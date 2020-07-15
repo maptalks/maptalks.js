@@ -277,6 +277,23 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+    updateDataConfig(idx, dataConfig) {
+        const computedDataConfig = this._vtStyle[idx].renderPlugin.dataConfig;
+        const old = extend({}, computedDataConfig);
+        extend(computedDataConfig, dataConfig);
+        if (Array.isArray(this.options.style)) {
+            extend(this.options.style[idx].renderPlugin.dataConfig, dataConfig);
+        } else if (this.options.style && Array.isArray(this.options.style.style)) {
+            extend(this.options.style.style[idx].renderPlugin.dataConfig, dataConfig);
+        }
+
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateDataConfig(idx, dataConfig, old);
+        }
+        return this;
+    }
+
     updateSymbol(idx, symbol) {
         const style = this._vtStyle[idx];
         if (!style) {

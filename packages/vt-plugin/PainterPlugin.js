@@ -238,6 +238,16 @@ function createPainterPlugin(type, Painter) {
             }
         },
 
+        // 返回true，则重刷图层，重新构造瓦片mesh
+        // 返回false，则只是请求重绘
+        updateDataConfig: function (dataConfig, old) {
+            var painter = this.painter;
+            if (painter) {
+                return painter.updateDataConfig(dataConfig, old);
+            }
+            return true;
+        },
+
         updateSymbol: function (symbol) {
             var painter = this.painter;
             if (!painter) {

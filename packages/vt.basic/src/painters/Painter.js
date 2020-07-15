@@ -239,6 +239,10 @@ class Painter {
     updateSceneConfig(/* config */) {
     }
 
+    updateDataConfig() {
+        return true;
+    }
+
     deleteMesh(meshes, keepGeometry) {
         if (!meshes) {
             return;

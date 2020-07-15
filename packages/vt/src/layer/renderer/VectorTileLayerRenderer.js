@@ -61,7 +61,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     updateSceneConfig(idx, sceneConfig) {
         const plugins = this.plugins;
-        if (!plugins) {
+        if (!plugins || !plugins[idx]) {
             return;
         }
 
@@ -70,6 +70,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             sceneConfig: sceneConfig
         });
         this.setToRedraw();
+    }
+
+    updateDataConfig(idx, dataConfig, old) {
+        const plugins = this.plugins;
+        if (!plugins || !plugins[idx]) {
+            return;
+        }
+        if (plugins[idx].updateDataConfig(dataConfig, old)) {
+            this.setStyle();
+        } else {
+            this.setToRedraw();
+        }
     }
 
     updateSymbol(idx/*, symbol*/) {

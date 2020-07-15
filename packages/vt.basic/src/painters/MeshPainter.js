@@ -139,6 +139,13 @@ class MeshPainter extends Painter {
         super.updateSymbol(symbol);
     }
 
+    updateDataConfig(dataConfig, old) {
+        if (this.dataConfig.type === 'line-extrusion' && !dataConfig['altitudeProperty'] && !old['altitudeProperty']) {
+            return false;
+        }
+        return true;
+    }
+
     getFnTypeConfig() {
         if (this._fnTypeConfig) {
             return this._fnTypeConfig;
