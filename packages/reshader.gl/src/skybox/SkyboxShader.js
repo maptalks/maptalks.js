@@ -25,6 +25,7 @@ class SkyboxShader extends MeshShader {
             }
         };
         super(config);
+        this.version = 300;
     }
 
     /**

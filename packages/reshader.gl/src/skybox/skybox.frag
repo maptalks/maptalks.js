@@ -1,10 +1,16 @@
-#ifdef GL_EXT_shader_texture_lod
-    #extension GL_EXT_shader_texture_lod : enable
-    #define textureCubeLod(tex, uv, lod) textureCubeLodEXT(tex, uv, lod)
+#if __VERSION__ == 100
+    #ifdef GL_EXT_shader_texture_lod
+        #extension GL_EXT_shader_texture_lod : enable
+        #define textureCubeLod(tex, uv, lod) textureCubeLodEXT(tex, uv, lod)
+    #else
+        #define textureCubeLod(tex, uv, lod) textureCube(tex, uv, lod)
+    #endif
 #else
-    #define textureCubeLod(tex, uv, lod) textureCube(tex, uv, lod)
+     #define textureCubeLod(tex, uv, lod) textureLod(tex, uv, lod)
 #endif
 precision highp float;
+
+#include <gl2_frag>
 
 #include <hsv_frag>
 
@@ -100,17 +106,17 @@ void main()
                 envColor = encodeRGBM(envColor.rgb, rgbmRange);
             }
         #endif
-        gl_FragColor = vec4(clamp(envColor.rgb, 0.0, 1.0, 1.0);
+        glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0, 1.0);
     #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
-        gl_FragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
+        glFragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
         if (length(hsv) > 0.0) {
-            gl_FragColor.rgb = hsv_apply(clamp(gl_FragColor.rgb, 0.0, 1.0), hsv);
+            glFragColor.rgb = hsv_apply(clamp(glFragColor.rgb, 0.0, 1.0), hsv);
         }
     #else
         if (length(hsv) > 0.0) {
             envColor.rgb = hsv_apply(envColor.rgb, hsv);
         }
-        gl_FragColor = envColor;
+        glFragColor = envColor;
     #endif
 
     // #ifdef USE_HDR
@@ -119,6 +125,8 @@ void main()
     //     color = pow(color, vec3(1.0/2.2));
     //     gl_FragColor.rgb = color;
     // #endif
-
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
 
 }
