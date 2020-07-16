@@ -74,7 +74,14 @@ class StandardPainter extends MeshPainter {
 
     getShadowMeshes() {
         this._shadowCount = this.scene.getMeshes().length;
-        return this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+        const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (mesh.material !== this.material) {
+                mesh.setMaterial(this.material);
+            }
+        }
+        return meshes;
     }
 
     updateSceneConfig(config) {
