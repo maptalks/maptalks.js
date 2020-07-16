@@ -7,6 +7,7 @@ const options = {
     extensions : [
 
     ],
+    onlyWebGL1: false,
     optionalExtensions : [
         'ANGLE_instanced_arrays',
         'OES_element_index_uint',

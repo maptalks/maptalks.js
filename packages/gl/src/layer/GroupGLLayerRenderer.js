@@ -349,7 +349,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _createGLContext(canvas, options) {
-        const names = ['webgl2', 'webgl', 'experimental-webgl'];
+        const layer = this.layer;
+        const names = layer.options['onlyWebGL1'] ? ['webgl', 'experimental-webgl'] : ['webgl2', 'webgl', 'experimental-webgl'];
         let gl = null;
         /* eslint-disable no-empty */
         for (let i = 0; i < names.length; ++i) {

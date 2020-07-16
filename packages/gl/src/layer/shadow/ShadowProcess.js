@@ -84,10 +84,10 @@ class ShadowProcess {
             if (displayShadow) {
                 scene.addMesh(this._ground);
             }
+            const farPlane = arr.map(c => [c.x, c.y, 0, 1]);
             const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this._shadowPass.render(
                 scene,
-                { cameraProjViewMatrix, lightDir, farPlane: arr.map(c => [c.x, c.y, 0, 1]),
-                    cameraLookAt: map.cameraLookAt }
+                { cameraProjViewMatrix, lightDir, farPlane, cameraLookAt: map.cameraLookAt }
             );
             matrix = this._lightProjViewMatrix = lightProjViewMatrix;
             smap = this._shadowMap = shadowMap;
