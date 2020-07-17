@@ -208,8 +208,8 @@ class Painter extends Class {
                 clipped = this._clip(points, altitude);
             } else {
                 clipped = {
-                    points : points,
-                    altitude : altitude
+                    points: points,
+                    altitude: altitude
                 };
             }
             const clipPoints = clipped.points;
@@ -287,8 +287,8 @@ class Painter extends Class {
             //     return this._clipLineByAlt(clipPoints, altitude);
             // }
             return {
-                points : clipPoints,
-                altitude : altitude
+                points: clipPoints,
+                altitude: altitude
             };
         }
         const glExtent2D = map._get2DExtent(map.getGLZoom(), TEMP_CLIP_EXTENT0)._expand(lineWidth * map._glScale);
@@ -324,8 +324,8 @@ class Painter extends Class {
         }
 
         return {
-            points : clipPoints,
-            altitude : altitude
+            points: clipPoints,
+            altitude: altitude
         };
     }
 
@@ -351,13 +351,13 @@ class Painter extends Class {
         if (!Array.isArray(altitude)) {
             const fn = cc => cc.point;
             return {
-                points : clipSegs.map(c => {
+                points: clipSegs.map(c => {
                     if (Array.isArray(c)) {
                         return c.map(fn);
                     }
                     return c.point;
                 }),
-                altitude : altitude
+                altitude: altitude
             };
         }
         const segsWithAlt = interpolateAlt(clipSegs, orig, altitude);
@@ -376,8 +376,8 @@ class Painter extends Class {
             return p.point;
         });
         return {
-            points : points,
-            altitude : altitude
+            points: points,
+            altitude: altitude
         };
     }
 
@@ -721,7 +721,7 @@ class Painter extends Class {
     }
 
     getAltitude() {
-        const propAlt = this.geometry.getAltitude();
+        const propAlt = this.geometry._getAltitudeContainsLayerAltitude();
         if (propAlt !== this._propAlt) {
             this._altAtGLZoom = this._getGeometryAltitude();
         }
@@ -750,7 +750,7 @@ class Painter extends Class {
         if (!map) {
             return 0;
         }
-        const altitude = this.geometry.getAltitude();
+        const altitude = this.geometry._getAltitudeContainsLayerAltitude();
         this._propAlt = altitude;
         if (!altitude) {
             this.minAltitude = this.maxAltitude = 0;
