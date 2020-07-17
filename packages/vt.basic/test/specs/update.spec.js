@@ -326,24 +326,34 @@ describe('update style specs', () => {
             data: point,
             style
         });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         layer.on('canvasisdirty', () => {
             count++;
+
+        });
+        group.on('layerload', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.highlightBatch(0, [0, 1, 0, 1]);
+                layer.outlineBatch(0);
             } else if (count === 2) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
-                assert.deepEqual(pixel, [0, 255, 0, 255]);
+                assert(pixel[1] > 10);
                 done();
             }
         });
-        layer.addTo(map);
+        group.addTo(map);
     });
 
 
