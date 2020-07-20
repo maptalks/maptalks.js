@@ -444,6 +444,11 @@ function createPainterPlugin(type, Painter) {
             if (painter) {
                 painter.outlineAll(fbo);
             }
+        },
+
+        needPolygonOffset() {
+            var painter = this.painter;
+            return painter && painter.needPolygonOffset();
         }
     });
 

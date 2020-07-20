@@ -16,6 +16,10 @@ class NativeLinePainter extends Painter {
         }
     }
 
+    needPolygonOffset() {
+        return true;
+    }
+
     createGeometry(glData) {
         const data = extend({}, glData.data);
         const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: 'lines', positionSize: glData.positionSize });

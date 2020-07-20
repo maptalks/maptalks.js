@@ -30,6 +30,10 @@ class FillPainter extends BasicPainter {
         }
     }
 
+    needPolygonOffset() {
+        return true;
+    }
+
     createMesh(geometry, transform, { tileCenter }) {
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();

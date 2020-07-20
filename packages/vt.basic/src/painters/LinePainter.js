@@ -20,6 +20,10 @@ class LinePainter extends BasicPainter {
         return super.needToRedraw() || animation && animation.enable;
     }
 
+    needPolygonOffset() {
+        return true;
+    }
+
     createMesh(geometry, transform) {
         prepareFnTypeData(geometry, this.symbolDef, this.fnTypeConfig);
 

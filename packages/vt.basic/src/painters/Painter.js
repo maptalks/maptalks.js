@@ -3,7 +3,6 @@ import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../Util';
 import outlineFrag from './glsl/outline.frag';
-import { OFFSET_FACTOR_SCALE } from './Constant';
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -112,6 +111,7 @@ class Painter {
 
     render(context) {
         this.pluginIndex = context.pluginIndex;
+        this.polygonOffsetIndex = context.polygonOffsetIndex;
         if (this._currentTimestamp !== context.timestamp) {
             this.preparePaint(context);
             this._currentTimestamp = context.timestamp;
@@ -181,12 +181,18 @@ class Painter {
         return context && context.renderTarget && context.renderTarget.fbo;
     }
 
+    needPolygonOffset() {
+        return false;
+    }
+
     getPolygonOffset() {
         const layer = this.layer;
         return {
-            factor: () => { return Math.floor(-OFFSET_FACTOR_SCALE * (layer.getPolygonOffset() + this.pluginIndex + 1) / layer.getTotalPolygonOffset()); },
-            // factor: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1) * 2; },
-            units: () => { return -(layer.getPolygonOffset() + this.pluginIndex + 1); }
+            factor: () => {
+                const factor = -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0));
+                return factor;
+            },
+            units: () => { return -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0)); }
         };
     }
 

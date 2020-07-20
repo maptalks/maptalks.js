@@ -77,6 +77,15 @@ class MeshPainter extends Painter {
         return mesh;
     }
 
+    needPolygonOffset() {
+        return this._needPolygonOffset;
+    }
+
+    startFrame(...args) {
+        delete this._needPolygonOffset;
+        return super.startFrame(...args);
+    }
+
     addMesh(mesh, progress) {
         if (progress !== null) {
             const mat = mesh.localTransform;
@@ -92,6 +101,9 @@ class MeshPainter extends Painter {
         }
         if (mesh.material !== this.material) {
             mesh.setMaterial(this.material);
+        }
+        if (mesh.geometry.properties.maxAltitude <= 0) {
+            this._needPolygonOffset = true;
         }
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
         if (this.getSymbol().ssr) {

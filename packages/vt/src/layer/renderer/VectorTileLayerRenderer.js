@@ -579,6 +579,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         }
         let dirty = false;
+        let polygonOffsetIndex = 0;
         plugins.forEach((plugin) => {
             const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
@@ -600,6 +601,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 gl: this.gl,
                 sceneConfig: plugin.config.sceneConfig,
                 pluginIndex: idx,
+                polygonOffsetIndex,
                 cameraPosition,
                 timestamp
             };
@@ -611,11 +613,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
+            if (plugin.needPolygonOffset()) {
+                polygonOffsetIndex++;
+            }
             dirty = true;
         });
+        this._polygonOffsetIndex = polygonOffsetIndex;
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
+    }
+
+    getPolygonOffsetCount() {
+        return this._polygonOffsetIndex || 0;
     }
 
     _hasMesh(meshes) {

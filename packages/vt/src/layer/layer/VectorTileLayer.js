@@ -171,7 +171,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!renderer) {
             return 0;
         }
-        return renderer.plugins && renderer.plugins.length || 0;
+        return renderer.getPolygonOffsetCount();
     }
 
     /**
