@@ -584,7 +584,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
             const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
-            if (!plugin || !visible || !includesChanged && !this._hasMesh(plugin.painter.scene.getMeshes())) {
+            const hasMesh = this._hasMesh(plugin.painter.scene.getMeshes());
+            if (!plugin || !visible || !includesChanged && !hasMesh) {
                 return;
             }
             this.regl.clear({
@@ -613,7 +614,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (plugin.needPolygonOffset()) {
+            if (plugin.needPolygonOffset() && hasMesh) {
                 polygonOffsetIndex++;
             }
             dirty = true;
