@@ -72,7 +72,7 @@ class VectorLayer extends OverlayLayer {
     }
 
     getAltitude() {
-        return this.options['altitude'];
+        return this.options['altitude'] || 0;
     }
 
     /**

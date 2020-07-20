@@ -1155,7 +1155,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
 
-    //------------- altitude -------------
+    //------------- altitude + layer.altitude -------------
     getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
@@ -1164,16 +1164,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layerOpts = layer.options,
             properties = this.getProperties();
         const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
-        return altitude;
-    }
-
-    // geometry altitude + layer.altitude
-    _getAltitudeContainsLayerAltitude() {
-        const altitude = this.getAltitude();
-        const layer = this.getLayer();
-        if (!layer) {
-            return altitude;
-        }
         const layerAltitude = layer.getAltitude();
         if (Array.isArray(altitude)) {
             for (let i = 0, len = altitude.length; i < len; i++) {

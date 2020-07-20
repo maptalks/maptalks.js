@@ -384,13 +384,8 @@ class UIComponent extends Eventable(Class) {
 
     _getViewPoint() {
         let alt = 0;
-        if (this._owner) {
-            let altitude = 0;
-            if (this._owner._getAltitudeContainsLayerAltitude) {
-                altitude = this._owner._getAltitudeContainsLayerAltitude();
-            } else if (this._owner.getAltitude) {
-                altitude = this._owner.getAltitude();
-            }
+        if (this._owner && this._owner.getAltitude) {
+            const altitude = this._owner.getAltitude();
             if (altitude > 0) {
                 alt = this._meterToPoint(this._coordinate, altitude);
             }
