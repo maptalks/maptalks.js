@@ -1166,10 +1166,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
         const layerAltitude = layer.getAltitude();
         if (Array.isArray(altitude)) {
-            for (let i = 0, len = altitude.length; i < len; i++) {
-                altitude[i] += layerAltitude;
-            }
-            return altitude;
+            return altitude.map(alt => {
+                return alt + layerAltitude;
+            });
         }
         return altitude + layerAltitude;
     }
