@@ -315,12 +315,8 @@ void main() {
     uTextureInputSize = resolution;
     uTextureInputRatio = vec2(1.0, 1.0);
     gTexCoord = vTexCoord;
-    // gl_FragColor = FxaaPixelShader(
-    //     vTexCoord, vec4(0.0), textureSource, textureSource, textureSource, 1.0 / resolution, vec4(0.0), vec4(0.0), vec4(0.0), 0.75, 0.166, 0.0833, 0.0, 0.0, 0.0, vec4(0.0)
-    // );
     vec4 color;
     if (enableFXAA == 1.0) {
-        // color = fxaa(textureSource);
         color = applyFXAA(gTexCoord * resolution, textureSource);
     } else {
         color = texture2D(textureSource, vTexCoord);
@@ -329,7 +325,7 @@ void main() {
         color = sharpen(color);
     }
     vec4 color1 = texture2D(noAaTextureSource, vTexCoord);
-    color = color1 * color1.a + color * (1.0 - color1.a);
+    color = color1 + color * (1.0 - color1.a);
 
     if (enableToneMapping == 1.0) {
         color.rgb = tonemap(color.rgb);
