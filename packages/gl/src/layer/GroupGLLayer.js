@@ -201,6 +201,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         return layer || null;
     }
 
+    getLayer(id) {
+        return this.getChildLayer(id);
+    }
+
     _bindChildListeners(layer) {
         layer.on('show hide', this._onLayerShowHide, this);
     }
