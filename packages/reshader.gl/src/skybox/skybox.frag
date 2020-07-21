@@ -48,12 +48,12 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
 vec4 textureCubeFixed(const in samplerCube tex, const in vec3 R, const in float size, const in float bias) {
     vec3 dir = R;
-    float scale = 1.0 - 1.0 / size;
-    vec3 absDir = abs(dir);
-    float M = max(max(absDir.x, absDir.y), absDir.z);
-    if (absDir.x != M) dir.x *= scale;
-    if (absDir.y != M) dir.y *= scale;
-    if (absDir.z != M) dir.z *= scale;
+    // float scale = 1.0 - 1.0 / size;
+    // vec3 absDir = abs(dir);
+    // float M = max(max(absDir.x, absDir.y), absDir.z);
+    // if (absDir.x != M) dir.x *= scale;
+    // if (absDir.y != M) dir.y *= scale;
+    // if (absDir.z != M) dir.z *= scale;
     return textureCubeLod(tex, dir, bias);
 }
 
