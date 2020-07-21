@@ -105,6 +105,25 @@ class LinePainter extends BasicPainter {
         return mesh;
     }
 
+    addMesh(...args) {
+        const symbol = this.getSymbol();
+        const mesh = args[0];
+        const defines = mesh.defines;
+        if (Array.isArray(symbol.lineDasharray) &&
+            symbol.lineDasharray.reduce((accumulator, currentValue)=> {
+                return accumulator + currentValue;
+            }, 0) > 0) {
+            if (!defines['HAS_DASHARRAY']) {
+                defines['HAS_DASHARRAY'] = 1;
+                mesh.setDefines(defines);
+            }
+        } else if (defines['HAS_DASHARRAY']) {
+            delete defines['HAS_DASHARRAY'];
+            mesh.setDefines(defines);
+        }
+        return super.addMesh(...args);
+    }
+
     setLineUniforms(uniforms) {
         const symbol = this.getSymbol();
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
