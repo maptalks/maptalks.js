@@ -14,6 +14,7 @@ import OverlayLayer from './OverlayLayer';
  * @property {Boolean} [options.enableAltitude=false]  - whether to enable render geometry with altitude, false by default
  * @property {Boolean} [options.altitudeProperty=altitude] - geometry's altitude property name, if enableAltitude is true, "altitude" by default
  * @property {Boolean} [options.drawAltitude=false]  - whether to draw altitude: a vertical line for marker, a vertical polygon for line
+ * @property {Number} [options.altitude=0]           - layer altitude
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
  * @memberOf VectorLayer
  * @instance
@@ -25,9 +26,10 @@ const options = {
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
     'cacheSvgOnCanvas': Browser.gecko,
-    'enableAltitude' : false,
-    'altitudeProperty' : 'altitude',
-    'drawAltitude' : false
+    'enableAltitude': false,
+    'altitudeProperty': 'altitude',
+    'drawAltitude': false,
+    'altitude': 0
 };
 
 /**
@@ -67,6 +69,10 @@ class VectorLayer extends OverlayLayer {
             return renderer.identify(coordinate, options);
         }
         return super.identify(coordinate, options);
+    }
+
+    getAltitude() {
+        return this.options['altitude'] || 0;
     }
 
     /**

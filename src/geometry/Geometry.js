@@ -38,7 +38,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
 const options = {
     'id': null,
     'visible': true,
-    'interactive':true,
+    'interactive': true,
     'editable': true,
     'cursor': null,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
@@ -1155,7 +1155,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
 
-    //------------- altitude -------------
+    //------------- altitude + layer.altitude -------------
     getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
@@ -1164,7 +1164,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layerOpts = layer.options,
             properties = this.getProperties();
         const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
-        return altitude;
+        const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        if (Array.isArray(altitude)) {
+            return altitude.map(alt => {
+                return alt + layerAltitude;
+            });
+        }
+        return altitude + layerAltitude;
     }
 
 }
