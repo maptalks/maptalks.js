@@ -21,6 +21,7 @@ attribute vec3 aPosition;
 varying vec3 vFragPos;
 varying vec3 vNormal;
 
+uniform float altitudeScale;
 uniform mat4 projMatrix;
 uniform mat4 viewModelMatrix;
 uniform mat4 normalMatrix;
@@ -79,6 +80,7 @@ void main()
     #else
         vec4 localPosition = getPosition(aPosition);
     #endif
+    localPosition.z *= altitudeScale;
     mat4 localPositionMatrix = getPositionMatrix();
 
     mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);

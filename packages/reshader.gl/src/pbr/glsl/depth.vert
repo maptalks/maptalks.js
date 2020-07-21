@@ -4,6 +4,7 @@ precision highp float;
 attribute vec3 aPosition;
 #include <line_extrusion_vert>
 
+uniform float altitudeScale;
 uniform mat4 uModelViewMatrix;
 uniform mat4 positionMatrix;
 uniform mat4 uProjectionMatrix;
@@ -19,6 +20,7 @@ void main() {
     #else
         vec4 localVertex = getPosition(aPosition);
     #endif
+    localVertex.z *= altitudeScale;
     vec4 viewVertex = uModelViewMatrix * localPositionMatrix * localVertex;
     mat4 jitteredProjection = uProjectionMatrix;
     jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;

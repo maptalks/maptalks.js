@@ -22,7 +22,7 @@ vec4 Tangent;
 
 // uniform float uDisplay2D;//0
 // uniform float uPointSize;//1070.9412
-
+uniform float altitudeScale;
 uniform mat4 uModelMatrix;
 uniform mat4 uModelViewMatrix;
 uniform mat4 positionMatrix;
@@ -114,6 +114,7 @@ void main() {
     #else
         vec4 localVertex = getPosition(aPosition);
     #endif
+    localVertex.z *= altitudeScale;
     vModelVertex = (uModelMatrix * localVertex).xyz;
 
     vec3 localNormal = Normal;

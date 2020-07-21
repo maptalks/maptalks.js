@@ -67,6 +67,7 @@ class GroundPainter {
                     'uHalton': uniforms['uHalton'],
                     'lineWidth': uniforms['lineWidth'],
                     'lineHeight': uniforms['lineHeight'],
+                    'altitudeScale': 1,
                     'linePixelScale': uniforms['linePixelScale'],
                     'projMatrix': this.getMap().projMatrix,
                     'viewMatrix': this.getMap().viewMatrix
@@ -194,6 +195,7 @@ class GroundPainter {
         }
         const uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
         this._setIncludeUniformValues(uniforms, context);
+        uniforms['altitudeScale'] = 1;
         return uniforms;
     }
 
