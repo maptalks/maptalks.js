@@ -229,7 +229,7 @@
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.4,
+      'uRoughnessFactor': 0.1,
       'uMetalnessFactor': 0,
       'uOutputLinear': 1,
       'uHsv': [0, 0, 0]
@@ -355,7 +355,7 @@
       environment: {
         enable: true,
         mode: 1,
-        level: 2
+        level: 0
       },
       shadow : {
         type : 'esm',
@@ -520,6 +520,16 @@
       sharp.open();
       var sharpCtrl = sharp.add(sharpConfig, 'factor', 0, 1, 0.1);
       sharpCtrl.onChange(onChange);
+
+      var scaleConfig = renderPlugin.dataConfig;
+      var scale = gui.addFolder('altitudeScale');
+      scale.open();
+      var scaleCtrl = scale.add(scaleConfig, 'altitudeScale', 0.1, 5, 0.1);
+      scaleCtrl.onChange(() => {
+        renderPlugin2.dataConfig.altitudeScale = scaleConfig.altitudeScale;
+        layer.updateDataConfig(0, { altitudeScale: scaleConfig.altitudeScale });
+        layer.updateDataConfig(1, { altitudeScale: scaleConfig.altitudeScale });
+      });
 
       var hsvValue = { 色相: litMaterial.uHsv[0], 饱和度: litMaterial.uHsv[1], 亮度: litMaterial.uHsv[2] };
       var hsvOnChange = function () {

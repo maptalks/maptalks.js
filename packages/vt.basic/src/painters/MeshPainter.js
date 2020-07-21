@@ -56,6 +56,7 @@ class MeshPainter extends Painter {
             setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
             setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
         }
+        setUniformFromSymbol(mesh.uniforms, 'altitudeScale', this.dataConfig, 'altitudeScale', 1);
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
@@ -152,6 +153,10 @@ class MeshPainter extends Painter {
     }
 
     updateDataConfig(dataConfig, old) {
+        const keys = Object.keys(dataConfig);
+        if (keys.length && keys[0] === 'altitudeScale') {
+            return false;
+        }
         if (this.dataConfig.type === 'line-extrusion' && !dataConfig['altitudeProperty'] && !old['altitudeProperty']) {
             return false;
         }

@@ -74,8 +74,8 @@ export default class LineExtrusionPack extends LinePack {
     placeVector(line) {
         const feature = line.feature;
         if (this._hasALineHeight) {
-            const { altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty } = this.options;
-            const { altitude, height } = getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+            const { altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty } = this.options;
+            const { altitude, height } = getFeaAltitudeAndHeight(feature, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
             this.feaAltitude = altitude;
             this.feaMinHeight = (altitude - height) / altitude * ALTITUDE_SCALE;
             if (altitude > this.maxAltitude) {

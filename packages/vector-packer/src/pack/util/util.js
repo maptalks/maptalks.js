@@ -51,9 +51,9 @@ export function getHeightValue(properties, heightProp, defaultValue) {
     return (height || 0) * 10;//乘以10是因为 tileTransform 中是以分米为单位，但这里是以米为单位
 }
 
-export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty) {
+export function getFeaAltitudeAndHeight(feature, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty) {
     const altitudeValue = getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
-    const altitude = altitudeValue * altitudeScale;
+    const altitude = altitudeValue;
 
     let height = altitudeValue;
     if (heightProperty) {
@@ -61,7 +61,6 @@ export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty
     } else if (minHeightProperty) {
         height = altitudeValue - getHeightValue(feature.properties, minHeightProperty, 0);
     }
-    height *= altitudeScale;
     return {
         altitude, height
     };
