@@ -107,6 +107,7 @@ class DrawTool extends MapTool {
             'mousedown': this._mouseDownHandler,
             'mouseup': this._mouseUpHandler
         };
+        this._isUndo = false;
     }
 
     /**
@@ -369,7 +370,13 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawvertex', event);
+            //判断当前是否处于撤销状态+起点
+            if(this._isUndo && this._historyPointer == 1){
+                this._fireEvent('drawstart', event);
+            }else{
+                this._fireEvent('drawvertex', event);
+            }
+            // this._fireEvent('drawvertex', event);
             if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
                 // registerMode['update']([coordinate], this._geometry, event);
                 this.endDraw(event);
@@ -527,7 +534,46 @@ class DrawTool extends MapTool {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('drawend', param);
+
+        let _flag = false
+        if(!param['point2d']){
+            const geo = geometry.copy();
+            const mode = this.getMode();
+            if(mode == 'Circle'){
+                if(geo._radius == 0){
+                    console.error('It has to be greater than 1 points')
+                    _flag = true
+                }
+            }else if(mode == 'Ellipse'){
+                if(geo.width == 0 || geo.height == 0){
+                    console.error('It has to be greater than 1 points')
+                    _flag = true
+                }
+            }else if(mode == 'Polygon'){
+                if(geo._coordinates.length < 3){
+                    console.error('It has to be greater than 3 points')
+                    _flag = true
+                }
+            }else if(mode == 'Rectangle' || mode == 'LineString'){
+                if(geo._coordinates.length <= 1){
+                    console.error('It has to be greater than 2 points')
+                    _flag = true
+                }
+            }
+            if(_flag){
+                delete this._geometry;
+                delete this._ending;
+                delete this._historyPointer;
+                delete this._clickCoords;
+            }
+        }
+
+        if(!_flag){
+            this._fireEvent('drawend', param);
+        }else{
+            console.error('drawend error')
+        }
+
         delete this._geometry;
         if (this.options['once']) {
             this.disable();

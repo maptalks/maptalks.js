@@ -109,7 +109,6 @@ class DistanceTool extends DrawTool {
         this.on('enable', this._afterEnable, this)
             .on('disable', this._afterDisable, this);
         this._measureLayers = [];
-        this._isUndo = false;
     }
 
     /**
@@ -324,6 +323,21 @@ class DistanceTool extends DrawTool {
         }
         this._addClearMarker(this._lastVertex.getCoordinates(), this._lastVertex._getPrjCoordinates(), size['width']);
         const geo = param['geometry'].copy();
+        if(!param['point2d']){
+            if(geo._coordinates.length <= 1){
+                console.error('It has to be greater than 1 points')
+                //clear this
+                this._measureLineLayer.clear()
+                this._measureMarkerLayer.clear()
+                delete this._lastMeasure;
+                delete this._lastVertex;
+                delete this._geometry;
+                delete this._ending;
+                delete this._historyPointer;
+                delete this._clickCoords;
+                return
+            }
+        }
         geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getLength();

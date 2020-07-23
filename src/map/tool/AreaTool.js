@@ -114,12 +114,22 @@ class AreaTool extends DistanceTool {
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
+        const geo = param['geometry'].copy();
         if(!param['point2d']){
-            param = this._lastDrawVertex
-            if(this._vertexes.length < 3){
-                console.error('It has to be greater than 3 points')
+            if(geo._coordinates.length < 3){
+                console.error('It has to be greater than 1 points')
+                //clear this
+                this._measureLineLayer.clear()
+                this._measureMarkerLayer.clear()
+                delete this._lastMeasure;
+                delete this._lastVertex;
+                delete this._geometry;
+                delete this._ending;
+                delete this._historyPointer;
+                delete this._clickCoords;
                 return
             }
+            param = this._lastDrawVertex
         }
         const prjCoord = this.getMap()._pointToPrj(param['point2d']);
         const ms = this._measure(param['geometry']);
@@ -131,7 +141,6 @@ class AreaTool extends DistanceTool {
             size = new Size(10, 10);
         }
         this._addClearMarker(param['coordinate'], prjCoord, size['width']);
-        const geo = param['geometry'].copy();
         geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
         this._lastMeasure = geo.getArea();
