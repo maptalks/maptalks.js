@@ -1,6 +1,6 @@
 import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
-import { pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
+import { isNumber, pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
 import { PackUtil } from '@maptalks/vector-packer';
 import earcut from 'earcut';
 import { KEY_IDX } from '../../common/Constant';
@@ -8,7 +8,7 @@ import { KEY_IDX } from '../../common/Constant';
 export function buildExtrudeFaces(
     features, EXTENT,
     {
-        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
+        altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
     },
     {
         side,
@@ -31,6 +31,7 @@ export function buildExtrudeFaces(
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
     const featIndexes = [];
+    const featIds = [];
     const vertices = [];
     const indices = [];
     const generateUV = !!uv,
@@ -88,8 +89,20 @@ export function buildExtrudeFaces(
         r = debugIndex;
         n = debugIndex + 1;
     }
+    let maxFeaId = 0;
+    let hasNegative = false;
     for (; r < n; r++) {
         const feature = features[r];
+        const feaId = feature.id;
+        if (isNumber(feaId)) {
+            if (Math.abs(feaId) > maxFeaId) {
+                maxFeaId = Math.abs(feaId);
+            }
+            if (feaId < 0) {
+                hasNegative = true;
+            }
+        }
+
         const geometry = feature.geometry;
 
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
@@ -144,6 +157,9 @@ export function buildExtrudeFaces(
         const count = vertices.length - verticeCount;
         for (let i = 0; i < count / 3; i++) {
             featIndexes.push(feature[KEY_IDX] || r);
+            if (isNumber(feaId)) {
+                featIds.push(feaId);
+            }
         }
     }
     const feaCtor = getUnsignedArrayType(featIndexes.length ? featIndexes[featIndexes.length - 1] : 0);
@@ -155,6 +171,10 @@ export function buildExtrudeFaces(
         indices,                                    // indices for drawElements
         featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
     };
+    if (featIds.length) {
+        const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
+        data.featureIds = new feaCtor(featIds);
+    }
     if (uvs) {
         //因为vertices中最后一位不在indices中引用，uvs为保持位数与vertices一致，需补充2位
         uvs.length = vertices.length / 3 * 2;

@@ -3,13 +3,13 @@ import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
 import Promise from './util/Promise';
-import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType } from './util/array';
+import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType, getUnsignedArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
 import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
 import { createFilter } from '@maptalks/feature-filter';
-import { isFnTypeSymbol } from '../style/Util';
+import { isFnTypeSymbol, isNumber } from '../style/Util';
 import { getHeightValue } from './util/util';
 
 //feature index defined in BaseLayerWorker
@@ -248,7 +248,20 @@ export default class VectorPack {
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
         let maxFeaIndex = 0;
+        const featIds = [];
+
+        let maxFeaId = 0;
+        let hasNegative = false;
         for (let i = 0, l = vectors.length; i < l; i++) {
+            const feaId = vectors[i].feature.id;
+            if (isNumber(feaId)) {
+                if (Math.abs(feaId) > maxFeaId) {
+                    maxFeaId = Math.abs(feaId);
+                }
+                if (feaId < 0) {
+                    hasNegative = true;
+                }
+            }
             const eleCount = data.length;
             if (!Array.isArray(vectors[i])) {
                 this._placeVector(vectors[i], scale);
@@ -261,6 +274,9 @@ export default class VectorPack {
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {
                 featureIndexes.push(vectors[i].featureIdx);
+                if (isNumber(feaId)) {
+                    featIds.push(feaId);
+                }
             }
             maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }
@@ -308,13 +324,21 @@ export default class VectorPack {
         const ElementType = getIndexArrayType(this.maxIndex);
         elements = new ElementType(elements);
         buffers.push(elements.buffer);
-        return {
+        const result = {
             data: arrays,
             // format,
             indices: elements,
             positionSize: 3, //!this.maxAltitude ? 2 : 3,
             buffers
         };
+
+        if (featIds.length) {
+            const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
+            result.featureIds = new feaCtor(featIds);
+            buffers.push(result.featureIds.buffer);
+        }
+
+        return result;
     }
 
     _placeVector(vector, scale) {

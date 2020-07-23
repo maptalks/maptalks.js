@@ -53,3 +53,9 @@ export function getPosArrayType(max) {
     if (max < 65536 / 2) return Int16Array;
     return Float32Array;
 }
+
+export function getUnsignedArrayType(max) {
+    if (max < 256) return Uint8Array;
+    if (max < 65536) return Uint16Array;
+    return Uint32Array;
+}

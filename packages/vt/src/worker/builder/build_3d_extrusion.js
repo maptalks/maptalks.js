@@ -112,6 +112,10 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         },
         buffers
     };
+    if (faces.featureIds) {
+        data.data.featureIds = faces.featureIds;
+        buffers.push(data.data.featureIds.buffer);
+    }
     if (fnTypes.aColor) {
         data.data.data.aColor = fnTypes.aColor;
         data.buffers.push(fnTypes.aColor.buffer);

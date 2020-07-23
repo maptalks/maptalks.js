@@ -105,6 +105,29 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+        let mesh;
+        if (Array.isArray(meshes) && meshes.length) {
+            mesh = meshes[0];
+        } else {
+            mesh = meshes;
+        }
+        if (mesh) {
+            const feaIdMap = mesh.geometry.properties.feaIdPickingMap;
+            if (feaIdMap) {
+                const feaIds = Object.keys(feaIdMap);
+                for (let ii = 0; ii < feaIds.length; ii++) {
+                    let feaMeshes = this._meshesOfFeaId[feaIds[ii]];
+                    if (!feaMeshes) {
+                        feaMeshes = this._meshesOfFeaId[feaIds[ii]] = [];
+                    }
+                    if (Array.isArray(meshes)) {
+                        feaMeshes.push(...meshes);
+                    } else {
+                        feaMeshes.push(meshes);
+                    }
+                }
+            }
+        }
         this.scene.addMesh(meshes);
         return meshes;
     }
@@ -233,13 +256,18 @@ class Painter {
             point[1] = Math.round(point[1] * 1E5) / 1E5;
             point[2] = Math.round(point[2] * 1E5) / 1E5;
         }
-        return {
+        const result = {
             data: props && props.features && props.features[pickingId],
             point,
             plugin: this.pluginIndex,
             meshId,
             pickingId
         };
+        const idMap = mesh.geometry.properties.feaPickingIdMap;
+        if (idMap) {
+            result.featureId = idMap[pickingId];
+        }
+        return result;
     }
 
     updateSceneConfig(/* config */) {
@@ -267,7 +295,6 @@ class Painter {
                     meshes[i].material.dispose();
                 }
                 meshes[i].dispose();
-                meshes[i]['___debug__disposed_by_painter'] = 1;
             }
         } else {
             if (!meshes.isValid()) {
@@ -280,7 +307,6 @@ class Painter {
                 meshes.material.dispose();
             }
             meshes.dispose();
-            meshes['___debug__disposed_by_painter'] = 1;
         }
     }
 
@@ -293,6 +319,7 @@ class Painter {
             this._redraw = false;
             this._needRetire = false;
         }
+        this._meshesOfFeaId = {};
         this.scene.clear();
     }
 
@@ -490,8 +517,30 @@ class Painter {
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = picked.pickingId;
-        this._outlineScene.setMeshes(this.picking.getMeshAt(picked.meshId));
+        const mesh = this.picking.getMeshAt(picked.meshId);
+        this._outlineScene.setMeshes(mesh);
         this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
+
+        if (this._meshesOfFeaId && picked.featureId !== undefined) {
+            const meshes = this._meshesOfFeaId[picked.featureId];
+            if (!meshes) {
+                return;
+            }
+            for (let i = 0; i < meshes.length; i++) {
+                if (meshes[i] === mesh) {
+                    continue;
+                }
+                const pickingMap = meshes[i].geometry.properties.feaIdPickingMap;
+                if (pickingMap) {
+                    const pickingId = pickingMap[picked.featureId];
+                    if (pickingId !== undefined) {
+                        uniforms.highlightPickingId = pickingId;
+                        this._outlineScene.setMeshes(meshes[i]);
+                        this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
+                    }
+                }
+            }
+        }
     }
 
     outlineAll(fbo) {
