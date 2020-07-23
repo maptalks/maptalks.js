@@ -108,6 +108,9 @@ class LinePainter extends BasicPainter {
     addMesh(...args) {
         const symbol = this.getSymbol();
         const mesh = args[0];
+        if (!mesh.geometry.aLineWidth && mesh.material.get('lineWidth') <= 0 || !mesh.geometry.aOpacity && mesh.material.get('lineOpacity') <= 0) {
+            return null;
+        }
         const defines = mesh.defines;
         if (Array.isArray(symbol.lineDasharray) &&
             symbol.lineDasharray.reduce((accumulator, currentValue)=> {
