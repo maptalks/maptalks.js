@@ -123,6 +123,7 @@ void main() {
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
     float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+    // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
     if (d * lineWidth < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
         float s = -d / limit;
