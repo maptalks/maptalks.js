@@ -41,7 +41,7 @@ export default class Geometry {
 
     getREGLData(regl, activeAttributes) {
         let updated = false;
-        if (!this._reglData) {
+        if (!this._reglData || this._isAttrChanged(activeAttributes)) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
             this._reglData = extend({}, this.data);
@@ -63,6 +63,7 @@ export default class Geometry {
                 delete this._reglData[tangentAttribute];
                 this._reglData['aTangent'] = data[tangentAttribute];
             }
+            this._activeAttributes = activeAttributes;
             updated = true;
         }
         //support vao
@@ -100,6 +101,21 @@ export default class Geometry {
             return this._vao[key];
         }
         return this._reglData;
+    }
+
+    _isAttrChanged(activeAttributes) {
+        if (activeAttributes === this._activeAttributes) {
+            return false;
+        }
+        if (activeAttributes.length !== this._activeAttributes.length) {
+            return true;
+        }
+        for (let i = 0; i < activeAttributes.length; i++) {
+            if (activeAttributes[i] !== this._activeAttributes[i]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     generateBuffers(regl) {
