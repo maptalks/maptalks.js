@@ -32,6 +32,7 @@ export function buildExtrudeFaces(
     // const arrCtor = getIndexArrayType(features.length);
     const featIndexes = [];
     const featIds = [];
+    const geoVertices = [];
     const vertices = [];
     const indices = [];
     const generateUV = !!uv,
@@ -40,15 +41,16 @@ export function buildExtrudeFaces(
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
     function fillData(start, offset, holes, height) {
-        const top = vertices.slice(start, offset);
         //just ignore bottom faces never appear in sight
         if (generateTop) {
-            const triangles = earcut(top, holes, 3); //vertices, holes, dimension(2|3)
+            const triangles = earcut(geoVertices, holes, 3); //vertices, holes, dimension(2|3)
             if (triangles.length === 0) {
                 return offset;
             }
             //TODO caculate earcut deviation
 
+            pushIn(vertices, geoVertices);
+            offset += geoVertices.length;
             //switch triangle's i + 1 and i + 2 to make it ccw winding
             let tmp;
             for (let i = 2, l = triangles.length; i < l; i += 3) {
@@ -67,7 +69,7 @@ export function buildExtrudeFaces(
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(true, vertices, top, holes, indices, start, offset, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
+                offset = buildSide(vertices, geoVertices, holes, indices, offset, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
             }
         }
         // debugger
@@ -75,7 +77,7 @@ export function buildExtrudeFaces(
             if (generateTop) {
                 topThickness = 0;
             }
-            offset = buildSide(generateTop, vertices, top, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
+            offset = buildSide(vertices, geoVertices, holes, indices, offset, topThickness, height, EXTENT, generateUV, sideUVMode || 0, uvs, uvSize, glScale, vScale);
         }
         return offset;
     }
@@ -112,17 +114,17 @@ export function buildExtrudeFaces(
 
         let start = offset;
         let holes = [];
-
+        geoVertices.length = 0;
         for (let i = 0, l = geometry.length; i < l; i++) {
             const isHole = PackUtil.calculateSignedArea(geometry[i]) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
                 //an exterior ring (multi polygon)
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                geoVertices.length = 0;
                 holes = [];
                 start = offset;
             }
-            const segStart = offset - start;
             let ring = geometry[i];
             if (EXTENT !== Infinity) {
                 ring = PackUtil.clipPolygon(ring, BOUNDS);
@@ -143,12 +145,12 @@ export function buildExtrudeFaces(
                 //首尾不一样时，在末尾添加让首尾封闭
                 ring.push(ring[0]);
             }
-
-            //a seg or a ring in line or polygon
-            offset = fillPosArray(vertices, offset, ring, scale, altitude);
             if (isHole) {
-                holes.push(segStart / 3);
+                holes.push(geoVertices.length / 3);
             }
+            //a seg or a ring in line or polygon
+            fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude);
+
             if (i === l - 1) {
                 offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
             }
@@ -184,24 +186,16 @@ export function buildExtrudeFaces(
     return data;
 }
 
-function buildSide(generateTop, vertices, topVertices, holes, indices, start, offset, topThickness, height, EXTENT, generateUV, sideUVMode, uvs, uvSize, glScale, vScale) {
-    const count = offset - start;
+function buildSide(vertices, topVertices, holes, indices, offset, topThickness, height, EXTENT, generateUV, sideUVMode, uvs, uvSize, glScale, vScale) {
+    const count = topVertices.length;
+    const startIdx = offset / 3;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
-    if (generateTop) {
-        //不生成top时，复用vertices中已有的top端点，不再次拷贝。
-        //top vertexes
-        for (let i = 2, l = count; i < l; i += 3) {
-            vertices[offset + i - 2] = topVertices[i - 2];
-            vertices[offset + i - 1] = topVertices[i - 1];
-            vertices[offset + i - 0] = topVertices[i] - topThickness;
-        }
-        offset += count;
-    } else if (topThickness) {
-        // 顶面端点的高度还是没有减去 topThickness 的值
-        for (let i = 2; i < topVertices.length; i += 3) {
-            vertices[start + i] -= topThickness;
-        }
+    for (let i = 2, l = count; i < l; i += 3) {
+        vertices[offset + i - 2] = topVertices[i - 2];
+        vertices[offset + i - 1] = topVertices[i - 1];
+        vertices[offset + i - 0] = topVertices[i] - topThickness;
     }
+    offset += count;
     //bottom vertexes
     for (let i = 2, l = count; i < l; i += 3) {
         vertices[offset + i - 2] = topVertices[i - 2];
@@ -226,7 +220,6 @@ function buildSide(generateTop, vertices, topVertices, holes, indices, start, of
 
     holes = holes || [];
     holes.push(count / 3);
-    const startIdx = generateTop ? (start + count) / 3 : start / 3;
     for (let r = 0; r < holes.length; r++) {
         // #287, 遍历geometry中的每个ring，构造侧面三角形和uv坐标
         const ringStart = startIdx + (holes[r - 1] || 0);
