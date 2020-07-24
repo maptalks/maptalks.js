@@ -328,13 +328,13 @@
       ]
     };
 
-    var layer1 = new maptalks.GeoJSONVectorTileLayer('floor', {
-      // canvas: debugCanvas,
-      data: floorData
-    });
-    // style.style[0].symbol.ssr = true;
-    style.style[0].renderPlugin.dataConfig.defaultAltitude = 0;
-    layer1.setStyle([style.style[0]]);
+    // var layer1 = new maptalks.GeoJSONVectorTileLayer('floor', {
+    //   // canvas: debugCanvas,
+    //   data: floorData
+    // });
+    // // style.style[0].symbol.ssr = true;
+    // style.style[0].renderPlugin.dataConfig.defaultAltitude = 0;
+    // layer1.setStyle([style.style[0]]);
 
     // style.style[0].filter = [
     //   "==",
@@ -414,13 +414,14 @@
     }
 
     function highlight() {
-      layer.outlineBatch(0, [1, 1, 0, 0.1]);
+      layer.outlineBatch(0);
     }
 
     map.on('click', e => {
       var result = layer.identify(e.coordinate);
       if (result.length) {
-        layer.outline(result[0], [1, 1, 0, 0.1]);
+        console.log(result[0]);
+        layer.outline(result[0]);
       }
     });
 
@@ -525,10 +526,16 @@
       var scale = gui.addFolder('altitudeScale');
       scale.open();
       var scaleCtrl = scale.add(scaleConfig, 'altitudeScale', 0.1, 5, 0.1);
+      var altCtrl = scale.add(scaleConfig, 'defaultAltitude', 1, 50, 1);
       scaleCtrl.onChange(() => {
         renderPlugin2.dataConfig.altitudeScale = scaleConfig.altitudeScale;
         layer.updateDataConfig(0, { altitudeScale: scaleConfig.altitudeScale });
         layer.updateDataConfig(1, { altitudeScale: scaleConfig.altitudeScale });
+      });
+      altCtrl.onChange(() => {
+        renderPlugin2.dataConfig.defaultAltitude = scaleConfig.defaultAltitude;
+        layer.updateDataConfig(0, { defaultAltitude: scaleConfig.defaultAltitude });
+        layer.updateDataConfig(1, { defaultAltitude: scaleConfig.defaultAltitude });
       });
 
       var hsvValue = { 色相: litMaterial.uHsv[0], 饱和度: litMaterial.uHsv[1], 亮度: litMaterial.uHsv[2] };
