@@ -110,10 +110,8 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         this.options['style'] = style;
         if (style['$root'] || style['$iconset']) {
-            let root;
-            let iconset;
-            root = this._styleRootPath = style['$root'];
-            iconset = this._styleRootPath = style['$iconset'];
+            let root = style['$root'];
+            let iconset = style['$iconset'];
             if (root && root[root.length - 1] === '/') {
                 root = root.substring(0, root.length - 1);
             }

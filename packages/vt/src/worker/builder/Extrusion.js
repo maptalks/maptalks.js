@@ -232,9 +232,8 @@ function buildSide(vertices, topVertices, holes, indices, offset, topThickness, 
 
 function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices, generateUV, sideUVMode, uvs, uvSize, glScale, vScale) {
     const indiceStart = indices.length;
-    const ringCount = ringEnd - ringStart;
     let current, next;
-    for (let i = ringStart, l = ringCount + ringStart; i < l - 1; i++) {
+    for (let i = ringStart, l = ringEnd; i < l - 1; i++) {
         current = i;
         next = i + 1;
         if (isClippedEdge(vertices, current, next, EXTENT)) {

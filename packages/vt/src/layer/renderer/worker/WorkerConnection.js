@@ -172,9 +172,9 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const data = {
             mapId : this._mapId,
             layerId,
-            command : 'setData',
-            params : {
-                data : JSON.stringify(geojson)
+            command: 'setData',
+            params: {
+                data: geojson
             }
         };
         this.send(data, null, cb, this._dedicatedVTWorkers[layerId]);
