@@ -42,7 +42,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
- * @property {Boolean} [options.fixCenterOnResize=false]        - whether to fix map center when map is resized
+ * @property {Boolean} [options.fixCenterOnResize=true]        - whether to fix map center when map is resized
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
  * @property {Number}  [options.maxVisualPitch=70]              - the max pitch to be visual
@@ -112,7 +112,7 @@ const options = {
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
-    'fixCenterOnResize' : false,
+    'fixCenterOnResize' : true,
 
     'checkSize': true,
     'checkSizeInterval' : 1000,
