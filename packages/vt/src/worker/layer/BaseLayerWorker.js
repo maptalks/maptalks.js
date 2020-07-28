@@ -1,4 +1,4 @@
-import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber } from '../../common/Util';
+import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
@@ -14,7 +14,7 @@ export default class BaseLayerWorker {
         this.id = id;
         this.options = options;
         this.upload = upload;
-        this._compileStyle(options.style || []);
+        this._compileStyle(options.style);
         this.requests = {};
         this._styleCounter = 0;
         this._cache = tileCache;
@@ -23,7 +23,7 @@ export default class BaseLayerWorker {
 
     updateStyle(style, cb) {
         this.options.style = style;
-        this._compileStyle(style || []);
+        this._compileStyle(style);
         this._styleCounter++;
         cb();
     }
@@ -173,16 +173,20 @@ export default class BaseLayerWorker {
                 buffers: []
             });
         }
-        const useDefault = !this.options.style.length;
-        let pluginConfigs = this.pluginConfig;
+        const useDefault = !this.options.style.style.length;
+        let pluginConfigs = this.pluginConfig.slice(0);
         if (useDefault) {
             //图层没有定义任何style，通过数据动态生成pluginConfig
             pluginConfigs = this._updateLayerPluginConfig(layers);
+        }
+        if (this.featurePlugins) {
+            pushIn(pluginConfigs, this.featurePlugins);
         }
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             tilePoint = { x: tileInfo.point.x * glScale, y: tileInfo.point.y * glScale },
             data = [],
+            featureData = [],
             pluginIndexes = [],
             options = this.options,
             buffers = [];
@@ -190,24 +194,39 @@ export default class BaseLayerWorker {
         const promises = [
             Promise.resolve(this._styleCounter)
         ];
+        let currentType = 0;
+        let typeIndex = 0;
         for (let i = 0; i < pluginConfigs.length; i++) {
             const pluginConfig = pluginConfigs[i];
             if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
                 continue;
             }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.filter, features, feaTags, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 continue;
             }
+
+            if (pluginConfig.type !== currentType) {
+                //plugin类型变成 feature plugin
+                typeIndex = 0;
+                currentType = pluginConfig.type;
+            }
             const maxIndex = tileFeaIndexes[tileFeaIndexes.length - 1];
             const arrCtor = getIndexArrayType(maxIndex);
-            data[i] = {
+
+            const targetData = pluginConfig.type === 0 ? data : featureData;
+            targetData[typeIndex] = {
                 //[feature_index, style_index, ...]
                 styledFeatures: new arrCtor(tileFeaIndexes)
             };
+
             //index of plugin with data
-            pluginIndexes.push(i);
+            pluginIndexes.push({
+                idx: i,
+                typeIdx: typeIndex++
+            });
+
             buffers.push(data[i].styledFeatures.buffer);
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, tilePoint, glScale, zScale, zoom });
             if (useDefault) {
@@ -222,7 +241,6 @@ export default class BaseLayerWorker {
                             if (tileData[i].data) tileData[i].data.layer = tileFeatures[0].layer;
                         }
                     }
-
                     return tileData;
                 });
             }
@@ -231,8 +249,8 @@ export default class BaseLayerWorker {
 
         return Promise.all(promises).then(([styleCount, ...tileDatas]) => {
             function handleTileData(tileData, i) {
-                tileData.data.type = pluginConfigs[pluginIndexes[i]].renderPlugin.dataConfig.type;
-                tileData.data.filter = pluginConfigs[pluginIndexes[i]].filter.def;
+                tileData.data.type = pluginConfigs[pluginIndexes[i].idx].renderPlugin.dataConfig.type;
+                tileData.data.filter = pluginConfigs[pluginIndexes[i].idx].filter.def;
 
                 if (tileData.buffers && tileData.buffers.length) {
                     for (let i = 0; i < tileData.buffers.length; i++) {
@@ -249,6 +267,7 @@ export default class BaseLayerWorker {
                     continue;
                 }
                 const tileData = tileDatas[i];
+                const targetData = pluginConfigs[pluginIndexes[i].idx].type === 0 ? data : featureData;
                 if (Array.isArray(tileData)) {
                     const datas = [];
                     for (let ii = 0; ii < tileData.length; ii++) {
@@ -259,11 +278,11 @@ export default class BaseLayerWorker {
                         datas.push(tileData[ii].data);
                     }
                     if (datas.length) {
-                        data[pluginIndexes[i]].data = datas;
+                        targetData[pluginIndexes[i].typeIdx].data = datas;
                     }
                 } else {
                     handleTileData(tileData, i);
-                    data[pluginIndexes[i]].data = tileData.data;
+                    targetData[pluginIndexes[i].typeIdx].data = tileData.data;
                 }
 
             }
@@ -298,6 +317,7 @@ export default class BaseLayerWorker {
                 data: {
                     schema,
                     data,
+                    featureData,
                     extent: EXTENT,
                     features: allFeas
                 },
@@ -409,11 +429,15 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(filter, features, tags) {
+    _filterFeatures(styleType, filter, features, tags) {
         const indexes = [];
         const filtered = [];
         const l = features.length;
         for (let i = 0; i < l; i++) {
+            if (styleType !== 1 && features[i].id !== undefined && this.styledFeatures[features[i].id]) {
+                continue;
+            }
+
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
             if ((!filter.def || filter.def === 'default') && !tags[i] ||
                 (filter.def === true || Array.isArray(filter.def) && filter(features[i]))) {
@@ -431,12 +455,28 @@ export default class BaseLayerWorker {
     }
 
     _compileStyle(layerStyle) {
-        this.pluginConfig = compileStyle(layerStyle);
-        for (let i = 0; i < layerStyle.length; i++) {
-            if (this.pluginConfig[i].filter) {
-                this.pluginConfig[i].filter.def = layerStyle[i].filter ? (layerStyle[i].filter.value || layerStyle[i].filter) : undefined;
+        const { style, featureStyle } = layerStyle;
+        const styledFeatures = {};
+        featureStyle.forEach(style => {
+            styledFeatures[style.id] = 1;
+            style.filter = ['=', '$id', style.id];
+        });
+        const pluginConfigs = compileStyle(style);
+        for (let i = 0; i < style.length; i++) {
+            if (pluginConfigs[i].filter) {
+                //设置def，是为了识别哪些feature归类到默认样式
+                pluginConfigs[i].filter.def = style[i].filter ? (style[i].filter.value || style[i].filter) : undefined;
             }
+            pluginConfigs[i].type = 0;
         }
+        const featurePlugins = compileStyle(featureStyle);
+        for (let i = 0; i < featureStyle.length; i++) {
+            featurePlugins[i].type = 1;
+        }
+
+        this.pluginConfig = pluginConfigs;
+        this.featurePlugins = featurePlugins;
+        this.styledFeatures = styledFeatures;
     }
 
     _updateLayerPluginConfig(layers) {

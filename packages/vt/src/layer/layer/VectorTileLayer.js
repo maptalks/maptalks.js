@@ -82,7 +82,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),
             //default render时，this._vtStyle有可能被default render设值
-            style: this.isDefaultRender() ? [] : !Array.isArray(this._vtStyle) ? [] : this._vtStyle,
+            style: this.isDefaultRender() ? [] : this._getComputedStyle(),
             features: this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']
@@ -128,6 +128,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             };
         }
         this.ready = true;
+        this._featureStyle = style['featureStyle'] || [];
         if (!Array.isArray(style) && !style.plugins) {
             //有plugins说明是个compressed style
             style = style.style || [];
@@ -225,6 +226,14 @@ class VectorTileLayer extends maptalks.TileLayer {
                 this._parseSymbolPath(symbol);
             }
         }
+
+        const featureStyles = this._featureStyle;
+        for (let i = 0; i < featureStyles.length; i++) {
+            const { symbol } = featureStyles[i].style;
+            if (symbol) {
+                this._parseSymbolPath(symbol);
+            }
+        }
     }
 
     _parseSymbolPath(symbol) {
@@ -260,40 +269,54 @@ class VectorTileLayer extends maptalks.TileLayer {
         return value;
     }
 
-    updateSceneConfig(idx, sceneConfig) {
-        extend(this._vtStyle[idx].renderPlugin.sceneConfig, sceneConfig);
+    updateSceneConfig(type, idx, sceneConfig) {
+        const styles = this._getTargetStyle(type);
+        if (!styles) {
+            return this;
+        }
+        extend(styles[idx].renderPlugin.sceneConfig, sceneConfig);
         if (Array.isArray(this.options.style)) {
             extend(this.options.style[idx].renderPlugin.sceneConfig, sceneConfig);
-        } else if (this.options.style && Array.isArray(this.options.style.style)) {
-            extend(this.options.style.style[idx].renderPlugin.sceneConfig, sceneConfig);
+        } else {
+            const styles = this._getTargetStyle(type, this.options.style);
+            extend(styles[idx].renderPlugin.sceneConfig, sceneConfig);
         }
 
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateSceneConfig(idx, sceneConfig);
+            renderer.updateSceneConfig(type, idx, sceneConfig);
         }
         return this;
     }
 
-    updateDataConfig(idx, dataConfig) {
-        const computedDataConfig = this._vtStyle[idx].renderPlugin.dataConfig;
+    updateDataConfig(type, idx, dataConfig) {
+        const styles = this._getTargetStyle(type);
+        if (!styles) {
+            return this;
+        }
+        const computedDataConfig = styles[idx].renderPlugin.dataConfig;
         const old = extend({}, computedDataConfig);
         extend(computedDataConfig, dataConfig);
         if (Array.isArray(this.options.style)) {
             extend(this.options.style[idx].renderPlugin.dataConfig, dataConfig);
-        } else if (this.options.style && Array.isArray(this.options.style.style)) {
-            extend(this.options.style.style[idx].renderPlugin.dataConfig, dataConfig);
+        } else {
+            const styles = this._getTargetStyle(type, this.options.style);
+            extend(styles[idx].renderPlugin.dataConfig, dataConfig);
         }
 
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateDataConfig(idx, dataConfig, old);
+            renderer.updateDataConfig(type, idx, dataConfig, old);
         }
         return this;
     }
 
-    updateSymbol(idx, symbol) {
-        const style = this._vtStyle[idx];
+    updateSymbol(type, idx, symbol) {
+        const styles = this._getTargetStyle(type);
+        if (!styles) {
+            return this;
+        }
+        const style = styles[idx];
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
@@ -319,7 +342,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             }
             let styles = self.options.style;
             if (!Array.isArray(styles)) {
-                styles = styles.style;
+                styles = self._getTargetStyle(type, self.options.style);
             }
             styles[idx].symbol = JSON.parse(JSON.stringify(target));
         }
@@ -351,6 +374,15 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         this.fire('updatesymbol', { index: idx, symbol });
         return this;
+    }
+
+    _getTargetStyle(type, allStyles) {
+        if (allStyles) {
+            const styles = type === 0 ? allStyles.style : allStyles.features;
+            return styles;
+        } else {
+            return type === 0 ? this._vtStyle : this._featureStyle;
+        }
     }
 
     isDefaultRender() {
@@ -392,11 +424,14 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     getComputedStyle() {
-        return JSON.parse(JSON.stringify(this._vtStyle));
+        return JSON.parse(JSON.stringify(this._getComputedStyle()));
     }
 
     _getComputedStyle() {
-        return this._vtStyle;
+        return {
+            style: this._vtStyle || [],
+            featureStyle: this._featureStyle || []
+        };
     }
 
     isOnly2D() {
@@ -404,7 +439,10 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     getCompiledStyle() {
-        return this._compiledStyles || [];
+        return {
+            style: this._compiledStyles || [],
+            featureStyle: this._compiledFeatureStyles || []
+        };
     }
 
     identify(coordinate, options = {}) {
@@ -471,11 +509,13 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _compileStyle() {
-        const styles = this._vtStyle;
-        if (!styles) {
-            return;
+        if (this._vtStyle) {
+            this._compiledStyles = compileStyle(this._vtStyle);
         }
-        this._compiledStyles = compileStyle(styles);
+        if (this._featureStyle) {
+            this._compiledFeatureStyles = compileStyle(this._featureStyle);
+        }
+
     }
 
     static registerPlugin(Plugin) {

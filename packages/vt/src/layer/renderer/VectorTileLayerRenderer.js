@@ -5,7 +5,7 @@ import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
-import { extend } from '../../common/Util';
+import { extend, pushIn } from '../../common/Util';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
@@ -59,21 +59,22 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    updateSceneConfig(idx, sceneConfig) {
-        const plugins = this.plugins;
+    updateSceneConfig(type, idx, sceneConfig) {
+        const plugins = type === 0 ? this.plugins : this.featurePlugins;
         if (!plugins || !plugins[idx]) {
             return;
         }
-
-        plugins[idx].config = this.layer._getComputedStyle()[idx].renderPlugin;
+        const allStyles = this.layer._getComputedStyle();
+        const styles = this.layer._getTargetStyle(type, allStyles);
+        plugins[idx].config = styles[idx].renderPlugin;
         plugins[idx].updateSceneConfig({
             sceneConfig: sceneConfig
         });
         this.setToRedraw();
     }
 
-    updateDataConfig(idx, dataConfig, old) {
-        const plugins = this.plugins;
+    updateDataConfig(type, idx, dataConfig, old) {
+        const plugins = type === 0 ? this.plugins : this.featurePlugins;
         if (!plugins || !plugins[idx]) {
             return;
         }
@@ -84,14 +85,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    updateSymbol(idx/*, symbol*/) {
-        const plugins = this.plugins;
-        if (!plugins) {
+    updateSymbol(type, idx/*, symbol*/) {
+        const plugins = type === 0 ? this.plugins : this.featurePlugins;
+        if (!plugins || !plugins[idx]) {
             return;
         }
-        const styles = this.layer.getCompiledStyle();
+        const allStyles = this.layer._getComputedStyle();
+        const styles = this.layer._getTargetStyle(type, allStyles);
         const symbol = styles[idx].symbol;
         const plugin = plugins[idx];
+        plugin.style = styles[idx];
         plugin.updateSymbol(symbol);
         this.setToRedraw();
     }
@@ -278,8 +281,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const meshes = [];
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
             const visible = this._isVisible(idx);
-            if (!plugin || !visible) {
+            if (!visible) {
                 return;
             }
             const shadowMeshes = plugin.getShadowMeshes();
@@ -356,41 +362,26 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         //restore features for plugin data
         const features = data.features;
         const layers = [];
-        //iterate plugins
         for (let i = 0; i < data.data.length; i++) {
             const pluginData = data.data[i]; // { data, featureIndex }
             if (!pluginData || !pluginData.data || !pluginData.styledFeatures.length) {
                 continue;
             }
-            const { style, isUpdated } = this._updatePluginIfNecessary(i, pluginData);
-            if (isUpdated) { needCompile = true; }
-
-            if (useDefault) {
-                layers.push({ layer: pluginData.data.layer, type: pluginData.data.type });
+            const { isUpdated, layer } = this._parseTileData(0, i, pluginData, features, layers);
+            layers.push(layer);
+            if (isUpdated) {
+                needCompile = isUpdated;
             }
-
-            const symbol = style.symbol;
-            const feaIndexes = pluginData.styledFeatures;
-            //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
-            //这样featureIndexes中的序号能从pFeatures取得正确的数据
-            const pluginFeas = {};
-            if (hasFeature(features)) {
-                //[feature index, style index]
-                for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
-                    let feature = features[feaIndexes[ii]];
-                    if (layer.options['features'] === 'id' && layer.getFeature) {
-                        feature = layer.getFeature(feature);
-                        feature.layer = i;
-                    }
-                    pluginFeas[feaIndexes[ii]] = {
-                        feature,
-                        symbol
-                    };
-                }
-            }
-            delete pluginData.styledFeatures;
-            pluginData.features = pluginFeas;
         }
+        //iterate plugins
+        for (let i = 0; i < data.featureData.length; i++) {
+            const pluginData = data.featureData[i]; // { data, featureIndex }
+            if (!pluginData || !pluginData.data || !pluginData.styledFeatures.length) {
+                continue;
+            }
+            this._parseTileData(1, i, pluginData, features);
+        }
+
         if (needCompile) {
             layer._compileStyle();
         }
@@ -419,6 +410,39 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
+    _parseTileData(styleType, i, pluginData, features) {
+        const { style, isUpdated } = this._updatePluginIfNecessary(styleType, i, pluginData.data);
+
+        const layer = this.layer;
+        const useDefault = layer.isDefaultRender();
+
+        const symbol = style.symbol;
+        const feaIndexes = pluginData.styledFeatures;
+        //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
+        //这样featureIndexes中的序号能从pFeatures取得正确的数据
+        const pluginFeas = {};
+        if (hasFeature(features)) {
+            //[feature index, style index]
+            for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
+                let feature = features[feaIndexes[ii]];
+                if (layer.options['features'] === 'id' && layer.getFeature) {
+                    feature = layer.getFeature(feature);
+                    feature.layer = i;
+                }
+                pluginFeas[feaIndexes[ii]] = {
+                    feature,
+                    symbol
+                };
+            }
+        }
+        delete pluginData.styledFeatures;
+        pluginData.features = pluginFeas;
+        return {
+            isUpdated,
+            layer: useDefault ? { layer: pluginData.data.layer, type: pluginData.data.type } : null
+        };
+    }
+
     _updateSchema(target, source) {
         // const useDefault = this.layer.isDefaultRender();
         for (const layer in source) {
@@ -443,26 +467,25 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    _updatePluginIfNecessary(i, pluginData) {
+    _updatePluginIfNecessary(styleType, i, data) {
         const layer = this.layer;
         let isUpdated = false;
         let style;
-        const layerStyles = layer._getComputedStyle();
         const useDefault = layer.isDefaultRender();
-        if (useDefault) {
+        if (useDefault && styleType === 0) {
             let layerPlugins = this._layerPlugins;
             if (!layerPlugins) {
                 layerPlugins = this._layerPlugins = {};
             }
             //没有定义任何图层，采用图层默认的plugin渲染
-            const layerId = pluginData.data.layer;
-            const type = pluginData.data.type;
+            const layerId = data.layer;
+            const type = data.type;
             if (!layerPlugins[layerId]) {
                 layerPlugins[layerId] = [];
             }
             if (!layerPlugins[layerId]['plugin_' + type]) {
                 style = this._getDefaultRenderPlugin(type);
-                style.filter = pluginData.data.filter;
+                style.filter = data.filter;
                 layerPlugins[layerId].push(style);
                 layerPlugins[layerId]['plugin_' + type] = style;
                 isUpdated = true;
@@ -471,10 +494,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 style = layerPlugins[layerId]['plugin_' + type];
             }
         } else {
-            style = layerStyles[i];
+            const allStyles = layer._getComputedStyle();
+            const styles = layer._getTargetStyle(styleType, allStyles);
+            style = styles[i];
             if (!style.renderPlugin) {
                 isUpdated = true;
-                const { plugin, symbol, renderPlugin } = this._getDefaultRenderPlugin(pluginData.data.type);
+                const { plugin, symbol, renderPlugin } = this._getDefaultRenderPlugin(data.type);
                 this.plugins[i] = plugin;
                 style.symbol = symbol;
                 style.renderPlugin = renderPlugin;
@@ -499,6 +524,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 });
             }
         }
+
+        if (this.featurePlugins && this.featurePlugins.length) {
+            plugins = plugins.slice();
+            pushIn(plugins, this.featurePlugins);
+        }
+
         return plugins;
     }
 
@@ -520,17 +551,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const parentContext = this._parentContext;
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
-            const visible = this._isVisible(idx);
-            if (!plugin || !visible) {
+            if (!plugin) {
                 return;
             }
-            let symbol;
-            if (useDefault) {
-                symbol = plugin.defaultSymbol;
-            } else {
-                const styles = this.layer.getCompiledStyle();
-                symbol = styles[idx].symbol;
+            const visible = this._isVisible(idx);
+            if (!visible) {
+                return;
             }
+            const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
             const context = {
                 regl: this.regl,
                 layer: this.layer,
@@ -581,11 +609,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let dirty = false;
         let polygonOffsetIndex = 0;
         plugins.forEach((plugin) => {
+            if (!plugin) {
+                return;
+            }
             const idx = plugin.renderIndex;
             const visible = this._isVisible(idx);
             const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
             const hasMesh = this._hasMesh(plugin.painter.scene.getMeshes());
-            if (!plugin || !visible || !includesChanged && !hasMesh) {
+            if (!visible || !includesChanged && !hasMesh) {
                 return;
             }
             this.regl.clear({
@@ -712,13 +743,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z);
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tileInfo.point, tileInfo.z);
-        const pluginData = tileData.data;
+        const pluginData = [];
+        pushIn(pluginData, tileData.data);
+        pushIn(pluginData, tileData.featureData);
 
         const plugins = this._getFramePlugins(tileData);
 
         plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
             const visible = this._isVisible(idx);
-            if (!pluginData[idx] || !plugin || !visible) {
+            if (!pluginData[idx] || !visible) {
                 return;
             }
             if (!tileCache[idx]) {
@@ -764,6 +800,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const hits = [];
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
             const visible = this._isVisible(idx);
             if (!visible) {
                 return;
@@ -785,17 +824,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const plugins = this._getAllPlugins();
             if (plugins) {
                 plugins.forEach((plugin, idx) => {
-                    if (plugin) {
-                        plugin.deleteTile({
-                            pluginIndex: idx,
-                            regl: this.regl,
-                            layer: this.layer,
-                            gl: this.gl,
-                            tileCache: tile.image.cache ? tile.image.cache[idx] : {},
-                            tileInfo: tile.info,
-                            tileData: tile.image
-                        });
+                    if (!plugin) {
+                        return;
                     }
+                    plugin.deleteTile({
+                        pluginIndex: idx,
+                        regl: this.regl,
+                        layer: this.layer,
+                        gl: this.gl,
+                        tileCache: tile.image.cache ? tile.image.cache[idx] : {},
+                        tileInfo: tile.info,
+                        tileData: tile.image
+                    });
                 });
             }
         }
@@ -874,11 +914,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _initPlugins() {
-        const styles = this.layer._getComputedStyle() || [];
-        if (!Array.isArray(styles)) {
-            return;
-        }
-        this.plugins = styles.map((style, idx) => {
+        const { style, featureStyle } = this.layer._getComputedStyle();
+        const plugins = style.map((style, idx) => {
             const config = style.renderPlugin;
             if (!config) {
                 return null;
@@ -886,8 +923,26 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!config.type) {
                 throw new Error('invalid plugin type for style at ' + idx);
             }
-            return this._createRenderPlugin(config);
+            const plugin = this._createRenderPlugin(config);
+            plugin.style = style;
+            return plugin;
         });
+        const featurePlugins = featureStyle.map((featureStyle, idx) => {
+            const config = featureStyle.renderPlugin;
+            if (!config) {
+                return null;
+            }
+            if (!config.type) {
+                throw new Error('invalid plugin type for features at ' + idx);
+            }
+            const plugin = this._createRenderPlugin(config);
+            plugin.style = style;
+            plugins.push(plugin);
+            return plugin;
+        });
+        this.plugins = plugins;
+        this.featurePlugins = featurePlugins;
+        return plugins;
     }
 
     _createRenderPlugin(config) {

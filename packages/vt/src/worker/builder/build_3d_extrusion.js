@@ -59,7 +59,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
     const ctor = getIndexArrayType(faces.vertices.length / 3);
     const indices = new ctor(faces.indices);
     delete faces.indices;
-    buffers.push(indices.buffer, faces.vertices.buffer, faces.featureIndexes.buffer);
+    buffers.push(indices.buffer, faces.vertices.buffer, faces.pickingIds.buffer);
 
     const normals = buildNormals(faces.vertices, indices);
     let simpleNormal = true;
@@ -95,6 +95,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         faces.uvs = new Float32Array(uvs);
         buffers.push(faces.uvs.buffer);
     }
+
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
     const data =  {
         data : {
@@ -103,7 +104,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
                 aTangent: faces.tangents,
-                aPickingId: faces.featureIndexes,
+                aPickingId: faces.pickingIds,
             },
             indices,
             properties: {
@@ -141,14 +142,14 @@ function createQuaternion(normals, tangents) {
     return aTangent;
 }
 
-function buildFnTypes(features, symbol, zoom, pickingIds) {
+function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const fnTypes = {};
     if (isFnTypeSymbol('polygonFill', symbol)) {
         const colorCache = {};
         const colorFn = piecewiseConstant(symbol.polygonFill);
-        const aColor = new Uint8Array(pickingIds.length * 4);
-        for (let i = 0; i < pickingIds.length; i++) {
-            const feature = features[pickingIds[i]];
+        const aColor = new Uint8Array(feaIndexes.length * 4);
+        for (let i = 0; i < feaIndexes.length; i++) {
+            const feature = features[feaIndexes[i]];
             let color = colorFn(zoom, feature.properties);
             if (!Array.isArray(color)) {
                 color = colorCache[color] = colorCache[color] || Color(color).array();
@@ -165,9 +166,9 @@ function buildFnTypes(features, symbol, zoom, pickingIds) {
     }
     if (isFnTypeSymbol('polygonOpacity', symbol)) {
         const opacityFn = interpolated(symbol.polygonOpacity);
-        const aOpacity = new Uint8Array(pickingIds.length);
-        for (let i = 0; i < pickingIds.length; i++) {
-            const feature = features[pickingIds[i]];
+        const aOpacity = new Uint8Array(feaIndexes.length);
+        for (let i = 0; i < feaIndexes.length; i++) {
+            const feature = features[feaIndexes[i]];
             const opacity = opacityFn(zoom, feature.properties);
             aOpacity[i] = opacity * 255;
         }

@@ -31,6 +31,7 @@ export function buildExtrudeFaces(
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
     const featIndexes = [];
+    const pickingIds = [];
     const featIds = [];
     const geoVertices = [];
     const vertices = [];
@@ -158,20 +159,22 @@ export function buildExtrudeFaces(
 
         const count = vertices.length - verticeCount;
         for (let i = 0; i < count / 3; i++) {
-            featIndexes.push(feature[KEY_IDX] || r);
+            pickingIds.push(feature[KEY_IDX] === undefined ? r : feature[KEY_IDX]);
+            featIndexes.push(r);
             if (isNumber(feaId)) {
                 featIds.push(feaId);
             }
         }
     }
-    const feaCtor = getUnsignedArrayType(featIndexes.length ? featIndexes[featIndexes.length - 1] : 0);
+    const pickingCtor = getUnsignedArrayType(pickingIds.length ? pickingIds[pickingIds.length - 1] : 0);
     const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
         maxAltitude,
         vertices: new posArrayType(vertices),        // vertexes
         indices,                                    // indices for drawElements
-        featureIndexes: new feaCtor(featIndexes)   // vertex index of each feature
+        pickingIds: new pickingCtor(pickingIds),   // vertex index of each feature
+        featureIndexes: featIndexes
     };
     if (featIds.length) {
         const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
