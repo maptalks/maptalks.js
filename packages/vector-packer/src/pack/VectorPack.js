@@ -249,11 +249,10 @@ export default class VectorPack {
         let featureIndexes = [];
         let maxFeaIndex = 0;
         const featIds = [];
-
         let maxFeaId = 0;
         let hasNegative = false;
         for (let i = 0, l = vectors.length; i < l; i++) {
-            const feaId = vectors[i].feature.id;
+            const feaId = Array.isArray(vectors[i]) ? vectors[i][0].feature.id : vectors[i].feature.id;
             if (isNumber(feaId)) {
                 if (Math.abs(feaId) > maxFeaId) {
                     maxFeaId = Math.abs(feaId);

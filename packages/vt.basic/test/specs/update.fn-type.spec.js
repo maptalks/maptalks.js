@@ -54,7 +54,7 @@ describe('update function type style specs', () => {
     it('normal to zoom function type', done => {
         const symbol = { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 255, 0, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: {
                     type: 'interval',
                     stops: [
@@ -69,7 +69,7 @@ describe('update function type style specs', () => {
     it('normal to property function type', done => {
         const symbol = { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 255, 0, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: {
                     type: 'categorical',
                     property: 'type',
@@ -85,7 +85,7 @@ describe('update function type style specs', () => {
     it('normal to property-zoom function type', done => {
         const symbol = { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 0, 255, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: {
                     type: 'categorical',
                     property: 'type',
@@ -120,7 +120,7 @@ describe('update function type style specs', () => {
             ]
         }, lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: '#f00'
             });
         });
@@ -143,7 +143,7 @@ describe('update function type style specs', () => {
             ]
         }, lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: '#f00'
             });
         });
@@ -158,7 +158,7 @@ describe('update function type style specs', () => {
             ]
         }, lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [0, 0, 255, 255], [255, 0, 0, 255], layer => {
-            layer.updateSymbol(0, {
+            layer.updateSymbol(0, 0, {
                 lineColor: '#f00'
             });
         });

@@ -82,7 +82,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             tileSize: this.options['tileSize'],
             baseRes: map.getResolution(map.getGLZoom()),
             //default render时，this._vtStyle有可能被default render设值
-            style: this.isDefaultRender() ? [] : this._getComputedStyle(),
+            style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
             features: this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']

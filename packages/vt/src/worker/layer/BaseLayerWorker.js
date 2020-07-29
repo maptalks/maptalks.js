@@ -516,6 +516,7 @@ export default class BaseLayerWorker {
                         symbol: getDefaultSymbol(type)
                     };
                     plugin.filter.def = def;
+                    plugin.type = 0;
                     stylePlugins.push(plugin);
                 }
                 layerPlugins[layer] = stylePlugins;
