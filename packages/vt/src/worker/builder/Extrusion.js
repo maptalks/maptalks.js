@@ -8,7 +8,7 @@ import { KEY_IDX } from '../../common/Constant';
 export function buildExtrudeFaces(
     features, EXTENT,
     {
-        altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
+        altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
     },
     {
         side,
@@ -108,7 +108,7 @@ export function buildExtrudeFaces(
 
         const geometry = feature.geometry;
 
-        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
 
         const verticeCount = vertices.length;

@@ -68,7 +68,7 @@ export function buildWireframe(
         const feature = features[r];
         const geometry = feature.geometry;
 
-        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
+        const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
 
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
         let start = offset;
