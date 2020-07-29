@@ -7,8 +7,6 @@ uniform mat4 projViewMatrix;
 uniform mat4 projViewModelMatrix;
 uniform mat4 positionMatrix;
 
-uniform float altitudeScale;
-
 #include <get_output>
 #include <viewshed_vert>
 #include <flood_vert>
@@ -17,7 +15,6 @@ uniform float altitudeScale;
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
-    localPosition.z *= altitudeScale;
     gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
     #ifdef HAS_VIEWSHED
