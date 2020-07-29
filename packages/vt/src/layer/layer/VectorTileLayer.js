@@ -370,7 +370,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             this.setStyle(this._vtStyle);
         } else {
             this._compileStyle();
-            renderer.updateSymbol(idx, symbol);
+            renderer.updateSymbol(type, idx, symbol);
         }
         this.fire('updatesymbol', { index: idx, symbol });
         return this;
@@ -378,7 +378,7 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     _getTargetStyle(type, allStyles) {
         if (allStyles) {
-            const styles = type === 0 ? allStyles.style : allStyles.features;
+            const styles = type === 0 ? allStyles.style : allStyles.featureStyle;
             return styles;
         } else {
             return type === 0 ? this._vtStyle : this._featureStyle;

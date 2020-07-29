@@ -224,10 +224,11 @@ export default class BaseLayerWorker {
             //index of plugin with data
             pluginIndexes.push({
                 idx: i,
-                typeIdx: typeIndex++
+                typeIdx: typeIndex
             });
 
-            buffers.push(data[i].styledFeatures.buffer);
+            buffers.push(targetData[typeIndex].styledFeatures.buffer);
+            typeIndex++;
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, tilePoint, glScale, zScale, zoom });
             if (useDefault) {
                 promise = promise.then(tileData => {
@@ -446,6 +447,9 @@ export default class BaseLayerWorker {
                 fea[KEY_IDX] = i;
                 filtered.push(fea);
                 indexes.push(i);
+                if (styleType === 1) {
+                    break;
+                }
             }
         }
         return {
@@ -469,9 +473,14 @@ export default class BaseLayerWorker {
             }
             pluginConfigs[i].type = 0;
         }
-        const featurePlugins = compileStyle(featureStyle);
+
+        const featurePlugins = [];
+        const compiledFeatureStyle = compileStyle(featureStyle);
         for (let i = 0; i < featureStyle.length; i++) {
-            featurePlugins[i].type = 1;
+            compiledFeatureStyle[i].type = 1;
+            if (compiledFeatureStyle[i].renderPlugin) {
+                featurePlugins.push(compiledFeatureStyle[i]);
+            }
         }
 
         this.pluginConfig = pluginConfigs;

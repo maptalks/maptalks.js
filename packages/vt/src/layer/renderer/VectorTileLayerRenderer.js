@@ -607,6 +607,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         }
         let dirty = false;
+        //只在需要的时候才增加polygonOffset
         let polygonOffsetIndex = 0;
         plugins.forEach((plugin) => {
             if (!plugin) {
@@ -936,7 +937,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 throw new Error('invalid plugin type for features at ' + idx);
             }
             const plugin = this._createRenderPlugin(config);
-            plugin.style = style;
+            plugin.style = featureStyle;
             plugins.push(plugin);
             return plugin;
         });

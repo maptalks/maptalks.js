@@ -296,19 +296,80 @@
         //       // textPlacement : 'line'
         //   }
         // }
+      ],
+      featureStyle: [
+        {
+          id: 514,
+          renderPlugin: {
+            type : 'lit',
+            dataConfig : {
+              type : '3d-extrusion',
+              altitudeProperty : 'height',
+              minHeightProperty: 'min_height',
+              altitudeScale : 1,
+              defaultAltitude : 30,
+              top: true,
+              topThickness: 2,
+              side: true
+            }
+          },
+          symbol: {
+            material: litMaterial,
+            polygonOpacity: 1,
+            polygonFill: '#f00'
+          }
+        },
+        {
+          id: 1310,
+          // renderPlugin: renderPlugin,
+          // symbol: {
+          //   material: litMaterial,
+          //   polygonOpacity: 1,
+          //   polygonFill: '#f00'
+          // }
+        },
+        // {
+        //   id: 34,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 40,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 41,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // },
+        // {
+        //   id: 442,
+        //   symbol: {
+        //     visible: false
+        //   }
+        // }
       ]
     };
     //'#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'
     // test tile clipping mask
     var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
-      // debug : true,
+      debug: true,
       // canvas: debugCanvas,
       data: data,
       // debugCollision: true,
       hitDetect : false,
       antialias: false,
       pickingPoint: true,
-      cascadeTiles: true
+      cascadeTiles: true,
+      // debugTile: {
+      //   x: 140835,
+      //   y: 85955,
+      //   z: 19
+      // }
     });
     layer.setStyle(style);
 
@@ -440,20 +501,20 @@
 
     function update() {
       litMaterial.uAlbedoPBR = [1, 0, 0, 1];
-      layer.updateSymbol(0, style.style[0].symbol);
+      layer.updateSymbol(0, 0, style.style[0].symbol);
     }
 
     function updatePolygonFill() {
-      layer.updateSymbol(0, { polygonFill: '#fff' });
+      layer.updateSymbol(0, 0, { polygonFill: '#fff' });
     }
 
     function updatePolygonOpacity() {
-      layer.updateSymbol(0, { polygonOpacity: 1 });
+      layer.updateSymbol(0, 0, { polygonOpacity: 1 });
     }
 
     function updateTexture() {
       litMaterial.uBaseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
-      layer.updateSymbol(0, style.style[0].symbol);
+      layer.updateSymbol(0, 0, style.style[0].symbol);
     }
 
     var bearing = 0;
