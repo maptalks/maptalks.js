@@ -250,6 +250,15 @@ describe('vector tile integration specs', () => {
             }
         }
     });
+
+    context('feature render specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'feature-style'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
 });
 
 const canvas = document.createElement('canvas');

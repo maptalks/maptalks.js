@@ -195,27 +195,30 @@ export default class BaseLayerWorker {
             Promise.resolve(this._styleCounter)
         ];
         let currentType = 0;
-        let typeIndex = 0;
+        let typeIndex = -1;
         for (let i = 0; i < pluginConfigs.length; i++) {
+            typeIndex++;
             const pluginConfig = pluginConfigs[i];
-            if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
-                continue;
-            }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.type, pluginConfig.filter, features, feaTags, i);
-
-            if (!tileFeatures.length) {
-                continue;
-            }
-
             if (pluginConfig.type !== currentType) {
                 //plugin类型变成 feature plugin
                 typeIndex = 0;
                 currentType = pluginConfig.type;
             }
+            const targetData = pluginConfig.type === 0 ? data : featureData;
+            if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
+                //数据不存在，则在data中添加个占位的null，不然renderer中featureData与data，对应的plugin会不正确
+                targetData[typeIndex] = null;
+                continue;
+            }
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.type, pluginConfig.filter, features, feaTags, i);
+
+            if (!tileFeatures.length) {
+                targetData[typeIndex] = null;
+                continue;
+            }
+
             const maxIndex = tileFeaIndexes[tileFeaIndexes.length - 1];
             const arrCtor = getIndexArrayType(maxIndex);
-
-            const targetData = pluginConfig.type === 0 ? data : featureData;
             targetData[typeIndex] = {
                 //[feature_index, style_index, ...]
                 styledFeatures: new arrCtor(tileFeaIndexes)
@@ -228,7 +231,6 @@ export default class BaseLayerWorker {
             });
 
             buffers.push(targetData[typeIndex].styledFeatures.buffer);
-            typeIndex++;
             let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, tilePoint, glScale, zScale, zoom });
             if (useDefault) {
                 promise = promise.then(tileData => {
@@ -478,6 +480,7 @@ export default class BaseLayerWorker {
         const compiledFeatureStyle = compileStyle(featureStyle);
         for (let i = 0; i < featureStyle.length; i++) {
             compiledFeatureStyle[i].type = 1;
+            //没有renderPlugin就不生成数据，必须和VectorTileLayerRenderer的_initPlugins中的逻辑对应起来
             if (compiledFeatureStyle[i].renderPlugin) {
                 featurePlugins.push(compiledFeatureStyle[i]);
             }
