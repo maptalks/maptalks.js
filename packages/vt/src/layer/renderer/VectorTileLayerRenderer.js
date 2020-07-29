@@ -928,7 +928,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugin.style = style;
             return plugin;
         });
-        const featurePlugins = featureStyle.map((featureStyle, idx) => {
+        const featurePlugins = [];
+        featureStyle.forEach((featureStyle, idx) => {
             const config = featureStyle.renderPlugin;
             if (!config) {
                 return null;
@@ -938,7 +939,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             const plugin = this._createRenderPlugin(config);
             plugin.style = featureStyle;
-            plugins.push(plugin);
+            featurePlugins.push(plugin);
             return plugin;
         });
         this.plugins = plugins;
