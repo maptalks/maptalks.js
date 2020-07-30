@@ -74,6 +74,8 @@ describe('style compress specs', () => {
                 }
             }
         ];
-        assert.deepEqual(style, expected);
+        assert.deepEqual(style.style, expected);
     });
+
+    //TODO 增加style + featureStyle的压缩
 });
