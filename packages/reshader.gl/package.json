@@ -23,7 +23,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@maptalks/gltf-loader": "^0.3.0",
-    "@maptalks/tbn-packer": "^1.2.2",
+    "@maptalks/tbn-packer": "^1.2.6",
     "gl-matrix": "^2.6.1",
     "zousan": "^2.3.3"
   },
