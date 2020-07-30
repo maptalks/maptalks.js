@@ -1,9 +1,10 @@
-import { Marker } from 'maptalks';
+import { Marker, renderer } from 'maptalks';
 
 export default class IconRequestor {
     //options.errorUrl : alt image when failing loading the icon
     constructor(options) {
         this.options = options || {};
+        this.resources = new renderer.ResourceCache();
         const canvas = document.createElement('canvas');
         this.ctx = canvas.getContext('2d');
     }
@@ -77,7 +78,7 @@ export default class IconRequestor {
                 delete symbol.markerPlacement;
                 delete symbol.markerFile;
                 marker.setSymbol(symbol);
-                const sprite = marker['_getSprite']();
+                const sprite = marker['_getSprite'](this.resources);
                 if (sprite) {
                     const canvas = sprite.canvas;
                     const width = canvas.width;
