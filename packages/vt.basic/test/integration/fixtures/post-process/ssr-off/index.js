@@ -59,7 +59,6 @@ module.exports = {
         center: [0, 0],
         zoom: 17
     },
-    renderingCount: 1,
     sceneConfig: {
         ground: {
             enable: true,
