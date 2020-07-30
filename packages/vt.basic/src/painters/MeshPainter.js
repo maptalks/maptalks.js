@@ -48,7 +48,7 @@ class MeshPainter extends Painter {
             Object.defineProperty(mesh.uniforms, 'lineHeight', {
                 enumerable: true,
                 get: () => {
-                    const alt = this.dataConfig['defaultAltitude'];
+                    const alt = this.dataConfig['defaultAltitude'] * (this.dataConfig['altitudeScale'] || 1);
                     return isNumber(alt) ? alt : 0;
                 }
             });

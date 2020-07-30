@@ -218,6 +218,7 @@ export default class LineExtrusionPack extends LinePack {
 
     createDataPack(vectors, scale) {
         this.maxAltitude = 0;
+        // debugger
         const pack = super.createDataPack(vectors, scale);
         if (!pack) {
             return pack;
@@ -237,8 +238,12 @@ export default class LineExtrusionPack extends LinePack {
         const arrays = {};
         const normals = buildNormals(aExtrudedPosition, indices);
         //因为line的三角形旋转方向是反的，所以normal的结果需要取反
+        let simpleNormal = true;
         for (let i = 0; i < normals.length; i++) {
             normals[i] = -normals[i];
+            if (normals[i] % 1 !== 0) {
+                simpleNormal = false;
+            }
         }
         let uvs;
         let tangents;
@@ -254,7 +259,7 @@ export default class LineExtrusionPack extends LinePack {
         } else {
             //normal的值只会是0或者1，所以可以用Int8Array封装
             //normal被封装在了tangents中，不用再次定义
-            arrays['aNormal'] = new Int8Array(normals);
+            arrays['aNormal'] = simpleNormal ? new Int8Array(normals) : new Float32Array(normals);
         }
         arrays['aPickingId'] = data.aPickingId;
         arrays['aExtrude'] = aExtrude;
@@ -387,7 +392,7 @@ function createQuaternion(normals, tangents) {
 
 function hasTexture(material) {
     for (const p in material) {
-        if (p.indexOf('Texture') >= 0 || p.indexOf('anisotropy') >= 0) {
+        if (p.indexOf('Texture') >= 0) {
             return true;
         }
     }

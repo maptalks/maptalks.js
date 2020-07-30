@@ -24,7 +24,7 @@
     "@maptalks/feature-filter": "^1.0.0",
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/gl": "<2.0.0",
-    "@maptalks/tbn-packer": "^1.2.4",
+    "@maptalks/tbn-packer": "^1.2.6",
     "@maptalks/vector-packer": "^0.18.0",
     "@maptalks/vt-plugin": "^0.18.0",
     "color": "^3.0.0",
