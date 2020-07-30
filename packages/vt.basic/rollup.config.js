@@ -50,9 +50,7 @@ module.exports = {
         json(),
         glsl(),
         resolve({
-            module: true,
-            jsnext: true,
-            main: true
+            mainFields: ['module', 'main'],
         }),
         commonjs(),
         babel({

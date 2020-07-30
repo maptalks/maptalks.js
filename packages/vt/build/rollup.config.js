@@ -44,9 +44,7 @@ module.exports = [{
     plugins: [
         json(),
         resolve({
-            module: true,
-            jsnext: true,
-            main: true
+            mainFields: ['module', 'main'],
         }),
         commonjs(),
         babel()
@@ -71,9 +69,7 @@ module.exports = [{
     plugins: [
         json(),
         resolve({
-            module: true,
-            jsnext: true,
-            main: true
+            mainFields: ['module', 'main'],
         }),
         commonjs()
     ],
