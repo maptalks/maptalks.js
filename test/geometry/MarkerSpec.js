@@ -658,6 +658,10 @@ describe('Geometry.Marker', function () {
         });
 
         it('rotate text marker', function (done) {
+            if (maptalks.Browser.ie) {
+                done();
+                return;
+            }
             var marker = new maptalks.Marker(map.getCenter(), {
                 symbol : {
                     textName : '■■■■■■■■■',

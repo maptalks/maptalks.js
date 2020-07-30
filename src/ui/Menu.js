@@ -14,6 +14,7 @@ import UIComponent from './UIComponent';
  * @instance
  */
 const defaultOptions = {
+    'containerClass': 'maptalks-menu',
     'animation': null,
     'animationDelay': 10,
     'animationOnHide': false,
@@ -102,7 +103,9 @@ class Menu extends UIComponent {
             }
         } else {
             const dom = createEl('div');
-            addClass(dom, 'maptalks-menu');
+            if (this.options['containerClass']) {
+                addClass(dom, this.options['containerClass']);
+            }
             dom.style.width = this._getMenuWidth() + 'px';
             /*const arrow = createEl('em');
             addClass(arrow, 'maptalks-ico');*/

@@ -120,6 +120,8 @@ Map.include(/** @lends Map.prototype */ {
         json['options'] = this.config();
         json['options']['center'] = this.getCenter();
         json['options']['zoom'] = this.getZoom();
+        json['options']['bearing'] = this.getBearing();
+        json['options']['pitch'] = this.getPitch();
 
         const baseLayer = this.getBaseLayer();
         if ((isNil(options['baseLayer']) || options['baseLayer']) && baseLayer) {

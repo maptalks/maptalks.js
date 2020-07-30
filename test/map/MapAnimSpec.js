@@ -144,7 +144,7 @@ describe('Map.Anim', function () {
         });
         setTimeout(function () {
             happen.once(container, {
-                type: (maptalks.Browser.gecko ? 'DOMMouseScroll' : 'mousewheel'),
+                type: 'wheel',
                 detail: 100
             });
         }, 100);

@@ -1,5 +1,4 @@
 import { pushIn, isNumber } from '../../core/util';
-import Size from '../../geo/Size';
 import Point from '../../geo/Point';
 import Canvas from '../../core/Canvas';
 import Geometry from '../../geometry/Geometry';
@@ -38,8 +37,8 @@ const el = {
         }
         const pcenter = this._getPrjCoordinates();
         const pt = map._prjToPoint(pcenter, map.getGLZoom());
-        const size = this._getRenderSize();
-        return [pt, size['width'], size['height']];
+        const size = this._getRenderSize(pt);
+        return [pt, ...size];
     },
 
     _paintOn: function () {
@@ -50,13 +49,13 @@ const el = {
         }
     },
 
-    _getRenderSize() {
+    _getRenderSize(pt) {
         const map = this.getMap(),
             z = map.getGLZoom();
         const prjExtent = this._getPrjExtent();
         const pmin = map._prjToPoint(prjExtent.getMin(), z),
             pmax = map._prjToPoint(prjExtent.getMax(), z);
-        return new Size(Math.abs(pmax.x - pmin.x) / 2, Math.abs(pmax.y - pmin.y) / 2);
+        return [Math.abs(pmax.x - pmin.x) / 2, Math.abs(pmax.y - pt.y), Math.abs(pt.y - pmin.y)];
     }
 };
 
@@ -85,8 +84,8 @@ Sector.include(el, {
         }
         const map = this.getMap();
         const pt = map._prjToPoint(this._getPrjCoordinates(), map.getGLZoom());
-        const size = this._getRenderSize();
-        return [pt, size['width'],
+        const size = this._getRenderSize(pt);
+        return [pt, size[0],
             [this.getStartAngle(), this.getEndAngle()]
         ];
     },

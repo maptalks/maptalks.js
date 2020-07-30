@@ -522,8 +522,8 @@ describe('Map.Spec', function () {
             map.on('resize', function (param) {
                 expect(param).to.be.ok();
                 expect(map.getViewPoint().toArray()).to.be.eql([0, 0]);
-                expect(map.getCenter().x).to.be.approx(118.84685718);
-                expect(map.getCenter().y).to.be.approx(32.046534);
+                expect(map.getCenter().x).to.be.approx(center.x);
+                expect(map.getCenter().y).to.be.approx(center.y);
                 done();
             });
             container.style.width = '10px';

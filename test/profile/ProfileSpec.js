@@ -121,6 +121,8 @@ describe('Map.Profile', function () {
             var config = map.config();
             config.center = map.getCenter();
             config.zoom = map.getZoom();
+            config.bearing = map.getBearing();
+            config.pitch = map.getPitch();
             expect(profile.options).to.be.eql(config);
             expect(profile.baseLayer).to.be.ok();
 

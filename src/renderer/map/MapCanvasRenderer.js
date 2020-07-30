@@ -22,6 +22,7 @@ class MapCanvasRenderer extends MapRenderer {
         super(map);
         //container is a <canvas> element
         this._containerIsCanvas = !!map._containerDOM.getContext;
+        this._thisVisibilitychange = this._onVisibilitychange.bind(this);
         this._registerEvents();
         this._loopTime = 0;
     }
@@ -144,7 +145,12 @@ class MapCanvasRenderer extends MapRenderer {
                 if (renderer.prepareRender) {
                     renderer.prepareRender();
                 }
-                renderer.drawOnInteracting(this._eventParam, framestamp);
+                if (renderer.checkAndDraw) {
+                    // for canvas renderers
+                    renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+                } else {
+                    renderer.drawOnInteracting(this._eventParam, framestamp);
+                }
             } else {
                 // map is not interacting, call layer's render
                 renderer.render(framestamp);
@@ -222,7 +228,12 @@ class MapCanvasRenderer extends MapRenderer {
             // call drawOnInteracting to redraw the layer
             renderer.prepareRender();
             renderer.prepareCanvas();
-            renderer.drawOnInteracting(this._eventParam, framestamp);
+            if (renderer.checkAndDraw) {
+                // for canvas renderers
+                renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
+            } else {
+                renderer.drawOnInteracting(this._eventParam, framestamp);
+            }
             return drawTime;
         } else if (map.isZooming() && !map.getPitch() && !map.isRotating()) {
             // when:
@@ -408,7 +419,7 @@ class MapCanvasRenderer extends MapRenderer {
 
     remove() {
         if (Browser.webgl && typeof document !== 'undefined') {
-            removeDomEvent(document, 'visibilitychange', this._onVisibilitychange, this);
+            removeDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
         }
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
@@ -565,13 +576,13 @@ class MapCanvasRenderer extends MapRenderer {
         const map = this.map;
         const center = map._getPrjCenter();
         return {
-            x       : center.x,
-            y       : center.y,
-            zoom    : map.getZoom(),
-            pitch   : map.getPitch(),
-            bearing : map.getBearing(),
-            width   : map.width,
-            height  : map.height
+            x: center.x,
+            y: center.y,
+            zoom: map.getZoom(),
+            pitch: map.getPitch(),
+            bearing: map.getBearing(),
+            width: map.width,
+            height: map.height
         };
     }
 
@@ -827,7 +838,7 @@ class MapCanvasRenderer extends MapRenderer {
         });
 
         if (Browser.webgl && typeof document !== 'undefined') {
-            addDomEvent(document, 'visibilitychange', this._onVisibilitychange, this);
+            addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
         }
     }
 
@@ -859,8 +870,8 @@ class MapCanvasRenderer extends MapRenderer {
 Map.registerRenderer('canvas', MapCanvasRenderer);
 
 Map.mergeOptions({
-    'fog' : false,
-    'fogColor' : [233, 233, 233]
+    'fog': false,
+    'fogColor': [233, 233, 233]
 });
 
 export default MapCanvasRenderer;

@@ -28,17 +28,6 @@ class Point extends Position {
     }
 
     /**
-     * Returns the distance between the current and the given point.
-     * @param  {Point} point - another point
-     * @return {Number} distance
-     */
-    distanceTo(point) {
-        const x = point.x - this.x,
-            y = point.y - this.y;
-        return Math.sqrt(x * x + y * y);
-    }
-
-    /**
      * Return the magitude of this point: this is the Euclidean
      * distance from the 0, 0 coordinate to this point's x and y
      * coordinates.

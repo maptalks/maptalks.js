@@ -80,6 +80,17 @@ class Position {
         return new this.constructor(Math.ceil(this.x), Math.ceil(this.y));
     }
 
+    /**
+     * Returns the distance between the current and the given point.
+     * @param  {Coordinate|Point} point - another point
+     * @return {Number} distance
+     */
+    distanceTo(point) {
+        const x = point.x - this.x,
+            y = point.y - this.y;
+        return Math.sqrt(x * x + y * y);
+    }
+
     _floor() {
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);

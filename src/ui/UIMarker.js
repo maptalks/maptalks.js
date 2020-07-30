@@ -17,6 +17,7 @@ import UIComponent from './UIComponent';
  * @instance
  */
 const options = {
+    'containerClass': null,
     'eventsPropagation' : true,
     'draggable': false,
     'single': false,
@@ -326,6 +327,9 @@ class UIMarker extends Handlerable(UIComponent) {
             dom.innerHTML = this.options['content'];
         } else {
             dom = this.options['content'];
+        }
+        if (this.options['containerClass']) {
+            dom.className = this.options['containerClass'];
         }
         this._registerDOMEvents(dom);
         return dom;

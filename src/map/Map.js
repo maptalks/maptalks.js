@@ -42,7 +42,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @property {Number}  [options.maxZoom=null]                   - the maximum zoom the map can be zooming to.
  * @property {Number}  [options.minZoom=null]                   - the minimum zoom the map can be zooming to.
  * @property {Extent}  [options.maxExtent=null]         - when maxExtent is set, map will be restricted to the give max extent and bouncing back when user trying to pan ouside the extent.
- * @property {Boolean} [options.fixCenterOnResize=false]        - whether to fix map center when map is resized
+ * @property {Boolean} [options.fixCenterOnResize=true]        - whether to fix map center when map is resized
  *
  * @property {Number}  [options.maxPitch=80]                    - max pitch
  * @property {Number}  [options.maxVisualPitch=70]              - the max pitch to be visual
@@ -112,7 +112,7 @@ const options = {
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
-    'fixCenterOnResize' : false,
+    'fixCenterOnResize' : true,
 
     'checkSize': true,
     'checkSizeInterval' : 1000,
@@ -205,6 +205,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._center = center;
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
+
+        this.setMaxExtent(opts['maxExtent']);
 
 
         this._mapViewPoint = new Point(0, 0);
@@ -485,6 +487,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         // const pitch = this.getPitch();
         // const visualDistance = this.height / 2 * Math.tan(visualPitch * Math.PI / 180);
         // return this.height / 2 + visualDistance *  Math.tan((90 - pitch) * Math.PI / 180);
+        visualPitch = visualPitch || 1E-2;
 
         const pitch = (90 - this.getPitch()) * Math.PI / 180;
         const fov = this.getFov() * Math.PI / 180;
@@ -1263,8 +1266,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate, out) {
-        return this.coordinateToViewPoint(coordinate, out);
+    coordToViewPoint(coordinate, out, altitude) {
+        return this.coordinateToViewPoint(coordinate, out, altitude);
     }
 
     /**
@@ -1336,21 +1339,28 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this;
         }
         const center = this.getCenter();
-        this._updateMapSize(watched);
 
         if (!this.options['fixCenterOnResize']) {
-            const resizeOffset = new Point((oldWidth - watched.width) / 2, (oldHeight - watched.height) / 2);
-            this._offsetCenterByPixel(resizeOffset);
+            // fix northwest's geo coordinate
+            const vh = this._getVisualHeight(this.getPitch());
+            const nwCP = new Point(0, this.height - vh);
+            const nwCoord = this._containerPointToPrj(nwCP);
+            this._updateMapSize(watched);
+            const vhAfter = this._getVisualHeight(this.getPitch());
+            const nwCPAfter = new Point(0, this.height - vhAfter);
+            this._setPrjCoordAtContainerPoint(nwCoord, nwCPAfter);
             // when size changed, center is updated but panel's offset remains.
             this._mapViewCoord = this._getPrjCenter();
+        } else {
+            this._updateMapSize(watched);
         }
 
         const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
-            this._noEvent = true;
+            this._eventSilence = true;
             this.setCenter(center);
-            delete this._noEvent;
+            delete this._eventSilence;
         }
         /**
          * resize event when map container's size changes
@@ -1496,7 +1506,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Event} domEvent                 - dom event
          */
         this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
-        if (!this._verifyExtent(this._getPrjCenter())) {
+        if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
         }
@@ -1579,7 +1589,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getDevicePixelRatio() {
-        return this.options['devicePixelRatio'] || Math.ceil(Browser.devicePixelRatio) || 1;
+        return this.options['devicePixelRatio'] || Browser.devicePixelRatio || 1;
     }
 
     //-----------------------------------------------------------
@@ -1674,7 +1684,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
 
     _fireEvent(eventName, param) {
-        if (this._noEvent) {
+        if (this._eventSilence) {
             return;
         }
         //fire internal events at first
@@ -2090,8 +2100,8 @@ Map.include(/** @lends Map.prototype */{
      */
     coordinateToViewPoint: function () {
         const COORD = new Coordinate(0, 0);
-        return function (coordinate, out) {
-            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out);
+        return function (coordinate, out, altitude) {
+            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out, altitude);
         };
     }(),
 
@@ -2199,12 +2209,12 @@ Map.include(/** @lends Map.prototype */{
      */
     distanceToPoint: function () {
         const POINT = new Point(0, 0);
-        return function (xDist, yDist, zoom) {
+        return function (xDist, yDist, zoom, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
-            const center = this.getCenter(),
+            const center = paramCenter || this.getCenter(),
                 target = projection.locate(center, xDist, yDist);
             const p0 = this.coordToPoint(center, zoom, POINT),
                 p1 = this.coordToPoint(target, zoom);
@@ -2383,8 +2393,8 @@ Map.include(/** @lends Map.prototype */{
      */
     _prjToContainerPoint: function () {
         const POINT = new Point(0, 0);
-        return function (pCoordinate, zoom, out) {
-            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, 0, out);
+        return function (pCoordinate, zoom, out, altitude) {
+            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, altitude || 0, out);
         };
     }(),
 
@@ -2397,8 +2407,8 @@ Map.include(/** @lends Map.prototype */{
      */
     _prjToViewPoint: function () {
         const POINT = new Point(0, 0);
-        return function (pCoordinate, out) {
-            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT);
+        return function (pCoordinate, out, altitude) {
+            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT, altitude);
             return this.containerPointToViewPoint(containerPoint, out);
         };
     }(),

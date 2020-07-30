@@ -26,11 +26,11 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     addHooks() {
-        addDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll, this);
+        addDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll, this);
     }
 
     removeHooks() {
-        removeDomEvent(this.target._containerDOM, 'mousewheel', this._onWheelScroll);
+        removeDomEvent(this.target._containerDOM, 'wheel', this._onWheelScroll);
     }
 
     _onWheelScroll(evt) {
@@ -128,7 +128,7 @@ class MapScrollWheelZoomHandler extends Handler {
             return false;
         }
         this._requesting = 0;
-        let levelValue = (evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
+        let levelValue = (evt.deltaY ? evt.deltaY * -1 : evt.wheelDelta ? evt.wheelDelta : evt.detail) > 0 ? 1 : -1;
         if (evt.detail) {
             levelValue *= -1;
         }
@@ -156,6 +156,10 @@ class MapScrollWheelZoomHandler extends Handler {
             'wheelZoom' : true
         }, frame => {
             if (frame.state.playState !== 'finished') {
+                if (frame.state.playState !== 'running') {
+                    delete this._zooming;
+                    delete this._requesting;
+                }
                 return;
             }
             if (this._requesting < 1 || Math.abs(nextZoom - this._startZoom) > 2 ||
@@ -169,11 +173,13 @@ class MapScrollWheelZoomHandler extends Handler {
                     'continueOnViewChanged' : true,
                     'duration' : 100
                 }, frame => {
-                    if (frame.state.playState === 'finished') {
-                        setTimeout(() => {
-                            delete this._zooming;
-                            delete this._requesting;
-                        }, 200);
+                    if (frame.state.playState !== 'running') {
+                        // setTimeout(() => {
+                        //     delete this._zooming;
+                        //     delete this._requesting;
+                        // }, 100);
+                        delete this._zooming;
+                        delete this._requesting;
                     }
                 });
                 delete this._startZoom;

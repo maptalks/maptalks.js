@@ -200,6 +200,7 @@ describe('GeoJSON', function () {
         it('FeatureCollection', function () {
             var fJsons = featureCollectionGeoJSON['features'];
             var features = maptalks.GeoJSON.toGeometry(featureCollectionGeoJSON, function (geometry) {
+                expect(geometry).have.property('properties');
                 geometry.config('zIndex', 0);
             });
             for (var i = 0; i < features.length; i++) {

@@ -45,8 +45,9 @@ class Path extends Geometry {
         if (!painter) {
             return null;
         }
-        const map = this.getMap();
-        const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
+        // const map = this.getMap();
+        // const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
+        const extent = this.getExtent();
         return new Polygon(extent.toArray(), {
             symbol : {
                 'lineWidth': 1,
@@ -89,11 +90,18 @@ class Path extends Geometry {
         const isPolygon = !!this.getShell;
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
         const projection = this._getProjection();
-        this._aniShowCenter = projection.unproject(this._getPrjExtent().getCenter());
+
+        const prjAnimCoords = projection.projectCoords(animCoords);
+
+        this._prjAniShowCenter = this._getPrjExtent().getCenter();
+        this._aniShowCenter = projection.unproject(this._prjAniShowCenter);
         const duration = options['duration'] || 1000,
-            length = this.getLength(),
             easing = options['easing'] || 'out';
         this.setCoordinates([]);
+        let length = 0;
+        for (let i = 1; i < prjAnimCoords.length; i++) {
+            length += prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
+        }
         const player = this._showPlayer = Animation.animate({
             't': duration
         }, {
@@ -110,10 +118,11 @@ class Path extends Geometry {
                 }
                 return;
             }
-            const currentCoord = this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords);
+            const currentCoord = this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords, prjAnimCoords);
             if (frame.state.playState === 'finished') {
                 delete this._showPlayer;
                 delete this._aniShowCenter;
+                delete this._prjAniShowCenter;
                 delete this._animIdx;
                 delete this._animLenSoFar;
                 delete this._animTailRatio;
@@ -122,21 +131,22 @@ class Path extends Geometry {
             if (cb) {
                 cb(frame, currentCoord);
             }
-        });
+        }, this);
         player.play();
         return player;
     }
 
-    _drawAnimShowFrame(t, duration, length, coordinates) {
+    _drawAnimShowFrame(t, duration, length, coordinates, prjCoords) {
         if (t === 0) {
             return coordinates[0];
         }
-        const map = this.getMap();
+        const projection = this._getProjection();
+        // const map = this.getMap();
         const targetLength = t / duration * length;
         let segLen = 0;
         let i, l;
-        for (i = this._animIdx, l = coordinates.length; i < l - 1; i++) {
-            segLen = map.computeLength(coordinates[i], coordinates[i + 1]);
+        for (i = this._animIdx, l = prjCoords.length; i < l - 1; i++) {
+            segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
             if (this._animLenSoFar + segLen > targetLength) {
                 break;
             }
@@ -148,26 +158,33 @@ class Path extends Geometry {
             return coordinates[coordinates.length - 1];
         }
         const idx = this._animIdx;
-        const p1 = coordinates[idx],
-            p2 = coordinates[idx + 1],
+        const p1 = prjCoords[idx],
+            p2 = prjCoords[idx + 1],
             span = targetLength - this._animLenSoFar,
             r = span / segLen;
         this._animTailRatio = r;
         const x = p1.x + (p2.x - p1.x) * r,
             y = p1.y + (p2.y - p1.y) * r,
-            targetCoord = new Coordinate(x, y);
+            lastCoord = new Coordinate(x, y);
+        const targetCoord = projection.unproject(lastCoord);
         const isPolygon = !!this.getShell;
         if (!isPolygon && this.options['smoothness'] > 0) {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
             const animCoords = coordinates.slice(0, this._animIdx + 3);
             this.setCoordinates(animCoords);
+            const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
+            this._setPrjCoordinates(prjAnimCoords);
         } else {
             const animCoords = coordinates.slice(0, this._animIdx + 1);
             animCoords.push(targetCoord);
+            const prjAnimCoords = prjCoords.slice(0, this._animIdx + 1);
+            prjAnimCoords.push(lastCoord);
             if (isPolygon) {
                 this.setCoordinates([this._aniShowCenter].concat(animCoords));
+                this._setPrjCoordinates([this._prjAniShowCenter].concat(prjAnimCoords));
             } else {
                 this.setCoordinates(animCoords);
+                this._setPrjCoordinates(prjAnimCoords);
             }
         }
         return targetCoord;

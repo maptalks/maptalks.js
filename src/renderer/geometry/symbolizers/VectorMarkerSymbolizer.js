@@ -225,7 +225,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             hLineWidth = style['markerLineWidth'] / 2;
         if (markerType === 'ellipse') {
             //ellipse default
-            Canvas.ellipse(ctx, point, width / 2, height / 2, lineOpacity, fillOpacity);
+            Canvas.ellipse(ctx, point, width / 2, height / 2, height / 2, lineOpacity, fillOpacity);
         } else if (markerType === 'cross' || markerType === 'x') {
             for (let j = vectorArray.length - 1; j >= 0; j--) {
                 vectorArray[j]._add(point);

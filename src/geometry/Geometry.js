@@ -38,7 +38,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
 const options = {
     'id': null,
     'visible': true,
-    'interactive':true,
+    'interactive': true,
     'editable': true,
     'cursor': null,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
@@ -303,6 +303,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             s = extendSymbol(this._getInternalSymbol(), props);
         }
+        this._eventSymbolProperties = props;
         return this.setSymbol(s);
     }
 
@@ -1041,6 +1042,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._painter) {
             this._painter.refreshSymbol();
         }
+        const e = {};
+        if (this._eventSymbolProperties) {
+            e.properties = this._eventSymbolProperties;
+            delete this._eventSymbolProperties;
+        }
         /**
          * symbolchange event.
          *
@@ -1048,8 +1054,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
          * @type {Object}
          * @property {String} type - symbolchange
          * @property {Geometry} target - the geometry fires the event
+         * @property {Object} properties - symbol properties to update if has
          */
-        this._fireEvent('symbolchange');
+        this._fireEvent('symbolchange', e);
     }
 
     onConfig(conf) {
@@ -1145,6 +1152,25 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         return properties;
+    }
+
+
+    //------------- altitude + layer.altitude -------------
+    getAltitude() {
+        const layer = this.getLayer();
+        if (!layer) {
+            return 0;
+        }
+        const layerOpts = layer.options,
+            properties = this.getProperties();
+        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        if (Array.isArray(altitude)) {
+            return altitude.map(alt => {
+                return alt + layerAltitude;
+            });
+        }
+        return altitude + layerAltitude;
     }
 
 }

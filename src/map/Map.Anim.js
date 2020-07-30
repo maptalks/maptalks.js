@@ -55,7 +55,7 @@ Map.include(/** @lends Map.prototype */{
             props = {};
         let empty = true;
         for (const p in view) {
-            if (hasOwn(view, p) && (p === 'prjCenter' || !isNil(currView[p]))) {
+            if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
                     const from = new Coordinate(currView[p]).toFixed(7),
@@ -79,8 +79,10 @@ Map.include(/** @lends Map.prototype */{
         }
         if (this._animPlayer) {
             if (this._isInternalAnimation) {
-                this._animPlayer.pause();
-                this._prevAnimPlayer = this._animPlayer;
+                if (this._animPlayer.playState === 'running') {
+                    this._animPlayer.pause();
+                    this._prevAnimPlayer = this._animPlayer;
+                }
             } else {
                 delete this._prevAnimPlayer;
                 this._stopAnim(this._animPlayer);
@@ -137,7 +139,7 @@ Map.include(/** @lends Map.prototype */{
                  * @property {Map} target - the map fires the event
                  */
                 this._fireEvent('animating');
-            } else if (player.playState === 'finished') {
+            } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
                 if (!player._interupted) {
                     if (props['center']) {
                         this._setPrjCenter(projection.project(props['center'][1]));
@@ -157,7 +159,7 @@ Map.include(/** @lends Map.prototype */{
             if (step) {
                 step(frame);
             }
-        });
+        }, this);
 
         this._startAnim(props, zoomOrigin);
 
@@ -247,10 +249,7 @@ Map.include(/** @lends Map.prototype */{
             //fix blank map when pitch changes to 0
             this.getRenderer().setToRedraw();
         }
-        if (this._prevAnimPlayer) {
-            this._animPlayer = this._prevAnimPlayer;
-            this._prevAnimPlayer.play();
-        }
+        this._resumePrev(player);
     },
 
     _startAnim(props, zoomOrigin) {
@@ -282,19 +281,31 @@ Map.include(/** @lends Map.prototype */{
         if (!player) {
             return;
         }
+        delete this._animRotating;
         if (player.playState !== 'finished') {
             player._interupted = true;
             player.cancel();
-        }
-        if (player === this._animPlayer && this._prevAnimPlayer) {
-            this._animPlayer = this._prevAnimPlayer;
-            this._prevAnimPlayer.play();
         }
         if (player === this._animPlayer) {
             delete this._animPlayer;
         }
         if (player === this._mapAnimPlayer) {
             delete this._mapAnimPlayer;
+        }
+        // this._resumePrev(player);
+    },
+
+    _resumePrev(player) {
+        if (!this._prevAnimPlayer) {
+            return;
+        }
+        const prevPlayer = this._prevAnimPlayer;
+        if (prevPlayer.playState !== 'paused') {
+            delete this._prevAnimPlayer;
+        }
+        if (player !== prevPlayer) {
+            this._animPlayer = prevPlayer;
+            prevPlayer.play();
         }
     }
 });

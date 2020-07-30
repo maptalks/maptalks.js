@@ -16,7 +16,7 @@ const options = {
     'width': 0,
     'height': 0,
     'animation': 'fade',
-    'cssName': 'maptalks-tooltip',
+    'containerClass': 'maptalks-tooltip',
     'showTimeout' : 400
 };
 /**
@@ -62,7 +62,7 @@ class ToolTip extends UIComponent {
      * @param {String} css class name - set for ToolTip's content.
      */
     setStyle(cssName) {
-        this.options.cssName = cssName;
+        this.options.containerClass = cssName;
         return this;
     }
 
@@ -71,7 +71,7 @@ class ToolTip extends UIComponent {
      * @returns {String} css class name - set for ToolTip's content.
      */
     getStyle() {
-        return this.options.cssName;
+        return this.options.containerClass;
     }
 
     /**
@@ -91,7 +91,7 @@ class ToolTip extends UIComponent {
         if (options.width) {
             dom.style.width = options.width + 'px';
         }
-        const cssName = options.cssName;
+        const cssName = options.containerClass || options.cssName;
         if (!cssName && options.height) {
             dom.style.lineHeight = options.height + 'px';
         }
