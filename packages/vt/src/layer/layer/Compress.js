@@ -3,10 +3,36 @@ import { extend } from '../../common/Util';
 
 //merge renderPlugin definitions
 export function compress(json) {
-    const compressed = [];
+    if (Array.isArray(json)) {
+        json = {
+            style: json,
+            featureStyle: []
+        };
+    }
+    const compressedStyle = [];
+    const compressedFeatureStyle = [];
     const pluginDefs = [];
-    for (let i = 0; i < json.length; i++) {
-        const style = json[i];
+    visitStyle(json.style, compressedStyle, pluginDefs);
+    visitStyle(json.featureStyle, compressedFeatureStyle, pluginDefs);
+    const compressed = {
+        plugins: pluginDefs,
+        styles: {
+            style: compressedStyle,
+            featureStyle: compressedFeatureStyle
+        }
+    };
+    if (json['$root']) {
+        compressed['$root'] = json['$root'];
+    }
+    if (json['$iconset']) {
+        compressed['$iconset'] = json['$iconset'];
+    }
+    return compressed;
+}
+
+function visitStyle(styles, compressedStyle, pluginDefs) {
+    for (let i = 0; i < styles.length; i++) {
+        const style = styles[i];
         const target = extend({}, style);
         const { renderPlugin } = style;
         const copy = extend({}, renderPlugin);
@@ -26,12 +52,8 @@ export function compress(json) {
             pluginDefs.push(copy);
         }
         target.renderPlugin = hit;
-        compressed.push(target);
+        compressedStyle.push(target);
     }
-    return {
-        plugins: pluginDefs,
-        styles: compressed
-    };
 }
 
 export function uncompress(json) {
@@ -39,10 +61,28 @@ export function uncompress(json) {
         return json;
     }
     const { plugins, styles } = json;
-    const targets = new Array(styles.length);
-    for (let i = 0; i < styles.length; i++) {
-        targets[i] = extend({}, styles[i]);
-        targets[i].renderPlugin = plugins[styles[i].renderPlugin];
+    let { style, featureStyle } = styles;
+    style = style || [];
+    featureStyle = featureStyle || [];
+    const targetStyle = new Array(style.length);
+    for (let i = 0; i < style.length; i++) {
+        targetStyle[i] = extend({}, style[i]);
+        targetStyle[i].renderPlugin = plugins[style[i].renderPlugin];
     }
-    return targets;
+    const targetFeatureStyle = new Array(featureStyle.length);
+    for (let i = 0; i < featureStyle.length; i++) {
+        targetFeatureStyle[i] = extend({}, featureStyle[i]);
+        targetFeatureStyle[i].renderPlugin = plugins[featureStyle[i].renderPlugin];
+    }
+    const target = {
+        style: targetStyle,
+        featureStyle: targetFeatureStyle
+    };
+    if (json['$root']) {
+        target['$root'] = json['$root'];
+    }
+    if (json['$iconset']) {
+        target['$iconset'] = json['$iconset'];
+    }
+    return target;
 }

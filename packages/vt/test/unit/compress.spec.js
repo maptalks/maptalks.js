@@ -34,7 +34,7 @@ const STYLE = [
     }
 ];
 
-const COMPRESSED = { 'plugins': [{ 'type': 'line', 'dataConfig': { 'type': 'line' } }], 'styles': [{ 'filter': ['==', 'type', 1], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }, { 'filter': ['==', 'type', 2], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }] };
+const COMPRESSED = { 'plugins': [{ 'type': 'line', 'dataConfig': { 'type': 'line' } }], 'styles': { featureStyle: [], style: [{ 'filter': ['==', 'type', 1], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }, { 'filter': ['==', 'type', 2], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }] } };
 
 describe('style compress specs', () => {
     it('should compress a style', () => {
@@ -43,38 +43,40 @@ describe('style compress specs', () => {
     });
 
     it('should set a compressed style', () => {
-
         const layer = new GeoJSONVectorTileLayer('id', { style: COMPRESSED });
         const style = layer.getComputedStyle();
-        const expected = [
-            {
-                filter: ['==', 'type', 1],
-                renderPlugin: {
-                    type: 'line',
-                    dataConfig: {
-                        type: 'line'
+        const expected = {
+            style: [
+                {
+                    filter: ['==', 'type', 1],
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: {
+                            type: 'line'
+                        }
+                    },
+                    symbol: {
+                        lineWidth: 12,
+                        lineBlur: 5
                     }
                 },
-                symbol: {
-                    lineWidth: 12,
-                    lineBlur: 5
-                }
-            },
-            {
-                filter: ['==', 'type', 2],
-                renderPlugin: {
-                    type: 'line',
-                    dataConfig: {
-                        type: 'line'
+                {
+                    filter: ['==', 'type', 2],
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: {
+                            type: 'line'
+                        }
+                    },
+                    symbol: {
+                        lineWidth: 12,
+                        lineBlur: 5
                     }
-                },
-                symbol: {
-                    lineWidth: 12,
-                    lineBlur: 5
                 }
-            }
-        ];
-        assert.deepEqual(style.style, expected);
+            ],
+            featureStyle: []
+        };
+        assert.deepEqual(style, expected);
     });
 
     //TODO 增加style + featureStyle的压缩

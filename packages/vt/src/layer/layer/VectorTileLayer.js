@@ -128,14 +128,13 @@ class VectorTileLayer extends maptalks.TileLayer {
             };
         }
         this.ready = true;
-        this._featureStyle = style['featureStyle'] || [];
-        if (!Array.isArray(style) && !style.plugins) {
-            //有plugins说明是个compressed style
-            style = style.style || [];
+        if (Array.isArray(style)) {
+            style = { style };
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
-        this._vtStyle = style;
+        this._featureStyle = style['featureStyle'] || [];
+        this._vtStyle = style['style'];
         this.validateStyle();
         if (this._replacer) {
             this._parseStylePath();
