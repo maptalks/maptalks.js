@@ -97,7 +97,7 @@ describe('GeoJSONVectorTileLayer', () => {
                 symbol: { markerType: 'square', markerSize: 20 }
             }]
         });
-        layer.updateSceneConfig(0, 0, { foo2: 2 });
+        layer.updateSceneConfig(0, { foo2: 2 });
         assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
@@ -117,7 +117,7 @@ describe('GeoJSONVectorTileLayer', () => {
                 ]
             }
         });
-        layer.updateSceneConfig(0, 0, { foo2: 2 });
+        layer.updateSceneConfig(0, { foo2: 2 });
         assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
