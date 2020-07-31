@@ -26,7 +26,7 @@ const DEFAULT_VIEW = {
 const line = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0], [1, 0]] }, properties: { type: 1 } }
+        { type: 'Feature', id: 0, geometry: { type: 'LineString', coordinates: [[-1, 0], [1, 0]] }, properties: { type: 1 } }
     ]
 };
 
@@ -663,8 +663,100 @@ describe('update style specs', () => {
         groupLayer.addTo(map);
     });
 
-    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle) {
-        const style = [
+
+    it('should can update feature symbol', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateFeatureSymbol(0, {
+                lineColor: '#0f0'
+            });
+            assert(layer.options.style.featureStyle[0].symbol.lineColor === '#0f0');
+        }, false, {
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ],
+            featureStyle: [
+                {
+                    id: 0,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ]
+        });
+    });
+
+    it('should can update feature sceneConfig', done => {
+        assertChangeStyle(done, [255, 0, 0, 255], layer => {
+            layer.updateFeatureSceneConfig(0, {
+                foo: 1
+            });
+            assert(layer.options.style.featureStyle[0].renderPlugin.sceneConfig.foo === 1);
+        }, false, {
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ],
+            featureStyle: [
+                {
+                    id: 0,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ]
+        });
+    });
+
+    it('should can update feature dataConfig', done => {
+        assertChangeStyle(done, [255, 0, 0, 255], layer => {
+            layer.updateFeatureDataConfig(0, {
+                foo: 1
+            });
+            assert(layer.options.style.featureStyle[0].renderPlugin.dataConfig.foo === 1);
+        }, true, {
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ],
+            featureStyle: [
+                {
+                    id: 0,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                }
+            ]
+        });
+    });
+
+
+    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style) {
+        style = style || [
             {
                 filter: {
                     title: '所有数据',

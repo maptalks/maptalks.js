@@ -273,7 +273,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSceneConfig(0, idx, sceneConfig);
     }
 
-    updateFeatureSceneonfig(idx, sceneConfig) {
+    updateFeatureSceneConfig(idx, sceneConfig) {
         return this._updateSceneConfig(1, idx, sceneConfig);
     }
 
@@ -331,7 +331,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSymbol(0, idx, symbol);
     }
 
-    updateFeatureSymbl(idx, symbol) {
+    updateFeatureSymbol(idx, symbol) {
         return this._updateSymbol(1, idx, symbol);
     }
 
