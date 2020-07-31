@@ -127,7 +127,7 @@ describe('update style specs', () => {
 
     it('should can updateSymbol', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
-            layer.updateSymbol(0, 0, {
+            layer.updateSymbol(0, {
                 lineColor: '#0f0'
             });
             assert(layer.options.style[0].symbol.lineColor === '#0f0');
@@ -136,7 +136,7 @@ describe('update style specs', () => {
 
     it('should hide by setting visible to false', done => {
         assertChangeStyle(done, [0, 0, 0, 0], layer => {
-            layer.updateSymbol(0, 0, {
+            layer.updateSymbol(0, {
                 visible: false
             });
         });
@@ -170,7 +170,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.updateSymbol(0, 0, { textFill: '#0f0' });
+                layer.updateSymbol(0, { textFill: '#0f0' });
             } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
@@ -209,7 +209,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.updateSymbol(0, 0, { textSize: 20, textFill: '#0f0' });
+                layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
             } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
@@ -249,7 +249,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.updateSymbol(0, 0, { textSize: 20, textFill: '#0f0' });
+                layer.updateSymbol(0, { textSize: 20, textFill: '#0f0' });
             } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //变成绿色
@@ -296,7 +296,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.updateSymbol(0, 0, { visible: false });
+                layer.updateSymbol(0, { visible: false });
             } else if (count === 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + xOffset, y / 2);
                 //变成透明
@@ -385,7 +385,7 @@ describe('update style specs', () => {
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
-                layer.updateSymbol(0, 0, { markerAllowOverlap: true });
+                layer.updateSymbol(0, { markerAllowOverlap: true });
             } else if (count === 2) {
                 done();
             }
@@ -421,7 +421,7 @@ describe('update style specs', () => {
         layer.on('layerload', () => {
             count++;
             if (count === 2) {
-                layer.updateSymbol(0, 0, { markerWidth: 20 });
+                layer.updateSymbol(0, { markerWidth: 20 });
             } else if (count === 3) {
                 done();
             }
@@ -455,7 +455,7 @@ describe('update style specs', () => {
                 const canvas = layer.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
                 assert.deepEqual(pixel, [139, 56, 87, 255]);
-                layer.updateSymbol(0, 0, { textFill: 'rgba(25, 95, 230, 1)' });
+                layer.updateSymbol(0, { textFill: 'rgba(25, 95, 230, 1)' });
             } else if (count === 2) {
                 const canvas = layer.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
@@ -507,7 +507,7 @@ describe('update style specs', () => {
                     assert.deepEqual(pixel, [15, 13, 52, 255]);
 
                     material.baseColorTexture = undefined;
-                    layer.updateSymbol(0, 0, { material });
+                    layer.updateSymbol(0, { material });
                     painted = true;
                 } else {
                     assert.deepEqual(pixel, [52, 52, 52, 255]);
@@ -586,7 +586,7 @@ describe('update style specs', () => {
                         assert.deepEqual(pixel, [78, 78, 78, 255]);
 
                         material.baseColorFactor = [1, 0, 0, 1];
-                        layer.updateSymbol(0, 1, { material });
+                        layer.updateSymbol(1, { material });
                         painted = true;
                     } else {
                         assert.deepEqual(pixel, [78, 1, 1, 255]);
@@ -646,7 +646,7 @@ describe('update style specs', () => {
                     if (!painted) {
                         assert(pixel[1] > 0);
                         assert(pixel[3] > 0);
-                        layer.updateSymbol(0, 0, { bloom: false });
+                        layer.updateSymbol(0, { bloom: false });
                         painted = true;
                     }
                 }

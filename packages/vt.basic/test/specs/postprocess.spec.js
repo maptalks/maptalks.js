@@ -96,7 +96,7 @@ describe('postprocess specs', () => {
 
     it.skip('should can update symbol', done => {
         assertStyle(layer => {
-            layer.updateSymbol(0, 0, {
+            layer.updateSymbol(0, {
                 material: {
                     normalTexture: null
                 }

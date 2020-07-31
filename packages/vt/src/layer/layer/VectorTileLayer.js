@@ -269,7 +269,15 @@ class VectorTileLayer extends maptalks.TileLayer {
         return value;
     }
 
-    updateSceneConfig(type, idx, sceneConfig) {
+    updateSceneConfig(idx, sceneConfig) {
+        return this._updateSceneConfig(0, idx, sceneConfig);
+    }
+
+    updateFeatureSceneonfig(idx, sceneConfig) {
+        return this._updateSceneConfig(1, idx, sceneConfig);
+    }
+
+    _updateSceneConfig(type, idx, sceneConfig) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
@@ -289,7 +297,15 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    updateDataConfig(type, idx, dataConfig) {
+    updateDataConfig(idx, dataConfig) {
+        return this._updateDataConfig(0, idx, dataConfig);
+    }
+
+    updateFeatureDataConfig(idx, dataConfig) {
+        return this._updateDataConfig(1, idx, dataConfig);
+    }
+
+    _updateDataConfig(type, idx, dataConfig) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
@@ -311,7 +327,15 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    updateSymbol(type, idx, symbol) {
+    updateSymbol(idx, symbol) {
+        return this._updateSymbol(0, idx, symbol);
+    }
+
+    updateFeatureSymbl(idx, symbol) {
+        return this._updateSymbol(1, idx, symbol);
+    }
+
+    _updateSymbol(type, idx, symbol) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
