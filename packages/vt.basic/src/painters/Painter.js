@@ -105,29 +105,6 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
-        let mesh;
-        if (Array.isArray(meshes) && meshes.length) {
-            mesh = meshes[0];
-        } else {
-            mesh = meshes;
-        }
-        if (mesh) {
-            const feaIdMap = mesh.geometry.properties.feaIdPickingMap;
-            if (feaIdMap) {
-                const feaIds = Object.keys(feaIdMap);
-                for (let ii = 0; ii < feaIds.length; ii++) {
-                    let feaMeshes = this._meshesOfFeaId[feaIds[ii]];
-                    if (!feaMeshes) {
-                        feaMeshes = this._meshesOfFeaId[feaIds[ii]] = [];
-                    }
-                    if (Array.isArray(meshes)) {
-                        feaMeshes.push(...meshes);
-                    } else {
-                        feaMeshes.push(meshes);
-                    }
-                }
-            }
-        }
         this.scene.addMesh(meshes);
         return meshes;
     }
@@ -319,7 +296,6 @@ class Painter {
             this._redraw = false;
             this._needRetire = false;
         }
-        this._meshesOfFeaId = {};
         this.scene.clear();
     }
 
@@ -521,9 +497,9 @@ class Painter {
         this._outlineScene.setMeshes(mesh);
         this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
 
-        if (this._meshesOfFeaId && picked.featureId !== undefined) {
-            const meshes = this._meshesOfFeaId[picked.featureId];
-            if (!meshes) {
+        if (picked.featureId !== undefined) {
+            const meshes = this._findMeshesHasFeaId(picked.featureId);
+            if (!meshes.length) {
                 return;
             }
             for (let i = 0; i < meshes.length; i++) {
@@ -541,6 +517,19 @@ class Painter {
                 }
             }
         }
+    }
+
+    _findMeshesHasFeaId(feaId) {
+        const meshes = [];
+        const allMeshes = this.scene.getMeshes();
+        for (let i = 0; i < allMeshes.length; i++) {
+            const mesh = allMeshes[i];
+            const idMap = mesh.geometry.properties.feaIdPickingMap;
+            if (idMap && idMap[feaId] !== undefined) {
+                meshes.push(mesh);
+            }
+        }
+        return meshes;
     }
 
     outlineAll(fbo) {
