@@ -76,7 +76,7 @@ export default class BaseLayerWorker {
             callback: cb,
             ref: this
         }];
-        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers) => {
+        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers, props) => {
             const waitings = loadings[url];
             delete loadings[url];
             if (this.checkIfCanceled(url)) {
@@ -108,14 +108,14 @@ export default class BaseLayerWorker {
             this._cache.add(url, { features, layers });
             if (waitings) {
                 for (let i = 0; i < waitings.length; i++) {
-                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features);
+                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features, props);
                 }
             }
         });
 
     }
 
-    _onTileLoad(context, cb, url, layers, features) {
+    _onTileLoad(context, cb, url, layers, features, props) {
         // debugger
         this._createTileData(layers, features, context).then(data => {
             if (data.canceled) {
@@ -123,6 +123,9 @@ export default class BaseLayerWorker {
                 return;
             }
             data.data.style = this._styleCounter;
+            if (props) {
+                extend(data.data, props);
+            }
             cb(null, data.data, data.buffers);
         });
     }

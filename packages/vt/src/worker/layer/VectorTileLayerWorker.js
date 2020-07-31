@@ -57,7 +57,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 layers[p].types = Object.keys(layers[p].types).map(t => +t);
             }
 
-            cb(null, features, layers);
+            cb(null, features, layers, { byteLength: response.data.byteLength });
         });
     }
 
