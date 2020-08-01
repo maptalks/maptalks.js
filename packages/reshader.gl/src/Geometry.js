@@ -357,11 +357,13 @@ export default class Geometry {
             packTangentFrame(q, n, t);
             vec4.copy(aTangent.subarray(i, i + 4), q);
         }
+        delete this._reglData;
     }
 
     createNormal(name = 'aNormal') {
         const vertices = this.data[this.desc.positionAttribute];
         this.data[name] = buildNormals(vertices, this.elements);
+        delete this._reglData;
     }
 
     /**
@@ -380,6 +382,7 @@ export default class Geometry {
             }
         }
         this.data[name] = bary;
+        delete this._reglData;
     }
 
     /**
@@ -427,6 +430,7 @@ export default class Geometry {
             }
             indices[i] = cursor++;
         }
+        delete this._reglData;
     }
 
     getMemorySize() {
