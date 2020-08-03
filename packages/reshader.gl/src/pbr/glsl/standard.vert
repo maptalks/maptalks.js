@@ -31,6 +31,7 @@ uniform mat4 uProjectionMatrix;
 // uniform vec2 uGlobalTexRatio;
 uniform vec2 uGlobalTexSize;
 uniform vec2 uHalton;
+uniform mediump vec3 uCameraPosition;
 
 uniform mat3 uModelNormalMatrix;
 
@@ -68,6 +69,24 @@ varying vec3 vModelVertex;
 #endif
 #include <heatmap_render_vert>
 #include <fog_render_vert>
+
+#ifdef HAS_BUMP_MAP
+    varying vec3 vTangentViewPos;
+    varying vec3 vTangentFragPos;
+    #if __VERSION__ == 100
+        mat3 transpose(in mat3 inMat) {
+            vec3 i0 = inMat[0];
+            vec3 i1 = inMat[1];
+            vec3 i2 = inMat[2];
+
+            return mat3(
+                vec3(i0.x, i1.x, i2.x),
+                vec3(i0.y, i1.y, i2.y),
+                vec3(i0.z, i1.z, i2.z)
+            );
+        }
+    #endif
+#endif
 
 /**
  * Extracts the normal vector of the tangent frame encoded in the specified quaternion.
@@ -161,5 +180,11 @@ void main() {
 
     #ifdef HAS_FOG
         fog_getDist( modelMatrix * localPositionMatrix * localVertex);
+    #endif
+
+    #ifdef HAS_BUMP_MAP
+        mat3 TBN = transpose(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
+        vTangentViewPos = TBN * uCameraPosition;
+        vTangentFragPos = TBN * vModelVertex;
     #endif
 }

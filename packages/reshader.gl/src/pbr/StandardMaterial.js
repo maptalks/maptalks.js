@@ -46,7 +46,12 @@ const DEFAULT_UNIFORMS = {
     'uSpecularAntiAliasingVariance': 1,
     'uSpecularAntiAliasingThreshold': 1,
 
-    'uHsv': [0, 0, 0]
+    'uHsv': [0, 0, 0],
+
+    'bumpTexture': null,
+    'bumpScale': 0.05,
+    'bumpMinLayers': 5,
+    'bumpMaxLayers': 20,
 };
 
 class StandardMaterial extends Material {
@@ -77,11 +82,15 @@ class StandardMaterial extends Material {
         if (uniforms['uNormalTexture']) {
             defines['HAS_NORMAL_MAP'] = 1;
         }
+        if (uniforms['bumpTexture']) {
+            defines['HAS_BUMP_MAP'] = 1;
+        }
         if (defines['HAS_ALBEDO_MAP'] ||
             defines['HAS_METALLICROUGHNESS_MAP'] ||
             defines['HAS_AO_MAP'] ||
             defines['HAS_EMISSIVE_MAP'] ||
-            defines['HAS_NORMAL_MAP']) {
+            defines['HAS_NORMAL_MAP'] ||
+            defines['HAS_BUMP_MAP']) {
             defines['HAS_MAP'] = 1;
         }
         // if (uniforms['HAS_TONE_MAPPING']) {
