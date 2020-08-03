@@ -18,10 +18,7 @@ const DEFAULT_UNIFORMS = {
     'uvOffset': [0, 0],
 
     'lineColor': [1, 1, 1, 1],
-    'lineOpacity': 1,
-
-    'polygonFill': [1, 1, 1, 1],
-    'polygonOpacity': 1,
+    'lineOpacity': 1
 };
 
 class PhongMaterial extends Material {
