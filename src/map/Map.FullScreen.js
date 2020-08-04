@@ -58,8 +58,8 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _requestFullScreen(dom) {
-        if (dom.requestFullScreen) {
-            dom.requestFullScreen();
+        if (dom.requestFullscreen) {
+            dom.requestFullscreen();
         } else if (dom.mozRequestFullScreen) {
             dom.mozRequestFullScreen();
         } else if (dom.webkitRequestFullScreen) {
@@ -80,8 +80,8 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _cancelFullScreen() {
-        if (document.cancelFullScreen) {
-            document.cancelFullScreen();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
         } else if (document.mozCancelFullScreen) {
             document.mozCancelFullScreen();
         } else if (document.webkitCancelFullScreen) {
