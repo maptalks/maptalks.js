@@ -71,6 +71,13 @@ export default class IconRequestor {
             if (url.indexOf('vector://') === 0) {
                 marker = marker ||  new Marker([0, 0]);
                 const symbol = JSON.parse(url.substring('vector://'.length));
+                const { markerFill, markerLineColor } = symbol;
+                if (markerFill && Array.isArray(markerFill)) {
+                    symbol.markerFill = convertColorArray(markerFill);
+                }
+                if (markerLineColor && Array.isArray(markerLineColor)) {
+                    symbol.markerLineColor = convertColorArray(markerLineColor);
+                }
                 delete symbol.markerHorizontalAlignment;
                 delete symbol.markerVerticalAlignment;
                 delete symbol.markerDx;
@@ -143,4 +150,18 @@ function isPowerOfTwo(value) {
 
 function ceilPowerOfTwo(value) {
     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+}
+
+function convertColorArray(color) {
+    if (color.length === 3) {
+        color.push(1);
+    }
+    return color.reduce((accumulator, v, idx) => {
+        if (idx < 3) {
+            accumulator += v * 255 + ','
+        } else {
+            accumulator += v + ')';
+        }
+        return accumulator;
+    }, 'rgba(');
 }
