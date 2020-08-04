@@ -18,6 +18,7 @@ const DEFAULT_UNIFORMS = {
     'uClearCoatRoughnessFactor': 0.04, //0.04
     'uClearCoatThickness': 5, //5
     'uEmitColorFactor': 1, //1
+    'uOcclusionFactor': 1,
     'uRoughnessFactor': 0.4,
     'uMetallicFactor': 0, //0
     'uNormalMapFactor': 1, //1
