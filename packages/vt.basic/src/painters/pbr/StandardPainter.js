@@ -365,10 +365,6 @@ class StandardPainter extends MeshPainter {
         disposeIBLTextures(this._iblTexes);
         delete this._iblTexes;
     }
-
-    shouldDeleteMeshOnUpdateSymbol() {
-        return false;
-    }
 }
 
 export default StandardPainter;

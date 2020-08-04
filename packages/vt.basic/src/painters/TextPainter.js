@@ -87,9 +87,20 @@ export default class TextPainter extends CollisionPainter {
         if (isFunctionDefinition(symbolDef['textName'])) {
             this._textNameFn = interpolated(symbolDef['textName']);
         }
+        this._textHaloRadius = this.symbolDef.textHaloRadius;
+    }
+
+    shouldDeleteMeshOnUpdateSymbol(symbol) {
+        if ((symbol.textHaloRadius === 0 || this._textHaloRadius === 0) && symbol.textHaloRadius !== this._textHaloRadius) {
+            return true;
+        }
+        return false;
     }
 
     updateSymbol(symbol) {
+        if (symbol.textHaloRadius !== undefined) {
+            this._textHaloRadius = symbol.textHaloRadius;
+        }
         super.updateSymbol(symbol);
         this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
@@ -133,6 +144,10 @@ export default class TextPainter extends CollisionPainter {
             }
         }
         return meshes;
+    }
+
+    needRetireMesh() {
+
     }
 
     preparePaint(context) {
