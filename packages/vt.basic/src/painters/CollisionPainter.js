@@ -17,6 +17,7 @@ const MESH_ANCHOR_KEY = '__meshAnchorKey';
 const UINT8 = new Uint8Array(1);
 const COLLISION_OFFSET_THRESHOLD = 2;
 const MESH_ANCHORS = [];
+const NO_COLLISION = { collides: 0, boxes: [] };
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
@@ -297,7 +298,7 @@ export default class CollisionPainter extends BasicPainter {
     _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex) {
         const symbol = mesh.geometry.properties.symbol;
         if (symbol[this.propIgnorePlacement] && symbol[this.propAllowOverlap]) {
-            return true;
+            return NO_COLLISION;
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
         if (symbol[this.propAllowOverlap]) {
