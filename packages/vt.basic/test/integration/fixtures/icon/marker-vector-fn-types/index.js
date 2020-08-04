@@ -24,7 +24,7 @@ const style = [
                 property: 'type',
                 default: '#00f',
                 stops: [
-                    [2, '#f00']
+                    [2, [1, 0, 0, 1]]
                 ]
             },
             markerFillOpacity: {
@@ -40,7 +40,7 @@ const style = [
                 property: 'type',
                 default: '#ff0',
                 stops: [
-                    [2, '#fff']
+                    [2, [1, 1, 1]]
                 ]
             },
             markerLineWidth: {
