@@ -35,6 +35,7 @@ class WireframeShader extends MeshShader {
             ],
             extraCommandProps
         });
+        this.version = 300;
     }
 }
 export default WireframeShader;

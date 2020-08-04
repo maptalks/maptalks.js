@@ -1,3 +1,4 @@
+#include <gl2_vert>
 attribute vec3 aPosition;
 attribute vec3 aBarycentric;
 varying vec3 vBarycentric;

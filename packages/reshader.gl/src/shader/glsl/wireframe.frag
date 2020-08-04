@@ -2,6 +2,11 @@
  * based on https://github.com/mattdesl/webgl-wireframes
  * @License MIT
 */
+#if __VERSION__ == 100
+  #ifdef GL_OES_standard_derivatives
+    #extension GL_OES_standard_derivatives : enable
+  #endif
+#endif
 precision mediump float;
 #include <gl2_frag>
 
@@ -31,7 +36,6 @@ uniform float opacity;
 #ifdef HAS_INSTANCE
   varying vec4 vInstanceColor;
 #endif
-#extension GL_OES_standard_derivatives : enable
 
 #include <viewshed_frag>
 #include <flood_frag>
