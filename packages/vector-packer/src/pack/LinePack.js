@@ -4,7 +4,7 @@ import VectorPack from './VectorPack';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { isNil, isFnTypeSymbol } from '../style/Util';
-import { isOut } from './util/util';
+import clipLine from './util/clip_line';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -161,8 +161,7 @@ export default class LinePack extends VectorPack {
             miterLimit = 2,
             roundLimit = 1.05;
         const feature = line.feature,
-            isPolygon = feature.type === 3, //POLYGON
-            lines = feature.geometry;
+            isPolygon = feature.type === 3; //POLYGON
         const elements = this.elements;
         if (isPolygon) {
             //Polygon时，需要遍历elements，去掉(filter)瓦片范围外的edge
@@ -207,6 +206,8 @@ export default class LinePack extends VectorPack {
             }
             this.feaOpacity = 255 * opacity;
         }
+        const extent = this.options.EXTENT;
+        const lines = clipLine(feature.geometry, 0, 0, extent, extent);
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
@@ -394,7 +395,7 @@ export default class LinePack extends VectorPack {
             const tanHalfAngle = sinHalfAngle / cosHalfAngle;
             if (isPolygon || i > first && i < len - 1) {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
-                if (needExtraVertex || prevVertex && isOut(prevVertex, EXTENT)) {
+                if (needExtraVertex/* || prevVertex && isOut(prevVertex, EXTENT)*/) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
                     const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
                     // const backDist = back * this.feaLineWidth / 2 * tileRatio;
@@ -499,8 +500,9 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
-                (isPolygon || i > first && i < len - 1)) {
+            // if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
+            //     (isPolygon || i > first && i < len - 1)) {
+            if (needExtraVertex) {
                 //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                 //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 //端点往前移动forward距离，以免新端点和lineJoin产生重叠
