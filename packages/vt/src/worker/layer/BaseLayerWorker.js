@@ -341,6 +341,7 @@ export default class BaseLayerWorker {
         const { extent, glScale, zScale, zoom, tilePoint } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
+        const debugIndex = this.options.debugTile && this.options.debugTile.index;
         if (type === '3d-extrusion') {
             const t = hasTexture(symbol);
             if (t) {
@@ -349,7 +350,6 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            const debugIndex = this.options.debugTile && this.options.debugTile.index;
             return Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex));
         } else if (type === '3d-wireframe') {
             return Promise.resolve(buildWireframe(features, dataConfig, extent));
@@ -357,7 +357,8 @@ export default class BaseLayerWorker {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 requestor: this.fetchIconGlyphs.bind(this),
-                zoom
+                zoom,
+                debugIndex
             });
             const symbols = PointPack.splitPointSymbol(symbol);
 
@@ -367,7 +368,8 @@ export default class BaseLayerWorker {
         } else if (type === 'native-point') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new NativePointPack(features, symbol, options);
             return pack.load(extent / tileSize);
@@ -376,14 +378,16 @@ export default class BaseLayerWorker {
                 EXTENT: extent,
                 requestor: this.fetchIconGlyphs.bind(this),
                 tileRatio,
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new LinePack(features, symbol, options);
             return pack.load();
         } else if (type === 'native-line') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new NativeLinePack(features, symbol, options);
             return pack.load();
@@ -391,7 +395,8 @@ export default class BaseLayerWorker {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 requestor: this.fetchIconGlyphs.bind(this),
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new PolygonPack(features, symbol, options);
             return pack.load();
@@ -412,14 +417,16 @@ export default class BaseLayerWorker {
                 tileSize,
                 zScale,
                 glScale,
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new LineExtrusionPack(features, symbol, options);
             return pack.load();
         } else if (type === 'circle') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
-                zoom
+                zoom,
+                debugIndex
             });
             const pack = new CirclePack(features, symbol, options);
             return pack.load();

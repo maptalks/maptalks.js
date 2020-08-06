@@ -117,7 +117,13 @@ export default class VectorPack {
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
         const symbol = this.symbolDef;
-        for (let i = 0, l = features.length; i < l; i++) {
+        let i = 0, l = features.length;
+        const debugIndex = this.options.debugIndex;
+        if (debugIndex !== undefined) {
+            i = debugIndex;
+            l = debugIndex + 1;
+        }
+        for (; i < l; i++) {
             const feature = features[i];
             let vector;
             if (Array.isArray(feature.properties)) {
