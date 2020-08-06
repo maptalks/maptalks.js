@@ -39,6 +39,7 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "@maptalks/vt": "^0.20.0",
+    "@maptalks/rollup-plugin-glsl-minify": "^0.1.5",
     "babel-eslint": "^9.0.0",
     "electron": "^4.0.1",
     "electron-mocha": "^6.0.4",

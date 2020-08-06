@@ -207,7 +207,8 @@ export default class LinePack extends VectorPack {
             this.feaOpacity = 255 * opacity;
         }
         const extent = this.options.EXTENT;
-        const lines = clipLine(feature.geometry, 0, 0, extent, extent);
+        //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
+        const lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
