@@ -19,6 +19,10 @@ class MeshPainter extends Painter {
             this.setToRedraw();
             return null;
         }
+
+        if (Array.isArray(geometry)) {
+            return geometry.map(geo => this.createMesh(geo, transform));
+        }
         const mesh = new reshader.Mesh(geometry, this.material);
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
@@ -87,6 +91,17 @@ class MeshPainter extends Painter {
     }
 
     addMesh(mesh, progress) {
+        this._prepareMesh(mesh, progress);
+        super.addMesh(mesh, progress);
+    }
+
+    _prepareMesh(mesh, progress) {
+        if (Array.isArray(mesh)) {
+            mesh.forEach(m => {
+                this._prepareMesh(m, progress);
+            });
+            return;
+        }
         if (progress !== null) {
             const mat = mesh.localTransform;
             if (progress === 0) {
@@ -111,7 +126,6 @@ class MeshPainter extends Painter {
         } else {
             mesh.setUniform('ssr', 0);
         }
-        super.addMesh(mesh, progress);
     }
 
     deleteMesh(meshes, keepGeometry) {

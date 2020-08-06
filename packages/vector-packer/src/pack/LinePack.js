@@ -211,10 +211,7 @@ export default class LinePack extends VectorPack {
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
-            let line = lines[i];
-            if (!isPolygon) {
-                line = this._filterLine(line);
-            }
+            const line = lines[i];
             this._addLine(line, feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
                 this._filterPolygonEdges(elements);

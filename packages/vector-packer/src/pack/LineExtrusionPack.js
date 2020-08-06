@@ -86,7 +86,9 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-
+        const startLength = this.data.length;
+        // if (vertices.length)
+        //     console.log(vertices[0]);
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
         const formatWidth = this.formatWidth;
         const end0 = this.data.length / formatWidth - this.offset;
@@ -96,30 +98,30 @@ export default class LineExtrusionPack extends LinePack {
         if (!isPolygon && end0 > 0 && generateSide) {
             const generateTop = this.options['top'] !== false;
             const topLength = generateTop ? 1 : 0;
-            const sideLenth = generateSide ? 4 : 0;
+            const sideLenth = 4;
             const vertexLength = topLength + sideLenth;
             const length = this.data.length;
             //封闭两端
             //在data末尾补充首尾两端的端点
 
             //line开始时顶点顺序: down0, down0-底, up0, up0-底
-            // console.log(this.data[(topLength + 1) * formatWidth], this.data[(topLength + 1) * formatWidth + 1], this.data[(topLength + 1) * formatWidth + 2]);
+            // console.log(this.data[startLength + (topLength + 1) * formatWidth], this.data[startLength + (topLength + 1) * formatWidth + 1], this.data[startLength + (topLength + 1) * formatWidth + 2]);
             for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[this.offset + formatWidth * 3 + i]);
+                this.data.push(this.data[startLength + formatWidth * 3 + i]);
             }
 
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
+            // console.log(this.data[startLength + formatWidth * 3], this.data[startLength + formatWidth * 3 + 1], this.data[startLength + formatWidth * 3 + 2]);
             //down0
             for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[this.offset + formatWidth * vertexLength + i]);
+                this.data.push(this.data[startLength + formatWidth * vertexLength + i]);
             }
 
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
+            // console.log(this.data[startLength + formatWidth * vertexLength], this.data[startLength + formatWidth * vertexLength + 1], this.data[startLength + formatWidth * vertexLength + 2]);
             //down1
             for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[this.offset + formatWidth * (vertexLength + 3) + i]);
+                this.data.push(this.data[startLength + formatWidth * (vertexLength + 3) + i]);
             }
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
+            // console.log(this.data[startLength + formatWidth * (vertexLength + 3)], this.data[startLength + formatWidth * (vertexLength + 3) + 1], this.data[startLength + formatWidth * (vertexLength + 3) + 2]);
 
             //第一个up0的第二条数据(没人用),down0, up1
             super.addElements(topLength + 1, end0 + 1, end0);
@@ -171,7 +173,6 @@ export default class LineExtrusionPack extends LinePack {
         //只用于计算uv和tangent
         const extrudedPointX = lineWidth * extrudeX + x;
         const extrudedPointY = lineWidth * extrudeY + y;
-
         this._fillTop(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY);
 
         if (generateSide) {
@@ -282,8 +283,10 @@ export default class LineExtrusionPack extends LinePack {
                 //侧面按顺时针(因为在背面)
                 //up0, up1, up1-底
                 super.addElements(e2 + offset, e3 + offset, e3 + offset + 2);
+                // console.log(this.data.length / formatWidth, e2 + offset, e3 + offset, e3 + offset + 2);
                 //up0, up1-底, up0-底
                 super.addElements(e2 + offset + 1, e3 + offset + 1 + 2, e2 + offset + 1 + 2);
+                // console.log(this.data.length / formatWidth, e2 + offset + 1, e3 + offset + 1 + 2, e2 + offset + 1 + 2);
             }
         } else {
             //参数中的顺序down0, up0, down1
@@ -295,8 +298,10 @@ export default class LineExtrusionPack extends LinePack {
                 const offset = (generateTop ? 1 : 0);
                 //down0, down0-底， down1
                 super.addElements(e1 + offset, e1 + offset + 2, e3 + offset);
+                // console.log(this.data.length / formatWidth, e1 + offset, e1 + offset + 2, e3 + offset);
                 //down0-底， down1-底， down1
                 super.addElements(e1 + offset + 1 + 2, e3 + offset + 1 + 2, e3 + offset + 1);
+                // console.log(this.data.length / formatWidth, e1 + offset + 1 + 2, e3 + offset + 1 + 2, e3 + offset + 1);
             }
         }
     }
@@ -331,8 +336,9 @@ export default class LineExtrusionPack extends LinePack {
         }
         let uvs;
         let tangents;
-        if (this.symbol['material'] && hasTexture(this.symbol['material'])) {
-            uvs = buildUVS(aExtrudedPosition, aLinesofar, aUp, indices, this.options);
+        if (this.options['top'] !== false && this.symbol['material'] && hasTexture(this.symbol['material'])) {
+            //只给顶面顶点生成uv坐标
+            uvs = buildUVS(aExtrudedPosition, aLinesofar, aUp);
             tangents = buildTangents(aExtrudedPosition, normals, uvs, indices);
             tangents = createQuaternion(normals, tangents);
         }
@@ -341,8 +347,7 @@ export default class LineExtrusionPack extends LinePack {
             arrays['aTexCoord0'] = new Float32Array(uvs);
             arrays['aTangent'] = tangents;
         } else {
-            //normal的值只会是0或者1，所以可以用Int8Array封装
-            //normal被封装在了tangents中，不用再次定义
+            //只有side需要aNormal
             arrays['aNormal'] = simpleNormal ? new Int8Array(normals) : new Float32Array(normals);
         }
         arrays['aPickingId'] = data.aPickingId;
@@ -367,78 +372,18 @@ export default class LineExtrusionPack extends LinePack {
     }
 }
 
-function buildUVS(vertexes, aLinesofar, ups, indices, options) {
+function buildUVS(vertexes, aLinesofar, ups) {
     const TWIDTH = 256;
     // let maxUv = -Infinity;
     const uvs = [];
-    let steps = 0;
-    if (options['top'] !== false) {
-        steps += 3;
-    }
-    if (options['side'] !== false) {
-        steps += 6;
-    }
+    for (let i = 0; i < vertexes.length; i += 3) {
+        const dist = aLinesofar[i / 3];
 
-    for (let i = 0; i < indices.length; i += steps) {
-        //0-2是顶面的一个三角形
-        //3-5,6-8是侧面的两个三角形
-
-        let dist = Infinity, dist2 = -Infinity;
-        for (let ii = 0; ii < steps; ii++) {
-            const linesofar = aLinesofar[indices[ii]];
-            if (dist > linesofar) {
-                dist = linesofar;
-            }
-            if (dist2 < linesofar) {
-                dist2 = linesofar;
-            }
-        }
-
-        const up = ups[indices[i]];
-        //buildUniqueVertex后，indices中成为递增的顺序，所以可以直接用push的方式推入uv数据，而无需从indices中取到真正的位置
-        //    up0  ____  up1
-        //  down0 |____| down1
+        const up = ups[i / 3];
         if (up) {
-            if (options['top'] !== false) {
-                //顶面的uv坐标 up0, down1, up1
-                uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 0, dist2 / TWIDTH, 1);
-            }
-            if (options['side'] !== false) {
-                //up0, up1, up1-底
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 1, dist2 / TWIDTH, 0);
-                // //up0, up1, up1-底
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 1, dist2 / TWIDTH, 0);
-                // //up0, up1-底, up0-底
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 0, dist / TWIDTH, 0);
-                // //up0, up1-底, up0-底
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 0, dist / TWIDTH, 0);
-                //侧面不绘制纹理
-                uvs.push(0, 0, 0, 0, 0, 0, 0, 0);
-            }
+            uvs.push(dist / TWIDTH, 1);
         } else {
-            if (options['top'] !== false) {
-                //顶面的uv坐标 down0, up0, down1
-                uvs.push(dist / TWIDTH, 0, dist / TWIDTH, 1, dist2 / TWIDTH, 0);
-            }
-            if (options['side'] !== false) {
-                //down0, down0-底， down1
-                // uvs.push(dist / TWIDTH, 1, dist / TWIDTH, 0, dist2 / TWIDTH, 1);
-                // //down0, down0-底， down1
-                // uvs.push(dist / TWIDTH, 1, dist / TWIDTH, 0, dist2 / TWIDTH, 1);
-                // //down0-底， down1-底， down1
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 0, dist2 / TWIDTH, 1);
-                // //down0-底， down1-底， down1
-                // uvs.push(dist / TWIDTH, 1, dist2 / TWIDTH, 0, dist2 / TWIDTH, 1);
-                //侧面不绘制纹理
-                uvs.push(0, 0, 0, 0, 0, 0, 0, 0);
-            }
-        }
-        //侧面的uv坐标
-    }
-    if (options['side'] !== false) {
-    //首尾增加的6个端点的uv坐标
-        for (let i = 0; i < 6 * 2; i++) {
-            uvs.push(0);
+            uvs.push(dist / TWIDTH, 0);
         }
     }
     return uvs;
@@ -459,7 +404,7 @@ function createQuaternion(normals, tangents) {
 
 function hasTexture(material) {
     for (const p in material) {
-        if (p.indexOf('Texture') >= 0) {
+        if (p.indexOf('Texture') >= 0 && material[p]) {
             return true;
         }
     }

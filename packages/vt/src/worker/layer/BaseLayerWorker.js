@@ -420,8 +420,26 @@ export default class BaseLayerWorker {
                 zoom,
                 debugIndex
             });
-            const pack = new LineExtrusionPack(features, symbol, options);
-            return pack.load();
+            if (t) {
+                const packs = [];
+                if (dataConfig.top !== false) {
+                    const opt = extend({}, options);
+                    opt.side = false;
+                    packs.push(new LineExtrusionPack(features, symbol, opt));
+                }
+                if (dataConfig.side !== false) {
+                    options.side = true;
+                    options.top = false;
+                    packs.push(new LineExtrusionPack(features, symbol, options));
+                }
+                if (packs.length === 1) {
+                    return packs[0].load();
+                } else {
+                    return Promise.all(packs.map(pack => pack.load()));
+                }
+            } else {
+                return new LineExtrusionPack(features, symbol, options).load();
+            }
         } else if (type === 'circle') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -651,9 +669,9 @@ function hasTexture(symbol) {
     }
     let t = 0;
     for (const p in symbol) {
-        if (p === 'normalTexture' || p === 'uNormalTexture') {
+        if ((p === 'normalTexture' || p === 'uNormalTexture' || p === 'bumpTexture') && symbol[p]) {
             return 2;
-        } else if (p.indexOf('Texture') > 0) {
+        } else if (p.indexOf('Texture') > 0 && symbol[p]) {
             t = 1;
         } else if (isObject(symbol[p])) {
             const t0 = hasTexture(symbol[p]);

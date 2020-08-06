@@ -12,6 +12,9 @@ class StandardPainter extends MeshPainter {
     }
 
     createGeometry(glData) {
+        if (Array.isArray(glData)) {
+            return glData.map(data => this.createGeometry(data));
+        }
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
