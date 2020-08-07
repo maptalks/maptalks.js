@@ -65,9 +65,18 @@ class StandardMaterial extends Material {
         super(uniforms, defaultUniforms);
     }
 
-    createDefines() {
-        const defines = super.createDefines();
+    appendDefines(defines, geometry) {
+        super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
+        // if (uniforms['HAS_TONE_MAPPING']) {
+        //     defines['HAS_TONE_MAPPING'] = 1;
+        // }
+        if (uniforms['GAMMA_CORRECT_INPUT']) {
+            defines['GAMMA_CORRECT_INPUT'] = 1;
+        }
+        if (!geometry.data[geometry.desc.uv0Attribute]) {
+            return defines;
+        }
         if (uniforms['uBaseColorTexture']) {
             defines['HAS_ALBEDO_MAP'] = 1;
         }
@@ -93,12 +102,6 @@ class StandardMaterial extends Material {
             defines['HAS_NORMAL_MAP'] ||
             defines['HAS_BUMP_MAP']) {
             defines['HAS_MAP'] = 1;
-        }
-        // if (uniforms['HAS_TONE_MAPPING']) {
-        //     defines['HAS_TONE_MAPPING'] = 1;
-        // }
-        if (uniforms['GAMMA_CORRECT_INPUT']) {
-            defines['GAMMA_CORRECT_INPUT'] = 1;
         }
         return defines;
     }

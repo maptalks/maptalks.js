@@ -1,5 +1,5 @@
 import Eventable from './common/Eventable.js';
-import { extend1 } from './common/Util.js';
+import { isNil, extend1 } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -25,10 +25,10 @@ class Material {
             }
         }
         this._dirtyUniforms = 'texture';
-        this._dirtyDefines = true;
         this._reglUniforms = {};
         this.refCount = 0;
         this._bindedOnTextureComplete = this._onTextureComplete.bind(this);
+        this._genUniformKeys();
         this._checkTextures();
     }
 
@@ -37,6 +37,10 @@ class Material {
     }
 
     set(k, v) {
+        let dirty = false;
+        if (isNil(this.uniforms[k])) {
+            dirty = true;
+        }
         this.uniforms[k] = v;
         if (k.length < 2 || k.charAt(0) !== 'u' || k.charAt(1) !== k.charAt(1).toUpperCase()) {
             this.uniforms['u' + firstUpperCase(k)] = v;
@@ -44,6 +48,9 @@ class Material {
         this._dirtyUniforms = this.isTexture(k) ? 'texture' : 'primitive';
         if (this._dirtyUniforms === 'texture') {
             this._checkTextures();
+        }
+        if (dirty) {
+            this._genUniformKeys();
         }
         return this;
     }
@@ -53,29 +60,15 @@ class Material {
     }
 
     isDirty() {
-        return this._dirtyUniforms || this._dirtyDefines;
+        return this._dirtyUniforms;
     }
 
     /**
      * Get shader defines
      * @return {Object}
      */
-    getDefines() {
-        if (!this._dirtyDefines) {
-            return this._defines;
-        }
-        if (this.createDefines) {
-            this._defines = this.createDefines();
-        } else {
-            this._defines = {};
-        }
-        this._dirtyDefines = false;
-        return this._defines;
-    }
-
-    createDefines() {
+    appendDefines(defines/*, geometry*/) {
         const uniforms = this.uniforms;
-        const defines = {};
         if (uniforms['jointTexture']) {
             defines['HAS_SKIN'] = 1;
         }
@@ -165,6 +158,20 @@ class Material {
         if (this._loadingCount <= 0) {
             this.fire('complete');
         }
+    }
+
+    getUniformKeys() {
+        return this._uniformKeys;
+    }
+
+    _genUniformKeys() {
+        const keys = [];
+        for (const p in this.uniforms) {
+            if (this.uniforms.hasOwnProperty(p) && !isNil(this.uniforms[p])) {
+                keys.push(p);
+            }
+        }
+        this._uniformKeys = keys.join();
     }
 }
 

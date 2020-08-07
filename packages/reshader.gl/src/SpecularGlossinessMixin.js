@@ -19,9 +19,12 @@ const SpecularGlossinessable = Base =>
             super(uniforms);
         }
 
-        createDefines() {
-            const defines = super.createDefines();
+        appendDefines(defines, geometry) {
+            super.appendDefines(defines, geometry);
             defines['SHADING_MODEL_SPECULAR_GLOSSINESS'] = 1;
+            if (!geometry.data[geometry.desc.uv0Attribute]) {
+                return defines;
+            }
             const uniforms = this.uniforms;
             if (uniforms['diffuseTexture']) {
                 defines['HAS_DIFFUSE_MAP'] = 1;

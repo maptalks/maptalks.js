@@ -23,14 +23,17 @@ class PhongMaterial extends Material {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 
-    createDefines() {
-        const defines = super.createDefines();
+    appendDefines(defines, geometry) {
+        super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
-        if (uniforms['baseColorTexture']) {
-            defines['HAS_BASECOLOR_MAP'] = 1;
-        }
         if (uniforms['extrusionOpacity']) {
             defines['HAS_EXTRUSION_OPACITY'] = 1;
+        }
+        if (!geometry.data[geometry.desc.uv0Attribute]) {
+            return defines;
+        }
+        if (uniforms['baseColorTexture']) {
+            defines['HAS_BASECOLOR_MAP'] = 1;
         }
         if (uniforms['occlusionTexture']) {
             defines['HAS_AO_MAP'] = 1;

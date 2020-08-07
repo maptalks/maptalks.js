@@ -67,11 +67,8 @@ class Mesh {
         if (this.defines) {
             extend(defines, this.defines);
         }
-        if (this.material) {
-            const mDefines = this.material.getDefines();
-            if (mDefines) {
-                extend(defines, mDefines);
-            }
+        if (this.material && this.geometry) {
+            this.material.appendDefines(defines, this.geometry);
         }
         return defines;
     }
@@ -88,11 +85,14 @@ class Mesh {
     }
 
     getCommandKey() {
-        if (!this._commandKey || this.dirtyDefines || (this.material && this.material.dirtyDefines)) {
+        if (!this._commandKey || this.dirtyDefines || (this.material && this._materialKeys !== this.material.getUniformKeys())) {
             let dKey = this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             this._commandKey = dKey;
+            if (this.material) {
+                this._materialKeys = this.material.getUniformKeys();
+            }
         }
 
         return this._commandKey;
