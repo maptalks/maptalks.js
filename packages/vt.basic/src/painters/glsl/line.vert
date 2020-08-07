@@ -128,12 +128,12 @@ void main() {
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
-    float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+    float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
-    if (d * myLineWidth < 0.0) {
+    if (pixelDelta * myLineWidth < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
-        float s = -d / limit;
-        float aaWidth = s * s * s * s * AA_LINE_WIDTH;
+        float pixelScale = -pixelDelta / limit;
+        float aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
         dist += aaWidth * extrude;
         outset += aaWidth / 6.0;
         // 用新的dist计算新的端点位置
