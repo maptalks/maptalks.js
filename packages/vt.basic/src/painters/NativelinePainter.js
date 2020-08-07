@@ -3,7 +3,7 @@ import { extend, setUniformFromSymbol, createColorSetter } from '../Util';
 import Painter from './Painter';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
-import pickingVert from './glsl/native-line.picking.vert';
+import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 class NativeLinePainter extends Painter {
@@ -128,7 +128,7 @@ class NativeLinePainter extends Painter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport

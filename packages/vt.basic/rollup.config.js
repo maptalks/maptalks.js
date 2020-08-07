@@ -3,6 +3,7 @@ const babel = require('rollup-plugin-babel');
 const commonjs = require('rollup-plugin-commonjs');
 const json = require('rollup-plugin-json');
 const uglify = require('rollup-plugin-uglify').uglify;
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
@@ -48,7 +49,9 @@ module.exports = {
     input: 'src/index.js',
     plugins: [
         json(),
-        glsl(),
+        production ? glslMinify({
+            commons: []
+        }) : glsl(),
         resolve({
             mainFields: ['module', 'main'],
         }),

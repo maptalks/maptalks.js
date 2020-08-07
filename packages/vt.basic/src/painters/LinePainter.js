@@ -4,7 +4,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
-import pickingVert from './glsl/line.picking.vert';
+import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
@@ -235,7 +235,7 @@ class LinePainter extends BasicPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

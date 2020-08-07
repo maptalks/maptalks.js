@@ -3,14 +3,14 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
-import pickingVert from './glsl/marker.picking.vert';
+import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { setUniformFromSymbol, isNil, fillArray } from '../Util';
 import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
-import textPickingVert from './glsl/text.picking.vert';
+import textPickingVert from './glsl/text.vert';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from './Constant';
@@ -708,7 +708,7 @@ class IconPainter extends CollisionPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms: [
                         'flipY',
                         'markerWidth',
@@ -753,7 +753,7 @@ class IconPainter extends CollisionPainter {
             this._textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: textPickingVert,
+                    vert: '#define PICKING_MODE 1\n' + textPickingVert,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport

@@ -8,8 +8,8 @@ import { getLabelNormal } from './util/get_label_normal';
 import vert from './glsl/text.vert';
 import vertAlongLine from './glsl/text.line.vert';
 import frag from './glsl/text.frag';
-import pickingVert from './glsl/text.picking.vert';
-import linePickingVert from './glsl/text.line.picking.vert';
+import pickingVert from './glsl/text.vert';
+import linePickingVert from './glsl/text.line.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
@@ -653,7 +653,7 @@ export default class TextPainter extends CollisionPainter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport
@@ -668,7 +668,7 @@ export default class TextPainter extends CollisionPainter {
             this._linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: linePickingVert,
+                    vert: '#define PICKING_MODE 1\n' + linePickingVert,
                     uniforms,
                     extraCommandProps: {
                         viewport: this.pickingViewport

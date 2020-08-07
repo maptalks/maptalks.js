@@ -57,23 +57,27 @@ varying float vGammaScale;
     uniform float lineWidth;
 #endif
 
-#ifdef HAS_COLOR
-    attribute vec4 aColor;
-    varying vec4 vColor;
-#endif
+#ifndef PICKING_MODE
+    #ifdef HAS_COLOR
+        attribute vec4 aColor;
+        varying vec4 vColor;
+    #endif
 
-#ifdef HAS_OPACITY
-    attribute float aOpacity;
-    varying float vOpacity;
-#endif
+    #ifdef HAS_OPACITY
+        attribute float aOpacity;
+        varying float vOpacity;
+    #endif
 
-#ifdef HAS_GRADIENT
-    attribute float aGradIndex;
-    varying float vGradIndex;
-#endif
+    #ifdef HAS_GRADIENT
+        attribute float aGradIndex;
+        varying float vGradIndex;
+    #endif
 
-#ifdef HAS_SHADOWING
-    #include <vsm_shadow_vert>
+    #ifdef HAS_SHADOWING
+        #include <vsm_shadow_vert>
+    #endif
+#else
+    #include <fbo_picking_vert>
 #endif
 
 
@@ -97,9 +101,11 @@ void main() {
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
         //除以2.0是为了解决 #190
-        float lineWidth = aLineWidth / 2.0;
+        float myLineWidth = aLineWidth / 2.0;
+    #else
+        float myLineWidth = lineWidth;
     #endif
-    float halfwidth = lineWidth / 2.0;
+    float halfwidth = myLineWidth / 2.0;
     // offset = -1.0 * offset;
 
     float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
@@ -124,7 +130,7 @@ void main() {
     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
     float d = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
-    if (d * lineWidth < 0.0) {
+    if (d * myLineWidth < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
         float s = -d / limit;
         float aaWidth = s * s * s * s * AA_LINE_WIDTH;
@@ -136,37 +142,41 @@ void main() {
     }
 
     //这里可能有z-fighting问题
-    float distance = gl_Position.w;
-    gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * distance;
+    float projDistance = gl_Position.w;
+    gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * projDistance;
 
-    vWidth = vec2(outset, inset);
-    vGammaScale = distance / cameraToCenterDistance;
-    #ifndef ENABLE_TILE_STENCIL
-        vPosition = position.xy;
-        #ifdef USE_LINE_OFFSET
-            vPosition += tileRatio * offset / EXTRUDE_SCALE;
+    #ifndef PICKING_MODE
+        vWidth = vec2(outset, inset);
+        vGammaScale = projDistance / cameraToCenterDistance;
+        #ifndef ENABLE_TILE_STENCIL
+            vPosition = position.xy;
+            #ifdef USE_LINE_OFFSET
+                vPosition += tileRatio * offset / EXTRUDE_SCALE;
+            #endif
         #endif
-    #endif
 
-    #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
-        #ifdef HAS_GRADIENT
-            vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
-            vGradIndex = aGradIndex;
-        #else
-            vLinesofar = aLinesofar / tileRatio * scale;
+        #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+            #ifdef HAS_GRADIENT
+                vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
+                vGradIndex = aGradIndex;
+            #else
+                vLinesofar = aLinesofar / tileRatio * scale;
+            #endif
         #endif
-    #endif
 
 
-    #ifdef HAS_COLOR
-        vColor = aColor;
-    #endif
+        #ifdef HAS_COLOR
+            vColor = aColor;
+        #endif
 
-    #ifdef HAS_OPACITY
-        vOpacity = aOpacity / 255.0;
-    #endif
+        #ifdef HAS_OPACITY
+            vOpacity = aOpacity / 255.0;
+        #endif
 
-    #if defined(HAS_SHADOWING)
-        shadow_computeShadowPars(localVertex);
+        #if defined(HAS_SHADOWING)
+            shadow_computeShadowPars(localVertex);
+        #endif
+    #else
+        fbo_picking_setData(projDistance, true);
     #endif
 }

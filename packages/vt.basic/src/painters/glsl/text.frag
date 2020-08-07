@@ -37,23 +37,29 @@ varying float vOpacity;
 
 void main() {
     #ifdef HAS_TEXT_FILL
-        vec4 textFill = vTextFill;
+        vec4 myTextFill = vTextFill;
+    #else
+        vec4 myTextFill = textFill;
     #endif
     float fontScale = vSize / 24.0;
 
-    lowp vec4 color = textFill;
+    lowp vec4 color = myTextFill;
     highp float gamma = EDGE_GAMMA / (fontScale * gammaScale);
     lowp float buff = 185.0 / 256.0;//(256.0 - 64.0) / 256.0;
     if (isHalo == 1) {
         #ifdef HAS_TEXT_HALO_FILL
-            vec4 textHaloFill = vTextHaloFill;
+            vec4 haloFill = vTextHaloFill;
+        #else
+            vec4 haloFill = textHaloFill;
         #endif
         #ifdef HAS_TEXT_HALO_RADIUS
-            float textHaloRadius = vTextHaloRadius;
+            float haloRadius = vTextHaloRadius;
+        #else
+            float haloRadius = textHaloRadius;
         #endif
-        color = textHaloFill;
+        color = haloFill;
         gamma = (textHaloBlur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * gammaScale);
-        buff = (6.0 - textHaloRadius / fontScale) / SDF_PX;
+        buff = (6.0 - haloRadius / fontScale) / SDF_PX;
         color *= textHaloOpacity * 1.25;
     }
 

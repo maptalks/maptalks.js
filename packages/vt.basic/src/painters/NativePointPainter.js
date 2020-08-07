@@ -3,7 +3,7 @@ import { extend } from '../Util';
 import Painter from './Painter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
-import pickingVert from './glsl/native-point.picking.vert';
+import pickingVert from './glsl/native-point.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 
 const DEFAULT_UNIFORMS = {
@@ -120,7 +120,7 @@ class NativePointPainter extends Painter {
             this.picking = new reshader.FBORayPicking(
                 this.renderer,
                 {
-                    vert: pickingVert,
+                    vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms: [
                         {
                             name: 'projViewModelMatrix',

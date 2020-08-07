@@ -59,42 +59,58 @@ uniform float mapPitch;
 uniform float mapRotation;
 
 uniform float zoomScale;
-uniform float tileRatio; //EXTENT / tileSize
+ //EXTENT / tileSize
+uniform float tileRatio;
 
-varying vec2 vTexCoord;
-varying float vOpacity;
+#ifndef PICKING_MODE
+    varying vec2 vTexCoord;
+    varying float vOpacity;
+#else
+    #include <fbo_picking_vert>
+#endif
 
 void main() {
     vec3 position = aPosition;
     #ifdef HAS_MARKER_WIDTH
-        float markerWidth = aMarkerWidth;
+        float myMarkerWidth = aMarkerWidth;
+    #else
+        float myMarkerWidth = markerWidth;
     #endif
     #ifdef HAS_MARKER_HEIGHT
-        float markerHeight = aMarkerHeight;
+        float myMarkerHeight = aMarkerHeight;
+    #else
+        float myMarkerHeight = markerHeight;
     #endif
     #ifdef HAS_MARKER_DX
-        float markerDx = aMarkerDx;
+        float myMarkerDx = aMarkerDx;
+    #else
+        float myMarkerDx = markerDx;
     #endif
     #ifdef HAS_MARKER_DY
-        float markerDy = aMarkerDy;
+        float myMarkerDy = aMarkerDy;
+    #else
+        float myMarkerDy = markerDy;
     #endif
     #if defined(HAS_PITCH_ALIGN)
-        float pitchWithMap = aPitchAlign;
+        float isPitchWithMap = aPitchAlign;
+    #else
+        float isPitchWithMap = pitchWithMap;
     #endif
     #if defined(HAS_ROTATION_ALIGN)
-        float rotateWithMap = aRotationAlign;
+        float isRotateWithMap = aRotationAlign;
+    #else
+        float isRotateWithMap = rotateWithMap;
     #endif
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
-    float distance = gl_Position.w;
-
-    float distanceRatio = (1.0 - cameraToCenterDistance / distance) * markerPerspectiveRatio;
+    float projDistance = gl_Position.w;
+    float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * markerPerspectiveRatio;
     //通过distance动态调整大小
     float perspectiveRatio = clamp(
         0.5 + 0.5 * (1.0 - distanceRatio),
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
-    float rotation = markerRotation - mapRotation * rotateWithMap;
-    if (pitchWithMap == 1.0) {
+    float rotation = markerRotation - mapRotation * isRotateWithMap;
+    if (isPitchWithMap == 1.0) {
         rotation += mapRotation;
     }
     float angleSin = sin(rotation);
@@ -102,33 +118,43 @@ void main() {
 
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     vec2 shape = (aShape / 10.0);
-    if (pitchWithMap == 1.0 && flipY == 0.0) {
+    if (isPitchWithMap == 1.0 && flipY == 0.0) {
         shape *= vec2(1.0, -1.0);
     }
-    shape = shape / iconSize * vec2(markerWidth, markerHeight);
+    shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight);
     shape = shapeMatrix * shape;
 
-    if (pitchWithMap == 0.0) {
+    if (isPitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
-        gl_Position.xy += offset * perspectiveRatio * distance;
+        gl_Position.xy += offset * perspectiveRatio * projDistance;
     } else {
-        float cameraScale = distance / cameraToCenterDistance;
+        float cameraScale = projDistance / cameraToCenterDistance;
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
 
-    gl_Position.xy += vec2(markerDx, -markerDy) * 2.0 / canvasSize * distance;
+    gl_Position.xy += vec2(myMarkerDx, -myMarkerDy) * 2.0 / canvasSize * projDistance;
 
-    vTexCoord = aTexCoord / texSize;
+    #ifndef PICKING_MODE
+        vTexCoord = aTexCoord / texSize;
 
-    #ifdef ENABLE_COLLISION
-        vOpacity = aOpacity / 255.0;
+        #ifdef ENABLE_COLLISION
+            vOpacity = aOpacity / 255.0;
+        #else
+            vOpacity = 1.0;
+        #endif
+
+        #ifdef HAS_OPACITY
+            vOpacity *= aColorOpacity / 255.0;
+        #endif
     #else
-        vOpacity = 1.0;
-    #endif
+        #ifdef ENABLE_COLLISION
+            bool visible = aOpacity == 255.0;
+        #else
+            bool visible = true;
+        #endif
 
-    #ifdef HAS_OPACITY
-        vOpacity *= aColorOpacity / 255.0;
+        fbo_picking_setData(gl_Position.w, visible);
     #endif
 }
