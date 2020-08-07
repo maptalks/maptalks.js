@@ -7,11 +7,25 @@ export {
     vec2, vec3, vec4,
 } from 'gl-matrix';
 export { createREGL, reshader };
-export { default as GroupGLLayer } from './layer/GroupGLLayer';
+import GroupGLLayer from './layer/GroupGLLayer';
+export { GroupGLLayer };
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';
-export { default as ViewshedAnalysis } from './analysis/ViewshedAnalysis';
-export { default as FloodAnalysis } from './analysis/FloodAnalysis';
-export { default as SkylineAnalysis } from './analysis/SkylineAnalysis';
+import ViewshedAnalysis from './analysis/ViewshedAnalysis';
+export { ViewshedAnalysis };
+import FloodAnalysis from './analysis/FloodAnalysis';
+export { FloodAnalysis };
+import SkylineAnalysis  from './analysis/SkylineAnalysis';
+export { SkylineAnalysis };
 import './light/MapLights.js';
 import './map/MapPostProcess.js';
+
+if (typeof window !== 'undefined') {
+    // append GroupGLLayer on maptalks manually
+    if (window.maptalks) {
+        window.maptalks.GroupGLLayer = GroupGLLayer;
+        window.maptalks.ViewshedAnalysis = ViewshedAnalysis;
+        window.maptalks.FloodAnalysis = FloodAnalysis;
+        window.maptalks.SkylineAnalysis = SkylineAnalysis;
+    }
+}

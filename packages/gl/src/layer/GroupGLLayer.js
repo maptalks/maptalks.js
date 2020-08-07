@@ -283,8 +283,3 @@ GroupGLLayer.registerRenderer('gl', Renderer);
 GroupGLLayer.registerRenderer('canvas', null);
 
 function empty() {}
-
-if (typeof window !== 'undefined') {
-    // append GroupGLLayer on maptalks manually
-    if (window.maptalks) window.maptalks.GroupGLLayer = GroupGLLayer;
-}
