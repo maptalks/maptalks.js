@@ -51,8 +51,8 @@ void main() {
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
     float alpha = clamp(min(dist - (vWidth.t - blur2), vWidth.s - dist) / blur2, 0.0, 1.0);
 
-    float x = vLinesofar;
-    vec4 color = texture2D(lineGradientTexture, vec2(x, (vGradIndex * 2.0 + 0.5) / lineGradientTextureHeight)) * alpha;
+    float linesofar = vLinesofar;
+    vec4 color = texture2D(lineGradientTexture, vec2(linesofar, (vGradIndex * 2.0 + 0.5) / lineGradientTextureHeight)) * alpha;
     color *= max(sign(MAX_LINE_COUNT - vGradIndex), 0.0); //超过MAX_LINE_COUNT时则不显示
 
     #ifdef HAS_TRAIL

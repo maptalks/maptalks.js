@@ -74,9 +74,9 @@ void main() {
     #ifdef HAS_PATTERN
         float patternWidth = ceil(linePatternSize.x * vWidth.s * 2.0 / linePatternSize.y);
         //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-        float x = vLinesofar / patternWidth;
-        float y = (vNormal.y + 1.0) / 2.0;
-        vec4 color = texture2D(linePatternFile, vec2(x, y));
+        float patternx = vLinesofar / patternWidth;
+        float patterny = (vNormal.y + 1.0) / 2.0;
+        vec4 color = texture2D(linePatternFile, vec2(patternx, patterny));
     #else
         #ifdef HAS_COLOR
             vec4 color = vColor / 255.0 * alpha;
@@ -106,9 +106,9 @@ void main() {
     #endif
 
     #ifdef HAS_TRAIL
-        float d = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
-        float a = d < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
-        color *= a;
+        float trailMod = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
+        float trailAlpha = trailMod < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
+        color *= trailAlpha;
     #endif
 
     #ifdef HAS_OPACITY
