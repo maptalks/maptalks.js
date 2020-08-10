@@ -17,7 +17,7 @@ const options = {
     'height': 0,
     'animation': 'fade',
     'containerClass': 'maptalks-tooltip',
-    'showTimeout' : 400
+    'showTimeout': 400
 };
 /**
  * @classdesc
@@ -133,6 +133,15 @@ class ToolTip extends UIComponent {
             this._owner.off('mouseover', this.onMouseOver, this);
             this._owner.off('mouseout', this.onMouseOut, this);
         }
+    }
+
+    /**
+     * override UIComponent method
+     * ignore altitude calculation
+     */
+    _getViewPoint() {
+        return this.getMap().coordToViewPoint(this._coordinate, undefined, 0)
+            ._add(this.options['dx'], this.options['dy']);
     }
 }
 
