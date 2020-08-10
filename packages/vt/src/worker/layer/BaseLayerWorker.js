@@ -492,8 +492,15 @@ export default class BaseLayerWorker {
         const { style, featureStyle } = layerStyle;
         const styledFeatures = {};
         featureStyle.forEach(style => {
-            styledFeatures[style.id] = 1;
-            style.filter = ['=', '$id', style.id];
+            if (Array.isArray(style.id)) {
+                style.id.forEach(id => {
+                    styledFeatures[id] = 1;
+                });
+                style.filter = ['in', '$id', ...style.id];
+            } else {
+                styledFeatures[style.id] = 1;
+                style.filter = ['=', '$id', style.id];
+            }
         });
         const pluginConfigs = compileStyle(style);
         for (let i = 0; i < style.length; i++) {
