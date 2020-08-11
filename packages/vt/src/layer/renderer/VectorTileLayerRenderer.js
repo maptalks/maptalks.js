@@ -272,9 +272,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     drawOutline(fbo) {
-        if (this._outline) {
-            this[this._outline[0]](fbo, ...this._outline[1]);
+        if (!this._outline) {
+            return;
         }
+        this._outline.forEach(outline => {
+            this[outline[0]](fbo, ...outline[1]);
+        });
     }
 
     getShadowMeshes() {
@@ -1119,25 +1122,37 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._zScale;
     }
 
-    outline(fbo, picked) {
-        this._outline = ['paintOutline', [fbo, picked]];
+    outline(idx, featureIds) {
+        if (!featureIds) {
+            return;
+        }
+        if (!Array.isArray(featureIds)) {
+            featureIds = [featureIds];
+        }
+        if (!this._outline) {
+            this._outline = [];
+        }
+        this._outline.push(['paintOutline', [idx, featureIds]]);
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    outlineBatch(fbo, idx) {
-        this._outline = ['paintBatchOutline', [fbo, idx]];
+    outlineBatch(idx) {
+        if (!this._outline) {
+            this._outline = [];
+        }
+        this._outline.push(['paintBatchOutline', [idx]]);
         this._needRetire = true;
         this.setToRedraw();
     }
 
-    paintOutline(fbo, picked) {
-        const pluginIdx = picked.plugin;
+    paintOutline(fbo, idx, featureIds) {
+        const pluginIdx = idx;
         const plugins = this._getFramePlugins();
         if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
             return;
         }
-        plugins[pluginIdx].outline(fbo, picked);
+        plugins[pluginIdx].outline(fbo, featureIds);
     }
 
     paintBatchOutline(fbo, idx) {

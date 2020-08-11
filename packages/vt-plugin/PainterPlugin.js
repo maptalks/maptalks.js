@@ -451,10 +451,10 @@ function createPainterPlugin(type, Painter) {
             return keys.length > limit;
         },
 
-        outline(fbo, picked) {
+        outline(fbo, featureIds) {
             var painter = this.painter;
             if (painter) {
-                painter.outline(fbo, picked);
+                painter.outline(fbo, featureIds);
             }
         },
 

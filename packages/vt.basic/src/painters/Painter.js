@@ -1,7 +1,7 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes } from '@maptalks/function-type';
-import { extend } from '../Util';
+import { extend, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 
 const TEX_CACHE_KEY = '__gl_textures';
@@ -237,8 +237,6 @@ class Painter {
             data: props && props.features && props.features[pickingId],
             point,
             plugin: this.pluginIndex,
-            meshId,
-            pickingId
         };
         const idMap = mesh.geometry.properties.feaPickingIdMap;
         if (idMap) {
@@ -482,38 +480,41 @@ class Painter {
         return b.level - a.level;
     }
 
-    outline(fbo, picked) {
+    outline(fbo, featureIds) {
+        const painted = {};
+        for (let i = 0; i < featureIds.length; i++) {
+            if (isNil(featureIds[i]) || painted[featureIds[i]]) {
+                continue;
+            }
+            this._outlineOne(fbo, featureIds[i]);
+            painted[featureIds[i]] = 1;
+        }
+    }
+
+    _outlineOne(fbo, featureId) {
         if (!this._outlineShader) {
             this._outlineScene = new reshader.Scene();
             this._initOutlineShader();
+            this._outlineShader.filter = this.level0Filter;
             if (!this._outlineShader) {
                 console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
                 return;
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
-        uniforms.highlightPickingId = picked.pickingId;
-        const mesh = this.picking.getMeshAt(picked.meshId);
-        this._outlineScene.setMeshes(mesh);
-        this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
 
-        if (picked.featureId !== undefined) {
-            const meshes = this._findMeshesHasFeaId(picked.featureId);
-            if (!meshes.length) {
-                return;
-            }
-            for (let i = 0; i < meshes.length; i++) {
-                if (meshes[i] === mesh) {
-                    continue;
-                }
-                const pickingMap = meshes[i].geometry.properties.feaIdPickingMap;
-                if (pickingMap) {
-                    const pickingId = pickingMap[picked.featureId];
-                    if (pickingId !== undefined) {
-                        uniforms.highlightPickingId = pickingId;
-                        this._outlineScene.setMeshes(meshes[i]);
-                        this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
-                    }
+        const meshes = this._findMeshesHasFeaId(featureId);
+        if (!meshes.length) {
+            return;
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            const pickingMap = meshes[i].geometry.properties.feaIdPickingMap;
+            if (pickingMap) {
+                const pickingId = pickingMap[featureId];
+                if (!isNil(pickingId)) {
+                    uniforms.highlightPickingId = pickingId;
+                    this._outlineScene.setMeshes(meshes[i]);
+                    this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
                 }
             }
         }

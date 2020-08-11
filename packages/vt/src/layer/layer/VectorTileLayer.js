@@ -190,21 +190,21 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._totalPolygonOffset;
     }
 
-    outline(picked, color) {
+    outline(idx, featureIds) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.outline(picked, color);
+        renderer.outline(idx, featureIds);
         return this;
     }
 
-    outlineBatch(idx, color) {
+    outlineBatch(idx) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.outlineBatch(idx, color);
+        renderer.outlineBatch(idx);
         return this;
     }
 

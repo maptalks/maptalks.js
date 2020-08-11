@@ -482,12 +482,12 @@
       var result = layer.identify(e.coordinate);
       if (result.length) {
         console.log(result[0]);
-        layer.outline(result[0]);
+        layer.outline(result[0].plugin, [result[0].featureId]);
       }
     });
 
     function cancelHighlight() {
-      layer.cancelHighlight();
+      layer.cancelOutline();
     }
 
     function turnOnTaa() {
