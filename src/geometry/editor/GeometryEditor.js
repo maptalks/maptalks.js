@@ -845,20 +845,20 @@ class GeometryEditor extends Eventable(Class) {
             }
             shadow._updateCache();
             //remove vertex handle
-            vertexHandles.splice(index, 1)[0].remove();
+            vertexHandles[ringIndex].splice(index, 1)[0].remove();
             //remove two neighbor "new vertex" handles
-            if (index < newVertexHandles.length) {
-                newVertexHandles.splice(index, 1)[0].remove();
+            if (index < newVertexHandles[ringIndex].length) {
+                newVertexHandles[ringIndex].splice(index, 1)[0].remove();
             }
             let nextIndex;
             if (index === 0) {
-                nextIndex = newVertexHandles.length - 1;
+                nextIndex = newVertexHandles[ringIndex].length - 1;
             } else {
                 nextIndex = index - 1;
             }
-            newVertexHandles.splice(nextIndex, 1)[0].remove();
+            newVertexHandles[ringIndex].splice(nextIndex, 1)[0].remove();
             //add a new "new vertex" handle.
-            newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
+            newVertexHandles[ringIndex].splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
             onVertexAddOrRemove();
             me._refresh();
         }
