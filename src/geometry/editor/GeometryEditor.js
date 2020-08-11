@@ -795,12 +795,13 @@ class GeometryEditor extends Eventable(Class) {
         const verticeLimit = shadow instanceof Polygon ? 3 : 2;
         const propertyOfVertexRefreshFn = 'maptalks--editor-refresh-fn',
             propertyOfVertexIndex = 'maptalks--editor-vertex-index';
-        const vertexHandles = [],
-            newVertexHandles = [];
+        //{ ringIndex:ring }
+        const vertexHandles = { 0: [] },
+            newVertexHandles = { 0: [] };
 
-        function getVertexCoordinates() {
+        function getVertexCoordinates(ringIndex = 0) {
             if (shadow instanceof Polygon) {
-                const coordinates = shadow.getCoordinates()[0];
+                const coordinates = shadow.getCoordinates()[ringIndex] || [];
                 return coordinates.slice(0, coordinates.length - 1);
             } else {
                 return shadow.getCoordinates();
@@ -808,17 +809,22 @@ class GeometryEditor extends Eventable(Class) {
 
         }
 
-        function getVertexPrjCoordinates() {
-            return shadow._getPrjCoordinates();
+        function getVertexPrjCoordinates(ringIndex = 0) {
+            if (ringIndex === 0) {
+                return shadow._getPrjCoordinates();
+            }
+            return shadow._getPrjHoles()[ringIndex - 1];
         }
 
         function onVertexAddOrRemove() {
             //restore index property of each handles.
-            for (let i = vertexHandles.length - 1; i >= 0; i--) {
-                vertexHandles[i][propertyOfVertexIndex] = i;
-            }
-            for (let i = newVertexHandles.length - 1; i >= 0; i--) {
-                newVertexHandles[i][propertyOfVertexIndex] = i;
+            for (const ringIndex in vertexHandles) {
+                for (let i = vertexHandles[ringIndex].length - 1; i >= 0; i--) {
+                    vertexHandles[ringIndex][i][propertyOfVertexIndex] = i;
+                }
+                for (let i = newVertexHandles[ringIndex].length - 1; i >= 0; i--) {
+                    newVertexHandles[ringIndex][i][propertyOfVertexIndex] = i;
+                }
             }
             me._updateCoordFromShadow();
         }
@@ -826,12 +832,17 @@ class GeometryEditor extends Eventable(Class) {
         function removeVertex(param) {
             const handle = param['target'],
                 index = handle[propertyOfVertexIndex];
-            const prjCoordinates = getVertexPrjCoordinates();
+            const ringIndex = isNumber(handle._ringIndex) ? handle._ringIndex : 0;
+            const prjCoordinates = getVertexPrjCoordinates(ringIndex);
             if (prjCoordinates.length <= verticeLimit) {
                 return;
             }
             prjCoordinates.splice(index, 1);
-            shadow._setPrjCoordinates(prjCoordinates);
+            if (ringIndex > 0) {
+                shadow._prjHoles[ringIndex - 1] = prjCoordinates;
+            } else {
+                shadow._setPrjCoordinates(prjCoordinates);
+            }
             shadow._updateCache();
             //remove vertex handle
             vertexHandles.splice(index, 1)[0].remove();
@@ -847,13 +858,13 @@ class GeometryEditor extends Eventable(Class) {
             }
             newVertexHandles.splice(nextIndex, 1)[0].remove();
             //add a new "new vertex" handle.
-            newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex));
+            newVertexHandles.splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
             onVertexAddOrRemove();
             me._refresh();
         }
 
-        function moveVertexHandle(handleViewPoint, index) {
-            const vertice = getVertexPrjCoordinates();
+        function moveVertexHandle(handleViewPoint, index, ringIndex = 0) {
+            const vertice = getVertexPrjCoordinates(ringIndex);
             const nVertex = map._viewPointToPrj(handleViewPoint);
             const pVertex = vertice[index];
             pVertex.x = nVertex.x;
@@ -863,30 +874,30 @@ class GeometryEditor extends Eventable(Class) {
             me._updateCoordFromShadow(true);
             let nextIndex;
             if (index === 0) {
-                nextIndex = newVertexHandles.length - 1;
+                nextIndex = newVertexHandles[ringIndex].length - 1;
             } else {
                 nextIndex = index - 1;
             }
             //refresh two neighbor "new vertex" handles.
-            if (newVertexHandles[index]) {
-                newVertexHandles[index][propertyOfVertexRefreshFn]();
+            if (newVertexHandles[ringIndex][index]) {
+                newVertexHandles[ringIndex][index][propertyOfVertexRefreshFn]();
             }
-            if (newVertexHandles[nextIndex]) {
-                newVertexHandles[nextIndex][propertyOfVertexRefreshFn]();
+            if (newVertexHandles[ringIndex][nextIndex]) {
+                newVertexHandles[ringIndex][nextIndex][propertyOfVertexRefreshFn]();
             }
         }
 
-        function createVertexHandle(index) {
-            let vertex = getVertexCoordinates()[index];
+        function createVertexHandle(index, ringIndex = 0) {
+            let vertex = getVertexCoordinates(ringIndex)[index];
             const handle = me.createHandle(vertex, {
                 'symbol': me.options['vertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
                 onMove: function (handleViewPoint) {
-                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex]);
+                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex], ringIndex);
                 },
                 onRefresh: function () {
-                    vertex = getVertexCoordinates()[handle[propertyOfVertexIndex]];
+                    vertex = getVertexCoordinates(ringIndex)[handle[propertyOfVertexIndex]];
                     handle.setCoordinates(vertex);
                 },
                 onUp: function () {
@@ -900,12 +911,13 @@ class GeometryEditor extends Eventable(Class) {
                 }
             });
             handle[propertyOfVertexIndex] = index;
+            handle._ringIndex = ringIndex;
             handle.on(me.options['removeVertexOn'], removeVertex);
             return handle;
         }
 
-        function createNewVertexHandle(index) {
-            let vertexCoordinates = getVertexCoordinates();
+        function createNewVertexHandle(index, ringIndex = 0) {
+            let vertexCoordinates = getVertexCoordinates(ringIndex);
             let nextVertex;
             if (index + 1 >= vertexCoordinates.length) {
                 nextVertex = vertexCoordinates[0];
@@ -921,13 +933,18 @@ class GeometryEditor extends Eventable(Class) {
                     if (e && e.domEvent && e.domEvent.button === 2) {
                         return;
                     }
-                    const prjCoordinates = getVertexPrjCoordinates();
+                    const prjCoordinates = getVertexPrjCoordinates(ringIndex);
                     const vertexIndex = handle[propertyOfVertexIndex];
                     //add a new vertex
                     const pVertex = projection.project(handle.getCoordinates());
                     //update shadow's vertice
                     prjCoordinates.splice(vertexIndex + 1, 0, pVertex);
-                    shadow._setPrjCoordinates(prjCoordinates);
+                    if (ringIndex > 0) {
+                        //update hole
+                        shadow._prjHoles[ringIndex - 1] = prjCoordinates;
+                    } else {
+                        shadow._setPrjCoordinates(prjCoordinates);
+                    }
                     shadow._updateCache();
 
                     const symbol = handle.getSymbol();
@@ -935,11 +952,10 @@ class GeometryEditor extends Eventable(Class) {
                     handle.setSymbol(symbol);
 
                     //add two "new vertex" handles
-                    newVertexHandles.splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex), createNewVertexHandle.call(me, vertexIndex + 1));
-
+                    newVertexHandles[ringIndex].splice(vertexIndex, 0, createNewVertexHandle.call(me, vertexIndex, ringIndex), createNewVertexHandle.call(me, vertexIndex + 1, ringIndex));
                 },
                 onMove: function (handleViewPoint) {
-                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1);
+                    moveVertexHandle(handleViewPoint, handle[propertyOfVertexIndex] + 1, ringIndex);
                 },
                 onUp: function (e) {
                     if (e && e.domEvent && e.domEvent.button === 2) {
@@ -947,16 +963,16 @@ class GeometryEditor extends Eventable(Class) {
                     }
                     const vertexIndex = handle[propertyOfVertexIndex];
                     //remove this handle
-                    removeFromArray(handle, newVertexHandles);
+                    removeFromArray(handle, newVertexHandles[ringIndex]);
                     handle.remove();
                     //add a new vertex handle
-                    vertexHandles.splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1));
+                    vertexHandles[ringIndex].splice(vertexIndex + 1, 0, createVertexHandle.call(me, vertexIndex + 1, ringIndex));
                     onVertexAddOrRemove();
                     me._updateCoordFromShadow();
                     me._refresh();
                 },
                 onRefresh: function () {
-                    vertexCoordinates = getVertexCoordinates();
+                    vertexCoordinates = getVertexCoordinates(ringIndex);
                     const vertexIndex = handle[propertyOfVertexIndex];
                     let nextIndex;
                     if (vertexIndex === vertexCoordinates.length - 1) {
@@ -971,23 +987,42 @@ class GeometryEditor extends Eventable(Class) {
             handle[propertyOfVertexIndex] = index;
             return handle;
         }
-        const vertexCoordinates = getVertexCoordinates();
-        for (let i = 0, len = vertexCoordinates.length; i < len; i++) {
-            vertexHandles.push(createVertexHandle.call(this, i));
-            if (i < len - 1) {
-                newVertexHandles.push(createNewVertexHandle.call(this, i));
-            }
-        }
         if (shadow instanceof Polygon) {
-            //1 more vertex handle for polygon
-            newVertexHandles.push(createNewVertexHandle.call(this, vertexCoordinates.length - 1));
+            const rings = shadow.getHoles().length + 1;
+            for (let ringIndex = 0; ringIndex < rings; ringIndex++) {
+                vertexHandles[ringIndex] = [];
+                newVertexHandles[ringIndex] = [];
+                const vertexCoordinates = getVertexCoordinates(ringIndex);
+                for (let i = 0, len = vertexCoordinates.length; i < len; i++) {
+                    vertexHandles[ringIndex].push(createVertexHandle.call(this, i, ringIndex));
+                    if (i < len - 1) {
+                        newVertexHandles[ringIndex].push(createNewVertexHandle.call(this, i, ringIndex));
+                    }
+                }
+                //1 more vertex handle for polygon
+                newVertexHandles[ringIndex].push(createNewVertexHandle.call(this, vertexCoordinates.length - 1, ringIndex));
+            }
+
+        } else {
+            const ringIndex = 0;
+            const vertexCoordinates = getVertexCoordinates(ringIndex);
+            for (let i = 0, len = vertexCoordinates.length; i < len; i++) {
+                vertexHandles[ringIndex].push(createVertexHandle.call(this, i, ringIndex));
+                if (i < len - 1) {
+                    newVertexHandles[ringIndex].push(createNewVertexHandle.call(this, i, ringIndex));
+                }
+            }
         }
         this._addRefreshHook(() => {
-            for (let i = newVertexHandles.length - 1; i >= 0; i--) {
-                newVertexHandles[i][propertyOfVertexRefreshFn]();
+            for (const ringIndex in newVertexHandles) {
+                for (let i = newVertexHandles[ringIndex].length - 1; i >= 0; i--) {
+                    newVertexHandles[ringIndex][i][propertyOfVertexRefreshFn](ringIndex);
+                }
             }
-            for (let i = vertexHandles.length - 1; i >= 0; i--) {
-                vertexHandles[i][propertyOfVertexRefreshFn]();
+            for (const ringIndex in vertexHandles) {
+                for (let i = vertexHandles[ringIndex].length - 1; i >= 0; i--) {
+                    vertexHandles[ringIndex][i][propertyOfVertexRefreshFn](ringIndex);
+                }
             }
         });
     }
