@@ -6,7 +6,7 @@ import { allowsVerticalWritingMode } from './util/script_detection';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
 import Color from 'color';
-
+import { isOut } from './util/util';
 
 const DEFAULT_SPACING = 250;
 
@@ -466,10 +466,14 @@ export default class PointPack extends VectorPack {
         if (this._opacityFn) {
             opacity = this._opacityFn(this.options['zoom'], properties) * 255;
         }
+        const extent = this.options.EXTENT;
         const textCount = quads.length;
         const altitude = this.getAltitude(point.feature.properties);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
+            if (isOut(anchor, extent)) {
+                continue;
+            }
             const x = anchor.x;
             const y = anchor.y;
             const l = quads.length;
