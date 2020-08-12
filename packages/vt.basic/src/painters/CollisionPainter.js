@@ -150,7 +150,7 @@ export default class CollisionPainter extends BasicPainter {
         const uncollidedOnZooming = this._zooming && collision && collision.collides === 0;
 
         if (!isCollidedOnZooming && boxVisible && (canProceed || uncollidedOnZooming)) {
-            if (uncollidedOnZooming || this._isCachedCollisionStale(meshKey) || collision.z !== zoom) {
+            if (this._isCachedCollisionStale(meshKey) || collision.z !== zoom) {
                 collision = null;
             }
             if (!collision) {
@@ -382,11 +382,33 @@ export default class CollisionPainter extends BasicPainter {
 
     _getBoxTimestamps(mesh) {
         if (!mesh['_fading_timestamps']) {
-            mesh['_fading_timestamps'] = {};
+            const framestamp = this.layer.getRenderer().getFrameTimestamp();
+            mesh['_fading_timestamps'] = {
+                'timestamp': framestamp
+            };
         }
         return mesh['_fading_timestamps'];
     }
 
+    _refreshTimeStamps(timestamp) {
+        if (!this._prevTimestamp) {
+            this._prevTimestamp = timestamp;
+            return;
+        }
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            const stamps = this._getBoxTimestamps(meshes[i]);
+            if (stamps['timestamp'] < this._prevTimestamp) {
+                delete meshes[i]['_fading_timestamps'];
+            } else {
+                stamps['timestamp'] = timestamp;
+            }
+        }
+        this._prevTimestamp = timestamp;
+    }
 
     _markFadingCollided(stamps, index) {
         if (!stamps) {
@@ -501,6 +523,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     preparePaint(context) {
+        this._refreshTimeStamps(context.timestamp);
         this._prepareZoomEndMeshes();
         if (this._zoomEndMeshes && this._zoomEndMeshes.length) {
             this._updateZoomMeshesLevel();
@@ -509,8 +532,11 @@ export default class CollisionPainter extends BasicPainter {
             }
         }
         //text/icon在同一个位置如果内容相同，只显示一个
-        this._updateUniquePlacements();
-        this._mergeUniquePlacements(this.scene.getMeshes());
+        const map = this.getMap();
+        if (map.isZooming() || this._zoomEndMeshes && this._zoomEndMeshes.length) {
+            this._updateUniquePlacements();
+            this._mergeUniquePlacements(this.scene.getMeshes());
+        }
 
         super.preparePaint(context);
         this._startCollision();
