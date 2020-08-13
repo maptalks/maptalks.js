@@ -34,7 +34,7 @@ const defaultOptions = {
     maxCacheSize: 72,
     antialias: false,
     iconErrorUrl: null,
-    collisionFrameLimit: 1,
+    collisionFrameLimit: 1.5,
     //是否开启无style时的默认绘制功能
     defaultRendering: true,
     //允许用户调整文字的gamma清晰度

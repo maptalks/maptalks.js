@@ -25,8 +25,10 @@ export default class CollisionPainter extends BasicPainter {
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
     }
 
-    startMeshCollision(/* meshKey */) {
+    startMeshCollision(meshKey) {
+        this._startTime = performance.now();
         this._canProceed = this._canProceedCollision();
+        this._meshCollisionStale = this._isCachedCollisionStale(meshKey);
     }
 
     endMeshCollision(meshKey) {
@@ -37,6 +39,7 @@ export default class CollisionPainter extends BasicPainter {
             meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1);
             meshContext.anchor0.z = map.getZoom();
         }
+        this.getMap().collisionFrameTime += performance.now() - this._startTime;
     }
 
     _isCachedCollisionStale(meshKey) {
@@ -66,7 +69,7 @@ export default class CollisionPainter extends BasicPainter {
 
     _getCachedCollision(meshKey, boxIndex) {
         const context = this._collisionContext;
-        return context && context.tags[meshKey] && context.tags[meshKey][boxIndex];
+        return context.tags[meshKey] && context.tags[meshKey][boxIndex];
     }
 
     _setCollisionCache(meshKey, boxIndex, value) {
@@ -97,6 +100,7 @@ export default class CollisionPainter extends BasicPainter {
                 cp0 = this._coordCache[key0] = map.coordToContainerPoint(anchor0);
                 cp1 = this._coordCache[key1] = map.coordToContainerPoint(anchor1);
             }
+            cp0.z = anchor0.z;
             MESH_ANCHORS[0] = cp0;
             MESH_ANCHORS[1] = cp1;
             return MESH_ANCHORS;
@@ -121,7 +125,8 @@ export default class CollisionPainter extends BasicPainter {
         if (this.isEnableUniquePlacement() && this._isReplacedPlacement(meshKey, boxIndex)) {
             return false;
         }
-        const zoom = this.getMap().getZoom();
+        const map = this.getMap();
+        const zoom = map.getZoom();
         // let debugging = false;
         // const label = getLabelContent(mesh, allElements[start]);
         // if (label === '上庸') {
@@ -150,15 +155,12 @@ export default class CollisionPainter extends BasicPainter {
         const uncollidedOnZooming = this._zooming && collision && collision.collides === 0;
 
         if (!isCollidedOnZooming && boxVisible && (canProceed || uncollidedOnZooming)) {
-            if (this._isCachedCollisionStale(meshKey) || collision.z !== zoom) {
+            if (this._meshCollisionStale || collision && collision.z !== zoom) {
                 collision = null;
             }
             if (!collision) {
-                const map = this.getMap();
-                const now = performance.now();
                 collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
                 collision.z = zoom;
-                map.collisionFrameTime += performance.now() - now;
 
                 this._setCollisionCache(meshKey, boxIndex, collision);
             } else if (collision.boxes) {
