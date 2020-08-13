@@ -74,7 +74,7 @@ varying vec3 vModelVertex;
     varying vec3 vTangentViewPos;
     varying vec3 vTangentFragPos;
     #if __VERSION__ == 100
-        mat3 transpose(in mat3 inMat) {
+        mat3 transposeMat3(in mat3 inMat) {
             vec3 i0 = inMat[0];
             vec3 i1 = inMat[1];
             vec3 i2 = inMat[2];
@@ -84,6 +84,10 @@ varying vec3 vModelVertex;
                 vec3(i0.y, i1.y, i2.y),
                 vec3(i0.z, i1.z, i2.z)
             );
+        }
+    #else
+        mat3 transposeMat3(in mat3 inMat) {
+            return transpose(inMat);
         }
     #endif
 #endif
@@ -183,7 +187,7 @@ void main() {
     #endif
 
     #ifdef HAS_BUMP_MAP
-        mat3 TBN = transpose(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
+        mat3 TBN = transposeMat3(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
         vTangentViewPos = TBN * uCameraPosition;
         vTangentFragPos = TBN * vModelVertex;
     #endif
