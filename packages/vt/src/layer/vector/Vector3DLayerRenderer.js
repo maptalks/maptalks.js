@@ -4,6 +4,7 @@ import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
 import { KEY_IDX } from '../../common/Constant';
+import Promise from '../../common/Promise';
 
 const SYMBOL_SIMPLE_PROPS = {
     textFill: 1,
@@ -67,7 +68,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._dirtyGeo = false;
             this._dirtySymbol = false;
         } else if (this._dirtyGeo) {
-            this.buildMesh(this.atlas);
+            const atlas = this.atlas;
+            delete this.atlas;
+            this.buildMesh(atlas);
             this._dirtyGeo = false;
             this._dirtySymbol = false;
         } else if (this._dirtySymbol) {
@@ -172,16 +175,21 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
 
-        this.createMesh(features, atlas, center).then(mesh => {
+        this.createMesh(features, atlas, center).then(m => {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
+            const { mesh, atlas } = m;
             this.meshes = mesh;
+            this.atlas = atlas;
             this.setToRedraw();
         });
     }
 
     createMesh(features, atlas, center) {
+        if (!features || !features.length) {
+            return Promise.resolve(null);
+        }
         const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
@@ -194,16 +202,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const pack = new this.PackClass(features, this.painterSymbol, options);
         return pack.load().then(packData => {
             if (!packData) {
-                this.setToRedraw();
                 return null;
             }
             const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
-
-            this.atlas = {
-                iconAtlas: packData.data.iconAtlas
-            };
-
             const transform = mat4.translate([], mat4.identity([]), center);
             // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
             const mesh = this.painter.createMesh(geometry, transform, {});
@@ -213,7 +215,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             defines['ENABLE_TILE_STENCIL'] = 1;
             mesh.setDefines(defines);
             mesh.properties.meshKey = this.layer.getId();
-            return mesh;
+            return {
+                mesh,
+                atlas: {
+                    iconAtlas: packData.data.iconAtlas
+                }
+            };
         });
     }
 

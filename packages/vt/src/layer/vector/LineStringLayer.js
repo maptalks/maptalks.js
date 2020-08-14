@@ -67,15 +67,12 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
     }
 
     buildMesh(atlas) {
-        //TODO 更新symbol的优化
-        //1. 如果只影响texture，则只重新生成texture
-        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
-        //3. Geometry和Texture全都受影响时，则全部重新生成
         const { features, center } = this._getFeaturesToRender();
         if (!features.length) {
             return;
         }
 
+        //因为有虚线和没有虚线的line绘制逻辑不同，需要分开创建mesh
         const feas = [];
         const dashFeas = [];
         for (let i = 0; i < features.length; i++) {
@@ -87,19 +84,25 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
             }
         }
 
-        const promises = [];
-        if (feas.length) {
-            promises.push(this.createMesh(feas, atlas, center));
-        }
-        if (dashFeas.length) {
-            promises.push(this.createMesh(dashFeas, atlas, center));
-        }
+        const promises = [
+            this.createMesh(feas, atlas && atlas[0], center),
+            this.createMesh(dashFeas, atlas && atlas[1], center)
+        ];
 
-        Promise.all(promises).then(meshes => {
+        Promise.all(promises).then(mm => {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
+            const meshes = [];
+            const atlas = [];
+            for (let i = 0; i < mm.length; i++) {
+                if (mm[i]) {
+                    meshes.push(mm[i].mesh);
+                    atlas[i] = mm[i].atlas;
+                }
+            }
             this.meshes = meshes;
+            this.atlas = atlas;
             this.setToRedraw();
         });
     }
