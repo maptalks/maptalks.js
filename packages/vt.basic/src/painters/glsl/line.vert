@@ -29,6 +29,18 @@ attribute vec2 aExtrude;
     varying highp float vLinesofar;
 #endif
 
+#ifdef HAS_DASHARRAY
+    #ifdef HAS_DASHARRAY_ATTR
+        attribute vec4 aDasharray;
+        varying vec4 vDasharray;
+    #endif
+
+    #ifdef HAS_DASHARRAY_COLOR
+        attribute vec4 aDashColor;
+        varying vec4 vDashColor;
+    #endif
+#endif
+
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
 uniform mat4 projViewModelMatrix;
@@ -175,6 +187,16 @@ void main() {
 
         #if defined(HAS_SHADOWING)
             shadow_computeShadowPars(localVertex);
+        #endif
+
+        #ifdef HAS_DASHARRAY
+            #ifdef HAS_DASHARRAY_ATTR
+                vDasharray = aDasharray;
+            #endif
+
+            #ifdef HAS_DASHARRAY_COLOR
+                vDashColor = aDashColor;
+            #endif
         #endif
     #else
         fbo_picking_setData(projDistance, true);

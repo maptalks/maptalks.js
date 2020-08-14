@@ -3,6 +3,7 @@ import { LinePack } from '@maptalks/vector-packer';
 import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
+import Promise from '../../common/Promise';
 
 class LineStringLayer extends Vector3DLayer {
 
@@ -63,6 +64,44 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
         super(...args);
         this.PackClass = LinePack;
         this.GeometryTypes = [maptalks.LineString, maptalks.MultiLineString];
+    }
+
+    buildMesh(atlas) {
+        //TODO 更新symbol的优化
+        //1. 如果只影响texture，则只重新生成texture
+        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
+        //3. Geometry和Texture全都受影响时，则全部重新生成
+        const { features, center } = this._getFeaturesToRender();
+        if (!features.length) {
+            return;
+        }
+
+        const feas = [];
+        const dashFeas = [];
+        for (let i = 0; i < features.length; i++) {
+            const f = features[i];
+            if (f.properties && f.properties['lineDasharray']) {
+                dashFeas.push(f);
+            } else {
+                feas.push(f);
+            }
+        }
+
+        const promises = [];
+        if (feas.length) {
+            promises.push(this.createMesh(feas, atlas, center));
+        }
+        if (dashFeas.length) {
+            promises.push(this.createMesh(dashFeas, atlas, center));
+        }
+
+        Promise.all(promises).then(meshes => {
+            if (this.meshes) {
+                this.painter.deleteMesh(this.meshes);
+            }
+            this.meshes = meshes;
+            this.setToRedraw();
+        });
     }
 
     createPainter() {

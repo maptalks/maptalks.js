@@ -471,7 +471,7 @@ export default class PointPack extends VectorPack {
         const altitude = this.getAltitude(point.feature.properties);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            if (isOut(anchor, extent)) {
+            if (extent !== Infinity && isOut(anchor, extent)) {
                 continue;
             }
             const x = anchor.x;

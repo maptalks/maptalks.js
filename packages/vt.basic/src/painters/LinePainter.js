@@ -91,12 +91,7 @@ class LinePainter extends BasicPainter {
         if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;
         }
-        if (Array.isArray(symbol.lineDasharray) &&
-            symbol.lineDasharray.reduce((accumulator, currentValue)=> {
-                return accumulator + currentValue;
-            }, 0) > 0) {
-            defines['HAS_DASHARRAY'] = 1;
-        }
+        this._prepareDashDefines(geometry, defines);
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
@@ -106,25 +101,40 @@ class LinePainter extends BasicPainter {
     }
 
     addMesh(...args) {
-        const symbol = this.getSymbol();
         const mesh = args[0];
+        if (Array.isArray(mesh)) {
+            mesh.forEach(m => {
+                this._prepareMesh(m);
+            });
+        }
+        return super.addMesh(...args);
+    }
+
+    _prepareMesh(mesh) {
         if (!mesh.geometry.aLineWidth && mesh.material.get('lineWidth') <= 0 || !mesh.geometry.aOpacity && mesh.material.get('lineOpacity') <= 0) {
-            return null;
+            return;
         }
         const defines = mesh.defines;
-        if (Array.isArray(symbol.lineDasharray) &&
+        this._prepareDashDefines(mesh.geometry, defines);
+        mesh.setDefines(defines);
+    }
+
+    _prepareDashDefines(geometry, defines) {
+        const symbol = this.getSymbol();
+        if (geometry.data['aDasharray'] || Array.isArray(symbol.lineDasharray) &&
             symbol.lineDasharray.reduce((accumulator, currentValue)=> {
                 return accumulator + currentValue;
             }, 0) > 0) {
-            if (!defines['HAS_DASHARRAY']) {
-                defines['HAS_DASHARRAY'] = 1;
-                mesh.setDefines(defines);
+            defines['HAS_DASHARRAY'] = 1;
+            if (geometry.data['aDasharray']) {
+                defines['HAS_DASHARRAY_ATTR'] = 1;
+            }
+            if (geometry.data['aDashColor']) {
+                defines['HAS_DASHARRAY_COLOR'] = 1;
             }
         } else if (defines['HAS_DASHARRAY']) {
             delete defines['HAS_DASHARRAY'];
-            mesh.setDefines(defines);
         }
-        return super.addMesh(...args);
     }
 
     setLineUniforms(uniforms) {

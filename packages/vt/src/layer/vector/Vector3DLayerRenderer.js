@@ -31,6 +31,7 @@ const SYMBOL_SIMPLE_PROPS = {
     lineDx: 1, //TODO
     lineDy: 1, //TODO
     lineGapWidth: 1, //TODO
+    lineDasharray: null,
 
     polygonFill: 1,
     polygonOpacity: 1
@@ -171,6 +172,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
 
+        this.createMesh(features, atlas, center).then(mesh => {
+            if (this.meshes) {
+                this.painter.deleteMesh(this.meshes);
+            }
+            this.meshes = mesh;
+            this.setToRedraw();
+        });
+    }
+
+    createMesh(features, atlas, center) {
         const options = {
             zoom: this.getMap().getZoom(),
             EXTENT: Infinity,
@@ -181,14 +192,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
 
         const pack = new this.PackClass(features, this.painterSymbol, options);
-        pack.load().then(packData => {
-            if (this.meshes) {
-                this.painter.deleteMesh(this.meshes);
-                delete this.meshes;
-            }
+        return pack.load().then(packData => {
             if (!packData) {
                 this.setToRedraw();
-                return;
+                return null;
             }
             const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
@@ -206,9 +213,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             defines['ENABLE_TILE_STENCIL'] = 1;
             mesh.setDefines(defines);
             mesh.properties.meshKey = this.layer.getId();
-
-            this.meshes = mesh;
-            this.setToRedraw();
+            return mesh;
         });
     }
 

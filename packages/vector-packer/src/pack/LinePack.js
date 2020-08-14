@@ -72,6 +72,12 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('lineOpacity', this.symbolDef)) {
             this.opacityFn = piecewiseConstant(this.symbolDef['lineOpacity']);
         }
+        if (isFnTypeSymbol('lineDasharray', this.symbolDef)) {
+            this.dasharrayFn = piecewiseConstant(this.symbolDef['lineDasharray']);
+        }
+        if (isFnTypeSymbol('lineDashColor', this.symbolDef)) {
+            this.dashColorFn = piecewiseConstant(this.symbolDef['lineDashColor']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
@@ -153,6 +159,24 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
+        if (this.dasharrayFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aDasharray'
+                }
+            );
+        }
+        if (this.dashColorFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aDashColor'
+                }
+            );
+        }
         return format;
     }
 
@@ -206,9 +230,36 @@ export default class LinePack extends VectorPack {
             }
             this.feaOpacity = 255 * opacity;
         }
+        if (this.dasharrayFn) {
+            let dasharray = this.dasharrayFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
+            if (dasharray.length < 4) {
+                const old = dasharray;
+                if (dasharray.length === 1) {
+                    dasharray = [old[0], old[0], old[0], old[0]];
+                } else if (dasharray.length === 2) {
+                    dasharray = [old[0], old[1], old[0], old[1]];
+                } else if (dasharray.length === 3) {
+                    dasharray = [old[0], old[1], old[2], old[2]];
+                }
+            }
+            this.feaDash = dasharray;
+        }
+        if (this.dashColorFn) {
+            let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], feature.properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
+            if (!Array.isArray(dashColor)) {
+                dashColor = Color(dashColor).array();
+            }
+            if (dashColor.length === 3) {
+                dashColor.push(255);
+            }
+            this.feaDashColor = dashColor;
+        }
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
-        const lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
+        let lines = feature.geometry;
+        if (extent !== Infinity) {
+            lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
+        }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.length / this.formatWidth;
@@ -225,7 +276,7 @@ export default class LinePack extends VectorPack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const needExtraVertex = this.symbol['linePatternFile'] || hasDasharray(this.symbol['lineDasharray']);
+        const needExtraVertex = this.symbol['linePatternFile'] || this.feaDash || hasDasharray(this.symbol['lineDasharray']);
         this.overscaling = 1;
         // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
@@ -591,6 +642,12 @@ export default class LinePack extends VectorPack {
         }
         if (this.opacityFn) {
             data.push(this.feaOpacity);
+        }
+        if (this.dasharrayFn) {
+            data.push(...this.feaDash);
+        }
+        if (this.dashColorFn) {
+            data.push(...this.feaDashColor);
         }
         // if (this.symbol['lineOffset']) {
         //     //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向

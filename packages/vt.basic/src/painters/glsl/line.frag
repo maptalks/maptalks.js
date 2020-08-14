@@ -35,8 +35,17 @@ varying float vGammaScale;
 
 uniform float tileExtent;
 #ifdef HAS_DASHARRAY
-    uniform vec4 lineDasharray;
-    uniform vec4 lineDashColor;
+    #ifdef HAS_DASHARRAY_ATTR
+        varying vec4 vDasharray;
+    #else
+        uniform vec4 lineDasharray;
+    #endif
+
+    #ifdef HAS_DASHARRAY_COLOR
+        varying vec4 vDashColor;
+    #else
+        uniform vec4 lineDashColor;
+    #endif
 #endif
 #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     varying highp float vLinesofar;
@@ -86,23 +95,35 @@ void main() {
     #endif
 
     #ifdef HAS_DASHARRAY
-        float dashWidth = lineDasharray[0] + lineDasharray[1] + lineDasharray[2] + lineDasharray[3];
+        #ifdef HAS_DASHARRAY_ATTR
+            vec4 dasharray = vDasharray;
+        #else
+            vec4 dasharray = lineDasharray;
+        #endif
+
+        #ifdef HAS_DASHARRAY_COLOR
+            vec4 dashColor = vDashColor;
+        #else
+            vec4 dashColor = lineDashColor;
+        #endif
+
+        float dashWidth = dasharray[0] + dasharray[1] + dasharray[2] + dasharray[3];
         float dashMod = mod(vLinesofar, dashWidth);
         //判断是否在第一个dash中
-        float firstInDash = max(sign(lineDasharray[0] - dashMod), 0.0);
+        float firstInDash = max(sign(dasharray[0] - dashMod), 0.0);
         //判断是否在第二个dash中
-        float secondDashMod = dashMod - lineDasharray[0] - lineDasharray[1];
-        float secondInDash = max(sign(secondDashMod), 0.0) * max(sign(lineDasharray[2] - secondDashMod), 0.0);
+        float secondDashMod = dashMod - dasharray[0] - dasharray[1];
+        float secondInDash = max(sign(secondDashMod), 0.0) * max(sign(dasharray[2] - secondDashMod), 0.0);
 
         float isInDash = firstInDash + secondInDash;
 
         //dash两边的反锯齿
-        float firstDashAlpha = dashAntialias(dashMod, lineDasharray[0]);
-        float secondDashAlpha = dashAntialias(secondDashMod, lineDasharray[2]);
+        float firstDashAlpha = dashAntialias(dashMod, dasharray[0]);
+        float secondDashAlpha = dashAntialias(secondDashMod, dasharray[2]);
 
         float dashAlpha = firstDashAlpha * firstInDash + secondDashAlpha * secondInDash;
 
-        color = alpha * (color * (1.0 - dashAlpha) + lineDashColor * dashAlpha);
+        color = alpha * (color * (1.0 - dashAlpha) + dashColor * dashAlpha);
     #endif
 
     #ifdef HAS_TRAIL
