@@ -75,6 +75,12 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         const y = cp.y * dpr;
         return renderer.pick(x, y, options);
     }
+
+    getComputedStyle() {
+        return {
+            style: this.getStyle || []
+        };
+    }
 }
 
 Vector3DLayer.mergeOptions(defaultOptions);
