@@ -282,7 +282,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             }
             const geometries = this.painter.createGeometry(packData.map(d => d && d.data), features.map(feature => { return { feature }; }));
             for (let i = 0; i < geometries.length; i++) {
-                this.fillCommonProps(geometries[i]);
+                this.fillCommonProps(geometries[i], packData[i] && packData[i].data);
             }
 
             this.atlas = {

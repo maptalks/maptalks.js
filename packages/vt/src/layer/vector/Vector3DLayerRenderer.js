@@ -331,8 +331,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const hits = [];
         if (this.painter) {
             const picked = this.painter.pick(x, y, options.tolerance);
-            const feature = this._currentFeatures[picked.pickingId];
-            hits.push(this._geometries[feature[ID_PROP]]);
+            if (picked && picked.data && picked.data.feature) {
+                const feature = picked.data.feature;
+                hits.push(this._geometries[feature[ID_PROP]]);
+            }
         }
         return hits;
     }

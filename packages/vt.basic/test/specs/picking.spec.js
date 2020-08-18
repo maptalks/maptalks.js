@@ -93,8 +93,6 @@ describe('picking specs', () => {
                 },
                 'point': [368, 368, 0],
                 'type': 'icon',
-                'meshId': 0,
-                'pickingId': 0,
                 'plugin': 0,
             }];
             runner(options, coord, expected, true, done);
@@ -140,8 +138,6 @@ describe('picking specs', () => {
                 },
                 'point': [368, 368, 0],
                 'type': 'icon',
-                'meshId': 1,
-                'pickingId': 0,
                 'plugin': 0,
             }];
             runner(options, coord, expected, true, done);
