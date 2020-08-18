@@ -13,14 +13,11 @@ function parse(arcConf) {
     const fullExtent = arcConf['fullExtent'],
         origin = tileInfo['origin'],
         tileSystem = [1, -1, origin['x'], origin['y']];
-    let projection = (fullExtent['spatialReference'].wkid || '').toString();
-    projection = getProjection(projection);
     delete fullExtent['spatialReference'];
     return {
         'spatialReference': {
             'resolutions': resolutions,
-            'fullExtent': fullExtent,
-            'projection': projection
+            'fullExtent': fullExtent
         },
         'tileSystem': tileSystem,
         'tileSize': tileSize
@@ -197,18 +194,12 @@ function parseTileMatrixSet(TileMatrixSets, index, options = {}) {
 
 SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp': true }) {
     if (isString(url) && url.substring(0, 1) !== '{') {
-        const searchParams = '?f=pjson';
-        if (url.indexOf(searchParams) < 0) {
-            url += searchParams;
-        }
-        const urlTemplate = (url + '/tile/{z}/{y}/{x}').replace(searchParams, '');
         Ajax.getJSON(url, function (err, json) {
             if (err) {
                 cb(err);
                 return;
             }
             const spatialRef = parse(json);
-            spatialRef.urlTemplate = urlTemplate;
             cb(null, spatialRef);
         }, options);
     } else {
