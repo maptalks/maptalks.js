@@ -78,7 +78,7 @@ class Vector3DLayer extends maptalks.OverlayLayer {
 
     getComputedStyle() {
         return {
-            style: this.getStyle || []
+            style: this.getStyle() || []
         };
     }
 }
