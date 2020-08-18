@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { createREGL, reshader, mat4 } from '@maptalks/gl';
+import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
@@ -54,7 +54,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     needToRedraw() {
         const redraw = super.needToRedraw();
         if (!redraw) {
-            return this.painter.needToRedraw();
+            return this.painter && this.painter.needToRedraw();
         }
         return redraw;
     }
@@ -62,6 +62,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     draw(timestamp, parentContext) {
         const layer = this.layer;
         this.prepareCanvas();
+        this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         if (this._dirtyAll) {
             this.buildMesh();
             this._dirtyAll = false;
@@ -85,7 +86,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             layer.clearCollisionIndex();
         }
         this._frameTime = timestamp;
-        this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
         this._parentContext = parentContext || {};
         const context = this._preparePaintContext();
         this.painter.startFrame(context);
@@ -200,15 +200,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
 
         const pack = new this.PackClass(features, this.painterSymbol, options);
+        const v0 = [], v1 = [];
         return pack.load().then(packData => {
             if (!packData) {
                 return null;
             }
             const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
-            const transform = mat4.translate([], mat4.identity([]), center);
+            const posMatrix = mat4.identity([]);
+            //TODO 计算zScale时，zoom可能和tileInfo.z不同
+            mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
+            mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
+            // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
+            // const transform = mat4.translate([], mat4.identity([]), center);
+
             // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const mesh = this.painter.createMesh(geometry, transform, {});
+            const mesh = this.painter.createMesh(geometry, posMatrix, {});
             mesh.setUniform('level', 0);
             const defines = mesh.getDefines();
             //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出

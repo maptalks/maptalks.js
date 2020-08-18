@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { PointPack } from '@maptalks/vector-packer';
-import { mat4 } from '@maptalks/gl';
+import { mat4, vec3 } from '@maptalks/gl';
 import { extend, isNil } from '../../common/Util';
 import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';
@@ -257,7 +257,9 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
                 requestor: this.requestor,
                 atlas,
                 center,
-                positionType: Float32Array
+                positionType: Float32Array,
+                altitudeProperty: 'altitude',
+                defaultAltitude: 0
             }
         ];
         options.push(extend({}, options[0]));
@@ -268,7 +270,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             symbols = [symbols[0]];
         }
         const pointPacks = symbols.map((symbol, idx) => new PointPack(features, symbol, options[idx]).load());
-
+        const v0 = [], v1 = [];
         Promise.all(pointPacks).then(packData => {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
@@ -287,10 +289,12 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
                 iconAtlas: packData[0] && packData[0].data.iconAtlas,
                 glyphAtlas: packData[1] && packData[1].data.glyphAtlas
             };
-            // const transform = mat4.identity([]);
-            const transform = mat4.translate([], mat4.identity([]), center);
-            // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const meshes = this.painter.createMesh(geometries, transform);
+            const posMatrix = mat4.identity([]);
+            //TODO 计算zScale时，zoom可能和tileInfo.z不同
+            mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
+            mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
+            // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
+            const meshes = this.painter.createMesh(geometries, posMatrix);
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
