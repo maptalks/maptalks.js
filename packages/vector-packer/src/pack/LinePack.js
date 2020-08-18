@@ -72,10 +72,16 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('lineOpacity', this.symbolDef)) {
             this.opacityFn = piecewiseConstant(this.symbolDef['lineOpacity']);
         }
+        let hasFeaDash = false;
         if (isFnTypeSymbol('lineDasharray', this.symbolDef)) {
-            this.dasharrayFn = piecewiseConstant(this.symbolDef['lineDasharray']);
+            const fn = piecewiseConstant(this.symbolDef['lineDasharray']);
+            hasFeaDash = hasFeatureDash(features, this.options.zoom, fn);
+            if (hasFeaDash) {
+                this.dasharrayFn = fn;
+            }
         }
-        if (isFnTypeSymbol('lineDashColor', this.symbolDef)) {
+        if ((hasDasharray(this.symbol['lineDasharray']) || hasFeaDash) &&
+            isFnTypeSymbol('lineDashColor', this.symbolDef)) {
             this.dashColorFn = piecewiseConstant(this.symbolDef['lineDashColor']);
         }
     }
@@ -747,6 +753,15 @@ function hasDasharray(dash) {
     }
     for (let i = 0; i < dash.length; i++) {
         if (dash[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function hasFeatureDash(features, zoom, fn) {
+    for (let i = 0; i < features.length; i++) {
+        if (fn(zoom, features[i].properties)) {
             return true;
         }
     }
