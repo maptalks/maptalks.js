@@ -29,6 +29,7 @@ export { Map };
 export { MapTool, DrawTool, AreaTool, DistanceTool } from './map/tool';
 export { default as SpatialReference } from './map/spatial-reference/SpatialReference';
 import './map/spatial-reference/SpatialReference.Arc';
+import './map/spatial-reference/SpatialReference.WMTS';
 
 /** @namespace ui */
 import * as ui from './ui';
