@@ -4,6 +4,16 @@ import { isNumber, extend, isArray, isSupportVAO } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 
+const REGL_TYPES = {
+    5120: 'int8',
+    5122: 'int16',
+    5124: 'int32',
+    5121: 'uint8',
+    5123: 'uint16',
+    5125: 'uint32',
+    5126: 'float'
+};
+
 const DEFAULT_DESC = {
     'positionSize': 3,
     'primitive': 'triangles',
@@ -37,6 +47,39 @@ export default class Geometry {
         this._vao = {};
         this.updateBoundingBox();
         this.getVertexCount();
+        this._prepareData();
+    }
+
+    _prepareData() {
+        if (!this.data) {
+            return;
+        }
+        //TODO 可以直接从POSITION的min/max读出bbox，省去遍历
+        const buffers = this._buffers || {};
+        for (const attr in this.data) {
+            const attribute = this.data[attr];
+            if (attribute.bufferView !== undefined) {
+                this.data[attr] =  {
+                    buffer: attribute.bufferView,
+                    offset: attribute.byteOffset,
+                    stride: attribute.byteStride,
+                    type: REGL_TYPES[attribute.componentType],
+                    size: attribute.itemSize,
+                    count: attribute.count
+                };
+                if (!buffers[attribute.bufferView]) {
+                    buffers[attribute.bufferView] = {
+                        data: attribute.array
+                    };
+                }
+            }
+        }
+        this._buffers = buffers;
+
+        const elements = this.elements;
+        if (elements && elements.bufferView !== undefined) {
+            this.elements = this.elements.array;
+        }
     }
 
     getREGLData(regl, activeAttributes) {
@@ -237,6 +280,7 @@ export default class Geometry {
             }
             this.data[name] = buffer;
         }
+        this._prepareData();
         delete this._reglData;
         return this;
     }
@@ -340,6 +384,7 @@ export default class Geometry {
     }
 
     createTangent(name = 'aTangent') {
+        //TODO data 可能是含stride的interleaved类型
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
         const normals = this.data[normalAttribute];
         const tangents = buildTangents(
@@ -361,6 +406,7 @@ export default class Geometry {
     }
 
     createNormal(name = 'aNormal') {
+        //TODO data 可能是含stride的interleaved类型
         const vertices = this.data[this.desc.positionAttribute];
         this.data[name] = buildNormals(vertices, this.elements);
         delete this._reglData;
@@ -480,6 +526,9 @@ export default class Geometry {
 function getElementLength(elements) {
     if (isNumber(elements)) {
         return elements;
+    } else if (elements.count !== undefined) {
+        // object buffer form
+        return elements.count;
     } else if (elements.length !== undefined) {
         return elements.length;
     } else if (elements.data) {

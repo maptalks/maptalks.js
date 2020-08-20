@@ -257,8 +257,12 @@ export default class GLTFPack {
 function createGeometry(primitive) {
     const attributes = {};
     for (const attr in primitive.attributes) {
-        attributes[attr] =  primitive.attributes[attr].array;
+        attributes[attr] =  primitive.attributes[attr];
+        if (attributes[attr].bufferView === undefined) {
+            attributes[attr] = attributes[attr].array;
+        }
     }
+    // for morph
     if (attributes['POSITION_0']) {
         for (let i = 0; i < 4; i++) {
             if (!attributes[`POSITION_${i}`]) {
@@ -266,9 +270,13 @@ function createGeometry(primitive) {
             }
         }
     }
+    let indices = primitive.indices;
+    if (indices.bufferView === undefined) {
+        indices = indices.array;
+    }
     const modelGeometry = new Geometry(
         attributes,
-        primitive.indices,
+        indices,
         0,
         {
             //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
