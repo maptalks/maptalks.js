@@ -866,9 +866,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (config.outline) {
             enableOutline = +!!config.outline.enable;
             highlightFactor = getValueOrDefault(config.outline, 'highlightFactor', highlightFactor);
-            outlineFactor = getValueOrDefault(config, 'outlineFactor', outlineFactor);
-            outlineWidth = getValueOrDefault(config, 'outlineWidth', outlineWidth);
-            outlineColor = getValueOrDefault(config, 'outlineColor', outlineColor);
+            outlineFactor = getValueOrDefault(config.outline, 'outlineFactor', outlineFactor);
+            outlineWidth = getValueOrDefault(config.outline, 'outlineWidth', outlineWidth);
+            outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
