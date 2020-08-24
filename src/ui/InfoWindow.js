@@ -346,6 +346,12 @@ class InfoWindow extends UIComponent {
                 ptIndex = i;
             }
         }
+        if (ptIndex < 0) {
+            return {
+                dist: minPtDis,
+                coordinate: mouseCoordinate
+            };
+        }
         const point = new Point(xys[ptIndex].x, xys[ptIndex].y);
         return {
             dis: minPtDis,
