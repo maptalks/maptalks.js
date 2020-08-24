@@ -4,6 +4,8 @@ import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
 import Point from '../../geo/Point';
+import CollectionPainter from '../geometry/CollectionPainter';
+import Painter from '../geometry/Painter';
 
 /**
  * @classdesc
@@ -494,7 +496,7 @@ class CanvasRenderer extends Class {
             });
             return null;
         }
-        const maskExtent2D = this._maskExtent = mask._getPainter().get2DExtent();
+        const maskExtent2D = this._maskExtent = mask._getMaskPainter().get2DExtent();
         if (!maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context,
@@ -539,13 +541,13 @@ class CanvasRenderer extends Class {
             const masks = mask.getGeometries() || [];
             context.beginPath();
             masks.forEach(_mask => {
-                const painter =  _mask._getPainter();
+                const painter =  _mask._getMaskPainter();
                 painter.paint(null, context);
             });
             context.stroke();
             delete context.isMultiClip;
         } else {
-            const painter = mask._getPainter();
+            const painter = mask._getMaskPainter();
             painter.paint(null, context);
         }
         if (dpr !== 1) {

@@ -543,7 +543,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!this._mask || !this.getMap()) {
             return null;
         }
-        const painter = this._mask._getPainter();
+        const painter = this._mask._getMaskPainter();
         if (!painter) {
             return null;
         }
