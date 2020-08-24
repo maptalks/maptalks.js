@@ -3,7 +3,13 @@ import { isNil } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
+import Painter from '../renderer/geometry/Painter';
+import CollectionPainter from '../renderer/geometry/CollectionPainter';
+import Coordinate from '../geo/Coordinate';
+import { LineString, Curve } from '../geometry';
+import PointExtent from '../geo/PointExtent';
 
+const TEMP_EXTENT = new PointExtent();
 /**
  * @property {Object}  options - VectorLayer's options
  * @property {Boolean} options.debug=false           - whether the geometries on the layer is in debug mode.
@@ -61,14 +67,58 @@ class VectorLayer extends OverlayLayer {
         }
     }
 
-
+    /**
+     * Identify the geometries on the given coordinate
+     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Geometry[]} geometries identified
+     */
     identify(coordinate, options = {}) {
         const renderer = this.getRenderer();
         // only iterate drawn geometries when onlyVisible is true.
         if (options['onlyVisible'] && renderer && renderer.identify) {
             return renderer.identify(coordinate, options);
         }
-        return super.identify(coordinate, options);
+        if (!(coordinate instanceof Coordinate)) {
+            coordinate = new Coordinate(coordinate);
+        }
+        return this._hitGeos(this._geoList, coordinate, options);
+    }
+
+    _hitGeos(geometries, coordinate, options = {}) {
+        const filter = options['filter'],
+            tolerance = options['tolerance'],
+            hits = [];
+        const map = this.getMap();
+        const point = map.coordToPoint(coordinate);
+        const cp = map._pointToContainerPoint(point, undefined, 0, point);
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            const geo = geometries[i];
+            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
+                continue;
+            }
+            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+                // Except for LineString with arrows or curves
+                let extent = geo.getContainerExtent(TEMP_EXTENT);
+                if (tolerance) {
+                    extent = extent._expand(tolerance);
+                }
+                if (!extent || !extent.contains(cp)) {
+                    continue;
+                }
+            }
+            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
+                hits.push(geo);
+                if (options['count']) {
+                    if (hits.length >= options['count']) {
+                        break;
+                    }
+                }
+            }
+        }
+        return hits;
     }
 
     getAltitude() {
@@ -144,6 +194,14 @@ class VectorLayer extends OverlayLayer {
             layer.setStyle(json['style']);
         }
         return layer;
+    }
+
+    static getPainterClass() {
+        return Painter;
+    }
+
+    static getCollectionPainterClass() {
+        return CollectionPainter;
     }
 }
 
