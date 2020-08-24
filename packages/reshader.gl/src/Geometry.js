@@ -58,7 +58,7 @@ export default class Geometry {
         const buffers = this._buffers || {};
         for (const attr in this.data) {
             const attribute = this.data[attr];
-            if (attribute.bufferView !== undefined) {
+            if (attribute && attribute.bufferView !== undefined) {
                 this.data[attr] =  {
                     buffer: attribute.bufferView,
                     offset: attribute.byteOffset,
