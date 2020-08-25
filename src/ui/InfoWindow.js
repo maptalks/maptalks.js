@@ -293,7 +293,7 @@ class InfoWindow extends UIComponent {
         // Find the point with the shortest distance
         for (let i = 0, len = pts.length; i < len; i++) {
             const pt = pts[i];
-            const dis = Math.sqrt(Math.pow(mousePt.x - pt.x, 2) + Math.pow(mousePt.y - pt.y, 2));
+            const dis = mousePt.distanceTo(pt);
             if (dis < minDis) {
                 minDis = dis;
                 coordinateIndex = i;
@@ -315,11 +315,8 @@ class InfoWindow extends UIComponent {
             if (pt1.x === pt2.x) {
                 const miny = Math.max(0, Math.min(pt1.y, pt2.y));
                 const maxy = Math.min(height, Math.max(pt1.y, pt2.y));
-                for (let j = miny; j <= maxy; j++) {
-                    xys.push({
-                        x: pt1.x,
-                        y: j
-                    });
+                for (let y = miny; y <= maxy; y++) {
+                    xys.push(new Point(pt1.x, y));
                 }
             } else {
                 const k = (pt2.y - pt1.y) / (pt2.x - pt1.x);
@@ -327,12 +324,9 @@ class InfoWindow extends UIComponent {
                 // y-pt1.y=k(x-pt1.x)
                 const minx = Math.max(0, Math.min(pt1.x, pt2.x));
                 const maxx = Math.min(width, Math.max(pt1.x, pt2.x));
-                for (let j = minx; j <= maxx; j++) {
-                    const y = k * (j - pt1.x) + pt1.y;
-                    xys.push({
-                        x: j,
-                        y
-                    });
+                for (let x = minx; x <= maxx; x++) {
+                    const y = k * (x - pt1.x) + pt1.y;
+                    xys.push(new Point(x, y));
                 }
             }
         }
@@ -340,7 +334,7 @@ class InfoWindow extends UIComponent {
         // Find the point with the shortest distance
         for (let i = 0, len = xys.length; i < len; i++) {
             const pt = xys[i];
-            const dis = Math.sqrt(Math.pow(mousePt.x - pt.x, 2) + Math.pow(mousePt.y - pt.y, 2));
+            const dis = mousePt.distanceTo(pt);
             if (dis < minPtDis) {
                 minPtDis = dis;
                 ptIndex = i;
@@ -348,7 +342,7 @@ class InfoWindow extends UIComponent {
         }
         if (ptIndex < 0) {
             return {
-                dist: minPtDis,
+                dis: minPtDis,
                 coordinate: mouseCoordinate
             };
         }
