@@ -205,6 +205,8 @@ class InfoWindow extends UIComponent {
             if (painter) {
                 const fixExtent = painter.getFixedExtent();
                 o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
+            } else {
+                o._add(0, -markerSize.height);
             }
         }
         return o;
