@@ -4,6 +4,7 @@ class BoundingBox {
     constructor(min, max) {
         this.min = min || [Infinity, Infinity, Infinity];
         this.max = max || [-Infinity, -Infinity, -Infinity];
+        this.updateVertex();
     }
 
     dirty() {
@@ -50,6 +51,29 @@ class BoundingBox {
         const max = this.max;
         return isFinite(min[0]) && isFinite(min[1]) && isFinite(min[2]) &&
             isFinite(max[0]) && isFinite(max[1]) && isFinite(max[2]);
+    }
+
+    updateVertex() {
+        this.vertex = [
+            [this.min[0], this.min[1], this.min[2]],
+            [this.min[0], this.min[1], this.max[2]],
+            [this.min[0], this.max[1], this.max[2]],
+            [this.min[0], this.max[1], this.min[2]],
+            [this.max[0], this.min[1], this.min[2]],
+            [this.max[0], this.min[1], this.max[2]],
+            [this.max[0], this.max[1], this.max[2]],
+            [this.max[0], this.max[1], this.min[2]]
+        ];
+        return this.vertex;
+    }
+
+    equals(vertex) {
+        for (let i = 0; i < this.vertex.length; i++) {
+            if (!vec3.equals(vertex[i], this.vertex[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

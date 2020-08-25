@@ -379,6 +379,7 @@ export default class Geometry {
                 if (y > max[1]) { max[1] = y; }
                 if (z > max[2]) { max[2] = z; }
             }
+            bbox.updateVertex();
             bbox.dirty();
         }
     }
