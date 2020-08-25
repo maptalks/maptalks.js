@@ -4,7 +4,7 @@
 
 precision mediump float;
 
-#if defined(HAS_SHADOWING)
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_frag>
 #endif
 
@@ -68,7 +68,7 @@ void main() {
     #endif
     gl_FragColor = color * opacity;
 
-    #if defined(HAS_SHADOWING)
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif

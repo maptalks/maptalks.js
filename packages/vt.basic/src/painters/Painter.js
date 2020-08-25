@@ -105,6 +105,32 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+
+        const bloom = this.getSymbol()['bloom'];
+        if (Array.isArray(meshes)) {
+            meshes.forEach(mesh => {
+                const defines = mesh.defines;
+                if (!!defines['HAS_BLOOM'] !== !!bloom) {
+                    if (bloom) {
+                        defines['HAS_BLOOM'] = 1;
+                    } else {
+                        delete defines['HAS_BLOOM'];
+                    }
+                    mesh.setDefines(defines);
+                }
+            });
+        } else {
+            const defines = meshes.defines;
+            if (!!defines['HAS_BLOOM'] !== !!bloom) {
+                if (bloom) {
+                    defines['HAS_BLOOM'] = 1;
+                } else {
+                    delete defines['HAS_BLOOM'];
+                }
+                meshes.setDefines(defines);
+            }
+        }
+
         this.scene.addMesh(meshes);
         return meshes;
     }

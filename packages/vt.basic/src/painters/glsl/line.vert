@@ -85,7 +85,7 @@ varying float vGammaScale;
         varying float vGradIndex;
     #endif
 
-    #ifdef HAS_SHADOWING
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         #include <vsm_shadow_vert>
     #endif
 #else
@@ -185,7 +185,7 @@ void main() {
             vOpacity = aOpacity / 255.0;
         #endif
 
-        #if defined(HAS_SHADOWING)
+        #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
             shadow_computeShadowPars(localVertex);
         #endif
 

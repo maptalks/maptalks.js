@@ -192,8 +192,6 @@ class FillPainter extends BasicPainter {
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
         uniforms.push(
-            'polygonFill', 'polygonOpacity',
-            'polygonPatternFile', 'uvScale',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -219,8 +217,7 @@ class FillPainter extends BasicPainter {
                     const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale / width % 1, (props['tileCenter'][1] - tileSize[1] / 2) * scale / height % 1];
                     return offset;
                 }
-            },
-            'tileResolution', 'resolution', 'tileRatio'
+            }
         );
         const viewport = {
             x: 0,
