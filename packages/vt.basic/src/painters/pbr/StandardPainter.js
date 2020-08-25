@@ -142,10 +142,21 @@ class StandardPainter extends MeshPainter {
             vert: `
                 attribute vec3 aPosition;
                 uniform mat4 projViewModelMatrix;
+                uniform mat4 positionMatrix;
+                //引入fbo picking的vert相关函数
+                #include <line_extrusion_vert>
+                #include <get_output>
                 #include <fbo_picking_vert>
                 void main() {
-                    vec4 pos = vec4(aPosition, 1.0);
-                    gl_Position = projViewModelMatrix * pos;
+                    mat4 localPositionMatrix = getPositionMatrix();
+                    #ifdef IS_LINE_EXTRUSION
+                        vec3 linePosition = getLineExtrudePosition(aPosition);
+                        vec4 localVertex = getPosition(linePosition);
+                    #else
+                        vec4 localVertex = getPosition(aPosition);
+                    #endif
+
+                    gl_Position = projViewModelMatrix * localPositionMatrix * localVertex;
                     fbo_picking_setData(gl_Position.w, true);
                 }
             `,
