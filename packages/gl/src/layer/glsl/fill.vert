@@ -9,7 +9,7 @@ uniform mat4 projViewModelMatrix;
     varying vec2 vTexCoord;
 #endif
 
-#ifdef HAS_SHADOWING
+#ifdef HAS_SHADOWING && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
 
@@ -19,7 +19,7 @@ void main () {
     #endif
     vec3 position = vec3(aPosition);
     gl_Position = projViewModelMatrix * vec4(position, 1.0);
-    #if defined(HAS_SHADOWING)
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         shadow_computeShadowPars(vec4(position, 1.0));
     #endif
 }

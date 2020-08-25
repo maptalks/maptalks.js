@@ -64,7 +64,7 @@ varying vec3 vModelVertex;
 #include <get_output>
 #include <viewshed_vert>
 #include <flood_vert>
-#ifdef HAS_SHADOWING
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
 #include <heatmap_render_vert>
@@ -166,7 +166,7 @@ void main() {
         vColor = aColor / 255.0;
     #endif
 
-    #if defined(HAS_SHADOWING)
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         shadow_computeShadowPars(localVertex);
     #endif
 
