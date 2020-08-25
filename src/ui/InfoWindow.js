@@ -342,16 +342,9 @@ class InfoWindow extends UIComponent {
                 ptIndex = i;
             }
         }
-        if (ptIndex < 0) {
-            return {
-                dis: minPtDis,
-                coordinate: mouseCoordinate
-            };
-        }
-        const point = new Point(xys[ptIndex].x, xys[ptIndex].y);
         return {
             dis: minPtDis,
-            coordinate: this.getMap().containerPointToCoord(point)
+            coordinate: ptIndex < 0 ? mouseCoordinate : this.getMap().containerPointToCoord(xys[ptIndex])
         };
     }
 
