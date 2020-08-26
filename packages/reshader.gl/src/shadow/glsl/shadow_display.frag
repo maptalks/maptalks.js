@@ -1,4 +1,4 @@
-#define SHADER_NAME SHADER_DISPLAY
+#define SHADER_NAME SHADOW_DISPLAY
 
 precision mediump float;
 
