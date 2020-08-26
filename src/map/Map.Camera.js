@@ -55,7 +55,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - fovchange from
           * @property {Number} to                      - fovchange to
         */
-        this._fireEvent('fovchange', { 'from' : from, 'to': this.getFov() });
+        this._fireEvent('fovchange', { 'from': from, 'to': this.getFov() });
         return this;
     },
 
@@ -91,7 +91,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotatestart', { 'from' : from, 'to': b });
+        this._fireEvent('rotatestart', { 'from': from, 'to': b });
         this._angle = b;
         this._calcMatrices();
         this._renderLayers();
@@ -105,7 +105,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotate', { 'from' : from, 'to': b });
+        this._fireEvent('rotate', { 'from': from, 'to': b });
         /*
           * rotateend event
           * @event Map#rotateend
@@ -115,7 +115,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotateend', { 'from' : from, 'to': b });
+        this._fireEvent('rotateend', { 'from': from, 'to': b });
         return this;
     },
 
@@ -151,7 +151,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitch from
           * @property {Number} to                      - pitch to
         */
-        this._fireEvent('pitchstart', { 'from' : from, 'to': p });
+        this._fireEvent('pitchstart', { 'from': from, 'to': p });
         this._pitch = p;
         this._calcMatrices();
         this._renderLayers();
@@ -164,7 +164,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitch from
           * @property {Number} to                      - pitch to
           */
-        this._fireEvent('pitch', { 'from' : from, 'to': p });
+        this._fireEvent('pitch', { 'from': from, 'to': p });
         /**
           * pitchend event
           * @event Map#pitchend
@@ -174,7 +174,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitchend from
           * @property {Number} to                      - pitchend to
           */
-        this._fireEvent('pitchend', { 'from' : from, 'to': p });
+        this._fireEvent('pitchend', { 'from': from, 'to': p });
         return this;
     },
 
@@ -248,6 +248,42 @@ Map.include(/** @lends Map.prototype */{
                 out.set(out.x, -out.y);
                 return out._add(this.width / 2, this.height / 2);
             }
+        };
+    }(),
+
+    /**
+     *Batch conversion for better performance
+     */
+    _pointsToContainerPoints: function () {
+        const a = [0, 0, 0];
+        return function (points, zoom, altitudes = []) {
+            const isTransforming = this.isTransforming();
+            const res = this._getResolution(zoom) / this._getResolution();
+            const w2 = this.width / 2, h2 = this.height / 2;
+            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
+            const pts = [];
+            for (let i = 0, len = points.length; i < len; i++) {
+                const point = points[i].copy()._multi(res);
+                let altitude = altitudes[i] || 0;
+                if (isTransforming || altitude) {
+                    altitude *= res;
+                    const scale = this._glScale;
+                    set(a, point.x * scale, point.y * scale, altitude * scale);
+                    const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
+                    applyMatrix(t, t, this.projViewMatrix);
+                    t[0] = (t[0] * w2) + w2;
+                    t[1] = -(t[1] * h2) + h2;
+                    point.x = t[0];
+                    point.y = t[1];
+                    pts.push(point);
+                } else {
+                    const out = point;
+                    out._sub(centerPoint.x, centerPoint.y);
+                    out.set(out.x, -out.y);
+                    pts.push(out._add(w2, h2));
+                }
+            }
+            return pts;
         };
     }(),
 

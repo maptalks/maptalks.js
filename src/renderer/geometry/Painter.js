@@ -190,12 +190,16 @@ class Painter extends Class {
             glZoom = map.getGLZoom(),
             containerOffset = this.containerOffset;
         let cPoints;
-        function pointContainerPoint(point, alt) {
-            const p = map._pointToContainerPoint(point, glZoom, alt)._sub(containerOffset);
-            if (dx || dy) {
-                p._add(dx || 0, dy || 0);
+        function pointsContainerPoints(viewPoints = [], alts = []) {
+            const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
+            for (let i = 0, len = pts.length; i < len; i++) {
+                const p = pts[i];
+                p._sub(containerOffset);
+                if (dx || dy) {
+                    p._add(dx || 0, dy || 0);
+                }
             }
-            return p;
+            return pts;
         }
 
         let altitude = this.getAltitude();
@@ -219,22 +223,24 @@ class Painter extends Class {
             }
             let alt = altitude;
             cPoints = [];
+            const alts = [];
             for (let i = 0, l = clipPoints.length; i < l; i++) {
                 const c = clipPoints[i];
                 if (Array.isArray(c)) {
-                    const cring = [];
+                    // const cring = [];
                     //polygon rings or clipped line string
-                    for (let ii = 0, ll = c.length; ii < ll; ii++) {
-                        const cc = c[ii];
-                        if (Array.isArray(altitude)) {
-                            if (altitude[i]) {
-                                alt = altitude[i][ii];
-                            } else {
-                                alt = 0;
-                            }
-                        }
-                        cring.push(pointContainerPoint(cc, alt));
-                    }
+                    // for (let ii = 0, ll = c.length; ii < ll; ii++) {
+                    //     const cc = c[ii];
+                    //     if (Array.isArray(altitude)) {
+                    //         if (altitude[i]) {
+                    //             alt = altitude[i][ii];
+                    //         } else {
+                    //             alt = 0;
+                    //         }
+                    //     }
+                    //     cring.push(pointsContainerPoints(cc, alt));
+                    // }
+                    const cring = pointsContainerPoints(c, altitude[i]);
                     cPoints.push(cring);
                 } else {
                     //line string
@@ -249,8 +255,11 @@ class Painter extends Class {
                             alt = altitude[i];
                         }
                     }
-                    cPoints.push(pointContainerPoint(c, alt));
+                    alts.push(alt);
                 }
+            }
+            if (alts.length) {
+                cPoints = pointsContainerPoints(clipPoints, alts);
             }
         } else if (points instanceof Point) {
             if (ignoreAltitude) {
