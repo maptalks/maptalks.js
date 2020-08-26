@@ -5,8 +5,7 @@ const data = {
     ]
 };
 const material = {
-    'baseColor': [0.560 * 255, 0.570 * 255, 0.580 * 255],
-    'baseColorFactor': [0.560, 0.570, 0.580, 1],
+    'baseColorFactor': [0.560, 0, 0, 1],
     'metallicFactor': 1,
     'roughnessFactor': 0.1,
     'reflectance': 0.5,
@@ -36,7 +35,6 @@ const style = [
         },
         symbol: {
             material,
-            lineColor: '#f00',
             lineWidth: 16,
             lineOpacity: 1
         }

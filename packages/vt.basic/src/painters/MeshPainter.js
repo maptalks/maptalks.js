@@ -48,7 +48,7 @@ class MeshPainter extends Painter {
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', 4);
             setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
+            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this._colorCache));
             Object.defineProperty(mesh.uniforms, 'lineHeight', {
                 enumerable: true,
                 get: () => {
