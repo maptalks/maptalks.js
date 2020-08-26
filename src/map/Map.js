@@ -2138,23 +2138,23 @@ Map.include(/** @lends Map.prototype */{
             const pts = [];
             const transformation = this._spatialReference.getTransformation();
             const resolution = this._getResolution(zoom);
-            // const res = resolution / this._getResolution();
+            const res = resolution / this._getResolution();
             const projection = this.getProjection();
             const tempOut = [0, 0, 0];
             const prjOut = new Coordinate(0, 0);
             const isTransforming = this.isTransforming();
             const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-            const t = this._projIfBehindCamera(tempOut, this.cameraPosition, this.cameraForward);
             const w = this.width / 2, h = this.height / 2;
             for (let i = 0, len = coordinates.length; i < len; i++) {
                 const pCoordinate = projection.project(coordinates[i], prjOut);
-                const point = transformation.transform(pCoordinate, resolution);
+                let point = transformation.transform(pCoordinate, resolution);
+                point = point._multi(res);
                 if (isTransforming) {
                     //convert altitude at zoom to current zoom
                     // altitude=0;
                     const scale = this._glScale;
                     set(tempOut, point.x * scale, point.y * scale, 0);
-
+                    const t = this._projIfBehindCamera(tempOut, this.cameraPosition, this.cameraForward);
                     applyMatrix(t, t, this.projViewMatrix);
 
                     const w2 = w, h2 = h;
