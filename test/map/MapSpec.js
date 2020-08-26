@@ -12,7 +12,7 @@ describe('Map.Spec', function () {
         container.style.height = '3px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation:false,
+            zoomAnimation: false,
             zoom: 17,
             center: center
         };
@@ -63,7 +63,7 @@ describe('Map.Spec', function () {
 
         it('#getSpatialReference', function () {
             map.setSpatialReference({
-                projection : 'EPSG:3857'
+                projection: 'EPSG:3857'
             });
             var sp = map.getSpatialReference().toJSON();
             expect(sp.fullExtent).to.be.eql({
@@ -118,6 +118,15 @@ describe('Map.Spec', function () {
             var coord = map.containerPointToCoordinate(new maptalks.Point(0, 0));
 
             expect(coord).to.be.a(maptalks.Coordinate);
+        });
+
+        it('coordinatesToContainerPoints', function () {
+            var points = map.coordinatesToContainerPoints([1, 2, 3].map(function (v) {
+                return new maptalks.Coordinate(v, v);
+            }));
+
+            expect(points).to.be.a(Array);
+            expect(points[0]).to.be.a(maptalks.Point);
         });
     });
 
@@ -296,7 +305,7 @@ describe('Map.Spec', function () {
 
         it('setZoom without animation', function () {
             var cur = map.getZoom();
-            map.setZoom(cur + 2, { animation : false });
+            map.setZoom(cur + 2, { animation: false });
             expect(map.isZooming()).not.to.be.ok();
             expect(map.getZoom()).to.be.eql(cur + 2);
         });
@@ -311,7 +320,7 @@ describe('Map.Spec', function () {
 
         it('getFitZoom with baidu projection', function () {
             map.setSpatialReference({
-                projection : 'baidu'
+                projection: 'baidu'
             });
             var extent = map.getExtent();
             var zoom = map.getZoom();
@@ -341,7 +350,7 @@ describe('Map.Spec', function () {
         it('fit to extent without animation', function () {
             var extent = new maptalks.Marker(map.getCenter()).getExtent();
             var maxZoom = map.getMaxZoom();
-            map.fitExtent(extent.toJSON(), 0, { 'animation' : false });
+            map.fitExtent(extent.toJSON(), 0, { 'animation': false });
             expect(maxZoom).to.be.eql(map.getZoom());
         });
 
@@ -382,10 +391,10 @@ describe('Map.Spec', function () {
             var pitch = 60;
             var bearing = 30;
             map.setView({
-                center : nc,
-                zoom : z,
-                pitch : pitch,
-                bearing : bearing
+                center: nc,
+                zoom: z,
+                pitch: pitch,
+                bearing: bearing
             });
 
             expect(map.getCenter()).to.closeTo(nc);
@@ -411,7 +420,7 @@ describe('Map.Spec', function () {
             var center = map.getCenter().toArray();
             var extent = map.getExtent();
             map.setMaxExtent(extent);
-            map.setZoom(map.getZoom() - 3, { animation : false });
+            map.setZoom(map.getZoom() - 3, { animation: false });
             map.once('animateend', function () {
                 expect(map.getCenter().toArray()).not.to.be.eql(center);
                 map.once('moveend', function () {
@@ -420,10 +429,10 @@ describe('Map.Spec', function () {
                 });
             });
             map.animateTo({
-                zoom : map.getZoom()  - 2,
-                around : map.getContainerExtent().getMax()
+                zoom: map.getZoom() - 2,
+                around: map.getContainerExtent().getMax()
             }, {
-                duration : 30
+                duration: 30
             });
         });
     });
@@ -563,8 +572,8 @@ describe('Map.Spec', function () {
             happen.dblclick(eventContainer);
         });
 
-        it('After dragging the map quickly and trigger moveend event,it can get the final coordinate', function(done) {
-            map.on('moveend', function(e) {
+        it('After dragging the map quickly and trigger moveend event,it can get the final coordinate', function (done) {
+            map.on('moveend', function (e) {
                 expect(e.coordinate).to.be.ok();
                 expect(e.containerPoint).to.be.ok();
                 expect(e.viewPoint).to.be.ok();
@@ -590,9 +599,9 @@ describe('Map.Spec', function () {
             this.timeout(6000);
             baseLayer.config({
                 'renderer': 'canvas',
-                'crossOrigin' : 'anonymous',
-                'gradualLoading' : false,
-                'visible' : true
+                'crossOrigin': 'anonymous',
+                'gradualLoading': false,
+                'visible': true
             });
             var size = map.getSize();
             var baseLoaded = false,
@@ -619,9 +628,9 @@ describe('Map.Spec', function () {
 
         it('use vectorlayer as base tile', function (done) {
             var layer = new maptalks.VectorLayer('vector').addGeometry(new maptalks.Circle(map.getCenter(), 1000, {
-                symbol : {
-                    polygonFill : '#000',
-                    polygonOpacity : 0.5
+                symbol: {
+                    polygonFill: '#000',
+                    polygonOpacity: 0.5
                 }
             }));
             var size = map.getSize();
@@ -736,11 +745,11 @@ describe('Map.Spec', function () {
         it('identify with tolerance', function (done) {
             var layer = new maptalks.VectorLayer('id');
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 4,
-                    markerHeight : 4,
-                    markerDx : 4
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 4,
+                    markerHeight: 4,
+                    markerDx: 4
                 }
             });
             layer.addGeometry(marker);
@@ -754,7 +763,7 @@ describe('Map.Spec', function () {
                 map.identify({
                     coordinate: center,
                     layers: [layer],
-                    tolerance : 5
+                    tolerance: 5
                 }, function (geos) {
                     expect(geos.length).to.be.eql(1);
                     done();
@@ -816,10 +825,10 @@ describe('Map.Spec', function () {
         var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
         layer.addGeometry(geometries, true);
         var tilelayer = new maptalks.TileLayer('t2', {
-            urlTemplate:'#',
+            urlTemplate: '#',
             subdomains: [1, 2, 3],
-            visible : false,
-            renderer : 'canvas'
+            visible: false,
+            renderer: 'canvas'
         });
         tilelayer.on('add', function () {
             map.remove();
@@ -849,11 +858,11 @@ describe('Map.Spec', function () {
         container.style.height = '0px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation:false,
+            zoomAnimation: false,
             zoom: 17,
             center: center,
-            pitch : 60,
-            bearing : 20
+            pitch: 60,
+            bearing: 20
         };
         map = new maptalks.Map(container, option);
         map.coordToContainerPoint(center);
