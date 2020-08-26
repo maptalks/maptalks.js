@@ -229,18 +229,19 @@ class Painter extends Class {
                 if (Array.isArray(c)) {
                     // const cring = [];
                     //polygon rings or clipped line string
-                    // for (let ii = 0, ll = c.length; ii < ll; ii++) {
-                    //     const cc = c[ii];
-                    //     if (Array.isArray(altitude)) {
-                    //         if (altitude[i]) {
-                    //             alt = altitude[i][ii];
-                    //         } else {
-                    //             alt = 0;
-                    //         }
-                    //     }
-                    //     cring.push(pointsContainerPoints(cc, alt));
-                    // }
-                    const cring = pointsContainerPoints(c, altitude[i]);
+                    const altArray = [];
+                    for (let ii = 0, ll = c.length; ii < ll; ii++) {
+                        // const cc = c[ii];
+                        if (Array.isArray(altitude)) {
+                            if (altitude[i]) {
+                                alt = altitude[i][ii];
+                            } else {
+                                alt = 0;
+                            }
+                        }
+                        altArray.push(alt);
+                    }
+                    const cring = pointsContainerPoints(c, altArray);
                     cPoints.push(cring);
                 } else {
                     //line string
