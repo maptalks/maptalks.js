@@ -92,6 +92,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
+        this._updateOffset();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
             if (!geo.isVisible()) {
@@ -122,6 +123,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.prepareToDraw();
 
         this.forEachGeo(this.checkGeo, this);
+        this._updateOffset();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
@@ -186,6 +188,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return [];
         }
         return this.layer._hitGeos(geometries, coordinate, options);
+    }
+
+    _updateOffset() {
+        const map = this.getMap();
+        const offset = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
+        this._offset = offset;
+        return offset;
     }
 }
 

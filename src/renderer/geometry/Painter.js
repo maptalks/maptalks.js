@@ -413,7 +413,8 @@ class Painter extends Class {
         if (minAltitude && frustumAlt && frustumAlt < minAltitude) {
             return;
         }
-        this.containerOffset = offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
+        //Multiplexing offset
+        this.containerOffset = offset || renderer._offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
