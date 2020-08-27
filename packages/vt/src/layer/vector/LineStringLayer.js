@@ -67,6 +67,11 @@ const SYMBOL = {
         type: 'identity',
         default: undefined,
         property: '_symbol_lineDasharray'
+    },
+    lineDashColor: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineDashColor'
     }
 };
 
