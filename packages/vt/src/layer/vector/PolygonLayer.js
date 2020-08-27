@@ -3,9 +3,20 @@ import { PolygonPack } from '@maptalks/vector-packer';
 import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
+import { fromJSON } from './util/from_json';
 
 class PolygonLayer extends Vector3DLayer {
-
+    /**
+     * Reproduce a PolygonLayer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {PolygonLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(json) {
+        return fromJSON(json, 'PolygonLayer', PolygonLayer);
+    }
 }
 
 PolygonLayer.registerJSONType('PolygonLayer');

@@ -81,6 +81,26 @@ class Vector3DLayer extends maptalks.OverlayLayer {
             style: this.getStyle() || []
         };
     }
+
+    /**
+     * Export the Layer's JSON. <br>
+     * @return {Object} layer's JSON
+     */
+    toJSON() {
+        const profile = {
+            'type': this.getJSONType(),
+            'id': this.getId(),
+            'options': this.config()
+        };
+        profile.geometries = [];
+        const geometries = this.getGeometries();
+        for (let i = 0, len = geometries.length; i < len; i++) {
+            const geo = geometries[i];
+            const json = geo.toJSON();
+            profile.geometries.push(json);
+        }
+        return profile;
+    }
 }
 
 Vector3DLayer.mergeOptions(defaultOptions);

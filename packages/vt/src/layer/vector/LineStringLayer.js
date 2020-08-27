@@ -4,9 +4,20 @@ import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import Promise from '../../common/Promise';
+import { fromJSON } from './util/from_json';
 
 class LineStringLayer extends Vector3DLayer {
-
+    /**
+     * Reproduce a LineStringLayer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {LineStringLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(json) {
+        return fromJSON(json, 'LineStringLayer', LineStringLayer);
+    }
 }
 
 LineStringLayer.registerJSONType('LineStringLayer');

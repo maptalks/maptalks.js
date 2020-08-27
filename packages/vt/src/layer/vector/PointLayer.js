@@ -6,6 +6,7 @@ import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import Promise from '../../common/Promise';
+import { fromJSON } from './util/from_json';
 
 const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
@@ -29,6 +30,18 @@ class PointLayer extends Vector3DLayer {
         sceneConfig['uniquePlacement'] = false;
         sceneConfig.collision = true;
         sceneConfig.depthFunc = sceneConfig.depthFunc || '<=';
+    }
+
+    /**
+     * Reproduce a PointLayer from layer's JSON.
+     * @param  {Object} layerJSON - layer's JSON
+     * @return {PointLayer}
+     * @static
+     * @private
+     * @function
+     */
+    static fromJSON(json) {
+        return fromJSON(json, 'PointLayer', PointLayer);
     }
 }
 
