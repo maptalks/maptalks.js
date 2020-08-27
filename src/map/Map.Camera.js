@@ -257,6 +257,7 @@ Map.include(/** @lends Map.prototype */{
     _pointsToContainerPoints: function () {
         const a = [0, 0, 0];
         return function (points, zoom, altitudes = []) {
+            const altitudeIsArray = Array.isArray(altitudes);
             const isTransforming = this.isTransforming();
             const res = this._getResolution(zoom) / this._getResolution();
             const w2 = this.width / 2, h2 = this.height / 2;
@@ -264,7 +265,7 @@ Map.include(/** @lends Map.prototype */{
             const pts = [];
             for (let i = 0, len = points.length; i < len; i++) {
                 const point = points[i].copy()._multi(res);
-                let altitude = altitudes[i] || 0;
+                let altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
                 if (isTransforming || altitude) {
                     altitude *= res;
                     const scale = this._glScale;

@@ -92,7 +92,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
-        this._updateOffset();
+        this._updateMapStateCache();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
             if (!geo.isVisible()) {
@@ -123,7 +123,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.prepareToDraw();
 
         this.forEachGeo(this.checkGeo, this);
-        this._updateOffset();
+        this._updateMapStateCache();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
         }
@@ -190,11 +190,29 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         return this.layer._hitGeos(geometries, coordinate, options);
     }
 
-    _updateOffset() {
+    _updateMapStateCache() {
         const map = this.getMap();
         const offset = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
-        this._offset = offset;
-        return offset;
+        const resolution = map.getResolution();
+        const pitch = map.getPitch();
+        const bearing = map.getBearing();
+        const glScale = map.getGLScale();
+        const glZoom = map.getGLZoom();
+        const containerExtent = map.getContainerExtent();
+        const _2DExtent = map._get2DExtent();
+        const glExtent = map._get2DExtent(glZoom);
+        this.mapStateCache = {
+            resolution,
+            pitch,
+            bearing,
+            glScale,
+            glZoom,
+            _2DExtent,
+            glExtent,
+            containerExtent,
+            offset
+        };
+        return this;
     }
 }
 

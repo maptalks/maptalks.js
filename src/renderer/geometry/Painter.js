@@ -116,11 +116,12 @@ class Painter extends Class {
      * @return {Object[]} resources to render vector
      */
     getPaintParams(dx, dy, ignoreAltitude) {
-        const map = this.getMap(),
-            geometry = this.geometry,
-            res = map.getResolution(),
-            pitched = (map.getPitch() !== 0),
-            rotated = (map.getBearing() !== 0);
+        const renderer = this.getLayer()._getRenderer();
+        const { resolution, pitch, bearing, glScale, containerExtent } = renderer.mapStateCache;
+        const geometry = this.geometry,
+            res = resolution,
+            pitched = (pitch !== 0),
+            rotated = (bearing !== 0);
         let params = this._cachedParams;
 
         const paintAsPath = geometry._paintAsPath && geometry._paintAsPath();
@@ -130,7 +131,7 @@ class Painter extends Class {
         } else if (!params ||
             // refresh paint params
             // simplified, but not same zoom
-            params._res !== map.getResolution() ||
+            params._res !== resolution ||
             // refresh if requested by geometry
             this._pitched !== pitched && geometry._redrawWhenPitch() ||
             this._rotated !== rotated && geometry._redrawWhenRotate()
@@ -157,12 +158,12 @@ class Painter extends Class {
         }
         this._pitched = pitched;
         this._rotated = rotated;
-        const zoomScale = map.getGLScale(),
+        const zoomScale = glScale,
             // paintParams = this._paintParams,
             tr = [], // transformed params
             points = params[0];
 
-        const mapExtent = map.getContainerExtent();
+        const mapExtent = containerExtent;
         const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, this._hitPoint && !mapExtent.contains(this._hitPoint));
         if (!cPoints) {
             return null;
@@ -186,8 +187,9 @@ class Painter extends Class {
         if (this._aboveCamera()) {
             return null;
         }
+        const renderer = this.getLayer()._getRenderer();
+        const { glZoom } = renderer.mapStateCache;
         const map = this.getMap(),
-            glZoom = map.getGLZoom(),
             containerOffset = this.containerOffset;
         let cPoints;
         function pointsContainerPoints(viewPoints = [], alts = []) {
@@ -224,11 +226,17 @@ class Painter extends Class {
             let alt = altitude;
             cPoints = [];
             const alts = [];
+            const altitudeIsNumber = isNumber(altitude);
             for (let i = 0, l = clipPoints.length; i < l; i++) {
                 const c = clipPoints[i];
                 if (Array.isArray(c)) {
                     // const cring = [];
                     //polygon rings or clipped line string
+                    if (altitudeIsNumber) {
+                        const cring = pointsContainerPoints(c, altitude);
+                        cPoints.push(cring);
+                        continue;
+                    }
                     const altArray = [];
                     for (let ii = 0, ll = c.length; ii < ll; ii++) {
                         // const cc = c[ii];
@@ -281,8 +289,10 @@ class Painter extends Class {
         if (!isNumber(lineWidth)) {
             lineWidth = 4;
         }
-        let extent2D = map._get2DExtent(undefined, TEMP_CLIP_EXTENT0)._expand(lineWidth);
-        if (map.getPitch() > 0 && altitude) {
+        const renderer = this.getLayer()._getRenderer();
+        const { _2DExtent, glExtent, pitch } = renderer.mapStateCache;
+        let extent2D = _2DExtent._expand(lineWidth);
+        if (pitch > 0 && altitude) {
             const c = map.cameraLookAt;
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
@@ -301,7 +311,7 @@ class Painter extends Class {
                 altitude: altitude
             };
         }
-        const glExtent2D = map._get2DExtent(map.getGLZoom(), TEMP_CLIP_EXTENT0)._expand(lineWidth * map._glScale);
+        const glExtent2D = glExtent._expand(lineWidth * map._glScale);
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
         if (geometry.getShell && this.geometry.getHoles && !smoothness) {
@@ -403,6 +413,7 @@ class Painter extends Class {
         if (!renderer || !renderer.context && !context) {
             return;
         }
+        const mapStateCache = renderer.mapStateCache;
         //reduce geos to paint when drawOnInteracting
         if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
             return;
@@ -414,7 +425,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
-        this.containerOffset = offset || renderer._offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
+        this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
