@@ -57,7 +57,29 @@ describe('vector layers update style specs', () => {
             }
         });
 
-        assertChangeStyle(done, PointLayer, marker, [0, 255, 0, 63], () => {
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
+            marker.updateSymbol({
+                markerFill: '#0f0',
+                markerOpacity: 0.5
+            });
+        });
+    });
+
+    it('should can updateSymbol for PointLayer', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
             marker.updateSymbol({
                 markerFill: '#0f0',
                 markerOpacity: 0.5
@@ -76,7 +98,8 @@ describe('vector layers update style specs', () => {
             }
         });
 
-        assertChangeStyle(done, PointLayer, marker, [0, 0, 0, 0], () => {
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 0, 0, 0], () => {
             marker.updateSymbol({
                 markerDx: 50,
             });
@@ -95,13 +118,40 @@ describe('vector layers update style specs', () => {
             }
         });
 
-        assertChangeStyle(done, PointLayer, marker, [255, 0, 0, 255], () => {
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [255, 0, 0, 255], () => {
             marker.updateSymbol({
                 markerWidth: 120,
                 markerDx: 50
             });
         });
     });
+
+    it('should can call PointLayer.updateSymbol', done => {
+        const marker = new maptalks.Marker([0, 0]);
+
+        const layer = new PointLayer('point', marker, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        markerType: 'ellipse',
+                        markerFill: '#f00',
+                        markerWidth: 30,
+                        markerHeight: 30,
+                        markerVerticalAlignment: 'middle'
+                    }
+                }
+            ]
+        });
+        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
+            layer.updateSymbol(0, {
+                markerFill: '#0f0',
+                markerOpacity: 0.5
+            });
+        });
+    });
+
 
     it('should can update textHaloRadius', done => {
         const marker = new maptalks.Marker([0, 0], {
@@ -112,7 +162,8 @@ describe('vector layers update style specs', () => {
             }
         });
 
-        assertChangeStyle(done, PointLayer, marker, [0, 255, 0, 255], [27, 0], () => {
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 255, 0, 255], [27, 0], () => {
             marker.updateSymbol({
                 textHaloRadius: 2,
                 textHaloFill: '#0f0'
@@ -376,13 +427,12 @@ describe('vector layers update style specs', () => {
     });
 
 
-    function assertChangeStyle(done, LayerClass, data, expectedColor, offset, changeFun, isSetStyle) {
+    function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle) {
         if (typeof offset === 'function') {
             changeFun = offset;
             offset = [0, 0];
             isSetStyle = changeFun;
         }
-        const layer = new LayerClass('vector', data);
         let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();

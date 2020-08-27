@@ -370,7 +370,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const marker = e.target;
         const id = marker[ID_PROP];
         if (this.features[id]) {
-            const symbol = marker.getSymbol();
+            const symbol = marker['_getInternalSymbol']();
             const feaProps = this.features[id].properties;
             for (const p in feaProps) {
                 if (p.indexOf('_symbol_') === 0) {
@@ -390,7 +390,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         let rebuild = false;
         for (const p in properties) {
-            if (!SYMBOL_SIMPLE_PROPS[p]) {
+            if (properties[p] && !SYMBOL_SIMPLE_PROPS[p]) {
                 rebuild = true;
                 break;
             }

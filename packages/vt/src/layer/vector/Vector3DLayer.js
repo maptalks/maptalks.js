@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { extend } from '../../common/Util';
 
 const defaultOptions = {
     picking: true,
@@ -27,6 +28,19 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         if (!this.options.sceneConfig) {
             this.options.sceneConfig = {};
         }
+    }
+
+    updateSymbol(idx, symbol) {
+        if (!this.options.style) {
+            throw new Error('can\'t call update symbol when style is not set');
+        }
+        const styles = Array.isArray(this.options.style) ? this.options.style : this.options.style.style;
+        if (!styles[idx]) {
+            throw new Error(`invalid style at ${idx}`);
+        }
+        extend(styles[idx].symbol, symbol);
+        this.setStyle(this.options.style);
+        return this;
     }
 
     /**
