@@ -26,7 +26,7 @@ const TEMP_POINT0 = new Point(0, 0);
 const TEMP_PAINT_EXTENT = new PointExtent();
 const TEMP_EXTENT = new PointExtent();
 const TEMP_FIXED_EXTENT = new PointExtent();
-const TEMP_CLIP_EXTENT0 = new PointExtent();
+// const TEMP_CLIP_EXTENT0 = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
