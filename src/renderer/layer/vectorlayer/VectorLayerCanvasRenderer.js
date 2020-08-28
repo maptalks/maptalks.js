@@ -93,12 +93,20 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._drawnRes = res;
         }
         this._updateMapStateCache();
+        let idx = 0;
+        const points = this._batchConversionMarkers();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
+            if (geo.getType() === 'Point') {
+                geo._cPoint = points[idx];
+                idx++;
+            }
             if (!geo.isVisible()) {
+                delete geo._cPoint;
                 continue;
             }
             geo._paint(this._displayExtent);
+            delete this._geosToDraw[i]._cPoint;
         }
     }
 
@@ -124,8 +132,15 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
         this.forEachGeo(this.checkGeo, this);
         this._updateMapStateCache();
+        let idx = 0;
+        const points = this._batchConversionMarkers();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
+            if (this._geosToDraw[i].getType() === 'Point') {
+                this._geosToDraw[i]._cPoint = points[idx];
+                idx++;
+            }
             this._geosToDraw[i]._paint();
+            delete this._geosToDraw[i]._cPoint;
         }
     }
 
@@ -213,6 +228,29 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             offset
         };
         return this;
+    }
+
+    // Better performance of batch coordinate conversion
+    _batchConversionMarkers() {
+        const points = [], altitudes = [];
+        const placement = 'center';
+        for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
+            const type = this._geosToDraw[i].getType();
+            if (type === 'Point') {
+                const painter = this._geosToDraw[i]._painter;
+                const point = painter.getRenderPoints(placement)[0][0];
+                const altitude = painter.getAltitude();
+                points.push(point);
+                altitudes.push(altitude);
+            }
+        }
+        if (points.length === 0) {
+            return [];
+        }
+        const map = this.getMap();
+        const glZoom = map.getGLZoom();
+        const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
+        return pts;
     }
 }
 
