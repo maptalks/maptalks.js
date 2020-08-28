@@ -120,7 +120,7 @@ class Painter extends Class {
         const mapStateCache = renderer.mapStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
         const map = this.getMap();
-        if (mapStateCache) {
+        if (mapStateCache && (!this._hitPoint)) {
             resolution = mapStateCache.resolution;
             pitch = mapStateCache.pitch;
             bearing = mapStateCache.bearing;
