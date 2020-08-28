@@ -1958,6 +1958,25 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Converts the projected coordinate to a 2D point in the specific zoom
+     * @param  {Coordinate} pCoord - projected Coordinate
+     * @param  {Number} zoom   - point's zoom level
+     * @return {Point} 2D point
+     * @private
+     */
+    _prjsToPoints(pCoords, zoom) {
+        zoom = (isNil(zoom) ? this.getZoom() : zoom);
+        const res = this._getResolution(zoom);
+        const transformation = this._spatialReference.getTransformation();
+        const pts = [];
+        for (let i = 0, len = pCoords.length; i < len; i++) {
+            const pt = transformation.transform(pCoords[i], res);
+            pts.push(pt);
+        }
+        return pts;
+    }
+
+    /**
      * Converts the 2D point to projected coordinate
      * @param  {Point} point - 2D point
      * @param  {Number} zoom   - point's zoom level

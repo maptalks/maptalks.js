@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArrayHasData, isFunction, forEachCoord } from '../core/util';
+import { isNil, isNumber, isArrayHasData, isFunction } from '../core/util';
 import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -17,10 +17,10 @@ import simplify from 'simplify-js';
  * @instance
  */
 const options = {
-    'smoothness' : 0,
-    'enableClip' : true,
-    'enableSimplify' : true,
-    'simplifyTolerance' : 2,
+    'smoothness': 0,
+    'enableClip': true,
+    'enableSimplify': true,
+    'simplifyTolerance': 2,
     'symbol': {
         'lineColor': '#000',
         'lineWidth': 2,
@@ -49,7 +49,7 @@ class Path extends Geometry {
         // const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
         const extent = this.getExtent();
         return new Polygon(extent.toArray(), {
-            symbol : {
+            symbol: {
                 'lineWidth': 1,
                 'lineColor': '6b707b'
             }
@@ -249,7 +249,21 @@ class Path extends Geometry {
         if (isNil(zoom)) {
             zoom = map.getZoom();
         }
-        return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
+        if (!Array.isArray(prjCoords)) {
+            return map._prjToPoint(prjCoords, zoom);
+        } else {
+            if (!Array.isArray(prjCoords[0])) {
+                return map._prjsToPoints(prjCoords, zoom);
+            }
+            const pts = [];
+            for (let i = 0, len = prjCoords.length; i < len; i++) {
+                const prjCoord = prjCoords[i];
+                const pt = map._prjsToPoints(prjCoord, zoom);
+                pts.push(pt);
+            }
+            return pts;
+        }
+        // return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
     }
 
     _shouldSimplify() {
