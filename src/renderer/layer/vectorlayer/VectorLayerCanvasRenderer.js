@@ -2,6 +2,7 @@ import { getExternalResources } from '../../../core/util/resource';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
+import { isNil } from '../../../core/util';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -234,14 +235,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _batchConversionMarkers() {
         const points = [], altitudes = [];
         const placement = 'center';
+        const altitudeCache = {};
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             const type = this._geosToDraw[i].getType();
             if (type === 'Point') {
                 const painter = this._geosToDraw[i]._painter;
                 const point = painter.getRenderPoints(placement)[0][0];
-                const altitude = painter.getAltitude();
+                const altitude = this._geosToDraw[i].getAltitude();
+                if (isNil(altitudeCache[altitude])) {
+                    altitudeCache[altitude] = painter.getAltitude();
+                }
                 points.push(point);
-                altitudes.push(altitude);
+                altitudes.push(altitudeCache[altitude]);
             }
         }
         if (points.length === 0) {
