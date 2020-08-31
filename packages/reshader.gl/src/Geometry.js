@@ -59,16 +59,17 @@ export default class Geometry {
         for (const attr in this.data) {
             const attribute = this.data[attr];
             if (attribute && attribute.bufferView !== undefined) {
+                const bufferView = attribute.bufferView;
                 this.data[attr] =  {
-                    buffer: attribute.bufferView,
+                    buffer: bufferView,
                     offset: attribute.byteOffset,
                     stride: attribute.byteStride,
                     type: REGL_TYPES[attribute.componentType],
                     size: attribute.itemSize,
                     count: attribute.count
                 };
-                if (!buffers[attribute.bufferView]) {
-                    buffers[attribute.bufferView] = {
+                if (!buffers[bufferView]) {
+                    buffers[bufferView] = {
                         data: attribute.array
                     };
                 }
@@ -77,7 +78,7 @@ export default class Geometry {
         this._buffers = buffers;
 
         const elements = this.elements;
-        if (elements && elements.bufferView !== undefined) {
+        if (elements && elements.array) {
             this.elements = this.elements.array;
         }
     }
