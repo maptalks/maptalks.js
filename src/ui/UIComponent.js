@@ -537,7 +537,8 @@ class UIComponent extends Eventable(Class) {
         return {
             'zooming rotate pitch': this.onEvent,
             'zoomend': this.onZoomEnd,
-            'moving': this.onMoving
+            'moving': this.onMoving,
+            'resize': this.onResize
         };
     }
 
@@ -573,6 +574,13 @@ class UIComponent extends Eventable(Class) {
     onZoomEnd() {
         if (this.isVisible()) {
             // when zoomend, map container is reset, position should be updated in current frame
+            this._setPosition();
+        }
+    }
+
+    onResize() {
+        if (this.isVisible()) {
+            //when map resize , update position
             this._setPosition();
         }
     }

@@ -1,9 +1,7 @@
 import { GEOJSON_TYPES } from '../core/Constants';
 import { isNil, UID, isObject, extend, isFunction } from '../core/util';
 import Extent from '../geo/Extent';
-import Coordinate from '../geo/Coordinate';
-import PointExtent from '../geo/PointExtent';
-import { Geometry, LineString, Curve } from '../geometry';
+import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
@@ -20,7 +18,6 @@ const options = {
     'drawImmediate' : false
 };
 
-const TEMP_EXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -515,55 +512,6 @@ class OverlayLayer extends Layer {
             this._geoList[i].onHide();
         }
         return Layer.prototype.hide.call(this);
-    }
-
-    /**
-     * Identify the geometries on the given coordinate
-     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
-     * @param  {Object} [options=null]  - options
-     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
-     * @param  {Object} [options.count=null]  - result count
-     * @return {Geometry[]} geometries identified
-     */
-    identify(coordinate, options = {}) {
-        if (!(coordinate instanceof Coordinate)) {
-            coordinate = new Coordinate(coordinate);
-        }
-        return this._hitGeos(this._geoList, coordinate, options);
-    }
-
-    _hitGeos(geometries, coordinate, options = {}) {
-        const filter = options['filter'],
-            tolerance = options['tolerance'],
-            hits = [];
-        const map = this.getMap();
-        const point = map.coordToPoint(coordinate);
-        const cp = map._pointToContainerPoint(point, undefined, 0, point);
-        for (let i = geometries.length - 1; i >= 0; i--) {
-            const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
-                continue;
-            }
-            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
-                // Except for LineString with arrows or curves
-                let extent = geo.getContainerExtent(TEMP_EXTENT);
-                if (tolerance) {
-                    extent = extent._expand(tolerance);
-                }
-                if (!extent || !extent.contains(cp)) {
-                    continue;
-                }
-            }
-            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
-                hits.push(geo);
-                if (options['count']) {
-                    if (hits.length >= options['count']) {
-                        break;
-                    }
-                }
-            }
-        }
-        return hits;
     }
 
     _initCache() {

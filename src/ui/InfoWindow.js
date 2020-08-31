@@ -1,7 +1,7 @@
 import { isString } from '../core/util';
 import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Point from '../geo/Point';
-import { Geometry, Marker, MultiPoint } from '../geometry';
+import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
 import UIComponent from './UIComponent';
 
 
@@ -21,8 +21,8 @@ import UIComponent from './UIComponent';
 const options = {
     'containerClass': 'maptalks-msgBox',
     'autoPan': true,
-    'autoCloseOn' : null,
-    'autoOpenOn' : 'click',
+    'autoCloseOn': null,
+    'autoOpenOn': 'click',
     'width': 300,
     'minHeight': 120,
     'custom': false,
@@ -205,6 +205,8 @@ class InfoWindow extends UIComponent {
             if (painter) {
                 const fixExtent = painter.getFixedExtent();
                 o._add(fixExtent.xmax - markerSize.width / 2, fixExtent.ymin);
+            } else {
+                o._add(0, -markerSize.height);
             }
         }
         return o;
@@ -259,10 +261,91 @@ class InfoWindow extends UIComponent {
                 this.show(owner.getCoordinates());
             } else if (owner instanceof MultiPoint) {
                 this.show(owner.findClosest(e.coordinate));
+            } else if ((owner instanceof LineString) || (owner instanceof MultiLineString)) {
+                if (this.getMap().getScale() >= 8) {
+                    e.coordinate = this._rectifyMouseCoordinte(owner, e.coordinate);
+                }
+                this.show(e.coordinate);
             } else {
                 this.show(e.coordinate);
             }
         }, 1);
+    }
+
+    _rectifyMouseCoordinte(owner, mouseCoordinate) {
+        if (owner instanceof LineString) {
+            return this._rectifyLineStringMouseCoordinate(owner, mouseCoordinate).coordinate;
+        } else if (owner instanceof MultiLineString) {
+            return owner.getGeometries().map(lineString => {
+                return this._rectifyLineStringMouseCoordinate(lineString, mouseCoordinate);
+            }).sort((a, b) => {
+                return a.dis - b.dis;
+            })[0].coordinate;
+        }
+        // others
+        return mouseCoordinate;
+    }
+
+    _rectifyLineStringMouseCoordinate(lineString, mouseCoordinate) {
+        const pts = lineString.getCoordinates().map(coordinate => {
+            return this.getMap().coordToContainerPoint(coordinate);
+        });
+        const mousePt = this.getMap().coordToContainerPoint(mouseCoordinate);
+        let minDis = Infinity, coordinateIndex = -1;
+        // Find the point with the shortest distance
+        for (let i = 0, len = pts.length; i < len; i++) {
+            const pt = pts[i];
+            const dis = mousePt.distanceTo(pt);
+            if (dis < minDis) {
+                minDis = dis;
+                coordinateIndex = i;
+            }
+        }
+        const filterPts = [];
+        if (coordinateIndex === 0) {
+            filterPts.push(pts[0], pts[1]);
+        } else if (coordinateIndex === pts.length - 1) {
+            filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex]);
+        } else {
+            filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex], pts[coordinateIndex + 1]);
+        }
+        const xys = [];
+        const { width, height } = this.getMap().getSize();
+        //Calculate all pixels in the field of view
+        for (let i = 0, len = filterPts.length - 1; i < len; i++) {
+            const pt1 = filterPts[i], pt2 = filterPts[i + 1];
+            if (pt1.x === pt2.x) {
+                const miny = Math.max(0, Math.min(pt1.y, pt2.y));
+                const maxy = Math.min(height, Math.max(pt1.y, pt2.y));
+                for (let y = miny; y <= maxy; y++) {
+                    xys.push(new Point(pt1.x, y));
+                }
+            } else {
+                const k = (pt2.y - pt1.y) / (pt2.x - pt1.x);
+                // y-y0=k(x-x0)
+                // y-pt1.y=k(x-pt1.x)
+                const minx = Math.max(0, Math.min(pt1.x, pt2.x));
+                const maxx = Math.min(width, Math.max(pt1.x, pt2.x));
+                for (let x = minx; x <= maxx; x++) {
+                    const y = k * (x - pt1.x) + pt1.y;
+                    xys.push(new Point(x, y));
+                }
+            }
+        }
+        let minPtDis = Infinity, ptIndex = -1;
+        // Find the point with the shortest distance
+        for (let i = 0, len = xys.length; i < len; i++) {
+            const pt = xys[i];
+            const dis = mousePt.distanceTo(pt);
+            if (dis < minPtDis) {
+                minPtDis = dis;
+                ptIndex = i;
+            }
+        }
+        return {
+            dis: minPtDis,
+            coordinate: ptIndex < 0 ? mouseCoordinate : this.getMap().containerPointToCoord(xys[ptIndex])
+        };
     }
 
     _getWindowWidth() {
