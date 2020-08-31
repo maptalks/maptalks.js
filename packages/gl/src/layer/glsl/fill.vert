@@ -9,7 +9,7 @@ uniform mat4 projViewModelMatrix;
     varying vec2 vTexCoord;
 #endif
 
-#ifdef HAS_SHADOWING && !defined(HAS_BLOOM)
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
 
