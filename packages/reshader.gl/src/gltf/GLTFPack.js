@@ -271,7 +271,7 @@ function createGeometry(primitive) {
         }
     }
     let indices = primitive.indices;
-    if (indices.bufferView === undefined) {
+    if (indices.bufferView === undefined && indices.array) {
         indices = indices.array;
     }
     const modelGeometry = new Geometry(
