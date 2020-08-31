@@ -501,20 +501,25 @@
 
     function update() {
       litMaterial.uAlbedoPBR = [1, 0, 0, 1];
-      layer.updateSymbol(0, 0, style.style[0].symbol);
+      layer.updateSymbol(0, style.style[0].symbol);
     }
 
     function updatePolygonFill() {
-      layer.updateSymbol(0, 0, { polygonFill: '#fff' });
+      layer.updateSymbol(0, { polygonFill: '#fff' });
     }
 
     function updatePolygonOpacity() {
-      layer.updateSymbol(0, 0, { polygonOpacity: 1 });
+      layer.updateSymbol(0, { polygonOpacity: 1 });
     }
 
     function updateTexture() {
       litMaterial.uBaseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
-      layer.updateSymbol(0, 0, style.style[0].symbol);
+      layer.updateSymbol(0, style.style[0].symbol);
+    }
+
+    function hide() {
+      layer.updateSymbol(0, { visible: false });
+      layer.updateSymbol(1, { visible: false });
     }
 
     var bearing = 0;

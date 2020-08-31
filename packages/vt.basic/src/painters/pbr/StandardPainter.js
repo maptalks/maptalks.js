@@ -4,6 +4,8 @@ import MeshPainter from '../MeshPainter';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 
+const EMPTY_ARRAY = [];
+
 class StandardPainter extends MeshPainter {
     constructor(...args) {
         super(...args);
@@ -76,6 +78,9 @@ class StandardPainter extends MeshPainter {
     }
 
     getShadowMeshes() {
+        if (!this.isVisible()) {
+            return EMPTY_ARRAY;
+        }
         this._shadowCount = this.scene.getMeshes().length;
         const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
         for (let i = 0; i < meshes.length; i++) {
