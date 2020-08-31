@@ -109,7 +109,7 @@ class Painter {
         const bloom = this.getSymbol()['bloom'];
         if (Array.isArray(meshes)) {
             meshes.forEach(mesh => {
-                const defines = mesh.defines;
+                const defines = mesh.defines || {};
                 if (!!defines['HAS_BLOOM'] !== !!bloom) {
                     if (bloom) {
                         defines['HAS_BLOOM'] = 1;
@@ -120,7 +120,7 @@ class Painter {
                 }
             });
         } else {
-            const defines = meshes.defines;
+            const defines = meshes.defines || {};
             if (!!defines['HAS_BLOOM'] !== !!bloom) {
                 if (bloom) {
                     defines['HAS_BLOOM'] = 1;

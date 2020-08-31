@@ -228,10 +228,10 @@ class PhongPainter extends MeshPainter {
         const directionalLight = lightManager.getDirectionalLight() || {};
 
         const uniforms = {
-            'lightAmbient': ambientLight.color || [0.2, 0.2, 0.2],
-            'lightDiffuse': directionalLight.color || [0.1, 0.1, 0.1],
+            'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2],
+            'uLight0_diffuse': [...(directionalLight.color || [0.1, 0.1, 0.1]), 1],
             'lightSpecular': directionalLight.specular || [0.8, 0.8, 0.8],
-            'lightDirection': directionalLight.direction || [1, 1, -1]
+            'uLight0_viewDirection': directionalLight.direction || [1, 1, -1]
         };
 
         return uniforms;

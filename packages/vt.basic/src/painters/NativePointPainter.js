@@ -38,6 +38,12 @@ class NativePointPainter extends Painter {
             return null;
         };
 
+        material.appendDefines = (defines/*, geometry*/) => {
+            if (symbol.markerType !== 'square') {
+                defines['USE_CIRCLE'] = 1;
+            }
+            return defines;
+        };
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
