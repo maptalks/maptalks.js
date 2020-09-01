@@ -14,6 +14,7 @@ const DEFAULT_UNIFORMS = {
 };
 
 const EMPTY_UV_OFFSET = [0, 0];
+const SCALE = [];
 
 class FillPainter extends BasicPainter {
     constructor(...args) {
@@ -46,13 +47,26 @@ class FillPainter extends BasicPainter {
         prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
-
+        mat4.getScaling(SCALE, transform);
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexCoord) {
             uniforms.tileCenter = tileCenter && tileCenter.toArray();
-            uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, true);
-            uniforms.patternSize = [iconAtlas.width, iconAtlas.height];
-            uniforms.uvScale = iconAtlas ? [256 / iconAtlas.width, 256 / iconAtlas.height] : [1, 1];
+            //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
+            uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, SCALE[0] !== 1);
+            uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
+            uniforms.uvScale = [1, 1];
+            if (document.getElementById('ICON_DEBUG')) {
+                const debug = document.getElementById('ICON_DEBUG');
+                debug.width = iconAtlas.width;
+                debug.height = iconAtlas.height;
+                debug.style.width = iconAtlas.width + 'px';
+                debug.style.height = iconAtlas.height + 'px';
+                debug.getContext('2d').putImageData(
+                    new ImageData(new Uint8ClampedArray(iconAtlas.data), iconAtlas.width, iconAtlas.height),
+                    0,
+                    0
+                );
+            }
         }
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
@@ -209,12 +223,12 @@ class FillPainter extends BasicPainter {
                         return EMPTY_UV_OFFSET;
                     }
                     const scale =  props['tileResolution'] / props['resolution'];
-                    const [width, height] = props['patternSize'];
+                    // const [width, height] = props['atlasSize'];
                     const tileSize = this.layer.options['tileSize'];
                     //瓦片左边沿的坐标 = 瓦片中心点.x - 瓦片宽度 / 2
                     //瓦片左边沿的屏幕坐标 = 瓦片左边沿的坐标 * tileResolution / resolution
                     //瓦片左边沿的uv偏移量 = （瓦片左边沿的屏幕坐标 / 模式图片的宽） % 1
-                    const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale / width % 1, (props['tileCenter'][1] - tileSize[1] / 2) * scale / height % 1];
+                    const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale, (props['tileCenter'][1] + tileSize[1] / 2) * scale];
                     return offset;
                 }
             }

@@ -8,7 +8,16 @@ precision mediump float;
 
 #ifdef HAS_PATTERN
     uniform sampler2D polygonPatternFile;
+    uniform vec2 atlasSize;
     varying vec2 vTexCoord;
+    varying vec4 vTexInfo;
+
+    vec2 computeUV() {
+        vec2 uv = mod(vTexCoord, 1.0);
+        vec2 uvStart = vTexInfo.xy;
+        vec2 uvSize = vTexInfo.zw;
+        return (uvStart + uv * uvSize) / atlasSize;
+    }
 #endif
 
 
@@ -29,6 +38,7 @@ uniform float tileExtent;
     varying vec2 vPosition;
 #endif
 
+
 void main() {
     #ifndef ENABLE_TILE_STENCIL
         //当position的x, y超出tileExtent时，丢弃该片元
@@ -40,7 +50,8 @@ void main() {
     #endif
 
     #ifdef HAS_PATTERN
-        vec4 color = texture2D(polygonPatternFile, vTexCoord);
+        vec2 uv = computeUV();
+        vec4 color = texture2D(polygonPatternFile, uv);
     #else
         #ifdef HAS_COLOR
             vec4 color = vColor;

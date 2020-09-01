@@ -48,9 +48,11 @@ export default class PolygonPack extends VectorPack {
             }
         ];
         if (this.iconAtlas) {
+            const width = this.iconAtlas.image.data.width;
+            const height = this.iconAtlas.image.data.height;
             format.push({
-                type: Int16Array,
-                width: 2,
+                type: (width > 256 || height > 256) ? Uint16Array : Uint8Array,
+                width: 4,
                 name: 'aTexCoord'
             });
         }
@@ -88,7 +90,6 @@ export default class PolygonPack extends VectorPack {
 
     placeVector(polygon, scale) {
         // const symbol = polygon.symbol;
-
         const feature = polygon.feature,
             geometry = feature.geometry;
 
@@ -114,24 +115,25 @@ export default class PolygonPack extends VectorPack {
             }
             dynOpacity *= 255;
         }
-
-        const uvSize = 256;
         const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
 
         const altitude = this.getAltitude(feature.properties);
-        let uvWidth = 0;
-        let uvHeight = 0;
+        const uvStart = [0, 0];
+        const uvSize = [0, 0];
         if (hasUV) {
             const patternFile = this._patternFn ? this._patternFn(null, feature.properties) : this.symbol['polygonPatternFile'];
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
-                uvWidth = image.data.width;
-                uvHeight = image.data.height;
+                const rect = this.iconAtlas.positions[patternFile].paddedRect;
+                uvStart[0] = rect.x;
+                uvStart[1] = rect.y;
+                //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
+                uvSize[0] = rect.w - 1;
+                uvSize[1] = rect.h - 1;
             }
         }
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
-        // debugger
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
             const triangleIndex = this.data.length / this.formatWidth;
@@ -158,7 +160,7 @@ export default class PolygonPack extends VectorPack {
                     ring[0].x, ring[0].y, altitude
                 );
                 if (hasUV) {
-                    this.data.push(ring[0].x * uvWidth / uvSize, ring[0].y * uvHeight / uvSize);
+                    this.data.push(...uvStart, ...uvSize);
                 }
                 if (dynFill !== undefined) {
                     this.data.push(...dynFill);
@@ -177,7 +179,7 @@ export default class PolygonPack extends VectorPack {
                         ring[i].x, ring[i].y, altitude
                     );
                     if (hasUV) {
-                        this.data.push(ring[i].x * uvWidth / uvSize, ring[i].y * uvHeight / uvSize);
+                        this.data.push(...uvStart, ...uvSize);
                     }
                     if (dynFill !== undefined) {
                         this.data.push(...dynFill);

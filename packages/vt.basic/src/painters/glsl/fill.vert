@@ -14,7 +14,7 @@ attribute vec3 aPosition;
 uniform mat4 projViewModelMatrix;
 
 #ifdef HAS_PATTERN
-    attribute vec2 aTexCoord;
+    attribute vec4 aTexCoord;
 
     uniform float tileResolution;
     uniform float resolution;
@@ -23,6 +23,14 @@ uniform mat4 projViewModelMatrix;
     uniform vec2 uvOffset;
 
     varying vec2 vTexCoord;
+    varying vec4 vTexInfo;
+
+    vec2 computeUV(vec2 vertex, vec2 uvSize, vec2 scale, vec2 offset) {
+        float u = vertex.x * scale.x;
+        float v = vertex.y * scale.y;
+        vTexInfo = vec4(aTexCoord.xy, uvSize);
+        return (offset + vec2(u, -v)) / uvSize;
+    }
 #endif
 #ifndef ENABLE_TILE_STENCIL
     varying vec2 vPosition;
@@ -32,7 +40,6 @@ uniform mat4 projViewModelMatrix;
     #include <vsm_shadow_vert>
 #endif
 
-
 void main() {
     vec4 position = vec4(aPosition, 1.);
     gl_Position = projViewModelMatrix * position;
@@ -41,8 +48,9 @@ void main() {
     #endif
     #ifdef HAS_PATTERN
         float zoomScale = tileResolution / resolution;
-        // /32.0 是为提升精度，原数据都 * 32
-        vTexCoord = aTexCoord / 32.0 * uvScale * zoomScale / tileRatio + uvOffset;
+        vec2 scale = uvScale * zoomScale / tileRatio;
+        //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
+        vTexCoord = computeUV(aPosition.xy, aTexCoord.zw + 1.0, scale, uvOffset);
     #endif
 
     #ifdef HAS_COLOR

@@ -24,23 +24,9 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
-                if (this.resize) {
-                    resize(this, ctx.canvas);
-                    width = ctx.canvas.width;
-                    height = ctx.canvas.height;
-                    if (document.getElementById('DEBUG')) {
-                        const debug = document.getElementById('DEBUG');
-                        debug.width = width;
-                        debug.height = height;
-                        debug.style.width = width + 'px';
-                        debug.style.height = height + 'px';
-                        debug.getContext('2d').drawImage(ctx.canvas, 0, 0);
-                    }
-                } else {
-                    width = ctx.canvas.width = this.width;
-                    height = ctx.canvas.height = this.height;
-                    ctx.drawImage(this, 0, 0);
-                }
+                width = ctx.canvas.width = this.width;
+                height = ctx.canvas.height = this.height;
+                ctx.drawImage(this, 0, 0);
                 const data = ctx.getImageData(0, 0, width, height).data;
                 buffers.push(data.buffer);
                 images[this.url] = { data: { data, width, height }, url: this.src };
@@ -158,7 +144,7 @@ function convertColorArray(color) {
     }
     return color.reduce((accumulator, v, idx) => {
         if (idx < 3) {
-            accumulator += v * 255 + ','
+            accumulator += v * 255 + ',';
         } else {
             accumulator += v + ')';
         }
