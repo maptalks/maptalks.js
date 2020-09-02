@@ -57,4 +57,19 @@ export default class BasicPainter extends Painter {
         }
         return regl.texture(config);
     }
+
+    drawDebugAtlas(iconAtlas) {
+        if (document.getElementById('MAPTALKS_ICON_DEBUG')) {
+            const debug = document.getElementById('MAPTALKS_ICON_DEBUG');
+            debug.width = iconAtlas.width;
+            debug.height = iconAtlas.height;
+            debug.style.width = iconAtlas.width + 'px';
+            debug.style.height = iconAtlas.height + 'px';
+            debug.getContext('2d').putImageData(
+                new ImageData(new Uint8ClampedArray(iconAtlas.data), iconAtlas.width, iconAtlas.height),
+                0,
+                0
+            );
+        }
+    }
 }

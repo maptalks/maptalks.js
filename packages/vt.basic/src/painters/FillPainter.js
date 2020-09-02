@@ -13,9 +13,6 @@ const DEFAULT_UNIFORMS = {
     'polygonOpacity': 1
 };
 
-const EMPTY_UV_OFFSET = [0, 0];
-const SCALE = [];
-
 class FillPainter extends BasicPainter {
     constructor(...args) {
         super(...args);
@@ -39,34 +36,19 @@ class FillPainter extends BasicPainter {
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
-            tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
 
         prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
-        mat4.getScaling(SCALE, transform);
         const iconAtlas = geometry.properties.iconAtlas;
-        if (iconAtlas && geometry.data.aTexCoord) {
+        if (iconAtlas && geometry.data.aTexInfo) {
             uniforms.tileCenter = tileCenter && tileCenter.toArray();
             //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
-            uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, SCALE[0] !== 1);
+            uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, false);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
-            uniforms.uvScale = [1, 1];
-            if (document.getElementById('ICON_DEBUG')) {
-                const debug = document.getElementById('ICON_DEBUG');
-                debug.width = iconAtlas.width;
-                debug.height = iconAtlas.height;
-                debug.style.width = iconAtlas.width + 'px';
-                debug.style.height = iconAtlas.height + 'px';
-                debug.getContext('2d').putImageData(
-                    new ImageData(new Uint8ClampedArray(iconAtlas.data), iconAtlas.width, iconAtlas.height),
-                    0,
-                    0
-                );
-            }
+            this.drawDebugAtlas(iconAtlas);
         }
         geometry.generateBuffers(this.regl);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
@@ -75,7 +57,7 @@ class FillPainter extends BasicPainter {
             picking: true
         });
         const defines = {};
-        if (iconAtlas && geometry.data.aTexCoord) {
+        if (iconAtlas && geometry.data.aTexInfo) {
             defines['HAS_PATTERN'] = 1;
         }
         if (geometry.data.aColor) {
@@ -205,34 +187,6 @@ class FillPainter extends BasicPainter {
         const uniforms = [];
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
-        uniforms.push(
-            {
-                name: 'projViewModelMatrix',
-                type: 'function',
-                fn: function (context, props) {
-                    const projViewModelMatrix = [];
-                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    return projViewModelMatrix;
-                }
-            },
-            {
-                name: 'uvOffset',
-                type: 'function',
-                fn: (context, props) => {
-                    if (!props['tileCenter']) {
-                        return EMPTY_UV_OFFSET;
-                    }
-                    const scale =  props['tileResolution'] / props['resolution'];
-                    // const [width, height] = props['atlasSize'];
-                    const tileSize = this.layer.options['tileSize'];
-                    //瓦片左边沿的坐标 = 瓦片中心点.x - 瓦片宽度 / 2
-                    //瓦片左边沿的屏幕坐标 = 瓦片左边沿的坐标 * tileResolution / resolution
-                    //瓦片左边沿的uv偏移量 = （瓦片左边沿的屏幕坐标 / 模式图片的宽） % 1
-                    const offset = [(props['tileCenter'][0] - tileSize[0] / 2) * scale, (props['tileCenter'][1] + tileSize[1] / 2) * scale];
-                    return offset;
-                }
-            }
-        );
         const viewport = {
             x: 0,
             y: 0,
@@ -297,10 +251,9 @@ class FillPainter extends BasicPainter {
 
     getUniformValues(map, context) {
         const projViewMatrix = map.projViewMatrix;
-        const resolution = map.getResolution();
         const uniforms = {
             projViewMatrix,
-            resolution
+            glScale: 1 / map.getGLScale(),
         };
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;

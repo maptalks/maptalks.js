@@ -378,6 +378,22 @@ export default class VectorPack {
         this.maxAltitude = Math.max(this.maxAltitude, Math.abs(altitude));
         return altitude;
     }
+
+    getIconAtlasMaxValue() {
+        const positions = this.iconAtlas.positions;
+        let max = 0;
+        for (const p in positions) {
+            if (positions.hasOwnProperty(p)) {
+                const rect = positions[p].paddedRect;
+                //w/h - 1 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
+                const m = Math.max(rect.x, rect.y, rect.w - 1, rect.h - 1);
+                if (m > max) {
+                    max = m;
+                }
+            }
+        }
+        return max;
+    }
 }
 
 function serializeAtlas(atlas) {

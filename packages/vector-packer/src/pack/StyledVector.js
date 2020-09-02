@@ -5,4 +5,12 @@ export default class StyledVector {
         this.symbol = symbol;
         this.options = options;//minZoom maxZoom
     }
+
+    setResource(res) {
+        this._res = res;
+    }
+
+    getResource() {
+        return this._res;
+    }
 }

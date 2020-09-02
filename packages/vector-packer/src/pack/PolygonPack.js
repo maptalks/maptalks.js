@@ -33,7 +33,7 @@ export default class PolygonPack extends VectorPack {
                 pattern = this._patternFn(options['zoom'], feature.properties);
             }
             if (pattern) {
-                iconReqs[pattern] = 'resize';
+                iconReqs[pattern] = 1;
             }
         }
         return new StyledVector(feature, symbol, options);
@@ -48,12 +48,11 @@ export default class PolygonPack extends VectorPack {
             }
         ];
         if (this.iconAtlas) {
-            const width = this.iconAtlas.image.data.width;
-            const height = this.iconAtlas.image.data.height;
+            const max = this.getIconAtlasMaxValue();
             format.push({
-                type: (width > 256 || height > 256) ? Uint16Array : Uint8Array,
+                type: max > 255 ? Uint16Array : Uint8Array,
                 width: 4,
-                name: 'aTexCoord'
+                name: 'aTexInfo'
             });
         }
         if (this._polygonFillFn) {

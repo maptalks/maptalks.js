@@ -29,6 +29,11 @@ attribute vec2 aExtrude;
     varying highp float vLinesofar;
 #endif
 
+#ifdef HAS_PATTERN
+    attribute vec4 aTexInfo;
+    varying vec4 vTexInfo;
+#endif
+
 #ifdef HAS_DASHARRAY
     #ifdef HAS_DASHARRAY_ATTR
         attribute vec4 aDasharray;
@@ -197,6 +202,10 @@ void main() {
             #ifdef HAS_DASHARRAY_COLOR
                 vDashColor = aDashColor;
             #endif
+        #endif
+
+        #ifdef HAS_PATTERN
+            vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
         #endif
     #else
         fbo_picking_setData(projDistance, true);

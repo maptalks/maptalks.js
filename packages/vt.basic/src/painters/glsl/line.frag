@@ -23,8 +23,15 @@ uniform lowp float lineBlur;
 
 #ifdef HAS_PATTERN
     uniform sampler2D linePatternFile;
-    uniform vec2 linePatternSize;
-
+    uniform vec2 atlasSize;
+    uniform float flipY;
+    varying vec4 vTexInfo;
+    vec2 computeUV(vec2 texCoord) {
+        vec2 uv = mod(texCoord, 1.0);
+        vec2 uvStart = vTexInfo.xy;
+        vec2 uvSize = vTexInfo.zw;
+        return (uvStart + uv * uvSize) / atlasSize;
+    }
 #endif
 varying vec2 vNormal;
 varying vec2 vWidth;
@@ -81,11 +88,12 @@ void main() {
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
     float alpha = clamp(min(dist - (vWidth.t - blur2), vWidth.s - dist) / blur2, 0.0, 1.0);
     #ifdef HAS_PATTERN
-        float patternWidth = ceil(linePatternSize.x * vWidth.s * 2.0 / linePatternSize.y);
+        vec2 uvSize = vTexInfo.zw;
+        float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
         //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-        float patternx = vLinesofar / patternWidth;
-        float patterny = (vNormal.y + 1.0) / 2.0;
-        vec4 color = texture2D(linePatternFile, vec2(patternx, patterny));
+        float patternx = mod(vLinesofar / patternWidth, 1.0);
+        float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
+        vec4 color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
     #else
         #ifdef HAS_COLOR
             vec4 color = vColor / 255.0 * alpha;

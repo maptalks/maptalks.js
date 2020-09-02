@@ -87,17 +87,18 @@ export default class LinePack extends VectorPack {
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
-        if (!this.options['atlas'] && symbol['linePatternFile']) {
-            let pattern = symbol['linePatternFile'];
-            if (this.patternFn) {
-                pattern = this.patternFn(options['zoom'], feature.properties);
-            }
-            if (pattern) {
-                iconReqs[pattern] = 'resize';
-            }
-
+        const vector = new StyledVector(feature, symbol, options);
+        let pattern = symbol['linePatternFile'];
+        if (this.patternFn) {
+            pattern = this.patternFn(options['zoom'], feature.properties);
         }
-        return new StyledVector(feature, symbol, options);
+        if (!this.options['atlas'] && pattern) {
+            iconReqs[pattern] = 1;
+        }
+        if (pattern) {
+            vector.setResource(pattern);
+        }
+        return vector;
     }
 
     getFormat() {
@@ -183,6 +184,14 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
+        if (this.iconAtlas) {
+            const max = this.getIconAtlasMaxValue();
+            format.push({
+                type: max > 255 ? Uint16Array : Uint8Array,
+                width: 4,
+                name: 'aTexInfo'
+            });
+        }
         return format;
     }
 
@@ -260,6 +269,22 @@ export default class LinePack extends VectorPack {
             }
             this.feaDashColor = dashColor;
         }
+
+        if (this.iconAtlas) {
+            const res = line.getResource();
+            const image = this.iconAtlas.glyphMap[res];
+            this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
+            if (image) {
+                const rect = this.iconAtlas.positions[res].paddedRect;
+                this.feaTexInfo[0] = rect.x;
+                this.feaTexInfo[1] = rect.y;
+                //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
+                this.feaTexInfo[2] = rect.w - 1;
+                this.feaTexInfo[3] = rect.h - 1;
+            } else {
+                this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
+            }
+        }
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
         let lines = feature.geometry;
@@ -282,7 +307,7 @@ export default class LinePack extends VectorPack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const needExtraVertex = this.symbol['linePatternFile'] || this.feaDash || hasDasharray(this.symbol['lineDasharray']);
+        const needExtraVertex = this.patternFn || this.symbol['linePatternFile'] || this.feaDash || hasDasharray(this.symbol['lineDasharray']);
         this.overscaling = 1;
         // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
@@ -672,6 +697,9 @@ export default class LinePack extends VectorPack {
         //         );
         //     }
         // }
+        if (this.iconAtlas) {
+            data.push(...this.feaTexInfo);
+        }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
 

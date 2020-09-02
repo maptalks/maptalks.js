@@ -87,7 +87,6 @@ export default class IconRequestor {
                 img.onload = onload;
                 img.onerror = onerror;
                 img.onabort = onerror;
-                img.resize = icons[url] === 'resize';
                 img.url = url;
                 img.crossOrigin = 'Anonymous';
                 hasAsyn = true;
