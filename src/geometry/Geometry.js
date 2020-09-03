@@ -874,6 +874,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Object} symbol - external symbol
      */
     _setExternSymbol(symbol) {
+        this._eventSymbolProperties = symbol;
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
@@ -1057,7 +1058,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const e = {};
         if (this._eventSymbolProperties) {
-            e.properties = this._eventSymbolProperties;
+            e.properties = extend({}, this._eventSymbolProperties);
             delete this._eventSymbolProperties;
         }
         /**
