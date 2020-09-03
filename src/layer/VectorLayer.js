@@ -142,9 +142,6 @@ class VectorLayer extends OverlayLayer {
             'id': this.getId(),
             'options': this.config()
         };
-        if ((isNil(options['style']) || options['style']) && this.getStyle()) {
-            profile['style'] = this.getStyle();
-        }
         if (isNil(options['geometries']) || options['geometries']) {
             let clipExtent;
             if (options['clipExtent']) {
@@ -190,9 +187,6 @@ class VectorLayer extends OverlayLayer {
             }
         }
         layer.addGeometry(geometries);
-        if (json['style']) {
-            layer.setStyle(json['style']);
-        }
         return layer;
     }
 

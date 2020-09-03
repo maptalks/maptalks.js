@@ -1,5 +1,5 @@
 import { GEOJSON_TYPES } from '../core/Constants';
-import { isNil, UID, isObject, extend, isFunction } from '../core/util';
+import { isNil, UID, isObject, extend, isFunction, parseStyleRootPath } from '../core/util';
 import Extent from '../geo/Extent';
 import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
@@ -42,7 +42,6 @@ class OverlayLayer extends Layer {
             this.addGeometry(geometries);
         }
         const style = this.options['style'];
-        delete this.options['style'];
         if (style) {
             this.setStyle(style);
         }
@@ -321,6 +320,9 @@ class OverlayLayer extends Layer {
         geo._fireEvent('add', {
             'layer': this
         });
+        if (this._cookedStyles) {
+            this._styleGeometry(geo);
+        }
     }
 
     /**
@@ -415,10 +417,10 @@ class OverlayLayer extends Layer {
      * @return {Object|Object[]} layer's style
      */
     getStyle() {
-        if (!this._style) {
+        if (!this.options['style']) {
             return null;
         }
-        return this._style;
+        return this.options['style'];
     }
 
     /**
@@ -440,7 +442,8 @@ class OverlayLayer extends Layer {
       ]);
      */
     setStyle(style) {
-        this._style = style;
+        this.options.style = style;
+        style = parseStyleRootPath(style);
         this._cookedStyles = compileStyle(style);
         this.forEach(function (geometry) {
             this._styleGeometry(geometry);
@@ -480,10 +483,10 @@ class OverlayLayer extends Layer {
      * @fires VectorLayer#removestyle
      */
     removeStyle() {
-        if (!this._style) {
+        if (!this.options.style) {
             return this;
         }
-        delete this._style;
+        delete this.options.style;
         delete this._cookedStyles;
         this.forEach(function (geometry) {
             geometry._setExternSymbol(null);
