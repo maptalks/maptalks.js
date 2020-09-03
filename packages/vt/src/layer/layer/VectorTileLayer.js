@@ -218,55 +218,10 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _parseStylePath() {
-        const styles = this._vtStyle;
-        for (let i = 0; i < styles.length; i++) {
-            const { symbol } = styles[i];
-            if (symbol) {
-                this._parseSymbolPath(symbol);
-            }
-        }
-
-        const featureStyles = this._featureStyle;
-        for (let i = 0; i < featureStyles.length; i++) {
-            const { symbol } = featureStyles[i].style;
-            if (symbol) {
-                this._parseSymbolPath(symbol);
-            }
-        }
+        maptalks.Util.convertStylePath(this._vtStyle, this._replacer);
+        maptalks.Util.convertStylePath(this._featureStyle, this._replacer);
     }
 
-    _parseSymbolPath(symbol) {
-        for (const p in symbol) {
-            if (symbol.hasOwnProperty(p) && p !== 'textName') {
-                if (isString(symbol[p]) && symbol[p].length > 2) {
-                    symbol[p] = symbol[p].replace(URL_PATTERN, this._replacer);
-                } else if (isFunctionDefinition(symbol[p])) {
-                    symbol[p] = this._parseStops(symbol[p]);
-                } else if (isObject(symbol[p])) {
-                    this._parseSymbolPath(symbol[p]);
-                }
-            }
-        }
-    }
-
-    _parseStops(value) {
-        const defaultValue = value['default'];
-        if (isString(defaultValue)) {
-            value['default'] = defaultValue.replace(URL_PATTERN, this._replacer);
-        }
-        const stops = value.stops;
-        for (let i = 0; i < stops.length; i++) {
-            if (!Array.isArray(stops[i])) {
-                continue;
-            }
-            if (isString(stops[i][1])) {
-                stops[i][1] = stops[i][1].replace(URL_PATTERN, this._replacer);
-            } else if (isFunctionDefinition(stops[i][1])) {
-                stops[i][1] = this._parseStops(stops[i][1]);
-            }
-        }
-        return value;
-    }
 
     updateSceneConfig(idx, sceneConfig) {
         return this._updateSceneConfig(0, idx, sceneConfig);
