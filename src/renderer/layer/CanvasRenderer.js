@@ -4,8 +4,6 @@ import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
 import Point from '../../geo/Point';
-import CollectionPainter from '../geometry/CollectionPainter';
-import Painter from '../geometry/Painter';
 
 /**
  * @classdesc
