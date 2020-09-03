@@ -47,7 +47,9 @@ module.exports = [{
             mainFields: ['module', 'main'],
         }),
         commonjs(),
-        babel()
+        babel({
+            compact: false
+        }),
     ],
     external: ['maptalks'],
     output: {
@@ -122,7 +124,9 @@ if (!workerLoaded) {
 }`
     },
     plugins: [
-        babel(),
+        babel({
+            compact: false
+        }),
         removeGlobal()
     ].concat(plugins),
     watch: {

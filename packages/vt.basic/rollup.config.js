@@ -57,7 +57,8 @@ module.exports = {
         }),
         commonjs(),
         babel({
-            exclude: 'node_modules/**'
+            exclude: 'node_modules/**',
+            compact: false
         })
     ].concat(plugins),
     external: ['@maptalks/vt', '@maptalks/gl', 'maptalks'],
