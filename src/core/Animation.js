@@ -189,7 +189,7 @@ const Animation = {
                     return null;
                 }
                 return [v1, v2 - v1, v2];
-            } else if (Array.isArray(v1) || v1 instanceof Coordinate || v1 instanceof Point) {
+            } else if (Array.isArray(v1) && isNumber(v1[0]) || v1 instanceof Coordinate || v1 instanceof Point) {
                 // is a coordinate (array or a coordinate) or a point
                 if (Array.isArray(v1)) {
                     v1 = new Coordinate(v1);
@@ -205,7 +205,7 @@ const Animation = {
                 }
                 return [v1, v2.sub(v1), v2];
             } else {
-                return [v1, 0, v2];
+                return [v1, v2, v2];
             }
         }
 
@@ -300,6 +300,8 @@ const Animation = {
                             result[p] = deltaStyles(delta, s, d);
                         } else if (s instanceof Point || s instanceof Coordinate) {
                             result[p] = s.add(d.multi(delta));
+                        } else {
+                            result[p] = d;
                         }
                     }
                 }
