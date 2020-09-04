@@ -80,7 +80,6 @@ function createPainterPlugin(type, Painter) {
                 tileData,
                 tileInfo,
                 tileExtent,
-                tileCenter = tileInfo.point,
                 tileTransform,
                 tileTranslationMatrix,
                 tileZoom,
@@ -153,9 +152,7 @@ function createPainterPlugin(type, Painter) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
-                var map = layer.getMap();
-                var glScale = map.getGLScale();
-                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tileCenter: tileCenter.multi(glScale).toArray(), tileZoom, tileTranslationMatrix });
+                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint: tileInfo.point.toArray(), tileZoom, tileTranslationMatrix });
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {

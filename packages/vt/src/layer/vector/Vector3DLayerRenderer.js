@@ -215,7 +215,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             // const transform = mat4.translate([], mat4.identity([]), center);
 
             // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const mesh = this.painter.createMesh(geometry, posMatrix, { tileCenter: [center[0], center[1]] });
+            const mesh = this.painter.createMesh(geometry, posMatrix, { tilePoint: [center[0], center[1]] });
             mesh.setUniform('level', 0);
             const defines = mesh.getDefines();
             //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出

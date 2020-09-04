@@ -42,11 +42,13 @@ class FillPainter extends BasicPainter {
         return true;
     }
 
-    createMesh(geometry, transform, { tileCenter }) {
+    createMesh(geometry, transform, { tilePoint }) {
+        const isVectorTile = geometry.data.aPosition instanceof Int16Array;
         this._colorCache = this._colorCache || {};
         const symbol = this.getSymbol();
         const uniforms = {
-            tileExtent: geometry.properties.tileExtent
+            tileExtent: geometry.properties.tileExtent,
+            tileRatio: geometry.properties.tileRatio
         };
 
         prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
@@ -54,7 +56,23 @@ class FillPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexInfo) {
-            uniforms.tileCenter = tileCenter;
+            // const resolution = this.getMap().getResolution();
+            const map = this.getMap();
+            uniforms.tilePoint = tilePoint;
+            // Object.defineProperty(uniforms, 'tilePoint', {
+            //     enumerable: true,
+            //     get: function () {
+            //         const tileScale = geometry.properties.tileResolution / map.getResolution();
+            //         return [tilePoint[0] * tileScale, tilePoint[1] * tileScale];
+            //     }
+            // });
+            Object.defineProperty(uniforms, 'tileScale', {
+                enumerable: true,
+                get: function () {
+                    return geometry.properties.tileResolution / map.getResolution();
+                }
+            });
+            // uniforms.tileRatio = geometry.properties.tileResolution / resolution / geometry.properties.tileRatio;
             //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
             uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, false);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
@@ -76,6 +94,11 @@ class FillPainter extends BasicPainter {
         if (geometry.data.aOpacity) {
             defines['HAS_OPACITY'] = 1;
         }
+
+        if (isVectorTile) {
+            defines['IS_VT'] = 1;
+        }
+
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
         return mesh;
