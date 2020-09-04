@@ -43,6 +43,7 @@ describe('Geometry.Animation', function () {
                 }
             });
             function step(frame) {
+                expect(frame.styles.symbol.markerType).to.be.eql('x');
                 if (frame.state.playState !== 'finished') {
                     return;
                 }

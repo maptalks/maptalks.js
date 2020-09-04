@@ -24,7 +24,7 @@ function parse(arcConf) {
     };
 }
 
-SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp' : true }) {
+SpatialReference.loadArcgis = function (url, cb, options = { 'jsonp': true }) {
     if (isString(url) && url.substring(0, 1) !== '{') {
         Ajax.getJSON(url, function (err, json) {
             if (err) {

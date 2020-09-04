@@ -874,6 +874,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Object} symbol - external symbol
      */
     _setExternSymbol(symbol) {
+        this._eventSymbolProperties = symbol;
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
@@ -968,14 +969,27 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _getPainter() {
-        if (!this._painter && this.getMap()) {
+        const layer = this.getLayer();
+        if (!this._painter && layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
-                this._painter = new CollectionPainter(this);
-            } else {
-                this._painter = new Painter(this);
+                if (layer.constructor.getCollectionPainterClass) {
+                    const clazz = layer.constructor.getCollectionPainterClass();
+                    this._painter = new clazz(this);
+                }
+            } else if (layer.constructor.getPainterClass) {
+                const clazz = layer.constructor.getPainterClass();
+                this._painter = new clazz(this);
             }
         }
         return this._painter;
+    }
+
+    _getMaskPainter() {
+        if (this._maskPainter) {
+            return this._maskPainter;
+        }
+        this._maskPainter = this.getGeometries && this.getGeometries() ?  new CollectionPainter(this) : new Painter(this);
+        return this._maskPainter;
     }
 
     _removePainter() {
@@ -1044,7 +1058,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const e = {};
         if (this._eventSymbolProperties) {
-            e.properties = this._eventSymbolProperties;
+            e.properties = extend({}, this._eventSymbolProperties);
             delete this._eventSymbolProperties;
         }
         /**

@@ -340,7 +340,7 @@ const Canvas = {
             ctx.lineCap = 'round';
             ctx.lineWidth = textHaloRadius * 2;
             ctx.strokeStyle = textHaloFill;
-            ctx.strokeText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
+            ctx.strokeText(text, pt.x, pt.y + textOffsetY);
             ctx.miterLimit = 10; //default
 
             ctx.globalAlpha = alpha;
@@ -371,7 +371,7 @@ const Canvas = {
         if (rgba) {
             ctx.fillStyle = rgba;
         }
-        ctx.fillText(text, Math.round(pt.x), Math.round(pt.y + textOffsetY));
+        ctx.fillText(text, pt.x, pt.y + textOffsetY);
     },
 
     _stroke(ctx, strokeOpacity, x, y) {
