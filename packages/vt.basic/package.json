@@ -33,7 +33,7 @@
     "color": "^3.0.0"
   },
   "peerDependencies": {
-    "maptalks": "1.0.0-alpha.9"
+    "maptalks": "1.0.0-alpha.10"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
