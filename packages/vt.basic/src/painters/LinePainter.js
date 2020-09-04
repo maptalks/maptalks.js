@@ -15,6 +15,24 @@ class LinePainter extends BasicPainter {
         this.fnTypeConfig = this.getFnTypeConfig();
     }
 
+    prepareSymbol(symbol) {
+        const lineColor = symbol.lineColor;
+        if (Array.isArray(lineColor)) {
+            if (lineColor.length === 3) {
+                lineColor.push(1);
+            }
+            symbol.lineColor = lineColor.map(c => c * 255);
+        }
+
+        const lineDashColor = symbol.lineDashColor;
+        if (Array.isArray(lineDashColor)) {
+            if (lineDashColor.length === 3) {
+                lineDashColor.push(1);
+            }
+            symbol.lineDashColor = lineDashColor.map(c => c * 255);
+        }
+    }
+
     needToRedraw() {
         const animation = this.sceneConfig.trailAnimation;
         return super.needToRedraw() || animation && animation.enable;

@@ -233,6 +233,8 @@ export default class LinePack extends VectorPack {
             this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
             if (!Array.isArray(this.feaColor)) {
                 this.feaColor = Color(this.feaColor).array();
+            } else {
+                this.feaColor = this.feaColor.map(c => c * 255);
             }
             if (this.feaColor.length === 3) {
                 this.feaColor.push(255);
@@ -263,6 +265,8 @@ export default class LinePack extends VectorPack {
             let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], feature.properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
             if (!Array.isArray(dashColor)) {
                 dashColor = Color(dashColor).array();
+            } else {
+                dashColor = dashColor.map(c => c * 255);
             }
             if (dashColor.length === 3) {
                 dashColor.push(255);

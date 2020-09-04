@@ -102,6 +102,8 @@ export default class PolygonPack extends VectorPack {
             dynFill = this._polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
             if (!Array.isArray(dynFill)) {
                 dynFill = Color(dynFill).array();
+            } else {
+                dynFill = dynFill.map(c => c * 255);
             }
             if (dynFill.length === 3) {
                 dynFill.push(255);

@@ -19,6 +19,16 @@ class FillPainter extends BasicPainter {
         this._fnTypeConfig = this._getFnTypeConfig();
     }
 
+    prepareSymbol(symbol) {
+        const polygonFill = symbol.polygonFill;
+        if (Array.isArray(polygonFill)) {
+            if (polygonFill.length === 3) {
+                polygonFill.push(1);
+            }
+            symbol.polygonFill = polygonFill.map(c => c * 255);
+        }
+    }
+
     needAA() {
         if (this.sceneConfig.antialias) {
             //turn on antialias if set
