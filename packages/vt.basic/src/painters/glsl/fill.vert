@@ -18,16 +18,18 @@ uniform mat4 modelMatrix;
     attribute vec4 aTexInfo;
 
     uniform float glScale;
-    uniform float flipY;
+    uniform vec2 tileCenter;
 
     varying vec2 vTexCoord;
     varying vec4 vTexInfo;
 
     vec2 computeUV(vec2 vertex, vec2 uvSize, float scale) {
-        float u = mod(vertex.x, uvSize.x) * scale;
-        float v = mod(vertex.y, uvSize.y) * scale;
+        //tileCenter是为了减小u和v的值，增加u和v的精度，以免在地图级别很大(scale很大)时，精度不足产生的纹理马赛克现象
+        vec2 centerOffset = mod(tileCenter * scale / uvSize, 1.0);
+        float u = (vertex.x - tileCenter.x) * scale / uvSize.x;
+        float v = (vertex.y - tileCenter.y) * scale / uvSize.y;
         vTexInfo = vec4(aTexInfo.xy, uvSize);
-        return (vec2(u, -v)) / uvSize;
+        return vec2(u, -v) + centerOffset;
     }
 #endif
 #ifndef ENABLE_TILE_STENCIL

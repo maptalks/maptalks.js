@@ -54,7 +54,7 @@ class FillPainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexInfo) {
-            uniforms.tileCenter = tileCenter && tileCenter.toArray();
+            uniforms.tileCenter = tileCenter;
             //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
             uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, false);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];

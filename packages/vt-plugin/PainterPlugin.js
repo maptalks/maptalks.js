@@ -153,7 +153,9 @@ function createPainterPlugin(type, Painter) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
-                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tileCenter, tileZoom, tileTranslationMatrix });
+                var map = layer.getMap();
+                var glScale = map.getGLScale();
+                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tileCenter: tileCenter.multi(glScale).toArray(), tileZoom, tileTranslationMatrix });
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
