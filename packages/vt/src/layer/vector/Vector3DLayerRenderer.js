@@ -396,19 +396,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
         if (!rebuild) {
-            if (!this._dirtyGeo || !this._dirtySymbol) {
-                for (const p in properties) {
-                    const old = this.painterSymbol[p];
-                    //new symbol property to force painter refresh geometry's attribute
-                    this.painterSymbol[p] = {
-                        type: old.type,
-                        default: old.default,
-                        property: old.property
-                    };
+            if (this.painterSymbol) {
+                if (!this._dirtyGeo || !this._dirtySymbol) {
+                    for (const p in properties) {
+                        const old = this.painterSymbol[p];
+                        //new symbol property to force painter refresh geometry's attribute
+                        this.painterSymbol[p] = {
+                            type: old.type,
+                            default: old.default,
+                            property: old.property
+                        };
 
+                    }
+                    this._markUpdateSymbol();
                 }
-                this._markUpdateSymbol();
             }
+
         } else {
             this._markRebuild();
         }
