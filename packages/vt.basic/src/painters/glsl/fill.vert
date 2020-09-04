@@ -11,8 +11,10 @@ attribute vec3 aPosition;
     varying float vOpacity;
 #endif
 
-uniform mat4 projViewMatrix;
-uniform mat4 modelMatrix;
+uniform mat4 projViewModelMatrix;
+#ifndef IS_VT
+    uniform mat4 modelMatrix;
+#endif
 
 #ifdef HAS_PATTERN
     attribute vec4 aTexInfo;
@@ -42,20 +44,20 @@ uniform mat4 modelMatrix;
         #endif
     }
 #endif
-#ifndef ENABLE_TILE_STENCIL
-    varying vec2 vPosition;
-#endif
+// #ifndef ENABLE_TILE_STENCIL
+//     varying vec2 vPosition;
+// #endif
 
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
 
 void main() {
-    vec4 position = modelMatrix * vec4(aPosition, 1.);
-    gl_Position = projViewMatrix * position;
-    #ifndef ENABLE_TILE_STENCIL
-        vPosition = aPosition.xy;
-    #endif
+    gl_Position = projViewModelMatrix * vec4(aPosition, 1.);
+
+    // #ifndef ENABLE_TILE_STENCIL
+    //     vPosition = aPosition.xy;
+    // #endif
     #ifdef HAS_PATTERN
         vec2 patternSize = aTexInfo.zw + 1.0;
         #ifdef IS_VT
@@ -64,6 +66,7 @@ void main() {
             // centerOffset.y = 1.0 - centerOffset.y;
             vTexCoord = centerOffset + computeUV(aPosition.xy * tileScale / tileRatio, patternSize);
         #else
+            vec4 position = modelMatrix * vec4(aPosition, 1.);
             // vec2 centerOffset = mod(tilePoint * glScale / patternSize * vec2(1.0, -1.0), 1.0);
             //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
             vTexCoord = computeUV(position.xy, patternSize);

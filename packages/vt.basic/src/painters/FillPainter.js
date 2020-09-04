@@ -217,7 +217,17 @@ class FillPainter extends BasicPainter {
     _createShader(context) {
         const canvas = this.canvas;
 
-        const uniforms = [];
+        const uniforms = [
+            {
+                name: 'projViewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    const projViewModelMatrix = [];
+                    mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    return projViewModelMatrix;
+                }
+            },
+        ];
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
         const viewport = {

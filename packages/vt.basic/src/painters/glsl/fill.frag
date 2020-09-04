@@ -34,20 +34,21 @@ precision mediump float;
 #endif
 
 uniform float tileExtent;
-#ifndef ENABLE_TILE_STENCIL
-    varying vec2 vPosition;
-#endif
+// #ifndef ENABLE_TILE_STENCIL
+//     varying vec2 vPosition;
+// #endif
 
 
 void main() {
-    #ifndef ENABLE_TILE_STENCIL
-        //当position的x, y超出tileExtent时，丢弃该片元
-        float clip = sign(tileExtent - min(tileExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
-            sign(tileExtent - min(tileExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
-        if (clip == 0.0) {
-            discard;
-        }
-    #endif
+    // #ifndef ENABLE_TILE_STENCIL
+    //     //当position的x, y超出tileExtent时，丢弃该片元
+    //     float clipExtent = tileExtent;
+    //     float clip = sign(clipExtent - min(clipExtent, abs(vPosition.x))) * sign(1.0 + sign(vPosition.x)) *
+    //         sign(clipExtent - min(clipExtent, abs(vPosition.y))) * sign(1.0 + sign(vPosition.y));
+    //     if (clip == 0.0) {
+    //         discard;
+    //     }
+    // #endif
 
     #ifdef HAS_PATTERN
         vec2 uv = computeUV();
@@ -70,4 +71,6 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
+
+    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
