@@ -53,7 +53,8 @@ uniform mat4 projViewModelMatrix;
 #endif
 
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.);
+    vec4 localVertex = vec4(aPosition, 1.);
+    gl_Position = projViewModelMatrix * localVertex;
 
     // #ifndef ENABLE_TILE_STENCIL
     //     vPosition = aPosition.xy;
@@ -84,6 +85,6 @@ void main() {
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
-        shadow_computeShadowPars(position);
+        shadow_computeShadowPars(localVertex);
     #endif
 }
