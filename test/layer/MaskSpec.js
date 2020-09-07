@@ -36,7 +36,7 @@ describe('Spec of Masks', function () {
         return false;
     }
 
-    function testMask(layer, done) {
+    function `testMask`(layer, done) {
         var canvas = layer.getMap().getRenderer().canvas;
         var c = new maptalks.Point(canvas.width / 2, canvas.height / 2);
         layer.once('layerload', function () {
@@ -204,6 +204,18 @@ describe('Spec of Masks', function () {
             expect(isDrawn(canvas, c.add(0, 0))).to.be.ok();
             done();
         });
+    });
+
+    it('mask can return extent', function () {
+        var mask = new maptalks.MultiPolygon([
+            new maptalks.Circle(map.getCenter(), 5).getShell(),
+            new maptalks.Circle(map.locate(map.getCenter(), 10, 0), 5).getShell()
+        ]);
+        vlayer.setMask(mask);
+        map.addLayer(vlayer);
+        const extent = mask._getMaskPainter().get2DExtent();
+        expect(extent.xmin).to.be.ok();
+        expect(extent.ymin).to.be.ok();
     });
 
 });
