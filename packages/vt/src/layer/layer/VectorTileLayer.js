@@ -1,11 +1,8 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, compileStyle, isNil, isString, isObject } from '../../common/Util';
+import { extend, compileStyle, isNil, isString } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
-import { isFunctionDefinition } from '@maptalks/function-type';
-
-const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
 
 const defaultOptions = {
     renderer: 'gl',
