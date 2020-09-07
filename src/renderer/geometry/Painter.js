@@ -447,8 +447,10 @@ class Painter extends Class {
         }
         const mapStateCache = renderer.mapStateCache || {};
         //reduce geos to paint when drawOnInteracting
-        if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
-            return;
+        if (!this.geometry._isCheck) {
+            if (extent && !extent.intersects(this.get2DExtent(renderer.resources, TEMP_PAINT_EXTENT))) {
+                return;
+            }
         }
         const map = this.getMap();
         const minAltitude = this.getMinAltitude();

@@ -86,6 +86,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         //refresh geometries on zooming
         const count = this.layer.getCount();
         const res = this.getMap().getResolution();
+        this._batchConversionMarkers();
         if (map.isZooming() &&
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
@@ -94,20 +95,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._drawnRes = res;
         }
         this._updateMapStateCache();
-        let idx = 0;
-        const points = this._batchConversionMarkers();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
-            if (geo.getType() === 'Point') {
-                geo._cPoint = points[idx];
-                idx++;
-            }
-            if (!geo.isVisible()) {
-                delete geo._cPoint;
-                continue;
+            if (!geo._isCheck) {
+                if (!geo.isVisible()) {
+                    delete geo._cPoint;
+                    delete geo._inCurrentView;
+                    continue;
+                }
             }
             geo._paint(this._displayExtent);
             delete this._geosToDraw[i]._cPoint;
+            delete this._geosToDraw[i]._inCurrentView;
         }
     }
 
@@ -130,18 +129,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._drawnRes = this.getMap().getResolution();
         this._updateDisplayExtent();
         this.prepareToDraw();
-
+        this._batchConversionMarkers();
         this.forEachGeo(this.checkGeo, this);
         this._updateMapStateCache();
-        let idx = 0;
-        const points = this._batchConversionMarkers();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            if (this._geosToDraw[i].getType() === 'Point') {
-                this._geosToDraw[i]._cPoint = points[idx];
-                idx++;
-            }
             this._geosToDraw[i]._paint();
             delete this._geosToDraw[i]._cPoint;
+            delete this._geosToDraw[i]._inCurrentView;
         }
     }
 
@@ -151,19 +145,31 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     checkGeo(geo) {
+        geo._isCheck = false;
         if (!geo || !geo.isVisible() || !geo.getMap() ||
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
         }
 
         const painter = geo._getPainter();
-        const extent2D = painter.get2DExtent(this.resources, TEMP_EXTENT);
-        if (!extent2D || !extent2D.intersects(this._displayExtent)) {
+        let inCurrentView = true;
+        if (geo._inCurrentView) {
+            inCurrentView = true;
+        } else if (geo._inCurrentView === false) {
+            inCurrentView = false;
+        } else {
+            const extent2D = painter.get2DExtent(this.resources, TEMP_EXTENT);
+            if (!extent2D || !extent2D.intersects(this._displayExtent)) {
+                inCurrentView = false;
+            }
+        }
+        if (!inCurrentView) {
             return;
         }
         if (painter.hasPoint()) {
             this._hasPoint = true;
         }
+        geo._isCheck = true;
         this._geosToDraw.push(geo);
     }
 
@@ -236,12 +242,17 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const points = [], altitudes = [];
         const placement = 'center';
         const altitudeCache = {};
-        for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            const type = this._geosToDraw[i].getType();
+        //Traverse all Geo
+        for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
+            const geo = this.layer._geoList[i];
+            const type = geo.getType();
             if (type === 'Point') {
-                const painter = this._geosToDraw[i]._painter;
+                const painter = geo._painter;
+                if (!painter) {
+                    continue;
+                }
                 const point = painter.getRenderPoints(placement)[0][0];
-                const altitude = this._geosToDraw[i].getAltitude();
+                const altitude = geo.getAltitude();
                 if (isNil(altitudeCache[altitude])) {
                     altitudeCache[altitude] = painter.getAltitude();
                 }
@@ -255,6 +266,27 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         const glZoom = map.getGLZoom();
         const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
+        const { xmax, ymax, xmin, ymin } = map.getContainerExtent();
+        let idx = 0;
+        for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
+            const geo = this.layer._geoList[i];
+            const painter = geo._painter;
+            if (!painter) {
+                continue;
+            }
+            const type = geo.getType();
+            if (type === 'Point') {
+                geo._cPoint = pts[idx];
+                const { x, y } = pts[idx];
+                //Is the point in view
+                if (x >= xmin && y >= ymin && x <= xmax && y <= ymax) {
+                    geo._inCurrentView = true;
+                } else {
+                    geo._inCurrentView = false;
+                }
+                idx++;
+            }
+        }
         return pts;
     }
 }
