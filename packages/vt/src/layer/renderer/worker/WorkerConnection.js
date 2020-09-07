@@ -12,6 +12,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const mapId = layer.getMap().id;
         this._layer = layer;
         this._mapId = mapId;
+        this._workerLayerId = 'vt_' + maptalks.Util.UID();
         const type = layer.getJSONType();
         this._isDedicated = dedicatedLayers.indexOf(type) >= 0;
         this._dedicatedVTWorkers = {};
@@ -29,7 +30,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     addLayer(cb) {
         const layer = this._layer;
         const options = layer.getWorkerOptions() || {};
-        const layerId = layer.getId(), type = layer.getJSONType();
+        const layerId = this._workerLayerId, type = layer.getJSONType();
         const data = {
             mapId : this._mapId,
             layerId,
@@ -50,8 +51,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     abortTile(url, cb) {
-        const layer = this._layer;
-        const layerId = layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
@@ -71,7 +71,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     removeLayer(cb) {
-        const layerId = this._layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
@@ -88,7 +88,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     updateStyle(style, cb) {
-        const layerId = this._layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
@@ -105,7 +105,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     updateOptions(options, cb) {
-        const layerId = this._layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
@@ -123,7 +123,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
     //send(layerId, command, data, buffers, callback, workerId)
     loadTile(context, cb) {
-        const layerId = this._layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
@@ -168,7 +168,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     }
 
     setData(geojson, cb) {
-        const layerId = this._layer.getId();
+        const layerId = this._workerLayerId;
         const data = {
             mapId : this._mapId,
             layerId,
