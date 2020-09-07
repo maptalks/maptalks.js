@@ -13,16 +13,17 @@ export default class CollectionPainter extends Class {
     /**
      * @param {GeometryCollection} geometry - geometry to paint
      */
-    constructor(geometry) {
+    constructor(geometry, isMask) {
         super();
         this.geometry = geometry;
+        this.isMask = isMask;
     }
 
     _eachPainter(fn) {
         const geometries = this.geometry.getGeometries();
         let painter;
         for (let i = 0, len = geometries.length; i < len; i++) {
-            painter = geometries[i]._getPainter();
+            painter = this.isMask ? geometries[i]._getMaskPainter() : geometries[i]._getPainter();
             if (!painter) {
                 continue;
             }

@@ -988,7 +988,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._maskPainter) {
             return this._maskPainter;
         }
-        this._maskPainter = this.getGeometries && this.getGeometries() ?  new CollectionPainter(this) : new Painter(this);
+        this._maskPainter = this.getGeometries && this.getGeometries() ?  new CollectionPainter(this, true) : new Painter(this);
         return this._maskPainter;
     }
 
