@@ -153,7 +153,7 @@ export function parseStyleRootPath(style) {
             }
             return null;
         };
-        style = convertStylePath(style, replacer);
+        convertStylePath(style, replacer);
     }
     return style;
 }
@@ -168,7 +168,7 @@ export function convertStylePath(styles, replacer) {
 
 }
 const URL_PATTERN = /(\{\$root\}|\{\$iconset\})/g;
-function parseSymbolPath(symbol, replacer) {
+export function parseSymbolPath(symbol, replacer) {
     for (const p in symbol) {
         if (symbol.hasOwnProperty(p) && p !== 'textName') {
             if (isString(symbol[p]) && symbol[p].length > 2) {
