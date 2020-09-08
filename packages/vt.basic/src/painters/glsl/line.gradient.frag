@@ -56,9 +56,9 @@ void main() {
     color *= max(sign(MAX_LINE_COUNT - vGradIndex), 0.0); //超过MAX_LINE_COUNT时则不显示
 
     #ifdef HAS_TRAIL
-        float d = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
-        float a = d < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
-        color *= a;
+        float trailMod = mod(linesofar - currentTime * trailSpeed * 0.1, trailCircle);
+        float trailAlpha = trailMod < trailLength ? mix(0.0, 1.0, trailMod / trailLength) : 0.0;
+        color *= trailAlpha;
     #endif
 
      #ifdef HAS_OPACITY

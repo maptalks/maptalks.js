@@ -34,8 +34,9 @@ class LinePainter extends BasicPainter {
     }
 
     needToRedraw() {
+        const symbol = this.getSymbol();
         const animation = this.sceneConfig.trailAnimation;
-        return super.needToRedraw() || animation && animation.enable;
+        return animation && animation.enable || symbol['linePatternAnimSpeed'] || super.needToRedraw();
     }
 
     needPolygonOffset() {
@@ -384,14 +385,15 @@ class LinePainter extends BasicPainter {
         // const unit = [resolution * 100 * glScale, 0, 0];
         // const v = vec3.transformMat4([], vec3.add([], map.cameraLookAt, unit), projViewMatrix);
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
-
+        const symbol = this.getSymbol();
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
             projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
-            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0
+            currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
+            linePatternAnimSpeed: symbol.linePatternAnimSpeed || 0
         };
 
         this.setIncludeUniformValues(uniforms, context);

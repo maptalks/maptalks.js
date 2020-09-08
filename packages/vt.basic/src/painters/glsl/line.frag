@@ -25,6 +25,8 @@ uniform lowp float lineBlur;
     uniform sampler2D linePatternFile;
     uniform vec2 atlasSize;
     uniform float flipY;
+    uniform float linePatternAnimSpeed;
+
     varying vec4 vTexInfo;
     vec2 computeUV(vec2 texCoord) {
         vec2 uv = mod(texCoord, 1.0);
@@ -62,6 +64,9 @@ uniform float tileExtent;
     uniform float trailSpeed;
     uniform float trailLength;
     uniform float trailCircle;
+#endif
+
+#if defined(HAS_TRAIL) || defined(HAS_PATTERN)
     uniform float currentTime;
 #endif
 
@@ -82,16 +87,21 @@ void main() {
             discard;
         }
     #endif
+    #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
+        float linesofar = vLinesofar;
+    #endif
 
-    float dist = length(vNormal) * vWidth.s;//outset
+    //outset
+    float dist = length(vNormal) * vWidth.s;
 
     float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
     float alpha = clamp(min(dist - (vWidth.t - blur2), vWidth.s - dist) / blur2, 0.0, 1.0);
     #ifdef HAS_PATTERN
         vec2 uvSize = vTexInfo.zw;
         float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
+        linesofar += mod(currentTime * linePatternAnimSpeed * 0.1, patternWidth);
         //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-        float patternx = mod(vLinesofar / patternWidth, 1.0);
+        float patternx = mod(linesofar / patternWidth, 1.0);
         float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
         vec4 color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
     #else
@@ -116,7 +126,7 @@ void main() {
         #endif
 
         float dashWidth = dasharray[0] + dasharray[1] + dasharray[2] + dasharray[3];
-        float dashMod = mod(vLinesofar, dashWidth);
+        float dashMod = mod(linesofar, dashWidth);
         //判断是否在第一个dash中
         float firstInDash = max(sign(dasharray[0] - dashMod), 0.0);
         //判断是否在第二个dash中
@@ -135,8 +145,8 @@ void main() {
     #endif
 
     #ifdef HAS_TRAIL
-        float trailMod = mod(vLinesofar - currentTime * trailSpeed * 0.1, trailCircle);
-        float trailAlpha = trailMod < trailLength ? mix(0.0, 1.0, d / trailLength) : 0.0;
+        float trailMod = mod(linesofar - currentTime * trailSpeed * 0.1, trailCircle);
+        float trailAlpha = trailMod < trailLength ? mix(0.0, 1.0, trailMod / trailLength) : 0.0;
         color *= trailAlpha;
     #endif
 
