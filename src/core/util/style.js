@@ -153,7 +153,7 @@ export function parseStyleRootPath(style) {
             }
             return null;
         };
-        style = convertStylePath(style, replacer);
+        convertStylePath(style, replacer);
     }
     return style;
 }
