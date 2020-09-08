@@ -300,7 +300,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         if (this._replacer) {
             symbol = JSON.parse(JSON.stringify(symbol));
-            this._parseSymbolPath(symbol);
+            maptalks.Util.parseSymbolPath(symbol, this._replacer);
         }
         const self = this;
         const target = style.symbol;
