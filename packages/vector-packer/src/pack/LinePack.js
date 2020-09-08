@@ -292,7 +292,7 @@ export default class LinePack extends VectorPack {
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
         let lines = feature.geometry;
-        if (extent !== Infinity) {
+        if (extent !== Infinity && feature.type !== 3) {
             lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
         }
         for (let i = 0; i < lines.length; i++) {
@@ -715,7 +715,7 @@ export default class LinePack extends VectorPack {
         const EXTENT = this.options['EXTENT'];
         const edges = this.elements;
         for (let i = 0; i < edges.length; i += 3) {
-            if (!isClippedLineEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT) &&
+            if (EXTENT === Infinity || !isClippedLineEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT) &&
                 !isClippedLineEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, EXTENT)) {
                 elements.push(edges[i], edges[i + 1], edges[i + 2]);
             }
