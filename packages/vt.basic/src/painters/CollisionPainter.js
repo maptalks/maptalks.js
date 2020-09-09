@@ -38,15 +38,19 @@ export default class CollisionPainter extends BasicPainter {
             meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0);
             meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1);
             meshContext.anchor0.z = map.getZoom();
+            meshContext.anchor0.width = map.width;
+            meshContext.anchor0.height = map.height;
         }
         this.getMap().collisionFrameTime += performance.now() - this._startTime;
     }
 
     _isCachedCollisionStale(meshKey) {
-        const z = this.getMap().getZoom();
+        const map = this.getMap();
+        const z = map.getZoom();
         const [anchor0, anchor1] = this._getMeshAnchor(meshKey);
         //如果没有anchor，或者anchor距离它应该在的点的像素距离超过阈值时，则说明collision已经过期
         if (!anchor0 || !anchor1 || anchor0.z !== z ||
+            anchor0.width !== map.width || anchor0.height !== map.height ||
             anchor0.distanceTo(this._containerAnchor0) > COLLISION_OFFSET_THRESHOLD ||
             anchor1.distanceTo(this._containerAnchor1) > COLLISION_OFFSET_THRESHOLD) {
             return true;
