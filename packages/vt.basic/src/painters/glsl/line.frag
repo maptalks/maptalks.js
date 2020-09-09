@@ -140,8 +140,7 @@ void main() {
         float secondDashAlpha = dashAntialias(secondDashMod, dasharray[2]);
 
         float dashAlpha = firstDashAlpha * firstInDash + secondDashAlpha * secondInDash;
-
-        color = alpha * (color * (1.0 - dashAlpha) + dashColor * dashAlpha);
+        color = color * (1.0 - dashAlpha) + dashColor * dashAlpha;
     #endif
 
     #ifdef HAS_TRAIL
