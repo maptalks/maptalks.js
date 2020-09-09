@@ -200,7 +200,7 @@ void main() {
             #endif
 
             #ifdef HAS_DASHARRAY_COLOR
-                vDashColor = aDashColor;
+                vDashColor = aDashColor / 255.0;
             #endif
         #endif
 
