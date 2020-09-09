@@ -315,8 +315,12 @@ export default class LinePack extends VectorPack {
         }
     }
 
+    _hasPattern() {
+        return this.iconAtlas && this.feaTexInfo[2] && this.feaTexInfo[3];
+    }
+
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const needExtraVertex = this.patternFn || this.symbol['linePatternFile'] || this.feaDash || hasDasharray(this.symbol['lineDasharray']);
+        const needExtraVertex = this._hasPattern() || hasDasharray(this.feaDash) || hasDasharray(this.symbol['lineDasharray']);
         this.overscaling = 1;
         // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？

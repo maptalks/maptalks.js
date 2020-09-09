@@ -147,6 +147,7 @@ void main() {
     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
     float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
+    //TODO linePack中 needExtraVertex为true时，一些不应该做抗锯齿计算的点，会出现抗锯齿
     if (pixelDelta * myLineWidth < 0.0) {
         // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
         float pixelScale = -pixelDelta / limit;
