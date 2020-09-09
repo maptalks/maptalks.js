@@ -90,7 +90,12 @@ export default class LinePack extends VectorPack {
         const vector = new StyledVector(feature, symbol, options);
         let pattern = symbol['linePatternFile'];
         if (this.patternFn) {
-            pattern = this.patternFn(options['zoom'], feature.properties);
+            const properties = feature && feature.properties || {};
+            properties['$layer'] = feature.layer;
+            properties['$type'] = feature.type;
+            pattern = this.patternFn(options['zoom'], properties);
+            delete properties['$layer'];
+            delete properties['$type'];
         }
         if (!this.options['atlas'] && pattern) {
             iconReqs[pattern] = 1;

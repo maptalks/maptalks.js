@@ -30,7 +30,12 @@ export default class PolygonPack extends VectorPack {
         if (!this.options['atlas'] && symbol['polygonPatternFile']) {
             let pattern = symbol['polygonPatternFile'];
             if (this._patternFn) {
-                pattern = this._patternFn(options['zoom'], feature.properties);
+                const properties = feature && feature.properties || {};
+                properties['$layer'] = feature.layer;
+                properties['$type'] = feature.type;
+                pattern = this._patternFn(options['zoom'], properties);
+                delete properties['$layer'];
+                delete properties['$type'];
             }
             if (pattern) {
                 iconReqs[pattern] = 1;

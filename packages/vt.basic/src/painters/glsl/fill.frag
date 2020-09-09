@@ -50,15 +50,17 @@ void main() {
     //     }
     // #endif
 
-    #ifdef HAS_PATTERN
-        vec2 uv = computeUV();
-        vec4 color = texture2D(polygonPatternFile, uv);
+    #ifdef HAS_COLOR
+        vec4 color = vColor;
     #else
-        #ifdef HAS_COLOR
-            vec4 color = vColor;
-        #else
-            vec4 color = polygonFill;
-        #endif
+        vec4 color = polygonFill;
+    #endif
+
+    #ifdef HAS_PATTERN
+        if (vTexInfo.z * vTexInfo.w > 1.0) {
+            vec2 uv = computeUV();
+            color = texture2D(polygonPatternFile, uv);
+        }
     #endif
 
     #ifdef HAS_OPACITY
