@@ -19,7 +19,14 @@ const style = [
         symbol: {
             lineWidth: 12,
             lineColor: '#f00',
-            lineDashColor: '#000',
+            lineDashColor: {
+                property: 'type',
+                default: 'rgba(0,255,0,1)',
+                type: 'categorical',
+                stops: [
+                    [3, '#000']
+                ],
+            },
             lineDasharray: [10, 10]
         }
     }
