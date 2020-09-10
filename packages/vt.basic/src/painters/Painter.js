@@ -1,6 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import { loadFunctionTypes } from '@maptalks/function-type';
+import { loadFunctionTypes, interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import { extend, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 
@@ -51,7 +51,7 @@ class Painter {
 
     isVisible() {
         const visible = this.getSymbol().visible;
-        return visible !== false && visible !== 0;
+        return visible !== false && visible !== 0 || this._visibleFn && !this._visibleFn.isFeatureConstant;
     }
 
     needToRedraw() {
@@ -370,6 +370,11 @@ class Painter {
                 this._symbol[p] = loadedSymbol[p];
             }
         }
+        if (isFunctionDefinition(this.symbolDef.visible)) {
+            this._visibleFn = interpolated(this.symbolDef.visible);
+        } else {
+            delete this._visibleFn;
+        }
     }
 
     getSymbol() {
@@ -379,6 +384,9 @@ class Painter {
         this._symbol = loadFunctionTypes(extend({}, this.symbolDef), () => {
             return [this.getMap().getZoom()];
         });
+        if (isFunctionDefinition(this.symbolDef.visible)) {
+            this._visibleFn = interpolated(this.symbolDef.visible);
+        }
         this._symbol.def = this.symbolDef;
         return this.getSymbol();
     }

@@ -17,6 +17,15 @@ const style = [
             }
         },
         symbol: {
+            visible: {
+                property: 'type',
+                default: false,
+                type: 'categorical',
+                stops: [
+                    [1, true],
+                    [2, true]
+                ],
+            },
             lineWidth: {
                 property: 'type',
                 type: 'categorical',
