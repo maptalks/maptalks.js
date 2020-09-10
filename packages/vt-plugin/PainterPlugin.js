@@ -57,6 +57,14 @@ function createPainterPlugin(type, Painter) {
             this._frameCache = {};
         },
 
+        updateCollision: function (context) {
+            var painter = this.painter;
+            if (painter && painter.isVisible()) {
+                return painter.updateCollision(context);
+            }
+            return null;
+        },
+
         endFrame: function (context) {
             var painter = this.painter;
             if (painter && painter.isVisible()) {

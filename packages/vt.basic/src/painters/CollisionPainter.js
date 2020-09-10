@@ -528,8 +528,8 @@ export default class CollisionPainter extends BasicPainter {
         );
     }
 
-    preparePaint(context) {
-        this._refreshTimeStamps(context.timestamp);
+    updateCollision(context) {
+        super.updateCollision(context);
         this._prepareZoomEndMeshes();
         if (this._zoomEndMeshes && this._zoomEndMeshes.length) {
             this._updateZoomMeshesLevel();
@@ -543,14 +543,11 @@ export default class CollisionPainter extends BasicPainter {
             this._updateUniquePlacements();
             this._mergeUniquePlacements(this.scene.getMeshes());
         }
-
-        super.preparePaint(context);
         this._startCollision();
     }
 
     paint(context) {
         const status = super.paint(context);
-
         this._renderCollisionBox(context);
         if (this._canProceed === false) {
             this.setToRedraw();

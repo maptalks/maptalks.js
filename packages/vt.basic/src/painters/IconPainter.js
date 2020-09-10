@@ -357,9 +357,8 @@ class IconPainter extends CollisionPainter {
         return mesh;
     }
 
-    preparePaint(context) {
-        super.preparePaint(context);
-
+    updateCollision(context) {
+        super.updateCollision(context);
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
             return;
@@ -389,7 +388,6 @@ class IconPainter extends CollisionPainter {
         }
 
         this._updateIconCollision(context.timestamp);
-
     }
 
     callCurrentTileShader(uniforms, context) {

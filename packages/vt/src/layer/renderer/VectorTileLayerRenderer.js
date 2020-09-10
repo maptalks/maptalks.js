@@ -609,18 +609,23 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 p.renderIndex = idx;
             });
         }
+
         let dirty = false;
         //只在需要的时候才增加polygonOffset
         let polygonOffsetIndex = 0;
+
+        //按照plugin顺序更新collision索引
         plugins.forEach((plugin) => {
-            if (!plugin) {
+            if (!this._isVisitable(plugin)) {
                 return;
             }
-            const idx = plugin.renderIndex;
-            const visible = this._isVisible(idx);
-            const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
-            const hasMesh = this._hasMesh(plugin.painter.scene.getMeshes());
-            if (!visible || !includesChanged && !hasMesh) {
+            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
+            plugin.updateCollision(context);
+        });
+
+        plugins.forEach((plugin) => {
+            const hasMesh = this._isVisitable(plugin);
+            if (!hasMesh) {
                 return;
             }
             this.regl.clear({
@@ -631,25 +636,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this._drawTileStencil(targetFBO);
             }
 
-            const context = {
-                regl: this.regl,
-                layer: this.layer,
-                gl: this.gl,
-                sceneConfig: plugin.config.sceneConfig,
-                pluginIndex: idx,
-                polygonOffsetIndex,
-                cameraPosition,
-                timestamp
-            };
-            if (parentContext) {
-                extend(context, parentContext);
-            }
+            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
             const status = plugin.endFrame(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (plugin.needPolygonOffset() && hasMesh) {
+            if (plugin.needPolygonOffset() && hasMesh === 2) {
                 polygonOffsetIndex++;
             }
             dirty = true;
@@ -662,6 +655,41 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     getPolygonOffsetCount() {
         return this._polygonOffsetIndex || 0;
+    }
+
+    _isVisitable(plugin) {
+        if (!plugin) {
+            return true;
+        }
+        const idx = plugin.renderIndex;
+        const parentContext = this._parentContext;
+        const visible = this._isVisible(idx);
+        const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
+        const hasMesh = this._hasMesh(plugin.painter.scene.getMeshes());
+        const empty = !visible || !includesChanged && !hasMesh;
+        if (empty) {
+            return 0;
+        } else {
+            return hasMesh ? 2 : 1;
+        }
+    }
+
+    _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
+        const context = {
+            regl: this.regl,
+            layer: this.layer,
+            gl: this.gl,
+            sceneConfig: plugin.config.sceneConfig,
+            pluginIndex: plugin.renderIndex,
+            polygonOffsetIndex,
+            cameraPosition,
+            timestamp
+        };
+        const parentContext = this._parentContext;
+        if (parentContext) {
+            extend(context, parentContext);
+        }
+        return context;
     }
 
     _hasMesh(meshes) {

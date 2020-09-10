@@ -135,6 +135,10 @@ class Painter {
         return meshes;
     }
 
+    updateCollision(/*context*/) {
+
+    }
+
     render(context) {
         this.pluginIndex = context.pluginIndex;
         this.polygonOffsetIndex = context.polygonOffsetIndex;

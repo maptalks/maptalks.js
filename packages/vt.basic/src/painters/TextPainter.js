@@ -150,9 +150,8 @@ export default class TextPainter extends CollisionPainter {
 
     }
 
-    preparePaint(context) {
-        super.preparePaint(context);
-
+    updateCollision(context) {
+        super.updateCollision(context);
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
             return;
