@@ -23,10 +23,10 @@ export default class SkylineAnalysis extends Analysis {
 
     _setSkylinePass(renderer) {
         const viewport = { width: renderer.canvas.width, height: renderer.canvas.height };
-        const skylineRenderer = new reshader.Renderer(renderer._regl);
+        const skylineRenderer = new reshader.Renderer(renderer.regl);
         this._skylinePass = new reshader.OutlinePass(skylineRenderer, viewport) || this._skylinePass;
         this.layer.addAnalysis(this);
-        this._ground = this._createGround(renderer._regl);
+        this._ground = this._createGround(renderer.regl);
     }
 
     renderAnalysis(context, toAanalyseMeshes, fbo) {

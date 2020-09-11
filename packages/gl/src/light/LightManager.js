@@ -2,15 +2,6 @@ import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
 const PREFILTER_CUBE_SIZE = 256;
-const canvas = document.createElement('canvas');
-const regl = createREGL({
-    canvas,
-    attributes: {
-        depth: false,
-        stencil: false,
-        alpha: false
-    }
-});
 
 class LightManager {
 
@@ -47,6 +38,30 @@ class LightManager {
         this._map.fire('updatelights');
     }
 
+    _tryToGetREGLContext(map) {
+        const layers = map.getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            const renderer = layers[i] && layers[i].getRenderer();
+            if (!renderer) {
+                continue;
+            }
+            if (renderer.regl) {
+                return renderer.regl;
+            }
+        }
+        const canvas = document.createElement('canvas');
+        const regl = createREGL({
+            canvas,
+            attributes: {
+                depth: false,
+                stencil: false,
+                alpha: false
+            }
+        });
+        regl._temp = true;
+        return regl;
+    }
+
     _initAmbientResources() {
         const resource = this._config.ambient.resource;
         const props = {
@@ -80,7 +95,8 @@ class LightManager {
 
     _createIBLMaps(hdr) {
         const config = this._config.ambient.resource;
-        const cubeSize = this._config.ambient.textureSize || PREFILTER_CUBE_SIZE;
+        const cubeSize = this._config.ambient.prefilterCubeSize || PREFILTER_CUBE_SIZE;
+        const regl = this._tryToGetREGLContext(this._map);
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
             envTexture: hdr.getREGLTexture(regl),
             rgbmRange: hdr.rgbmRange,
@@ -95,6 +111,9 @@ class LightManager {
         }/* else {
             console.log(JSON.stringify(maps.sh));
         }*/
+        if (regl._temp) {
+            regl.destroy();
+        }
         return maps;
     }
 

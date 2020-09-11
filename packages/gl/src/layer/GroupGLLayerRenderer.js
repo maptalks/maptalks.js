@@ -85,7 +85,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (!this._envPainter) {
-            this._envPainter = new EnvironmentPainter(this._regl, this.layer);
+            this._envPainter = new EnvironmentPainter(this.regl, this.layer);
         }
         this._envPainter.paint(this._drawContext);
 
@@ -145,12 +145,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
         if (!fbo) {
-            const outlineTex = this._regl.texture({
+            const outlineTex = this.regl.texture({
                 width: width,
                 height: height,
                 format: 'rgba4'
             });
-            fbo = this._outlineFBO = this._regl.framebuffer({
+            fbo = this._outlineFBO = this.regl.framebuffer({
                 width: width,
                 height: height,
                 colors: [outlineTex],
@@ -259,14 +259,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
         this.glCtx = gl.wrap();
         this.canvas.gl = this.gl;
-        this._reglGL = gl.wrap();
-        this._regl = createREGL({
-            gl: this._reglGL,
+        this.reglGL = gl.wrap();
+        this.regl = createREGL({
+            gl: this.reglGL,
             attributes,
             extensions: layer.options['extensions'],
             optionalExtensions: layer.options['optionalExtensions']
         });
-        this.gl.regl = this._regl;
+        this.gl.regl = this.regl;
 
         this._jitter = [0, 0];
     }
@@ -291,25 +291,25 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     clearCanvas() {
         super.clearCanvas();
-        this._regl.clear({
+        this.regl.clear({
             color: [0, 0, 0, 0],
             depth: 1,
             stencil: 0xFF
         });
         if (this._targetFBO) {
-            this._regl.clear({
+            this.regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1,
                 stencil: 0xFF,
                 framebuffer: this._targetFBO
             });
-            this._regl.clear({
+            this.regl.clear({
                 color: [0, 0, 0, 0],
                 framebuffer: this._noAaFBO
             });
         }
         if (this._outlineFBO) {
-            this._regl.clear({
+            this.regl.clear({
                 color: [0, 0, 0, 0],
                 framebuffer: this._outlineFBO
             });
@@ -372,7 +372,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (fbo) {
             config['framebuffer'] = fbo;
         }
-        this._regl.clear(config);
+        this.regl.clear(config);
     }
 
     onRemove() {
@@ -431,7 +431,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     drawGround() {
         if (!this._groundPainter) {
-            this._groundPainter = new GroundPainter(this._regl, this.layer);
+            this._groundPainter = new GroundPainter(this.regl, this.layer);
         }
         return this._groundPainter.paint(this.getFrameContext());
     }
@@ -681,7 +681,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return null;
         }
         if (!this._shadowPass) {
-            this._shadowPass = new ShadowPass(this._regl, sceneConfig, this.layer);
+            this._shadowPass = new ShadowPass(this.regl, sceneConfig, this.layer);
         }
         const shadow = {
             config: sceneConfig.shadow,
@@ -734,7 +734,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
-            const regl = this._regl;
+            const regl = this.regl;
             const fboInfo = this._createFBOInfo(config);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
             this._targetFBO = regl.framebuffer(fboInfo);
@@ -749,7 +749,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _createFBOInfo(config, depthTex) {
         const width = this.canvas.width, height = this.canvas.height;
-        const regl = this._regl;
+        const regl = this.regl;
         const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
         const color = regl.texture({
             min: 'nearest',
@@ -802,7 +802,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.layer.getMap();
         if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this._regl, this.layer, this._jitGetter);
+            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
         }
         let tex = this._targetFBO.color[0];
 
