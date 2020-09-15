@@ -479,6 +479,11 @@ class DrawTool extends MapTool {
         if (clickCoords.length < 2) {
             return;
         }
+        const mode = this.getMode();
+        // Polygon ,FreeHandPolygon
+        if (mode && mode.indexOf('polygon') > -1 && clickCoords.length < 4) {
+            return;
+        }
         const projection = this.getMap().getProjection();
         //remove duplicate vertexes
         const path = [clickCoords[0]];
