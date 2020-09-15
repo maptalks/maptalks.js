@@ -483,21 +483,13 @@ export default class LinePack extends VectorPack {
             // Calculate how far along the line the currentVertex is
             if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
-            // let distanceChanged = false;
-            const sinHalfAngle = Math.sqrt(1 - cosHalfAngle * cosHalfAngle);
-            const tanHalfAngle = sinHalfAngle / cosHalfAngle;
-            if (isPolygon || i > first && i < len - 1) {
+            if (i > first && i < len - 1 || isPolygon && i === len - 1) {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 if (needExtraVertex/* || prevVertex && isOut(prevVertex, EXTENT)*/) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
-                    const back = Math.min(prevNormal.mag() * tanHalfAngle, Math.abs(prevNormal.x), Math.abs(prevNormal.y));
-                    // const backDist = back * this.feaLineWidth / 2 * tileRatio;
-                    // if (backDist < this.distance) {
-                    //     this.distance -= backDist;
-                    //     distanceChanged = true;
-                    // }
+                    const back = -prevNormal.mag() * cosHalfAngle;
                     //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                    this.addCurrentVertex(currentVertex, prevNormal, -back, -back, segment);
+                    this.addCurrentVertex(currentVertex, prevNormal, back, back, segment);
                 }
             }
 
@@ -594,17 +586,14 @@ export default class LinePack extends VectorPack {
             }
 
             // if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
-            //     (isPolygon || i > first && i < len - 1)) {
-            if (needExtraVertex) {
-                //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
-                //端点往前移动forward距离，以免新端点和lineJoin产生重叠
-                const forward = Math.min(nextNormal.mag() * tanHalfAngle, Math.abs(nextNormal.x), Math.abs(nextNormal.y));
-                this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
-                // if (distanceChanged) {
-                //     //抵消前一个extra端点时对distance的修改
-                //     this.distance -= prevNormal.mag() * tanHalfAngle * this.feaLineWidth / 2 * 1;
-                // }
+            if (i > first && i < len - 1 || isPolygon && i === first) {
+                if (needExtraVertex) {
+                    //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+                    //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
+                    //端点往前移动forward距离，以免新端点和lineJoin产生重叠
+                    const forward = nextNormal.mag() * cosHalfAngle;
+                    this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
+                }
             }
         }
     }
