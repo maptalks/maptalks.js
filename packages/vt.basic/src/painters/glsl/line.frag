@@ -105,7 +105,7 @@ void main() {
         vec2 uvSize = vTexInfo.zw;
         if (uvSize.x * uvSize.y > 1.0) {
             float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
-            linesofar += mod(currentTime * linePatternAnimSpeed * 0.1, patternWidth);
+            linesofar += mod(currentTime * -linePatternAnimSpeed * 0.1, patternWidth);
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
             float patternx = mod(linesofar / patternWidth, 1.0);
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
