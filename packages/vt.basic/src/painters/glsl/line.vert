@@ -32,6 +32,9 @@ attribute vec2 aExtrude;
 #ifdef HAS_PATTERN
     attribute vec4 aTexInfo;
     varying vec4 vTexInfo;
+
+    attribute float aJoin;
+    varying float vJoin;
 #endif
 
 #ifdef HAS_DASHARRAY
@@ -207,6 +210,7 @@ void main() {
 
         #ifdef HAS_PATTERN
             vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
+            vJoin = aJoin;
         #endif
     #else
         fbo_picking_setData(projDistance, true);

@@ -28,6 +28,7 @@ uniform lowp float lineBlur;
     uniform float linePatternAnimSpeed;
 
     varying vec4 vTexInfo;
+    varying float vJoin;
     vec2 computeUV(vec2 texCoord) {
         vec2 uv = mod(texCoord, 1.0);
         vec2 uvStart = vTexInfo.xy;
@@ -102,6 +103,7 @@ void main() {
         vec4 color = lineColor * alpha;
     #endif
     #ifdef HAS_PATTERN
+
         vec2 uvSize = vTexInfo.zw;
         if (uvSize.x * uvSize.y > 1.0) {
             float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
@@ -109,7 +111,9 @@ void main() {
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
             float patternx = mod(linesofar / patternWidth, 1.0);
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
-            color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
+            vec2 uvStart = vTexInfo.xy;
+            //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
+            color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
         }
     #endif
 

@@ -84,6 +84,9 @@ export default class LinePack extends VectorPack {
             isFnTypeSymbol('lineDashColor', this.symbolDef)) {
             this.dashColorFn = piecewiseConstant(this.symbolDef['lineDashColor']);
         }
+        if (isFnTypeSymbol('lineJoinPatternMode', this.symbolDef)) {
+            this.joinPatternModeFn = piecewiseConstant(this.symbolDef['lineJoinPatternMode']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
@@ -196,6 +199,12 @@ export default class LinePack extends VectorPack {
                 width: 4,
                 name: 'aTexInfo'
             });
+
+            format.push({
+                type: Uint8Array,
+                width: 1,
+                name: 'aJoin'
+            });
         }
         return format;
     }
@@ -284,14 +293,19 @@ export default class LinePack extends VectorPack {
             const image = this.iconAtlas.glyphMap[res];
             this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
             if (image) {
-                const rect = this.iconAtlas.positions[res].paddedRect;
-                this.feaTexInfo[0] = rect.x;
-                this.feaTexInfo[1] = rect.y;
+                const { tl, displaySize } = this.iconAtlas.positions[res];
+                this.feaTexInfo[0] = tl[0];
+                this.feaTexInfo[1] = tl[0];
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-                this.feaTexInfo[2] = rect.w - 1;
-                this.feaTexInfo[3] = rect.h - 1;
+                this.feaTexInfo[2] = displaySize[0] - 1;
+                this.feaTexInfo[3] = displaySize[1] - 1;
             } else {
                 this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
+            }
+            if (this.joinPatternModeFn) {
+                this.feaJoinPatternMode = this.dashColorFn(this.options['zoom'], feature.properties) || 0;
+            } else {
+                this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
         }
         const extent = this.options.EXTENT;
@@ -487,9 +501,10 @@ export default class LinePack extends VectorPack {
                 //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                 if (needExtraVertex/* || prevVertex && isOut(prevVertex, EXTENT)*/) {
                     //back不能超过normal的x或者y，否则会出现绘制错误
-                    const back = -prevNormal.mag() * cosHalfAngle;
+                    const back = this.feaJoinPatternMode ? 0 : -prevNormal.mag() * cosHalfAngle;
                     //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                     this.addCurrentVertex(currentVertex, prevNormal, back, back, segment);
+                    this._inLineJoin = 1;
                 }
             }
 
@@ -588,10 +603,11 @@ export default class LinePack extends VectorPack {
             // if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
             if (i > first && i < len - 1 || isPolygon && i === first) {
                 if (needExtraVertex) {
+                    delete this._inLineJoin;
                     //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
                     //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
                     //端点往前移动forward距离，以免新端点和lineJoin产生重叠
-                    const forward = nextNormal.mag() * cosHalfAngle;
+                    const forward = this.feaJoinPatternMode ? 0 : nextNormal.mag() * cosHalfAngle;
                     this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
                 }
             }
@@ -701,6 +717,8 @@ export default class LinePack extends VectorPack {
         // }
         if (this.iconAtlas) {
             data.push(...this.feaTexInfo);
+
+            data.push(this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
