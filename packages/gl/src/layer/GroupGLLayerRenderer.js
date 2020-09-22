@@ -870,9 +870,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
+        const enableFXAA = config && config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
-            1,
+            +!!enableFXAA,
             +!!(config.toneMapping && config.toneMapping.enable),
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
