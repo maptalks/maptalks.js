@@ -154,7 +154,8 @@ void main() {
         #endif
     #endif
 
-    vec4 viewVertex = uModelViewMatrix * localPositionMatrix * localVertex;
+    vec4 position = localPositionMatrix * localVertex;
+    vec4 viewVertex = uModelViewMatrix * position;
     vViewVertex = viewVertex;
     // gl_Position = uProjectionMatrix * uModelViewMatrix * localVertex;
     mat4 jitteredProjection = uProjectionMatrix;
@@ -167,15 +168,15 @@ void main() {
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
-        shadow_computeShadowPars(localVertex);
+        shadow_computeShadowPars(position);
     #endif
 
     #ifdef HAS_VIEWSHED
-        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localVertex);
+        viewshed_getPositionFromViewpoint(modelMatrix * position);
     #endif
 
     #ifdef HAS_FLOODANALYSE
-        flood_getHeight(modelMatrix * localPositionMatrix * localVertex);
+        flood_getHeight(modelMatrix * position);
     #endif
 
     #ifdef HAS_HEATMAP
@@ -183,7 +184,7 @@ void main() {
     #endif
 
     #ifdef HAS_FOG
-        fog_getDist( modelMatrix * localPositionMatrix * localVertex);
+        fog_getDist( modelMatrix * position);
     #endif
 
     #ifdef HAS_BUMP_MAP
