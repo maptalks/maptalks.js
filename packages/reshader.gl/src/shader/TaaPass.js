@@ -1,7 +1,18 @@
 import TaaShader from './TaaShader.js';
-import { vec2, vec4 } from 'gl-matrix';
+import { vec2, mat4 } from 'gl-matrix';
 
-const JITTER = [];
+const normalizedToClip = [
+    2,  0,  0, 0,
+    0,  2,  0, 0,
+    0,  0,  -2, 0,
+    -1, -1, 1, 1,
+];
+
+// const sampleOffsets = [
+//     [-1.0, -1.0], [0.0, -1.0], [1.0, -1.0],
+//     [-1.0,  0.0], [0.0,  0.0], [1.0,  0.0],
+//     [-1.0,  1.0], [0.0,  1.0], [1.0,  1.0],
+// ];
 
 class TaaPass {
     constructor(renderer, jitter) {
@@ -15,9 +26,8 @@ class TaaPass {
         return this._counter < this._jitter.getSampleCount();
     }
 
-    render(sourceTex, depthTex, projMatrix, pvMatrix, invViewMatrix, fov, near, far, needClear, enableTaa) {
+    render(sourceTex, depthTex, projMatrix, needClear) {
         const jitter = this._jitter;
-        const currentJitter = jitter.getJitter(JITTER);
         this._initShaders();
         this._createTextures(sourceTex);
         if (needClear) {
@@ -34,31 +44,44 @@ class TaaPass {
         const output = this._outputTex;
         const prevTex = this._prevTex;
         const uniforms = this._uniforms || {
-            'uTextureDepthSize': [depthTex.width, depthTex.height],
-            'uTextureDepthRatio': [1, 1],
-            'uTextureInputRatio': [1, 1],
-            'uTextureInputSize': [sourceTex.width, sourceTex.height],
-            'uTextureOutputRatio': [1, 1],
-            'uTextureOutputSize': [sourceTex.width, sourceTex.height],
-            'uTexturePreviousRatio': [1, 1],
-            'uTexturePreviousSize': [prevTex.width, prevTex.height],
-            'uSSAARestart': 0,
-            'uClipAABBEnabled': 0
+            'materialParams_history_size': [prevTex.width, prevTex.height],
+            'textureOutputSize': [],
+            'materialParams': {
+                alpha: 1,
+                reprojection: [],
+                filterWeights: []
+            }
         };
-        uniforms['uTaaEnabled'] = +!!enableTaa;
-        uniforms['fov'] = fov;
-        uniforms['uProjectionMatrix'] = projMatrix;
-        uniforms['uTaaCurrentFramePVLeft'] = pvMatrix;
-        uniforms['uTaaInvViewMatrixLeft'] = invViewMatrix;
-        uniforms['uTaaLastFramePVLeft'] = this._prevPvMatrix || pvMatrix;
-        uniforms['TextureDepth'] = depthTex;
-        uniforms['TextureInput'] = sourceTex;
-        uniforms['TexturePrevious'] = prevTex;
-        uniforms['uHalton'] = vec4.set(this._halton, currentJitter[0], currentJitter[1], needClear ? 1.0 : 2.0, this._counter);
-        vec2.set(uniforms['uTextureDepthSize'], depthTex.width, depthTex.height);
-        vec2.set(uniforms['uTextureInputSize'], sourceTex.width, sourceTex.height);
-        vec2.set(uniforms['uTextureOutputSize'], output.width, output.height);
-        vec2.set(uniforms['uTexturePreviousSize'], prevTex.width, prevTex.height);
+        uniforms['materialParams']['alpha'] = 1 / this._counter;
+
+        const reprojection = uniforms['materialParams']['reprojection'];
+        mat4.multiply(reprojection, this._prevProjMatrix || projMatrix, mat4.invert(reprojection, projMatrix));
+        mat4.multiply(reprojection, reprojection, normalizedToClip);
+
+        vec2.set(uniforms['materialParams_history_size'], prevTex.width, prevTex.height);
+        vec2.set(uniforms['textureOutputSize'], sourceTex.width, sourceTex.height);
+
+        // const weights = uniforms['materialParams']['filterWeights'];
+        // const filterWidth = 0.2;
+        // let sum = 0;
+        // for (let i = 0; i < 9; i++) {
+        //     const d = vec2.sub([], sampleOffsets[i], currentJitter);
+        //     d[0] *= 1.0 / filterWidth;
+        //     d[1] *= 1.0 / filterWidth;
+        //     // this is a gaussian fit of a 3.3 Blackman Harris window
+        //     // see: "High Quality Temporal Supersampling" by Bruan Karis
+        //     // weights[i] = std::exp2(-3.3 * (d.x * d.x + d.y * d.y));
+        //     weights[i] = Math.pow(2, -3.3 * (d[0] * d[0] + d[0] * d[0]));
+
+        //     sum += weights[i];
+        // }
+        // for (let i = 0; i < 9; i++) {
+        //     weights[i] /= sum;
+        // }
+
+        uniforms['materialParams_depth'] = depthTex;
+        uniforms['materialParams_color'] = sourceTex;
+        uniforms['materialParams_history'] = prevTex;
 
         this._renderer.render(this._shader, uniforms, null, this._fbo);
 
@@ -69,7 +92,7 @@ class TaaPass {
         this._fbo = this._prevFbo;
         this._prevTex = tempTex;
         this._prevFbo = tempFBO;
-        this._prevPvMatrix = pvMatrix;
+        this._prevProjMatrix = mat4.copy(this._prevProjMatrix || [], projMatrix);
         return output;
     }
 

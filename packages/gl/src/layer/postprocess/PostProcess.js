@@ -209,14 +209,12 @@ export default class PostProcess {
     }
 
     taa(curTex, depthTex, {
-        projMatrix, projViewMatrix, cameraWorldMatrix,
-        fov, near, far, needClear, taa
+        projMatrix, needClear
     }) {
         const pass = this._taaPass;
         const outputTex = pass.render(
             curTex, depthTex,
-            projMatrix, projViewMatrix, cameraWorldMatrix,
-            fov, near, far, needClear, taa
+            projMatrix, needClear
         );
         const redraw = pass.needToRedraw();
         return {

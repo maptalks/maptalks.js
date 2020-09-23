@@ -833,18 +833,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
         }
 
-        const enableTAA = config.antialias && config.antialias.enable;
+        const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
         if (enableTAA) {
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
-                projViewMatrix: map.projViewMatrix,
-                cameraWorldMatrix: map.cameraWorldMatrix,
-                fov: map.getFov() * Math.PI / 180,
-                jitter: this._jitter,
-                near: map.cameraNear,
-                far: map.cameraFar,
-                needClear: this._needRetireFrames || map.getRenderer().isViewChanged(),
-                taa: !!config.antialias.taa
+                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
             });
             tex = outputTex;
             if (redraw) {
@@ -870,7 +863,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
-        const enableFXAA = config && config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
+        const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
             +!!enableFXAA,
