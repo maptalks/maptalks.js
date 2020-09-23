@@ -463,7 +463,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
             return false;
         } else {
-            return (isNil(symbol['opacity']) || (isNumber(symbol['opacity']) && symbol['opacity'] > 0));
+            return (isNil(symbol['opacity']) || isObject(symbol['opacity']) || (isNumber(symbol['opacity']) && symbol['opacity'] > 0));
         }
     }
 
