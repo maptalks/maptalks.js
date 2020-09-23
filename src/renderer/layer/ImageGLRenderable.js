@@ -234,8 +234,7 @@ const ImageGLRenderable = Base => {
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader'],
-                ['u_matrix', 'u_image', 'u_opacity', 'u_debug_line']);
+            this.program = this.createProgram(shaders['vertexShader'], this.layer.options['fragmentShader'] || shaders['fragmentShader']);
             this._debugBuffer = this.createBuffer();
 
             this.useProgram(this.program);
@@ -469,13 +468,19 @@ const ImageGLRenderable = Base => {
          * @param {String} frag a fragment shader program (string)
          * @return {WebGLProgram} created program object, or null if the creation has failed
          */
-        createProgram(vert, frag, uniforms) {
+        createProgram(vert, frag) {
             const gl = this.gl;
             const { program, vertexShader, fragmentShader } = createProgram(gl, vert, frag);
+            const numUniforms = gl.getProgramParameter(program, 0x8B86);
+            const activeUniforms = [];
+            for (let i = 0; i < numUniforms; ++i) {
+                const info = gl.getActiveUniform(program, i);
+                activeUniforms.push(info.name);
+            }
             program.vertexShader = vertexShader;
             program.fragmentShader = fragmentShader;
 
-            this._initUniforms(program, uniforms);
+            this._initUniforms(program, activeUniforms);
             return program;
         }
 
