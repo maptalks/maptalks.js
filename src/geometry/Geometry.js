@@ -988,7 +988,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._maskPainter) {
             return this._maskPainter;
         }
-        this._maskPainter = this.getGeometries && this.getGeometries() ?  new CollectionPainter(this, true) : new Painter(this);
+        this._maskPainter = this.getGeometries && this.getGeometries() ? new CollectionPainter(this, true) : new Painter(this);
         return this._maskPainter;
     }
 
@@ -1001,6 +1001,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _paint(extent) {
         if (this._painter) {
+            if (this._templateCoordinates) {
+                const projection = this._getProjection();
+                if (projection) {
+                    this._setPrjCoordinates(projection.project(this._coordinates));
+                }
+                delete this._templateCoordinates;
+            }
             this._painter.paint(extent);
         }
     }
