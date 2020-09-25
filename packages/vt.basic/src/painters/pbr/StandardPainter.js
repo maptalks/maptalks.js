@@ -49,13 +49,13 @@ class StandardPainter extends MeshPainter {
             context.renderTarget.fbo = fbo;
             this.shader = shader;
         }
-        if (this._shadowCount !== undefined && hasShadow) {
+        if (this.shadowCount !== undefined && hasShadow) {
             const count = this.scene.getMeshes().length;
-            if (this._shadowCount !== count) {
+            if (this.shadowCount !== count) {
                 this.setToRedraw();
             }
         }
-        delete this._shadowCount;
+        delete this.shadowCount;
     }
 
     getShader() {
@@ -81,7 +81,7 @@ class StandardPainter extends MeshPainter {
         if (!this.isVisible()) {
             return EMPTY_ARRAY;
         }
-        this._shadowCount = this.scene.getMeshes().length;
+        this.shadowCount = this.scene.getMeshes().length;
         const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
