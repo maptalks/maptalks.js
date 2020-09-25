@@ -1001,12 +1001,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _paint(extent) {
         if (this._painter) {
-            if (this._templateCoordinates) {
+            if (this._dirtyCoords) {
+                delete this._dirtyCoords;
                 const projection = this._getProjection();
                 if (projection) {
-                    this._setPrjCoordinates(projection.project(this._coordinates));
+                    this._pcenter = projection.project(this._coordinates);
+                    this._clearCache();
                 }
-                delete this._templateCoordinates;
             }
             this._painter.paint(extent);
         }
