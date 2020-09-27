@@ -31,6 +31,8 @@ export default function (Base) {
             }
             this._coordinates = center;
             if (!this.getMap()) {
+                //When not on a layer or when creating a new one, temporarily save the coordinates,
+                this._dirtyCoords  = true;
                 this.onPositionChanged();
                 return this;
             }
