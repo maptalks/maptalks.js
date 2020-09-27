@@ -1426,8 +1426,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (this._getRenderer()) {
             this._getRenderer().remove();
         }
-        if (this._containerDOM.innerHTML) {
-            this._containerDOM.innerHTML = '';
+        if (this._containerDOM.childNodes && this._containerDOM.childNodes.length > 0) {
+            Array.prototype.slice.call(this._containerDOM.childNodes, 0)
+                .filter(node => node.className === 'maptalks-wrapper')
+                .forEach(node => this._containerDOM.removeChild(node));
         }
         delete this._panels;
         delete this._containerDOM;

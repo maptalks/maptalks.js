@@ -206,4 +206,20 @@ describe('Spec of Masks', function () {
         });
     });
 
+    it('mask can return extent', function () {
+        var mask = new maptalks.MultiPolygon([
+            new maptalks.Circle(map.getCenter(), 5).getShell(),
+            new maptalks.Circle(map.locate(map.getCenter(), 10, 0), 5).getShell()
+        ]);
+        var tileLayer = new maptalks.TileLayer('tile', {
+            urlTemplate : TILE_IMAGE,
+            renderer:'canvas'
+        });
+        tileLayer.setMask(mask);
+        map.addLayer(tileLayer);
+        var extent = mask._getMaskPainter().get2DExtent();
+        expect(extent.xmin).to.be.ok();
+        expect(extent.ymin).to.be.ok();
+    });
+
 });

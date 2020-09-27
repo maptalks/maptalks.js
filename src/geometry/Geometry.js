@@ -874,6 +874,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @param {Object} symbol - external symbol
      */
     _setExternSymbol(symbol) {
+        this._eventSymbolProperties = symbol;
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
@@ -987,7 +988,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._maskPainter) {
             return this._maskPainter;
         }
-        this._maskPainter = this.getGeometries && this.getGeometries() ?  new CollectionPainter(this) : new Painter(this);
+        this._maskPainter = this.getGeometries && this.getGeometries() ? new CollectionPainter(this, true) : new Painter(this);
         return this._maskPainter;
     }
 
@@ -1000,6 +1001,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _paint(extent) {
         if (this._painter) {
+            if (this._dirtyCoords) {
+                delete this._dirtyCoords;
+                const projection = this._getProjection();
+                if (projection) {
+                    this._pcenter = projection.project(this._coordinates);
+                    this._clearCache();
+                }
+            }
             this._painter.paint(extent);
         }
     }
@@ -1057,7 +1066,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const e = {};
         if (this._eventSymbolProperties) {
-            e.properties = this._eventSymbolProperties;
+            e.properties = extend({}, this._eventSymbolProperties);
             delete this._eventSymbolProperties;
         }
         /**

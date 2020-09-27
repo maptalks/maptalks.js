@@ -345,6 +345,14 @@ class DrawTool extends MapTool {
     _clickHandler(event) {
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
+        //dbclick will trigger two click
+        if (this._clickCoords && this._clickCoords.length) {
+            const len = this._clickCoords.length;
+            const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            if (this._clickCoords[len - 1].equals(prjCoord)) {
+                return;
+            }
+        }
         if (!this._geometry) {
             this._createGeometry(event);
         } else {
@@ -477,6 +485,11 @@ class DrawTool extends MapTool {
         const registerMode = this._getRegisterMode();
         const clickCoords = this._clickCoords;
         if (clickCoords.length < 2) {
+            return;
+        }
+        const mode = this.getMode();
+        // Polygon ,FreeHandPolygon
+        if (mode && mode.indexOf('polygon') > -1 && clickCoords.length < 3) {
             return;
         }
         const projection = this.getMap().getProjection();

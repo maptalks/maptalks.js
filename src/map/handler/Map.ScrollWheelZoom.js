@@ -118,7 +118,7 @@ class MapScrollWheelZoomHandler extends Handler {
             this._zooming = false;
             delete this._timeout;
             map.onZoomEnd(map.getZoom(), this._zoomOrigin);
-        }, 320);
+        }, 210);
     }
 
     _interval(evt, origin) {
