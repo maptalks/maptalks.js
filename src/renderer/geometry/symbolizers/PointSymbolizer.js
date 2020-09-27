@@ -60,13 +60,26 @@ class PointSymbolizer extends CanvasSymbolizer {
      * @return {Point[]}
      */
     _getRenderContainerPoints(ignoreAltitude) {
-        const painter = this.getPainter(),
-            points = this._getRenderPoints()[0];
+        const painter = this.getPainter();
         if (painter.isSpriting()) {
-            return points;
+            return this._getRenderPoints()[0];
         }
+        const geometry = this.geometry;
         const dxdy = this.getDxDy();
-        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
+        let cpoints;
+        if (geometry._cPoint && (!ignoreAltitude)) {
+            const p = geometry._cPoint;
+            const containerOffset = painter.containerOffset;
+            p._sub(containerOffset);
+            const dx = dxdy.x, dy = dxdy.y;
+            if (dx || dy) {
+                p._add(dx || 0, dy || 0);
+            }
+            cpoints = [p];
+        } else {
+            const points = this._getRenderPoints()[0];
+            cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
+        }
         if (!cpoints || !Array.isArray(cpoints[0])) {
             return cpoints;
         }
