@@ -279,11 +279,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 geo._cPoint = pts[idx];
                 const { x, y } = pts[idx];
                 //Is the point in view
-                if (x >= xmin && y >= ymin && x <= xmax && y <= ymax) {
-                    geo._inCurrentView = true;
-                } else {
-                    geo._inCurrentView = false;
-                }
+                geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
                 idx++;
             }
         }
