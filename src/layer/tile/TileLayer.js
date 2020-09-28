@@ -526,9 +526,9 @@ class TileLayer extends Layer {
                 }
 
 
-                const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y, p.x + width, p.y - height);
+                const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y - height, p.x + width, p.y);
                 if (hasOffset) {
-                    tileExtent.set(p.x, p.y, p.x + width, p.y - height);
+                    tileExtent.set(p.x, p.y - height, p.x + width, p.y);
                     tileExtent._sub(offset);
                 }
                 if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, glScale)) {
