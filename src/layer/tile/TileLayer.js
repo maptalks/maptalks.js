@@ -122,7 +122,6 @@ const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
 const TEMP_POINT3 = new Point(0, 0);
 const TEMP_POINT4 = new Point(0, 0);
-const TEMP_POINT5 = new Point(0, 0);
 const TEMP_POINT6 = new Point(0, 0);
 // const TEMP_POINT_EXTENT = new PointExtent();
 const TILE_BOX = [[0, 0, 0], [0, 0, 0]];
