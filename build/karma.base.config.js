@@ -8,6 +8,8 @@ module.exports = {
     },
     files : [
         'dist/maptalks.js',
+        //js for TileOffsetSpec.js
+        'test/resources/chncrs.js',
         'test/core/ClassSpec.js',
         'test/**/!(ClassSpec).js',
         {

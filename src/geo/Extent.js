@@ -388,10 +388,10 @@ class Extent {
     }
 
     set(xmin, ymin, xmax, ymax) {
-        this.xmin = xmin;
-        this.ymin = ymin;
-        this.xmax = xmax;
-        this.ymax = ymax;
+        this.xmin = Math.min(xmin, xmax);
+        this.ymin = Math.min(ymin, ymax);
+        this.xmax = Math.max(xmin, xmax);
+        this.ymax = Math.max(ymin, ymax);
         this._dirty = true;
         return this;
     }
