@@ -308,7 +308,14 @@ const ImageGLRenderable = Base => {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            try {
+                //can't interrupt the program directly because of this error
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            } catch (e) {
+                console.error(e);
+                // eslint-disable-next-line quotes
+                console.warn(`You may need to configure layer crossOrigin=anonymous\n such as:\n const imageLayer=new maptalks.ImageLayer('imagelayer',{crossOrigin:'anonymous'}'); `);
+            }
 
             if (isInteger(log2(image.width)) && isInteger(log2(image.width))) {
                 gl.generateMipmap(gl.TEXTURE_2D);
