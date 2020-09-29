@@ -196,9 +196,9 @@ class CanvasRenderer extends Class {
         delete this.layer;
     }
 
-    onRemove() {}
+    onRemove() { }
 
-    onAdd() {}
+    onAdd() { }
 
     /**
      * Get map
@@ -476,8 +476,8 @@ class CanvasRenderer extends Class {
              * @property {WebGLRenderingContext2D} gl  - canvas's webgl context
              */
             this.layer.fire('canvascreate', {
-                'context' : this.context,
-                'gl' : this.gl
+                'context': this.context,
+                'gl': this.gl
             });
         } else {
             this.resetCanvasTransform();
@@ -490,7 +490,7 @@ class CanvasRenderer extends Class {
         if (!mask) {
             this.layer.fire('renderstart', {
                 'context': this.context,
-                'gl' : this.gl
+                'gl': this.gl
             });
             return null;
         }
@@ -498,7 +498,7 @@ class CanvasRenderer extends Class {
         if (!maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context,
-                'gl' : this.gl
+                'gl': this.gl
             });
             return maskExtent2D;
         }
@@ -513,7 +513,7 @@ class CanvasRenderer extends Class {
          */
         this.layer.fire('renderstart', {
             'context': this.context,
-            'gl' : this.gl
+            'gl': this.gl
         });
         return maskExtent2D;
     }
@@ -539,7 +539,7 @@ class CanvasRenderer extends Class {
             const masks = mask.getGeometries() || [];
             context.beginPath();
             masks.forEach(_mask => {
-                const painter =  _mask._getMaskPainter();
+                const painter = _mask._getMaskPainter();
                 painter.paint(null, context);
             });
             context.stroke();
@@ -562,10 +562,10 @@ class CanvasRenderer extends Class {
      */
     getViewExtent() {
         return {
-            'extent' : this._extent2D,
-            'maskExtent' : this._maskExtent,
-            'zoom' : this._renderZoom,
-            'southWest' : this.southWest
+            'extent': this._extent2D,
+            'maskExtent': this._maskExtent,
+            'zoom': this._renderZoom,
+            'southWest': this.southWest
         };
     }
 
@@ -586,7 +586,7 @@ class CanvasRenderer extends Class {
              */
             this.layer.fire('renderend', {
                 'context': this.context,
-                'gl' : this.gl
+                'gl': this.gl
             });
             this.setCanvasUpdated();
         }
@@ -598,17 +598,17 @@ class CanvasRenderer extends Class {
      */
     getEvents() {
         return {
-            '_zoomstart' : this.onZoomStart,
-            '_zooming' : this.onZooming,
-            '_zoomend' : this.onZoomEnd,
-            '_resize'  : this.onResize,
-            '_movestart' : this.onMoveStart,
-            '_moving' : this.onMoving,
-            '_moveend' : this.onMoveEnd,
-            '_dragrotatestart' : this.onDragRotateStart,
-            '_dragrotating' : this.onDragRotating,
-            '_dragrotateend' : this.onDragRotateEnd,
-            '_spatialreferencechange' : this.onSpatialReferenceChange
+            '_zoomstart': this.onZoomStart,
+            '_zooming': this.onZooming,
+            '_zoomend': this.onZoomEnd,
+            '_resize': this.onResize,
+            '_movestart': this.onMoveStart,
+            '_moving': this.onMoving,
+            '_moveend': this.onMoveEnd,
+            '_dragrotatestart': this.onDragRotateStart,
+            '_dragrotating': this.onDragRotating,
+            '_dragrotateend': this.onDragRotateEnd,
+            '_spatialreferencechange': this.onSpatialReferenceChange
         };
     }
 
@@ -632,19 +632,19 @@ class CanvasRenderer extends Class {
     * onZooming
     * @param  {Object} param event parameters
     */
-    onZooming() {}
+    onZooming() { }
 
     /**
     * onMoveStart
     * @param  {Object} param event parameters
     */
-    onMoveStart() {}
+    onMoveStart() { }
 
     /**
     * onMoving
     * @param  {Object} param event parameters
     */
-    onMoving() {}
+    onMoving() { }
 
     /**
     * onMoveEnd
@@ -668,13 +668,13 @@ class CanvasRenderer extends Class {
     * onDragRotateStart
     * @param  {Object} param event parameters
     */
-    onDragRotateStart() {}
+    onDragRotateStart() { }
 
     /**
     * onDragRotating
     * @param  {Object} param event parameters
     */
-    onDragRotating() {}
+    onDragRotating() { }
 
     /**
     * onDragRotateEnd
@@ -719,7 +719,7 @@ class CanvasRenderer extends Class {
         this.draw(framestamp);
         t = now() - t;
         //reduce some time in the first draw
-        this._drawTime = painted ? t  : t / 2;
+        this._drawTime = painted ? t : t / 2;
         if (painted && this.layer && this.layer.options['logDrawTime']) {
             console.log(this.layer.getId(), 'frameTimeStamp:', framestamp, 'drawTime:', this._drawTime);
         }
@@ -728,6 +728,7 @@ class CanvasRenderer extends Class {
     _promiseResource(url) {
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
+        const renderer = this.layer.options['renderer'] || '';
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
@@ -736,6 +737,8 @@ class CanvasRenderer extends Class {
             const img = new Image();
             if (!isNil(crossOrigin)) {
                 img['crossOrigin'] = crossOrigin;
+            } else if (renderer !== 'canvas') {
+                img['crossOrigin'] = '';
             }
             if (isSVG(url[0]) && !IS_NODE) {
                 //amplify the svg image to reduce loading.
@@ -761,7 +764,7 @@ class CanvasRenderer extends Class {
                 resources.markErrorResource(url);
                 resolve(url);
             };
-            loadImage(img,  url);
+            loadImage(img, url);
         };
 
     }

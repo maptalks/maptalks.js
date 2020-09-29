@@ -222,14 +222,6 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     _drawImage(image, extent, opacity) {
-        /**
-         * 这个不能随意设置值
-         * 同源的情况下不需要设置，否则会报错
-         */
-        const crossOrigin = this.layer.options['crossOrigin'];
-        if (crossOrigin) {
-            image.crossOrigin = crossOrigin;
-        }
         this.drawGLImage(image, extent.xmin, extent.ymax, extent.getWidth(), extent.getHeight(), 1, opacity);
     }
 
