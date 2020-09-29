@@ -64,6 +64,145 @@ describe('SymbolSpec', function () {
         expect(marker.getSymbol()).to.be.eql(expected);
     });
 
+    it('updateSymbol with array 1', function () {
+        var expected = [
+            {
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 30
+            },
+            {
+                'markerType': 'square',
+                'markerWidth': 50,
+                'markerHeight': 40
+            },
+        ];
+        var marker = new maptalks.Marker(center);
+        marker.setSymbol([
+            {
+                'markerType': 'ellipse',
+                'markerWidth':20,
+                'markerHeight':30
+            },
+            {
+                'markerType' : 'square',
+                'markerWidth':50,
+                'markerHeight':40
+            },
+        ]).updateSymbol([
+            {
+                'markerWidth' : 40,
+            },
+            {
+                'markerWidth' : 50,
+            }
+        ]);
+        expect(marker.getSymbol()).to.be.eql(expected);
+    });
+
+    it('updateSymbol with array 1.5', function () {
+        var expected = [
+            {
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 30
+            },
+            {
+                'markerType': 'square',
+                'markerWidth': 50,
+                'markerHeight': 40
+            },
+        ];
+        var marker = new maptalks.Marker(center);
+        marker.setSymbol([
+            {
+                'markerType': 'ellipse',
+                'markerWidth':20,
+                'markerHeight':30
+            },
+            {
+                'markerType' : 'square',
+                'markerWidth':50,
+                'markerHeight':40
+            },
+        ]).updateSymbol([
+            {
+                'markerWidth' : 40,
+            },
+            {
+                'markerWidth' : 50,
+            },
+            {
+                'markerWidth' : 60,
+            }
+        ]);
+        expect(marker.getSymbol()).to.be.eql(expected);
+    });
+
+    it('updateSymbol with array 2', function () {
+        var expected = [
+            {
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 30
+            },
+            {
+                'markerType': 'square',
+                'markerWidth': 20,
+                'markerHeight': 40
+            },
+        ];
+        var marker = new maptalks.Marker(center);
+        marker.setSymbol([
+            {
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 30
+            },
+            {
+                'markerType': 'square',
+                'markerWidth': 20,
+                'markerHeight': 40
+            },
+        ]).updateSymbol([
+            {
+                'markerWidth': 40,
+            }
+        ]);
+        expect(marker.getSymbol()).to.be.eql(expected);
+    });
+
+    it('updateSymbol with array 3', function () {
+        var marker = new maptalks.Marker(center);
+        marker.setSymbol([
+            {
+                'markerType': 'ellipse',
+                'markerWidth':20,
+                'markerHeight':30
+            },
+            {
+                'markerType' : 'square',
+                'markerWidth':20,
+                'markerHeight':40
+            },
+        ]);
+        expect(function () {
+            marker.updateSymbol({ 'markerWidth' : 40 })
+        }).to.throwException();
+    });
+
+    it('updateSymbol with array 4', function () {
+        var marker = new maptalks.Marker(center);
+        marker.setSymbol({
+                'markerType' : 'ellipse',
+                'markerWidth':20,
+                'markerHeight':30
+            });
+        expect(function () {
+            marker.updateSymbol([{ 'markerWidth' : 40 }])
+        }).to.throwException();
+    });
+
     it('marker file', function () {
         var marker = new maptalks.Marker([100, 0], {
             symbol:{
