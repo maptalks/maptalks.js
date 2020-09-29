@@ -277,7 +277,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     /**
      * Update geometry's current symbol.
      *
-     * @param  {Object} props - symbol properties to update
+     * @param  {Object | Array} props - symbol properties to update
      * @return {Geometry} this
      * @fires Geometry#symbolchange
      * @example
@@ -298,7 +298,18 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this;
         }
         let s = this._getSymbol();
-        if (s) {
+        if (Array.isArray(s)) {
+            if (!Array.isArray(props)) {
+                throw new Error('Parameter of updateSymbol is not an array.');
+            }
+            for (let i = 0; i < props.length; i++) {
+                if (s[i] && props[i]) {
+                    s[i] = extendSymbol(s[i], props[i]);
+                }
+            }
+        } else if (Array.isArray(props)) {
+            throw new Error('Geometry\'s symbol is not an array to update.');
+        } else if (s) {
             s = extendSymbol(s, props);
         } else {
             s = extendSymbol(this._getInternalSymbol(), props);
