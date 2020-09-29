@@ -18,6 +18,22 @@ describe('SpatialReference.Update', function () {
         REMOVE_CONTAINER();
     });
 
+    it('SpatialReference update with resolutions', function () {
+        var res = Math.pow(2, 18);
+        var resolutions = [];
+        for (var i = 0; i < 23; i++) {
+            resolutions[i] = res;
+            res *= 0.5;
+        }
+        var spatialReference = {
+            projection: 'baidu',
+            resolutions: resolutions
+        };
+        expect(map.getMaxZoom()).to.be.eql(20);
+        map.setSpatialReference(spatialReference);
+        expect(map.getMaxZoom()).to.be.eql(22);
+    });
+
     it('SpatialReference.TileLayer', function (done) {
         var tileLayer = new maptalks.TileLayer('base', {
             urlTemplate : '#'
