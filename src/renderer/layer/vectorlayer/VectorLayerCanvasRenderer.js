@@ -3,9 +3,10 @@ import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import { isNil } from '../../../core/util';
+import * as vec3 from '../../../core/util/vec3';
 
 const TEMP_EXTENT = new PointExtent();
-
+const TEMP_VEC3 = [];
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
@@ -95,6 +96,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._drawnRes = res;
         }
         this._updateMapStateCache();
+        this._sortByDistanceToCamera(map.cameraPosition);
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
             if (!geo._isCheck) {
@@ -131,6 +133,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.prepareToDraw();
         this._batchConversionMarkers();
         this.forEachGeo(this.checkGeo, this);
+        this._sortByDistanceToCamera(this.getMap().cameraPosition);
         this._updateMapStateCache();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
@@ -284,6 +287,37 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
         }
         return pts;
+    }
+
+    _sortByDistanceToCamera(cameraPosition) {
+        if (!this._geosToDraw.length) {
+            return;
+        }
+        const map = this.getMap();
+        const p = map.distanceToPoint(1000, 0, map.getGLScale()).x;
+        const meterScale = p / 1000;
+        const placement = 'center';
+        this._geosToDraw.sort((a, b) => {
+            const type0 = a.getType();
+            const type1 = b.getType();
+            if (type0 !== 'Point' || type1 !== 'Point') {
+                return 0;
+            }
+            const painter0 = a._painter;
+            const painter1 = b._painter;
+            if (!painter0 || !painter1) {
+                return 0;
+            }
+            const point0 = painter0.getRenderPoints(placement)[0][0];
+            const point1 = painter1.getRenderPoints(placement)[0][0];
+            const alt0 = painter0.getAltitude() * meterScale;
+            const alt1 = painter1.getAltitude() * meterScale;
+            vec3.set(TEMP_VEC3, point0.x, point0.y, alt0);
+            const dist0 = vec3.distance(TEMP_VEC3, cameraPosition);
+            vec3.set(TEMP_VEC3, point1.x, point1.y, alt1);
+            const dist1 = vec3.distance(TEMP_VEC3, cameraPosition);
+            return dist1 - dist0;
+        });
     }
 }
 
