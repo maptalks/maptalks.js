@@ -816,7 +816,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.getMaxZoom();
         }
         const size = this.getSize();
-        const containerExtent = extent.convertTo(p => this.coordToContainerPoint(p));
+        const containerExtent = extent.convertTo(p => this.coordToPoint(p));
         const w = containerExtent.getWidth(),
             h = containerExtent.getHeight();
         const scaleX = size['width'] / w,
