@@ -200,6 +200,32 @@ describe('Geometry.Marker', function () {
                 expect(marker.getSize().toArray()).to.be.eql([30, 22]);
             });
 
+            it('multiple symbols with different alignments', function (done) {
+                var marker = new maptalks.Label('■■■■■■■■■', center, {
+                  'textSymbol': {
+                    'textFaceName': 'monospace',
+                    'textFill' : '#fff',
+                    'textLineSpacing': 1,
+                    'textHorizontalAlignment': 'right',
+                    'textDx': 15
+                  },
+                  'boxStyle' : {
+                    'padding' : [6, 2],
+                    'symbol' : {
+                      'markerType' : 'square',
+                      'markerFill' : '#000',
+                      'markerLineColor' : '#b4b3b3'
+                    }
+                  }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(11, 0, [0, 0, 0, 255]);
+                    expect(layer).to.be.painted(20, 0, [255, 255, 255, 255]);
+                    done();
+                });
+                layer.addGeometry(marker);
+            });
+
         });
 
         context('vector marker with alignment', function () {

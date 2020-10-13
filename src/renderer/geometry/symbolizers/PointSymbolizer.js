@@ -6,7 +6,8 @@ import { isFunctionDefinition } from '../../../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
-
+const TEMP_POINT2 = new Point(0, 0);
+const TEMP_POINT3 = new Point(0, 0);
 /**
  * @classdesc
  * Base symbolizer class for all the point type symbol styles.
@@ -68,7 +69,12 @@ class PointSymbolizer extends CanvasSymbolizer {
         const dxdy = this.getDxDy();
         let cpoints;
         if (geometry._cPoint && (!ignoreAltitude)) {
-            const p = geometry._cPoint;
+            //DANGEROUS
+            //调用 _getRenderContainerPoints 获取坐标之后，都直接绘制了，所以这里可以用TEMP_POINT来减少对象创建
+            //但如果 _getRenderContainerPoints 获取坐标后还有其他操作，会导致bug。
+            const p = ignoreAltitude ? TEMP_POINT2 : TEMP_POINT3;
+            p.set(geometry._cPoint.x, geometry._cPoint.y);
+            // const p = geometry._cPoint;
             const containerOffset = painter.containerOffset;
             p._sub(containerOffset);
             const dx = dxdy.x, dy = dxdy.y;
