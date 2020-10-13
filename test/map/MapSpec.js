@@ -323,6 +323,7 @@ describe('Map.Spec', function () {
                 projection: 'baidu'
             });
             var extent = map.getExtent();
+            map.setPitch(60);
             var zoom = map.getZoom();
             var fitZoom = map.getFitZoom(extent);
 
