@@ -275,11 +275,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             const { x, y } = pts[i];
             //Is the point in view
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
-            //不在视野内的，再用fixedExtent 判断下
+            //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
-                //每个点的fixedExtent 居然一样
                 const fixedExtent = geo._painter.getFixedExtent();
-                //intersects 速度有点慢
+                fixedExtent._add(pts[i]);
                 geo._inCurrentView = fixedExtent.intersects(containerExtent);
             }
         }
