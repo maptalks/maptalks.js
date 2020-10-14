@@ -267,13 +267,21 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const map = this.getMap();
         const glZoom = map.getGLZoom();
         const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
-        const { xmax, ymax, xmin, ymin } = map.getContainerExtent();
+        const containerExtent = map.getContainerExtent();
+        const { xmax, ymax, xmin, ymin } = containerExtent;
         for (let i = 0, len = pointGeos.length; i < len; i++) {
             const geo = pointGeos[i];
             geo._cPoint = pts[i];
             const { x, y } = pts[i];
             //Is the point in view
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
+            //不在视野内的，再用fixedExtent 判断下
+            if (!geo._inCurrentView) {
+                //每个点的fixedExtent 居然一样
+                const fixedExtent = geo._painter.getFixedExtent();
+                //intersects 速度有点慢
+                geo._inCurrentView = fixedExtent.intersects(containerExtent);
+            }
         }
         return pts;
     }

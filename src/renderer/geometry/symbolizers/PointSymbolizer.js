@@ -68,8 +68,7 @@ class PointSymbolizer extends CanvasSymbolizer {
         const dxdy = this.getDxDy();
         let cpoints;
         if (geometry._cPoint && (!ignoreAltitude)) {
-            //fix symbolizers.length>1 ,such as [marker,text]
-            const p = (painter.symbolizers && painter.symbolizers.length > 1 ? geometry._cPoint.copy() : geometry._cPoint);
+            const p = geometry._cPoint;
             const containerOffset = painter.containerOffset;
             p._sub(containerOffset);
             const dx = dxdy.x, dy = dxdy.y;
