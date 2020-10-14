@@ -5,6 +5,7 @@ import PointExtent from '../../../geo/PointExtent';
 import { isNil } from '../../../core/util';
 
 const TEMP_EXTENT = new PointExtent();
+const TEMP_FIXEDEXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -269,6 +270,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
         const containerExtent = map.getContainerExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
+        const symbolkeyMap = {};
         for (let i = 0, len = pointGeos.length; i < len; i++) {
             const geo = pointGeos[i];
             geo._cPoint = pts[i];
@@ -277,9 +279,16 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
-                const fixedExtent = geo._painter.getFixedExtent();
-                fixedExtent._add(pts[i]);
-                geo._inCurrentView = fixedExtent.intersects(containerExtent);
+                const symbolkey = geo.__symbol;
+                let fixedExtent;
+                if (symbolkey) {
+                    fixedExtent = symbolkeyMap[symbolkey] = (symbolkeyMap[symbolkey] || geo._painter.getFixedExtent());
+                } else {
+                    fixedExtent = geo._painter.getFixedExtent();
+                }
+                TEMP_FIXEDEXTENT.set(fixedExtent.xmin, fixedExtent.ymin, fixedExtent.xmax, fixedExtent.ymax);
+                TEMP_FIXEDEXTENT._add(pts[i]);
+                geo._inCurrentView = TEMP_FIXEDEXTENT.intersects(containerExtent);
             }
         }
         return pts;
