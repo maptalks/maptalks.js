@@ -86,11 +86,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         //refresh geometries on zooming
         const count = this.layer.getCount();
         const res = this.getMap().getResolution();
-        this._batchConversionMarkers();
         if (map.isZooming() &&
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
+            this._batchConversionMarkers();
             this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
@@ -239,7 +239,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     // Better performance of batch coordinate conversion
     _batchConversionMarkers() {
-        const points = [], altitudes = [];
+        const points = [], altitudes = [], pointGeos = [];
         const placement = 'center';
         const altitudeCache = {};
         //Traverse all Geo
@@ -258,6 +258,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 }
                 points.push(point);
                 altitudes.push(altitudeCache[altitude]);
+                pointGeos.push(geo);
             }
         }
         if (points.length === 0) {
@@ -267,21 +268,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const glZoom = map.getGLZoom();
         const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
         const { xmax, ymax, xmin, ymin } = map.getContainerExtent();
-        let idx = 0;
-        for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
-            const geo = this.layer._geoList[i];
-            const painter = geo._painter;
-            if (!painter) {
-                continue;
-            }
-            const type = geo.getType();
-            if (type === 'Point') {
-                geo._cPoint = pts[idx];
-                const { x, y } = pts[idx];
-                //Is the point in view
-                geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
-                idx++;
-            }
+        for (let i = 0, len = pointGeos.length; i < len; i++) {
+            const geo = pointGeos[i];
+            geo._cPoint = pts[i];
+            const { x, y } = pts[i];
+            //Is the point in view
+            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
         }
         return pts;
     }
