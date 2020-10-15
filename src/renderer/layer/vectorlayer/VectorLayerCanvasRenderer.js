@@ -306,6 +306,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     _sortByDistanceToCamera(cameraPosition) {
+        if (!this.layer.options['sortByDistanceToCamera']) {
+            return;
+        }
         if (!this._geosToDraw.length) {
             return;
         }
