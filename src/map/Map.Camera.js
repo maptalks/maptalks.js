@@ -384,7 +384,7 @@ Map.include(/** @lends Map.prototype */{
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
-            const pitch = this.getPitch() * Math.PI / 180;
+            // const pitch = this.getPitch() * Math.PI / 180;
 
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
@@ -393,7 +393,7 @@ Map.include(/** @lends Map.prototype */{
             const fov = this.getFov() * Math.PI / 180;
             const farZ = this._getCameraFar(fov, this.getPitch());
             this.cameraFar = farZ;
-            this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(pitch), 0.1);
+            this.cameraNear = Math.max(this.cameraCenterDistance / 10, 0.1);
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
@@ -417,20 +417,20 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraFar(fov, pitch) {
+        // const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+        // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         let farZ = cameraCenterDistance;
+        let y = 4 * cameraCenterDistance;
         if (pitch > 0) {
             pitch = pitch * Math.PI / 180;
-            let y;
-            if (2 / Math.PI - pitch <= fov / 2) {
-                y = 4 * cameraCenterDistance;
-            } else {
+            if (2 / Math.PI - pitch > fov / 2) {
                 const tanFov = Math.tan(fov / 2);
                 const tanP = Math.tan(pitch);
-                y = (cameraCenterDistance * tanFov) / (1 / tanP - tanFov);
+                y = Math.max((cameraCenterDistance * tanFov) / (1 / tanP - tanFov), y);
             }
-            farZ += y;
         }
+        farZ += y;
         //TODO 地下的图形无法显示
         return farZ + 1.0;
     },
