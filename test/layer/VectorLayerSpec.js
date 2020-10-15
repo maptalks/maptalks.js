@@ -472,7 +472,7 @@ describe('VectorLayer.Spec', function () {
                     altitude: 0
                 }
             });
-            var layer = new maptalks.VectorLayer('v', [marker1, marker2], { 'canvas' : canvas, enableAltitude: true });
+            var layer = new maptalks.VectorLayer('v', [marker1, marker2], { 'canvas' : canvas, enableAltitude: true, sortByDistanceToCamera:true });
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0);
                 var w = canvas.width, h = canvas.height;
