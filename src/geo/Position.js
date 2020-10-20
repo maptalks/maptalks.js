@@ -91,6 +91,16 @@ class Position {
         return Math.sqrt(x * x + y * y);
     }
 
+    /**
+     * Return the magnitude of this point: this is the Euclidean
+     * distance from the 0, 0 coordinate to this point's x and y
+     * coordinates.
+     * @return {Number} magnitude
+     */
+    mag() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
     _floor() {
         this.x = Math.floor(this.x);
         this.y = Math.floor(this.y);
