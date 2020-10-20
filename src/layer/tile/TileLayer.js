@@ -553,7 +553,6 @@ class TileLayer extends Layer {
                                 'mask': cascadeLevel,
                                 'size': [width, height],
                                 'id': tileId,
-                                'dupKey': tileId,
                                 'layer': this.getId(),
                                 'url': this.getTileUrl(idx.x, idx.y, zoom)
                             };
@@ -641,7 +640,6 @@ class TileLayer extends Layer {
                 'extent2d' : childExtent,
                 'size': [w, h],
                 'id': tileId,
-                'dupKey': tileId,
                 'layer': this.getId(),
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
             };

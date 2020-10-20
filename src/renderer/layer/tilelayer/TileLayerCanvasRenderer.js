@@ -108,7 +108,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
                         if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
                             loadingCount++;
-                            const key = tileId + '@' + tile['point'].toArray().join();
+                            const key = tileId;
                             tileQueue[key] = tile;
                         }
                     }
