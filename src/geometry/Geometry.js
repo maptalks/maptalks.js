@@ -271,6 +271,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setSymbol(symbol) {
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
+        this.__symbol = JSON.stringify(this._symbol);
         return this;
     }
 

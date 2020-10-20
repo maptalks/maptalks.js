@@ -2,11 +2,15 @@ import { getExternalResources } from '../../../core/util/resource';
 import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
-import { isNil } from '../../../core/util';
 import * as vec3 from '../../../core/util/vec3';
 
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
+const TEMP_FIXEDEXTENT = new PointExtent();
+const PLACEMENT_CENTER = 'center';
+const TEMP_POINTS = [];
+const TEMP_ALTITUDES = [];
+const TEMP_GEOS = [];
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
@@ -82,20 +86,20 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this._geosToDraw) {
             return;
         }
+        this._updateMapStateCache();
         this._updateDisplayExtent();
         const map = this.getMap();
         //refresh geometries on zooming
         const count = this.layer.getCount();
-        const res = this.getMap().getResolution();
-        this._batchConversionMarkers();
+        const res = this.mapStateCache.resolution;
         if (map.isZooming() &&
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
+            this._batchConversionMarkers(this.mapStateCache.glZoom);
             this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
-        this._updateMapStateCache();
         this._sortByDistanceToCamera(map.cameraPosition);
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
@@ -128,13 +132,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     drawGeos() {
-        this._drawnRes = this.getMap().getResolution();
+        this._updateMapStateCache();
+        this._drawnRes = this.mapStateCache.resolution;
         this._updateDisplayExtent();
         this.prepareToDraw();
-        this._batchConversionMarkers();
+        this._batchConversionMarkers(this.mapStateCache.glZoom);
         this.forEachGeo(this.checkGeo, this);
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
-        this._updateMapStateCache();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
             delete this._geosToDraw[i]._cPoint;
@@ -241,11 +245,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     // Better performance of batch coordinate conversion
-    _batchConversionMarkers() {
-        const points = [], altitudes = [];
-        const placement = 'center';
+    // 优化前 11fps
+    // 优化后 15fps
+    _batchConversionMarkers(glZoom) {
+        //减少临时变量的使用
+        TEMP_ALTITUDES.length = TEMP_GEOS.length = TEMP_POINTS.length = 0;
         const altitudeCache = {};
         //Traverse all Geo
+        let idx = 0;
         for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
             const geo = this.layer._geoList[i];
             const type = geo.getType();
@@ -254,42 +261,54 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 if (!painter) {
                     continue;
                 }
-                const point = painter.getRenderPoints(placement)[0][0];
+                const point = painter.getRenderPoints(PLACEMENT_CENTER)[0][0];
                 const altitude = geo.getAltitude();
-                if (isNil(altitudeCache[altitude])) {
+                //减少方法的调用
+                if (altitudeCache[altitude] == null) {
                     altitudeCache[altitude] = painter.getAltitude();
                 }
-                points.push(point);
-                altitudes.push(altitudeCache[altitude]);
+                TEMP_POINTS[idx] = point;
+                TEMP_ALTITUDES[idx] = altitudeCache[altitude];
+                TEMP_GEOS[idx] = geo;
+                idx++;
             }
         }
-        if (points.length === 0) {
+        if (idx === 0) {
             return [];
         }
         const map = this.getMap();
-        const glZoom = map.getGLZoom();
-        const pts = map._pointsToContainerPoints(points, glZoom, altitudes);
-        const { xmax, ymax, xmin, ymin } = map.getContainerExtent();
-        let idx = 0;
-        for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
-            const geo = this.layer._geoList[i];
-            const painter = geo._painter;
-            if (!painter) {
-                continue;
-            }
-            const type = geo.getType();
-            if (type === 'Point') {
-                geo._cPoint = pts[idx];
-                const { x, y } = pts[idx];
-                //Is the point in view
-                geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
-                idx++;
+        const pts = map._pointsToContainerPoints(TEMP_POINTS, glZoom, TEMP_ALTITUDES);
+        const containerExtent = map.getContainerExtent();
+        const { xmax, ymax, xmin, ymin } = containerExtent;
+        const symbolkeyMap = {};
+        for (let i = 0, len = TEMP_GEOS.length; i < len; i++) {
+            const geo = TEMP_GEOS[i];
+            geo._cPoint = pts[i];
+            const { x, y } = pts[i];
+            //Is the point in view
+            geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
+            //不在视野内的，再用fixedExtent 精确判断下
+            if (!geo._inCurrentView) {
+                const symbolkey = geo.__symbol;
+                let fixedExtent;
+                if (symbolkey) {
+                    //相同的symbol 不要重复计算
+                    fixedExtent = symbolkeyMap[symbolkey] = (symbolkeyMap[symbolkey] || geo._painter.getFixedExtent());
+                } else {
+                    fixedExtent = geo._painter.getFixedExtent();
+                }
+                TEMP_FIXEDEXTENT.set(fixedExtent.xmin, fixedExtent.ymin, fixedExtent.xmax, fixedExtent.ymax);
+                TEMP_FIXEDEXTENT._add(pts[i]);
+                geo._inCurrentView = TEMP_FIXEDEXTENT.intersects(containerExtent);
             }
         }
         return pts;
     }
 
     _sortByDistanceToCamera(cameraPosition) {
+        if (!this.layer.options['sortByDistanceToCamera']) {
+            return;
+        }
         if (!this._geosToDraw.length) {
             return;
         }
