@@ -443,6 +443,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
+            if (this.layer.options['errorUrl']) {
+                tileImage.src = this.layer.options['errorUrl'];
+                return;
+            }
             this.abortTileLoading(tileImage, tileInfo);
         }
         tileImage.loadTime = 0;

@@ -64,6 +64,7 @@ class TileHashset {
  * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
+ * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
  * @memberOf TileLayer
  * @instance
  */
@@ -71,6 +72,8 @@ const options = {
 
     'urlTemplate': null,
     'subdomains': null,
+
+    'errorUrl': null,
 
     'repeatWorld': true,
 
