@@ -112,16 +112,32 @@ class AreaTool extends DistanceTool {
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
-        const prjCoord = this.getMap()._pointToPrj(param['point2d']);
+        let prjCoord;
+        if (param['point2d']) {
+            prjCoord = this.getMap()._pointToPrj(param['point2d']);
+        } else {
+            let prjCoords = param['geometry']._getPrjCoordinates();
+            prjCoords = prjCoords.slice(0, prjCoords.length - 1);
+            param['geometry']._setPrjCoordinates(prjCoords);
+            prjCoord = prjCoords[prjCoords.length - 1];
+        }
+        if (param['geometry']._getPrjCoordinates().length < 3) {
+            this._lastMeasure = 0;
+            this._clearMeasureLayers();
+            return;
+        }
+
         const ms = this._measure(param['geometry']);
-        const endLabel = new Label(ms, param['coordinate'], this.options['labelOptions'])
+        const projection = this.getMap().getProjection();
+        const coord = projection.unproject(prjCoord);
+        const endLabel = new Label(ms, coord, this.options['labelOptions'])
             .addTo(this._measureMarkerLayer);
         endLabel._setPrjCoordinates(prjCoord);
         let size = endLabel.getSize();
         if (!size) {
             size = new Size(10, 10);
         }
-        this._addClearMarker(param['coordinate'], prjCoord, size['width']);
+        this._addClearMarker(coord, prjCoord, size['width']);
         const geo = param['geometry'].copy();
         geo._setPrjCoordinates(param['geometry']._getPrjCoordinates());
         geo.addTo(this._measureLineLayer);
