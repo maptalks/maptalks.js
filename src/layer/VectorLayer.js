@@ -21,7 +21,7 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Boolean} [options.altitudeProperty=altitude] - geometry's altitude property name, if enableAltitude is true, "altitude" by default
  * @property {Boolean} [options.drawAltitude=false]  - whether to draw altitude: a vertical line for marker, a vertical polygon for line
  * @property {Boolean} [options.sortByDistanceToCamera=false]  - markers Sort by camera distance
- * @property {Boolean} [options.roundPoint=false]  - Rounding screen coordinates,Note that this will cause geometry to wobble on the map
+ * @property {Boolean} [options.roundPoint=false]  - round point before painting to improve performance, but will cause geometry shaking in animation
  * @property {Number} [options.altitude=0]           - layer altitude
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
  * @memberOf VectorLayer
