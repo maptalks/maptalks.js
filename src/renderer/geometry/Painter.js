@@ -214,6 +214,7 @@ class Painter extends Class {
             glZoom = map.getGLZoom();
         }
         let cPoints;
+        const roundPoint = this.getLayer().options['roundPoint'];
         function pointsContainerPoints(viewPoints = [], alts = []) {
             const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
             for (let i = 0, len = pts.length; i < len; i++) {
@@ -221,6 +222,11 @@ class Painter extends Class {
                 p._sub(containerOffset);
                 if (dx || dy) {
                     p._add(dx || 0, dy || 0);
+                }
+                if (roundPoint) {
+                    //使用 round 会导致左右波动，用floor,ceil 要好点
+                    p.x = Math.ceil(p.x);
+                    p.y = Math.ceil(p.y);
                 }
             }
             return pts;
