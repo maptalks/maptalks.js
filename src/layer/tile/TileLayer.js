@@ -701,14 +701,15 @@ class TileLayer extends Layer {
             this._tileConfig = new TileConfig(map, this.options['tileSystem'], fullExtent, tileSize);
         }
         //inherit baselayer's tileconfig
-        if (map && !this._tileConfig &&
-            map.getSpatialReference() === sr &&
-            map.getBaseLayer() &&
-            map.getBaseLayer() !== this &&
-            map.getBaseLayer()._getTileConfig) {
-            const base = map.getBaseLayer()._getTileConfig();
-            this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
-        }
+        // if (map && !this._tileConfig &&
+        //     mapSr === sr &&
+        //     map.getBaseLayer() &&
+        //     map.getBaseLayer() !== this &&
+        //     map.getBaseLayer()._getTileConfig &&
+        //     map.getBaseLayer().getSpatialReference() === mapSr) {
+        //     const base = map.getBaseLayer()._getTileConfig();
+        //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
+        // }
         this._hasOwnSR = sr !== map.getSpatialReference();
     }
 
