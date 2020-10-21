@@ -443,8 +443,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         if (tileImage instanceof Image) {
-            if (this.layer.options['errorUrl']) {
-                tileImage.src = this.layer.options['errorUrl'];
+            const errorUrl = this.layer.options['errorUrl'];
+            if (errorUrl && tileImage.src !== errorUrl) {
+                tileImage.src = errorUrl;
                 return;
             }
             this.abortTileLoading(tileImage, tileInfo);
