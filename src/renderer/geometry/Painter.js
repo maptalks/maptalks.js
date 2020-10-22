@@ -30,6 +30,13 @@ const TEMP_FIXED_EXTENT = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
+const TEMP_BBOX = {
+    minx: Infinity,
+    miny: Infinity,
+    maxx: -Infinity,
+    maxy: -Infinity
+};
+
 /**
  * @classdesc
  * Painter class for all geometry types except the collection types.
@@ -215,6 +222,7 @@ class Painter extends Class {
         }
         let cPoints;
         const roundPoint = this.getLayer().options['roundPoint'];
+        let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         function pointsContainerPoints(viewPoints = [], alts = []) {
             const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
             for (let i = 0, len = pts.length; i < len; i++) {
@@ -228,6 +236,10 @@ class Painter extends Class {
                     p.x = Math.ceil(p.x);
                     p.y = Math.ceil(p.y);
                 }
+                minx = Math.min(p.x, minx);
+                miny = Math.min(p.y, miny);
+                maxx = Math.max(p.x, maxx);
+                maxy = Math.max(p.y, maxy);
             }
             return pts;
         }
@@ -307,6 +319,12 @@ class Painter extends Class {
                 cPoints._add(dx, dy);
             }
         }
+        //cache geometry bbox
+        TEMP_BBOX.minx = minx;
+        TEMP_BBOX.miny = miny;
+        TEMP_BBOX.maxx = maxx;
+        TEMP_BBOX.maxy = maxy;
+        this.__bbox = TEMP_BBOX;
         return cPoints;
     }
 
