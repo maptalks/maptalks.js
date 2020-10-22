@@ -377,7 +377,12 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawvertex', event);
+            if (this._clickCoords.length <= 1) {
+                this._fireEvent('drawstart', event);
+            } else {
+                this._fireEvent('drawvertex', event);
+            }
+
             if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
                 // registerMode['update']([coordinate], this._geometry, event);
                 this.endDraw(event);
