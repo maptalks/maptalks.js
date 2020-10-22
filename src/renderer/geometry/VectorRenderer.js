@@ -28,6 +28,7 @@ function isWithinPixel(painter) {
             TEMP_WITHIN.center[0] = (minx + maxx) / 2;
             TEMP_WITHIN.center[1] = (miny + maxy) / 2;
         }
+        delete painter.__bbox;
     }
     return TEMP_WITHIN;
 }
