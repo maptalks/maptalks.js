@@ -409,11 +409,11 @@ class MapCanvasRenderer extends MapRenderer {
         return null;
     }
 
-    toDataURL(mimeType) {
+    toDataURL(mimeType, quality) {
         if (!this.canvas) {
             return null;
         }
-        return this.canvas.toDataURL(mimeType);
+        return this.canvas.toDataURL(mimeType, quality);
     }
 
     remove() {

@@ -1210,7 +1210,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Exports image from the map's canvas.
      * @param {Object} [options=undefined] - options
-     * @param {String} [options.mimeType=image/png] - mime type of the image
+     * @param {String} [options.mimeType=image/png] - mime type of the image: image/png, image/jpeg, image/webp
+     * @param {String} [options.quality=0.92] - A Number between 0 and 1 indicating the image quality to use for image formats that use lossy compression such as image/jpeg and image/webp.
      * @param {Boolean} [options.save=false] - whether pop a file save dialog to save the export image.
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
@@ -1230,11 +1231,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!file) {
                 file = 'export';
             }
-            const dataURL = renderer.toDataURL(mimeType);
+            const dataURL = renderer.toDataURL(mimeType, options.quality || 0.92);
             if (save && dataURL) {
                 let imgURL;
                 if (typeof Blob !== 'undefined' && typeof atob !== 'undefined') {
-                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''), mimeType);
+                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, ''), mimeType);
                     imgURL = URL.createObjectURL(blob);
                 } else {
                     imgURL = dataURL;
