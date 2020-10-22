@@ -295,10 +295,10 @@ class DistanceTool extends DrawTool {
         if (!this._vertexes) {
             this._vertexes = [];
         }
-        this._vertexes.push({ label: vertexLabel, marker });
-        if (this._historyPointer !== undefined) {
-            this._vertexes.length = this._historyPointer;
+        if (this._historyPointer !== undefined && this._vertexes.length > this._historyPointer - 1) {
+            this._vertexes.length = this._historyPointer - 1;
         }
+        this._vertexes.push({ label: vertexLabel, marker });
         this._measureMarkerLayer.addGeometry(marker);
         if (vertexLabel) {
             this._measureMarkerLayer.addGeometry(vertexLabel);
