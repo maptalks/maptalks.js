@@ -3,6 +3,7 @@ import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
+import Path from '../../../geometry/Path';
 
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
@@ -11,6 +12,9 @@ const PLACEMENT_CENTER = 'center';
 const TEMP_POINTS = [];
 const TEMP_ALTITUDES = [];
 const TEMP_GEOS = [];
+//polygon ,linestring ....
+const TEMP_POLYS = [];
+const TEMP_CENTERS = [];
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
@@ -96,7 +100,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
-            this._batchConversionMarkers(this.mapStateCache.glZoom);
+            this._batchConversion(this.mapStateCache.glZoom);
             this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
@@ -136,7 +140,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._drawnRes = this.mapStateCache.resolution;
         this._updateDisplayExtent();
         this.prepareToDraw();
-        this._batchConversionMarkers(this.mapStateCache.glZoom);
+        this._batchConversion(this.mapStateCache.glZoom);
         this.forEachGeo(this.checkGeo, this);
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
@@ -230,6 +234,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const containerExtent = map.getContainerExtent();
         const _2DExtent = map._get2DExtent();
         const glExtent = map._get2DExtent(glZoom);
+        const zoom = map.getZoom();
         this.mapStateCache = {
             resolution,
             pitch,
@@ -239,7 +244,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             _2DExtent,
             glExtent,
             containerExtent,
-            offset
+            offset,
+            zoom
         };
         return this;
     }
@@ -247,20 +253,22 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     // Better performance of batch coordinate conversion
     // 优化前 11fps
     // 优化后 15fps
-    _batchConversionMarkers(glZoom) {
+    //这个方法已经不仅仅用来批量处理marker了，所有改个更通用的名字
+    _batchConversion(glZoom) {
+        const zoomChange = this.__zoom !== this.mapStateCache.zoom;
         //减少临时变量的使用
-        TEMP_ALTITUDES.length = TEMP_GEOS.length = TEMP_POINTS.length = 0;
+        TEMP_ALTITUDES.length = TEMP_GEOS.length = TEMP_POINTS.length = TEMP_POLYS.length = TEMP_CENTERS.length = 0;
         const altitudeCache = {};
         //Traverse all Geo
         let idx = 0;
         for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
             const geo = this.layer._geoList[i];
+            const painter = geo._painter;
+            if (!painter) {
+                continue;
+            }
             const type = geo.getType();
             if (type === 'Point') {
-                const painter = geo._painter;
-                if (!painter) {
-                    continue;
-                }
                 const point = painter.getRenderPoints(PLACEMENT_CENTER)[0][0];
                 const altitude = geo.getAltitude();
                 //减少方法的调用
@@ -271,8 +279,13 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 TEMP_ALTITUDES[idx] = altitudeCache[altitude];
                 TEMP_GEOS[idx] = geo;
                 idx++;
+            } else if (zoomChange && (geo instanceof Path)) {
+                TEMP_CENTERS.push(geo.getCenter());
+                TEMP_POLYS.push(geo);
             }
         }
+        this._pathInCurrentView();
+        this.__zoom = this.mapStateCache.zoom;
         if (idx === 0) {
             return [];
         }
@@ -303,6 +316,33 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
         }
         return pts;
+    }
+
+    /**
+     * path 的中心点是否在当前视野
+     *
+     * 当zoom小时可以简单的判断出绝大数path
+     *
+     * 当zoom大时，这个方法只能处理小部分数据，和painter.get2DExtent 联合起来过滤的时间会变长
+     * 但是因为 高等级下 geometry的数量会变少，渲染时间会大大降低，所有整个性能还是非常好的
+     */
+    _pathInCurrentView() {
+        if (TEMP_CENTERS.length === 0) {
+            return this;
+        }
+        const map = this.getMap();
+        const pts = map.coordinatesToContainerPoints(TEMP_CENTERS, this.mapStateCache.zoom);
+        const containerExtent = map.getContainerExtent();
+        const { xmax, ymax, xmin, ymin } = containerExtent;
+        for (let i = 0, len = TEMP_POLYS.length; i < len; i++) {
+            const { x, y } = pts[i];
+            //Is the path center in view
+            if (x >= xmin && y >= ymin && x <= xmax && y <= ymax) {
+                TEMP_POLYS[i]._inCurrentView = true;
+            }
+        }
+        return this;
+
     }
 
     _sortByDistanceToCamera(cameraPosition) {

@@ -33,6 +33,15 @@ function isWithinPixel(painter) {
     return TEMP_WITHIN;
 }
 
+function getMapGLZoom(geometry) {
+    const mapStateCache = geometry.getLayer()._getRenderer().mapStateCache;
+    if (mapStateCache) {
+        return mapStateCache.glZoom;
+    } else {
+        return geometry.getMap().getGLZoom();
+    }
+}
+
 Geometry.include({
     _redrawWhenPitch: () => false,
 
@@ -59,7 +68,7 @@ const el = {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
-        const pt = map._prjToPoint(pcenter, map.getGLZoom());
+        const pt = map._prjToPoint(pcenter, getMapGLZoom(this));
         const size = this._getRenderSize(pt);
         return [pt, ...size];
     },
@@ -74,7 +83,7 @@ const el = {
 
     _getRenderSize(pt) {
         const map = this.getMap(),
-            z = map.getGLZoom();
+            z = getMapGLZoom(this);
         const prjExtent = this._getPrjExtent();
         const pmin = map._prjToPoint(prjExtent.getMin(), z),
             pmax = map._prjToPoint(prjExtent.getMax(), z);
@@ -88,8 +97,8 @@ Circle.include(el);
 //----------------------------------------------------
 Rectangle.include({
     _getPaintParams() {
-        const map = this.getMap();
-        const pointZoom = map.getGLZoom();
+        // const map = this.getMap();
+        const pointZoom = getMapGLZoom(this);
         const shell = this._getPrjShell();
         const points = this._getPath2DPoints(shell, false, pointZoom);
         return [points];
@@ -106,7 +115,7 @@ Sector.include(el, {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getGLZoom());
+        const pt = map._prjToPoint(this._getPrjCoordinates(), getMapGLZoom(this));
         const size = this._getRenderSize(pt);
         return [pt, size[0],
             [this.getStartAngle(), this.getEndAngle()]
@@ -174,7 +183,7 @@ LineString.include({
 
     _getPaintParams() {
         const prjVertexes = this._getPrjCoordinates();
-        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getGLZoom());
+        const points = this._getPath2DPoints(prjVertexes, false, getMapGLZoom(this));
         return [points];
     },
 
@@ -264,7 +273,7 @@ LineString.include({
 
 Polygon.include({
     _getPaintParams(disableSimplify) {
-        const maxZoom = this.getMap().getGLZoom();
+        const maxZoom = getMapGLZoom(this);
         const prjVertexes = this._getPrjShell();
         let points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
         //splitted by anti-meridian

@@ -6,10 +6,19 @@ import Rectangle from '../../geometry/Rectangle';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 
+function getMapGLZoom(geometry) {
+    const mapStateCache = geometry.getLayer()._getRenderer().mapStateCache;
+    if (mapStateCache) {
+        return mapStateCache.glZoom;
+    } else {
+        return geometry.getMap().getGLZoom();
+    }
+}
+
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
     _getRenderPoints() {
-        return [[this._getCenter2DPoint(this.getMap().getGLZoom())], null];
+        return [[this._getCenter2DPoint(getMapGLZoom(this))], null];
     }
 };
 
@@ -31,11 +40,11 @@ Rectangle.include({
             const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
-                points.push(map.coordToPoint(shell[i], map.getGLZoom()));
+                points.push(map.coordToPoint(shell[i], getMapGLZoom(this)));
             }
             return [points, null];
         } else {
-            const c = map.coordToPoint(this.getCenter(), map.getGLZoom());
+            const c = map.coordToPoint(this.getCenter(), getMapGLZoom(this));
             return [
                 [c], null
             ];
@@ -47,7 +56,7 @@ Rectangle.include({
 const PolyRenderer = {
     _getRenderPoints(placement) {
         const map = this.getMap();
-        const glZoom = map.getGLZoom();
+        const glZoom = getMapGLZoom(this);
         let points, rotations = null;
         if (placement === 'point') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom);
@@ -82,7 +91,7 @@ const PolyRenderer = {
             points = [];
             rotations = [];
             const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom),
-                isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
+                isSplitted = vertice.length > 0 && Array.isArray(vertice[0]);
             if (isSplitted) {
                 //anti-meridian splitted
                 let ring;
