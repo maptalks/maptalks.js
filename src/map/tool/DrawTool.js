@@ -102,8 +102,11 @@ class DrawTool extends MapTool {
          */
         this._events = {
             'click': this._clickHandler,
-            'mousemove': this._mouseMoveHandler,
+            'mousemove touchmove': this._mouseMoveHandler,
             'dblclick': this._doubleClickHandler,
+            'mousedown touchstart': this._mouseDownHandler,
+            'mouseup touchend': this._mouseUpHandler,
+            'mousemove': this._mouseMoveHandler,
             'mousedown': this._mouseDownHandler,
             'mouseup': this._mouseUpHandler
         };
@@ -264,7 +267,14 @@ class DrawTool extends MapTool {
             'doubleClickZoom': this.options['doubleClickZoom']
         });
         const actions = this._getRegisterMode()['action'];
-        if (actions.indexOf('mousedown') > -1) {
+        let dragging = false;
+        for (let i = 0; i < actions.length; i++) {
+            if (actions[i].indexOf('mousemove') >= 0) {
+                dragging = true;
+                break;
+            }
+        }
+        if (dragging) {
             const map = this.getMap();
             this._mapDraggable = map.options['draggable'];
             map.config({
@@ -569,7 +579,8 @@ class DrawTool extends MapTool {
      */
     _getMouseContainerPoint(event) {
         const action = this._getRegisterMode()['action'];
-        if (action === 'mousedown') {
+        if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
+            //prevent map's event propogation
             stopPropagation(event['domEvent']);
         }
         return event['containerPoint'];

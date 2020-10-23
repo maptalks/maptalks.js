@@ -37,7 +37,7 @@ DrawTool.registerMode('circle', extend({
 }, circleHooks));
 
 DrawTool.registerMode('freeHandCircle', extend({
-    'action': ['mousedown', 'mousemove', 'mouseup']
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, circleHooks));
 
 const ellipseHooks = {
@@ -74,7 +74,7 @@ DrawTool.registerMode('ellipse', extend({
 }, ellipseHooks));
 
 DrawTool.registerMode('freeHandEllipse', extend({
-    'action': ['mousedown', 'mousemove', 'mouseup']
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, ellipseHooks));
 
 const rectangleHooks = {
@@ -107,7 +107,7 @@ DrawTool.registerMode('rectangle', extend({
 }, rectangleHooks));
 
 DrawTool.registerMode('freeHandRectangle', extend({
-    'action': ['mousedown', 'mousemove', 'mouseup']
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, rectangleHooks));
 
 DrawTool.registerMode('point', {
@@ -178,7 +178,7 @@ DrawTool.registerMode('polygon', extend({
 }, polygonHooks));
 
 DrawTool.registerMode('freeHandPolygon', extend({
-    'action': ['mousedown', 'mousemove', 'mouseup']
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, polygonHooks));
 
 const lineStringHooks = {
@@ -210,7 +210,7 @@ DrawTool.registerMode('linestring', extend({
 }, lineStringHooks));
 
 DrawTool.registerMode('freeHandLinestring', extend({
-    'action': ['mousedown', 'mousemove', 'mouseup']
+    'action': ['mousedown touchstart', 'mousemove touchmove', 'mouseup touchend']
 }, lineStringHooks));
 
 DrawTool.registerMode('arccurve', {
