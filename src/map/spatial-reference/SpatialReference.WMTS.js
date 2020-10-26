@@ -13,6 +13,20 @@ function getProjection(projection) {
     return prj;
 }
 
+function getProjectionCode(code) {
+    let newcode = '';
+    const codeArray = code.split('');
+    for (let len = codeArray.length, i = len - 1; i >= 0; i--) {
+        if (!isNaN(codeArray[i])) {
+            newcode = codeArray[i] + newcode;
+        } else {
+            break;
+        }
+    }
+    return newcode;
+
+}
+
 function strReplace(str, repArray = []) {
     repArray.forEach(rep => {
         const [template, value] = rep;
@@ -121,9 +135,10 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
         if (supportedCRS) {
             projection = supportedCRS.textContent;
             projection = projection.split('EPSG')[1];
-            while (projection.indexOf(':') > -1) {
-                projection = projection.replace(':', '');
-            }
+            // while (projection.indexOf(':') > -1) {
+            //     projection = projection.replace(':', '');
+            // }
+            projection = getProjectionCode(projection);
             projection = getProjection(projection);
         }
     }
