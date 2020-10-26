@@ -95,12 +95,18 @@ void main() {
     //outset
     float dist = length(vNormal) * vWidth.s;
 
-    float blur2 = (lineBlur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
+    #ifdef HAS_PATTERN
+        float blur = 0.0;
+    #else
+        float blur = lineBlur;
+    #endif
+
+    float blur2 = (blur + 1.0 / DEVICE_PIXEL_RATIO) * vGammaScale;
     float alpha = clamp(min(dist - (vWidth.t - blur2), vWidth.s - dist) / blur2, 0.0, 1.0);
     #ifdef HAS_COLOR
-        vec4 color = vColor / 255.0 * alpha;
+        vec4 color = vColor / 255.0;
     #else
-        vec4 color = lineColor * alpha;
+        vec4 color = lineColor;
     #endif
     #ifdef HAS_PATTERN
 
@@ -116,7 +122,7 @@ void main() {
             color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
         }
     #endif
-
+    color *= alpha;
     #ifdef HAS_DASHARRAY
         #ifdef HAS_DASHARRAY_ATTR
             vec4 dasharray = vDasharray;
