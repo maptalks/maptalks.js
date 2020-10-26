@@ -178,7 +178,7 @@ class MapGeometryEventsHandler extends Handler {
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
-        if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches.length === 1)) {
+        if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1)) {
             this._mouseDownTime = now();
         } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
