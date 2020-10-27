@@ -13,21 +13,28 @@ const data = {
     ]
 };
 
-const style = [
-    {
-        renderPlugin: {
-            type: 'fill',
-            dataConfig: {
-                type: 'fill'
+const style = {
+    background: {
+        enable: true,
+        color: [0, 1, 0, 1],
+        opacity: 0.5
+    },
+    style: [
+        {
+            renderPlugin: {
+                type: 'fill',
+                dataConfig: {
+                    type: 'fill'
+                },
+                sceneConfig: {
+                }
             },
-            sceneConfig: {
+            symbol: {
+                polygonFill: '#f00'
             }
-        },
-        symbol: {
-            polygonFill: '#f00'
         }
-    }
-];
+    ]
+};
 
 module.exports = {
     style,

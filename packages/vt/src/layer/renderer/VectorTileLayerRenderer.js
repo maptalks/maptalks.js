@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4, vec3, createREGL } from '@maptalks/gl';
+import { mat4, vec3, createREGL, GroundPainter } from '@maptalks/gl';
 import { getUniformLevel } from '@maptalks/vt-plugin';
 import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
@@ -9,6 +9,7 @@ import { extend, pushIn } from '../../common/Util';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
+const CLEAR_COLOR = [0, 0, 0, 0];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -30,6 +31,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     setStyle() {
+        if (this._groundPainter) {
+            this._groundPainter.update();
+        }
         if (this._workerConn) {
             this._styleCounter++;
             this.clear();
@@ -141,6 +145,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
+        this._groundPainter = new GroundPainter(this.regl, this.layer);
     }
 
     _createREGLContext() {
@@ -198,13 +203,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         //这里必须通过regl来clear，如果直接调用webgl context的clear，则brdf的texture会被设为0
         if (this.glOptions.depth) {
             this.regl.clear({
-                color: this.layer.options['background'],
+                color: CLEAR_COLOR,
                 depth: 1,
                 stencil: 0
             });
         } else {
             this.regl.clear({
-                color: this.layer.options['background'],
+                color: CLEAR_COLOR,
                 stencil: 0
             });
         }
@@ -613,6 +618,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
         let polygonOffsetIndex = 0;
+        const groundOffset = -this.layer.getPolygonOffset();
+        const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
+        groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
+        const painted = this._groundPainter.paint(groundContext);
+        if (painted) {
+            polygonOffsetIndex++;
+        }
 
         //按照plugin顺序更新collision索引
         plugins.forEach((plugin) => {
@@ -679,8 +691,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             regl: this.regl,
             layer: this.layer,
             gl: this.gl,
-            sceneConfig: plugin.config.sceneConfig,
-            pluginIndex: plugin.renderIndex,
+            sceneConfig: plugin && plugin.config.sceneConfig,
+            pluginIndex: plugin && plugin.renderIndex,
             polygonOffsetIndex,
             cameraPosition,
             timestamp

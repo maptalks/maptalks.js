@@ -3,6 +3,7 @@ import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
 import { extend, compileStyle, isNil, isString } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
+import Color from 'color';
 
 const defaultOptions = {
     renderer: 'gl',
@@ -27,7 +28,6 @@ const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
     boxLimitOnZoomout: 7,
-    background: [0, 0, 0, 0],
     maxCacheSize: 72,
     antialias: false,
     iconErrorUrl: null,
@@ -132,6 +132,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         style = uncompress(style);
         this._featureStyle = style['featureStyle'] || [];
         this._vtStyle = style['style'];
+        const background = style.background || {};
+        this._background = {
+            enable: background.enable || false,
+            color: unitColor(background.color) || [0, 0, 0, 0],
+            opacity: getOrDefault(background.opacity, 1),
+            patternFile: background.patternFile
+        };
+
         this.validateStyle();
         if (this._replacer) {
             this._parseStylePath();
@@ -401,12 +409,34 @@ class VectorTileLayer extends maptalks.TileLayer {
         return JSON.parse(JSON.stringify(this.options.style));
     }
 
+    getGroundConfig() {
+        if (!this._backgroundConfig) {
+            this._backgroundConfig = {
+                enable: true,
+                renderPlugin: {
+                    type: 'fill'
+                },
+                symbol: {
+                    polygonFill: [0, 0, 0, 0],
+                    polygonOpacity: 1
+                }
+            };
+        }
+        const background = this._getComputedStyle().background;
+        this._backgroundConfig.enable = background.enable;
+        this._backgroundConfig.symbol.polygonFill = background.color;
+        this._backgroundConfig.symbol.polygonOpacity = background.opacity;
+        this._backgroundConfig.symbol.polygonPatternFile = background.patternFile;
+        return this._backgroundConfig;
+    }
+
     getComputedStyle() {
         return JSON.parse(JSON.stringify(this._getComputedStyle()));
     }
 
     _getComputedStyle() {
         return {
+            background: this._background,
             style: this._vtStyle || [],
             featureStyle: this._featureStyle || []
         };
@@ -538,4 +568,24 @@ export default VectorTileLayer;
 
 function isPropFunction(v) {
     return !!(v && v.properties);
+}
+
+function unitColor(color) {
+    if (!color) {
+        return null;
+    }
+    if (!Array.isArray(color)) {
+        color = Color(color).unitArray();
+    }
+    if (color.length === 3) {
+        color.push(1);
+    }
+    return color;
+}
+
+function getOrDefault(v, defaultValue) {
+    if (v === undefined || v === null) {
+        return defaultValue;
+    }
+    return v;
 }
