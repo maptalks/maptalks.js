@@ -36,3 +36,14 @@ vec3 hsv_apply(vec3 c, vec3 hsvOffset) {
     hsv = clamp(hsv, 0.0, 1.0);
     return hsv_hsv2rgb(hsv);
 }
+
+mat4 contrastMatrix(float contrast)
+{
+    float t = (1.0 - contrast) / 2.0;
+    return mat4(
+        contrast, 0., 0., 0.,
+        0., contrast, 0., 0.,
+        0., 0., contrast, 0.,
+        t, t, t, 1
+    );
+}

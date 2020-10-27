@@ -48,6 +48,7 @@ const DEFAULT_UNIFORMS = {
     'uSpecularAntiAliasingThreshold': 1,
 
     'uHsv': [0, 0, 0],
+    'contrast': 1,
 
     'bumpTexture': null,
     'bumpScale': 0.05,
