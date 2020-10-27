@@ -24,13 +24,13 @@ class GroundPainter {
     }
 
     getSymbol() {
-        const sceneConfig = this._layer._getSceneConfig();
-        return sceneConfig && sceneConfig.ground && sceneConfig.ground.symbol;
+        const ground = this._layer.getGroundConfig();
+        return ground && ground.symbol;
     }
 
     isEnable() {
-        const sceneConfig = this._layer._getSceneConfig();
-        return sceneConfig && sceneConfig.ground && sceneConfig.ground.enable;
+        const ground = this._layer.getGroundConfig();
+        return ground && ground.enable;
     }
 
     paint(context) {
@@ -46,7 +46,7 @@ class GroundPainter {
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        const isSSR = this._layer.getRenderer().isEnableSSR();
+        const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
         if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
@@ -88,11 +88,11 @@ class GroundPainter {
     }
 
     update() {
-        const sceneConfig = this._layer._getSceneConfig();
-        if (!sceneConfig) {
+        const groundConfig = this._layer.getGroundConfig();
+        if (!groundConfig) {
             return;
         }
-        const symbol = sceneConfig.ground && sceneConfig.ground.symbol;
+        const symbol = groundConfig && groundConfig.symbol;
         if (!symbol) {
             this._polygonFill = [1, 1, 1, 1];
             this._polygonOpacity = 1;
@@ -162,8 +162,7 @@ class GroundPainter {
     }
 
     _getShader() {
-        const sceneConfig = this._layer._getSceneConfig();
-        const groundConfig = sceneConfig.ground;
+        const groundConfig = this._layer.getGroundConfig();
         if (!groundConfig || !groundConfig.renderPlugin) {
             return this._fillShader;
         }
@@ -189,10 +188,20 @@ class GroundPainter {
     }
 
     _getCommonUniforms(context) {
-        if (!this._iblTexes) {
-            this._iblTexes = createIBLTextures(this._regl, this.getMap());
+        const groundConfig = this._layer.getGroundConfig();
+        const type = groundConfig.renderPlugin.type;
+        let uniforms;
+        if (type === 'lit') {
+            if (!this._iblTexes) {
+                this._iblTexes = createIBLTextures(this._regl, this.getMap());
+            }
+            uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
+        } else {
+            const map = this.getMap();
+            uniforms = {
+                projViewMatrix: map.projViewMatrix
+            };
         }
-        const uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
         this._setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
@@ -276,8 +285,7 @@ class GroundPainter {
             depth: {
                 enable: true,
                 mask: () => {
-                    const sceneConfig = this._layer._getSceneConfig();
-                    const ground = sceneConfig.ground;
+                    const ground = this._layer.getGroundConfig();
                     return ground.depth || ground.depth === undefined;
                 },
                 //如果设成'<'，会有低级别下地面消失的问题，fuzhenn/maptalks-studio#460
@@ -303,7 +311,7 @@ class GroundPainter {
 
     _hasIBL() {
         const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
+        const resource = lightManager && lightManager.getAmbientResource();
         return !!resource;
     }
 
@@ -351,7 +359,8 @@ class GroundPainter {
             this._defines = {};
         }
         const defines = this._defines;
-        const sceneConfig = this._layer._getSceneConfig();
+        const sceneConfig = this._layer._getSceneConfig && this._layer._getSceneConfig();
+        const groundConfig = this._layer.getGroundConfig();
 
         function update(has, name) {
             if (has) {
@@ -363,9 +372,9 @@ class GroundPainter {
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
-        const hasSSR = context && context.ssr && sceneConfig.ground && sceneConfig.ground.symbol && sceneConfig.ground.symbol.ssr;
+        const hasSSR = context && context.ssr && groundConfig && groundConfig.symbol && groundConfig.symbol.ssr;
         update(hasSSR, 'HAS_SSR');
-        const hasShadow = context && sceneConfig.shadow && sceneConfig.shadow.enable;
+        const hasShadow = context && sceneConfig && sceneConfig.shadow && sceneConfig.shadow.enable;
         update(hasShadow, 'HAS_SHADOWING');
         update(hasShadow, 'USE_ESM');
         const hasPattern = !!this._polygonPatternFile;

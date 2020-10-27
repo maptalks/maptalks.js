@@ -1,5 +1,14 @@
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
+
+import GroupGLLayer from './layer/GroupGLLayer';
+import GroundPainter from './layer/GroundPainter';
+import ViewshedAnalysis from './analysis/ViewshedAnalysis';
+import FloodAnalysis from './analysis/FloodAnalysis';
+import SkylineAnalysis  from './analysis/SkylineAnalysis';
+import './light/MapLights.js';
+import './map/MapPostProcess.js';
+
 export {
     glMatrix,
     mat2, mat2d, mat3, mat4,
@@ -7,18 +16,13 @@ export {
     vec2, vec3, vec4,
 } from 'gl-matrix';
 export { createREGL, reshader };
-import GroupGLLayer from './layer/GroupGLLayer';
-export { GroupGLLayer };
+export { GroupGLLayer, GroundPainter };
+
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
 export { GLContext } from '@maptalks/fusiongl';
-import ViewshedAnalysis from './analysis/ViewshedAnalysis';
 export { ViewshedAnalysis };
-import FloodAnalysis from './analysis/FloodAnalysis';
 export { FloodAnalysis };
-import SkylineAnalysis  from './analysis/SkylineAnalysis';
 export { SkylineAnalysis };
-import './light/MapLights.js';
-import './map/MapPostProcess.js';
 
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually

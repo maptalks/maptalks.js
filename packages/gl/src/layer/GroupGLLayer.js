@@ -71,6 +71,14 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this.options.sceneConfig;
     }
 
+    getGroundConfig() {
+        const sceneConfig = this._getSceneConfig();
+        if (!sceneConfig) {
+            return null;
+        }
+        return sceneConfig.ground;
+    }
+
     /**
      * Add a new Layer.
      * @param {Layer} layer - new layer
