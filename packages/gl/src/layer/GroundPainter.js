@@ -45,6 +45,8 @@ class GroundPainter {
         const shader = this._getShader();
         this._transformGround();
         const uniforms = this._getUniformValues(context);
+        uniforms['offsetFactor'] = context.offsetFactor;
+        uniforms['offsetUnits'] = context.offsetUnits;
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
         const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
         if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
@@ -302,8 +304,12 @@ class GroundPainter {
             polygonOffset: {
                 enable: true,
                 offset: {
-                    factor: () => { return 1; },
-                    units: () => { return 4; }
+                    factor: (context, props) => {
+                        return props['offsetFactor'];
+                    },
+                    units: (context, props) => {
+                        return props['offsetUnits'];
+                    }
                 }
             }
         };

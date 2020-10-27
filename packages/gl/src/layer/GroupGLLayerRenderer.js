@@ -433,7 +433,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!this._groundPainter) {
             this._groundPainter = new GroundPainter(this.regl, this.layer);
         }
-        return this._groundPainter.paint(this.getFrameContext());
+        const context = this.getFrameContext();
+        context.offsetFactor = 1;
+        context.offsetUnits = 4;
+        return this._groundPainter.paint(context);
     }
 
     _buildDrawFn(drawMethod) {
