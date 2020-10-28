@@ -2,6 +2,7 @@ const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
 const { PointLayer, LineStringLayer } = require('@maptalks/vt');
+const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -424,6 +425,96 @@ describe('vector layers update style specs', () => {
             }
         });
         layer.addTo(map);
+    });
+
+    it('vector should can outlineAll', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let outlined = false;
+        group.on('layerload', () => {
+            if (count === 1 || count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.outlineAll();
+                outlined = true;
+            } else if (outlined) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('vector should can outline features', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let outlined = false;
+        group.on('layerload', () => {
+            if (count === 1 || count === 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.outline([1]);
+                outlined = true;
+            } else if (outlined) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
     });
 
 

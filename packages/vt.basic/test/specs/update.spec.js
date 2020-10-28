@@ -33,7 +33,7 @@ const line = {
 const point = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
+        { type: 'Feature', id: 0, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
     ]
 };
 
@@ -307,7 +307,7 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
-    it('should can highlight text', done => {
+    it('should can outline batch', done => {
         const style = [
             {
                 filter: {
@@ -346,6 +346,104 @@ describe('update style specs', () => {
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.outlineBatch(0);
+            } else if (count === 2) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can outlineAll', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+
+        });
+        group.on('layerload', () => {
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.outlineAll();
+            } else if (count === 2) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can outline features', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+
+        });
+        group.on('layerload', () => {
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.outline(0, [0]);
             } else if (count === 2) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色

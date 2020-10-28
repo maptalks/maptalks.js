@@ -91,6 +91,51 @@ class Painter {
         }
     }
 
+    prepareGeometry(glData, features) {
+        const geometry = this.createGeometry(glData, features);
+        if (Array.isArray(geometry)) {
+            for (let i = 0; i < geometry.length; i++) {
+                const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                geometry[i].properties.features = features;
+                if (hasFeaIds) {
+                    geometry[i].properties.feaIdPickingMap = pickingIdMap;
+                    geometry[i].properties.feaPickingIdMap = idPickingMap;
+                }
+            }
+        } else if (geometry.properties) {
+            const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData);
+            geometry.properties.features = features;
+            if (hasFeaIds) {
+                geometry.properties.feaIdPickingMap = pickingIdMap;
+                geometry.properties.feaPickingIdMap = idPickingMap;
+            }
+        }
+        return geometry;
+    }
+
+    _getIdMap(glData) {
+        if (!glData) {
+            return {};
+        }
+        if (Array.isArray(glData)) {
+            glData = glData[0];
+            if (!glData) {
+                return {};
+            }
+        }
+        var feaIds = glData.featureIds;
+        var idPickingMap = {};
+        var pickingIdMap = {};
+        var hasFeaIds = feaIds && feaIds.length;
+        if (hasFeaIds) {
+            for (let i = 0; i < feaIds.length; i++) {
+                idPickingMap[glData.data.aPickingId[i]] = feaIds[i];
+                pickingIdMap[feaIds[i]] = glData.data.aPickingId[i];
+            }
+        }
+        return { hasFeaIds, idPickingMap, pickingIdMap };
+    }
+
     createGeometry(/* glData, features */) {
         throw new Error('not implemented');
     }

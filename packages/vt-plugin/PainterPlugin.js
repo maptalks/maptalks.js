@@ -116,33 +116,15 @@ function createPainterPlugin(type, Painter) {
                     var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition, glData.positionSize);
                     data.data.aColor = colors;
                 }
-                geometry = tileCache.geometry = painter.createGeometry(data, features);
+                geometry = tileCache.geometry = painter.prepareGeometry(data, features);
                 if (geometry) {
-                    var feaIds = glData.featureIds;
-                    var idPickingMap = {};
-                    var pickingIdMap = {};
-                    var hasFeaIds = feaIds && feaIds.length;
-                    if (hasFeaIds) {
-                        for (let i = 0; i < feaIds.length; i++) {
-                            idPickingMap[glData.data.aPickingId[i]] = feaIds[i];
-                            pickingIdMap[feaIds[i]] = glData.data.aPickingId[i];
-                        }
-                    }
                     if (Array.isArray(geometry)) {
                         for (let i = 0; i < geometry.length; i++) {
                             geometry[i].properties.features = features;
-                            if (hasFeaIds) {
-                                geometry[i].properties.feaIdPickingMap = pickingIdMap;
-                                geometry[i].properties.feaPickingIdMap = idPickingMap;
-                            }
                             this._fillCommonProps(geometry[i], context);
                         }
                     } else if (geometry.properties) {
                         geometry.properties.features = features;
-                        if (hasFeaIds) {
-                            geometry.properties.feaIdPickingMap = pickingIdMap;
-                            geometry.properties.feaPickingIdMap = idPickingMap;
-                        }
                         this._fillCommonProps(geometry, context);
                     }
                     if (tileCache.excludes !== this._excludes) {

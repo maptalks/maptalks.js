@@ -277,7 +277,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     drawOutline(fbo) {
-        if (!this._outline) {
+        if (!this._outline && !this._outlineAll) {
+            return;
+        }
+        if (this._outlineAll) {
+            this.paintOutlineAll(fbo);
             return;
         }
         this._outline.forEach(outline => {
@@ -1186,6 +1190,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
+    outlineAll() {
+        this._outlineAll = true;
+        this._needRetire = true;
+        this.setToRedraw();
+    }
+
+    paintOutlineAll(fbo) {
+        const plugins = this._getFramePlugins();
+        for (let i = 0; i < plugins.length; i++) {
+            plugins[i].outlineAll(fbo);
+        }
+    }
+
     paintOutline(fbo, idx, featureIds) {
         const pluginIdx = idx;
         const plugins = this._getFramePlugins();
@@ -1205,6 +1222,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     cancelOutline() {
         delete this._outline;
+        delete this._outlineAll;
         this._needRetire = true;
         this.setToRedraw();
     }

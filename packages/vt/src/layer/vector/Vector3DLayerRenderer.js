@@ -205,7 +205,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!packData) {
                 return null;
             }
-            const geometry = this.painter.createGeometry(packData.data, features.map(feature => { return { feature }; }));
+            const geometry = this.painter.prepareGeometry(packData.data, features.map(feature => { return { feature }; }));
             this.fillCommonProps(geometry);
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
@@ -533,6 +533,35 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onRemove() {
         super.onRemove();
         this.painter.delete();
+    }
+
+    drawOutline(fbo) {
+        if (this._outlineAll) {
+            this.painter.outlineAll(fbo);
+        }
+        if (this._outlineFeatures) {
+            for (let i = 0; i < this._outlineFeatures.length; i++) {
+                this.painter.outline(fbo, this._outlineFeatures[i]);
+            }
+        }
+    }
+
+    outlineAll() {
+        this._outlineAll = true;
+        this.setToRedraw();
+    }
+
+    outline(featureIds) {
+        if (!this._outlineFeatures) {
+            this._outlineFeatures = [];
+        }
+        this._outlineFeatures.push(featureIds);
+        this.setToRedraw();
+    }
+
+    cancelOutline() {
+        delete this._outlineAll;
+        delete this._outlineFeatures;
     }
 
     isEnableWorkAround(key) {
