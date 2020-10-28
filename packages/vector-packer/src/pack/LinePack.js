@@ -295,7 +295,7 @@ export default class LinePack extends VectorPack {
             if (image) {
                 const { tl, displaySize } = this.iconAtlas.positions[res];
                 this.feaTexInfo[0] = tl[0];
-                this.feaTexInfo[1] = tl[0];
+                this.feaTexInfo[1] = tl[1];
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
                 this.feaTexInfo[2] = displaySize[0] - 1;
                 this.feaTexInfo[3] = displaySize[1] - 1;

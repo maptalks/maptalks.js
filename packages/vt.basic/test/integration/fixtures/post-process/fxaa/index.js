@@ -69,7 +69,7 @@ module.exports = {
             enable: true,
             antialias: {
                 //FXAA默认是打开的
-                enable: false
+                enable: true
             }
         }
     }

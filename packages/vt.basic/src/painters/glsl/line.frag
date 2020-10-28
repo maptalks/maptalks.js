@@ -119,7 +119,8 @@ void main() {
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
             vec2 uvStart = vTexInfo.xy;
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
-            color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
+            color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
+            // color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
         }
     #endif
     color *= alpha;

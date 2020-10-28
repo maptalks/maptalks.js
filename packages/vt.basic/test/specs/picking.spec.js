@@ -94,6 +94,7 @@ describe('picking specs', () => {
                 'point': [368, 368, 0],
                 'type': 'icon',
                 'plugin': 0,
+                'featureId': 0
             }];
             runner(options, coord, expected, true, done);
         });
@@ -139,6 +140,7 @@ describe('picking specs', () => {
                 'point': [368, 368, 0],
                 'type': 'icon',
                 'plugin': 0,
+                'featureId': 0
             }];
             runner(options, coord, expected, true, done);
         });
