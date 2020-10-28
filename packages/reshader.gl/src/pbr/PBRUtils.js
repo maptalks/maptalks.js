@@ -89,3 +89,7 @@ export function disposeIBLTextures(iblTexes) {
         delete iblTexes[p];
     }
 }
+
+export function isSupported(regl) {
+    return regl.hasExtension('EXT_shader_texture_lod');
+}

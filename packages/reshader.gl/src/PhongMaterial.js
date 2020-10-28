@@ -23,6 +23,14 @@ class PhongMaterial extends Material {
         super(uniforms, DEFAULT_UNIFORMS);
     }
 
+    static convertFrom(standardMaterial) {
+        const matUniforms = {};
+        for (const u in DEFAULT_UNIFORMS) {
+            matUniforms[u] = standardMaterial.get(u);
+        }
+        return new PhongMaterial(matUniforms);
+    }
+
     appendDefines(defines, geometry) {
         super.appendDefines(defines, geometry);
         const uniforms = this.uniforms;
