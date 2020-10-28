@@ -46,6 +46,11 @@ describe('style compress specs', () => {
         const layer = new GeoJSONVectorTileLayer('id', { style: COMPRESSED });
         const style = layer.getComputedStyle();
         const expected = {
+            background: {
+                color: [0, 0, 0, 0],
+                enable: false,
+                opacity: 1
+            },
             style: [
                 {
                     filter: ['==', 'type', 1],
