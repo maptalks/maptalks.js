@@ -295,10 +295,10 @@ class DistanceTool extends DrawTool {
         if (!this._vertexes) {
             this._vertexes = [];
         }
-        this._vertexes.push({ label: vertexLabel, marker });
-        if (this._historyPointer !== undefined) {
-            this._vertexes.length = this._historyPointer;
+        if (this._historyPointer !== undefined && this._vertexes.length > this._historyPointer - 1) {
+            this._vertexes.length = this._historyPointer - 1;
         }
+        this._vertexes.push({ label: vertexLabel, marker });
         this._measureMarkerLayer.addGeometry(marker);
         if (vertexLabel) {
             this._measureMarkerLayer.addGeometry(vertexLabel);
@@ -307,6 +307,11 @@ class DistanceTool extends DrawTool {
 
     _msOnDrawEnd(param) {
         this._clearTailMarker();
+        if (param['geometry']._getPrjCoordinates().length < 2) {
+            this._lastMeasure = 0;
+            this._clearMeasureLayers();
+            return;
+        }
         let size = this._lastVertex.getSize();
         if (!size) {
             size = new Size(10, 10);
@@ -360,6 +365,11 @@ class DistanceTool extends DrawTool {
             this._tailLabel.remove();
             delete this._tailLabel;
         }
+    }
+
+    _clearMeasureLayers() {
+        this._measureLineLayer.remove();
+        this._measureMarkerLayer.remove();
     }
 
 }

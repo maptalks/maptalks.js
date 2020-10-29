@@ -55,7 +55,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - fovchange from
           * @property {Number} to                      - fovchange to
         */
-        this._fireEvent('fovchange', { 'from' : from, 'to': this.getFov() });
+        this._fireEvent('fovchange', { 'from': from, 'to': this.getFov() });
         return this;
     },
 
@@ -91,7 +91,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotatestart', { 'from' : from, 'to': b });
+        this._fireEvent('rotatestart', { 'from': from, 'to': b });
         this._angle = b;
         this._calcMatrices();
         this._renderLayers();
@@ -105,7 +105,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotate', { 'from' : from, 'to': b });
+        this._fireEvent('rotate', { 'from': from, 'to': b });
         /*
           * rotateend event
           * @event Map#rotateend
@@ -115,7 +115,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - bearing rotate from
           * @property {Number} to                      - bearing rotate to
         */
-        this._fireEvent('rotateend', { 'from' : from, 'to': b });
+        this._fireEvent('rotateend', { 'from': from, 'to': b });
         return this;
     },
 
@@ -151,7 +151,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitch from
           * @property {Number} to                      - pitch to
         */
-        this._fireEvent('pitchstart', { 'from' : from, 'to': p });
+        this._fireEvent('pitchstart', { 'from': from, 'to': p });
         this._pitch = p;
         this._calcMatrices();
         this._renderLayers();
@@ -164,7 +164,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitch from
           * @property {Number} to                      - pitch to
           */
-        this._fireEvent('pitch', { 'from' : from, 'to': p });
+        this._fireEvent('pitch', { 'from': from, 'to': p });
         /**
           * pitchend event
           * @event Map#pitchend
@@ -174,7 +174,7 @@ Map.include(/** @lends Map.prototype */{
           * @property {Number} from                    - pitchend from
           * @property {Number} to                      - pitchend to
           */
-        this._fireEvent('pitchend', { 'from' : from, 'to': p });
+        this._fireEvent('pitchend', { 'from': from, 'to': p });
         return this;
     },
 
@@ -248,6 +248,43 @@ Map.include(/** @lends Map.prototype */{
                 out.set(out.x, -out.y);
                 return out._add(this.width / 2, this.height / 2);
             }
+        };
+    }(),
+
+    /**
+     *Batch conversion for better performance
+     */
+    _pointsToContainerPoints: function () {
+        const a = [0, 0, 0];
+        return function (points, zoom, altitudes = []) {
+            const altitudeIsArray = Array.isArray(altitudes);
+            const isTransforming = this.isTransforming();
+            const res = this._getResolution(zoom) / this._getResolution();
+            const w2 = this.width / 2, h2 = this.height / 2;
+            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
+            const pts = [];
+            for (let i = 0, len = points.length; i < len; i++) {
+                const point = points[i].copy()._multi(res);
+                let altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
+                if (isTransforming || altitude) {
+                    altitude *= res;
+                    const scale = this._glScale;
+                    set(a, point.x * scale, point.y * scale, altitude * scale);
+                    const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
+                    applyMatrix(t, t, this.projViewMatrix);
+                    t[0] = (t[0] * w2) + w2;
+                    t[1] = -(t[1] * h2) + h2;
+                    point.x = t[0];
+                    point.y = t[1];
+                    pts.push(point);
+                } else {
+                    const out = point;
+                    out._sub(centerPoint.x, centerPoint.y);
+                    out.set(out.x, -out.y);
+                    pts.push(out._add(w2, h2));
+                }
+            }
+            return pts;
         };
     }(),
 
@@ -334,8 +371,7 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = createMat4(),
-            m1 = createMat4();
+        const m1 = createMat4();
         return function () {
             //必须先删除缓存的常用值，否则后面计算常用值时，会循环引用造成错误
             delete this._mapRes;
@@ -347,7 +383,7 @@ Map.include(/** @lends Map.prototype */{
                 h = size.height || 1;
 
             this._glScale = this.getGLScale();
-            const pitch = this.getPitch() * Math.PI / 180;
+            // const pitch = this.getPitch() * Math.PI / 180;
 
             // camera world matrix
             const worldMatrix = this._getCameraWorldMatrix();
@@ -356,14 +392,14 @@ Map.include(/** @lends Map.prototype */{
             const fov = this.getFov() * Math.PI / 180;
             const farZ = this._getCameraFar(fov, this.getPitch());
             this.cameraFar = farZ;
-            this.cameraNear = Math.max(this._glScale * this.getResolution(this.getGLZoom()) * Math.cos(pitch), 0.1);
+            this.cameraNear = Math.max(this.cameraCenterDistance / 10, 0.1);
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
             this.projMatrix = projMatrix;
 
             // view matrix
-            this.viewMatrix = mat4.invert(m0, worldMatrix);
+            this.viewMatrix = mat4.invert(this.viewMatrix || createMat4(), worldMatrix);
             // matrix for world point => screen point
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
             this._calcCascadeMatrixes();
@@ -380,20 +416,20 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     _getCameraFar(fov, pitch) {
+        // const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+        // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         let farZ = cameraCenterDistance;
+        let y = 4 * cameraCenterDistance;
         if (pitch > 0) {
             pitch = pitch * Math.PI / 180;
-            let y;
-            if (2 / Math.PI - pitch <= fov / 2) {
-                y = 4 * cameraCenterDistance;
-            } else {
+            if (2 / Math.PI - pitch > fov / 2) {
                 const tanFov = Math.tan(fov / 2);
                 const tanP = Math.tan(pitch);
-                y = (cameraCenterDistance * tanFov) / (1 / tanP - tanFov);
+                y = Math.max((cameraCenterDistance * tanFov) / (1 / tanP - tanFov), y);
             }
-            farZ += y;
         }
+        farZ += y;
         //TODO 地下的图形无法显示
         return farZ + 1.0;
     },

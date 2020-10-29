@@ -1,5 +1,5 @@
 import { isNumber, extend } from '../../../core/util';
-import { loadFunctionTypes } from '../../../core/mapbox';
+import { loadFunctionTypes, isFunctionDefinition, interpolated } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
 
@@ -15,10 +15,20 @@ import Canvas from '../../../core/Canvas';
  */
 class CanvasSymbolizer extends Symbolizer {
     _prepareContext(ctx) {
+        if (isFunctionDefinition(this.symbol['opacity'])) {
+            if (!this._opacityFn) {
+                this._opacityFn = interpolated(this.symbol['opacity']);
+            }
+        } else {
+            delete this._opacityFn;
+        }
         if (isNumber(this.symbol['opacity'])) {
             if (ctx.globalAlpha !== this.symbol['opacity']) {
                 ctx.globalAlpha = this.symbol['opacity'];
             }
+        } else if (this._opacityFn) {
+            const map = this.getMap();
+            ctx.globalAlpha = this._opacityFn(map.getZoom());
         } else if (ctx.globalAlpha !== 1) {
             ctx.globalAlpha = 1;
         }

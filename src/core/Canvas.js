@@ -609,15 +609,15 @@ const Canvas = {
             const u0 = 1.0 - t0;
             const u1 = 1.0 - t1;
 
-            const qxa =  x1 * u0 * u0 + bx1 * 2 * t0 * u0 + bx2 * t0 * t0;
-            const qxb =  x1 * u1 * u1 + bx1 * 2 * t1 * u1 + bx2 * t1 * t1;
-            const qxc = bx1 * u0 * u0 + bx2 * 2 * t0 * u0 +  x2 * t0 * t0;
-            const qxd = bx1 * u1 * u1 + bx2 * 2 * t1 * u1 +  x2 * t1 * t1;
+            const qxa = x1 * u0 * u0 + bx1 * 2 * t0 * u0 + bx2 * t0 * t0;
+            const qxb = x1 * u1 * u1 + bx1 * 2 * t1 * u1 + bx2 * t1 * t1;
+            const qxc = bx1 * u0 * u0 + bx2 * 2 * t0 * u0 + x2 * t0 * t0;
+            const qxd = bx1 * u1 * u1 + bx2 * 2 * t1 * u1 + x2 * t1 * t1;
 
-            const qya =  y1 * u0 * u0 + by1 * 2 * t0 * u0 + by2 * t0 * t0;
-            const qyb =  y1 * u1 * u1 + by1 * 2 * t1 * u1 + by2 * t1 * t1;
-            const qyc = by1 * u0 * u0 + by2 * 2 * t0 * u0 +  y2 * t0 * t0;
-            const qyd = by1 * u1 * u1 + by2 * 2 * t1 * u1 +  y2 * t1 * t1;
+            const qya = y1 * u0 * u0 + by1 * 2 * t0 * u0 + by2 * t0 * t0;
+            const qyb = y1 * u1 * u1 + by1 * 2 * t1 * u1 + by2 * t1 * t1;
+            const qyc = by1 * u0 * u0 + by2 * 2 * t0 * u0 + y2 * t0 * t0;
+            const qyd = by1 * u1 * u1 + by2 * 2 * t1 * u1 + y2 * t1 * t1;
 
             // const xa = qxa * u0 + qxc * t0;
             const xb = qxa * u1 + qxc * t1;
@@ -873,6 +873,31 @@ const Canvas = {
         target.height = canvas.height;
         target.getContext('2d').drawImage(canvas, 0, 0);
         return target;
+    },
+
+    // pixel render
+    pixelRect(ctx, point, lineOpacity, fillOpacity) {
+        const lineWidth = ctx.lineWidth;
+        const alpha = ctx.globalAlpha;
+        if (lineWidth > 0 && lineOpacity > 0) {
+            if (ctx.fillStyle !== ctx.strokeStyle) {
+                ctx.fillStyle = ctx.strokeStyle;
+            }
+            if (lineOpacity < 1) {
+                ctx.globalAlpha *= lineOpacity;
+            }
+        } else if (fillOpacity > 0) {
+            if (fillOpacity < 1) {
+                ctx.globalAlpha *= fillOpacity;
+            }
+        } else {
+            return;
+        }
+        ctx.canvas._drawn = true;
+        ctx.fillRect(point[0], point[1], 1, 1);
+        if (ctx.globalAlpha !== alpha) {
+            ctx.globalAlpha = alpha;
+        }
     }
 };
 

@@ -6,7 +6,8 @@ import { isFunctionDefinition } from '../../../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
-
+const TEMP_POINT2 = new Point(0, 0);
+const TEMP_POINT3 = new Point(0, 0);
 /**
  * @classdesc
  * Base symbolizer class for all the point type symbol styles.
@@ -60,13 +61,31 @@ class PointSymbolizer extends CanvasSymbolizer {
      * @return {Point[]}
      */
     _getRenderContainerPoints(ignoreAltitude) {
-        const painter = this.getPainter(),
-            points = this._getRenderPoints()[0];
+        const painter = this.getPainter();
         if (painter.isSpriting()) {
-            return points;
+            return this._getRenderPoints()[0];
         }
+        const geometry = this.geometry;
         const dxdy = this.getDxDy();
-        const cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
+        let cpoints;
+        if (geometry._cPoint && (!ignoreAltitude)) {
+            //DANGEROUS
+            //调用 _getRenderContainerPoints 获取坐标之后，都直接绘制了，所以这里可以用TEMP_POINT来减少对象创建
+            //但如果 _getRenderContainerPoints 获取坐标后还有其他操作，会导致bug。
+            const p = ignoreAltitude ? TEMP_POINT2 : TEMP_POINT3;
+            p.set(geometry._cPoint.x, geometry._cPoint.y);
+            // const p = geometry._cPoint;
+            const containerOffset = painter.containerOffset;
+            p._sub(containerOffset);
+            const dx = dxdy.x, dy = dxdy.y;
+            if (dx || dy) {
+                p._add(dx || 0, dy || 0);
+            }
+            cpoints = [p];
+        } else {
+            const points = this._getRenderPoints()[0];
+            cpoints = this.painter._pointContainerPoints(points, dxdy.x, dxdy.y, ignoreAltitude, true, this.getPlacement());
+        }
         if (!cpoints || !Array.isArray(cpoints[0])) {
             return cpoints;
         }

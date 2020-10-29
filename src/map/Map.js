@@ -22,7 +22,10 @@ import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
+import { set } from '../core/util/vec3';
+import { applyMatrix } from '../core/util/math';
 
+const TEMP_COORD = new Coordinate(0, 0);
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -79,12 +82,12 @@ import SpatialReference from './spatial-reference/SpatialReference';
  * @instance
  */
 const options = {
-    'maxVisualPitch' : 70,
-    'maxPitch' : 80,
+    'maxVisualPitch': 70,
+    'maxPitch': 80,
     'centerCross': false,
 
-    'zoomInCenter' : false,
-    'zoomOrigin' : null,
+    'zoomInCenter': false,
+    'zoomOrigin': null,
     'zoomAnimation': (function () {
         return !IS_NODE;
     })(),
@@ -103,19 +106,19 @@ const options = {
         return !Browser.mobile;
     })(),
 
-    'hitDetectLimit' : 5,
+    'hitDetectLimit': 5,
 
-    'fpsOnInteracting' : 25,
+    'fpsOnInteracting': 25,
 
-    'layerCanvasLimitOnInteracting' : -1,
+    'layerCanvasLimitOnInteracting': -1,
 
     'maxZoom': null,
     'minZoom': null,
     'maxExtent': null,
-    'fixCenterOnResize' : true,
+    'fixCenterOnResize': true,
 
     'checkSize': true,
-    'checkSizeInterval' : 1000,
+    'checkSizeInterval': 1000,
 
     'renderer': 'canvas',
 
@@ -640,7 +643,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Boolean} [options.animation=true] whether zoom is animation, true by default
      * @returns {Map} this
      */
-    setZoom(zoom, options = { 'animation' : true }) {
+    setZoom(zoom, options = { 'animation': true }) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
@@ -790,7 +793,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     setCenterAndZoom(center, zoom) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
-            this.setZoom(zoom, { animation : false });
+            this.setZoom(zoom, { animation: false });
         } else {
             this.setCenter(center);
         }
@@ -813,7 +816,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this.getMaxZoom();
         }
         const size = this.getSize();
-        const containerExtent = extent.convertTo(p => this.coordToContainerPoint(p));
+        const containerExtent = extent.convertTo(p => this.coordToPoint(p));
         const w = containerExtent.getWidth(),
             h = containerExtent.getHeight();
         const scaleX = size['width'] / w,
@@ -830,10 +833,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     getView() {
         return {
-            'center' : this.getCenter().toArray(),
-            'zoom'  : this.getZoom(),
-            'pitch' : this.getPitch(),
-            'bearing' : this.getBearing()
+            'center': this.getCenter().toArray(),
+            'zoom': this.getZoom(),
+            'pitch': this.getPitch(),
+            'bearing': this.getBearing()
         };
     }
 
@@ -850,7 +853,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setCenter(view['center']);
         }
         if (view['zoom'] !== null && !isNaN(+view['zoom'])) {
-            this.setZoom(+view['zoom'], { 'animation' : false });
+            this.setZoom(+view['zoom'], { 'animation': false });
         }
         if (view['pitch'] !== null && !isNaN(+view['pitch'])) {
             this.setPitch(+view['pitch']);
@@ -900,8 +903,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
                 center,
                 zoom
             }, {
-                'duration' : options['duration'] || this.options['zoomAnimationDuration'],
-                'easing' : options['easing'] || 'out',
+                'duration': options['duration'] || this.options['zoomAnimationDuration'],
+                'easing': options['easing'] || 'out',
             }, step);
         else
             return this.setCenterAndZoom(center, zoom);
@@ -1041,7 +1044,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (!id) {
             return null;
         }
-        const layer =  this._layerCache ? this._layerCache[id] : null;
+        const layer = this._layerCache ? this._layerCache[id] : null;
         if (layer) {
             return layer;
         }
@@ -1207,7 +1210,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * Exports image from the map's canvas.
      * @param {Object} [options=undefined] - options
-     * @param {String} [options.mimeType=image/png] - mime type of the image
+     * @param {String} [options.mimeType=image/png] - mime type of the image: image/png, image/jpeg, image/webp
+     * @param {String} [options.quality=0.92] - A Number between 0 and 1 indicating the image quality to use for image formats that use lossy compression such as image/jpeg and image/webp.
      * @param {Boolean} [options.save=false] - whether pop a file save dialog to save the export image.
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
@@ -1227,11 +1231,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (!file) {
                 file = 'export';
             }
-            const dataURL = renderer.toDataURL(mimeType);
+            const dataURL = renderer.toDataURL(mimeType, options.quality || 0.92);
             if (save && dataURL) {
                 let imgURL;
                 if (typeof Blob !== 'undefined' && typeof atob !== 'undefined') {
-                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''), mimeType);
+                    const blob = b64toBlob(dataURL.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, ''), mimeType);
                     imgURL = URL.createObjectURL(blob);
                 } else {
                     imgURL = dataURL;
@@ -1355,7 +1359,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this._updateMapSize(watched);
         }
 
-        const hided = (watched['width'] === 0 ||  watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
+        const hided = (watched['width'] === 0 || watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
             this._eventSilence = true;
@@ -1507,7 +1511,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('moveend',  (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
+        this._fireEvent('moveend', (param && param['domEvent']) ? this._parseEvent(param['domEvent'], 'moveend') : param);
         if (!this._verifyExtent(this._getPrjCenter()) && this._originCenter) {
             const moveTo = this._originCenter;
             this._panTo(moveTo);
@@ -1974,6 +1978,25 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * Converts the projected coordinate to a 2D point in the specific zoom
+     * @param  {Coordinate} pCoord - projected Coordinate
+     * @param  {Number} zoom   - point's zoom level
+     * @return {Point} 2D point
+     * @private
+     */
+    _prjsToPoints(pCoords, zoom) {
+        zoom = (isNil(zoom) ? this.getZoom() : zoom);
+        const res = this._getResolution(zoom);
+        const transformation = this._spatialReference.getTransformation();
+        const pts = [];
+        for (let i = 0, len = pCoords.length; i < len; i++) {
+            const pt = transformation.transform(pCoords[i], res);
+            pts.push(pt);
+        }
+        return pts;
+    }
+
+    /**
      * Converts the 2D point to projected coordinate
      * @param  {Point} point - 2D point
      * @param  {Number} zoom   - point's zoom level
@@ -2136,6 +2159,57 @@ Map.include(/** @lends Map.prototype */{
         return function (coordinate, zoom, out) {
             const pCoordinate = this.getProjection().project(coordinate, COORD);
             return this._prjToContainerPoint(pCoordinate, zoom, out);
+        };
+    }(),
+
+    /**
+     * Convert a geographical coordinate to the container point. <br>
+     * Batch conversion for better performance <br>
+     *  A container point is a point relative to map container's top-left corner. <br>
+     * @param {Array[Coordinate]}                - coordinates
+     * @param  {Number} [zoom=undefined]  - zoom level
+     * @return {Array[Point]}
+     * @function
+     */
+    coordinatesToContainerPoints: function () {
+        return function (coordinates, zoom) {
+            zoom = (isNil(zoom) ? this.getZoom() : zoom);
+            const pts = [];
+            const transformation = this._spatialReference.getTransformation();
+            const resolution = this._getResolution(zoom);
+            const res = resolution / this._getResolution();
+            const projection = this.getProjection();
+            const tempOut = [0, 0, 0];
+            const prjOut = new Coordinate(0, 0);
+            const isTransforming = this.isTransforming();
+            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
+            const w = this.width / 2, h = this.height / 2;
+            for (let i = 0, len = coordinates.length; i < len; i++) {
+                const pCoordinate = projection.project(coordinates[i], prjOut);
+                let point = transformation.transform(pCoordinate, resolution);
+                point = point._multi(res);
+                if (isTransforming) {
+                    //convert altitude at zoom to current zoom
+                    // altitude=0;
+                    const scale = this._glScale;
+                    set(tempOut, point.x * scale, point.y * scale, 0);
+                    const t = this._projIfBehindCamera(tempOut, this.cameraPosition, this.cameraForward);
+                    applyMatrix(t, t, this.projViewMatrix);
+
+                    const w2 = w, h2 = h;
+                    t[0] = (t[0] * w2) + w2;
+                    t[1] = -(t[1] * h2) + h2;
+                    point.x = t[0];
+                    point.y = t[1];
+                    pts.push(point);
+                } else {
+                    const out = point;
+                    out._sub(centerPoint.x, centerPoint.y);
+                    out.set(out.x, -out.y);
+                    pts.push(out._add(w, h));
+                }
+            }
+            return pts;
         };
     }(),
 

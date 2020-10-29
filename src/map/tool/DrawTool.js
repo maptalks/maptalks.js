@@ -102,8 +102,11 @@ class DrawTool extends MapTool {
          */
         this._events = {
             'click': this._clickHandler,
-            'mousemove': this._mouseMoveHandler,
+            'mousemove touchmove': this._mouseMoveHandler,
             'dblclick': this._doubleClickHandler,
+            'mousedown touchstart': this._mouseDownHandler,
+            'mouseup touchend': this._mouseUpHandler,
+            'mousemove': this._mouseMoveHandler,
             'mousedown': this._mouseDownHandler,
             'mouseup': this._mouseUpHandler
         };
@@ -264,7 +267,14 @@ class DrawTool extends MapTool {
             'doubleClickZoom': this.options['doubleClickZoom']
         });
         const actions = this._getRegisterMode()['action'];
-        if (actions.indexOf('mousedown') > -1) {
+        let dragging = false;
+        for (let i = 0; i < actions.length; i++) {
+            if (actions[i].indexOf('mousemove') >= 0) {
+                dragging = true;
+                break;
+            }
+        }
+        if (dragging) {
             const map = this.getMap();
             this._mapDraggable = map.options['draggable'];
             map.config({
@@ -345,6 +355,14 @@ class DrawTool extends MapTool {
     _clickHandler(event) {
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
+        //dbclick will trigger two click
+        if (this._clickCoords && this._clickCoords.length) {
+            const len = this._clickCoords.length;
+            const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            if (this._clickCoords[len - 1].equals(prjCoord)) {
+                return;
+            }
+        }
         if (!this._geometry) {
             this._createGeometry(event);
         } else {
@@ -369,7 +387,12 @@ class DrawTool extends MapTool {
              * @property {Point} viewPoint       - view point of the event
              * @property {Event} domEvent                 - dom event
              */
-            this._fireEvent('drawvertex', event);
+            if (this._clickCoords.length <= 1) {
+                this._fireEvent('drawstart', event);
+            } else {
+                this._fireEvent('drawvertex', event);
+            }
+
             if (registerMode['clickLimit'] && registerMode['clickLimit'] === this._historyPointer) {
                 // registerMode['update']([coordinate], this._geometry, event);
                 this.endDraw(event);
@@ -479,6 +502,11 @@ class DrawTool extends MapTool {
         if (clickCoords.length < 2) {
             return;
         }
+        const mode = this.getMode();
+        // Polygon ,FreeHandPolygon
+        if (mode && mode.indexOf('polygon') > -1 && clickCoords.length < 3) {
+            return;
+        }
         const projection = this.getMap().getProjection();
         //remove duplicate vertexes
         const path = [clickCoords[0]];
@@ -551,7 +579,8 @@ class DrawTool extends MapTool {
      */
     _getMouseContainerPoint(event) {
         const action = this._getRegisterMode()['action'];
-        if (action === 'mousedown') {
+        if (action[0].indexOf('mousedown') >= 0 || action[0].indexOf('touchstart') >= 0) {
+            //prevent map's event propogation
             stopPropagation(event['domEvent']);
         }
         return event['containerPoint'];

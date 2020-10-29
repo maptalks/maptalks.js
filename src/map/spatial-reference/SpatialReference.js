@@ -128,6 +128,8 @@ export default class SpatialReference {
                     return false;
                 }
             }
+        } else if (r1 || r2) {
+            return false;
         }
         return true;
     }

@@ -64,6 +64,7 @@ class TileHashset {
  * @property {Boolean}             [options.cascadeTiles=true]      - draw cascaded tiles of different zooms to reduce tiles
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
+ * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
  * @memberOf TileLayer
  * @instance
  */
@@ -71,6 +72,8 @@ const options = {
 
     'urlTemplate': null,
     'subdomains': null,
+
+    'errorUrl': null,
 
     'repeatWorld': true,
 
@@ -122,7 +125,6 @@ const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
 const TEMP_POINT3 = new Point(0, 0);
 const TEMP_POINT4 = new Point(0, 0);
-const TEMP_POINT5 = new Point(0, 0);
 const TEMP_POINT6 = new Point(0, 0);
 // const TEMP_POINT_EXTENT = new PointExtent();
 const TILE_BOX = [[0, 0, 0], [0, 0, 0]];
@@ -406,7 +408,9 @@ class TileLayer extends Layer {
         if (!tileConfig) {
             return emptyGrid;
         }
-
+        const tileOffsets = {
+            zoom: offset
+        };
         const sr = this.getSpatialReference();
         const mapSR = map.getSpatialReference();
         const res = sr.getResolution(zoom);
@@ -492,8 +496,8 @@ class TileLayer extends Layer {
 
                 let p;
                 if (tileInfo) {
-                    const { point0 } = tileInfo;
-                    p = tileInfo.point.set(point0.x, point0.y);
+                    const { point } = tileInfo;
+                    p = point;
                 } else if (!this._hasOwnSR) {
                     p = tileConfig.getTilePointNW(idx.x, idx.y, res);
                     // const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
@@ -520,26 +524,30 @@ class TileLayer extends Layer {
                 }
                 const dx = scale.x * (idx.idx - idx.x) * width,
                     dy = scale.y * (idx.idy - idx.y) * height;
-                if (dx || dy) {
+                if (!tileInfo && (dx || dy)) {
                     p._add(dx, dy);
                 }
+
+
+                const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y - height, p.x + width, p.y);
                 if (hasOffset) {
-                    p._sub(offset);
+                    tileExtent.set(p.x, p.y - height, p.x + width, p.y);
+                    tileExtent._sub(offset);
                 }
-                const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y, p.x + width, p.y - height);
                 if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, glScale)) {
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
                     if (cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, offset, dx, dy);
+                        tileExtent._add(offset);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets);
+                        tileExtent._sub(offset);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
                             tileInfo = {
                                 //reserve point caculated by tileConfig
                                 //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
-                                'point0': p.add(offset)._sub(dx, dy),
                                 'point': p,
                                 'z': z,
                                 'x': idx.x,
@@ -548,15 +556,9 @@ class TileLayer extends Layer {
                                 'mask': cascadeLevel,
                                 'size': [width, height],
                                 'id': tileId,
-                                'dupKey': tileId,
                                 'layer': this.getId(),
                                 'url': this.getTileUrl(idx.x, idx.y, zoom)
                             };
-                        }
-                        if (hasOffset) {
-                            tileExtent.set(p.x, p.y, p.x + width, p.y - height);
-                            tileInfo.point = p._add(offset);
-                            tileExtent._add(offset);
                         }
                         tiles.push(tileInfo);
                         extent._combine(tileExtent);
@@ -589,13 +591,12 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, tileExtent, offset, dx, dy) {
+    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, tileExtent, dx, dy, tileOffsets) {
         // const hasOffset = offset[0] || offset[1];
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const glScale = this.getMap().getGLScale(z);
         //yOrder < 0，用左上角，大于0时，用左下角
         const corner = TEMP_POINT4.set(tileExtent.xmin * 2, yOrder < 0 ? tileExtent.ymax * 2 : tileExtent.ymin * 2);
-        const corner0 = TEMP_POINT5.set(tileExtent.xmin, yOrder < 0 ? tileExtent.ymax : tileExtent.ymin)._add(offset)._sub(dx, dy)._multi(2);
         const w = tileExtent.getWidth();
         const h = tileExtent.getHeight();
         const idx = tileIdx.idx * 2;
@@ -603,34 +604,38 @@ class TileLayer extends Layer {
         const x = tileIdx.x * 2;
         const y = tileIdx.y * 2;
 
-        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 0, w, h, corner, corner0, offset, glScale);
+        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 0, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 1, w, h, corner, corner0, offset, glScale);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 1, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 0, w, h, corner, corner0, offset, glScale);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 0, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 1, w, h, corner, corner0, offset, glScale);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 1, w, h, corner, glScale, tileOffsets);
         if (tile) tiles.push(tile);
     }
 
-    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, i, j, w, h, corner, corner0, offset, glScale) {
+    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, i, j, w, h, corner, glScale, tileOffsets) {
         const tileId = this._getTileId(idx + i, idy + j, z);
         if (this._visitedTiles && this._visitedTiles.has(tileId)) {
             return null;
         }
+        let offset = tileOffsets[z];
+        if (!offset) {
+            offset = tileOffsets[z] = this._getTileOffset(z);
+        }
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const childExtent = new PointExtent(corner.x + i * w, corner.y + yOrder * j * h, corner.x + (i + 1) * w, corner.y + yOrder * (j + 1) * h);
+        childExtent._sub(offset);
         if (/*!rightVisitEnd && */
             !this._isSplittedTileInExtent(frustumMatrix, childExtent, glScale)) {
             return null;
         }
-        const hasOffset = offset[0] || offset[1];
+        childExtent._add(offset);
         let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
         if (!tileInfo) {
             //reserve point caculated by tileConfig
             //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
             tileInfo = {
-                'point0': corner0.add(i * w, Math.max(yOrder * j * h, yOrder * (j + 1) * h)),
                 'point': new Point(childExtent.xmin, childExtent.ymax),
                 'z': z,
                 'x' : x + i,
@@ -638,30 +643,20 @@ class TileLayer extends Layer {
                 'extent2d' : childExtent,
                 'size': [w, h],
                 'id': tileId,
-                'dupKey': tileId,
                 'layer': this.getId(),
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
             };
         } else {
             tileInfo = tileInfo.info;
         }
-        if (hasOffset) {
-            tileInfo.extent2d = childExtent;
-            tileInfo.extent2d._add(offset);
-            tileInfo.point.set(childExtent.xmin, childExtent.ymax)._add(offset);
-        }
         return tileInfo;
     }
 
     _getTileOffset(z) {
-        const map = this.getMap();
-        const scale = map._getResolution() / map._getResolution(z);
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset(this);
+            offset = offset(z);
         }
-        offset[0] *= scale;
-        offset[1] *= scale;
         return offset;
     }
 
@@ -709,14 +704,15 @@ class TileLayer extends Layer {
             this._tileConfig = new TileConfig(map, this.options['tileSystem'], fullExtent, tileSize);
         }
         //inherit baselayer's tileconfig
-        if (map && !this._tileConfig &&
-            map.getSpatialReference() === sr &&
-            map.getBaseLayer() &&
-            map.getBaseLayer() !== this &&
-            map.getBaseLayer()._getTileConfig) {
-            const base = map.getBaseLayer()._getTileConfig();
-            this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
-        }
+        // if (map && !this._tileConfig &&
+        //     mapSr === sr &&
+        //     map.getBaseLayer() &&
+        //     map.getBaseLayer() !== this &&
+        //     map.getBaseLayer()._getTileConfig &&
+        //     map.getBaseLayer().getSpatialReference() === mapSr) {
+        //     const base = map.getBaseLayer()._getTileConfig();
+        //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
+        // }
         this._hasOwnSR = sr !== map.getSpatialReference();
     }
 

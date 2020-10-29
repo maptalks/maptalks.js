@@ -445,6 +445,43 @@ describe('VectorLayer.Spec', function () {
             });
             map.setPitch(80);
         });
+
+
+        it('sort markers by camera distance', function (done) {
+            var canvas = document.createElement('canvas');
+            var marker1 = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    'markerType': 'ellipse',
+                    'markerFill': '#f00',
+                    'markerWidth' : 20,
+                    'markerHeight' : 20
+                },
+                properties: {
+                    altitude: 2
+                }
+
+            });
+            var marker2 = new maptalks.Marker(map.getCenter(), {
+                symbol : {
+                    'markerType': 'ellipse',
+                    'markerFill': '#0f0',
+                    'markerWidth' : 20,
+                    'markerHeight' : 20
+                },
+                properties: {
+                    altitude: 0
+                }
+            });
+            var layer = new maptalks.VectorLayer('v', [marker1, marker2], { 'canvas' : canvas, enableAltitude: true, sortByDistanceToCamera:true });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                var w = canvas.width, h = canvas.height;
+                var color = canvas.getContext('2d').getImageData(w / 2, h / 2, 1, 1).data;
+                expect(color).to.be.eql({ 0: 255, 1: 0, 2: 0, 3: 255 });
+                done();
+            });
+            layer.addTo(map);
+        });
     });
 
     describe('can setStyle', function () {

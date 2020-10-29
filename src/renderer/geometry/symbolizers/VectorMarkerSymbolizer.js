@@ -8,6 +8,8 @@ import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
+const TEMP_SIZE = new Size(1, 1);
+
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
@@ -70,7 +72,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
-            const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            // const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
             if (origin) {
                 point = origin;
             }
@@ -92,7 +95,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const anchor = this._getAnchor(image.width, image.height);
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
-            const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            // const origin = this._rotate(ctx, point, this._getRotationAt(i));
+            const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
             if (origin) {
                 point = origin;
             }
@@ -155,8 +159,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     _getAnchor(w, h) {
         const shadow = 2 * (this.symbol['shadowBlur'] || 0),
             margin = shadow + this.padding;
-        const p = getAlignPoint(new Size(w, h), this.style['markerHorizontalAlignment'], this.style['markerVerticalAlignment']);
-        if (p.x !== -w  / 2) {
+        TEMP_SIZE.width = w;
+        TEMP_SIZE.height = h;
+        const p = getAlignPoint(TEMP_SIZE, this.style['markerHorizontalAlignment'], this.style['markerVerticalAlignment']);
+        if (p.x !== -w / 2) {
             p.x -= sign(p.x + w / 2) * margin;
         }
         if (p.y !== -h / 2) {
@@ -312,7 +318,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerWidth': getValueOrDefault(s['markerWidth'], 10),
             'markerHeight': getValueOrDefault(s['markerHeight'], 10),
 
-            'markerRotation' : getValueOrDefault(s['markerRotation'], 0)
+            'markerRotation': getValueOrDefault(s['markerRotation'], 0)
         };
         const markerType = result['markerType'];
         let ha, va;

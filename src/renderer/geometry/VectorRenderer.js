@@ -10,6 +10,29 @@ import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
 
+const TEMP_WITHIN = {
+    within: false,
+    center: [0, 0]
+};
+// bbox in pixel
+function isWithinPixel(painter) {
+    if (!painter || (!painter.__bbox)) {
+        TEMP_WITHIN.within = false;
+    } else {
+        TEMP_WITHIN.within = false;
+        const { minx, miny, maxx, maxy } = painter.__bbox;
+        const offsetx = Math.abs(maxx - minx);
+        const offsety = Math.abs(maxy - miny);
+        if (offsetx <= 1 && offsety <= 1) {
+            TEMP_WITHIN.within = true;
+            TEMP_WITHIN.center[0] = (minx + maxx) / 2;
+            TEMP_WITHIN.center[1] = (miny + maxy) / 2;
+        }
+        delete painter.__bbox;
+    }
+    return TEMP_WITHIN;
+}
+
 Geometry.include({
     _redrawWhenPitch: () => false,
 
@@ -156,7 +179,10 @@ LineString.include({
     },
 
     _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
-        if (this.options['smoothness']) {
+        const r = isWithinPixel(this._painter);
+        if (r.within) {
+            Canvas.pixelRect(ctx, r.center, lineOpacity, fillOpacity);
+        } else if (this.options['smoothness']) {
             Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness'], false, this._animIdx, this._animTailRatio);
         } else {
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
@@ -280,7 +306,12 @@ Polygon.include({
     },
 
     _paintOn(ctx, points, lineOpacity, fillOpacity, dasharray) {
-        Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
+        const r = isWithinPixel(this._painter);
+        if (r.within) {
+            Canvas.pixelRect(ctx, r.center, lineOpacity, fillOpacity);
+        } else {
+            Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
+        }
     }
 });
 

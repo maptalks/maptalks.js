@@ -199,7 +199,8 @@ Map.include(/** @lends Map.prototype */ {
         }
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
-        if (type === 'mousedown' || (type === 'touchstart' && e.touches.length === 1)) {
+        // happen.js produce event without touches
+        if (type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1))) {
             this._mouseDownTime = now();
         } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu')) {
             if (!this._mouseDownTime) {

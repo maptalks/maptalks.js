@@ -62,7 +62,8 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         Canvas.prepareCanvasFont(ctx, style);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
-            const origin = this._rotate(ctx, p, this._getRotationAt(i));
+            // const origin = this._rotate(ctx, p, this._getRotationAt(i));
+            const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
             if (origin) {
                 p = origin;
             }
