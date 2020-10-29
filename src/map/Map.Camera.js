@@ -371,8 +371,7 @@ Map.include(/** @lends Map.prototype */{
      */
     _calcMatrices: function () {
         // closure matrixes to reuse
-        const m0 = createMat4(),
-            m1 = createMat4();
+        const m1 = createMat4();
         return function () {
             //必须先删除缓存的常用值，否则后面计算常用值时，会循环引用造成错误
             delete this._mapRes;
@@ -400,7 +399,7 @@ Map.include(/** @lends Map.prototype */{
             this.projMatrix = projMatrix;
 
             // view matrix
-            this.viewMatrix = mat4.invert(m0, worldMatrix);
+            this.viewMatrix = mat4.invert(this.viewMatrix || createMat4(), worldMatrix);
             // matrix for world point => screen point
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
             this._calcCascadeMatrixes();
