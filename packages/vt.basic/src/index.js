@@ -20,6 +20,7 @@ import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 import GLTFPhongPainter from './painters/GLTFPhongPainter';
 import GLTFStandardPainter from './painters/GLTFStandardPainter';
 import HeatmapPainter from './painters/HeatmapPainter';
+import WaterPainter from './painters/WaterPainter';
 
 const FillPlugin = createPainterPlugin('fill', FillPainter);
 FillPlugin.registerAt(VectorTileLayer);
@@ -74,11 +75,15 @@ GLTFStandardPlugin.registerAt(VectorTileLayer);
 const HeatmapPlugin = createPainterPlugin('heatmap', HeatmapPainter);
 HeatmapPlugin.registerAt(VectorTileLayer);
 
+const WaterPlugin = createPainterPlugin('water', WaterPainter);
+WaterPlugin.registerAt(VectorTileLayer);
+
 Vector3DLayer.registerPainter('lit', StandardPainter);
 Vector3DLayer.registerPainter('icon', IconPainter);
 Vector3DLayer.registerPainter('fill', FillPainter);
 Vector3DLayer.registerPainter('line', LinePainter);
 Vector3DLayer.registerPainter('line-gradient', LineGradientPainter);
+Vector3DLayer.registerPainter('water', WaterPainter);
 
 export {
     LinePlugin,
@@ -113,5 +118,6 @@ export {
     //gltf plugins
     GLTFStandardPlugin,
 
-    HeatmapPlugin
+    HeatmapPlugin,
+    WaterPlugin
 };
