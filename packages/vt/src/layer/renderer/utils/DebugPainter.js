@@ -73,7 +73,7 @@ class DebugPainter {
 
     }
 
-    remove() {
+    delete() {
         if (this._texture) {
             this._texture.destroy();
         }
