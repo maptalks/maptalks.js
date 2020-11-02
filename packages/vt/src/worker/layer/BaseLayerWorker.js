@@ -53,7 +53,8 @@ export default class BaseLayerWorker {
             const { features, layers } = this._cache.get(url);
             const waitings = loadings[url];
             delete loadings[url];
-            if (!features.length) {
+            if (!features || !features.length) {
+                this._callWaitings(waitings);
                 cb();
                 return;
             }
@@ -383,6 +384,7 @@ export default class BaseLayerWorker {
             });
             const pack = new LinePack(features, symbol, options);
             return pack.load();
+            // return Promise.resolve(null);
         } else if (type === 'native-line') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -449,10 +451,7 @@ export default class BaseLayerWorker {
             const pack = new CirclePack(features, symbol, options);
             return pack.load();
         }
-        return Promise.resolve({
-            data: {},
-            buffers: null
-        });
+        return Promise.resolve(null);
     }
 
     /**

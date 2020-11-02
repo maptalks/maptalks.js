@@ -156,7 +156,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
                 if (err) {
                     throw err;
                 }
-                if (data.buffers) {
+                if (data.buffers && data.buffers.length) {
                     dataBuffers.push(...data.buffers);
                 }
                 cb(null, { icons: data.icons, glyphs: glyphData.glyphs }, dataBuffers);

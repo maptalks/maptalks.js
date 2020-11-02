@@ -24,11 +24,22 @@ export default class IconRequestor {
         const self = this;
         function callback(url) {
             images[url] = self._getCache(url);
-            buffers.push(images[url].data.data.buffer);
+            if (images[url] && images[url] !== 'error') {
+                buffers.push(images[url].data.data.buffer);
+            } else {
+                delete images[url];
+            }
             current++;
             if (current === count) {
                 cb(null, { icons: images, buffers });
             }
+        }
+        function complete(img) {
+            const requests = self._requesting[img.url];
+            for (let i = 0; i < requests.length; i++) {
+                requests[i].call(img, img.url);
+            }
+            delete self._requesting[img.url];
         }
         function onload() {
             const ctx = self.ctx;
@@ -43,11 +54,7 @@ export default class IconRequestor {
                 //tainted canvas
                 console.warn(err);
             }
-            const requests = self._requesting[this.url];
-            for (let i = 0; i < requests.length; i++) {
-                requests[i].call(this, this.url);
-            }
-            delete self._requesting[this.url];
+            complete(this);
         }
         function onerror(err) {
             console.warn(`failed loading icon(${this.index}) at "${this.url}"`);
@@ -55,18 +62,19 @@ export default class IconRequestor {
             if (self.options.iconErrorUrl) {
                 this.src = self.options.iconErrorUrl;
             } else {
-                current++;
-                if (current === count) {
-                    cb(null, { icons: images, buffers });
-                }
+                self._addCache(this.url);
+                complete(this);
             }
         }
-        let hasAsyn = false;
+        let hasRequests = false;
         let marker;
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
-            if (this._cache.has(url)) {
+            const icon = this._getCache(url);
+            if (icon && icon !== 'error') {
                 images[url] = this._getCache(url);
+                continue;
+            } else if (icon === 'error') {
                 continue;
             }
             if (url.indexOf('vector://') === 0) {
@@ -106,7 +114,7 @@ export default class IconRequestor {
                 if (!this._requesting[url]) {
                     this._requesting[url] = [];
                 } else {
-                    hasAsyn = true;
+                    hasRequests = true;
                     count++;
                     this._requesting[url].push(callback);
                     continue;
@@ -119,24 +127,40 @@ export default class IconRequestor {
                 img.onabort = onerror;
                 img.url = url;
                 img.crossOrigin = 'Anonymous';
-                hasAsyn = true;
+                hasRequests = true;
                 count++;
                 img.src = url;
             }
         }
-        if (!hasAsyn) {
+        if (!hasRequests) {
             cb(null, { icons: images, buffers });
         }
     }
 
+    _hasCache(url) {
+        const icon = this._cache.get(url);
+        return icon && icon !== 'error';
+    }
+
     _addCache(url, data, width, height) {
-        if (!this._cache.has(url)) {
-            this._cache.add(url, { data: { data, width, height }, url });
+        if (!this._hasCache(url)) {
+            if (data) {
+                this._cache.add(url, { data: { data, width, height }, url });
+            } else {
+                this._cache.add(url, 'error');
+            }
+
         }
     }
 
     _getCache(url) {
         const iconAtlas = this._cache.get(url);
+        if (!iconAtlas) {
+            return null;
+        }
+        if (iconAtlas === 'error') {
+            return iconAtlas;
+        }
         return {
             data: { data: new Uint8ClampedArray(iconAtlas.data.data), width: iconAtlas.data.width, height: iconAtlas.data.height },
             url: iconAtlas.url
