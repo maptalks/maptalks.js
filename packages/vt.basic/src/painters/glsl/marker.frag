@@ -12,4 +12,5 @@ varying float vOpacity;
 
 void main() {
     gl_FragColor = texture2D(texture, vTexCoord) * markerOpacity * vOpacity;
+    gl_FragColor *= gl_FragColor.a;
 }

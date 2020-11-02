@@ -126,6 +126,7 @@ class DebugPainter {
                     } else {
                         gl_FragColor = texture2D(uImage, vTexCoord) * uOpacity;
                     }
+                    gl_FragColor *= gl_FragColor.a;
                 }
             `,
             attributes: {
@@ -148,7 +149,7 @@ class DebugPainter {
             blend: {
                 enable: true,
                 func: {
-                    src: 'src alpha',
+                    src: 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'

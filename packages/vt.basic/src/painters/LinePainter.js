@@ -359,9 +359,7 @@ class LinePainter extends BasicPainter {
             blend: {
                 enable: true,
                 func: {
-                    src: (context, props) => {
-                        return props['linePatternFile'] ? 'src alpha' : this.sceneConfig.blendSrc || 'one';
-                    },
+                    src: 'one',
                     dst: this.sceneConfig.blendDst || 'one minus src alpha'
                 },
                 equation: 'add'

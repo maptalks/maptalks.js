@@ -675,7 +675,7 @@ class IconPainter extends CollisionPainter {
                 blend: {
                     enable: true,
                     func: {
-                        src: 'src alpha',
+                        src: 'one',
                         // srcAlpha: 1,
                         dst: 'one minus src alpha',
                         // dstAlpha: 1

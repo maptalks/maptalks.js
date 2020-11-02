@@ -74,5 +74,6 @@ void main() {
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 
+    gl_FragColor *= gl_FragColor.a;
     // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

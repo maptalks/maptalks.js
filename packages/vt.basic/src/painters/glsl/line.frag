@@ -96,7 +96,9 @@ void main() {
     float dist = length(vNormal) * vWidth.s;
 
     #ifdef HAS_PATTERN
-        float blur = 0.0;
+        vec2 uvSize = vTexInfo.zw;
+        float hasPattern = sign(uvSize.x * uvSize.y);
+        float blur = mix(lineBlur, 0.0, hasPattern);
     #else
         float blur = lineBlur;
     #endif
@@ -109,19 +111,15 @@ void main() {
         vec4 color = lineColor;
     #endif
     #ifdef HAS_PATTERN
-
-        vec2 uvSize = vTexInfo.zw;
-        if (uvSize.x * uvSize.y > 1.0) {
-            float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
-            linesofar += mod(currentTime * -linePatternAnimSpeed * 0.1, patternWidth);
-            //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-            float patternx = mod(linesofar / patternWidth, 1.0);
-            float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
-            vec2 uvStart = vTexInfo.xy;
-            //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
-            color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
-            // color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
-        }
+        float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
+        linesofar += mod(currentTime * -linePatternAnimSpeed * 0.1, patternWidth);
+        //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
+        float patternx = mod(linesofar / patternWidth, 1.0);
+        float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
+        vec2 uvStart = vTexInfo.xy;
+        //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
+        vec4 texColor = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
+        color = mix(color, texColor, hasPattern);
     #endif
     color *= alpha;
     #ifdef HAS_DASHARRAY
@@ -172,4 +170,6 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
+
+    gl_FragColor *= gl_FragColor.a;
 }
