@@ -7,7 +7,7 @@ import pickingVert from './glsl/fill.picking.vert';
 const DEFAULT_DIR_LIGHT = {
     color: [2.0303, 2.0280, 2.0280],
     // direction: [-0.9617, -0.2717, 0.0347]
-    direction: [-1, -0.2717, -1]
+    direction: [0.9, -0.2717, -1]
 };
 
 class WaterPainter extends BasicPainter {
@@ -38,13 +38,14 @@ class WaterPainter extends BasicPainter {
         mesh.setUniform('tileRatio', geometry.properties.tileRatio);
         mesh.setUniform('tilePoint', tilePoint);
         // mesh.setUniform('tileScale', 1);
-        mesh.setUniform('waveParams', [0.09, 4, 0.03, -0.5]);
+        //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
+        mesh.setUniform('waveParams', [0.0900, 4, 0.0300, -0.5000]);
         mesh.setUniform('waveDirection', [-0.1182, -0.0208]);
         mesh.setUniform('waterColor', [0.1451, 0.2588, 0.4863, 1]);
         Object.defineProperty(mesh.uniforms, 'tileScale', {
             enumerable: true,
             get: function () {
-                return Math.pow(2, 6) * geometry.properties.tileResolution / map.getResolution(map.getGLZoom());
+                return Math.pow(2, 8) * geometry.properties.tileResolution / map.getResolution(map.getGLZoom());
             }
         });
         const defines = {};
@@ -162,10 +163,10 @@ class WaterPainter extends BasicPainter {
                 self.setToRedraw();
             };
             img.onerror = () => {
-                console.error('invalid water wave perturbation texture:' + normalUrl);
+                console.error('invalid water wave perturbation texture:' + pertUrl);
             };
-            this.addCachedTexture(normalUrl, img);
-            img.src = normalUrl;
+            this.addCachedTexture(pertUrl, img);
+            img.src = pertUrl;
         }
     }
 
@@ -275,7 +276,7 @@ class WaterPainter extends BasicPainter {
             lightDirection: directionalLight.direction,
             lightColor: directionalLight.color,
             camPos: map.cameraPosition,
-            timeElapsed: this.layer.getRenderer().getFrameTimestamp() || 0,
+            timeElapsed: this.layer.getRenderer().getFrameTimestamp() / 2 || 0,
             texWaveNormal: this._normalTex || this._emptyTex,
             texWavePerturbation: this._pertTex || this._emptyTex,
         };
