@@ -272,6 +272,7 @@ class GroundPainter {
     }
 
     _getExtraCommandProps() {
+        const defaultRange = [0, 1];
         const canvas = this._layer.getRenderer().canvas;
         return {
             viewport: {
@@ -289,6 +290,11 @@ class GroundPainter {
                 mask: () => {
                     const ground = this._layer.getGroundConfig();
                     return ground.depth || ground.depth === undefined;
+                },
+                range: () => {
+                    const groundConfig = this._layer.getGroundConfig();
+                    const groundSceneConfig = groundConfig && groundConfig.renderPlugin.sceneConfig;
+                    return groundSceneConfig && groundSceneConfig['depthRange'] || defaultRange;
                 },
                 //如果设成'<'，会有低级别下地面消失的问题，fuzhenn/maptalks-studio#460
                 func: '<='
