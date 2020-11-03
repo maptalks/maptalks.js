@@ -358,10 +358,7 @@ class LinePainter extends BasicPainter {
             },
             blend: {
                 enable: true,
-                func: {
-                    src: 'one',
-                    dst: this.sceneConfig.blendDst || 'one minus src alpha'
-                },
+                func: this.getBlendFunc(),
                 equation: 'add'
             },
             polygonOffset: {
@@ -391,7 +388,8 @@ class LinePainter extends BasicPainter {
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            linePatternAnimSpeed: symbol.linePatternAnimSpeed || 0
+            linePatternAnimSpeed: symbol.linePatternAnimSpeed || 0,
+            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
         };
 
         this.setIncludeUniformValues(uniforms, context);

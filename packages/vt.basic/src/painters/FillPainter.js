@@ -278,10 +278,7 @@ class FillPainter extends BasicPainter {
                 },
                 blend: {
                     enable: true,
-                    func: {
-                        src: 'one',
-                        dst: 'one minus src alpha'
-                    },
+                    func: this.getBlendFunc(),
                     equation: 'add'
                 },
                 polygonOffset: {
@@ -297,6 +294,7 @@ class FillPainter extends BasicPainter {
         const uniforms = {
             projViewMatrix,
             glScale: 1 / map.getGLScale(),
+            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
         };
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;

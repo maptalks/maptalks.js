@@ -674,12 +674,7 @@ class IconPainter extends CollisionPainter {
                 viewport,
                 blend: {
                     enable: true,
-                    func: {
-                        src: 'one',
-                        // srcAlpha: 1,
-                        dst: 'one minus src alpha',
-                        // dstAlpha: 1
-                    },
+                    func: this.getBlendFunc(),
                     equation: 'add',
                     // color: [0, 0, 0, 0]
                 },
@@ -794,6 +789,8 @@ class IconPainter extends CollisionPainter {
             glyphSize: GLYPH_SIZE,
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE,
+
+            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
         };
     }
 

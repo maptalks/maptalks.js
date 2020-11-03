@@ -271,6 +271,17 @@ class Painter {
         };
     }
 
+    getBlendFunc() {
+        return {
+            src: () => {
+                return this.sceneConfig.blendSrc || 'src alpha';
+            },
+            dst: () => {
+                return this.sceneConfig.blendDst || 'one minus src alpha';
+            }
+        };
+    }
+
     pick(x, y, tolerance = 3) {
         if (!this.layer.options['picking'] || this.sceneConfig.picking === false) {
             return null;

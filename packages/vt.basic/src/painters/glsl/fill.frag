@@ -37,7 +37,7 @@ uniform float tileExtent;
 // #ifndef ENABLE_TILE_STENCIL
 //     varying vec2 vPosition;
 // #endif
-
+uniform lowp float blendSrcIsOne;
 
 void main() {
     // #ifndef ENABLE_TILE_STENCIL
@@ -74,6 +74,8 @@ void main() {
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 
-    gl_FragColor *= gl_FragColor.a;
+    if (blendSrcIsOne == 1.0) {
+        gl_FragColor *= gl_FragColor.a;
+    }
     // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
