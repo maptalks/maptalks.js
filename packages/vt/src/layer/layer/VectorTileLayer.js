@@ -137,7 +137,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             enable: background.enable || false,
             color: unitColor(background.color) || [0, 0, 0, 0],
             opacity: getOrDefault(background.opacity, 1),
-            patternFile: background.patternFile
+            patternFile: background.patternFile,
+            depthRange: background.depthRange
         };
 
         this.validateStyle();
@@ -423,7 +424,9 @@ class VectorTileLayer extends maptalks.TileLayer {
             this._backgroundConfig = {
                 enable: true,
                 renderPlugin: {
-                    type: 'fill'
+                    type: 'fill',
+                    sceneConfig: {
+                    }
                 },
                 symbol: {
                     polygonFill: [0, 0, 0, 0],
@@ -436,6 +439,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._backgroundConfig.symbol.polygonFill = background.color;
         this._backgroundConfig.symbol.polygonOpacity = background.opacity;
         this._backgroundConfig.symbol.polygonPatternFile = background.patternFile;
+        this._backgroundConfig.renderPlugin.sceneConfig.depthRange = background.depthRange;
         return this._backgroundConfig;
     }
 
