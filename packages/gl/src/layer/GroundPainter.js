@@ -37,25 +37,27 @@ class GroundPainter {
         if (!this.isEnable()) {
             return false;
         }
+        const shader = this._getShader();
+        if (this._isInSSRPhase(context) && shader === this._fillShader) {
+            return false;
+        }
         const defines = this._getGroundDefines(context);
         this._ground.setDefines(defines);
         if (this._ground.material !== this.material) {
             this._ground.setMaterial(this.material);
         }
-        const shader = this._getShader();
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         uniforms['offsetFactor'] = context.offsetFactor;
         uniforms['offsetUnits'] = context.offsetUnits;
         const fbo = context && context.renderTarget && context.renderTarget.fbo;
-        const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
-        if (shader === this._fillShader && (!isSSR || !context || !context.ssr)) {
+        if (shader === this._fillShader) {
             //如果是drawSSR阶段不绘制fill ground，fuzhenn/maptalks-studio#461
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
             this._layer.getRenderer().setCanvasUpdated();
             return true;
         }
-
+        const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
         let updated = false;
         if (isSSR && defines && defines['HAS_SSR']) {
             if (context && context.ssr) {
@@ -87,6 +89,14 @@ class GroundPainter {
             this._layer.getRenderer().setCanvasUpdated();
         }
         return updated;
+    }
+
+    _isInSSRPhase(context) {
+        const enableSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
+        if (!enableSSR) {
+            return false;
+        }
+        return !!(context && context.ssr);
     }
 
     update() {
