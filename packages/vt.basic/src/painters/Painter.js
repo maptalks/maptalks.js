@@ -102,7 +102,7 @@ class Painter {
                     geometry[i].properties.feaPickingIdMap = idPickingMap;
                 }
             }
-        } else if (geometry.properties) {
+        } else if (geometry && geometry.properties) {
             const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData);
             geometry.properties.features = features;
             if (hasFeaIds) {

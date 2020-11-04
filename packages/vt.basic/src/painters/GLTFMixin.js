@@ -9,6 +9,7 @@ const DEFAULT_SCALE = [1, 1, 1];
 
 const EMPTY_ARRAY = [];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
+const TEMP_MATRIX = [];
 
 const pickingVert = `
     attribute vec3 aPosition;
@@ -91,6 +92,21 @@ const GLTFMixin = Base =>
             const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
             const meshInfos = this._gltfMeshInfos;
             const symbol = this.getSymbol();
+            let zOffset = 0;
+            //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
+            meshInfos.forEach(info => {
+                const { geometry, nodeMatrix } = info;
+                const positionMatrix = mat4.multiply(TEMP_MATRIX, gltfMatrix, nodeMatrix);
+                const gltfBBox = geometry.boundingBox;
+                const meshBox = gltfBBox.copy();
+                meshBox.transform(positionMatrix);
+
+                const offset = this._calAnchorTranslation(meshBox);
+                if (offset > zOffset) {
+                    zOffset = offset;
+                }
+            });
+            const anchorTranslation = [0, 0, zOffset];
             const meshes = meshInfos.map(info => {
                 const { geometry, nodeMatrix, materialInfo, skin, morphWeights } = info;
                 const MatClazz = this.getMaterialClazz(materialInfo);
@@ -118,14 +134,15 @@ const GLTFMixin = Base =>
                 setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
                 // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
                 const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
-
                 const matrix = [];
+                mat4.fromTranslation(matrix, anchorTranslation);
+                mat4.multiply(positionMatrix, matrix, positionMatrix);
+
                 mesh.setPositionMatrix(() => {
                     const fixZoom = this.getSymbol().fixSizeOnZoom;
                     if (isNumber(fixZoom)) {
                         const scale = map.getGLScale() / map.getGLScale(fixZoom);
                         vec3.set(V3, scale, scale, scale);
-                        // vec3.set(V3, scale, scale, scale);
                         mat4.fromScaling(matrix, V3);
                         return mat4.multiply(matrix, matrix, positionMatrix);
                     } else {
@@ -155,6 +172,29 @@ const GLTFMixin = Base =>
             return meshes;
         }
 
+        // _calFitScale(gltfBBox) {
+        //     const maxLength = Math.max(gltfBBox.max[0] - gltfBBox.min[0], gltfBBox.max[1] - gltfBBox.min[1], gltfBBox.max[2] - gltfBBox.min[2]);
+        //     const fitExtent = getFitExtent(this.getMap(), this.layer.options['gltfFitSize']);
+        //     if (fitExtent > maxLength) {
+        //         return 1;
+        //     }
+        //     const ratio = fitExtent / maxLength;
+        //     return ratio;
+        // }
+
+        _calAnchorTranslation(gltfBBox) {
+            const anchorZ = this.getSymbol().anchorZ || 'bottom';
+            let zOffset = 0;
+            if (anchorZ === 'bottom') {
+                zOffset = -gltfBBox.min[2];
+            } else if (anchorZ === 'top') {
+                zOffset = -gltfBBox.max[2];
+            } else if (anchorZ === 'center') {
+                zOffset = -(gltfBBox.min[2] + gltfBBox.max[2]) / 2;
+            }
+            return zOffset;
+        }
+
         addMesh(meshes) {
             if (!meshes) {
                 return null;
@@ -172,13 +212,15 @@ const GLTFMixin = Base =>
         }
 
         preparePaint(context) {
+            const symbol = this.getSymbol();
             const isAnimated = this._isSkinAnimating();
             if (isAnimated && this._gltfPack) {
-                let speed = this.sceneConfig.gltfAnimation.speed;
+                let speed = symbol.speed;
+                const loop = !!symbol.loop;
                 if (isNil(speed)) {
                     speed = 1;
                 }
-                this._gltfPack.updateAnimation(context.timestamp, true, speed);
+                this._gltfPack.updateAnimation(context.timestamp, loop, speed);
             }
             if (isAnimated) {
                 //TODO retire shadow frame，可能会造成性能问题
@@ -197,7 +239,8 @@ const GLTFMixin = Base =>
         }
 
         _isSkinAnimating() {
-            return !!(this.sceneConfig.gltfAnimation && this.sceneConfig.gltfAnimation.enable) && this._gltfPack && this._gltfPack.hasSkinAnimation();
+            const symbol = this.getSymbol();
+            return symbol.animation && this._gltfPack && this._gltfPack.hasSkinAnimation();
         }
 
         _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
@@ -322,3 +365,7 @@ const GLTFMixin = Base =>
     };
 
 export default GLTFMixin;
+
+// function getFitExtent(map, fitSize) {
+//     return fitSize * map.getGLScale();
+// }
