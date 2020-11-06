@@ -1,5 +1,5 @@
 import { extend, isNil, isNumber, isFunction } from './common/Util.js';
-import { vec4, mat4, vec3 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 
 const tempMat4 = [];
@@ -190,7 +190,7 @@ class Mesh {
         }
         mat4.multiply(tempMat4, this.localTransform, this.positionMatrix);
         //如果Mesh的localTransform * positionMatrix发生了变化，或者geometry的boundingBox发生变化，则需要更新bbox
-        if (!this._currentTransform || !mat4.equals(tempMat4, this._currentTransform) || !this.geometry.boundingBox.equals(this._GeomtryBBoxVertex)) {
+        if (!mat4.equals(tempMat4, this._currentTransform) || !this.geometry.boundingBox.equals(this._geoBox)) {
             this.updateBoundingBox();
         }
         return [this._bbox.min, this._bbox.max];
@@ -201,33 +201,10 @@ class Mesh {
             this._bbox = new BoundingBox();
         }
         const box = this.geometry.boundingBox;
-        this._currentTransform = this._currentTransform || [];
-        if (!this.localTransform[1] && !this.localTransform[2] && !this.localTransform[4] && !this.localTransform[6] && !this.localTransform[8] && !this.localTransform[9]) {
-            const { min, max } = box;
-            vec4.set(this._bbox.min, min[0], min[1], min[2], 1);
-            vec4.set(this._bbox.max, max[0], max[1], max[2], 1);
-            const matrix = mat4.multiply(this._currentTransform, this.localTransform, this.positionMatrix);
-            vec4.transformMat4(this._bbox.min, this._bbox.min, matrix);
-            vec4.transformMat4(this._bbox.max, this._bbox.max, matrix);
-        } else {
-            const boxVertex = box.vertex;
-            const matrix = mat4.multiply(this._currentTransform, this.localTransform, this.positionMatrix);
-            for (let i = 0; i < boxVertex.length; i++) {
-                vec4.set(this._bbox.vertex[i], boxVertex[i][0], boxVertex[i][1], boxVertex[i][2], 1);
-                vec4.transformMat4(this._bbox.vertex[i], this._bbox.vertex[i], matrix);
-            }
-            const xVertex = this._bbox.vertex.map(v => v[0]);
-            const yVertex = this._bbox.vertex.map(v => v[1]);
-            const zVertex = this._bbox.vertex.map(v => v[2]);
-            const minX = Math.min(...xVertex), maxX = Math.max(...xVertex);
-            const minY = Math.min(...yVertex), maxY = Math.max(...yVertex);
-            const minZ = Math.min(...zVertex), maxZ = Math.max(...zVertex);
-            vec3.set(this._bbox.min, minX, minY, minZ);
-            vec3.set(this._bbox.max, maxX, maxY, maxZ);
-        }
-        this._GeomtryBBoxVertex = box.vertex.map(v => {
-            return [v[0], v[1], v[2]];
-        });
+        this._bbox = box.copy();
+        this._bbox.transform(this.positionMatrix, this.localTransform);
+        this._currentTransform = mat4.multiply(this._currentTransform || [], this.localTransform, this.positionMatrix);
+        this._geoBox = box.copy();
     }
 
     _createDefinesKey(defines) {

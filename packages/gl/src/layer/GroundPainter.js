@@ -1,6 +1,5 @@
-import { mat4 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-import { getGroundTransform } from './util/util';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
@@ -8,8 +7,19 @@ import { extend } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
+const SCALE = [];
 
 class GroundPainter {
+    static getGroundTransform(out, map) {
+        const extent = map['_get2DExtent'](map.getGLZoom());
+        const scaleX = extent.getWidth(), scaleY = extent.getHeight();
+        const localTransform = out;
+        mat4.identity(localTransform);
+        mat4.translate(localTransform, localTransform, map.cameraLookAt);
+        mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
+        return localTransform;
+    }
+
     constructor(regl, layer) {
         this._regl = regl;
         this.renderer = new reshader.Renderer(regl);
@@ -245,9 +255,6 @@ class GroundPainter {
         const extraCommandProps = this._getExtraCommandProps();
         const fillUniforms = ShadowProcess.getUniformDeclares();
         fillUniforms.push(
-            'polygonFill',
-            'polygonOpacity',
-            'polygonPatternFile',
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
@@ -265,7 +272,6 @@ class GroundPainter {
         //standard shader
         const uniforms = ShadowProcess.getUniformDeclares();
         uniforms.push(...reshader.SsrPass.getUniformDeclares());
-        uniforms.push('polygonFill', 'polygonOpacity');
         this._standardShader = new reshader.pbr.StandardShader({
             uniforms,
             extraCommandProps
@@ -339,8 +345,11 @@ class GroundPainter {
 
     _createGround() {
         const planeGeo = new reshader.Plane();
+        planeGeo.data.aTexCoord = new Uint8Array(
+            [0, 1, 1, 1, 0, 0, 1, 0]
+        );
         planeGeo.generateBuffers(this.renderer.regl);
-        planeGeo.data.aTexCoord = new Float32Array(8);
+
         //TODO 还需要构造 tangent
         this._ground = new reshader.Mesh(planeGeo, null, { castShadow: false });
         this._groundScene = new reshader.Scene([this._ground]);
@@ -348,7 +357,7 @@ class GroundPainter {
 
     _transformGround() {
         const map = this.getMap();
-        const localTransform = getGroundTransform(this._ground.localTransform, map);
+        const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
 
         const extent = map['_get2DExtent'](map.getGLZoom());
@@ -363,17 +372,8 @@ class GroundPainter {
         const w = extent.getWidth() / TEX_SIZE * 2;
         const h = extent.getHeight() / TEX_SIZE * 2;
 
-        const uv = this._ground.geometry.data.aTexCoord;
-        uv[0] = uvStartX;
-        uv[1] = uvStartY - h;
-        uv[2] = uvStartX + w;
-        uv[3] = uvStartY - h;
-        uv[4] = uvStartX;
-        uv[5] = uvStartY;
-        uv[6] = uvStartX + w;
-        uv[7] = uvStartY;
-
-        this._ground.geometry.updateData('aTexCoord', uv);
+        this._ground.setUniform('uvOffset', [uvStartX, uvStartY]);
+        this._ground.setUniform('uvScale', [w, -h]);
     }
 
     _getGroundDefines(context) {

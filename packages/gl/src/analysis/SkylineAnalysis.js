@@ -1,5 +1,5 @@
 import * as reshader from '@maptalks/reshader.gl';
-import { getGroundTransform } from '../layer/util/util';
+import GroundPainter from '../layer/GroundPainter';
 import Analysis from './Analysis';
 
 export default class SkylineAnalysis extends Analysis {
@@ -51,7 +51,7 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     _transformGround(map) {
-        const localTransform = getGroundTransform(this._ground.localTransform, map);
+        const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
     }
 

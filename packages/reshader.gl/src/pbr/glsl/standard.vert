@@ -114,7 +114,7 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
 
 void main() {
     #if defined(HAS_MAP)
-        vTexCoord = (aTexCoord + uvOffset) * uvScale;
+        vTexCoord = aTexCoord * uvScale + uvOffset;
     #endif
 
     #if defined(HAS_TANGENT)

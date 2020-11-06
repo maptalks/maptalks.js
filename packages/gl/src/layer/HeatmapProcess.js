@@ -3,7 +3,8 @@
 //  * https://codepen.io/fuzhenn/pen/vYOgQwX
 // import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-import { getGroundTransform, extend } from './util/util';
+import GroundPainter from './GroundPainter';
+import { extend } from './util/util';
 
 export default class HeatmapProcess {
 
@@ -115,7 +116,7 @@ export default class HeatmapProcess {
 
     _transformGround() {
         const map = this._layer.getMap();
-        const localTransform = getGroundTransform(this._ground.localTransform, map);
+        const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
     }
 

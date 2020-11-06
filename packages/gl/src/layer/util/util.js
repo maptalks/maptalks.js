@@ -1,17 +1,3 @@
-import { mat4, vec3 } from 'gl-matrix';
-
-const SCALE = [];
-
-export function getGroundTransform(out, map) {
-    const extent = map['_get2DExtent'](map.getGLZoom());
-    const scaleX = extent.getWidth(), scaleY = extent.getHeight();
-    const localTransform = out;
-    mat4.identity(localTransform);
-    mat4.translate(localTransform, localTransform, map.cameraLookAt);
-    mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
-    return localTransform;
-}
-
 const supportAssign = typeof Object.assign === 'function';
 
 /**
