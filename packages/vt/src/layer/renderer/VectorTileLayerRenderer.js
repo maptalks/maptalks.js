@@ -205,12 +205,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.regl.clear({
                 color: CLEAR_COLOR,
                 depth: 1,
-                stencil: 0
+                stencil: 0xFF
             });
         } else {
             this.regl.clear({
                 color: CLEAR_COLOR,
-                stencil: 0
+                stencil: 0xFF
             });
         }
     }

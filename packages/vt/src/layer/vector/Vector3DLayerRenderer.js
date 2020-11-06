@@ -513,7 +513,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.regl.clear({
             color: [0, 0, 0, 0],
             depth: 1,
-            stencil: 0
+            stencil: 0xFF
         });
     }
 

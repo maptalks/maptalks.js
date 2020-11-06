@@ -216,14 +216,12 @@ function createPainterPlugin(type, Painter) {
                 const defines = mesh.defines || {};
                 defines['ENABLE_TILE_STENCIL'] = 1;
                 mesh.setDefines(defines);
-                if (!mesh.material.uniforms.hasOwnProperty('stencilRef')) {
-                    Object.defineProperty(mesh.material.uniforms, 'stencilRef', {
-                        enumerable: true,
-                        get: function () {
-                            return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
-                        }
-                    });
-                }
+                Object.defineProperty(mesh.uniforms, 'stencilRef', {
+                    enumerable: true,
+                    get: function () {
+                        return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
+                    }
+                });
             }
         },
 

@@ -15,9 +15,10 @@ uniform vec3 lightDirection;
 uniform vec3 lightColor;
 uniform vec3 camPos;
 uniform float timeElapsed;
-varying vec2 vuv;
-varying vec3 vpos;
-varying mat3 vtbnMatrix;
+varying vec2 vUv;
+varying vec2 vNoiseUv;
+varying vec3 vPos;
+varying mat3 vTbnMatrix;
 
 const vec2  FLOW_JUMP = vec2(6.0/25.0, 5.0/24.0);
 vec2 textureDenormalized2D(sampler2D _tex, vec2 uv) {
@@ -48,7 +49,6 @@ vec3 computeUVPerturbedWeigth(sampler2D texFlow, vec2 uv, float time, float phas
     result += (time - progress) * FLOW_JUMP;
     return vec3(result, weight);
 }
-const float TIME_NOISE_TEXTURE_REPEAT = 0.3737;
 const float TIME_NOISE_STRENGTH = 7.77;
 vec3 getWaveLayer(sampler2D texNormal, sampler2D dudv, vec2 uv, vec2 _waveDir, float time) {
     float waveStrength = waveParams[0];
@@ -56,7 +56,7 @@ vec3 getWaveLayer(sampler2D texNormal, sampler2D dudv, vec2 uv, vec2 _waveDir, f
     // 用于计算uv方向的整体偏移量
     //为确保波速的单位长度方向不至于过快，需要对波速做了一个硬编码的操作
     vec2 waveMovement = time * -_waveDir;
-    float timeNoise = sampleNoiseTexture(uv * TIME_NOISE_TEXTURE_REPEAT) * TIME_NOISE_STRENGTH;
+    float timeNoise = sampleNoiseTexture(uv) * TIME_NOISE_STRENGTH;
 
     //通过采样发现贴图和扰动贴图，实时计算当前帧点的位置
     vec3 uv_A = computeUVPerturbedWeigth(dudv, uv + waveMovement, time + timeNoise, 0.0);
@@ -186,11 +186,11 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 void main() {
     vec3 localUp = NORMAL;
     //切线空间
-    vec3 tangentNormal = getSurfaceNormal(vuv, timeElapsed / 1000.0);
+    vec3 tangentNormal = getSurfaceNormal(vUv, timeElapsed / 1000.0);
 
     //在切线空间中旋转法线
-    vec3 n = normalize(vtbnMatrix * tangentNormal);
-    vec3 v = -normalize(vpos - camPos);
+    vec3 n = normalize(vTbnMatrix * tangentNormal);
+    vec3 v = -normalize(vPos - camPos);
     vec3 l = normalize(-lightDirection);
     float shadow = 1.0;
     vec4 final = vec4(getSeaColor(n, v, l, waterColor.rgb, lightColor, localUp, shadow), waterColor.w);
