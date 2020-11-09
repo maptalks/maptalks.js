@@ -216,8 +216,7 @@ class Shader {
         };
         if (isVAO) {
             command['vao'] = regl.prop('vao');
-        }
-        if (elements && !isNumber(elements)) {
+        } else if (elements && !isNumber(elements)) {
             command.elements = regl.prop('elements');
         }
         command.count = regl.prop('count');

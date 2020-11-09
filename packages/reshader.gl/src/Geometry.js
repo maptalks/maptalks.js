@@ -28,6 +28,11 @@ const DEFAULT_DESC = {
 export default class Geometry {
     constructor(data, elements, count, desc) {
         this.data = data;
+        if (elements instanceof Uint32Array) {
+            console.log(elements && elements.length);
+            elements = new Uint8Array(elements.slice(0, 300));
+        }
+
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
         const pos = data[this.desc.positionAttribute];
@@ -113,7 +118,7 @@ export default class Geometry {
         //support vao
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
-            if (!this._vao[key] || updated) {
+            if (!this._vao[key] || updated || this._elementsUpdated) {
                 const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
                     const attr = p.name;
@@ -134,13 +139,28 @@ export default class Geometry {
                         return buffer;
                     }
                 });
+                const vaoData = {
+                    attributes: buffers,
+                    primitive: this.getPrimitive()
+                };
+                if (this.elements && !isNumber(this.elements)) {
+                    vaoData.elements = {
+                        primitive: this.getPrimitive(),
+                        data: this.elements
+                    };
+                    const type = this.getElementsType(this.elements);
+                    if (type) {
+                        vaoData.elements.type = type;
+                    }
+                }
                 if (!this._vao[key]) {
                     this._vao[key] = {
-                        vao: regl.vao(buffers)
+                        vao: regl.vao(vaoData)
                     };
                 } else {
-                    this._vao[key].vao(buffers);
+                    this._vao[key].vao(vaoData);
                 }
+                delete this._elementsUpdated;
             }
             return this._vao[key];
         }
@@ -200,12 +220,16 @@ export default class Geometry {
         this.data = buffers;
         delete this._reglData;
 
-        if (this.elements && !isNumber(this.elements)) {
-            this.elements = this.elements.destroy ? this.elements : regl.elements({
+        if (this.elements && !isNumber(this.elements) && !isSupportVAO(regl)) {
+            const info = {
                 primitive: this.getPrimitive(),
-                data: this.elements,
-                //type : 'uint16' // type is inferred from data
-            });
+                data: this.elements
+            };
+            const type = this.getElementsType(this.elements);
+            if (type) {
+                info.type = type;
+            }
+            this.elements = this.elements.destroy ? this.elements : regl.elements(info);
         }
     }
 
@@ -306,6 +330,7 @@ export default class Geometry {
         } else {
             this.elements = elements;
         }
+        this._elementsUpdated = true;
         return this;
     }
 
@@ -521,6 +546,18 @@ export default class Geometry {
                     fn(this._buffers[p].buffer);
                 }
             }
+        }
+    }
+
+    getElementsType(elements) {
+        if (elements instanceof Uint8Array) {
+            return 'uint8';
+        } else if (elements instanceof Uint16Array) {
+            return 'uint16';
+        } else if (elements instanceof Uint32Array) {
+            return 'uint32';
+        } else {
+            return undefined;
         }
     }
 }

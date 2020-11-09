@@ -1,4 +1,4 @@
-import { extend, isNil, isNumber, isFunction } from './common/Util.js';
+import { extend, isNil, isNumber, isFunction, isSupportVAO } from './common/Util.js';
 import { mat4 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 
@@ -165,7 +165,9 @@ class Mesh {
     getREGLProps(regl, activeAttributes) {
         const props = this.getUniforms(regl);
         extend(props, this._getREGLAttrData(regl, activeAttributes));
-        props.elements = this.geometry.getElements();
+        if (!isSupportVAO(regl)) {
+            props.elements = this.geometry.getElements();
+        }
         props.count = this.geometry.getDrawCount();
         props.offset = this.geometry.getDrawOffset();
         // command primitive : triangle, triangle strip, etc

@@ -1,5 +1,5 @@
 import { mat4, vec4 } from 'gl-matrix';
-import { extend, isSupportVAO } from './common/Util.js';
+import { extend, isNumber, isSupportVAO } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -27,16 +27,37 @@ export default class InstancedMesh extends Mesh {
         const geoBuffers = this.geometry.getREGLData();
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
-            if (!this._vao[key]) {
+            if (!this._vao[key] || this._instanceDataUpdated) {
                 const attributes = activeAttributes.map(attr => attr.name);
                 const buffers = [];
                 for (let i = 0; i < attributes.length; i++) {
                     const data = geoBuffers[attributes[i]] || this.instancedData[attributes[i]];
                     buffers.push(data);
                 }
-                this._vao[key] = {
-                    vao: regl.vao(buffers)
+                const vaoData = {
+                    attributes: buffers,
+                    primitive: this.geometry.getPrimitive()
                 };
+                const elements = this.geometry.getElements();
+                if (elements && !isNumber(elements)) {
+                    vaoData.elements = {
+                        primitive: this.geometry.getPrimitive(),
+                        data: elements
+                    };
+                    const type = this.geometry.getElementsType(elements);
+                    if (type) {
+                        vaoData.elements.type = type;
+                    }
+                }
+                console.log(vaoData);
+                if (this._vao[key]) {
+                    this._vao[key].vao(vaoData);
+                } else {
+                    this._vao[key] = {
+                        vao: regl.vao(vaoData)
+                    };
+                }
+                delete this._instanceDataUpdated;
             }
             return this._vao[key];
         } else {
@@ -77,6 +98,7 @@ export default class InstancedMesh extends Mesh {
         //     }
         //     this.instancedData[name] = buffer;
         // }
+        this._instanceDataUpdated = true;
         return this;
     }
 
