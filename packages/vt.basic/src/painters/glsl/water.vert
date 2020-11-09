@@ -1,4 +1,3 @@
-uniform mat4 projViewMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 projViewModelMatrix;
 attribute vec3 aPosition;

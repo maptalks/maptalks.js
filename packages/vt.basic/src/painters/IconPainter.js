@@ -365,6 +365,9 @@ class IconPainter extends CollisionPainter {
         }
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
+            if (!geometry) {
+                continue;
+            }
             const { aMarkerWidth, aMarkerHeight } = geometry.properties;
             if (aMarkerWidth || aMarkerHeight) {
                 this._updateMarkerFitSize(geometry);
@@ -377,6 +380,9 @@ class IconPainter extends CollisionPainter {
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
             const { aMarkerWidth, aMarkerHeight } = geometry.properties;
+            if (!geometry) {
+                continue;
+            }
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);
                 aMarkerWidth.dirty = false;
@@ -460,7 +466,7 @@ class IconPainter extends CollisionPainter {
         meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
             const iconMesh = meshes[m];
-            if (!iconMesh || !iconMesh.geometry.properties.isEmpty && !this.isMeshIterable(iconMesh)) {
+            if (!iconMesh || !iconMesh.geometry || !iconMesh.geometry.properties.isEmpty && !this.isMeshIterable(iconMesh)) {
                 continue;
             }
             const textMesh = iconMesh._textMesh;

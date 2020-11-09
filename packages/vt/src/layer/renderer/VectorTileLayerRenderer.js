@@ -622,12 +622,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
         let polygonOffsetIndex = 0;
-        const groundOffset = -this.layer.getPolygonOffset();
-        const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
-        groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
-        const painted = this._groundPainter.paint(groundContext);
-        if (painted) {
-            polygonOffsetIndex++;
+        if (mode !== 'aa') {
+            const groundOffset = -this.layer.getPolygonOffset();
+            const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
+            groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
+            const painted = this._groundPainter.paint(groundContext);
+            if (painted) {
+                polygonOffsetIndex++;
+            }
         }
 
         //按照plugin顺序更新collision索引
