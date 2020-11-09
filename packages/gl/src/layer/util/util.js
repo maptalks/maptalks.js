@@ -1,4 +1,5 @@
 const supportAssign = typeof Object.assign === 'function';
+import { vec3, mat4 } from 'gl-matrix';
 
 /**
  * Merges the properties of sources into destination object.
@@ -22,4 +23,15 @@ export function extend(dest) {
 
 export function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
+}
+
+const SCALE = [];
+export function getGroundTransform(out, map) {
+    const extent = map['_get2DExtent'](map.getGLZoom());
+    const scaleX = extent.getWidth(), scaleY = extent.getHeight();
+    const localTransform = out;
+    mat4.identity(localTransform);
+    mat4.translate(localTransform, localTransform, map.cameraLookAt);
+    mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
+    return localTransform;
 }

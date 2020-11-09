@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-import GroundPainter from '../GroundPainter';
+import  { getGroundTransform } from '../util/util';
 
 //阴影覆盖的pitch范围
 const SHADOW_MAX_PITCH = 62;
@@ -198,7 +198,7 @@ class ShadowProcess {
 
     _transformGround() {
         const map = this._layer.getMap();
-        const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
+        const localTransform = getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
     }
 }

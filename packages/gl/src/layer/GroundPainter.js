@@ -1,23 +1,16 @@
-import { vec3, mat4 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend } from './util/util.js';
+import { extend, getGroundTransform } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
-const SCALE = [];
 
 class GroundPainter {
     static getGroundTransform(out, map) {
-        const extent = map['_get2DExtent'](map.getGLZoom());
-        const scaleX = extent.getWidth(), scaleY = extent.getHeight();
-        const localTransform = out;
-        mat4.identity(localTransform);
-        mat4.translate(localTransform, localTransform, map.cameraLookAt);
-        mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
-        return localTransform;
+        return getGroundTransform(out, map);
     }
 
     constructor(regl, layer) {
