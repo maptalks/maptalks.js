@@ -50,6 +50,11 @@ export default class GroupGLLayer extends maptalks.Layer {
     constructor(id, layers, options) {
         super(id, options);
         this.layers = layers || [];
+        this.layers.forEach(layer => {
+            if (layer.getMap()) {
+                throw new Error(`layer(${layer.getId()} is already added on map`);
+            }
+        });
         this._checkChildren();
         this._layerMap = {};
     }
