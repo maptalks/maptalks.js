@@ -28,10 +28,6 @@ const DEFAULT_DESC = {
 export default class Geometry {
     constructor(data, elements, count, desc) {
         this.data = data;
-        if (elements instanceof Uint32Array) {
-            console.log(elements && elements.length);
-            elements = new Uint8Array(elements.slice(0, 300));
-        }
 
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
@@ -182,7 +178,7 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl) {
+    generateBuffers(regl, excludeElementsInVAO) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -220,7 +216,7 @@ export default class Geometry {
         this.data = buffers;
         delete this._reglData;
 
-        if (this.elements && !isNumber(this.elements) && !isSupportVAO(regl)) {
+        if ((!isSupportVAO(regl) || excludeElementsInVAO) && this.elements && !isNumber(this.elements)) {
             const info = {
                 primitive: this.getPrimitive(),
                 data: this.elements

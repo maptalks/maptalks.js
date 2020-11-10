@@ -1,5 +1,5 @@
 import { mat4, vec4 } from 'gl-matrix';
-import { extend, isNumber, isSupportVAO } from './common/Util.js';
+import { extend, isSupportVAO } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -38,18 +38,18 @@ export default class InstancedMesh extends Mesh {
                     attributes: buffers,
                     primitive: this.geometry.getPrimitive()
                 };
-                const elements = this.geometry.getElements();
-                if (elements && !isNumber(elements)) {
-                    vaoData.elements = {
-                        primitive: this.geometry.getPrimitive(),
-                        data: elements
-                    };
-                    const type = this.geometry.getElementsType(elements);
-                    if (type) {
-                        vaoData.elements.type = type;
-                    }
-                }
-                console.log(vaoData);
+                // const elements = this.geometry.getElements();
+                // if (elements && !isNumber(elements)) {
+                //     vaoData.elements = {
+                //         primitive: this.geometry.getPrimitive(),
+                //         data: elements
+                //     };
+                //     const type = this.geometry.getElementsType(elements);
+                //     if (type) {
+                //         vaoData.elements.type = type;
+                //     }
+                // }
+                // console.log(vaoData);
                 if (this._vao[key]) {
                     this._vao[key].vao(vaoData);
                 } else {
@@ -138,6 +138,7 @@ export default class InstancedMesh extends Mesh {
         if (!isSupportVAO(regl)) {
             extend(props, this.instancedData);
         }
+        props.elements = this.geometry.getElements();
         props.instances = this.instanceCount;
         return props;
     }
