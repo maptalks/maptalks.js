@@ -82,7 +82,9 @@ class DebugPainter {
             this._data.destroy();
             this._textData.destroy();
         }
-        //this._command.destroy();
+        if (this._command) {
+            this._command.destroy();
+        }
     }
 
     _init() {

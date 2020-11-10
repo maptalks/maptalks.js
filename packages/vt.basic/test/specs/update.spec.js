@@ -593,7 +593,7 @@ describe('update style specs', () => {
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
-            data: polygon,
+            data: polygon.features[0],
             style
         });
         let painted = false;
