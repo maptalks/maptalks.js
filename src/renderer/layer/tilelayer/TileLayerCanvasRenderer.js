@@ -703,7 +703,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         const tileSize = this.layer.getTileSize(),
             scale = map._getResolution(z) / map._getResolution(),
-            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1);
+            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;
         if (isFunction(placeholder)) {
