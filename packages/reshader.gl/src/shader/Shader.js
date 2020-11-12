@@ -179,12 +179,8 @@ class Shader {
         const frag = this.getVersion(regl, fragSource) + fragSource;
         const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag);
         const attributes = {};
-        let isInstancing = false;
         activeAttributes.forEach((p, idx) => {
             const name = p.name;
-            if (p.type === 35666) {
-                isInstancing = true;
-            }
             if (isVAO) {
                 attributes[name] = idx;
             } else {
@@ -222,7 +218,7 @@ class Shader {
         if (isVAO) {
             command['vao'] = regl.prop('vao');
         }
-        if ((!isVAO || isInstancing) && elements && !isNumber(elements)) {
+        if ((!isVAO || isInstanced) && elements && !isNumber(elements)) {
             command.elements = regl.prop('elements');
         }
         command.count = regl.prop('count');
