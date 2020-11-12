@@ -85,8 +85,8 @@ export default class Geometry {
     }
 
     getREGLData(regl, activeAttributes) {
-        let updated = false;
-        if (!this._reglData || this._isAttrChanged(activeAttributes)) {
+        let updated = !this._reglData;
+        if (updated || this._isAttrChanged(activeAttributes)) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
             this._reglData = extend({}, this.data);
@@ -109,7 +109,6 @@ export default class Geometry {
                 this._reglData['aTangent'] = data[tangentAttribute];
             }
             this._activeAttributes = activeAttributes;
-            updated = true;
         }
         //support vao
         if (isSupportVAO(regl)) {

@@ -150,15 +150,15 @@ class Shader {
         const numUniforms = gl.getProgramParameter(program, 0x8B86);
         const activeUniforms = [];
         for (let i = 0; i < numUniforms; ++i) {
-            const info = gl.getActiveUniform(program, i);
-            if (info.name.indexOf('[') > 0) {
+            const uniformInfo = gl.getActiveUniform(program, i);
+            if (uniformInfo.name.indexOf('[') > 0) {
                 // array
-                const { name, len } = parseArrayName(info.name.replace('[0]', `[${info.size}]`));
+                const { name, len } = parseArrayName(uniformInfo.name.replace('[0]', `[${uniformInfo.size}]`));
                 for (let ii = 0; ii < len; ii++) {
                     activeUniforms.push(name + `[${ii}]`);
                 }
             } else {
-                activeUniforms.push(info.name);
+                activeUniforms.push(uniformInfo.name);
             }
         }
         gl.deleteProgram(program);
