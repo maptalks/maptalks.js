@@ -151,15 +151,16 @@ class Shader {
         const activeUniforms = [];
         for (let i = 0; i < numUniforms; ++i) {
             const uniformInfo = gl.getActiveUniform(program, i);
+            let name = uniformInfo.name;
             if (uniformInfo.name.indexOf('[') > 0) {
+                name = name.replace('[0]', '');
                 // array
-                const { name, len } = parseArrayName(uniformInfo.name.replace('[0]', `[${uniformInfo.size}]`));
-                for (let ii = 0; ii < len; ii++) {
-                    activeUniforms.push(name + `[${ii}]`);
-                }
-            } else {
-                activeUniforms.push(uniformInfo.name);
+                // const { name, len } = parseArrayName(uniformInfo.name.replace('[0]', `[${uniformInfo.size}]`));
+                // for (let ii = 0; ii < len; ii++) {
+                //     activeUniforms.push(name + `[${ii}]`);
+                // }
             }
+            activeUniforms.push(name);
         }
         gl.deleteProgram(program);
         gl.deleteShader(vertShader);
