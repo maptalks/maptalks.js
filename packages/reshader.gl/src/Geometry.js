@@ -86,7 +86,6 @@ export default class Geometry {
 
     getREGLData(regl, activeAttributes) {
         const updated = !this._reglData;
-        const key = activeAttributes.key;
         if (updated || this._isAttrChanged(activeAttributes)) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
@@ -113,6 +112,7 @@ export default class Geometry {
         }
         //support vao
         if (isSupportVAO(regl)) {
+            const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._elementsUpdated) {
                 const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
@@ -177,7 +177,7 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl, excludeElementsInVAO) {
+    generateBuffers(regl, options) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -215,6 +215,7 @@ export default class Geometry {
         this.data = buffers;
         delete this._reglData;
 
+        const excludeElementsInVAO = options && options.excludeElementsInVAO;
         if ((!isSupportVAO(regl) || excludeElementsInVAO) && this.elements && !isNumber(this.elements)) {
             const info = {
                 primitive: this.getPrimitive(),
