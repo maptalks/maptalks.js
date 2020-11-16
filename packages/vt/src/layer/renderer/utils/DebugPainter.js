@@ -3,10 +3,12 @@ class DebugPainter {
         this._regl = regl;
         this._map = map;
         this._color = color || [0, 1, 0];
-        this._init();
     }
 
     draw(debugInfo, transform, tileSize, extent, fbo) {
+        if (!this._command) {
+            this._init();
+        }
         const textWidth = 512, textHeight = 64;
         if (!this._data) {
             this._data = this._regl.buffer(new Uint16Array([
@@ -73,17 +75,24 @@ class DebugPainter {
 
     }
 
-    remove() {
+    delete() {
         if (this._texture) {
             this._texture.destroy();
+            delete this._texture;
         }
-        this._texCoordData.destroy();
+        if (this._texCoordData) {
+            this._texCoordData.destroy();
+            delete this._texCoordData;
+        }
         if (this._data) {
             this._data.destroy();
             this._textData.destroy();
+            delete this._data;
+            delete this._textData;
         }
         if (this._command) {
             this._command.destroy();
+            delete this._command;
         }
     }
 
