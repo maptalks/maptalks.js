@@ -85,7 +85,8 @@ export default class Geometry {
     }
 
     getREGLData(regl, activeAttributes) {
-        let updated = !this._reglData;
+        const updated = !this._reglData;
+        const key = activeAttributes.key;
         if (updated || this._isAttrChanged(activeAttributes)) {
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
@@ -112,7 +113,6 @@ export default class Geometry {
         }
         //support vao
         if (isSupportVAO(regl)) {
-            const key = activeAttributes.key;
             if (!this._vao[key] || updated || this._elementsUpdated) {
                 const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
