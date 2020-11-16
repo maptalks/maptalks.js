@@ -255,7 +255,6 @@ class GLContext {
      * @param {String} pname
      */
     getParameter(pname) {
-        this._checkAndRestore();
         return this._gl.getParameter(pname);
     }
 
