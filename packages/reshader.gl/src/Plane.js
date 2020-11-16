@@ -23,7 +23,7 @@ class Plane extends Geometry {
                     0, 0, 1,
                 ])
             },
-            new Uint8Array([0, 1, 3, 3, 2, 0])
+            new Uint16Array([0, 1, 3, 3, 2, 0])
         );
     }
 }
