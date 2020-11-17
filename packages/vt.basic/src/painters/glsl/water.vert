@@ -1,3 +1,5 @@
+#define SHADER_NAME WATER
+
 uniform mat4 modelMatrix;
 uniform mat4 projViewModelMatrix;
 attribute vec3 aPosition;
@@ -18,7 +20,7 @@ mat3 getTBNMatrix(in vec3 n) {
     return mat3(t, b, n);
 }
 
-#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+#if defined(HAS_SHADOWING)
     #include <vsm_shadow_vert>
 #endif
 
@@ -33,7 +35,7 @@ void main(void) {
     vUv = aTexCoord * uvScale + uvOffset;
     vNoiseUv = aTexCoord * uvScale * TIME_NOISE_TEXTURE_REPEAT + noiseUvOffset;
 
-    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #if defined(HAS_SHADOWING)
         shadow_computeShadowPars(localVertex);
     #endif
 }

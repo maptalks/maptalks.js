@@ -198,7 +198,9 @@ class WaterPainter extends BasicPainter {
                 }
             }
         ];
-        const defines = {};
+        const defines = {
+            'TIME_NOISE_TEXTURE_REPEAT': TIME_NOISE_TEXTURE_REPEAT
+        };
         this.fillIncludes(defines, uniforms, context);
         const viewport = {
             x: 0,
@@ -264,9 +266,7 @@ class WaterPainter extends BasicPainter {
         this._waterShader = new reshader.MeshShader({
             vert: waterVert,
             frag: waterFrag,
-            defines: {
-                'TIME_NOISE_TEXTURE_REPEAT': TIME_NOISE_TEXTURE_REPEAT
-            },
+            defines,
             uniforms,
             extraCommandProps: {
                 viewport,

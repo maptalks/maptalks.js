@@ -1,6 +1,11 @@
+#define SHADER_NAME WATER
 
 precision highp float;
 precision highp sampler2D;
+
+#if defined(HAS_SHADOWING)
+    #include <vsm_shadow_frag>
+#endif
 
 const vec3 NORMAL = vec3(0., 0., 1.);
 
@@ -192,7 +197,12 @@ void main() {
     vec3 n = normalize(vTbnMatrix * tangentNormal);
     vec3 v = -normalize(vPos - camPos);
     vec3 l = normalize(-lightDirection);
-    float shadow = 1.0;
+
+    #if defined(HAS_SHADOWING)
+        float shadow = shadow_computeShadow();
+    #else
+        float shadow = 1.0;
+    #endif
     vec4 final = vec4(getSeaColor(n, v, l, waterColor.rgb, lightColor, localUp, shadow), waterColor.w);
     gl_FragColor = delinearizeGamma(final);
 }
