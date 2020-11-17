@@ -274,11 +274,11 @@ void main() {
     float lumaColor   = luma(filtered.rgb);
     float lumaHistory = luma(history.rgb);
 
-    float alpha = materialParams.alpha;
+    float alphaValue = materialParams.alpha;
 #if PREVENT_FLICKERING
     // [Lottes] prevents flickering by modulating the blend weight by the difference in luma
     float diff = 1.0 - abs(lumaColor - lumaHistory) / (0.001 + max(lumaColor, lumaHistory));
-    alpha *= diff * diff;
+    alphaValue *= diff * diff;
 #endif
 
     // tonemapping for handling HDR
@@ -286,7 +286,7 @@ void main() {
     history.rgb  *= 1.0 / (1.0 + lumaHistory);
 
     // combine history and current frame
-    vec4 result = mix(history, filtered, alpha);
+    vec4 result = mix(history, filtered, alphaValue);
 
     // untonemap result
     result.rgb *= 1.0 / (1.0 - luma(result.rgb));
