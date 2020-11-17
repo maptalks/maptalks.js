@@ -108,6 +108,15 @@ class LightManager {
         hdr.dispose();
         if (config['sh']) {
             maps.sh = config['sh'];
+            //兼容老的[[], [], ..]形式的sh
+            if (Array.isArray(maps['sh'][0])) {
+                const sh = maps['sh'];
+                const flatten = [];
+                for (let i = 0; i < sh.length; i++) {
+                    flatten.push(...sh[i]);
+                }
+                maps['sh'] = flatten;
+            }
         }/* else {
             console.log(JSON.stringify(maps.sh));
         }*/
