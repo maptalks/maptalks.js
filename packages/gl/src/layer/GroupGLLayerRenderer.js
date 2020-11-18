@@ -9,6 +9,7 @@ import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
 const MIN_SSR_PITCH = 10;
+const NO_JITTER = [0, 0];
 
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
@@ -49,10 +50,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.layer._updatePolygonOffset();
-        this._renderChildLayers('render', args);
+        const tex = this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
         this._renderOutlines();
-        this._postProcess();
+        this._postProcess(tex);
     }
 
     drawOnInteracting(...args) {
@@ -60,20 +61,106 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         this.layer._updatePolygonOffset();
-        this._renderChildLayers('drawOnInteracting', args);
+        const tex = this._renderChildLayers('drawOnInteracting', args);
         this['_toRedraw'] = false;
         this._renderOutlines();
-        this._postProcess();
+        this._postProcess(tex);
     }
 
     _renderChildLayers(methodName, args) {
-        //noAA需要最后绘制，如果有noAa的图层，分为aa和noAa两个阶段分别绘制
         this._renderMode = 'default';
+        const drawContext = this._getDrawContext(args);
+        if (!this._envPainter) {
+            this._envPainter = new EnvironmentPainter(this.regl, this.layer);
+        }
+        this._envPainter.paint(drawContext);
+        //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
+        this.drawGround();
+
         const hasRenderTarget = this.hasRenderTarget();
-        if (hasRenderTarget) {
-            this._renderMode = 'aa';
+        if (!hasRenderTarget) {
+            this._renderInMode('default', null, methodName, args);
+            return null;
+        }
+        if (!this._postProcessor) {
+            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
         }
 
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
+
+        this._renderInMode(enableTAA ? 'taa' : 'fxaa', this._targetFBO, methodName, args);
+        drawContext.jitter = NO_JITTER;
+        if (this._postProcessor && this.isSSROn()) {
+            this._postProcessor.drawSSR(this._depthTex);
+        }
+        if (enableTAA) {
+            if (!this._fxaaFBO) {
+                const regl = this.regl;
+                const info = this._createFBOInfo(config, this._depthTex);
+                this._fxaaFBO = regl.framebuffer(info);
+            }
+            this._renderInMode('fxaaAfterTaa', this._fxaaFBO, methodName, args);
+        } else if (this._fxaaFBO) {
+            this._fxaaFBO.destroy();
+            delete this._fxaaFBO;
+        }
+        this._renderInMode('noAa', this._noAaFBO, methodName, args);
+
+        const map = this.getMap();
+
+        let tex = this._targetFBO.color[0];
+
+        const enableSSR = this.isSSROn();
+        if (enableSSR) {
+            tex = this._postProcessor.ssr(tex);
+        }
+
+        const enableBloom = config.bloom && config.bloom.enable;
+        if (enableBloom) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
+            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
+        }
+
+        if (enableTAA) {
+            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
+                projMatrix: map.projMatrix,
+                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
+            });
+            tex = outputTex;
+            if (redraw) {
+                this.setToRedraw();
+            }
+            this._needRetireFrames = false;
+        }
+        return tex;
+    }
+
+    _renderInMode(mode, fbo, methodName, args) {
+        //noAA需要最后绘制，如果有noAa的图层，分为aa和noAa两个阶段分别绘制
+        this._renderMode = mode;
+        const drawContext = this._getDrawContext(args);
+        drawContext.renderMode = this._renderMode;
+        drawContext.renderTarget.fbo = fbo;
+
+        this.forEachRenderer((renderer, layer) => {
+            if (!layer.isVisible()) {
+                return;
+            }
+            if (!renderer.isSupportRenderMode &&
+                (mode === 'fxaa' || mode === 'fxaaAfterTaa' || mode === 'default') ||
+                renderer.supportRenderMode && renderer.supportRenderMode(mode)) {
+                this.clearStencil(renderer, fbo);
+                renderer[methodName].apply(renderer, args);
+            }
+        });
+    }
+
+    _getDrawContext(args) {
         let timestamp = args[0];
         if (!isNumber(timestamp)) {
             timestamp = args[1];
@@ -83,43 +170,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._contextFrameTime = timestamp;
             this._frameEvent = isNumber(args[0]) ? null : args[0];
         }
-
-        if (!this._envPainter) {
-            this._envPainter = new EnvironmentPainter(this.regl, this.layer);
-        }
-        this._envPainter.paint(this._drawContext);
-
-        //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
-        this.drawGround();
-
-        let hasNoAA = false;
-        this.forEachRenderer((renderer, layer) => {
-            if (!layer.isVisible()) {
-                return;
-            }
-            if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
-                hasNoAA = true;
-            }
-            this.clearStencil(renderer, this._targetFBO);
-            renderer[methodName].apply(renderer, args);
-        });
-
-        if (this._postProcessor && this.isSSROn()) {
-            this._postProcessor.drawSSR(this._depthTex);
-        }
-
-        if (hasNoAA && hasRenderTarget) {
-            this._renderMode = this._drawContext.renderMode = 'noAa';
-            this.forEachRenderer((renderer, layer) => {
-                if (!layer.isVisible()) {
-                    return;
-                }
-                if (renderer.hasNoAARendering && renderer.hasNoAARendering()) {
-                    this.clearStencil(renderer, this._targetFBO);
-                    renderer[methodName].apply(renderer, args);
-                }
-            });
-        }
+        return this._drawContext;
     }
 
     _renderOutlines() {
@@ -307,6 +358,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 color: [0, 0, 0, 0],
                 framebuffer: this._noAaFBO
             });
+            if (this._fxaaFBO) {
+                this.regl.clear({
+                    color: [0, 0, 0, 0],
+                    framebuffer: this._fxaaFBO
+                });
+            }
         }
         if (this._outlineFBO) {
             this.regl.clear({
@@ -408,6 +465,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._targetFBO) {
             this._targetFBO.destroy();
             this._noAaFBO.destroy();
+            if (this._fxaaFBO) {
+                this._fxaaFBO.destroy();
+                delete this._fxaaFBO;
+            }
             delete this._targetFBO;
             delete this._noAaFBO;
         }
@@ -434,9 +495,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._groundPainter = new GroundPainter(this.regl, this.layer);
         }
         const context = this.getFrameContext();
+        const jitter = context.jitter;
+        //地面绘制不用引入jitter，会导致地面的晃动
+        context.jitter = NO_JITTER;
         context.offsetFactor = 1;
         context.offsetUnits = 4;
-        return this._groundPainter.paint(context);
+        const drawn = this._groundPainter.paint(context);
+        context.jitter = jitter;
+        return drawn;
     }
 
     _buildDrawFn(drawMethod) {
@@ -571,7 +637,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else {
             const hasJitter = config.antialias && config.antialias.enable;
             if (hasJitter) {
-                const ratio = config.antialias.jitterRatio || 0.25;
+                const ratio = config.antialias.jitterRatio || 0.1;
                 let jitGetter = this._jitGetter;
                 if (!jitGetter) {
                     jitGetter = this._jitGetter = new reshader.Jitter(ratio);
@@ -745,8 +811,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._noAaFBO = regl.framebuffer(noAaInfo);
         }
         return {
-            fbo: this._targetFBO,
-            noAaFbo: this._noAaFBO
+            fbo: this._targetFBO
         };
     }
 
@@ -793,7 +858,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return fboInfo;
     }
 
-    _postProcess() {
+    _postProcess(tex) {
         if (!this._targetFBO) {
             this._needRetireFrames = false;
             return;
@@ -804,18 +869,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         const map = this.layer.getMap();
-        if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
-        }
-        let tex = this._targetFBO.color[0];
-
-        const enableSSR = this.isSSROn();
-        if (enableSSR) {
-            tex = this._postProcessor.ssr(tex);
-        }
 
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
+            //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
             //generate ssao texture for the next frame
             tex = this._postProcessor.ssao(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
@@ -827,27 +884,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             });
         }
 
-        const enableBloom = config.bloom && config.bloom.enable;
-        if (enableBloom) {
-            const bloomConfig = config.bloom;
-            const threshold = +bloomConfig.threshold || 0;
-            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
-            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
-        }
-
-        const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
-        if (enableTAA) {
-            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
-                projMatrix: map.projMatrix,
-                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
-            });
-            tex = outputTex;
-            if (redraw) {
-                this.setToRedraw();
-            }
-            this._needRetireFrames = false;
-        }
         let sharpFactor = config.sharpen && config.sharpen.factor;
         if (!sharpFactor && sharpFactor !== 0) {
             sharpFactor = 0.2;// 0 - 5
@@ -866,10 +902,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
-        const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
-        this._postProcessor.fxaa(tex, this._noAaFBO.color[0],
+        // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
+        this._postProcessor.fxaa(tex, this._noAaFBO.color[0], this._fxaaFBO && this._fxaaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
-            +!!enableFXAA,
+            // +!!enableFXAA,
+            1,
             +!!(config.toneMapping && config.toneMapping.enable),
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
@@ -881,6 +918,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineWidth,
             outlineColor
         );
+        const enableSSR = this.isSSROn();
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex);
         }

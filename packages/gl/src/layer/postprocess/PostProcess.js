@@ -239,11 +239,17 @@ export default class PostProcess {
         }, sourceTex, depthTex);
     }
 
-    fxaa(source, noAaSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
+    fxaa(source, noAaSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         enableOutline, textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
+        if (fxaaTextureSource) {
+            this._fxaaShader.shaderDefines['HAS_FXAA_TEX'] = 1;
+        } else {
+            delete this._fxaaShader.shaderDefines['HAS_FXAA_TEX'];
+        }
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
             noAaTextureSource: noAaSource,
+            fxaaTextureSource,
             resolution: vec2.set(RESOLUTION, source.width, source.height),
             enableFXAA,
             enableToneMapping,

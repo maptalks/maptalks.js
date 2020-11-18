@@ -1,3 +1,4 @@
+#define SHADER_NAME TAA
 precision mediump float;
 #define saturate(x)        clamp(x, 0.0, 1.0)
 

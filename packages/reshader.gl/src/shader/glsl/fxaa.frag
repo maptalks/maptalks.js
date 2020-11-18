@@ -20,6 +20,9 @@ uniform float enableSharpen;
 uniform vec2 resolution;
 uniform sampler2D textureSource;
 uniform sampler2D noAaTextureSource;
+#ifdef HAS_FXAA_TEX
+  uniform sampler2D fxaaTextureSource;
+#endif
 uniform float pixelRatio;
 uniform float sharpFactor;//0 - 5
 
@@ -35,15 +38,26 @@ vec2 uTextureInputSize;
 vec2 uTextureInputRatio;
 
 
-vec4 applyFXAA(vec2 fragCoord, sampler2D tex)
+vec4 readFXAATexture(vec2 uv) {
+  #ifdef HAS_FXAA_TEX
+    vec4 source = texture2D(textureSource, uv);
+    vec4 fxaa = texture2D(fxaaTextureSource, uv);
+    return fxaa + source * (1.0 - fxaa.a);
+  #else
+    return texture2D(textureSource, uv);
+  #endif
+
+}
+
+vec4 applyFXAA(vec2 fragCoord)
 {
     vec4 color;
   mediump vec2 inverseVP = vec2(1.0 / resolution.x, 1.0 / resolution.y);
-  vec3 rgbNW = texture2D(tex, (fragCoord + vec2(-1.0, -1.0)) * inverseVP).xyz;
-  vec3 rgbNE = texture2D(tex, (fragCoord + vec2(1.0, -1.0)) * inverseVP).xyz;
-  vec3 rgbSW = texture2D(tex, (fragCoord + vec2(-1.0, 1.0)) * inverseVP).xyz;
-  vec3 rgbSE = texture2D(tex, (fragCoord + vec2(1.0, 1.0)) * inverseVP).xyz;
-  vec4 texColor = texture2D(tex, fragCoord  * inverseVP);
+  vec3 rgbNW = readFXAATexture((fragCoord + vec2(-1.0, -1.0)) * inverseVP).xyz;
+  vec3 rgbNE = readFXAATexture((fragCoord + vec2(1.0, -1.0)) * inverseVP).xyz;
+  vec3 rgbSW = readFXAATexture((fragCoord + vec2(-1.0, 1.0)) * inverseVP).xyz;
+  vec3 rgbSE = readFXAATexture((fragCoord + vec2(1.0, 1.0)) * inverseVP).xyz;
+  vec4 texColor = readFXAATexture(fragCoord  * inverseVP);
   vec3 rgbM  = texColor.xyz;
   vec3 luma = vec3(0.299, 0.587, 0.114);
   float lumaNW = dot(rgbNW, luma);
@@ -67,11 +81,11 @@ vec4 applyFXAA(vec2 fragCoord, sampler2D tex)
             dir * rcpDirMin)) * inverseVP;
 
   vec4 rgbA = 0.5 * (
-      texture2D(tex, fragCoord * inverseVP + dir * (1.0 / 3.0 - 0.5)) +
-      texture2D(tex, fragCoord * inverseVP + dir * (2.0 / 3.0 - 0.5)));
+      readFXAATexture(fragCoord * inverseVP + dir * (1.0 / 3.0 - 0.5)) +
+      readFXAATexture(fragCoord * inverseVP + dir * (2.0 / 3.0 - 0.5)));
   vec4 rgbB = rgbA * 0.5 + 0.25 * (
-      texture2D(tex, fragCoord * inverseVP + dir * -0.5) +
-      texture2D(tex, fragCoord * inverseVP + dir * 0.5));
+      readFXAATexture(fragCoord * inverseVP + dir * -0.5) +
+      readFXAATexture(fragCoord * inverseVP + dir * 0.5));
 
   float lumaB = dot(rgbB.xyz, luma);
   if ((lumaB < lumaMin) || (lumaB > lumaMax))
@@ -317,7 +331,7 @@ void main() {
     gTexCoord = vTexCoord;
     vec4 color;
     if (enableFXAA == 1.0) {
-        color = applyFXAA(gTexCoord * resolution, textureSource);
+        color = applyFXAA(gTexCoord * resolution);
     } else {
         color = texture2D(textureSource, vTexCoord);
     }
