@@ -118,15 +118,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex = this._postProcessor.ssr(tex);
         }
 
-        const enableBloom = config.bloom && config.bloom.enable;
-        if (enableBloom) {
-            const bloomConfig = config.bloom;
-            const threshold = +bloomConfig.threshold || 0;
-            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
-            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
-        }
-
         if (enableTAA) {
             const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
                 projMatrix: map.projMatrix,
@@ -877,6 +868,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         const map = this.layer.getMap();
+
+        const enableBloom = config.bloom && config.bloom.enable;
+        if (enableBloom) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
+            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
+        }
 
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
