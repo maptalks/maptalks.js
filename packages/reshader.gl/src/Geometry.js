@@ -27,6 +27,7 @@ const DEFAULT_DESC = {
 
 export default class Geometry {
     constructor(data, elements, count, desc) {
+        this._version = 0;
         this.data = data;
 
         this.elements = elements;
@@ -50,6 +51,18 @@ export default class Geometry {
         this.getVertexCount();
         this._prepareData();
     }
+
+    set version(v) {
+        throw new Error('Geometry.version is read only.');
+    }
+
+    get version() {
+        return this._version;
+    }
+
+    // set elements(e) {
+    //     throw new Error('Geometry.elements is read only, use setElements instead.');
+    // }
 
     _prepareData() {
         if (!this.data) {
@@ -283,6 +296,7 @@ export default class Geometry {
         if (!buf) {
             return this;
         }
+        this._incrVersion();
         let buffer;
         this.data[name] = data;
         if (buf.buffer && buf.buffer.destroy) {
@@ -318,6 +332,7 @@ export default class Geometry {
         if (!elements) {
             throw new Error('elements data is invalid');
         }
+        this._incrVersion();
         const e = this.elements;
         this.count = count === undefined ? getElementLength(elements) : count;
 
@@ -331,6 +346,7 @@ export default class Geometry {
     }
 
     setDrawCount(count) {
+        this._incrVersion();
         this.count1 = count;
         return this;
     }
@@ -340,6 +356,7 @@ export default class Geometry {
     }
 
     setDrawOffset(offset) {
+        this._incrVersion();
         this.offset = offset;
         return this;
     }
@@ -407,6 +424,7 @@ export default class Geometry {
     }
 
     createTangent(name = 'aTangent') {
+        this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
         const normals = this.data[normalAttribute];
@@ -429,6 +447,7 @@ export default class Geometry {
     }
 
     createNormal(name = 'aNormal') {
+        this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const vertices = this.data[this.desc.positionAttribute];
         this.data[name] = buildNormals(vertices, this.elements);
@@ -443,6 +462,7 @@ export default class Geometry {
         if (this.desc.primitive !== 'triangles') {
             throw new Error('Primitive must be triangles to create bary centric data');
         }
+        this._incrVersion();
         const bary = new Uint8Array(this.getVertexCount() * 3);
         for (let i = 0, l = this.elements.length; i < l;) {
             for (let j = 0; j < 3; j++) {
@@ -458,6 +478,7 @@ export default class Geometry {
      * Build unique vertex data for each attribute
      */
     buildUniqueVertex() {
+        this._incrVersion();
         const data = this.data;
         const indices = this.elements;
         if (!isArray(indices)) {
@@ -555,6 +576,10 @@ export default class Geometry {
         } else {
             return undefined;
         }
+    }
+
+    _incrVersion() {
+        this._version++;
     }
 }
 

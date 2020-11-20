@@ -9,10 +9,19 @@ const MIN4 = [], MAX4 = [];
 export default class InstancedMesh extends Mesh {
     constructor(instancedData, instanceCount, geometry, material, config = {}) {
         super(geometry, material, config);
-        this.instanceCount = instanceCount;
+        this._instanceCount = instanceCount;
         this.instancedData = instancedData || {};
         this._checkInstancedProp();
         this._vao = {};
+    }
+
+    get instanceCount() {
+        return this._instanceCount;
+    }
+
+    set instanceCount(count) {
+        this._incrVersion();
+        this._instanceCount = count;
     }
 
     _checkInstancedProp() {
@@ -83,6 +92,7 @@ export default class InstancedMesh extends Mesh {
         if (!buf) {
             return this;
         }
+        this._incrVersion();
         // let buffer;
         this.instancedData[name] = data;
         if (buf.buffer && buf.buffer.destroy) {
@@ -123,7 +133,7 @@ export default class InstancedMesh extends Mesh {
                 buffers[key] = {
                     buffer : regl.buffer({
                         data: data[key],
-                        dimension: data[key].length / this.instanceCount
+                        dimension: data[key].length / this._instanceCount
                     }),
                     divisor: 1
                 };
@@ -139,7 +149,7 @@ export default class InstancedMesh extends Mesh {
             extend(props, this.instancedData);
         }
         props.elements = this.geometry.getElements();
-        props.instances = this.instanceCount;
+        props.instances = this._instanceCount;
         return props;
     }
 

@@ -88,8 +88,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
+        const enableTAA = this.isEnableTAA();
 
+        //TODO 也许可以在未更新时，省略taa阶段的绘制
         this._renderInMode(enableTAA ? 'taa' : 'fxaa', this._targetFBO, methodName, args);
         drawContext.jitter = NO_JITTER;
         if (this._postProcessor && this.isSSROn()) {
@@ -151,8 +152,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (!layer.isVisible()) {
                 return;
             }
-            if (!renderer.isSupportRenderMode &&
-                (mode === 'fxaa' || mode === 'fxaaAfterTaa' || mode === 'default') ||
+            if (mode === 'default' ||
+                !renderer.isSupportRenderMode && (mode === 'fxaa' || mode === 'fxaaAfterTaa') ||
                 renderer.supportRenderMode && renderer.supportRenderMode(mode)) {
                 this.clearStencil(renderer, fbo);
                 renderer[methodName].apply(renderer, args);
@@ -236,12 +237,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
-                this.setRetireFrames();
                 return true;
             }
         }
         return false;
     }
+
+    // _isLayerEnableTAA(renderer) {
+    //     return this.isEnableTAA() && renderer.supportRenderMode && renderer.supportRenderMode('taa');
+    // }
 
     isRenderComplete() {
         const layers = this.layer.getLayers();
@@ -528,9 +532,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _buildSetToRedrawFn(fn) {
-        const me = this;
         return function (...args) {
-            me.setRetireFrames();
             return fn.apply(this, args);
         };
     }
@@ -552,6 +554,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.getMap();
         return map.getPitch() > MIN_SSR_PITCH;
+    }
+
+    isEnableTAA() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        return config && config.antialias && config.antialias.enable && config.antialias.taa;
     }
 
     isEnableSSAO() {
@@ -635,7 +643,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!config || !config.enable) {
             this._clearFramebuffers();
         } else {
-            const hasJitter = config.antialias && config.antialias.enable;
+            const hasJitter = this.isEnableTAA();
             if (hasJitter) {
                 const ratio = config.antialias.jitterRatio || 0.1;
                 let jitGetter = this._jitGetter;
@@ -645,7 +653,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     jitGetter.setRatio(ratio);
                 }
                 const map = this.getMap();
-                const enableTAA = config.antialias && config.antialias.enable && config.antialias.taa;
+                const enableTAA = this.isEnableTAA();
                 if (map.isInteracting() && !enableTAA) {
                     jitGetter.reset();
                 }
@@ -765,7 +773,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const fbo = context.renderTarget && context.renderTarget.fbo;
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
-        let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged || this._needRetireFrames;
+        let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
         this.forEachRenderer(renderer => {
             if (!renderer.getShadowMeshes) {
                 return;

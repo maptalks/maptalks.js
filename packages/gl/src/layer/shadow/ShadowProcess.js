@@ -95,7 +95,10 @@ class ShadowProcess {
             this._blurFBO = blurFBO;
             this._renderedShadows = scene.getMeshes().reduce((ids, m) => {
                 if (m.castShadow) {
-                    ids[m.uuid] = 1;
+                    ids[m.uuid] = {
+                        v0: m.version,
+                        v1: m.geometry.version
+                    };
                 }
                 return ids;
             }, {});
@@ -181,7 +184,11 @@ class ShadowProcess {
         const meshes = scene.getMeshes();
         let changed = false;
         for (let i = 0; i < meshes.length; i++) {
-            if (meshes[i].castShadow && !this._renderedShadows[meshes[i].uuid]) {
+            const saved = this._renderedShadows[meshes[i].uuid];
+            if (meshes[i].castShadow &&
+                (!saved ||
+                    saved.v0 !== meshes[i].version ||
+                    saved.v1 !== meshes[i].geometry.version)) {
                 return true;
             }
         }
