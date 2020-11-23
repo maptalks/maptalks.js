@@ -21,8 +21,8 @@ const frag = `
 `;
 
 class WaterPainter extends BasicPainter {
-    needAA() {
-        return false;
+    supportRenderMode(mode) {
+        return mode === 'fxaa' || mode === 'fxaaAfterTaa';
     }
 
     needPolygonOffset() {
@@ -51,19 +51,6 @@ class WaterPainter extends BasicPainter {
         this.transformGround();
         const waterUniforms = this._getWaterUniform(this.getMap(), context);
         this.renderer.render(this._waterShader, waterUniforms, this._waterScene, this.getRenderFBO(context));
-    }
-
-
-    getRenderFBO(context) {
-        if (context && context.renderTarget) {
-            if (this.needAA()) {
-                if (context.renderTarget.fbo) {
-                    return context.renderTarget.fbo;
-                }
-            }
-            return context.renderTarget.noAaFbo || context.renderTarget.fbo;
-        }
-        return null;
     }
 
     updateSymbol(symbol) {
