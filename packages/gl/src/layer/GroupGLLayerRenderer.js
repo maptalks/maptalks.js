@@ -96,18 +96,26 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._postProcessor && this.isSSROn()) {
             this._postProcessor.drawSSR(this._depthTex);
         }
+        const fGL = this.glCtx;
         if (enableTAA) {
-            if (!this._fxaaFBO) {
+            let fxaaFBO = this._fxaaFBO;
+            if (!fxaaFBO) {
                 const regl = this.regl;
                 const info = this._createFBOInfo(config, this._depthTex);
-                this._fxaaFBO = regl.framebuffer(info);
+                fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
+            } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
+                fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
             }
-            this._renderInMode('fxaaAfterTaa', this._fxaaFBO, methodName, args);
+            fGL.resetDrawCalls();
+            this._renderInMode('fxaaAfterTaa', fxaaFBO, methodName, args);
+            this._fxaaDrawCount = fGL.getDrawCalls();
         } else if (this._fxaaFBO) {
             this._fxaaFBO.destroy();
             delete this._fxaaFBO;
         }
+        fGL.resetDrawCalls();
         this._renderInMode('noAa', this._noAaFBO, methodName, args);
+        this._noaaDrawCount = fGL.getDrawCalls();
 
         const map = this.getMap();
 
@@ -355,7 +363,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 color: [0, 0, 0, 0],
                 framebuffer: this._noAaFBO
             });
-            if (this._fxaaFBO) {
+            if (this._fxaaFBO && this._fxaaDrawCount) {
                 this.regl.clear({
                     color: [0, 0, 0, 0],
                     framebuffer: this._fxaaFBO
@@ -376,6 +384,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
             this._noAaFBO.resize(this.canvas.width, this.canvas.height);
+            if (this._fxaaFBO) {
+                this._fxaaFBO.resize(this.canvas.width, this.canvas.height);
+            }
         }
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
@@ -915,7 +926,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
-        this._postProcessor.fxaa(tex, this._noAaFBO.color[0], this._fxaaFBO && this._fxaaFBO.color[0],
+        this._postProcessor.fxaa(
+            tex,
+            this._noaaDrawCount && this._noAaFBO.color[0],
+            this._fxaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,
@@ -923,8 +937,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             +!!(config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
             sharpFactor,
-            enableOutline && +(this._outlineCounts > 0),
-            this._getOutlineFBO(),
+            enableOutline && this._outlineCounts > 0 && this._getOutlineFBO(),
             highlightFactor,
             outlineFactor,
             outlineWidth,

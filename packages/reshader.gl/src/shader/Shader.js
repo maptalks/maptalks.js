@@ -44,6 +44,19 @@ class Shader {
         this._compileSource();
     }
 
+    set shaderDefines(defines) {
+        this._shaderDefines = defines;
+        this._dkey = Object.keys(this._shaderDefines).join();
+    }
+
+    get shaderDefines() {
+        return this._shaderDefines || {};
+    }
+
+    setDefines(defines) {
+        this.shaderDefines = defines;
+    }
+
     /**
      * The framebuffer object to render to
      * Set to null to render to default display

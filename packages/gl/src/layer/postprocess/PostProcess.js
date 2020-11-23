@@ -240,12 +240,24 @@ export default class PostProcess {
     }
 
     fxaa(source, noAaSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
-        enableOutline, textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
+        textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
+        const shaderDefines = {};
         if (fxaaTextureSource) {
-            this._fxaaShader.shaderDefines['HAS_FXAA_TEX'] = 1;
+            shaderDefines['HAS_FXAA_TEX'] = 1;
         } else {
-            delete this._fxaaShader.shaderDefines['HAS_FXAA_TEX'];
+            delete shaderDefines['HAS_FXAA_TEX'];
         }
+        if (textureOutline) {
+            shaderDefines['HAS_OUTLINE_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_OUTLINE_TEX'];
+        }
+        if (noAaSource) {
+            shaderDefines['HAS_NOAA_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_NOAA_TEX'];
+        }
+        this._fxaaShader.setDefines(shaderDefines);
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
             noAaTextureSource: noAaSource,
@@ -254,7 +266,6 @@ export default class PostProcess {
             enableFXAA,
             enableToneMapping,
             enableSharpen, pixelRatio, sharpFactor,
-            enableOutline,
             textureOutline,
             highlightFactor,
             outlineFactor,
