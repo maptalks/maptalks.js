@@ -347,35 +347,40 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     clearCanvas() {
         super.clearCanvas();
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            depth: 1,
-            stencil: 0xFF
-        });
+        this._clearFramebuffers();
+    }
+
+    _clearFramebuffers() {
+        const regl = this.regl;
         if (this._targetFBO) {
-            this.regl.clear({
+            regl.clear({
                 color: [0, 0, 0, 0],
                 depth: 1,
                 stencil: 0xFF,
                 framebuffer: this._targetFBO
             });
-            this.regl.clear({
+            regl.clear({
                 color: [0, 0, 0, 0],
                 framebuffer: this._noAaFBO
             });
             if (this._fxaaFBO && this._fxaaDrawCount) {
-                this.regl.clear({
+                regl.clear({
                     color: [0, 0, 0, 0],
                     framebuffer: this._fxaaFBO
                 });
             }
         }
         if (this._outlineFBO) {
-            this.regl.clear({
+            regl.clear({
                 color: [0, 0, 0, 0],
                 framebuffer: this._outlineFBO
             });
         }
+        regl.clear({
+            color: [0, 0, 0, 0],
+            depth: 1,
+            stencil: 0xFF
+        });
     }
 
     resizeCanvas() {
@@ -445,7 +450,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this.canvas.pickingFBO && this.canvas.pickingFBO.destroy) {
             this.canvas.pickingFBO.destroy();
         }
-        this._clearFramebuffers();
+        this._destroyFramebuffers();
         if (this._groundPainter) {
             this._groundPainter.dispose();
             delete this._groundPainter;
@@ -469,7 +474,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         super.onRemove();
     }
 
-    _clearFramebuffers() {
+    _destroyFramebuffers() {
         if (this._targetFBO) {
             this._targetFBO.destroy();
             this._noAaFBO.destroy();
@@ -645,7 +650,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         let renderTarget;
         if (!config || !config.enable) {
-            this._clearFramebuffers();
+            this._destroyFramebuffers();
         } else {
             const hasJitter = this.isEnableTAA();
             if (hasJitter) {
@@ -818,11 +823,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const config = sceneConfig && sceneConfig.postProcess;
         if (!this._targetFBO) {
             const regl = this.regl;
-            const fboInfo = this._createFBOInfo(config);
+            let depthTex = this._depthTex;
+            if (!depthTex || !depthTex['_texture'] || depthTex['_texture'].refCount <= 0) {
+                depthTex = null;
+            }
+            const fboInfo = this._createFBOInfo(config, depthTex);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
             this._targetFBO = regl.framebuffer(fboInfo);
             const noAaInfo = this._createFBOInfo(config, this._depthTex);
             this._noAaFBO = regl.framebuffer(noAaInfo);
+            this._clearFramebuffers();
         }
         return {
             fbo: this._targetFBO
