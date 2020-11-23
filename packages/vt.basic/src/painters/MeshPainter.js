@@ -13,6 +13,18 @@ const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 //一个三维mesh绘制的通用painter，负责mesh的create, add 和 delete, 负责fn-type的更新
 class MeshPainter extends Painter {
 
+    supportRenderMode(mode) {
+        if (this.isAnimating()) {
+            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+        } else {
+            return mode === 'taa' || mode === 'fxaa';
+        }
+    }
+
+    isAnimating() {
+        return false;
+    }
+
     createMesh(geometry, transform) {
         if (!this.material) {
             //还没有初始化

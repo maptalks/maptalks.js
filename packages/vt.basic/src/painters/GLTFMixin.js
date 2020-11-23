@@ -38,6 +38,10 @@ const GLTFMixin = Base =>
             this.scene.sortFunction = this.sortByCommandKey;
         }
 
+        isAnimating() {
+            return this._isSkinAnimating();
+        }
+
         createGeometry(glData, features) {
             if (!glData) {
                 return null;
@@ -287,6 +291,8 @@ const GLTFMixin = Base =>
             this._initGLTF();
         }
 
+
+        //TODO 缺乏GLTF模型的更新逻辑
         _initGLTF() {
             if (this._gltfPack) {
                 return;

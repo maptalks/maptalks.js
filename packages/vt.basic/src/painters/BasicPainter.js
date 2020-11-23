@@ -31,11 +31,11 @@ export default class BasicPainter extends Painter {
 
     getRenderFBO(context) {
         //优先采用不aa的fbo
-        return context && context.renderTarget && (context.renderTarget.noAaFbo || context.renderTarget.fbo);
+        return context && context.renderTarget && context.renderTarget.fbo;
     }
 
-    needAA() {
-        return false;
+    supportRenderMode(mode) {
+        return mode === 'noAa';
     }
 
     createAtlasTexture(atlas, flipY) {

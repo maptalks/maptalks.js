@@ -29,12 +29,12 @@ class FillPainter extends BasicPainter {
         }
     }
 
-    needAA() {
-        if (this.sceneConfig.antialias) {
+    supportRenderMode(mode) {
+        if (this.sceneConfig.antialias || this.sceneConfig.antialias === undefined) {
             //turn on antialias if set
-            return true;
+            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
         } else {
-            return false;
+            return super.supportRenderMode(mode);
         }
     }
 
@@ -114,15 +114,7 @@ class FillPainter extends BasicPainter {
     }
 
     getRenderFBO(context) {
-        if (context && context.renderTarget) {
-            if (this.needAA()) {
-                if (context.renderTarget.fbo) {
-                    return context.renderTarget.fbo;
-                }
-            }
-            return context.renderTarget.noAaFbo || context.renderTarget.fbo;
-        }
-        return null;
+        return context.renderTarget.fbo;
     }
 
     _getFnTypeConfig() {

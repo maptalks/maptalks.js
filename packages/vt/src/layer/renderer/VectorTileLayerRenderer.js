@@ -13,7 +13,7 @@ const CLEAR_COLOR = [0, 0, 0, 0];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
-    hasNoAARendering() {
+    supportRenderMode() {
         return true;
     }
 
@@ -225,7 +225,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     draw(timestamp, parentContext) {
-        this._needRetire = false;
+        if (this._currentTimestamp !== timestamp) {
+            this._needRetire = false;
+        }
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
@@ -249,23 +251,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._startFrame(timestamp);
         super.draw(timestamp);
         this._endFrame(timestamp);
-        if (layer.options['debug']) {
-            const mat = [];
-            const projViewMatrix = this.getMap().projViewMatrix;
-            for (const p in this.tilesInView) {
-                const info = this.tilesInView[p].info;
-                const transform = info.transform;
-                const extent = this.tilesInView[p].image.extent;
-                const renderTarget = parentContext && parentContext.renderTarget;
-                if (transform && extent) this._debugPainter.draw(
-                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
-                    this.layer.options['tileSize'][0], extent,
-                    renderTarget && (renderTarget.noAaFbo || renderTarget.fbo)
-                );
-            }
-        }
 
         this.completeRender();
+        this._currentTimestamp = timestamp;
     }
 
     getFrameTimestamp() {
@@ -594,21 +582,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
         let plugins = this._getFramePlugins();
-        if (mode === 'aa') {
+        if (mode && mode !== 'default') {
             plugins = plugins.filter((p, idx) => {
                 if (!p) {
                     return false;
                 }
                 p.renderIndex = idx;
-                return p.needAA();
-            });
-        } else if (mode === 'noAa') {
-            plugins = plugins.filter((p, idx) => {
-                if (!p) {
-                    return false;
-                }
-                p.renderIndex = idx;
-                return !p.needAA();
+                return p.supportRenderMode(mode);
             });
         } else {
             plugins.forEach((p, idx) => {
@@ -622,12 +602,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
         let polygonOffsetIndex = 0;
-        const groundOffset = -this.layer.getPolygonOffset();
-        const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
-        groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
-        const painted = this._groundPainter.paint(groundContext);
-        if (painted) {
-            polygonOffsetIndex++;
+        if (mode === 'default' || mode === 'noAa') {
+            const groundOffset = -this.layer.getPolygonOffset();
+            const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
+            groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
+            const painted = this._groundPainter.paint(groundContext);
+            if (painted) {
+                polygonOffsetIndex++;
+            }
         }
 
         //按照plugin顺序更新collision索引
@@ -667,10 +649,33 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
+        if (mode === 'default' || mode === 'noAa') {
+            this._drawDebug();
+        }
     }
 
     getPolygonOffsetCount() {
         return this._polygonOffsetIndex || 0;
+    }
+
+    _drawDebug() {
+        const layer = this.layer;
+        if (layer.options['debug']) {
+            const parentContext = this._parentContext;
+            const mat = [];
+            const projViewMatrix = this.getMap().projViewMatrix;
+            for (const p in this.tilesInView) {
+                const info = this.tilesInView[p].info;
+                const transform = info.transform;
+                const extent = this.tilesInView[p].image.extent;
+                const renderTarget = parentContext && parentContext.renderTarget;
+                if (transform && extent) this._debugPainter.draw(
+                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
+                    this.layer.options['tileSize'][0], extent,
+                    renderTarget && renderTarget.fbo
+                );
+            }
+        }
     }
 
     _isVisitable(plugin) {
@@ -833,6 +838,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
+                if (plugin.supportRenderMode('taa')) {
+                    this._needRetire = true;
+                }
                 this.setToRedraw();
             }
         });
@@ -1177,7 +1185,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._outline = [];
         }
         this._outline.push(['paintOutline', [idx, featureIds]]);
-        this._needRetire = true;
         this.setToRedraw();
     }
 
@@ -1186,13 +1193,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._outline = [];
         }
         this._outline.push(['paintBatchOutline', [idx]]);
-        this._needRetire = true;
         this.setToRedraw();
     }
 
     outlineAll() {
         this._outlineAll = true;
-        this._needRetire = true;
         this.setToRedraw();
     }
 
@@ -1223,7 +1228,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     cancelOutline() {
         delete this._outline;
         delete this._outlineAll;
-        this._needRetire = true;
         this.setToRedraw();
     }
 }
