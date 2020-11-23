@@ -41,6 +41,7 @@ class TaaPass {
         if (this._fbo.width !== sourceTex.width || this._fbo.height !== sourceTex.height) {
             this._fbo.resize(sourceTex.width, sourceTex.height);
         }
+        // console.log(this._counter, jitter.getJitter([]));
         const output = this._outputTex;
         const prevTex = this._prevTex;
         const uniforms = this._uniforms || {

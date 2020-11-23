@@ -50,8 +50,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareRender();
         this.prepareCanvas();
         this.layer._updatePolygonOffset();
-        const tex = this._renderChildLayers('render', args);
         this['_toRedraw'] = false;
+        const tex = this._renderChildLayers('render', args);
         this._renderOutlines();
         this._postProcess(tex);
     }
@@ -61,8 +61,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         this.layer._updatePolygonOffset();
-        const tex = this._renderChildLayers('drawOnInteracting', args);
         this['_toRedraw'] = false;
+        const tex = this._renderChildLayers('drawOnInteracting', args);
         this._renderOutlines();
         this._postProcess(tex);
     }
@@ -137,7 +137,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderMode = mode;
         const drawContext = this._getDrawContext(args);
         drawContext.renderMode = this._renderMode;
-        drawContext.renderTarget.fbo = fbo;
+        if (drawContext.renderTarget) {
+            drawContext.renderTarget.fbo = fbo;
+        }
 
         this.forEachRenderer((renderer, layer) => {
             if (!layer.isVisible()) {
@@ -636,7 +638,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else {
             const hasJitter = this.isEnableTAA();
             if (hasJitter) {
-                const ratio = config.antialias.jitterRatio || 0.1;
+                const ratio = config.antialias.jitterRatio || 0.2;
                 let jitGetter = this._jitGetter;
                 if (!jitGetter) {
                     jitGetter = this._jitGetter = new reshader.Jitter(ratio);
@@ -644,8 +646,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     jitGetter.setRatio(ratio);
                 }
                 const map = this.getMap();
-                const enableTAA = this.isEnableTAA();
-                if (map.isInteracting() && !enableTAA) {
+                if (this._rendereMode === 'taa') {
+                    this.forEachRenderer((renderer, layer) => {
+                        if (!layer.isVisible()) {
+                            return;
+                        }
+                        if (renderer.needRetireFrames && renderer.needRetireFrames()) {
+                            this.setRetireFrames();
+                        }
+                    });
+                }
+                if (map.isInteracting() || this._needRetireFrames) {
                     jitGetter.reset();
                 }
                 jitGetter.getJitter(this._jitter);
@@ -672,14 +683,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this._renderAnalysis(context, renderTarget);
         if (this._renderMode !== 'noAa') {
-            this.forEachRenderer((renderer, layer) => {
-                if (!layer.isVisible()) {
-                    return;
-                }
-                if (renderer.needRetireFrames && renderer.needRetireFrames()) {
-                    this.setRetireFrames();
-                }
-            });
+
             this._shadowContext = this._prepareShadowContext(context);
             if (this._shadowContext) {
                 context.includes.shadow = 1;
