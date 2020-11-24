@@ -1,7 +1,6 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        // { type : 'Feature', geometry : { type : 'Polygon', coordinates : [[[-1, 0.0], [-0.4, 0.0], [0, -0.5], [-1, 0]]] }, properties : { type : 3 }}
         {
             type: 'Feature',
             geometry: {
@@ -24,28 +23,64 @@ const data = {
                 ]
             },
             properties: {
-                levels: 3000
+                type: 1
+            }
+        },
+        {
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [-1, -0.75],
+                    [1, -0.75]
+                ]
+            },
+            properties: {
+                type: 2
             }
         }
     ]
 };
-const plugin = {
-    type: 'fill',
-    dataConfig: {
-        type: 'fill'
+const style = [
+    {
+        renderPlugin: {
+            type: 'fill',
+            dataConfig: {
+                type: 'fill'
+            },
+            sceneConfig: {
+            },
+        },
+        symbol: {
+            bloom: false,
+            polygonOpacity: 1,
+            polygonFill: '#0f0'
+        },
+        filter: [
+            '==',
+            '$type',
+            'Polygon'
+        ],
     },
-    sceneConfig: {
-    },
-};
-const style = [{
-    renderPlugin: plugin,
-    symbol: {
-        bloom: true,
-        polygonOpacity: 1,
-        polygonFill: '#0f0'
-    },
-    filter: true,
-}];
+    {
+        renderPlugin: {
+            type: 'line',
+            dataConfig: {
+                type: 'line'
+            }
+        },
+        symbol: {
+            bloom: true,
+            lineColor: '#f00',
+            lineWidth: 4
+        },
+        filter: [
+            '==',
+            '$type',
+            'LineString'
+        ],
+    }
+];
 module.exports = {
     style,
     data: data,

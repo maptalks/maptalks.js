@@ -227,6 +227,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     draw(timestamp, parentContext) {
         if (this._currentTimestamp !== timestamp) {
             this._needRetire = false;
+            this._setPluginIndex();
         }
         const layer = this.layer;
         this.prepareCanvas();
@@ -250,10 +251,50 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
         super.draw(timestamp);
+        if (this._currentTimestamp !== timestamp) {
+            this._prepareRender(timestamp);
+        }
+
         this._endFrame(timestamp);
 
         this.completeRender();
         this._currentTimestamp = timestamp;
+    }
+
+    _setPluginIndex() {
+        const plugins = this._getFramePlugins();
+        //按照plugin顺序更新collision索引
+        plugins.forEach((plugin, idx) => {
+            plugin.renderIndex = idx;
+        });
+    }
+
+    _prepareRender(timestamp) {
+        const map = this.getMap();
+        const cameraPosition = map.cameraPosition;
+        const plugins = this._getFramePlugins();
+        //按照plugin顺序更新collision索引
+        plugins.forEach((plugin) => {
+            if (!hasMesh(plugin)) {
+                return;
+            }
+            const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+            plugin.updateCollision(context);
+        });
+
+        this._pluginOffsets = [];
+        const groundConfig = this.layer.getGroundConfig();
+        let polygonOffsetIndex = +(!!groundConfig.enable);
+        plugins.forEach((plugin, idx) => {
+            if (!hasMesh(plugin)) {
+                return;
+            }
+            this._pluginOffsets[idx] = polygonOffsetIndex;
+            if (plugin.needPolygonOffset()) {
+                polygonOffsetIndex++;
+            }
+        });
+        this._polygonOffsetIndex = polygonOffsetIndex;
     }
 
     getFrameTimestamp() {
@@ -581,49 +622,23 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const mode = parentContext.renderMode;
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
-        let plugins = this._getFramePlugins();
-        if (mode && mode !== 'default') {
-            plugins = plugins.filter((p, idx) => {
-                if (!p) {
-                    return false;
-                }
-                p.renderIndex = idx;
-                return p.supportRenderMode(mode);
-            });
-        } else {
-            plugins.forEach((p, idx) => {
-                if (!p) {
-                    return;
-                }
-                p.renderIndex = idx;
-            });
-        }
+        const plugins = this._getFramePlugins();
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
-        let polygonOffsetIndex = 0;
-        if (mode === 'default' || mode === 'noAa') {
+        if (!mode || mode === 'default' || mode === 'noAa') {
             const groundOffset = -this.layer.getPolygonOffset();
             const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
             groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
-            const painted = this._groundPainter.paint(groundContext);
-            if (painted) {
-                polygonOffsetIndex++;
-            }
+            this._groundPainter.paint(groundContext);
         }
 
-        //按照plugin顺序更新collision索引
-        plugins.forEach((plugin) => {
-            if (!this._isVisitable(plugin)) {
-                return;
-            }
-            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
-            plugin.updateCollision(context);
-        });
-
-        plugins.forEach((plugin) => {
+        plugins.forEach((plugin, idx) => {
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh) {
+                return;
+            }
+            if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                 return;
             }
             this.regl.clear({
@@ -634,22 +649,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this._drawTileStencil(targetFBO);
             }
 
+            const polygonOffsetIndex = this._pluginOffsets[idx];
             const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
             const status = plugin.endFrame(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (plugin.needPolygonOffset() && hasMesh === 2) {
-                polygonOffsetIndex++;
-            }
             dirty = true;
         });
-        this._polygonOffsetIndex = polygonOffsetIndex;
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
-        if (mode === 'default' || mode === 'noAa') {
+        if (!mode || mode === 'default' || mode === 'noAa') {
             this._drawDebug();
         }
     }
@@ -1339,4 +1351,9 @@ function hasFeature(features) {
         }
     }
     return false;
+}
+
+function hasMesh(plugin) {
+    const meshes = plugin.painter && plugin.painter.scene && plugin.painter.scene.getMeshes();
+    return meshes && meshes.length;
 }
