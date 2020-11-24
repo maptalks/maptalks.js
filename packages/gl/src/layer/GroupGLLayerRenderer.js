@@ -512,7 +512,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         //地面绘制不用引入jitter，会导致地面的晃动
         context.jitter = NO_JITTER;
         context.offsetFactor = 1;
-        context.offsetUnits = 4;
+        context.offsetUnits = 1;
         const drawn = this._groundPainter.paint(context);
         context.jitter = jitter;
         return drawn;
@@ -591,7 +591,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._renderedView = {
                 center: map.getCenter(),
                 bearing: map.getBearing(),
-                pitch: map.getPitch()
+                pitch: map.getPitch(),
+                res: map.getResolution()
                 // count: scene.getMeshes().length - (displayShadow ? 1 : 0)
             };
             let lightDirectionChanged = false;
@@ -606,12 +607,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 lightDirectionChanged
             };
         }
+        const res = map.getResolution();
+        const scale = res / this._renderedView.res;
         // const maxPitch = map.options['cascadePitches'][2];
         // const pitch = map.getPitch();
         const cp = map.coordToContainerPoint(this._renderedView.center);
         const viewMoveThreshold = this.layer.options['viewMoveThreshold'];
         // const viewPitchThreshold = this.layer.options['viewPitchThreshold'];
-        const viewChanged = (cp._sub(map.width / 2, map.height / 2).mag() > viewMoveThreshold);
+        const viewChanged = (cp._sub(map.width / 2, map.height / 2).mag() > viewMoveThreshold) || scale < 0.95 || scale > 1.05;
         // Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
         // (renderedView.pitch < maxPitch || pitch < maxPitch) && Math.abs(renderedView.pitch - pitch) > viewPitchThreshold;
         let lightDirectionChanged = false;
@@ -628,6 +631,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._renderedView.center = map.getCenter();
             this._renderedView.bearing = map.getBearing();
             this._renderedView.pitch = map.getPitch();
+            this._renderedView.res = map.getResolution();
         }
         return {
             viewChanged,
