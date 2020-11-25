@@ -146,10 +146,6 @@ export default class TextPainter extends CollisionPainter {
         return meshes;
     }
 
-    needRetireMesh() {
-
-    }
-
     updateCollision(context) {
         super.updateCollision(context);
         const meshes = this.scene.getMeshes();

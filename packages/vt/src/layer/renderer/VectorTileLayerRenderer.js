@@ -13,7 +13,7 @@ const CLEAR_COLOR = [0, 0, 0, 0];
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
-    hasNoAARendering() {
+    supportRenderMode() {
         return true;
     }
 
@@ -205,12 +205,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.regl.clear({
                 color: CLEAR_COLOR,
                 depth: 1,
-                stencil: 0xFF
+                stencil: 0
             });
         } else {
             this.regl.clear({
                 color: CLEAR_COLOR,
-                stencil: 0xFF
+                stencil: 0
             });
         }
     }
@@ -225,7 +225,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     draw(timestamp, parentContext) {
-        this._needRetire = false;
+        if (this._currentTimestamp !== timestamp) {
+            this._needRetire = false;
+            this._setPluginIndex();
+        }
         const layer = this.layer;
         this.prepareCanvas();
         if (!this.ready || !layer.ready) {
@@ -248,24 +251,39 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
         super.draw(timestamp);
-        this._endFrame(timestamp);
-        if (layer.options['debug']) {
-            const mat = [];
-            const projViewMatrix = this.getMap().projViewMatrix;
-            for (const p in this.tilesInView) {
-                const info = this.tilesInView[p].info;
-                const transform = info.transform;
-                const extent = this.tilesInView[p].image.extent;
-                const renderTarget = parentContext && parentContext.renderTarget;
-                if (transform && extent) this._debugPainter.draw(
-                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
-                    this.layer.options['tileSize'][0], extent,
-                    renderTarget && (renderTarget.noAaFbo || renderTarget.fbo)
-                );
-            }
+        if (this._currentTimestamp !== timestamp) {
+            this._prepareRender(timestamp);
         }
 
+        this._endFrame(timestamp);
+
         this.completeRender();
+        this._currentTimestamp = timestamp;
+    }
+
+    _setPluginIndex() {
+        const plugins = this._getFramePlugins();
+        //按照plugin顺序更新collision索引
+        plugins.forEach((plugin, idx) => {
+            plugin.renderIndex = idx;
+        });
+    }
+
+    _prepareRender() {
+        const plugins = this._getFramePlugins();
+        this._pluginOffsets = [];
+        const groundConfig = this.layer.getGroundConfig();
+        let polygonOffsetIndex = +(!!groundConfig.enable);
+        plugins.forEach((plugin, idx) => {
+            if (!hasMesh(plugin)) {
+                return;
+            }
+            this._pluginOffsets[idx] = polygonOffsetIndex;
+            if (plugin.needPolygonOffset()) {
+                polygonOffsetIndex++;
+            }
+        });
+        this._polygonOffsetIndex = polygonOffsetIndex;
     }
 
     getFrameTimestamp() {
@@ -420,6 +438,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const tileInfo = tiles[i];
             this.onTileLoad(i === 0 ? data : copyTileData(data), tileInfo);
         }
+        this.layer.fire('datareceived');
     }
 
     _parseTileData(styleType, i, pluginData, features) {
@@ -593,57 +612,36 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const mode = parentContext.renderMode;
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
-        let plugins = this._getFramePlugins();
-        if (mode === 'aa') {
-            plugins = plugins.filter((p, idx) => {
-                if (!p) {
-                    return false;
-                }
-                p.renderIndex = idx;
-                return p.needAA();
-            });
-        } else if (mode === 'noAa') {
-            plugins = plugins.filter((p, idx) => {
-                if (!p) {
-                    return false;
-                }
-                p.renderIndex = idx;
-                return !p.needAA();
-            });
-        } else {
-            plugins.forEach((p, idx) => {
-                if (!p) {
-                    return;
-                }
-                p.renderIndex = idx;
-            });
-        }
-
-        let dirty = false;
-        //只在需要的时候才增加polygonOffset
-        let polygonOffsetIndex = 0;
-        if (mode !== 'aa') {
-            const groundOffset = -this.layer.getPolygonOffset();
-            const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
-            groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
-            const painted = this._groundPainter.paint(groundContext);
-            if (painted) {
-                polygonOffsetIndex++;
-            }
-        }
+        const plugins = this._getFramePlugins();
 
         //按照plugin顺序更新collision索引
         plugins.forEach((plugin) => {
-            if (!this._isVisitable(plugin)) {
+            if (!hasMesh(plugin)) {
                 return;
             }
-            const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
+            if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
+                return;
+            }
+            const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
             plugin.updateCollision(context);
         });
 
-        plugins.forEach((plugin) => {
+
+        let dirty = false;
+        //只在需要的时候才增加polygonOffset
+        if (!mode || mode === 'default' || mode === 'noAa') {
+            const groundOffset = -this.layer.getPolygonOffset();
+            const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
+            groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
+            this._groundPainter.paint(groundContext);
+        }
+
+        plugins.forEach((plugin, idx) => {
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh) {
+                return;
+            }
+            if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                 return;
             }
             this.regl.clear({
@@ -654,25 +652,45 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this._drawTileStencil(targetFBO);
             }
 
+            const polygonOffsetIndex = this._pluginOffsets[idx];
             const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
             const status = plugin.endFrame(context);
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
                 this.setToRedraw();
             }
-            if (plugin.needPolygonOffset() && hasMesh === 2) {
-                polygonOffsetIndex++;
-            }
             dirty = true;
         });
-        this._polygonOffsetIndex = polygonOffsetIndex;
         if (dirty) {
             this.layer.fire('canvasisdirty');
+        }
+        if (!mode || mode === 'default' || mode === 'noAa') {
+            this._drawDebug();
         }
     }
 
     getPolygonOffsetCount() {
         return this._polygonOffsetIndex || 0;
+    }
+
+    _drawDebug() {
+        const layer = this.layer;
+        if (layer.options['debug']) {
+            const parentContext = this._parentContext;
+            const mat = [];
+            const projViewMatrix = this.getMap().projViewMatrix;
+            for (const p in this.tilesInView) {
+                const info = this.tilesInView[p].info;
+                const transform = info.transform;
+                const extent = this.tilesInView[p].image.extent;
+                const renderTarget = parentContext && parentContext.renderTarget;
+                if (transform && extent) this._debugPainter.draw(
+                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
+                    this.layer.options['tileSize'][0], extent,
+                    renderTarget && renderTarget.fbo
+                );
+            }
+        }
     }
 
     _isVisitable(plugin) {
@@ -835,6 +853,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             if (status && status.redraw) {
                 //let plugin to determine when to redraw
+                if (plugin.supportRenderMode('taa')) {
+                    this._needRetire = true;
+                }
                 this.setToRedraw();
             }
         });
@@ -939,7 +960,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this.pickingFBO;
         }
         if (this._debugPainter) {
-            this._debugPainter.remove();
+            this._debugPainter.delete();
         }
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
@@ -1179,7 +1200,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._outline = [];
         }
         this._outline.push(['paintOutline', [idx, featureIds]]);
-        this._needRetire = true;
         this.setToRedraw();
     }
 
@@ -1188,13 +1208,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._outline = [];
         }
         this._outline.push(['paintBatchOutline', [idx]]);
-        this._needRetire = true;
         this.setToRedraw();
     }
 
     outlineAll() {
         this._outlineAll = true;
-        this._needRetire = true;
         this.setToRedraw();
     }
 
@@ -1225,7 +1243,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     cancelOutline() {
         delete this._outline;
         delete this._outlineAll;
-        this._needRetire = true;
         this.setToRedraw();
     }
 }
@@ -1315,7 +1332,14 @@ function isWinIntelGPU(gl) {
 }
 
 function copyTileData(data) {
-    const arrays = extend({}, data.data);
+    let arrays;
+    if (Array.isArray(data.data)) {
+        arrays = [];
+        pushIn(arrays, data.data);
+    } else {
+        arrays = {};
+        extend(arrays, data.data);
+    }
     const tileData = extend({}, data);
     tileData.data = arrays;
     return tileData;
@@ -1337,4 +1361,9 @@ function hasFeature(features) {
         }
     }
     return false;
+}
+
+function hasMesh(plugin) {
+    const meshes = plugin.painter && plugin.painter.scene && plugin.painter.scene.getMeshes();
+    return meshes && meshes.length;
 }

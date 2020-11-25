@@ -22,8 +22,8 @@ function createPainterPlugin(type, Painter) {
             this._meshCache = {};
         },
 
-        needAA: function () {
-            return this.painter.needAA();
+        supportRenderMode: function (mode) {
+            return this.painter.supportRenderMode(mode);
         },
 
         startFrame: function (context) {

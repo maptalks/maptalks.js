@@ -38,6 +38,10 @@ const GLTFMixin = Base =>
             this.scene.sortFunction = this.sortByCommandKey;
         }
 
+        isAnimating() {
+            return this._isSkinAnimating();
+        }
+
         createGeometry(glData, features) {
             if (!glData) {
                 return null;
@@ -151,7 +155,7 @@ const GLTFMixin = Base =>
                 });
                 mesh.setLocalTransform(tileTranslationMatrix);
 
-                geometry.generateBuffers(this.regl);
+                geometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
                 //上面已经生成了buffer，无需再生成
                 // mesh.generateInstancedBuffers(this.regl);
                 if (instanceData['instance_color']) {
@@ -287,6 +291,8 @@ const GLTFMixin = Base =>
             this._initGLTF();
         }
 
+
+        //TODO 缺乏GLTF模型的更新逻辑
         _initGLTF() {
             if (this._gltfPack) {
                 return;

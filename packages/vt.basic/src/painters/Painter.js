@@ -534,8 +534,8 @@ class Painter {
         return false;
     }
 
-    needAA() {
-        return true;
+    supportRenderMode(mode) {
+        return mode === 'taa' || mode === 'fxaa';
     }
 
     _stencil(quadStencil) {
