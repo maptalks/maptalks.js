@@ -449,6 +449,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const tileInfo = tiles[i];
             this.onTileLoad(i === 0 ? data : copyTileData(data), tileInfo);
         }
+        this.layer.fire('datareceived');
     }
 
     _parseTileData(styleType, i, pluginData, features) {
@@ -1329,7 +1330,14 @@ function isWinIntelGPU(gl) {
 }
 
 function copyTileData(data) {
-    const arrays = extend({}, data.data);
+    let arrays;
+    if (Array.isArray(data.data)) {
+        arrays = [];
+        pushIn(arrays, data.data);
+    } else {
+        arrays = {};
+        extend(arrays, data.data);
+    }
     const tileData = extend({}, data);
     tileData.data = arrays;
     return tileData;
