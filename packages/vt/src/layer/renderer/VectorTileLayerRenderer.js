@@ -269,19 +269,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    _prepareRender(timestamp) {
-        const map = this.getMap();
-        const cameraPosition = map.cameraPosition;
+    _prepareRender() {
         const plugins = this._getFramePlugins();
-        //按照plugin顺序更新collision索引
-        plugins.forEach((plugin) => {
-            if (!hasMesh(plugin)) {
-                return;
-            }
-            const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
-            plugin.updateCollision(context);
-        });
-
         this._pluginOffsets = [];
         const groundConfig = this.layer.getGroundConfig();
         let polygonOffsetIndex = +(!!groundConfig.enable);
@@ -624,6 +613,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
+
+        //按照plugin顺序更新collision索引
+        plugins.forEach((plugin) => {
+            if (!hasMesh(plugin)) {
+                return;
+            }
+            if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
+                return;
+            }
+            const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+            plugin.updateCollision(context);
+        });
+
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
