@@ -56,8 +56,13 @@ varying vec3 vModelVertex;
 #endif
 
 #if defined(HAS_COLOR)
-    attribute vecCOLOR0_SIZE aColor;
-    varying vecCOLOR0_SIZE vColor;
+    #if COLOR0_SIZE == 3
+        attribute vec3 aColor;
+        varying vec3 vColor;
+    #else
+        attribute vec4 aColor;
+        varying vec4 vColor;
+    #endif
 #endif
 
 #if defined(HAS_COLOR0)
