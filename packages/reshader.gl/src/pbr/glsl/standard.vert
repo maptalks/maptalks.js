@@ -56,8 +56,13 @@ varying vec3 vModelVertex;
 #endif
 
 #if defined(HAS_COLOR)
-    attribute vec4 aColor;
-    varying vec4 vColor;
+    attribute vecCOLOR0_SIZE aColor;
+    varying vecCOLOR0_SIZE vColor;
+#endif
+
+#if defined(HAS_COLOR0)
+    attribute vec4 aColor0;
+    varying vec4 vColor0;
 #endif
 
 #include <line_extrusion_vert>
@@ -165,6 +170,10 @@ void main() {
 
     #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
+    #endif
+
+    #if defined(HAS_COLOR0)
+        vColor0 = aColor0 / 255.0;
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)

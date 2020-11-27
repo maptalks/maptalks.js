@@ -22,6 +22,7 @@ const DEFAULT_DESC = {
     'normalAttribute': 'aNormal',
     'uv0Attribute': 'aTexCoord',
     'uv1Attribute': 'aTexCoord1',
+    'color0Attribute': 'aColor0',
     'tangentAttribute': 'aTangent'
 };
 
@@ -101,7 +102,7 @@ export default class Geometry {
         const updated = !this._reglData;
         if (updated || this._isAttrChanged(activeAttributes)) {
             const data = this.data;
-            const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute } = this.desc;
+            const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute, color0Attribute } = this.desc;
             this._reglData = extend({}, this.data);
             delete this._reglData[positionAttribute];
             this._reglData['aPosition'] = data[positionAttribute];
@@ -120,6 +121,10 @@ export default class Geometry {
             if (data[tangentAttribute]) {
                 delete this._reglData[tangentAttribute];
                 this._reglData['aTangent'] = data[tangentAttribute];
+            }
+            if (data[color0Attribute]) {
+                delete this._reglData[color0Attribute];
+                this._reglData['aColor0'] = data[color0Attribute];
             }
             this._activeAttributes = activeAttributes;
         }

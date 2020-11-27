@@ -270,6 +270,16 @@ function createGeometry(primitive) {
             }
         }
     }
+    if (attributes['COLOR_0']) {
+        //将float类型的颜色值转为0-255的uint8类型
+        if (attributes['COLOR_0'] instanceof Float32Array) {
+            const color = new Uint8Array(attributes['COLOR_0'].length);
+            for (let i = 0; i < color.length; i++) {
+                color[i] = Math.round(attributes['COLOR_0'][i] * 255);
+            }
+            attributes['COLOR_0'] = color;
+        }
+    }
     let indices = primitive.indices;
     if (indices.bufferView === undefined && indices.array) {
         indices = indices.array;
@@ -284,7 +294,8 @@ function createGeometry(primitive) {
             positionAttribute: 'POSITION',
             normalAttribute: 'NORMAL',
             uv0Attribute: 'TEXCOORD_0',
-            uv1Attribute: 'TEXCOORD_1'
+            uv1Attribute: 'TEXCOORD_1',
+            color0Attribute: 'COLOR_0'
         }
     );
     if (!modelGeometry.data['NORMAL']) {
