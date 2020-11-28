@@ -64,7 +64,7 @@ class ShadowProcess {
     render(displayShadow, projMatrix, viewMatrix, color, opacity, lightDirection, scene, halton, framebuffer, forceRefresh) {
         this._transformGround();
         const map = this._layer.getMap();
-        const changed = forceRefresh || this._shadowChanged(map, scene);
+        const changed = forceRefresh || this._shadowChanged(map, scene, !!displayShadow);
         let matrix, smap;
         if (changed) {
             const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
@@ -103,7 +103,8 @@ class ShadowProcess {
                 return ids;
             }, {});
             this._renderedView = {
-                count: scene.getMeshes().length - (displayShadow ? 1 : 0)
+                count: scene.getMeshes().length,
+                displayShadow: !!displayShadow
             };
             this._updated = true;
         } else {
@@ -169,7 +170,7 @@ class ShadowProcess {
         return this._updated !== false;
     }
 
-    _shadowChanged(map, scene) {
+    _shadowChanged(map, scene, displayShadow) {
         // if (this._rendered || !this._rendered && scene.getMeshes().length > 5) {
         //     this._rendered = true;
         //     return false;
@@ -178,7 +179,7 @@ class ShadowProcess {
             return true;
         }
         const renderedView = this._renderedView;
-        if (scene.getMeshes().length !== renderedView.count) {
+        if (scene.getMeshes().length !== renderedView.count || displayShadow !== renderedView.displayShadow) {
             return true;
         }
         const meshes = scene.getMeshes();
