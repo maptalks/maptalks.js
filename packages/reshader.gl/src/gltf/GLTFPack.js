@@ -118,7 +118,11 @@ export default class GLTFPack {
         }
         const trs = node.trs;
         if (trs) {
-            trs.setMatrix(node.localMatrix);
+            if (node.matrix) {
+                mat4.copy(node.localMatrix, node.matrix);
+            } else {
+                trs.setMatrix(node.localMatrix);
+            }
         }
         if (parentNodeMatrix) {
             mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.localMatrix);
