@@ -129,24 +129,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderInMode('noAa', this._noAaFBO, methodName, args);
         this._noaaDrawCount = fGL.getDrawCalls();
 
-        const map = this.getMap();
-
-        const enableSSR = this.isSSROn();
-        if (enableSSR) {
-            tex = this._postProcessor.ssr(tex);
-        }
-
-        if (enableTAA) {
-            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
-                projMatrix: map.projMatrix,
-                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
-            });
-            tex = outputTex;
-            if (redraw) {
-                this.setToRedraw();
-            }
-            this._needRetireFrames = false;
-        }
         return tex;
     }
 
@@ -908,6 +890,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.layer.getMap();
 
+        const enableSSR = this.isSSROn();
+        if (enableSSR) {
+            tex = this._postProcessor.ssr(tex);
+        }
+
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
             //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
@@ -920,6 +907,19 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 ssaoRadius: config.ssao && config.ssao.radius || 100,
                 ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
             });
+        }
+
+        const enableTAA = this.isEnableTAA();
+        if (enableTAA) {
+            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
+                projMatrix: map.projMatrix,
+                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
+            });
+            tex = outputTex;
+            if (redraw) {
+                this.setToRedraw();
+            }
+            this._needRetireFrames = false;
         }
 
         let sharpFactor = config.sharpen && config.sharpen.factor;
@@ -958,7 +958,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineWidth,
             outlineColor
         );
-        const enableSSR = this.isSSROn();
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex);
         }
