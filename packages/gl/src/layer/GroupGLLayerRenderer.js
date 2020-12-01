@@ -113,13 +113,23 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._fxaaFBO.destroy();
             delete this._fxaaFBO;
         }
+
+        let tex = this._targetFBO.color[0];
+        const enableBloom = config.bloom && config.bloom.enable;
+        if (enableBloom) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
+            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
+        }
+
+        // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
         fGL.resetDrawCalls();
         this._renderInMode('noAa', this._noAaFBO, methodName, args);
         this._noaaDrawCount = fGL.getDrawCalls();
 
         const map = this.getMap();
-
-        let tex = this._targetFBO.color[0];
 
         const enableSSR = this.isSSROn();
         if (enableSSR) {
@@ -897,15 +907,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         const map = this.layer.getMap();
-
-        const enableBloom = config.bloom && config.bloom.enable;
-        if (enableBloom) {
-            const bloomConfig = config.bloom;
-            const threshold = +bloomConfig.threshold || 0;
-            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
-            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
-        }
 
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
