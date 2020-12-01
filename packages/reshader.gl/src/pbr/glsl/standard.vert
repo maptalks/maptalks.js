@@ -56,18 +56,18 @@ varying vec3 vModelVertex;
 #endif
 
 #if defined(HAS_COLOR)
-    #if COLOR0_SIZE == 3
-        attribute vec3 aColor;
-        varying vec3 vColor;
-    #else
-        attribute vec4 aColor;
-        varying vec4 vColor;
-    #endif
+    attribute vec4 aColor;
+    varying vec4 vColor;
 #endif
 
 #if defined(HAS_COLOR0)
-    attribute vec4 aColor0;
-    varying vec4 vColor0;
+    #if COLOR0_SIZE == 3
+        attribute vec3 aColor0;
+        varying vec3 vColor0;
+    #else
+        attribute vec4 aColor0;
+        varying vec4 vColor0;
+    #endif
 #endif
 
 #include <line_extrusion_vert>
