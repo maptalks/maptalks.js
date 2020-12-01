@@ -103,7 +103,7 @@ class ShadowProcess {
                 return ids;
             }, {});
             this._renderedView = {
-                count: scene.getMeshes().length,
+                count: scene.getMeshes().length - +!!displayShadow,
                 displayShadow: !!displayShadow
             };
             this._updated = true;
