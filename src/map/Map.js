@@ -1678,6 +1678,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         for (let i = 0, l = this._layers.length; i < l; i++) {
             this._layers[i]._order = i;
+            if (this._layers[i].sortLayersByZIndex) {
+                this._layers[i].sortLayersByZIndex();
+            }
         }
         this._layers.sort(function (a, b) {
             const c = a.getZIndex() - b.getZIndex();
