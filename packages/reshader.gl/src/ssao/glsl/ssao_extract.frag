@@ -27,7 +27,8 @@ struct MaterialParams {
     //options.power
     float power;
     //1 / -cameraFar
-    float invFarPlane;
+    // float invFarPlane;
+    vec2 cameraNearFar;
 };
 
 uniform MaterialParams materialParams;
@@ -84,7 +85,7 @@ vec3 getNoiseSample(const int x) {
 
 vec2 pack(highp float depth) {
     // we need 16-bits of precision
-    highp float z = clamp(depth * materialParams.invFarPlane, 0.0, 1.0);
+    highp float z = clamp(depth * 1.0 / -materialParams.cameraNearFar.y, 0.0, 1.0);
     highp float t = floor(256.0 * z);
     mediump float hi = t * (1.0 / 256.0);   // we only need 8-bits of precision
     mediump float lo = (256.0 * z) - t;     // we only need 8-bits of precision
@@ -126,13 +127,30 @@ highp mat4 getViewFromClipMatrix() {
 }
 
 highp float linearizeDepth(highp float depth) {
+    // highp mat4 projection = getClipFromViewMatrix();
+    highp float z = depth * 2.0 - 1.0; // depth in clip space
+    highp float cameraNear = materialParams.cameraNearFar.x;
+    highp float cameraFar = materialParams.cameraNearFar.y;
+    // return -projection[3].z / (z + projection[2].z);
+    return (2.0 * cameraNear * cameraFar) / (cameraFar + cameraNear - z * (cameraFar - cameraNear));
+}
+
+highp float fetchDepth(const vec2 uv) {
+    return texture2D(materialParams_depth, uv).r;
+}
+
+highp float sampleDepthLinear(const vec2 uv) {
+    return linearizeDepth(fetchDepth(uv));
+}
+
+highp float projectDepth(highp float depth) {
     highp mat4 projection = getClipFromViewMatrix();
     highp float z = depth * 2.0 - 1.0; // depth in clip space
     return -projection[3].z / (z + projection[2].z);
 }
 
-highp float sampleDepthLinear(const vec2 uv) {
-    return linearizeDepth(texture2D(materialParams_depth, uv).r);
+highp float sampleProjDepth(const vec2 uv) {
+    return projectDepth(texture2D(materialParams_depth, uv).r);
 }
 
 highp vec3 computeViewSpacePositionFromDepth(in vec2 p, highp float linearDepth) {
@@ -157,8 +175,8 @@ highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position) {
 highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position, const vec2 uv) {
     vec2 uvdx = uv + vec2(materialParams.resolution.z, 0.0);
     vec2 uvdy = uv + vec2(0.0, materialParams.resolution.w);
-    highp vec3 px = computeViewSpacePositionFromDepth(uvdx, sampleDepthLinear(uvdx));
-    highp vec3 py = computeViewSpacePositionFromDepth(uvdy, sampleDepthLinear(uvdy));
+    highp vec3 px = computeViewSpacePositionFromDepth(uvdx, sampleProjDepth(uvdx));
+    highp vec3 py = computeViewSpacePositionFromDepth(uvdy, sampleProjDepth(uvdy));
     highp vec3 dpdx = px - position;
     highp vec3 dpdy = py - position;
     return cross(dpdx, dpdy);
@@ -167,7 +185,7 @@ highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position, const 
 // Ambient Occlusion, largely inspired from:
 // Hemisphere Crysis-style SSAO. See "Screen Space Ambient Occlusion" by John Chapman
 
-float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, const vec3 noise, const vec3 sphereSample) {
+float computeAmbientOcclusionSSAO(const highp vec3 origin, const highp float originDepth, const vec3 normal, const vec3 noise, const vec3 sphereSample) {
     highp mat4 projection = getClipFromViewMatrix();
     float radius0 = materialParams.radius;
     float bias0 = materialParams.bias;
@@ -182,38 +200,39 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const vec3 normal, co
 
     highp float occlusionDepth = sampleDepthLinear(samplePosScreen.xy);
 
-    // smoothstep() optimized for range 0 to 1
-    float t = saturate(radius0 / abs(origin.z - occlusionDepth));
-    float rangeCheck = t * t * (3.0 - 2.0 * t);
-    float d = origin.z - occlusionDepth; // distance from depth to sample
-    return (d >= -bias0 ? 0.0 : rangeCheck);
+    float t = saturate(radius0 / abs(originDepth - occlusionDepth));
+    float rangeCheck = abs(originDepth - occlusionDepth) < radius0 ? 1.0 : 0.0;
+    float d = originDepth - occlusionDepth; // distance from depth to sample
+    return (d <= bias0 ? 0.0 : rangeCheck);
 }
 
 void main() {
 
     highp vec2 uv = vTexCoord; // interpolated to pixel center
 
-    highp float depth = sampleDepthLinear(uv);
-    highp vec3 origin = computeViewSpacePositionFromDepth(uv, depth);
+    highp float depth = fetchDepth(uv);
+    highp float prjDepth = projectDepth(depth);
+    highp vec3 origin = computeViewSpacePositionFromDepth(uv, prjDepth);
     highp vec3 normal = computeViewSpaceNormalNotNormalized(origin, uv);
+    highp float linearDepth = linearizeDepth(depth);
 
     normal = normalize(normal);
     vec3 noise = getNoise(uv);
 
     float occlusion = 0.0;
     for (int i = 0; i < kSphereSampleCount; i++) {
-        occlusion += computeAmbientOcclusionSSAO(origin, normal, noise, kSphereSamples[i]);
+        occlusion += computeAmbientOcclusionSSAO(origin, linearDepth, normal, noise, kSphereSamples[i]);
     }
 
     float ao = 1.0 - occlusion / float(kSphereSampleCount);
     // simulate user-controled ao^n with n[1, 2]
     ao = mix(ao, ao * ao, materialParams.power);
 
-    vec2 coords = floor(gl_FragCoord.xy);
-    ao += (1.0 - step(kEdgeDistance, abs(dFdx(origin.z)))) * dFdx(ao) * (0.5 - mod(coords.x, 2.0));
-    ao += (1.0 - step(kEdgeDistance, abs(dFdy(origin.z)))) * dFdy(ao) * (0.5 - mod(coords.y, 2.0));
+    // vec2 coords = floor(gl_FragCoord.xy);
+    // ao += (1.0 - step(kEdgeDistance, abs(dFdx(origin.z)))) * dFdx(ao) * (0.5 - mod(coords.x, 2.0));
+    // ao += (1.0 - step(kEdgeDistance, abs(dFdy(origin.z)))) * dFdy(ao) * (0.5 - mod(coords.y, 2.0));
     glFragColor = vec4(ao, pack(origin.z), 1.0);
-    // gl_FragColor = vec4(vec3(ao), 1.0);
+    // glFragColor = vec4(vec3(ao), 1.0);
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

@@ -83,7 +83,8 @@ class SsaoPass {
                 'radius': uniforms['radius'],
                 'bias': uniforms['bias'],
                 'power': power,
-                'invFarPlane': 1 / -uniforms['cameraFar']
+                // 'invFarPlane': 1 / -uniforms['cameraFar'],
+                'cameraNearFar': [uniforms['cameraNear'], uniforms['cameraFar']]
             },
             'outputSize': [hw, hh]
         }, null, this._extractFBO);
