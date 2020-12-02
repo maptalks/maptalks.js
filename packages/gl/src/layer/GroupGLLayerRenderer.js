@@ -88,33 +88,42 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        const enableTAA = this.isEnableTAA();
 
+        const enableTAA = this.isEnableTAA();
+        const jitter = drawContext.jitter;
+        drawContext.jitter = NO_JITTER;
         //TODO 也许可以在未更新时，省略taa阶段的绘制
-        this._renderInMode(enableTAA ? 'taa' : 'fxaa', this._targetFBO, methodName, args);
+        this._renderInMode(enableTAA ? 'fxaaAfterTaa' : 'fxaa', this._targetFBO, methodName, args);
+
+        const fGL = this.glCtx;
+        if (enableTAA) {
+            drawContext.jitter = jitter;
+            let taaFBO = this._taaFBO;
+            if (!taaFBO) {
+                const regl = this.regl;
+                const info = this._createFBOInfo(config, this._depthTex);
+                taaFBO = this._taaFBO = regl.framebuffer(info);
+            } else if (taaFBO.width !== this._targetFBO.width || taaFBO.height !== this._targetFBO.height) {
+                taaFBO.resize(this._targetFBO.width, this._targetFBO.height);
+            }
+            fGL.resetDrawCalls();
+            this._renderInMode('taa', taaFBO, methodName, args);
+            this._taaDrawCount = fGL.getDrawCalls();
+        } else if (this._taaFBO) {
+            this._taaFBO.destroy();
+            delete this._taaFBO;
+        }
         drawContext.jitter = NO_JITTER;
         if (this._postProcessor && this.isSSROn()) {
             this._postProcessor.drawSSR(this._depthTex);
         }
-        const fGL = this.glCtx;
-        if (enableTAA) {
-            let fxaaFBO = this._fxaaFBO;
-            if (!fxaaFBO) {
-                const regl = this.regl;
-                const info = this._createFBOInfo(config, this._depthTex);
-                fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
-            } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
-                fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
-            }
-            fGL.resetDrawCalls();
-            this._renderInMode('fxaaAfterTaa', fxaaFBO, methodName, args);
-            this._fxaaDrawCount = fGL.getDrawCalls();
-        } else if (this._fxaaFBO) {
-            this._fxaaFBO.destroy();
-            delete this._fxaaFBO;
+
+        let tex = this._taaFBO ? this._taaFBO.color[0] : this._targetFBO.color[0];
+        const enableSSR = this.isSSROn();
+        if (enableSSR) {
+            tex = this._postProcessor.ssr(tex);
         }
 
-        let tex = this._targetFBO.color[0];
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
             const bloomConfig = config.bloom;
@@ -355,10 +364,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 color: [0, 0, 0, 0],
                 framebuffer: this._noAaFBO
             });
-            if (this._fxaaFBO && this._fxaaDrawCount) {
+            if (this._taaFBO && this._taaDrawCount) {
                 regl.clear({
                     color: [0, 0, 0, 0],
-                    framebuffer: this._fxaaFBO
+                    framebuffer: this._taaFBO
                 });
             }
         }
@@ -381,8 +390,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.height !== this.canvas.height)) {
             this._targetFBO.resize(this.canvas.width, this.canvas.height);
             this._noAaFBO.resize(this.canvas.width, this.canvas.height);
-            if (this._fxaaFBO) {
-                this._fxaaFBO.resize(this.canvas.width, this.canvas.height);
+            if (this._taaFBO) {
+                this._taaFBO.resize(this.canvas.width, this.canvas.height);
             }
         }
         this.forEachRenderer(renderer => {
@@ -470,9 +479,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._targetFBO) {
             this._targetFBO.destroy();
             this._noAaFBO.destroy();
-            if (this._fxaaFBO) {
-                this._fxaaFBO.destroy();
-                delete this._fxaaFBO;
+            if (this._taaFBO) {
+                this._taaFBO.destroy();
+                delete this._taaFBO;
             }
             delete this._targetFBO;
             delete this._noAaFBO;
@@ -504,7 +513,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         //地面绘制不用引入jitter，会导致地面的晃动
         context.jitter = NO_JITTER;
         context.offsetFactor = 1;
-        context.offsetUnits = 1;
+        context.offsetUnits = 4;
         const drawn = this._groundPainter.paint(context);
         context.jitter = jitter;
         return drawn;
@@ -890,11 +899,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.layer.getMap();
 
-        const enableSSR = this.isSSROn();
-        if (enableSSR) {
-            tex = this._postProcessor.ssr(tex);
-        }
-
         const enableSSAO = this.isEnableSSAO();
         if (enableSSAO) {
             //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
@@ -942,9 +946,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
-            tex,
+            enableTAA ? this._targetFBO.color[0] : tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
-            this._fxaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
+            enableTAA && tex,
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,
@@ -958,6 +962,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineWidth,
             outlineColor
         );
+        const enableSSR = this.isSSROn();
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex);
         }
