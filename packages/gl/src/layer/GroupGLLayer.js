@@ -56,7 +56,18 @@ export default class GroupGLLayer extends maptalks.Layer {
             }
         });
         this._checkChildren();
+        this.sortLayersByZIndex();
         this._layerMap = {};
+    }
+
+    sortLayersByZIndex() {
+        if (!this.layers || !this.layers.length) {
+            return;
+        }
+        for (let i = 0, l = this.layers.length; i < l; i++) {
+            this.layers[i]._order = i;
+        }
+        this.layers.sort(sortLayersByZIndex);
     }
 
     setSceneConfig(sceneConfig) {
@@ -99,6 +110,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             this.layers.splice(idx, 0, layer);
         }
         this._checkChildren();
+        this.sortLayersByZIndex();
         const renderer = this.getRenderer();
         if (!renderer) {
             // not loaded yet
@@ -296,3 +308,11 @@ GroupGLLayer.registerRenderer('gl', Renderer);
 GroupGLLayer.registerRenderer('canvas', null);
 
 function empty() {}
+
+function sortLayersByZIndex(a, b) {
+    const c = a.getZIndex() - b.getZIndex();
+    if (c === 0) {
+        return a._order - b._order;
+    }
+    return c;
+}
