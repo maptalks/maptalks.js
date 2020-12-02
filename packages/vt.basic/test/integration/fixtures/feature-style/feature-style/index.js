@@ -58,19 +58,23 @@ const style = [
 const featureStyle = [
     {
         id: 2,
-        renderPlugin: {
-            type: 'line',
-            dataConfig: {
-                type: 'line'
-            },
-            sceneConfig: {
+        style: [
+            {
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: {
+                        type: 'line'
+                    },
+                    sceneConfig: {
+                    }
+                },
+                symbol: {
+                    lineWidth: 12,
+                    lineJoin: 'round',
+                    lineColor: '#f00'
+                }
             }
-        },
-        symbol: {
-            lineWidth: 12,
-            lineJoin: 'round',
-            lineColor: '#f00'
-        }
+        ]
     }
 ];
 

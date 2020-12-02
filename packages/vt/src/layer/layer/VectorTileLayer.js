@@ -131,6 +131,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
         this._featureStyle = style['featureStyle'] || [];
+        this._featureStyle = parseFeatureStyle(style['featureStyle']);
         this._vtStyle = style['style'];
         const background = style.background || {};
         this._background = {
@@ -473,7 +474,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return [];
         }
         let cp = coordinate;
-        if (coordinate instanceof map.getCenter()) {
+        if (!(coordinate instanceof map.getViewPoint().constructor)) {
             cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
         }
         return renderer.pick(cp.x, cp.y, options);
@@ -604,4 +605,24 @@ function getOrDefault(v, defaultValue) {
         return defaultValue;
     }
     return v;
+}
+
+function parseFeatureStyle(featureStyle) {
+    if (!featureStyle || !Array.isArray(featureStyle)) {
+        return [];
+    }
+    const parsed = [];
+    for (let i = 0; i < featureStyle.length; i++) {
+        const style = featureStyle[i].style;
+        if (style && Array.isArray(style) && style.length) {
+            for (let ii = 0; ii < style.length; ii++) {
+                const unitStyle = extend({}, featureStyle[i], style[i]);
+                delete unitStyle.style;
+                parsed.push(unitStyle);
+            }
+        } else {
+            parsed.push(extend({}, featureStyle[i]));
+        }
+    }
+    return parsed;
 }
