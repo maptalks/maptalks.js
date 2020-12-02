@@ -64,7 +64,7 @@
 
       "center":[13.411526530727542,52.527111139790435],"zoom":19.136793519083586,"pitch":80,"bearing":-80.80000000000064,
 
-      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":62.00000000000039,"bearing":121.99999999999828,
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":0,"bearing":121.99999999999828,
       //纽约
       // "center":[-74.00621804388925,40.70693481549321],"zoom":17.45624930433703,"pitch":0,"bearing":-15.59999999999991,
 
@@ -301,24 +301,28 @@
       featureStyle: [
         {
           id: [514],
-          renderPlugin: {
-            type : 'lit',
-            dataConfig : {
-              type : '3d-extrusion',
-              altitudeProperty : 'height',
-              minHeightProperty: 'min_height',
-              altitudeScale : 1,
-              defaultAltitude : 30,
-              top: true,
-              topThickness: 2,
-              side: true
+          style: [
+            {
+              renderPlugin: {
+                type : 'lit',
+                dataConfig : {
+                  type : '3d-extrusion',
+                  altitudeProperty : 'height',
+                  minHeightProperty: 'min_height',
+                  altitudeScale : 1,
+                  defaultAltitude : 30,
+                  top: true,
+                  topThickness: 2,
+                  side: true
+                }
+              },
+              symbol: {
+                material: litMaterial,
+                polygonOpacity: 1,
+                polygonFill: '#ff0'
+              }
             }
-          },
-          symbol: {
-            material: litMaterial,
-            polygonOpacity: 1,
-            polygonFill: '#ff0'
-          }
+          ]
         },
         {
           id: 1310,
@@ -454,7 +458,7 @@
         ssao: {
           enable: true,
           bias: 0.1,
-          radius: 0.1,
+          radius: 0.14,
           intensity: 1.5
         },
         sharpen: {
