@@ -119,6 +119,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         let tex = this._taaFBO ? this._taaFBO.color[0] : this._targetFBO.color[0];
+
+        //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const enableSSR = this.isSSROn();
         if (enableSSR) {
             tex = this._postProcessor.ssr(tex);
@@ -651,7 +653,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             states: this._getViewStates()
         };
 
-
+        const ratio = config.antialias.jitterRatio || 0.2;
+        let jitGetter = this._jitGetter;
+        if (!jitGetter) {
+            jitGetter = this._jitGetter = new reshader.Jitter(ratio);
+        } else {
+            jitGetter.setRatio(ratio);
+        }
 
         let renderTarget;
         if (!config || !config.enable) {
@@ -659,13 +667,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         } else {
             const hasJitter = this.isEnableTAA();
             if (hasJitter) {
-                const ratio = config.antialias.jitterRatio || 0.2;
-                let jitGetter = this._jitGetter;
-                if (!jitGetter) {
-                    jitGetter = this._jitGetter = new reshader.Jitter(ratio);
-                } else {
-                    jitGetter.setRatio(ratio);
-                }
                 const map = this.getMap();
                 if (this._rendereMode === 'taa') {
                     this.forEachRenderer((renderer, layer) => {
@@ -964,6 +965,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         );
         const enableSSR = this.isSSROn();
         if (enableSSR) {
+            //TODO tex不包含fxaa texture，ssr中可能是错误的
             this._postProcessor.genSsrMipmap(tex);
         }
     }
