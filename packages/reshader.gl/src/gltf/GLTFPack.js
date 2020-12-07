@@ -60,7 +60,7 @@ export default class GLTFPack {
     updateAnimation(time, loop, speed) {
         const json = this.gltf;
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
-        const animTime = (loop ? (time * 0.001) % (timespan.max - timespan.min) : time * 0.001) * speed;
+        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * 0.001);
         json.scenes[0].nodes.forEach(node => {
             this._updateNodeMatrix(animTime, node);
         });
