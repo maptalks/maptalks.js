@@ -653,7 +653,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             states: this._getViewStates()
         };
 
-        const ratio = config.antialias.jitterRatio || 0.2;
+        const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
         let jitGetter = this._jitGetter;
         if (!jitGetter) {
             jitGetter = this._jitGetter = new reshader.Jitter(ratio);
