@@ -80,6 +80,10 @@ float dashAntialias(float dashMod, float dashWidth) {
     return clamp(min(dashDist + blur2, dashHalf - dashDist) / blur2, 0.0, 1.0);
 }
 
+varying vec3 vVertex;
+uniform vec3 cameraPosition;
+uniform float cameraToCenterDistance;
+
 void main() {
     #ifndef ENABLE_TILE_STENCIL
     //当position的x, y超出tileExtent时，丢弃该片元
@@ -174,8 +178,11 @@ void main() {
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 
+    float perspectiveAlpha = clamp(cameraToCenterDistance * 1.5 / distance(vVertex, cameraPosition), 0.0, 1.0);
+
     if (blendSrcIsOne == 1.0) {
         gl_FragColor *= gl_FragColor.a;
     }
 
+    gl_FragColor *= perspectiveAlpha;
 }

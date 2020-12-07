@@ -389,7 +389,11 @@ class LinePainter extends BasicPainter {
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
             linePatternAnimSpeed: symbol.linePatternAnimSpeed || 0,
-            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
+            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
+            cameraPosition: map.cameraPosition
+            // projMatrix: map.projMatrix,
+            // halton: context.jitter || [0, 0],
+            // globalTexSize: [this.canvas.width, this.canvas.height],
         };
 
         this.setIncludeUniformValues(uniforms, context);

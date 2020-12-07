@@ -52,6 +52,7 @@ attribute vec2 aExtrude;
 uniform float cameraToCenterDistance;
 uniform float lineGapWidth;
 uniform mat4 projViewModelMatrix;
+uniform mat4 modelMatrix;
 uniform float tileResolution;
 uniform float resolution;
 uniform float tileRatio; //EXTENT / tileSize
@@ -100,6 +101,12 @@ varying float vGammaScale;
     #include <fbo_picking_vert>
 #endif
 
+// uniform mat4 projMatrix;
+// uniform mat4 viewModelMatrix;
+// uniform vec2 halton;
+// uniform vec2 globalTexSize;
+
+varying vec3 vVertex;
 
 void main() {
     vec3 position = aPosition;
@@ -116,7 +123,9 @@ void main() {
         vNormal.y = vNormal.y * 2.0 - 1.0;
     #endif
 
-    vec4 vertex = projViewModelMatrix * vec4(position, 1.0);
+    vec4 pos4 = vec4(position, 1.0);
+    vec4 vertex = projViewModelMatrix * pos4;
+    vVertex = (modelMatrix * pos4).xyz;
 
     float gapwidth = lineGapWidth / 2.0;
     #ifdef HAS_LINE_WIDTH
