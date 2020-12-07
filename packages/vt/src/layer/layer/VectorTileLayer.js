@@ -130,7 +130,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
-        this._featureStyle = style['featureStyle'] || [];
+        this._originFeatureStyle = style['featureStyle'] || [];
         this._featureStyle = parseFeatureStyle(style['featureStyle']);
         this._vtStyle = style['style'];
         const background = style.background || {};
@@ -243,29 +243,49 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSceneConfig(0, idx, sceneConfig);
     }
 
-    updateFeatureSceneConfig(idx, sceneConfig) {
-        return this._updateSceneConfig(1, idx, sceneConfig);
+    updateFeatureSceneConfig(idx, styleIdx, sceneConfig) {
+        return this._updateSceneConfig(1, idx, sceneConfig, styleIdx);
     }
 
-    _updateSceneConfig(type, idx, sceneConfig) {
+    _updateSceneConfig(type, idx, sceneConfig, styleIdx) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
         }
+        let renderIdx = idx;
         extend(styles[idx].renderPlugin.sceneConfig, sceneConfig);
+        let computedSceneConfig;
+        if (styleIdx !== undefined) {
+            checkFeaStyleExist(this._originFeatureStyle, idx, styleIdx);
+            renderIdx = this._originFeatureStyle[idx].style[styleIdx]._renderIdx;
+            computedSceneConfig = styles[renderIdx].renderPlugin.sceneConfig;
+        } else {
+            checkStyleExist(styles, idx);
+            computedSceneConfig = styles[idx].renderPlugin.sceneConfig;
+        }
+        extend(computedSceneConfig, sceneConfig);
+
         if (Array.isArray(this.options.style)) {
             extend(this.options.style[idx].renderPlugin.sceneConfig, sceneConfig);
         } else {
             const styles = this._getTargetStyle(type, this.options.style);
-            if (!styles[idx].renderPlugin.sceneConfig) {
-                styles[idx].renderPlugin.sceneConfig = {};
+            let renderPlugin;
+            if (styleIdx !== undefined) {
+                checkFeaStyleExist(styles, idx, styleIdx);
+                renderPlugin = styles[idx].style[styleIdx].renderPlugin;
+            } else {
+                checkStyleExist(styles, idx);
+                renderPlugin = styles[idx].renderPlugin;
             }
-            extend(styles[idx].renderPlugin.sceneConfig, sceneConfig);
+            if (!renderPlugin.sceneConfig) {
+                renderPlugin.sceneConfig = {};
+            }
+            extend(renderPlugin.sceneConfig, sceneConfig);
         }
 
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateSceneConfig(type, idx, sceneConfig);
+            renderer.updateSceneConfig(type, renderIdx, sceneConfig);
         }
         return this;
     }
@@ -274,28 +294,48 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateDataConfig(0, idx, dataConfig);
     }
 
-    updateFeatureDataConfig(idx, dataConfig) {
-        return this._updateDataConfig(1, idx, dataConfig);
+    updateFeatureDataConfig(idx, styleIdx, dataConfig) {
+        return this._updateDataConfig(1, idx, dataConfig, styleIdx);
     }
 
-    _updateDataConfig(type, idx, dataConfig) {
+    _updateDataConfig(type, idx, dataConfig, styleIdx) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
         }
-        const computedDataConfig = styles[idx].renderPlugin.dataConfig;
+        let rendererIdx = idx;
+        let computedDataConfig;
+        if (styleIdx !== undefined) {
+            checkFeaStyleExist(this._originFeatureStyle, idx, styleIdx);
+            rendererIdx = this._originFeatureStyle[idx].style[styleIdx]._renderIdx;
+            computedDataConfig = styles[rendererIdx].renderPlugin.dataConfig;
+        } else {
+            checkStyleExist(styles, idx);
+            computedDataConfig = styles[idx].renderPlugin.dataConfig;
+        }
         const old = extend({}, computedDataConfig);
         extend(computedDataConfig, dataConfig);
         if (Array.isArray(this.options.style)) {
             extend(this.options.style[idx].renderPlugin.dataConfig, dataConfig);
         } else {
             const styles = this._getTargetStyle(type, this.options.style);
-            extend(styles[idx].renderPlugin.dataConfig, dataConfig);
+            let renderPlugin;
+            if (styleIdx !== undefined) {
+                checkFeaStyleExist(styles, idx, styleIdx);
+                renderPlugin = styles[idx].style[styleIdx].renderPlugin;
+            } else {
+                checkStyleExist(styles, idx);
+                renderPlugin = styles[idx].renderPlugin;
+            }
+            if (!renderPlugin.dataConfig) {
+                renderPlugin.dataConfig = {};
+            }
+            extend(renderPlugin.dataConfig, dataConfig);
         }
 
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateDataConfig(type, idx, dataConfig, old);
+            renderer.updateDataConfig(type, rendererIdx, dataConfig, old);
         }
         return this;
     }
@@ -304,11 +344,11 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSymbol(0, idx, symbol);
     }
 
-    updateFeatureSymbol(idx, symbol) {
-        return this._updateSymbol(1, idx, symbol);
+    updateFeatureSymbol(idx, styleIdx, symbol) {
+        return this._updateSymbol(1, idx, symbol, styleIdx);
     }
 
-    _updateSymbol(type, idx, symbol) {
+    _updateSymbol(type, idx, symbol, styleIdx) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
@@ -341,7 +381,14 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (!Array.isArray(styles)) {
                 styles = self._getTargetStyle(type, self.options.style);
             }
-            styles[idx].symbol = JSON.parse(JSON.stringify(target));
+            const copy = JSON.parse(JSON.stringify(target));
+            if (styleIdx !== undefined) {
+                checkFeaStyleExist(styles, idx, styleIdx);
+                styles[idx].style[styleIdx].symbol = copy;
+            } else {
+                checkStyleExist(styles, idx);
+                styles[idx].symbol = copy;
+            }
         }
 
         const renderer = this.getRenderer();
@@ -617,6 +664,7 @@ function parseFeatureStyle(featureStyle) {
         if (style && Array.isArray(style) && style.length) {
             for (let ii = 0; ii < style.length; ii++) {
                 const unitStyle = extend({}, featureStyle[i], style[i]);
+                style[i]._renderIdx = parsed.length;
                 delete unitStyle.style;
                 parsed.push(unitStyle);
             }
@@ -625,4 +673,16 @@ function parseFeatureStyle(featureStyle) {
         }
     }
     return parsed;
+}
+
+function checkFeaStyleExist(styles, idx, styleIdx) {
+    if (!styles[idx] || !styles[idx].style || !styles[idx].style[styleIdx]) {
+        throw new Error(`No plugin defined at feature style of ${idx} - ${styleIdx}`);
+    }
+}
+
+function checkStyleExist(styles, idx) {
+    if (!styles[idx]) {
+        throw new Error(`No plugin defined at style of ${idx}`);
+    }
 }
