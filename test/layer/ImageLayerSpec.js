@@ -25,11 +25,11 @@ describe('Layer.ImageLayer', function () {
     it('add and remove', function (done) {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var layer = new maptalks.ImageLayer('images', {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
-            }, {
-                renderer : 'canvas'
-            });
+            url: TILE_IMAGE,
+            extent: extent.toJSON()
+        }, {
+            renderer: 'canvas'
+        });
         layer.on('layerload', function () {
             expect(layer).to.be.painted(1, 1);
             map.removeLayer(layer);
@@ -42,11 +42,11 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var layer = new maptalks.ImageLayer('images', [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
+                url: TILE_IMAGE,
+                extent: extent.toJSON()
             }
         ], {
-            renderer : 'canvas'
+            renderer: 'canvas'
         });
         layer.on('layerload', function () {
             expect(layer).to.be.painted(1, 1, [0, 0, 0, 255]);
@@ -60,14 +60,18 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var layer = new maptalks.ImageLayer('images', [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON(),
-                opacity : 0.5
+                url: TILE_IMAGE,
+                extent: extent.toJSON(),
+                opacity: 0.5
             }
         ], {
-            renderer : 'canvas'
+            renderer: 'canvas'
         });
         layer.on('layerload', function () {
+            var size = map.getSize();
+            var ctx = layer.getRenderer().canvas.getContext('2d');
+            var imageData = ctx.getImageData(size.width / 2, size.height / 2, 1, 1);
+            console.log(imageData);
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(1, 1, [0, 0, 0, 128]);
             } else {
@@ -82,12 +86,12 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var images = [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
+                url: TILE_IMAGE,
+                extent: extent.toJSON()
             }
         ];
         var layer = new maptalks.ImageLayer('images', images, {
-            renderer : 'canvas'
+            renderer: 'canvas'
         });
         expect(layer.getImages()).to.be.eql(images);
     });
@@ -96,12 +100,12 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var images = [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
+                url: TILE_IMAGE,
+                extent: extent.toJSON()
             }
         ];
         var layer = new maptalks.ImageLayer('images', {
-            renderer : 'canvas'
+            renderer: 'canvas'
         }).addTo(map);
         expect(layer.getImages()).to.be.eql([]);
 
@@ -117,18 +121,18 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var images = [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
+                url: TILE_IMAGE,
+                extent: extent.toJSON()
             }
         ];
         var images2 = [
             {
-                url : TILE_IMAGE + '2',
-                extent : extent.toJSON()
+                url: TILE_IMAGE + '2',
+                extent: extent.toJSON()
             }
         ];
         var layer = new maptalks.ImageLayer('images', images, {
-            renderer : 'gl'
+            renderer: 'gl'
         });
         layer.once('layerload', function () {
             layer.setImages(images2);
@@ -143,18 +147,18 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var images = [
             {
-                url : TILE_IMAGE,
-                extent : extent.add([2, 2]).toJSON()
+                url: TILE_IMAGE,
+                extent: extent.add([2, 2]).toJSON()
             }
         ];
         var images2 = [
             {
-                url : TILE_IMAGE,
-                extent : extent.toJSON()
+                url: TILE_IMAGE,
+                extent: extent.toJSON()
             }
         ];
         var layer = new maptalks.ImageLayer('images', images, {
-            renderer : 'canvas'
+            renderer: 'canvas'
         });
         layer.once('layerload', function () {
             expect(layer).not.to.be.painted(1, 1);
@@ -176,11 +180,11 @@ describe('Layer.ImageLayer', function () {
         var extent = new maptalks.Rectangle(center, 100, 100).getExtent();
         var layer = new maptalks.ImageLayer('images', [
             {
-                url : TILE_IMAGE,
-                extent : extent
+                url: TILE_IMAGE,
+                extent: extent
             }
         ], {
-            renderer : 'gl'
+            renderer: 'gl'
         });
         layer.on('layerload', function () {
             // expect(layer).to.be.painted(1, 1);
