@@ -88,9 +88,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             for (let i = 0, l = allTiles.length; i < l; i++) {
                 const tile = allTiles[i],
                     tileId = tile['id'];
-                if (tile.y === 26771) {
-                    // debugger
-                }
                 //load tile in cache at first if it has.
                 let tileLoading = false;
                 if (this._isLoadingTile(tileId)) {
@@ -619,7 +616,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 tilesLoading[tileId].current = false;
                 const { image, info } = tilesLoading[tileId];
                 this.abortTileLoading(image, info);
-                console.log('_getCachedTile');
                 delete tilesLoading[tileId];
             }
         } else {
@@ -707,7 +703,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         const tileSize = this.layer.getTileSize(),
             scale = map._getResolution(z) / map._getResolution(),
-            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1);
+            canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;
         if (isFunction(placeholder)) {
