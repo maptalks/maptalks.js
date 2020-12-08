@@ -68,6 +68,15 @@ describe('Layer.ImageLayer', function () {
             renderer: 'canvas'
         });
         layer.on('layerload', function () {
+            var parser = new UAParser();
+            var alpha = 102;
+            var result = parser.getOS();
+            console.log(result);
+            if (result.name) {
+                if (result.name.toLowerCase().indexOf('linux') > -1) {
+                    alpha = 104;
+                }
+            }
             var size = map.getSize();
             var ctx = layer.getRenderer().canvas.getContext('2d');
             var imageData = ctx.getImageData(size.width / 2, size.height / 2, 1, 1);
@@ -75,7 +84,7 @@ describe('Layer.ImageLayer', function () {
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(1, 1, [0, 0, 0, 128]);
             } else {
-                expect(layer).to.be.painted(1, 1, [0, 0, 0, 102]);
+                expect(layer).to.be.painted(1, 1, [0, 0, 0, alpha]);
             }
             done();
         });

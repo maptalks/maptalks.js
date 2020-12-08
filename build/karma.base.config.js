@@ -7,6 +7,7 @@ module.exports = {
         }
     },
     files : [
+        'https://cdn.jsdelivr.net/npm/ua-parser-js@0.7.22/dist/ua-parser.min.js',
         'dist/maptalks.js',
         //js for TileOffsetSpec.js
         'test/resources/chncrs.js',
