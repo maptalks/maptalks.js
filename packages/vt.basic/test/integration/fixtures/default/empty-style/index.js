@@ -6,7 +6,8 @@ const data = {
     ]
 };
 
-const style = null;
+const style = [
+];
 
 module.exports = {
     style,
@@ -14,5 +15,6 @@ module.exports = {
     view: {
         center: [0, 0],
         zoom: 6
-    }
+    },
+    eventName: 'layerload'
 };

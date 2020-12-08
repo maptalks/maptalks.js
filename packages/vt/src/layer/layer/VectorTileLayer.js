@@ -59,7 +59,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     constructor(id, options) {
         super(id, options);
         this.VERSION = VectorTileLayer.VERSION;
-        const style = options && options.style || [];
+        const style = options && options.style;
         this.setStyle(style);
     }
 
@@ -106,7 +106,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return this;
         }
         this.options['style'] = style;
-        if (style['$root'] || style['$iconset']) {
+        if (style && (style['$root'] || style['$iconset'])) {
             let root = style['$root'];
             let iconset = style['$iconset'];
             if (root && root[root.length - 1] === '/') {
@@ -125,6 +125,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             };
         }
         this.ready = true;
+        style = style || [];
         if (Array.isArray(style)) {
             style = { style };
         }
@@ -437,7 +438,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._isOnly2D = true;
         this._isDefaultRender = false;
         let styles = this._vtStyle;
-        if (!styles || Array.isArray(styles) && !styles.length) {
+        if (!this.options['style']) {
             this._isDefaultRender = true;
             styles = this._vtStyle = [];
         }
