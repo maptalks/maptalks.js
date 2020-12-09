@@ -223,6 +223,10 @@ export default class PostProcess {
         };
     }
 
+    isTaaNeedRedraw() {
+        return this._taaPass.needToRedraw();
+    }
+
     ssao(sourceTex, depthTex, uniforms) {
         if (!this._ssaoPass) {
             this._ssaoPass = new reshader.SsaoPass(this._renderer);

@@ -97,7 +97,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const fGL = this.glCtx;
         if (enableTAA) {
-            drawContext.jitter = jitter;
+            const map = this.getMap();
+            const needRefresh = this._postProcessor.isTaaNeedRedraw() || this._needRetireFrames || map.getRenderer().isViewChanged();
+            drawContext.jitter = needRefresh ? jitter : this._jitGetter.getAverage();
             let taaFBO = this._taaFBO;
             if (!taaFBO) {
                 const regl = this.regl;
@@ -118,7 +120,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.drawSSR(this._depthTex);
         }
 
-        let tex = this._taaFBO ? this._taaFBO.color[0] : this._targetFBO.color[0];
+        let tex = /*this._taaFBO ? this._taaFBO.color[0] : */this._targetFBO.color[0];
 
         //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const enableSSR = this.isSSROn();
@@ -915,12 +917,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         const enableTAA = this.isEnableTAA();
+        let taaTex;
         if (enableTAA) {
-            const { outputTex, redraw } = this._postProcessor.taa(tex, this._depthTex, {
+            const { outputTex, redraw } = this._postProcessor.taa(this._taaFBO.color[0], this._depthTex, {
                 projMatrix: map.projMatrix,
                 needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
             });
-            tex = outputTex;
+            taaTex = outputTex;
             if (redraw) {
                 this.setToRedraw();
             }
@@ -947,9 +950,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
-            enableTAA ? this._targetFBO.color[0] : tex,
+            tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
-            enableTAA && tex,
+            taaTex,
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,

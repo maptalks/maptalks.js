@@ -20,11 +20,20 @@ const SAMPLES = [
 
 const SAMPLE_COUNT = SAMPLES.length;
 
+const AVG = [0, 0];
+for (let i = 0; i < SAMPLES.length; i++) {
+    AVG[0] += SAMPLES[i][0];
+    AVG[1] += SAMPLES[i][1];
+}
+AVG[0] /= SAMPLE_COUNT;
+AVG[1] /= SAMPLE_COUNT;
+
 class Jitter {
     constructor(ratio) {
         this._frameNum = 0;
         // this._ratio = 0.05;
         this._ratio = ratio || 0.05;
+        this._avg = [AVG[0] * this._ratio, AVG[1] * this._ratio];
     }
 
     getRatio() {
@@ -36,6 +45,11 @@ class Jitter {
             this._ratio = ratio;
             this.reset();
         }
+        this._avg = [AVG[0] * this._ratio, AVG[1] * this._ratio];
+    }
+
+    getAverage() {
+        return this._avg;
     }
 
     reset() {
