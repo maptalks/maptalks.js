@@ -7,7 +7,7 @@ uniform mat4 modelMatrix;
 uniform mat4 projViewMatrix;
 uniform mat4 projViewModelMatrix;
 uniform mat4 positionMatrix;
-
+varying vec3 vPosition;
 #include <get_output>
 #include <viewshed_vert>
 #include <flood_vert>
@@ -18,6 +18,7 @@ void main () {
     vec4 localPosition = getPosition(aPosition);
     gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
+    vPosition = aPosition;
     #ifdef HAS_VIEWSHED
         viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
     #endif

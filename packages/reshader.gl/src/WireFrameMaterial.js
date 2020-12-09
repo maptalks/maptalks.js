@@ -17,7 +17,8 @@ const DEFAULT_UNIFORMS = {
     'squeezeMax': 1,
     'dualStroke': false,
     'secondThickness': 0.05,
-    'opacity' : 1.0
+    'opacity': 1.0,
+    'noiseEnable': false
 };
 
 class WireFrameMaterial extends Material {
