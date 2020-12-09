@@ -13,7 +13,7 @@ class Shader {
         //defines besides meshes : lights, etc
         this.shaderDefines = defines && extend({}, defines) || {};
 
-        uniforms = this.uniforms = uniforms || [];
+        uniforms = this.uniforms = (uniforms || []).slice();
         this.contextDesc = {};
         for (let i = 0, l = uniforms.length; i < l; i++) {
             const p = uniforms[i];
