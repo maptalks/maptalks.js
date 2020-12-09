@@ -465,6 +465,9 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     getStyle() {
+        if (!this.options.style) {
+            return null;
+        }
         return JSON.parse(JSON.stringify(this.options.style));
     }
 
