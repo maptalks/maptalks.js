@@ -13,6 +13,10 @@ varying vec2 vUv;
 varying vec2 vNoiseUv;
 varying vec3 vPos;
 varying mat3 vTbnMatrix;
+#ifdef HAS_SSR
+    uniform mat4 uModelViewMatrix;
+    varying vec4 vViewVertex;
+#endif
 
 mat3 getTBNMatrix(in vec3 n) {
     vec3 t = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
@@ -34,6 +38,11 @@ void main(void) {
     gl_Position = projViewModelMatrix * localVertex;
     vUv = aTexCoord * uvScale + uvOffset;
     vNoiseUv = aTexCoord * uvScale * TIME_NOISE_TEXTURE_REPEAT + noiseUvOffset;
+
+    #ifdef HAS_SSR
+        vec4 viewVertex = uModelViewMatrix * localVertex;
+        vViewVertex = viewVertex;
+    #endif
 
     #if defined(HAS_SHADOWING)
         shadow_computeShadowPars(localVertex);

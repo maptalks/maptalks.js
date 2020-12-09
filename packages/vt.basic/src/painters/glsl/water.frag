@@ -7,6 +7,199 @@ precision highp sampler2D;
     #include <vsm_shadow_frag>
 #endif
 
+#ifdef HAS_SSR
+    varying vec4 vViewVertex;
+    uniform mat3 uModelViewNormalMatrix;
+    uniform sampler2D TextureDepthTest;
+    uniform sampler2D TextureDepth;
+    uniform highp vec2 uGlobalTexSize;
+    uniform float uSsrFactor;
+    uniform float uSsrQuality;
+    uniform vec2 uPreviousGlobalTexSize;
+    uniform sampler2D TextureToBeRefracted;
+    uniform vec2 uTextureToBeRefractedSize;
+    uniform highp mat4 uProjectionMatrix;
+    uniform mat4 uInvProjMatrix;
+    uniform vec4 uTaaCornersCSLeft[2];
+    uniform mat4 uReprojectViewProj;
+    uniform vec2 uNearFar;
+    vec3 decodeRGBM(const in vec4 color, const in float range) {
+        if(range <= 0.0) return color.rgb;
+        return range * color.rgb * color.a;
+    }
+    float interleavedGradientNoise(const in vec2 fragCoord, const in float frameMod) {
+        vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+        return fract(magic.z * fract(dot(fragCoord.xy + frameMod * vec2(47.0, 17.0) * 0.695, magic.xy))) * 0.5;
+    }
+    vec3 computeLodNearestPixelSizePowLevel(const in float lodLevelIn, const in float maxLod, const in vec2 size) {
+        float lodLevel = min(maxLod - 0.01, lodLevelIn);
+        float lowerLevel = floor(lodLevel);
+        float higherLevel = min(maxLod, lowerLevel + 1.0);
+        float powLevel = pow(2.0, higherLevel);
+        vec2 pixelSize = 2.0 * powLevel / size;
+        if (lodLevel - lowerLevel > 0.5) powLevel *= 2.0;
+        return vec3(pixelSize, powLevel);
+    }
+    vec2 computeLodUVNearest(const in vec2 uvIn, const in vec3 pixelSizePowLevel) {
+        vec2 uv = max(pixelSizePowLevel.xy, min(1.0 - pixelSizePowLevel.xy, uvIn));
+        return vec2(2.0 * uv.x, pixelSizePowLevel.z - 1.0 - uv.y) / pixelSizePowLevel.z;
+    }
+    vec3 ssrViewToScreen(const in mat4 projection, const in vec3 viewVertex) {
+        vec4 projected = projection * vec4(viewVertex, 1.0);
+        return vec3(0.5 + 0.5 * projected.xy / projected.w, projected.w);
+    }
+    vec3 fetchColorLod(const in float level, const in vec2 uv) {
+        return decodeRGBM(texture2D(TextureToBeRefracted, uv), 7.0);
+    }
+
+    float linearizeDepth(float depth) {
+        highp mat4 projection = uProjectionMatrix;
+        highp float z = depth * 2.0 - 1.0; // depth in clip space
+        return -projection[3].z / (z + projection[2].z);
+    }
+
+    float fetchDepthLod(const vec2 uv, const in vec3 pixelSizePowLevel) {
+        return linearizeDepth(texture2D(TextureDepth, uv).r);
+    }
+
+
+    vec3 unrealImportanceSampling(const in float frameMod, const in vec3 tangentX, const in vec3 tangentY, const in vec3 tangentZ, const in vec3 eyeVector, const in float rough4) {
+        vec2 E;
+        E.x = interleavedGradientNoise(gl_FragCoord.yx, frameMod);
+        E.y = fract(E.x * 52.9829189);
+        E.y = mix(E.y, 1.0, 0.7);
+        float phi = 2.0 * 3.14159 * E.x;
+        float cosTheta = pow(max(E.y, 0.000001), rough4 / (2.0 - rough4));
+        float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+        vec3 h = vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
+        h = h.x * tangentX + h.y * tangentY + h.z * tangentZ;
+        return normalize((2.0 * dot(eyeVector, h)) * h - eyeVector);
+    }
+    float getStepOffset(const in float frameMod) {
+        return (interleavedGradientNoise(gl_FragCoord.xy, frameMod) - 0.5);
+    }
+    vec3 computeRayDirUV(const in vec3 rayOriginUV, const in float rayLen, const in vec3 rayDirView) {
+        vec3 rayDirUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz + rayDirView * rayLen);
+        rayDirUV.z = 1.0 / rayDirUV.z;
+        rayDirUV -= rayOriginUV;
+        float scaleMaxX = min(1.0, 0.99 * (1.0 - rayOriginUV.x) / max(1e-5, rayDirUV.x));
+        float scaleMaxY = min(1.0, 0.99 * (1.0 - rayOriginUV.y) / max(1e-5, rayDirUV.y));
+        float scaleMinX = min(1.0, 0.99 * rayOriginUV.x / max(1e-5, -rayDirUV.x));
+        float scaleMinY = min(1.0, 0.99 * rayOriginUV.y / max(1e-5, -rayDirUV.y));
+        return rayDirUV * min(scaleMaxX, scaleMaxY) * min(scaleMinX, scaleMinY);
+    }
+
+    float binarySearch(const in vec3 rayOriginUV, const in vec3 rayDirUV, inout float startSteps, inout float endSteps) {
+        float steps = (endSteps + startSteps) * 0.5;
+        vec3 sampleUV = rayOriginUV + rayDirUV * steps;
+        float z = texture2D(TextureDepth, sampleUV.xy).r;
+        float depth = linearizeDepth(z);
+        float sampleDepth = -1.0 / sampleUV.z;
+        startSteps = depth > sampleDepth ? startSteps : steps;
+        endSteps = depth > sampleDepth ? steps : endSteps;
+        return steps;
+    }
+
+    vec4 rayTraceUnrealSimple(
+    const in vec3 rayOriginUV, const in float rayLen, in float depthTolerance, const in vec3 rayDirView, const in float roughness, const in float frameMod) {
+        float invNumSteps = 1.0 / float(20);
+        if (uSsrQuality > 1.0) invNumSteps /= 2.0;
+        depthTolerance *= invNumSteps;
+        vec3 rayDirUV = computeRayDirUV(rayOriginUV, rayLen, rayDirView);
+        float sampleTime = /* getStepOffset(frameMod) * invNumSteps +  */invNumSteps;
+        vec3 diffSampleW = vec3(0.0, sampleTime, 1.0);
+        vec3 sampleUV;
+        float z, depth, sampleDepth, depthDiff, timeLerp, hitTime;
+        bool hit;
+        float hitDepth = 1.0;
+        float steps;
+
+        for (int i = 0; i < 20; i++) {
+            sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
+            z = texture2D(TextureDepth, sampleUV.xy).r;
+            depth = linearizeDepth(z);
+            sampleDepth = -1.0 / sampleUV.z;
+            //z = 1时说明遇到了最远处的远视面，应该忽略这个depthDiff
+            float validSample = clamp(sign(0.95 - depth), 0.0, 1.0);
+            depthDiff = validSample * (sampleDepth - depth);
+            hit = abs(depthDiff + depthTolerance) < depthTolerance;
+            timeLerp = clamp(diffSampleW.x / (diffSampleW.x - depthDiff), 0.0, 1.0);
+            hitTime = hit ? (diffSampleW.y + timeLerp * invNumSteps - invNumSteps) : 1.0;
+            diffSampleW.z = min(diffSampleW.z, hitTime);
+            diffSampleW.x = depthDiff;
+            if (hit) {
+                float startSteps = diffSampleW.y - invNumSteps;
+                float endSteps = diffSampleW.y;
+                steps = binarySearch(rayOriginUV, rayDirUV, startSteps, endSteps);
+                steps = binarySearch(rayOriginUV, rayDirUV, startSteps, endSteps);
+                steps = binarySearch(rayOriginUV, rayDirUV, startSteps, endSteps);
+                hitDepth = steps;
+                break;
+            }
+            diffSampleW.y += invNumSteps;
+        }
+
+        // hitDepth = diffSampleW.z;
+        if (uSsrQuality > 1.0) {
+            for (int i = 0; i < 8; i++) {
+                sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
+                z = texture2D(TextureDepth, sampleUV.xy).r;
+                depth = linearizeDepth(z);
+                depthDiff = sign(1.0 - z) * (-1.0 / sampleUV.z - depth);
+                hit = abs(depthDiff + depthTolerance) < depthTolerance;
+                timeLerp = clamp(diffSampleW.x / (diffSampleW.x - depthDiff), 0.0, 1.0);
+                hitTime = hit ? (diffSampleW.y + timeLerp * invNumSteps - invNumSteps) : 1.0;
+                diffSampleW.z = min(diffSampleW.z, hitTime);
+                diffSampleW.x = depthDiff;
+                diffSampleW.y += invNumSteps;
+            }
+        }
+
+        return vec4(rayOriginUV + rayDirUV * hitDepth, 1.0 - hitDepth);
+    }
+
+    vec4 fetchColorContribution(
+    in vec4 resRay, const in float maskSsr, const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness) {
+        vec4 AB = mix(uTaaCornersCSLeft[0], uTaaCornersCSLeft[1], resRay.x);
+        resRay.xyz = vec3(mix(AB.xy, AB.zw, resRay.y), 1.0) * -1.0 / resRay.z;
+        resRay.xyz = (uReprojectViewProj * vec4(resRay.xyz, 1.0)).xyw;
+        resRay.xy /= resRay.z;
+
+        float maskEdge = clamp(6.0 - 6.0 * max(abs(resRay.x), abs(resRay.y)), 0.0, 1.0);
+        resRay.xy = 0.5 + 0.5 * resRay.xy;
+        vec3 fetchColor = specularColor * fetchColorLod(roughness * (1.0 - resRay.w), resRay.xy);
+        return vec4(mix(specularEnvironment, fetchColor, maskSsr * maskEdge), 1.0);
+    }
+
+    /**
+     * @param specularEnvironment 环境光中的specular部分
+     * @param specularColor 材质的specularColor
+    */
+    vec3 ssr(const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness, const in vec3 normal, const in vec3 eyeVector) {
+        float uFrameModTaaSS = 0.0;
+        vec4 result = vec4(0.0);
+        float rough4 = roughness * roughness;
+        rough4 = rough4 * rough4;
+        vec3 upVector = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+        vec3 tangentX = normalize(cross(upVector, normal));
+        vec3 tangentY = cross(normal, tangentX);
+        float maskSsr = uSsrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.45, 0.0, 1.0);
+        maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
+        vec3 rayOriginUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz);
+        rayOriginUV.z = 1.0 / rayOriginUV.z;
+        vec3 rayDirView = unrealImportanceSampling(uFrameModTaaSS, tangentX, tangentY, normal, eyeVector, rough4);
+
+        float rayLen = mix(uNearFar.y + vViewVertex.z, -vViewVertex.z - uNearFar.x, rayDirView.z * 0.5 + 0.5);
+        float depthTolerance = 0.5 * rayLen;
+        vec4 resRay;
+        if (dot(rayDirView, normal) > 0.001 && maskSsr > 0.0) {
+            resRay = rayTraceUnrealSimple(rayOriginUV, rayLen, depthTolerance, rayDirView, roughness, uFrameModTaaSS);
+            if (resRay.w > 0.0) result += fetchColorContribution(resRay, maskSsr, specularEnvironment, specularColor, roughness);
+        }
+        return result.w > 0.0 ? result.rgb / result.w : specularEnvironment;
+    }
+#endif
+
 const vec3 NORMAL = vec3(0., 0., 1.);
 
 uniform sampler2D texWaveNormal;
@@ -185,10 +378,28 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
         vec3 incidentLight = lightIntensity * LIGHT_NORMALIZATION * shadow;
         specular = shadingInfo.NdotL * incidentLight * specularSun;
     }
+
+    #ifdef HAS_SSR
+        vec3 viewNormal = uModelViewNormalMatrix * n;
+        vec3 ssr = ssr(specular, reflSea, roughness, viewNormal, -normalize(vViewVertex.xyz));
+        return tonemapACES(reflSky + reflSea + specular) + ssr;
+    #else
+        return tonemapACES(reflSky + reflSea + specular);
+    #endif
     //对天空色，水色和高光色进行混合
-    return tonemapACES(reflSky + reflSea + specular);
+
 }
+
 void main() {
+    #ifdef HAS_SSR
+        //人工的深度测试，如果当前片元的深度值比TextureDepth(targetFBO的深度纹理)中的小，则抛弃这个片元
+        vec2 gTexCoord = gl_FragCoord.xy / uGlobalTexSize;
+        float depth = texture2D(TextureDepthTest, gTexCoord).r;
+        if (depth == 0.0) {
+            discard;
+            return;
+        }
+    #endif
     vec3 localUp = NORMAL;
     //切线空间
     vec3 tangentNormal = getSurfaceNormal(vUv, timeElapsed / 1000.0);
@@ -205,4 +416,5 @@ void main() {
     #endif
     vec4 final = vec4(getSeaColor(n, v, l, waterColor.rgb, lightColor, localUp, shadow), waterColor.w);
     gl_FragColor = delinearizeGamma(final);
+
 }

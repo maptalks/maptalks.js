@@ -1,8 +1,9 @@
 import BasicPainter from './BasicPainter';
-import { reshader, mat4, GroundPainter } from '@maptalks/gl';
+import { reshader, mat3, mat4, GroundPainter } from '@maptalks/gl';
 import waterVert from './glsl/water.vert';
 import waterFrag from './glsl/water.frag';
 import pickingVert from './glsl/fill.picking.vert';
+import { extend } from '../Util';
 
 const DEFAULT_DIR_LIGHT = {
     color: [2.0303, 2.0280, 2.0280],
@@ -53,6 +54,20 @@ class WaterPainter extends BasicPainter {
         this.renderer.render(this._waterShader, waterUniforms, this._waterScene, this.getRenderFBO(context));
     }
 
+    addMesh(mesh, progress) {
+        this._prepareMesh(mesh, progress);
+        super.addMesh(mesh, progress);
+    }
+
+    _prepareMesh(mesh) {
+        //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
+        if (this.getSymbol().ssr) {
+            mesh.setUniform('ssr', 1);
+        } else {
+            mesh.setUniform('ssr', 0);
+        }
+    }
+
     updateSymbol(symbol) {
         super.updateSymbol(symbol);
     }
@@ -62,7 +77,31 @@ class WaterPainter extends BasicPainter {
             this.shader.dispose();
             this._createShader(context);
         }
+        const isSsr = !!context.ssr;
+        const shader = this._waterShader;
+        const fbo = this.getRenderFBO(context);
+        if (isSsr) {
+            this._water.setUniform('ssr', 1);
+            this._renderSsrDepth(context);
+            context.renderTarget.fbo = context.ssr.fbo;
+            this._waterShader = this._ssrShader;
+        } else {
+            this._water.setUniform('ssr', 0);
+        }
         super.paint(context);
+        if (isSsr) {
+            context.renderTarget.fbo = fbo;
+            this._waterShader = shader;
+        }
+    }
+
+    _renderSsrDepth(context) {
+        this.regl.clear({
+            color: [0, 0, 0, 0],
+            framebuffer: context.ssr.depthTestFbo
+        });
+        this._depthShader.filter = context.sceneFilter;
+        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.ssr.depthTestFbo);
     }
 
     init(context) {
@@ -183,6 +222,25 @@ class WaterPainter extends BasicPainter {
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
+            },
+            {
+                name: 'uModelViewNormalMatrix',
+                type: 'function',
+                fn: (context, props) => {
+                    const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    const inverted = mat4.invert(modelView, modelView);
+                    const transposed = mat4.transpose(inverted, inverted);
+                    return mat3.fromMat4([], transposed);
+                    // const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    // return mat3.fromMat4([], modelView);
+                }
+            },
+            {
+                name: 'uModelViewMatrix',
+                type: 'function',
+                fn: (context, props) => {
+                    return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                }
             }
         ];
         const defines = {
@@ -250,42 +308,73 @@ class WaterPainter extends BasicPainter {
                 }
             }
         });
+        const extraCommandProps = {
+            viewport,
+            stencil: {
+                enable: true,
+                mask: 0xFF,
+                func: {
+                    cmp: '==',
+                    ref: 0xFE,
+                    mask: 0xFF
+                },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            depth: {
+                enable: false
+            }
+        };
         this._waterShader = new reshader.MeshShader({
             vert: waterVert,
             frag: waterFrag,
             defines,
             uniforms,
-            extraCommandProps: {
-                viewport,
-                stencil: {
-                    enable: true,
-                    mask: 0xFF,
-                    func: {
-                        cmp: '==',
-                        ref: 0xFE,
-                        mask: 0xFF
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
-                },
-                depth: {
-                    enable: false
-                }
-            }
+            extraCommandProps
         });
+        if (reshader.SsrPass && !this._ssrShader) {
+            const defines1 = extend({}, defines);
+            uniforms.push(...reshader.SsrPass.getUniformDeclares());
+            extend(defines1, reshader.SsrPass.getDefines());
+            this._ssrShader = new reshader.MeshShader({
+                vert: waterVert,
+                frag: waterFrag,
+                uniforms,
+                defines: defines1,
+                extraCommandProps
+            });
+
+            this._depthShader = new reshader.pbr.StandardDepthShader({
+                extraCommandProps: {
+                    viewport,
+                    depth: {
+                        enable: true,
+                        range: this.sceneConfig.depthRange || [0, 1],
+                        func: this.sceneConfig.depthFunc || '<='
+                    }
+                }
+            });
+        }
     }
 
     needClearStencil() {
         return true;
     }
 
-    getUniformValues(map) {
-        return {
-            projViewMatrix: map.projViewMatrix
+    getUniformValues(map, context) {
+        const canvas = this.canvas;
+        const uniforms = {
+            projMatrix: map.projMatrix,
+            projViewMatrix: map.projViewMatrix,
+            viewMatrix: map.viewMatrix,
+            uGlobalTexSize: [canvas.width, canvas.height],
+            uHalton: [0, 0]
         };
+        this.setIncludeUniformValues(uniforms, context);
+        return uniforms;
     }
 
     _getWaterUniform(map, context) {
@@ -295,8 +384,17 @@ class WaterPainter extends BasicPainter {
         if (!directionalLight) {
             directionalLight = DEFAULT_DIR_LIGHT;
         }
+        const canvas = this.canvas;
         const uniforms = {
+            uProjectionMatrix: map.projMatrix,
+            projMatrix: map.projMatrix,
             projViewMatrix,
+            viewMatrix: map.viewMatrix,
+            uGlobalTexSize: [canvas.width, canvas.height],
+            uHalton: [0, 0],
+            uCameraPosition: map.cameraPosition,
+            uNearFar: [map.cameraNear, map.cameraFar],
+
             lightDirection: directionalLight.direction,
             lightColor: directionalLight.color,
             camPos: map.cameraPosition,
@@ -310,6 +408,9 @@ class WaterPainter extends BasicPainter {
             'waterColor': [0.1451, 0.2588, 0.4863, 1],
         };
         this.setIncludeUniformValues(uniforms, context);
+        if (context && context.ssr && context.ssr.renderUniforms) {
+            extend(uniforms, context.ssr.renderUniforms);
+        }
         return uniforms;
     }
 
