@@ -36,4 +36,14 @@ export default class TRS {
             vec3.copy(this.scale, scale);
         }
     }
+
+    isTRS(animMatrix) {
+        mat4.getTranslation(trans, animMatrix);
+        mat4.getRotation(rotation, animMatrix);
+        mat4.getScaling(scale, animMatrix);
+        if (!vec3.equals(trans, EMPTY_TRANS) && !quat.equals(rotation, EMPTY_ROTATION) && !vec3.equals(scale, EMPTY_SCALE)) {
+            return true;
+        }
+        return false;
+    }
 }

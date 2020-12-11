@@ -45,6 +45,7 @@ varying vec3 vPosition;
 #include <fog_render_frag>
 
 #define F4 0.309016994374947451
+#define halfDist = 0.5
 
 vec4 mod289(vec4 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -168,7 +169,7 @@ const float PI = 3.14159265359;
 
 // This is like
 float aastep (float threshold, float dist) {
-  float afwidth = fwidth(dist) * 0.5;
+  float afwidth = fwidth(dist) * halfDist;
   return smoothstep(threshold - afwidth, threshold + afwidth, dist);
 }
 
@@ -178,7 +179,7 @@ vec4 getStyledWireframe (vec3 barycentric) {
   // this will be our signed distance for the wireframe edge
   float d = min(min(barycentric.x, barycentric.y), barycentric.z);
   float noiseOff = 0.0;
-  if(noiseEnable) noiseOff += snoise(vec4(vPosition.xyz * 80.0, time * 0.5)) * 0.12;
+  if(noiseEnable) noiseOff += snoise(vec4(vPosition.xyz * 80.0, time * halfDist)) * 0.12;
   d += noiseOff;
   // for dashed rendering, we can use this to get the 0 .. 1 value of the line length
   float positionAlong = max(barycentric.x, barycentric.y);
@@ -244,7 +245,8 @@ vec4 getStyledWireframe (vec3 barycentric) {
 }
 
 void main () {
-  glFragColor = getStyledWireframe(vBarycentric) * opacity;
+  glFragColor = getStyledWireframe(vBarycentric);
+  glFragColor *= (halfDist + opacity);
   #ifdef HAS_VIEWSHED
       glFragColor = viewshed_draw(glFragColor);
   #endif

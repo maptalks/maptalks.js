@@ -82,7 +82,14 @@ export default class GLTFPack {
     _updateNodeMatrix(time, node, parentNodeMatrix) {
         const trs = node.trs;
         if (trs) {
-            trs.setMatrix(node.localMatrix);
+            gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
+            node.trs.update(animMatrix);
+            if (trs.isTRS(animMatrix)) {
+                //根据时间获取到的动画矩阵如果t、r、s都存在，需要直接赋给localMatrix
+                mat4.copy(node.localMatrix, animMatrix);
+            } else {
+                trs.setMatrix(node.localMatrix);
+            }
         }
         if (parentNodeMatrix) {
             mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.localMatrix);
@@ -95,8 +102,6 @@ export default class GLTFPack {
                 this._updateNodeMatrix(time, child, nodeMatrix);
             });
         }
-        gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
-        node.trs.update(animMatrix);
         if (node.weights) {
             for (let i = 0; i < node.weights.length; i++) {
                 node.morphWeights[i] = node.weights[i];
