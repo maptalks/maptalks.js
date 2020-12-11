@@ -84,7 +84,7 @@ void main() {
 
     if (materialParams.axis.y > 0.0) {
         vec4 color = texture2D(TextureInput, uv);
-        gl_FragColor = vec4(color.rgb * occlusion, color.a);;
+        gl_FragColor = vec4(color.rgb * occlusion, color.a);
     } else {
         gl_FragColor = vec4(occlusion, gb, 1.0);
     }
