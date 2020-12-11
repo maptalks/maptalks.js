@@ -75,23 +75,31 @@ class WaterPainter extends BasicPainter {
     paint(context) {
         if (context.states && context.states.includesChanged['shadow']) {
             this.shader.dispose();
+            this._waterShader.dispose();
             this._createShader(context);
         }
-        const isSsr = !!context.ssr;
+        const isSsr = !!context.ssr && this.getSymbol().ssr;
         const shader = this._waterShader;
         const fbo = this.getRenderFBO(context);
+        const shaderDefines = shader.shaderDefines;
         if (isSsr) {
             this._water.setUniform('ssr', 1);
-            this._renderSsrDepth(context);
-            context.renderTarget.fbo = context.ssr.fbo;
-            this._waterShader = this._ssrShader;
+            if (context.ssr.fbo) {
+                this._renderSsrDepth(context);
+                context.renderTarget.fbo = context.ssr.fbo;
+            }
+            if (context.ssr.defines) {
+                const defines = extend({}, shaderDefines, context.ssr.defines);
+                shader.shaderDefines = defines;
+            }
         } else {
             this._water.setUniform('ssr', 0);
         }
+
         super.paint(context);
         if (isSsr) {
             context.renderTarget.fbo = fbo;
-            this._waterShader = shader;
+            shader.shaderDefines = shaderDefines;
         }
     }
 
@@ -328,6 +336,7 @@ class WaterPainter extends BasicPainter {
                 enable: false
             }
         };
+        uniforms.push(...reshader.SsrPass.getUniformDeclares());
         this._waterShader = new reshader.MeshShader({
             vert: waterVert,
             frag: waterFrag,
@@ -335,29 +344,17 @@ class WaterPainter extends BasicPainter {
             uniforms,
             extraCommandProps
         });
-        if (reshader.SsrPass && !this._ssrShader) {
-            const defines1 = extend({}, defines);
-            uniforms.push(...reshader.SsrPass.getUniformDeclares());
-            extend(defines1, reshader.SsrPass.getDefines());
-            this._ssrShader = new reshader.MeshShader({
-                vert: waterVert,
-                frag: waterFrag,
-                uniforms,
-                defines: defines1,
-                extraCommandProps
-            });
-
-            this._depthShader = new reshader.pbr.StandardDepthShader({
-                extraCommandProps: {
-                    viewport,
-                    depth: {
-                        enable: true,
-                        range: this.sceneConfig.depthRange || [0, 1],
-                        func: this.sceneConfig.depthFunc || '<='
-                    }
+        //TODO 按ssr的两种组合，都进行初始化，以解决第一次拖动时的卡顿问题
+        this._depthShader = new reshader.pbr.StandardDepthShader({
+            extraCommandProps: {
+                viewport,
+                depth: {
+                    enable: true,
+                    range: this.sceneConfig.depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || '<='
                 }
-            });
-        }
+            }
+        });
     }
 
     needClearStencil() {
@@ -384,15 +381,11 @@ class WaterPainter extends BasicPainter {
         if (!directionalLight) {
             directionalLight = DEFAULT_DIR_LIGHT;
         }
-        const canvas = this.canvas;
+        const symbol = this.getSymbol();
         const uniforms = {
             uProjectionMatrix: map.projMatrix,
-            projMatrix: map.projMatrix,
             projViewMatrix,
             viewMatrix: map.viewMatrix,
-            uGlobalTexSize: [canvas.width, canvas.height],
-            uHalton: [0, 0],
-            uCameraPosition: map.cameraPosition,
             uNearFar: [map.cameraNear, map.cameraFar],
 
             lightDirection: directionalLight.direction,
@@ -403,9 +396,9 @@ class WaterPainter extends BasicPainter {
             texWavePerturbation: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
             // 'waveParams': [0.0900, 12, 0.0300, -0.5],
-            waveParams: [0.0900, 12, 0.0300, -0.5],
-            'waveDirection': [-0.1182, -0.0208],
-            'waterColor': [0.1451, 0.2588, 0.4863, 1],
+            waveParams: [0.0900, 12, symbol.waterPower || 0.0300, -0.5],
+            'waveDirection': symbol.waterDirection || [-0.1182, -0.0208],
+            'waterColor': symbol.waterColor || [0.1451, 0.2588, 0.4863, 1],
         };
         this.setIncludeUniformValues(uniforms, context);
         if (context && context.ssr && context.ssr.renderUniforms) {
@@ -417,17 +410,20 @@ class WaterPainter extends BasicPainter {
     delete() {
         super.delete();
         if (this._emptyTex) {
-            this._emptyTex.dispose();
+            this._emptyTex.destroy();
             delete this._emptyTex;
         }
         if (this._normalTex) {
-            this._normalTex.dispose();
+            this._normalTex.destroy();
         }
         if (this._pertTex) {
-            this._pertTex.dispose();
+            this._pertTex.destroy();
         }
         if (this.shader) {
             this.shader.dispose();
+        }
+        if (this._waterShader) {
+            this._waterShader.dispose();
         }
         if (this._water) {
             this._water.geometry.dispose();

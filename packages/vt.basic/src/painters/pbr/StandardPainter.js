@@ -35,18 +35,25 @@ class StandardPainter extends MeshPainter {
             delete this.shader;
             this._createShader(context);
         }
-        const isSsr = !!context.ssr;
+        const isSsr = !!context.ssr && this.getSymbol().ssr;
         this.shader = this.getShader();
         const shader = this.shader;
+        const shaderDefines = shader.shaderDefines;
         const fbo = this.getRenderFBO(context);
         if (isSsr) {
-            this._renderSsrDepth(context);
-            context.renderTarget.fbo = context.ssr.fbo;
-            this.shader = this.hasIBL() ? this._ssrShader : this._noIblSsrShader;
+            if (context.ssr.fbo) {
+                this._renderSsrDepth(context);
+                context.renderTarget.fbo = context.ssr.fbo;
+            }
+            if (context.ssr.defines) {
+                const defines = extend({}, shaderDefines, context.ssr.defines);
+                shader.shaderDefines = defines;
+            }
         }
         super.paint(context);
         if (isSsr) {
             context.renderTarget.fbo = fbo;
+            shader.shaderDefines = shaderDefines;
             this.shader = shader;
         }
         if (this.shadowCount !== undefined && hasShadow) {
@@ -109,8 +116,6 @@ class StandardPainter extends MeshPainter {
         this.material.dispose();
         if (this._depthShader) {
             this._depthShader.dispose();
-            this._ssrShader.dispose();
-            this._noIblSsrShader.dispose();
         }
         if (this._iblShader) {
             this._iblShader.dispose();
@@ -203,6 +208,7 @@ class StandardPainter extends MeshPainter {
         };
         const defines = {};
         const uniformDeclares = [];
+        uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
         this.fillIncludes(defines, uniformDeclares, context);
         const extraCommandProps = {
             cull: {
@@ -250,27 +256,9 @@ class StandardPainter extends MeshPainter {
         this._iblShader = new reshader.pbr.StandardShader(config);
         delete config.defines['HAS_IBL_LIGHTING'];
         this._noIblShader = new reshader.pbr.StandardShader(config);
-        if (reshader.SsrPass && !this._ssrShader) {
-            const defines1 = extend({}, defines);
-            uniformDeclares.push(...reshader.SsrPass.getUniformDeclares());
-            extend(defines1, reshader.SsrPass.getDefines());
-            this._getDefines(defines1);
-            this._ssrShader = new reshader.pbr.StandardShader({
-                uniforms: uniformDeclares,
-                defines: defines1,
-                extraCommandProps
-            });
-            delete defines['HAS_IBL_LIGHTING'];
-            this._noIblSsrShader = new reshader.pbr.StandardShader({
-                uniforms: uniformDeclares,
-                defines: defines1,
-                extraCommandProps
-            });
-
-            this._depthShader = new reshader.pbr.StandardDepthShader({
-                extraCommandProps
-            });
-        }
+        this._depthShader = new reshader.pbr.StandardDepthShader({
+            extraCommandProps
+        });
     }
 
     _onTextureLoad({ resources }) {

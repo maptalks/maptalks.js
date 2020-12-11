@@ -10,7 +10,9 @@ precision highp sampler2D;
 #ifdef HAS_SSR
     varying vec4 vViewVertex;
     uniform mat3 uModelViewNormalMatrix;
-    uniform sampler2D TextureDepthTest;
+    #ifdef SSR_IN_ONE_FRAME
+        uniform sampler2D TextureDepthTest;
+    #endif
     uniform sampler2D TextureDepth;
     uniform highp vec2 uGlobalTexSize;
     uniform float uSsrFactor;
@@ -23,6 +25,13 @@ precision highp sampler2D;
     uniform vec4 uTaaCornersCSLeft[2];
     uniform mat4 uReprojectViewProj;
     uniform vec2 uNearFar;
+    float decodeDepth(const in vec4 pack) {
+        // if(decodeProfile(pack) == 0) {
+        //     const vec3 decode = 1.0 / vec3(1.0, 255.0, 65025.0);
+        //     return dot(pack.rgb, decode);
+        // }
+        return pack.r + pack.g / 255.0;
+    }
     vec3 decodeRGBM(const in vec4 color, const in float range) {
         if(range <= 0.0) return color.rgb;
         return range * color.rgb * color.a;
@@ -58,8 +67,13 @@ precision highp sampler2D;
         return -projection[3].z / (z + projection[2].z);
     }
 
-    float fetchDepthLod(const vec2 uv, const in vec3 pixelSizePowLevel) {
-        return linearizeDepth(texture2D(TextureDepth, uv).r);
+    float fetchDepth(const vec2 uv) {
+        #ifdef SSR_IN_ONE_FRAME
+            float depth = texture2D(TextureDepth, uv).r;
+        #else
+            float depth = decodeDepth(texture2D(TextureDepth, uv));
+        #endif
+        return depth;
     }
 
 
@@ -92,7 +106,7 @@ precision highp sampler2D;
     float binarySearch(const in vec3 rayOriginUV, const in vec3 rayDirUV, inout float startSteps, inout float endSteps) {
         float steps = (endSteps + startSteps) * 0.5;
         vec3 sampleUV = rayOriginUV + rayDirUV * steps;
-        float z = texture2D(TextureDepth, sampleUV.xy).r;
+        float z = fetchDepth(sampleUV.xy);
         float depth = linearizeDepth(z);
         float sampleDepth = -1.0 / sampleUV.z;
         startSteps = depth > sampleDepth ? startSteps : steps;
@@ -116,7 +130,7 @@ precision highp sampler2D;
 
         for (int i = 0; i < 20; i++) {
             sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
-            z = texture2D(TextureDepth, sampleUV.xy).r;
+            z = fetchDepth(sampleUV.xy);
             depth = linearizeDepth(z);
             sampleDepth = -1.0 / sampleUV.z;
             //z = 1时说明遇到了最远处的远视面，应该忽略这个depthDiff
@@ -143,7 +157,7 @@ precision highp sampler2D;
         if (uSsrQuality > 1.0) {
             for (int i = 0; i < 8; i++) {
                 sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
-                z = texture2D(TextureDepth, sampleUV.xy).r;
+                z = fetchDepth(sampleUV.xy);
                 depth = linearizeDepth(z);
                 depthDiff = sign(1.0 - z) * (-1.0 / sampleUV.z - depth);
                 hit = abs(depthDiff + depthTolerance) < depthTolerance;
@@ -368,8 +382,9 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 
     //反射的天空颜色由菲涅耳反射乘以近似的天空颜色组成
     vec3 reflSky = fresnelReflection(shadingInfo.VdotN, vec3(fresnelSky[0]), fresnelSky[1]) * skyColor * shadowModifier;
+    vec3 seaColor = seaWaterColor * mix(skyColor, upDotL * lightIntensity * LIGHT_NORMALIZATION, 2.0 / 3.0);
     //计算水的颜色.
-    vec3 reflSea = seaWaterColor * mix(skyColor, upDotL * lightIntensity * LIGHT_NORMALIZATION, 2.0 / 3.0) * shadowModifier;
+    vec3 reflSea = seaColor * shadowModifier;
     vec3 specular = vec3(0.0);
     if(upDotV > 0.0 && upDotL > 0.0) {
         // 计算 BRDF 并简化环境光遮罩
@@ -381,8 +396,8 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 
     #ifdef HAS_SSR
         vec3 viewNormal = uModelViewNormalMatrix * n;
-        vec3 ssr = ssr(specular, reflSea, roughness, viewNormal, -normalize(vViewVertex.xyz));
-        return tonemapACES(reflSky + reflSea + specular) + ssr;
+        vec3 ssr = ssr(seaColor, specular, roughness, viewNormal, -normalize(vViewVertex.xyz));
+        return tonemapACES(reflSky + reflSea + ssr);
     #else
         return tonemapACES(reflSky + reflSea + specular);
     #endif
@@ -391,7 +406,7 @@ vec3 getSeaColor(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 }
 
 void main() {
-    #ifdef HAS_SSR
+    #if defined(HAS_SSR) && defined(SSR_IN_ONE_FRAME)
         //人工的深度测试，如果当前片元的深度值比TextureDepth(targetFBO的深度纹理)中的小，则抛弃这个片元
         vec2 gTexCoord = gl_FragCoord.xy / uGlobalTexSize;
         float depth = texture2D(TextureDepthTest, gTexCoord).r;
@@ -416,5 +431,4 @@ void main() {
     #endif
     vec4 final = vec4(getSeaColor(n, v, l, waterColor.rgb, lightColor, localUp, shadow), waterColor.w);
     gl_FragColor = delinearizeGamma(final);
-
 }
