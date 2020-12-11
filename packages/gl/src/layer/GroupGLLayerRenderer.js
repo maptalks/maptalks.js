@@ -560,13 +560,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     isSSROn() {
         const enable = this.isEnableSSR();
-        if (!enable) {
-            return false;
-        }
         const map = this.getMap();
+        if (!enable || map.getPitch() <= MIN_SSR_PITCH) {
+            return 0;
+        }
         const projViewMat = map.projViewMatrix;
         const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
-        return (map.getPitch() > MIN_SSR_PITCH) ? (prevSsrMat && mat4.equals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME) : 0;
+        return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
     }
 
     isEnableTAA() {
