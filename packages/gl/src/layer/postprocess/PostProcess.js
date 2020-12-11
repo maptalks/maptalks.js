@@ -1,5 +1,5 @@
 import * as reshader from '@maptalks/reshader.gl';
-import { vec2, mat4 } from 'gl-matrix';
+import { vec2 } from 'gl-matrix';
 
 const RESOLUTION = [];
 const bloomFilter = m => m.getUniform('bloom');
@@ -92,19 +92,20 @@ export default class PostProcess {
         return fGL.getDrawCalls();
     }
 
-    genSsrMipmap(tex) {
-        if (!this._ssrPass || !this._ssrPainted) {
+    genSsrMipmap(tex, depthTex) {
+        if (!this._ssrPass/* || !this._ssrPainted*/) {
             return;
         }
-        this._ssrPass.genMipMap(tex);
-        if (!this._ssrFBO._projViewMatrix) {
-            this._ssrFBO._projViewMatrix = [];
-        }
-        mat4.copy(this._ssrFBO._projViewMatrix, this._layer.getMap().projViewMatrix);
+        const projViewMatrix = this._layer.getMap().projViewMatrix;
+        this._ssrPass.genMipMap(tex, depthTex, projViewMatrix);
+    }
+
+    getPrevSsrProjViewMatrix() {
+        return this._ssrPass && this._ssrPass.getPrevProjViewMatrix();
     }
 
     ssr(currentTex) {
-        if (!this._ssrFBO || !this._ssrPainted) {
+        if (!this._ssrFBO) {
             return currentTex;
         }
         //合并ssr和原fbo中的像素
@@ -119,16 +120,13 @@ export default class PostProcess {
         const timestamp = layerRenderer.getFrameTime();
         const event = layerRenderer.getFrameEvent();
         const context = layerRenderer.getFrameContext();
-        if (!this._ssrPass) {
-            this._ssrPass = new reshader.SsrPass(regl);
-        }
         let ssrFBO = this._ssrFBO;
         let ssrDepthTestFBO = this._ssrDepthTestFBO;
         if (!ssrFBO) {
             const info = this._createFBOInfo();
             ssrFBO = this._ssrFBO = regl.framebuffer(info);
             // 把 rgba4 改成 rgba 后，spector.js里的预览图才会正常显示
-            const depthTestInfo = this._createFBOInfo(depthTex, 'rgba4');
+            const depthTestInfo = this._createFBOInfo(depthTex, 'rgba');
             ssrDepthTestFBO = this._ssrDepthTestFBO = regl.framebuffer(depthTestInfo);
         } else {
             const { width, height } = layerRenderer.canvas;
@@ -138,13 +136,13 @@ export default class PostProcess {
             if (ssrDepthTestFBO.width !== width || ssrDepthTestFBO.height !== height) {
                 ssrDepthTestFBO.resize(width, height);
             }
-            regl.clear({
-                color: [0, 0, 0, 0],
-                depth: 1,
-                framebuffer: ssrFBO
-            });
         }
-        context.ssr = this._prepareSSRContext(depthTex);
+        regl.clear({
+            color: [0, 0, 0, 0],
+            depth: 1,
+            framebuffer: ssrFBO
+        });
+        context.ssr = this.getSSRContext(depthTex);
         const renderMode = context.renderMode;
         const filter = context['sceneFilter'];
         context.renderMode = 'default';
@@ -181,31 +179,38 @@ export default class PostProcess {
         return groundPainted;
     }
 
-    _prepareSSRContext(depthTex) {
+    getSSRUniforms() {
         const sceneConfig =  this._layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const map = this._layer.getMap();
-        const texture = this._ssrPass.getMipmapTexture();
+        return this._ssrPass.getSSRUniforms(map, config.ssr.factor, config.ssr.quality);
+    }
+
+    getSSRContext(depthTex) {
+        if (!this._ssrPass) {
+            this._ssrPass = new reshader.SsrPass(this._regl);
+        }
+        const sceneConfig =  this._layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        const map = this._layer.getMap();
         const ssrFBO = this._ssrFBO;
         const ssrDepthTestFBO = this._ssrDepthTestFBO;
-        return {
-            renderUniforms: {
-                'TextureDepthTest': this._ssrDepthTestFBO.color[0],
-                'TextureDepth': depthTex,
-                // 'TextureSource': currentTex,
-                'TextureToBeRefracted': texture,
-                'uSsrFactor': config.ssr.factor || 1,
-                'uSsrQuality': config.ssr.quality || 2,
-                'uPreviousGlobalTexSize': [texture.width, texture.height / 2],
-                'uGlobalTexSize': [depthTex.width, depthTex.height],
-                'uTextureToBeRefractedSize': [texture.width, texture.height],
-                'fov': map.getFov() * Math.PI / 180,
-                'prevProjViewMatrix': ssrFBO._projViewMatrix || map.projViewMatrix,
-                'cameraWorldMatrix': map.cameraWorldMatrix
-            },
-            fbo: ssrFBO,
-            depthTestFbo: ssrDepthTestFBO
+        const uniforms = this._ssrPass.getSSRUniforms(map, config.ssr.factor, config.ssr.quality, depthTex, depthTex && ssrDepthTestFBO && ssrDepthTestFBO.color[0]);
+        if (!uniforms) {
+            return null;
+        }
+        const context = {
+            renderUniforms: uniforms,
+            defines: {
+                'HAS_SSR': 1
+            }
         };
+        if (depthTex) {
+            context.fbo = ssrFBO;
+            context.depthTestFbo = ssrDepthTestFBO;
+            context.defines['SSR_IN_ONE_FRAME'] = 1;
+        }
+        return context;
     }
 
     taa(curTex, depthTex, {

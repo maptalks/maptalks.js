@@ -7,6 +7,7 @@ import { extend, getGroundTransform } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
+const EMPTY_COLOR = [0, 0, 0, 0];
 
 class GroundPainter {
     static getGroundTransform(out, map) {
@@ -49,6 +50,13 @@ class GroundPainter {
         if (this._ground.material !== this.material) {
             this._ground.setMaterial(this.material);
         }
+        const groundConfig = this._layer.getGroundConfig();
+        const symbol = groundConfig && groundConfig.symbol;
+        if (symbol.ssr) {
+            this._ground.setUniform('ssr', 1);
+        } else {
+            this._ground.setUniform('ssr', 0);
+        }
         this._transformGround();
         const uniforms = this._getUniformValues(context);
         uniforms['offsetFactor'] = context.offsetFactor;
@@ -62,28 +70,44 @@ class GroundPainter {
         }
         const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
         let updated = false;
-        if (isSSR && defines && defines['HAS_SSR']) {
+        shader.filter = context.sceneFilter;
+        this._depthShader.filter = context.sceneFilter;
+        if (isSSR && symbol.ssr) {
             if (context && context.ssr) {
-                //清空depthTestFbo的颜色缓冲
-                this._regl.clear({
-                    color: [0, 0, 0, 0],
-                    framebuffer: context.ssr.depthTestFbo
-                });
-                const depthUniforms = {
-                    'uGlobalTexSize': uniforms['uGlobalTexSize'],
-                    'uHalton': uniforms['uHalton'],
-                    'lineWidth': uniforms['lineWidth'],
-                    'lineHeight': uniforms['lineHeight'],
-                    'linePixelScale': uniforms['linePixelScale'],
-                    'projMatrix': this.getMap().projMatrix,
-                    'viewMatrix': this.getMap().viewMatrix
-                };
-                this.renderer.render(this._depthShader, depthUniforms, this._groundScene, context.ssr.depthTestFbo);
-                const ssrFbo = context && context.ssr.fbo;
-                this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
-                updated = true;
+                const shaderDefines = shader.shaderDefines;
+                if (context.ssr.defines) {
+                    const defines = extend({}, shaderDefines, context.ssr.defines);
+                    shader.shaderDefines = defines;
+                }
+                if (context.ssr.fbo) {
+                    //清空depthTestFbo的颜色缓冲
+                    this._regl.clear({
+                        color: EMPTY_COLOR,
+                        framebuffer: context.ssr.depthTestFbo
+                    });
+                    const depthUniforms = {
+                        'uGlobalTexSize': uniforms['uGlobalTexSize'],
+                        'uHalton': uniforms['uHalton'],
+                        'lineWidth': uniforms['lineWidth'],
+                        'lineHeight': uniforms['lineHeight'],
+                        'linePixelScale': uniforms['linePixelScale'],
+                        'projMatrix': this.getMap().projMatrix,
+                        'viewMatrix': this.getMap().viewMatrix
+                    };
+                    this.renderer.render(this._depthShader, depthUniforms, this._groundScene, context.ssr.depthTestFbo);
+                    const ssrFbo = context && context.ssr.fbo;
+
+                    this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
+
+                } else {
+                    this.renderer.render(shader, uniforms, this._groundScene, fbo);
+                }
+                shader.shaderDefines = shaderDefines;
+            } else {
+                this.renderer.render(shader, uniforms, this._groundScene, fbo);
             }
-        } else if (!context || !context.ssr) {
+            updated = true;
+        } else {
             //context中有ssr时，说明是drawSSR阶段，此时什么都不用绘制
             this.renderer.render(shader, uniforms, this._groundScene, fbo);
             updated = true;
@@ -375,7 +399,7 @@ class GroundPainter {
         }
         const defines = this._defines;
         const sceneConfig = this._layer._getSceneConfig && this._layer._getSceneConfig();
-        const groundConfig = this._layer.getGroundConfig();
+        // const groundConfig = this._layer.getGroundConfig();
 
         function update(has, name) {
             if (has) {
@@ -387,8 +411,8 @@ class GroundPainter {
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
-        const hasSSR = context && context.ssr && groundConfig && groundConfig.symbol && groundConfig.symbol.ssr;
-        update(hasSSR, 'HAS_SSR');
+        // const hasSSR = context && context.ssr && groundConfig && groundConfig.symbol && groundConfig.symbol.ssr;
+        // update(hasSSR, 'HAS_SSR');
         const hasShadow = context && sceneConfig && sceneConfig.shadow && sceneConfig.shadow.enable;
         update(hasShadow, 'HAS_SHADOWING');
         update(hasShadow, 'USE_ESM');

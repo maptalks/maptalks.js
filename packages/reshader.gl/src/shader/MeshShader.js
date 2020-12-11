@@ -69,7 +69,8 @@ class MeshShader extends Shader {
     }
 
     getMeshCommand(regl, mesh) {
-        const dKey = mesh.getCommandKey(regl);
+        const key = this._dkey || '';
+        const dKey = key + '_' + mesh.getCommandKey(regl);
         let command = this.commands[dKey];
         if (!command) {
             const defines = mesh.getDefines();

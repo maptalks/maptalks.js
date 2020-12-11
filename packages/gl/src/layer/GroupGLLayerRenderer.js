@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -14,6 +14,9 @@ const NO_JITTER = [0, 0];
 const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
+
+const SSR_STATIC = 1;
+const SSR_IN_ONE_FRAME = 2;
 
 class Renderer extends maptalks.renderer.CanvasRenderer {
 
@@ -82,9 +85,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._renderInMode('default', null, methodName, args);
             return null;
         }
-        if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
-        }
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -116,15 +116,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             delete this._taaFBO;
         }
         drawContext.jitter = NO_JITTER;
-        if (this._postProcessor && this.isSSROn()) {
+
+        const ssrMode = this.isSSROn();
+        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
             this._postProcessor.drawSSR(this._depthTex);
         }
 
-        let tex = /*this._taaFBO ? this._taaFBO.color[0] : */this._targetFBO.color[0];
+        let tex = /*this._taaFBO ? this._taaFBO.color[0] :*/ this._targetFBO.color[0];
 
         //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        const enableSSR = this.isSSROn();
-        if (enableSSR) {
+        if (ssrMode === SSR_IN_ONE_FRAME) {
             tex = this._postProcessor.ssr(tex);
         }
 
@@ -562,12 +563,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!enable) {
             return false;
         }
-        if (!this._ssrpainted) {
-            this._ssrpainted = true;
-            return true;
-        }
         const map = this.getMap();
-        return map.getPitch() > MIN_SSR_PITCH;
+        const projViewMat = map.projViewMatrix;
+        const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
+        return (map.getPitch() > MIN_SSR_PITCH) ? (prevSsrMat && mat4.equals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME) : 0;
     }
 
     isEnableTAA() {
@@ -663,6 +662,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             jitGetter.setRatio(ratio);
         }
 
+        if (!this._postProcessor) {
+            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
+        }
+
+        const ssrMode = this.isSSROn();
         let renderTarget;
         if (!config || !config.enable) {
             this._destroyFramebuffers();
@@ -690,16 +694,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             context['jitter'] = this._jitter;
             const enableBloom = config.bloom && config.bloom.enable;
-            const enableSsr = this.isSSROn();
-            if (enableBloom && enableSsr) {
+            if (enableBloom && ssrMode === SSR_IN_ONE_FRAME) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noPostFilter;
             } else if (enableBloom) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
-            } else if (enableSsr) {
+            } else if (ssrMode === SSR_IN_ONE_FRAME) {
                 context['sceneFilter'] = noSsrFilter;
             }
+
             renderTarget = this._getFramebufferTarget();
             if (renderTarget) {
                 context.renderTarget = renderTarget;
@@ -721,6 +725,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         context.states.includesChanged = this._includesState;
         if (config && config.enable && this._postProcessor) {
             this._postProcessor.setContextIncludes(context);
+        }
+        if (ssrMode === SSR_STATIC) {
+            const ssr = this._postProcessor.getSSRContext();
+            if (ssr) {
+                context.ssr = ssr;
+            }
         }
         return context;
     }
@@ -969,7 +979,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableSSR = this.isSSROn();
         if (enableSSR) {
             //TODO tex不包含fxaa texture，ssr中可能是错误的
-            this._postProcessor.genSsrMipmap(tex);
+            this._postProcessor.genSsrMipmap(taaTex || tex, this._depthTex);
         }
     }
 }
