@@ -174,6 +174,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             timestamp = args[1];
         }
         if (timestamp !== this._contextFrameTime) {
+            this.forEachRenderer((renderer, layer) => {
+                if (!layer.isVisible()) {
+                    return;
+                }
+                if (renderer.needRetireFrames && renderer.needRetireFrames()) {
+                    this.setRetireFrames();
+                }
+            });
             this._drawContext = this._prepareDrawContext();
             this._contextFrameTime = timestamp;
             this._frameEvent = isNumber(args[0]) ? null : args[0];
@@ -674,16 +682,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const hasJitter = this.isEnableTAA();
             if (hasJitter) {
                 const map = this.getMap();
-                if (this._rendereMode === 'taa') {
-                    this.forEachRenderer((renderer, layer) => {
-                        if (!layer.isVisible()) {
-                            return;
-                        }
-                        if (renderer.needRetireFrames && renderer.needRetireFrames()) {
-                            this.setRetireFrames();
-                        }
-                    });
-                }
                 if (map.isInteracting() || this._needRetireFrames) {
                     jitGetter.reset();
                 }
