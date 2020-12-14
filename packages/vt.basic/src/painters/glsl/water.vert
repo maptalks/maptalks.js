@@ -20,8 +20,9 @@ varying mat3 vTbnMatrix;
 
 mat3 getTBNMatrix(in vec3 n) {
     vec3 t = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
-    vec3 b = normalize(cross(n, t));
-    return mat3(t, b, n);
+    //变量名直接用b时，会造成混淆错误
+    vec3 bi = normalize(cross(n, t));
+    return mat3(t, bi, n);
 }
 
 #if defined(HAS_SHADOWING)
