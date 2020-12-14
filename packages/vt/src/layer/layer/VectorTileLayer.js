@@ -128,6 +128,8 @@ class VectorTileLayer extends maptalks.TileLayer {
         style = style || [];
         if (Array.isArray(style)) {
             style = { style };
+        } else if (style.renderPlugin) {
+            style = { style: style };
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
