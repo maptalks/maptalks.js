@@ -3,6 +3,7 @@ import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes, interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import { extend, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
+const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -686,6 +687,69 @@ class Painter {
                 }
             }
         });
+    }
+
+    hasIBL() {
+        const lightManager = this.getMap().getLightManager();
+        const resource = lightManager.getAmbientResource();
+        return !!resource;
+    }
+
+    updateIBLDefines(shader) {
+        const shaderDefines = shader.shaderDefines;
+        let updated = false;
+        if (this.hasIBL()) {
+            if (!shaderDefines[['HAS_IBL_LIGHTING']]) {
+                shaderDefines['HAS_IBL_LIGHTING'] = 1;
+                updated = true;
+            }
+        } else if (shaderDefines[['HAS_IBL_LIGHTING']]) {
+            delete shaderDefines['HAS_IBL_LIGHTING'];
+            updated = true;
+        }
+        if (updated) {
+            shader.shaderDefines = shaderDefines;
+        }
+    }
+
+    createIBLTextures() {
+        const canvas = this.layer.getRenderer().canvas;
+        if (!canvas.iblTexes) {
+            canvas.iblTexes = createIBLTextures(this.regl, this.getMap());
+            canvas.iblTexes.count = 0;
+            canvas.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
+        }
+        this.dfgLUT = canvas.dfgLUT;
+        this.iblTexes = canvas.iblTexes;
+        canvas.iblTexes.count++;
+        this.setToRedraw(true);
+    }
+
+    disposeIBLTextures() {
+        const canvas = this.layer.getRenderer().canvas;
+        if (canvas.iblTexes) {
+            canvas.iblTexes.count--;
+            if (canvas.iblTexes.count <= 0) {
+                disposeIBLTextures(canvas.iblTexes);
+                canvas.dfgLUT.destroy();
+                delete canvas.iblTexes;
+            }
+        }
+    }
+
+    onUpdatelights(param) {
+        if (param.ambientUpdate) {
+            delete this.iblTexes;
+            const canvas = this.layer.getRenderer().canvas;
+            const iblTexes = canvas.iblTexes;
+            if (iblTexes && iblTexes.event !== param) {
+                disposeIBLTextures(iblTexes);
+                delete canvas.iblTexes;
+                this.createIBLTextures();
+                canvas.iblTexes.event = param;
+            }
+        }
+        this.setToRedraw(true);
     }
 }
 

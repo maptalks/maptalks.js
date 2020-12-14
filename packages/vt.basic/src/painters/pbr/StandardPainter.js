@@ -2,7 +2,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { extend } from '../../Util';
 import MeshPainter from '../MeshPainter';
 
-const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
+const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
 const EMPTY_ARRAY = [];
 
@@ -30,14 +30,13 @@ class StandardPainter extends MeshPainter {
     paint(context) {
         const hasShadow = !!context.shadow;
         if (context.states && context.states.includesChanged) {
-            this._iblShader.dispose();
-            this._noIblShader.dispose();
+            this.shader.dispose();
             delete this.shader;
             this._createShader(context);
         }
         const isSsr = !!context.ssr && this.getSymbol().ssr;
-        this.shader = this.getShader();
         const shader = this.shader;
+        this.updateIBLDefines(shader);
         const shaderDefines = shader.shaderDefines;
         const fbo = this.getRenderFBO(context);
         if (isSsr) {
@@ -65,15 +64,6 @@ class StandardPainter extends MeshPainter {
         delete this.shadowCount;
     }
 
-    getShader() {
-        return this.hasIBL() ? this._iblShader : this._noIblShader;
-    }
-
-    hasIBL() {
-        const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
-        return !!resource;
-    }
 
     _renderSsrDepth(context) {
         this.regl.clear({
@@ -106,22 +96,16 @@ class StandardPainter extends MeshPainter {
 
 
     delete() {
-        this.getMap().off('updatelights', this._updateLights, this);
+        this.getMap().off('updatelights', this.onUpdateLights, this);
         super.delete();
-        if (this._dfgLUT) {
-            this._dfgLUT.destroy();
-            delete this._dfgLUT;
-        }
-        this._disposeIblTextures();
+        this.disposeIBLTextures();
         this.material.dispose();
         if (this._depthShader) {
             this._depthShader.dispose();
         }
-        if (this._iblShader) {
-            this._iblShader.dispose();
-        }
-        if (this._noIblShader) {
-            this._noIblShader.dispose();
+        if (this.shader) {
+            this.shader.dispose();
+            delete this.shader;
         }
     }
 
@@ -133,7 +117,7 @@ class StandardPainter extends MeshPainter {
     }
 
     init(context) {
-        this.getMap().on('updatelights', this._updateLights, this);
+        this.getMap().on('updatelights', this.onUpdateLights, this);
         //保存context，updateSceneConfig时读取
         this._context = this._context || context;
         this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
@@ -185,14 +169,6 @@ class StandardPainter extends MeshPainter {
         };
         this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
 
-    }
-
-    _updateLights(param) {
-        if (param.ambientUpdate) {
-            this._disposeIblTextures();
-            this._iblTexes = createIBLTextures(this.regl, this.getMap());
-        }
-        this.setToRedraw();
     }
 
     _createShader(context) {
@@ -253,9 +229,7 @@ class StandardPainter extends MeshPainter {
             extraCommandProps
         };
 
-        this._iblShader = new reshader.pbr.StandardShader(config);
-        delete config.defines['HAS_IBL_LIGHTING'];
-        this._noIblShader = new reshader.pbr.StandardShader(config);
+        this.shader = new reshader.pbr.StandardShader(config);
         this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
@@ -351,11 +325,15 @@ class StandardPainter extends MeshPainter {
         }
     }
 
+    getShader() {
+        return this.shader;
+    }
+
     getUniformValues(map, context) {
-        if (!this._iblTexes) {
-            this._iblTexes = createIBLTextures(this.regl, map);
+        if (!this.iblTexes) {
+            this.createIBLTextures();
         }
-        const uniforms = getPBRUniforms(map, this._iblTexes, this._dfgLUT, context);
+        const uniforms = getPBRUniforms(map, this.iblTexes, this.dfgLUT, context);
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
@@ -363,14 +341,6 @@ class StandardPainter extends MeshPainter {
     _getDefines(defines) {
         defines['HAS_IBL_LIGHTING'] = 1;
         return defines;
-    }
-
-    _disposeIblTextures() {
-        if (!this._iblTexes) {
-            return;
-        }
-        disposeIBLTextures(this._iblTexes);
-        delete this._iblTexes;
     }
 }
 

@@ -73,13 +73,14 @@ class WaterPainter extends BasicPainter {
     }
 
     paint(context) {
-        if (context.states && context.states.includesChanged['shadow']) {
+        if (context.states && context.states.includesChanged) {
             this.shader.dispose();
             this._waterShader.dispose();
             this._createShader(context);
         }
         const isSsr = !!context.ssr && this.getSymbol().ssr;
         const shader = this._waterShader;
+        this.updateIBLDefines(shader);
         const fbo = this.getRenderFBO(context);
         const shaderDefines = shader.shaderDefines;
         if (isSsr) {
@@ -113,6 +114,7 @@ class WaterPainter extends BasicPainter {
     }
 
     init(context) {
+        this.getMap().on('updatelights', this.onUpdateLights, this);
         const regl = this.regl;
 
 
@@ -176,7 +178,6 @@ class WaterPainter extends BasicPainter {
             this.addCachedTexture(normalUrl, img);
             img.src = normalUrl;
         }
-
 
         const pertUrl = symbol['texWavePerturbation'];
         const cachedPertData = this.getCachedTexture(pertUrl);
@@ -295,7 +296,7 @@ class WaterPainter extends BasicPainter {
                     enable: true,
                     mask: 0xFF,
                     func: {
-                        cmp: 'always',
+                        cmp: '<=',
                         ref: 0xFE,
                         mask: 0xFF
                     },
@@ -375,30 +376,38 @@ class WaterPainter extends BasicPainter {
     }
 
     _getWaterUniform(map, context) {
+        if (!this.iblTexes) {
+            this.createIBLTextures();
+        }
         const projViewMatrix = map.projViewMatrix;
         const lightManager = map.getLightManager();
         let directionalLight = lightManager && lightManager.getDirectionalLight();
-        if (!directionalLight) {
-            directionalLight = DEFAULT_DIR_LIGHT;
-        }
+        const ambientLight = lightManager && lightManager.getAmbientLight();
         const symbol = this.getSymbol();
         const uniforms = {
+            hdrHsv: ambientLight && ambientLight.hsv || [0, 0, 0],
+            specularPBR: this.iblTexes.prefilterMap,
+            rgbmRange: this.iblTexes.rgbmRange,
+            ambientColor: ambientLight && ambientLight.color || [0.2, 0.2, 0.2],
+            // uniform vec3 diffuseSPH[9];
+
             uProjectionMatrix: map.projMatrix,
             projViewMatrix,
             viewMatrix: map.viewMatrix,
             uNearFar: [map.cameraNear, map.cameraFar],
 
-            lightDirection: directionalLight.direction,
-            lightColor: directionalLight.color,
+            lightDirection: directionalLight && directionalLight.direction || DEFAULT_DIR_LIGHT,
+            lightColor: directionalLight.color || [1, 1, 1],
             camPos: map.cameraPosition,
             timeElapsed: this.layer.getRenderer().getFrameTimestamp() / 2 || 0,
-            texWaveNormal: this._normalTex || this._emptyTex,
-            texWavePerturbation: this._pertTex || this._emptyTex,
+            normalTexture: this._normalTex || this._emptyTex,
+            heightTexture: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
             // 'waveParams': [0.0900, 12, 0.0300, -0.5],
-            waveParams: [0.0900, 12, symbol.waterPower || 0.0300, -0.5],
-            'waveDirection': symbol.waterDirection || [-0.1182, -0.0208],
-            'waterColor': symbol.waterColor || [0.1451, 0.2588, 0.4863, 1],
+            // waveParams: [0.09, 12, 0.03, -0.5],
+            //getWaterDirVector(symbol.waterDirection || [-0.1182, -0.0208]),
+            waterDir: [-0.1182, -0.0208],
+            waterBaseColor: symbol.waterBaseColor || [0.1451, 0.2588, 0.4863, 1],
         };
         this.setIncludeUniformValues(uniforms, context);
         if (context && context.ssr && context.ssr.renderUniforms) {
@@ -408,6 +417,7 @@ class WaterPainter extends BasicPainter {
     }
 
     delete() {
+        this.getMap().off('updatelights', this.onUpdateLights, this);
         super.delete();
         if (this._emptyTex) {
             this._emptyTex.destroy();
@@ -433,6 +443,7 @@ class WaterPainter extends BasicPainter {
             this._water.dispose();
             delete this._water;
         }
+        this.disposeIBLTextures();
     }
 
     createGround() {
@@ -477,3 +488,7 @@ class WaterPainter extends BasicPainter {
 }
 
 export default WaterPainter;
+
+function getWaterDirVector(dir) {
+
+}
