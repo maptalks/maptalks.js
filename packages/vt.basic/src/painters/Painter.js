@@ -714,24 +714,40 @@ class Painter {
 
     createIBLTextures() {
         const canvas = this.layer.getRenderer().canvas;
+        if (!canvas.dfgLUT) {
+            canvas.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
+            canvas.dfgLUT.mtkCount = 0;
+        }
+        if (this.dfgLUT !== canvas.dfgLUT) {
+            canvas.dfgLUT.mtkCount++;
+            this.dfgLUT = canvas.dfgLUT;
+        }
+        if (!this.hasIBL()) {
+            return;
+        }
         if (!canvas.iblTexes) {
             canvas.iblTexes = createIBLTextures(this.regl, this.getMap());
-            canvas.iblTexes.count = 0;
-            canvas.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
+            canvas.iblTexes.mtkCount = 0;
         }
-        this.dfgLUT = canvas.dfgLUT;
         this.iblTexes = canvas.iblTexes;
-        canvas.iblTexes.count++;
+        canvas.iblTexes.mtkCount++;
         this.setToRedraw(true);
     }
 
     disposeIBLTextures() {
         const canvas = this.layer.getRenderer().canvas;
-        if (canvas.iblTexes) {
-            canvas.iblTexes.count--;
-            if (canvas.iblTexes.count <= 0) {
-                disposeIBLTextures(canvas.iblTexes);
+        if (this.dfgLUT && this.dfgLUT === canvas.dfgLUT) {
+            canvas.dfgLUT.mtkCount--;
+            if (canvas.dfgLUT.mtkCount <= 0) {
                 canvas.dfgLUT.destroy();
+                delete canvas.dfgLUT;
+            }
+        }
+        delete this.dfgLUT;
+        if (this.iblTexes && this.iblTexes === canvas.iblTexes) {
+            canvas.iblTexes.mtkCount--;
+            if (canvas.iblTexes.mtkCount <= 0) {
+                disposeIBLTextures(canvas.iblTexes);
                 delete canvas.iblTexes;
             }
         }
@@ -742,11 +758,13 @@ class Painter {
             delete this.iblTexes;
             const canvas = this.layer.getRenderer().canvas;
             const iblTexes = canvas.iblTexes;
-            if (iblTexes && iblTexes.event !== param) {
+            if (iblTexes && this.iblTexes === canvas.iblTexes && iblTexes.event !== param) {
                 disposeIBLTextures(iblTexes);
                 delete canvas.iblTexes;
                 this.createIBLTextures();
-                canvas.iblTexes.event = param;
+                if (canvas.iblTexes) {
+                    canvas.iblTexes.event = param;
+                }
             }
         }
         this.setToRedraw(true);

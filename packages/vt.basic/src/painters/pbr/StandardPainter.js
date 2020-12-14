@@ -120,7 +120,6 @@ class StandardPainter extends MeshPainter {
         this.getMap().on('updatelights', this.onUpdateLights, this);
         //保存context，updateSceneConfig时读取
         this._context = this._context || context;
-        this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
         const regl = this.regl;
         this.renderer = new reshader.Renderer(regl);
 
