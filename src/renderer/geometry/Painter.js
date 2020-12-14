@@ -547,7 +547,8 @@ class Painter extends Class {
             tolerance = 0.5;
         }
         if (!testCanvas) {
-            testCanvas = Canvas.createCanvas(1, 1);
+            const canvasClass = this.getMap() ? this.getMap().CanvasClass : null;
+            testCanvas = Canvas.createCanvas(1, 1, canvasClass);
         }
         Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
