@@ -125,7 +125,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         let tex = /*this._taaFBO ? this._taaFBO.color[0] :*/ this._targetFBO.color[0];
 
         //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        if (ssrMode === SSR_IN_ONE_FRAME) {
+        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
             tex = this._postProcessor.ssr(tex);
         }
 

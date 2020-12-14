@@ -123,7 +123,7 @@ class GroundPainter {
         if (!enableSSR) {
             return false;
         }
-        return !!(context && context.ssr);
+        return !!(context && context.ssr && context.ssr.fbo);
     }
 
     update() {
