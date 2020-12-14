@@ -384,6 +384,7 @@ class WaterPainter extends BasicPainter {
         let directionalLight = lightManager && lightManager.getDirectionalLight();
         const ambientLight = lightManager && lightManager.getAmbientLight();
         const symbol = this.getSymbol();
+        const waterDir = this._waterDir = this._waterDir || [];
         const uniforms = {
             hdrHsv: ambientLight && ambientLight.hsv || [0, 0, 0],
             specularPBR: this.iblTexes.prefilterMap,
@@ -404,9 +405,7 @@ class WaterPainter extends BasicPainter {
             heightTexture: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
             // 'waveParams': [0.0900, 12, 0.0300, -0.5],
-            // waveParams: [0.09, 12, 0.03, -0.5],
-            //getWaterDirVector(symbol.waterDirection || [-0.1182, -0.0208]),
-            waterDir: [-0.1182, -0.0208],
+            waterDir: getWaterDirVector(waterDir, symbol.waterDirection || 90),
             waterBaseColor: symbol.waterBaseColor || [0.1451, 0.2588, 0.4863, 1],
         };
         this.setIncludeUniformValues(uniforms, context);
@@ -489,6 +488,13 @@ class WaterPainter extends BasicPainter {
 
 export default WaterPainter;
 
-function getWaterDirVector(dir) {
+function toRadian(v) {
+    return Math.PI * v / 180;
+}
 
+function getWaterDirVector(out, dir) {
+    dir = toRadian(dir);
+    out[0] = Math.sin(dir);
+    out[1] = Math.cos(dir);
+    return out;
 }
