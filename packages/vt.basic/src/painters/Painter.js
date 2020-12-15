@@ -732,6 +732,7 @@ class Painter {
         this.iblTexes = canvas.iblTexes;
         canvas.iblTexes.mtkCount++;
         this.setToRedraw(true);
+        this.layer.fire('iblupdated');
     }
 
     disposeIBLTextures() {
@@ -755,10 +756,11 @@ class Painter {
 
     onUpdatelights(param) {
         if (param.ambientUpdate) {
-            delete this.iblTexes;
             const canvas = this.layer.getRenderer().canvas;
             const iblTexes = canvas.iblTexes;
-            if (iblTexes && this.iblTexes === canvas.iblTexes && iblTexes.event !== param) {
+            const myIblTexes = this.iblTexes;
+            delete this.iblTexes;
+            if (iblTexes && myIblTexes === canvas.iblTexes && iblTexes.event !== param) {
                 disposeIBLTextures(iblTexes);
                 delete canvas.iblTexes;
                 this.createIBLTextures();

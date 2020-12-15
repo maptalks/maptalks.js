@@ -114,7 +114,7 @@ class WaterPainter extends BasicPainter {
     }
 
     init(context) {
-        this.getMap().on('updatelights', this.onUpdateLights, this);
+        this.getMap().on('updatelights', this.onUpdatelights, this);
         const regl = this.regl;
 
 
@@ -416,7 +416,7 @@ class WaterPainter extends BasicPainter {
     }
 
     delete() {
-        this.getMap().off('updatelights', this.onUpdateLights, this);
+        this.getMap().off('updatelights', this.onUpdatelights, this);
         super.delete();
         if (this._emptyTex) {
             this._emptyTex.destroy();

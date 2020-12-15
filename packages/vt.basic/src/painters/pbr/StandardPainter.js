@@ -96,7 +96,7 @@ class StandardPainter extends MeshPainter {
 
 
     delete() {
-        this.getMap().off('updatelights', this.onUpdateLights, this);
+        this.getMap().off('updatelights', this.onUpdatelights, this);
         super.delete();
         this.disposeIBLTextures();
         this.material.dispose();
@@ -117,7 +117,7 @@ class StandardPainter extends MeshPainter {
     }
 
     init(context) {
-        this.getMap().on('updatelights', this.onUpdateLights, this);
+        this.getMap().on('updatelights', this.onUpdatelights, this);
         //保存context，updateSceneConfig时读取
         this._context = this._context || context;
         const regl = this.regl;
