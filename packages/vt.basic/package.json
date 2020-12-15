@@ -35,7 +35,7 @@
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
-    "@maptalks/rollup-plugin-glsl-minify": "^0.1.6",
+    "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
     "@maptalks/vt": "^0.32.0",
     "babel-eslint": "^9.0.0",
     "electron": "^4.0.1",
