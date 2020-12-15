@@ -45,7 +45,7 @@ varying vec3 vPosition;
 #include <fog_render_frag>
 
 #define F4 0.309016994374947451
-#define halfDist = 0.5
+#define halfDist 0.5
 
 vec4 mod289(vec4 x) {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
