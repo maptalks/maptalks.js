@@ -196,9 +196,6 @@ Map.include(/** @lends Map.prototype */ {
         }
 
         this._fireDOMEvent(this, e, 'dom:' + e.type);
-        if (this._ignoreEvent(e)) {
-            return;
-        }
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
         // happen.js produce event without touches
@@ -222,15 +219,24 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
-        this._fireDOMEvent(this, e, type);
+        let mimicEvent;
         if (mimicClick) {
             if (this._clickTime && (now() - this._clickTime <= 300)) {
                 delete this._clickTime;
-                this._fireDOMEvent(this, e, 'dblclick');
+                mimicEvent = 'dblclick';
+                this._fireDOMEvent(this, e, 'dom:dblclick');
             } else {
                 this._clickTime = now();
-                this._fireDOMEvent(this, e, 'click');
+                mimicEvent = 'click';
+                this._fireDOMEvent(this, e, 'dom:click');
             }
+        }
+        if (this._ignoreEvent(e)) {
+            return;
+        }
+        this._fireDOMEvent(this, e, type);
+        if (mimicEvent) {
+            this._fireDOMEvent(this, e, mimicEvent);
         }
     },
 
