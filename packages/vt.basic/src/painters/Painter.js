@@ -432,6 +432,7 @@ class Painter {
         } else {
             delete this._visibleFn;
         }
+        this.setToRedraw(true);
     }
 
     getSymbol() {
