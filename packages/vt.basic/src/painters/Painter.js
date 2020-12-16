@@ -432,7 +432,7 @@ class Painter {
         } else {
             delete this._visibleFn;
         }
-        this.setToRedraw(true);
+        this.setToRedraw(this.supportRenderMode('taa'));
     }
 
     getSymbol() {
