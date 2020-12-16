@@ -112,7 +112,7 @@ class StandardPainter extends MeshPainter {
     updateSymbol(symbol) {
         super.updateSymbol(symbol);
         if (symbol.material) {
-            this._updateMaterial();
+            this._updateMaterial(symbol.material);
         }
     }
 
@@ -238,19 +238,15 @@ class StandardPainter extends MeshPainter {
         for (let i = 0; i < resources.length; i++) {
             this.addCachedTexture(resources[i].url, resources[i].data);
         }
-    }
-
-    _onMaterialComplete() {
-        if (this._loadingMaterial) {
-            this.material.dispose();
-            this.material = this._loadingMaterial;
-            delete this._loadingMaterial;
-        }
         this.setToRedraw(true);
     }
 
-    _updateMaterial() {
-        const materialConfig = this.getSymbol().material;
+    _onMaterialComplete() {
+        this.setToRedraw(true);
+    }
+
+    _updateMaterial(config) {
+        const materialConfig = config || this.getSymbol().material;
         const material = {};
         let hasTexture = false;
         for (const p in materialConfig) {
@@ -259,6 +255,7 @@ class StandardPainter extends MeshPainter {
                     //纹理图片
                     let texConf = materialConfig[p];
                     if (!texConf) {
+                        material[p] = undefined;
                         continue;
                     }
                     const url = typeof texConf === 'string' ? texConf : texConf.url;
@@ -310,13 +307,10 @@ class StandardPainter extends MeshPainter {
             this.material = new reshader.pbr.StandardMaterial(material);
             this.material.once('complete', this._bindOnMaterialComplete);
         } else {
-            this._loadingMaterial = new reshader.pbr.StandardMaterial(material);
-            if (this._loadingMaterial.isReady()) {
-                this._onMaterialComplete();
-            } else {
-                this._loadingMaterial.once('complete', this._bindOnMaterialComplete);
+            for (let p in material) {
+                this.material.set(p, material[p]);
             }
-
+            this.setToRedraw(true);
         }
 
         if (!hasTexture) {
@@ -344,3 +338,7 @@ class StandardPainter extends MeshPainter {
 }
 
 export default StandardPainter;
+
+// function firstUpperCase(str) {
+//     return str.charAt(0).toUpperCase() + str.substring(1);
+// }
