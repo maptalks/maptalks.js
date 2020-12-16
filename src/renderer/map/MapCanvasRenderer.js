@@ -794,8 +794,9 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _setCheckSizeInterval(interval) {
-        // priority of use
-        if (ResizeObserver) {
+        // ResizeObserver priority of use
+        // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
+        if (typeof window !== 'undefined' && window.ResizeObserver) {
             if (this._resizeObserver) {
                 this._resizeInterval.disconnect();
             }
