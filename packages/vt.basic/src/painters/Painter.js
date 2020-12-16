@@ -400,10 +400,10 @@ class Painter {
         this.logoutTextureCache();
     }
 
-    updateSymbol(symbolDef) {
+    updateSymbol(symbolDef, all) {
         // const styles = this.layer.getCompiledStyle();
-        // this.symbolDef = styles[this.pluginIndex].symbol;
-        this.symbolDef = symbolDef;
+        // this.symbolDef = styles.style[this.pluginIndex].symbol;
+        this.symbolDef = all;
         if (!this._symbol) {
             return;
         }

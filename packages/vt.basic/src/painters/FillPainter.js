@@ -154,8 +154,8 @@ class FillPainter extends BasicPainter {
         ];
     }
 
-    updateSymbol(symbol) {
-        super.updateSymbol(symbol);
+    updateSymbol(...args) {
+        super.updateSymbol(...args);
         this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
         this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
     }

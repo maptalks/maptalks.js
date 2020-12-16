@@ -58,8 +58,8 @@ class IconPainter extends CollisionPainter {
         this._textFilter1 = TEXT_FILTER_N.bind(this);
     }
 
-    updateSymbol(symbol) {
-        super.updateSymbol(symbol);
+    updateSymbol(...args) {
+        super.updateSymbol(...args);
         this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }

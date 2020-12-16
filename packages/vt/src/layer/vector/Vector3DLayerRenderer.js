@@ -126,7 +126,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     updateSymbol() {
-        this.painter.updateSymbol(this.painterSymbol);
+        this.painter.updateSymbol(this.painterSymbol, this.painterSymbol);
     }
 
     _getFeaturesToRender(fn) {

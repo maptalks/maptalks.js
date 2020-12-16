@@ -169,12 +169,12 @@ class MeshPainter extends Painter {
         updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this.getFnTypeConfig(), meshes, this.getMap().getZoom());
     }
 
-    updateSymbol(symbol) {
+    updateSymbol(...args) {
+        super.updateSymbol(...args);
         const symbolDef = this.symbolDef;
         this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
         this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
         this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        super.updateSymbol(symbol);
     }
 
     updateDataConfig(dataConfig, old) {

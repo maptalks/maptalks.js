@@ -68,10 +68,6 @@ class WaterPainter extends BasicPainter {
         }
     }
 
-    updateSymbol(symbol) {
-        super.updateSymbol(symbol);
-    }
-
     paint(context) {
         if (context.states && context.states.includesChanged) {
             this.shader.dispose();

@@ -97,11 +97,11 @@ export default class TextPainter extends CollisionPainter {
         return false;
     }
 
-    updateSymbol(symbol) {
-        if (symbol.textHaloRadius !== undefined) {
-            this._textHaloRadius = symbol.textHaloRadius;
+    updateSymbol(symbol, all) {
+        if (all.textHaloRadius !== undefined) {
+            this._textHaloRadius = all.textHaloRadius;
         }
-        super.updateSymbol(symbol);
+        super.updateSymbol(symbol, all);
         this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
 

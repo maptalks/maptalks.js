@@ -245,8 +245,8 @@ class LinePainter extends BasicPainter {
         ];
     }
 
-    updateSymbol(symbol) {
-        super.updateSymbol(symbol);
+    updateSymbol(...args) {
+        super.updateSymbol(...args);
         this.fnTypeConfig = this.getFnTypeConfig();
     }
 
