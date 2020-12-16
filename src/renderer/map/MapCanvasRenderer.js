@@ -794,16 +794,34 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _setCheckSizeInterval(interval) {
-        clearInterval(this._resizeInterval);
-        this._checkSizeInterval = interval;
-        this._resizeInterval = setInterval(() => {
-            if (!this.map || this.map.isRemoved()) {
-                //is deleted
-                clearInterval(this._resizeInterval);
-            } else {
-                this._checkSize();
+        // priority of use
+        if (ResizeObserver) {
+            if (this._resizeObserver) {
+                this._resizeInterval.disconnect();
             }
-        }, this._checkSizeInterval);
+            if (this.map) {
+                // eslint-disable-next-line no-unused-vars
+                this._resizeObserver = new ResizeObserver((entries) => {
+                    if (this.map.isRemoved()) {
+                        this._resizeInterval.disconnect();
+                    } else {
+                        this._checkSize();
+                    }
+                });
+                this._resizeObserver.observe(this.map._containerDOM);
+            }
+        } else {
+            clearInterval(this._resizeInterval);
+            this._checkSizeInterval = interval;
+            this._resizeInterval = setInterval(() => {
+                if (!this.map || this.map.isRemoved()) {
+                    //is deleted
+                    clearInterval(this._resizeInterval);
+                } else {
+                    this._checkSize();
+                }
+            }, this._checkSizeInterval);
+        }
     }
 
     _registerEvents() {
