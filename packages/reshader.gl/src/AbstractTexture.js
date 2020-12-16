@@ -96,7 +96,7 @@ class AbstractTexture {
     }
 
     _updateREGL() {
-        if (this._texture) {
+        if (this._texture && !this._texture[KEY_DISPOSED]) {
             this._texture(this.config);
         }
         this.dirty = false;
@@ -111,8 +111,9 @@ class AbstractTexture {
             this._texture[KEY_DISPOSED] = true;
         }
         delete this.resLoader;
-        this.fire('disposed', { target: this, url: this.config && this.config.url });
+        const url = this.config && this.config.url;
         delete this.config;
+        this.fire('disposed', { target: this, url });
     }
 
     _needPowerOf2() {

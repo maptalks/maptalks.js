@@ -8,6 +8,10 @@ class Texture2D extends Texture {
 
     onLoad({ data }) {
         const config = this.config;
+        if (!config) {
+            //disposed
+            return;
+        }
         if (config.hdr) {
             data = parseRGBE(data.data, 0, config.maxRange);
             this.rgbmRange = data.rgbmRange;

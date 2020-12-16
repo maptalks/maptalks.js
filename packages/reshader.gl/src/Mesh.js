@@ -163,7 +163,7 @@ class Mesh {
     // }
 
     getUniforms(regl) {
-        if (this._dirtyUniforms || this.material && this.material.isDirty()) {
+        if (this._dirtyUniforms || this.material && this._materialVer !== this.material.version) {
             this._realUniforms = {
             };
             if (this.material) {
@@ -193,6 +193,7 @@ class Mesh {
                 }
             }
             this._dirtyUniforms = false;
+            this._materialVer = this.material && this.material.version;
         }
         this._realUniforms['modelMatrix'] = isFunction(this._localTransform) ? this._localTransform() : this._localTransform;
         this._realUniforms['positionMatrix'] = isFunction(this._positionMatrix) ? this._positionMatrix() : this._positionMatrix;

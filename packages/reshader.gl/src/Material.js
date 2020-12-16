@@ -5,6 +5,7 @@ import { KEY_DISPOSED } from './common/Constants.js';
 
 class Material {
     constructor(uniforms = {}, defaultUniforms) {
+        this._version = 0;
         this.uniforms = extend1({}, defaultUniforms || {}, uniforms);
         for (const p in uniforms) {
             const getter = Object.getOwnPropertyDescriptor(uniforms, p).get;
@@ -24,12 +25,19 @@ class Material {
                 }
             }
         }
-        this._dirtyUniforms = 'texture';
         this._reglUniforms = {};
         this.refCount = 0;
         this._bindedOnTextureComplete = this._onTextureComplete.bind(this);
         this._genUniformKeys();
         this._checkTextures();
+    }
+
+    set version(v) {
+        throw new Error('Material.version is read only.');
+    }
+
+    get version() {
+        return this._version;
     }
 
     isReady() {
@@ -41,17 +49,21 @@ class Material {
         if (isNil(this.uniforms[k])) {
             dirty = true;
         }
+        if (this.uniforms[k] && this.isTexture(k)) {
+            this.uniforms[k].dispose();
+        }
         this.uniforms[k] = v;
         if (k.length < 2 || k.charAt(0) !== 'u' || k.charAt(1) !== k.charAt(1).toUpperCase()) {
             this.uniforms['u' + firstUpperCase(k)] = v;
         }
-        this._dirtyUniforms = this.isTexture(k) ? 'texture' : 'primitive';
-        if (this._dirtyUniforms === 'texture') {
+        this._dirtyUniforms = true;
+        if (this.isTexture(k)) {
             this._checkTextures();
         }
         if (dirty) {
             this._genUniformKeys();
         }
+        this._incrVersion();
         return this;
     }
 
@@ -60,7 +72,7 @@ class Material {
     }
 
     isDirty() {
-        return this._dirtyUniforms;
+        return this._uniformVer !== this.version;
     }
 
     /**
@@ -79,7 +91,7 @@ class Material {
     }
 
     getUniforms(regl) {
-        if (!this._dirtyUniforms) {
+        if (this._reglUniforms && !this.isDirty()) {
             return this._reglUniforms;
         }
         const uniforms = this.uniforms;
@@ -87,14 +99,7 @@ class Material {
         for (const p in uniforms) {
             const v = this.uniforms[p];
             if (this.isTexture(p)) {
-                if (this._dirtyUniforms === 'primitive' && this._reglUniforms[p]) {
-                    realUniforms[p] = this._reglUniforms[p];
-                } else {
-                    if (this._reglUniforms[p]) {
-                        this._reglUniforms[p].destroy();
-                    }
-                    realUniforms[p] = v.getREGLTexture(regl);
-                }
+                realUniforms[p] = v.getREGLTexture(regl);
             } else {
                 Object.defineProperty(realUniforms, p, {
                     enumerable: true,
@@ -106,7 +111,7 @@ class Material {
             }
         }
         this._reglUniforms = realUniforms;
-        this._dirtyUniforms = false;
+        this._uniformVer = this.version;
         return realUniforms;
     }
 
@@ -155,8 +160,11 @@ class Material {
 
     _onTextureComplete() {
         this._loadingCount--;
+        this._incrVersion();
         if (this._loadingCount <= 0) {
-            this.fire('complete');
+            if (!this._disposed) {
+                this.fire('complete');
+            }
         }
     }
 
@@ -172,6 +180,10 @@ class Material {
             }
         }
         this._uniformKeys = keys.join();
+    }
+
+    _incrVersion() {
+        this._version++;
     }
 }
 
