@@ -15,7 +15,7 @@ class Material {
                 });
             }
             //自动增加uFoo形式的uniform变量定义
-            if (p.length < 2 || p.charAt(0) !== 'u' || p.charAt(1) !== p.charAt(1).toUpperCase()) {
+            if (shouldChangeName(p)) {
                 const key = 'u' + firstUpperCase(p);
                 this.uniforms[key] = uniforms[p];
                 if (getter) {
@@ -45,15 +45,19 @@ class Material {
     }
 
     set(k, v) {
-        let dirty = false;
-        if (isNil(this.uniforms[k])) {
-            dirty = true;
-        }
+        const dirty = this.uniforms[k] !== v;
         if (this.uniforms[k] && this.isTexture(k)) {
             this.uniforms[k].dispose();
         }
-        this.uniforms[k] = v;
-        if (k.length < 2 || k.charAt(0) !== 'u' || k.charAt(1) !== k.charAt(1).toUpperCase()) {
+        if (!isNil(v)) {
+            this.uniforms[k] = v;
+        } else if (!isNil(this.uniforms[k])) {
+            delete this.uniforms[k];
+            if (shouldChangeName(k)) {
+                delete this.uniforms['u' + firstUpperCase(k)];
+            }
+        }
+        if (!isNil(v) && shouldChangeName(k)) {
             this.uniforms['u' + firstUpperCase(k)] = v;
         }
         this._dirtyUniforms = true;
@@ -191,4 +195,8 @@ export default Eventable(Material);
 
 function firstUpperCase(str) {
     return str.charAt(0).toUpperCase() + str.substring(1);
+}
+
+function shouldChangeName(k) {
+    return (k.length < 2 || k.charAt(0) !== 'u' || k.charAt(1) !== k.charAt(1).toUpperCase());
 }
