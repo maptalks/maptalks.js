@@ -13,7 +13,7 @@ class Mesh {
     constructor(geometry, material, config = {}) {
         this._version = 0;
         this._geometry = geometry;
-        this.material = material;
+        this._material = material;
         this.config = config;
         this.transparent = !!config.transparent;
         this.castShadow = isNil(config.castShadow) || config.castShadow;
@@ -29,6 +29,16 @@ class Mesh {
         if (uuid > Number.MAX_VALUE - 10) {
             uuid = 0;
         }
+    }
+
+    set material(v) {
+        if (this._material !== v) {
+            this.setMaterial(v);
+        }
+    }
+
+    get material() {
+        return this._material;
     }
 
     set version(v) {
@@ -81,8 +91,9 @@ class Mesh {
     }
 
     setMaterial(material) {
-        this.material = material;
+        this._material = material;
         this._dirtyUniforms = true;
+        delete this._materialVer;
         this.dirtyDefines = true;
         return this;
     }
@@ -118,8 +129,8 @@ class Mesh {
         if (this.defines) {
             extend(defines, this.defines);
         }
-        if (this.material && this._geometry) {
-            this.material.appendDefines(defines, this._geometry);
+        if (this._material && this._geometry) {
+            this._material.appendDefines(defines, this._geometry);
         }
         return defines;
     }
@@ -136,14 +147,14 @@ class Mesh {
     }
 
     getCommandKey() {
-        if (!this._commandKey || this.dirtyDefines || (this.material && this._materialKeys !== this.material.getUniformKeys())) {
+        if (!this._commandKey || this.dirtyDefines || (this._material && this._materialKeys !== this._material.getUniformKeys())) {
             //TODO geometry的data变动也可能会改变commandKey，但鉴于geometry一般不会发生变化，暂时不管
             let dKey = this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             this._commandKey = dKey;
-            if (this.material) {
-                this._materialKeys = this.material.getUniformKeys();
+            if (this._material) {
+                this._materialKeys = this._material.getUniformKeys();
             }
         }
 
@@ -154,8 +165,8 @@ class Mesh {
     //     const uniforms = {
     //         'modelMatrix': this._localTransform
     //     };
-    //     if (this.material) {
-    //         const materialUniforms = this.material.getUniforms(regl);
+    //     if (this._material) {
+    //         const materialUniforms = this._material.getUniforms(regl);
     //         extend(uniforms, materialUniforms);
     //     }
     //     extend(uniforms, this.uniforms);
@@ -163,11 +174,11 @@ class Mesh {
     // }
 
     getUniforms(regl) {
-        if (this._dirtyUniforms || this.material && this._materialVer !== this.material.version) {
+        if (this._dirtyUniforms || this._material && this._materialVer !== this._material.version) {
             this._realUniforms = {
             };
-            if (this.material) {
-                const materialUniforms = this.material.getUniforms(regl);
+            if (this._material) {
+                const materialUniforms = this._material.getUniforms(regl);
                 for (const p in materialUniforms) {
                     if (materialUniforms.hasOwnProperty(p)) {
                         Object.defineProperty(this._realUniforms, p, {
@@ -193,7 +204,7 @@ class Mesh {
                 }
             }
             this._dirtyUniforms = false;
-            this._materialVer = this.material && this.material.version;
+            this._materialVer = this._material && this._material.version;
         }
         this._realUniforms['modelMatrix'] = isFunction(this._localTransform) ? this._localTransform() : this._localTransform;
         this._realUniforms['positionMatrix'] = isFunction(this._positionMatrix) ? this._positionMatrix() : this._positionMatrix;
@@ -202,7 +213,7 @@ class Mesh {
 
 
     getMaterial() {
-        return this.material;
+        return this._material;
     }
 
     getElements() {
@@ -228,13 +239,13 @@ class Mesh {
 
     dispose() {
         delete this._geometry;
-        delete this.material;
+        delete this._material;
         this.uniforms = {};
         return this;
     }
 
     isValid() {
-        return this._geometry && !this._geometry.isDisposed() && (!this.material || !this.material.isDisposed());
+        return this._geometry && !this._geometry.isDisposed() && (!this._material || !this._material.isDisposed());
     }
 
     getBoundingBox() {

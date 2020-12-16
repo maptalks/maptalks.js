@@ -45,7 +45,9 @@ class Material {
     }
 
     set(k, v) {
-        const dirty = this.uniforms[k] !== v;
+        const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
+            !isNil(this.uniforms[k]) && isNil(v);
+
         if (this.uniforms[k] && this.isTexture(k)) {
             this.uniforms[k].dispose();
         }
