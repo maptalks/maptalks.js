@@ -798,15 +798,15 @@ class MapCanvasRenderer extends MapRenderer {
         // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
         if (typeof window !== 'undefined' && window.ResizeObserver) {
             if (this._resizeObserver) {
-                this._resizeInterval.disconnect();
+                this._resizeObserver.disconnect();
             }
             if (this.map) {
                 // eslint-disable-next-line no-unused-vars
                 this._resizeObserver = new ResizeObserver((entries) => {
-                    if (this.map.isRemoved()) {
-                        this._resizeInterval.disconnect();
-                    } else {
-                        this._checkSize();
+                    if (!this.map || this.map.isRemoved()) {
+                        this._resizeObserver.disconnect();
+                    } else if (entries.length) {
+                        this._checkSize(entries[0].contentRect);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);

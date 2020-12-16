@@ -553,9 +553,13 @@ describe('Map.Spec', function () {
                     expect(map.getCenter().toArray()).to.be.eql(center.toArray());
                     done();
                 });
-                container.style.display = '';
+                setTimeout(function () {
+                    container.style.display = '';
+                }, 17);
             });
-            container.style.display = 'none';
+            setTimeout(function () {
+                container.style.display = 'none';
+            }, 17);
         });
 
         it('event properties', function (done) {
