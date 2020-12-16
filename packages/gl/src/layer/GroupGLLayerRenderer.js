@@ -100,6 +100,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const map = this.getMap();
             const needRefresh = this._postProcessor.isTaaNeedRedraw() || this._needRetireFrames || map.getRenderer().isViewChanged();
             drawContext.jitter = needRefresh ? jitter : this._jitGetter.getAverage();
+            drawContext.onlyUpdateDepthInTaa = !needRefresh;
             let taaFBO = this._taaFBO;
             if (!taaFBO) {
                 const regl = this.regl;
