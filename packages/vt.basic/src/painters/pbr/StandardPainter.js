@@ -36,6 +36,9 @@ class StandardPainter extends MeshPainter {
         }
         const isSsr = !!context.ssr && this.getSymbol().ssr;
         const shader = this.shader;
+        if (context.onlyUpdateDepthInTaa) {
+            this.shader = this._updateDepthShader;
+        }
         this.updateIBLDefines(shader);
         const shaderDefines = shader.shaderDefines;
         const fbo = this.getRenderFBO(context);
@@ -53,7 +56,6 @@ class StandardPainter extends MeshPainter {
         if (isSsr) {
             context.renderTarget.fbo = fbo;
             shader.shaderDefines = shaderDefines;
-            this.shader = shader;
         }
         if (this.shadowCount !== undefined && hasShadow) {
             const count = this.scene.getMeshes().length;
@@ -61,6 +63,7 @@ class StandardPainter extends MeshPainter {
                 this.setToRedraw();
             }
         }
+        this.shader = shader;
         delete this.shadowCount;
     }
 
@@ -106,6 +109,10 @@ class StandardPainter extends MeshPainter {
         if (this.shader) {
             this.shader.dispose();
             delete this.shader;
+        }
+        if (this._updateDepthShader) {
+            this._updateDepthShader.dispose();
+            delete this._updateDepthShader;
         }
     }
 
@@ -229,6 +236,17 @@ class StandardPainter extends MeshPainter {
         };
 
         this.shader = new reshader.pbr.StandardShader(config);
+        config.frag = `
+            precision mediump float;
+            #include <gl2_frag>
+            void main() {
+                glFragColor = vec4(0.0);
+                #if __VERSION__ == 100
+                    gl_FragColor = glFragColor;
+                #endif
+            }
+        `;
+        this._updateDepthShader = new reshader.pbr.StandardShader(config);
         this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
