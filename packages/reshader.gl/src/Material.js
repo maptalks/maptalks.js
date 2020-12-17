@@ -96,6 +96,10 @@ class Material {
         return defines;
     }
 
+    hasSkinAnimation() {
+        return this.uniforms['jointTexture'] && this.uniforms['skinAnimation'];
+    }
+
     getUniforms(regl) {
         if (this._reglUniforms && !this.isDirty()) {
             return this._reglUniforms;

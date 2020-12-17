@@ -187,7 +187,7 @@ class ShadowProcess {
         for (let i = 0; i < meshes.length; i++) {
             const saved = this._renderedShadows[meshes[i].uuid];
             if (meshes[i].castShadow &&
-                (!saved ||
+                (meshes[i].hasSkinAnimation() || !saved ||
                     saved.v0 !== meshes[i].version ||
                     saved.v1 !== meshes[i].geometry.version)) {
                 return true;

@@ -141,6 +141,10 @@ class Mesh {
         return this;
     }
 
+    hasSkinAnimation() {
+        return this._material && this._material.hasSkinAnimation();
+    }
+
     _getDefinesKey() {
         this.dirtyDefines = false;
         return this._createDefinesKey(this.getDefines());
