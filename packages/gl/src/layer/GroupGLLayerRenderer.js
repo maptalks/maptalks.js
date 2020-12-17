@@ -93,7 +93,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
         //TODO 也许可以在未更新时，省略taa阶段的绘制
-        this._renderInMode(enableTAA ? 'fxaaAfterTaa' : 'fxaa', this._targetFBO, methodName, args);
+        this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
 
         const fGL = this.glCtx;
         if (enableTAA) {
@@ -112,9 +112,23 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             fGL.resetDrawCalls();
             this._renderInMode('taa', taaFBO, methodName, args);
             this._taaDrawCount = fGL.getDrawCalls();
+
+            let fxaaFBO = this._fxaaFBO;
+            if (!fxaaFBO) {
+                const regl = this.regl;
+                const info = this._createFBOInfo(config, this._depthTex);
+                fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
+            } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
+                fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
+            }
+            fGL.resetDrawCalls();
+            this._renderInMode('fxaaAfterTaa', this._fxaaFBO, methodName, args);
+            this._fxaaAfterTaaDrawCount = fGL.getDrawCalls();
         } else if (this._taaFBO) {
             this._taaFBO.destroy();
+            this._fxaaFBO.destroy();
             delete this._taaFBO;
+            delete this._fxaaFBO;
         }
         drawContext.jitter = NO_JITTER;
 
@@ -123,7 +137,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.drawSSR(this._depthTex);
         }
 
-        let tex = /*this._taaFBO ? this._taaFBO.color[0] :*/ this._targetFBO.color[0];
+        let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
 
         //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
@@ -384,6 +398,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     framebuffer: this._taaFBO
                 });
             }
+            if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
+                regl.clear({
+                    color: [0, 0, 0, 0],
+                    framebuffer: this._fxaaFBO
+                });
+            }
         }
         if (this._outlineFBO) {
             regl.clear({
@@ -400,12 +420,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     resizeCanvas() {
         super.resizeCanvas();
-        if (this._targetFBO && (this._targetFBO.width !== this.canvas.width ||
-            this._targetFBO.height !== this.canvas.height)) {
-            this._targetFBO.resize(this.canvas.width, this.canvas.height);
-            this._noAaFBO.resize(this.canvas.width, this.canvas.height);
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        if (this._targetFBO && (this._targetFBO.width !== width ||
+            this._targetFBO.height !== height)) {
+            this._targetFBO.resize(width, height);
+            this._noAaFBO.resize(width, height);
             if (this._taaFBO) {
-                this._taaFBO.resize(this.canvas.width, this.canvas.height);
+                this._taaFBO.resize(width, height);
+            }
+            if (this._fxaaFBO) {
+                this._fxaaFBO.resize(width, height);
             }
         }
         this.forEachRenderer(renderer => {
@@ -496,6 +521,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             if (this._taaFBO) {
                 this._taaFBO.destroy();
                 delete this._taaFBO;
+            }
+            if (this._fxaaFBO) {
+                this._fxaaFBO.destroy();
+                delete this._fxaaFBO;
             }
             delete this._targetFBO;
             delete this._noAaFBO;
@@ -959,9 +988,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
-            tex,
+            taaTex ? this._targetFBO.color[0] : tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
             taaTex,
+            taaTex ? tex : null,
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,

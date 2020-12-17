@@ -24,6 +24,7 @@ uniform sampler2D textureSource;
 #endif
 #ifdef HAS_TAA_TEX
   uniform sampler2D taaTextureSource;
+  uniform sampler2D fxaaTextureSource;
 #endif
 uniform float pixelRatio;
 uniform float sharpFactor;//0 - 5
@@ -46,7 +47,8 @@ vec4 readFXAATexture(vec2 uv) {
   #ifdef HAS_TAA_TEX
     vec4 source = texture2D(textureSource, uv);
     vec4 taa = texture2D(taaTextureSource, uv);
-    return taa + source * (1.0 - taa.a);
+    vec4 fxaa = texture2D(fxaaTextureSource, uv);
+    return fxaa + (taa + source * (1.0 - taa.a)) * (1.0 - fxaa.a);
   #else
     return texture2D(textureSource, uv);
   #endif

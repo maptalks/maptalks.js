@@ -248,7 +248,7 @@ export default class PostProcess {
         }, sourceTex, depthTex);
     }
 
-    fxaa(source, noAaSource, taaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
+    fxaa(source, noAaSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
         const shaderDefines = {};
         if (taaTextureSource) {
@@ -271,6 +271,7 @@ export default class PostProcess {
             textureSource: source,
             noAaTextureSource: noAaSource,
             taaTextureSource,
+            fxaaTextureSource,
             resolution: vec2.set(RESOLUTION, source.width, source.height),
             enableFXAA,
             enableToneMapping,

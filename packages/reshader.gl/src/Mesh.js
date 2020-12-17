@@ -258,7 +258,7 @@ class Mesh {
         }
         mat4.multiply(tempMat4, this._localTransform, this._positionMatrix);
         //如果Mesh的localTransform * positionMatrix发生了变化，或者geometry的boundingBox发生变化，则需要更新bbox
-        if (!mat4.equals(tempMat4, this._currentTransform) || !this._geometry.boundingBox.equals(this._geoBox)) {
+        if (!mat4.exactEquals(tempMat4, this._currentTransform) || !this._geometry.boundingBox.equals(this._geoBox)) {
             this.updateBoundingBox();
         }
         return [this._bbox.min, this._bbox.max];
