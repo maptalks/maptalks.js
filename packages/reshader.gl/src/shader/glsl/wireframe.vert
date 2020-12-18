@@ -16,7 +16,7 @@ varying vec3 vPosition;
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
-    gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * localPosition;
+    gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
     vPosition = aPosition;
     #ifdef HAS_VIEWSHED
