@@ -161,6 +161,7 @@ export default class GLTFPack {
                     geometry,
                     nodeMatrix,
                     materialInfo : this._createMaterialInfo(primitive.material, node),
+                    extraInfo: this._createExtralInfo(primitive.material),
                     animationMatrix : node.trs.setMatrix()
                 };
                 if (node.skin) {
@@ -231,11 +232,16 @@ export default class GLTFPack {
             if (material.emissiveFactor) {
                 materialUniforms['emissiveFactor'] = material.emissiveFactor;
             }
-            if (material.doubleSided) {
-                materialUniforms['doubleSided'] = material.doubleSided;
-            }
         }
         return materialUniforms;
+    }
+
+    _createExtralInfo(material) {
+        const info = {};
+        if (material) {
+            info['doubleSided'] = material.doubleSided;
+        }
+        return info;
     }
 
     _toTexture(texture) {

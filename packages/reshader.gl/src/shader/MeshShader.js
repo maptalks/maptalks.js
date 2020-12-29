@@ -76,7 +76,7 @@ class MeshShader extends Shader {
             const defines = mesh.getDefines();
             const material = mesh.getMaterial();
             if (material) {
-                const doubleSided = material.get('doubleSided');
+                const doubleSided = material.doubleSided;
                 if (doubleSided && this.extraCommandProps && this.extraCommandProps.cull) {
                     this.extraCommandProps.cull.enable = false;
                 }
