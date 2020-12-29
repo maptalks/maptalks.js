@@ -231,6 +231,9 @@ export default class GLTFPack {
             if (material.emissiveFactor) {
                 materialUniforms['emissiveFactor'] = material.emissiveFactor;
             }
+            if (material.doubleSided) {
+                materialUniforms['doubleSided'] = material.doubleSided;
+            }
         }
         return materialUniforms;
     }

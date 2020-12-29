@@ -74,6 +74,13 @@ class MeshShader extends Shader {
         let command = this.commands[dKey];
         if (!command) {
             const defines = mesh.getDefines();
+            const material = mesh.getMaterial();
+            if (material) {
+                const doubleSided = material.get('doubleSided');
+                if (doubleSided && this.extraCommandProps && this.extraCommandProps.cull) {
+                    this.extraCommandProps.cull.enable = false;
+                }
+            }
             command = this.commands[dKey] =
                 this.createREGLCommand(
                     regl,
