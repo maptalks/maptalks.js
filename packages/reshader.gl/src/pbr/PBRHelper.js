@@ -151,6 +151,7 @@ function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
         // mipmap: true
     });
     tmpFBO.destroy();
+    drawCube.destroy();
     return color;
 }
 
@@ -180,6 +181,7 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
         const pixels = regl.read();
         faces.push(new pixels.constructor(pixels));
     });
+    drawCube.destroy();
     tmpFBO.destroy();
     return faces;
 }
@@ -251,7 +253,7 @@ function createEquirectangularMapCube(regl, texture, size, rgbm) {
     });
 
     renderToCube(regl, envMapFBO, drawCube);
-
+    drawCube.destroy();
     return envMapFBO;
 }
 
@@ -332,8 +334,9 @@ function createPrefilterMipmap(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, r
         size /= 2;
         tmpFBO.resize(size);
     }
-
+    distributionMap.destroy();
     tmpFBO.destroy();
+    drawCube.destroy();
     return mipmap;
 }
 
@@ -437,6 +440,7 @@ export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     });
     drawLUT();
 
+    drawLUT.destroy();
     quadBuf.destroy();
     quadTexBuf.destroy();
     distributionMap.destroy();
