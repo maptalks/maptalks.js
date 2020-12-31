@@ -7,7 +7,7 @@ const DEFAULT_UNIFORMS = {
     'uvOffset': [0, 0],
 
     'uBaseColorFactor': [1, 1, 1, 1],
-    'uEmitColor': [0, 0, 0],
+    'uEmissiveFactor': [0, 0, 0],
 
     'uAlbedoPBRFactor': 1, //1
     'uAnisotropyDirection': 0, //0
