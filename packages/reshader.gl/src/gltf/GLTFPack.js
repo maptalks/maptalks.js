@@ -4,6 +4,7 @@ import Skin from './Skin';
 import TRS from './TRS';
 import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
+import { KEY_DISPOSED } from '../common/Constants.js';
 
 const animMatrix = [];
 let timespan = 0;
@@ -44,14 +45,16 @@ export default class GLTFPack {
         geometries.forEach(g => {
             g.geometry.dispose();
             for (const m in g.materialInfo) {
-                if (g.materialInfo[m].destroy) {
-                    g.materialInfo[m].destroy();
+                const materialInfo = g.materialInfo[m];
+                //如果是texture对象，需要销毁，如果已经销毁过，不能再重复销毁
+                if (materialInfo.destroy && !materialInfo[KEY_DISPOSED]) {
+                    materialInfo.destroy();
                 }
             }
         });
         for (const index in this.gltf.nodes) {
             const node = this.gltf.nodes[index];
-            if (node.skin && node.skin.jointTexture) {
+            if (node.skin && node.skin.jointTexture && !node.skin.jointTexture[KEY_DISPOSED]) {
                 node.skin.jointTexture.destroy();
             }
         }
