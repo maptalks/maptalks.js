@@ -290,6 +290,11 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (renderer) {
             renderer.updateSceneConfig(type, renderIdx, sceneConfig);
         }
+        if (type === 0) {
+            this.fire('updatesceneconfig', { index: idx, sceneConfig });
+        } else if (type === 1) {
+            this.fire('updatefeaturesceneconfig', { index: idx, styleIdx, sceneConfig });
+        }
         return this;
     }
 
@@ -339,6 +344,11 @@ class VectorTileLayer extends maptalks.TileLayer {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.updateDataConfig(type, rendererIdx, dataConfig, old);
+        }
+        if (type === 0) {
+            this.fire('updatedataconfig', { index: idx, dataConfig });
+        } else if (type === 1) {
+            this.fire('updatefeaturedataconfig', { index: idx, styleIdx, dataConfig });
         }
         return this;
     }
@@ -419,7 +429,11 @@ class VectorTileLayer extends maptalks.TileLayer {
             this._compileStyle();
             renderer.updateSymbol(type, idx, symbol);
         }
-        this.fire('updatesymbol', { index: idx, symbol });
+        if (type === 0) {
+            this.fire('updatesymbol', { index: idx, symbol });
+        } else if (type === 1) {
+            this.fire('updatefeaturesymbol', { index: idx, styleIdx, symbol });
+        }
         return this;
     }
 
