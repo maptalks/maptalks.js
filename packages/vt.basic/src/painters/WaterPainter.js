@@ -23,7 +23,7 @@ const frag = `
 
 class WaterPainter extends BasicPainter {
     supportRenderMode(mode) {
-        return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+        return mode === 'fxaa' || mode === 'fxaaBeforeTaa';
     }
 
     needPolygonOffset() {
@@ -377,15 +377,16 @@ class WaterPainter extends BasicPainter {
         }
         const projViewMatrix = map.projViewMatrix;
         const lightManager = map.getLightManager();
-        let directionalLight = lightManager && lightManager.getDirectionalLight();
-        const ambientLight = lightManager && lightManager.getAmbientLight();
+        let directionalLight = lightManager && lightManager.getDirectionalLight() || {};
+        const ambientLight = lightManager && lightManager.getAmbientLight() || {};
         const symbol = this.getSymbol();
         const waterDir = this._waterDir = this._waterDir || [];
         const uniforms = {
-            hdrHsv: ambientLight && ambientLight.hsv || [0, 0, 0],
-            specularPBR: this.iblTexes.prefilterMap,
-            rgbmRange: this.iblTexes.rgbmRange,
-            ambientColor: ambientLight && ambientLight.color || [0.2, 0.2, 0.2],
+            hdrHsv: ambientLight.hsv || [0, 0, 0],
+            specularPBR: this.iblTexes && this.iblTexes.prefilterMap,
+            rgbmRange: this.iblTexes && this.iblTexes.rgbmRange,
+            ambientColor: ambientLight.color || [0.2, 0.2, 0.2],
+            uGlobalTexSize: [this.canvas.width, this.canvas.height],
             // uniform vec3 diffuseSPH[9];
 
             uProjectionMatrix: map.projMatrix,
@@ -393,15 +394,15 @@ class WaterPainter extends BasicPainter {
             viewMatrix: map.viewMatrix,
             uNearFar: [map.cameraNear, map.cameraFar],
 
-            lightDirection: directionalLight && directionalLight.direction || DEFAULT_DIR_LIGHT,
-            lightColor: directionalLight.color || [1, 1, 1],
+            lightDirection: directionalLight.direction || DEFAULT_DIR_LIGHT.direction,
+            lightColor: directionalLight.color || DEFAULT_DIR_LIGHT.color,
             camPos: map.cameraPosition,
             timeElapsed: this.layer.getRenderer().getFrameTimestamp() / 2 || 0,
             normalTexture: this._normalTex || this._emptyTex,
             heightTexture: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
             // 'waveParams': [0.0900, 12, 0.0300, -0.5],
-            waterDir: getWaterDirVector(waterDir, symbol.waterDirection || 90),
+            waterDir: getWaterDirVector(waterDir, symbol.waterDirection || 0),
             waterBaseColor: symbol.waterBaseColor || [0.1451, 0.2588, 0.4863, 1],
         };
         this.setIncludeUniformValues(uniforms, context);

@@ -32,7 +32,7 @@ class FillPainter extends BasicPainter {
     supportRenderMode(mode) {
         if (this.sceneConfig.antialias || this.sceneConfig.antialias === undefined) {
             //turn on antialias if set
-            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+            return mode === 'fxaa' || mode === 'fxaaBeforeTaa';
         } else {
             return super.supportRenderMode(mode);
         }

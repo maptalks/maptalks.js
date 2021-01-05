@@ -692,7 +692,7 @@ class Painter {
 
     hasIBL() {
         const lightManager = this.getMap().getLightManager();
-        const resource = lightManager.getAmbientResource();
+        const resource = lightManager && lightManager.getAmbientResource();
         return !!resource;
     }
 
