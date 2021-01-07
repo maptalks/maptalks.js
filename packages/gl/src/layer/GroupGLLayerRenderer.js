@@ -197,7 +197,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                     this.setRetireFrames();
                 }
             });
-            this._drawContext = this._prepareDrawContext();
+            this._drawContext = this._prepareDrawContext(timestamp);
             this._contextFrameTime = timestamp;
             this._frameEvent = isNumber(args[0]) ? null : args[0];
         }
@@ -557,7 +557,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         context.jitter = NO_JITTER;
         context.offsetFactor = 1;
         context.offsetUnits = 4;
+        // 第一次绘制 ground 应该忽略 sceneFilter
+        // 否则 noSSRFilter 会把 ground 过滤掉
+        // 但当场景有透明物体时，物体背后没画ground，出现绘制问题。
+        const sceneFilter = context.sceneFilter;
+        delete context.sceneFilter;
         const drawn = this._groundPainter.paint(context);
+        if (sceneFilter) {
+            context.sceneFilter = sceneFilter;
+        }
         context.jitter = jitter;
         return drawn;
     }
@@ -602,9 +610,12 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!enable || map.getPitch() <= MIN_SSR_PITCH) {
             return 0;
         }
-        const projViewMat = map.projViewMatrix;
-        const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
-        return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        // const projViewMat = map.projViewMatrix;
+        // const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
+        // return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        // SSR_STATIC的思路是直接利用上一帧的深度纹理，来绘制ssr，这样无需额外的ssr pass。
+        // 但当场景里有透明的物体时，被物体遮住的倒影会在SSR_STATIC阶段中绘制，但在SSR_IN_ONE_FRAME中不绘制，出现闪烁，故取消SSR_STATIC
+        return SSR_IN_ONE_FRAME;
     }
 
     isEnableTAA() {
@@ -683,10 +694,11 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
 
 
-    _prepareDrawContext() {
+    _prepareDrawContext(timestamp) {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         const context = {
+            timestamp,
             renderMode: this._renderMode || 'default',
             includes: {},
             states: this._getViewStates()

@@ -2,7 +2,7 @@ import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
 import SsrMipmapShader from './SsrMipmapShader.js';
 import SsrCombineShader from './SsrCombineShader.js';
-import CopyDepthShader from './CopyDepthShader.js';
+// import CopyDepthShader from './CopyDepthShader.js';
 // import BoxBlurShader from './BoxBlurShader.js';
 
 import quadVert from './glsl/quad.vert';
@@ -81,10 +81,11 @@ class SsrPass {
     // }
 
     getSSRUniforms(map, factor, quality, mainDepthTex, depthTestTex) {
-        if (!mainDepthTex && !this._depthCopy) {
+        if (!mainDepthTex/* && !this._depthCopy*/) {
             return null;
         }
-        const depthTex = mainDepthTex || this._depthCopy;
+        // const depthTex = mainDepthTex || this._depthCopy;
+        const depthTex = mainDepthTex;
         const texture = this.getMipmapTexture();
         const uniforms = {
             'TextureDepth': depthTex,
@@ -123,7 +124,7 @@ class SsrPass {
     genMipMap(sourceTex, depthTex, projViewMatrix) {
         this.setup(sourceTex);
         this._ssrBlur(sourceTex);
-        this.copyDepthTex(depthTex);
+        // this.copyDepthTex(depthTex);
         if (!this._projViewMatrix) {
             this._projViewMatrix = [];
         }
@@ -131,38 +132,38 @@ class SsrPass {
         return this._outputTex;
     }
 
-    getPrevProjViewMatrix() {
-        return this._projViewMatrix;
-    }
+    // getPrevProjViewMatrix() {
+    //     return this._projViewMatrix;
+    // }
 
-    copyDepthTex(depthTex) {
-        if (!this._depthCopy) {
-            const info = {
-                min: 'nearest',
-                mag: 'nearest',
-                mipmap: false,
-                type: 'uint8',
-                width: depthTex.width,
-                height: depthTex.height,
-            };
-            this._depthCopy = this._regl.texture(info);
-            const fboInfo = {
-                width: depthTex.width,
-                height: depthTex.height,
-                colors: [this._depthCopy],
-                // stencil: true,
-                // colorCount,
-                colorFormat: 'rgba'
-            };
-            this._depthCopyFBO = this._regl.framebuffer(fboInfo);
-        } else if (depthTex.width !== this._depthCopy.width || depthTex.height !== this._depthCopy.height) {
-            this._depthCopyFBO.resize(depthTex.width, depthTex.height);
-        }
-        this._renderer.render(this._copyDepthShader, {
-            'TextureDepth': depthTex
-        }, null, this._depthCopyFBO);
-        return this._depthCopy;
-    }
+    // copyDepthTex(depthTex) {
+    //     if (!this._depthCopy) {
+    //         const info = {
+    //             min: 'nearest',
+    //             mag: 'nearest',
+    //             mipmap: false,
+    //             type: 'uint8',
+    //             width: depthTex.width,
+    //             height: depthTex.height,
+    //         };
+    //         this._depthCopy = this._regl.texture(info);
+    //         const fboInfo = {
+    //             width: depthTex.width,
+    //             height: depthTex.height,
+    //             colors: [this._depthCopy],
+    //             // stencil: true,
+    //             // colorCount,
+    //             colorFormat: 'rgba'
+    //         };
+    //         this._depthCopyFBO = this._regl.framebuffer(fboInfo);
+    //     } else if (depthTex.width !== this._depthCopy.width || depthTex.height !== this._depthCopy.height) {
+    //         this._depthCopyFBO.resize(depthTex.width, depthTex.height);
+    //     }
+    //     this._renderer.render(this._copyDepthShader, {
+    //         'TextureDepth': depthTex
+    //     }, null, this._depthCopyFBO);
+    //     return this._depthCopy;
+    // }
 
     _ssrBlur(inputTex) {
         const output = this._targetFBO;
@@ -206,7 +207,7 @@ class SsrPass {
             this._mipmapShader.dispose();
             // this._blurShader.dispose();
             this._ssrQuadShader.dispose();
-            this._copyDepthShader.dispose();
+            // this._copyDepthShader.dispose();
 
             this._targetFBO.destroy();
             this._combineFBO.destroy();
@@ -214,18 +215,18 @@ class SsrPass {
 
             delete this._combineShader;
         }
-        if (this._depthCopy) {
-            this._depthCopyFBO.destroy();
-            delete this._depthCopy;
-            delete this._depthCopyFBO;
-        }
+        // if (this._depthCopy) {
+        //     this._depthCopyFBO.destroy();
+        //     delete this._depthCopy;
+        //     delete this._depthCopyFBO;
+        // }
     }
 
     _initShaders() {
         if (!this._combineShader) {
             this._mipmapShader = new SsrMipmapShader();
             this._combineShader = new SsrCombineShader();
-            this._copyDepthShader = new CopyDepthShader();
+            // this._copyDepthShader = new CopyDepthShader();
             // this._blurShader = new BoxBlurShader({ blurOffset: 2 });
 
             const config = {

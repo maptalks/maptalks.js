@@ -100,9 +100,9 @@ export default class PostProcess {
         this._ssrPass.genMipMap(tex, depthTex, projViewMatrix);
     }
 
-    getPrevSsrProjViewMatrix() {
-        return this._ssrPass && this._ssrPass.getPrevProjViewMatrix();
-    }
+    // getPrevSsrProjViewMatrix() {
+    //     return this._ssrPass && this._ssrPass.getPrevProjViewMatrix();
+    // }
 
     ssr(currentTex) {
         if (!this._ssrFBO) {

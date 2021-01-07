@@ -46,7 +46,9 @@ class GroundPainter {
             return false;
         }
         const defines = this._getGroundDefines(context);
-        this._ground.setDefines(defines);
+        if (defines) {
+            this._ground.setDefines(defines);
+        }
         if (this._ground.material !== this.material) {
             this._ground.setMaterial(this.material);
         }
@@ -104,6 +106,7 @@ class GroundPainter {
                 }
                 shader.shaderDefines = shaderDefines;
             } else {
+                // ssr on，但没有context.ssr，说明是此帧的第一次绘制ground
                 this.renderer.render(shader, uniforms, this._groundScene, fbo);
             }
             updated = true;
@@ -365,10 +368,13 @@ class GroundPainter {
         planeGeo.data.aTexCoord = new Uint8Array(
             [0, 1, 1, 1, 0, 0, 1, 0]
         );
+        planeGeo.createTangent();
         planeGeo.generateBuffers(this.renderer.regl);
 
         //TODO 还需要构造 tangent
         this._ground = new reshader.Mesh(planeGeo, null, { castShadow: false });
+        const defines = this._standardShader.getGeometryDefines(planeGeo);
+        this._ground.setDefines(defines);
         this._groundScene = new reshader.Scene([this._ground]);
     }
 
@@ -394,10 +400,8 @@ class GroundPainter {
     }
 
     _getGroundDefines(context) {
-        if (!this._defines) {
-            this._defines = {};
-        }
-        const defines = this._defines;
+        let updated = false;
+        const defines = this._ground.defines;
         const sceneConfig = this._layer._getSceneConfig && this._layer._getSceneConfig();
         // const groundConfig = this._layer.getGroundConfig();
 
@@ -405,9 +409,11 @@ class GroundPainter {
             if (has) {
                 if (!defines[name]) {
                     defines[name] = 1;
+                    updated = true;
                 }
             } else if (defines[name]) {
                 delete defines[name];
+                updated = true;
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
@@ -420,6 +426,9 @@ class GroundPainter {
         update(hasPattern, 'HAS_PATTERN');
         const hasSSAO = context && context.ssao;
         update(hasSSAO, 'HAS_SSAO');
+        if (!updated) {
+            return null;
+        }
         return defines;
     }
 
