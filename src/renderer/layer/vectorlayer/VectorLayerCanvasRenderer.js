@@ -97,7 +97,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
             this._batchConversionMarkers(this.mapStateCache.glZoom);
-            this.forEachGeo(this.checkGeo, this);
+            if (!this._onlyHasPoint) {
+                this.forEachGeo(this.checkGeo, this);
+            }
             this._drawnRes = res;
         }
         this._sortByDistanceToCamera(map.cameraPosition);
@@ -137,7 +139,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._updateDisplayExtent();
         this.prepareToDraw();
         this._batchConversionMarkers(this.mapStateCache.glZoom);
-        this.forEachGeo(this.checkGeo, this);
+        if (!this._onlyHasPoint) {
+            this.forEachGeo(this.checkGeo, this);
+        }
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
@@ -153,6 +157,16 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     checkGeo(geo) {
         geo._isCheck = false;
+        if (geo.type === 'Point') {
+            if (geo._inCurrentView) {
+                if (geo._painter.hasPoint()) {
+                    this._hasPoint = true;
+                }
+                geo._isCheck = true;
+                this._geosToDraw.push(geo);
+            }
+            return;
+        }
         if (!geo || !geo.isVisible() || !geo.getMap() ||
             !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
             return;
@@ -250,27 +264,51 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     _batchConversionMarkers(glZoom) {
         //减少临时变量的使用
         TEMP_ALTITUDES.length = TEMP_GEOS.length = TEMP_POINTS.length = 0;
+        //全局变量本域化,减少全局变量的查找
+        const ALTITUDES = TEMP_ALTITUDES, GEOS = TEMP_GEOS, POINTS = TEMP_POINTS;
         const altitudeCache = {};
+        const layer = this.layer;
+        const layerOpts = layer.options;
+        const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        //是否只有点要素
+        this._onlyHasPoint = true;
         //Traverse all Geo
         let idx = 0;
         for (let i = 0, len = this.layer._geoList.length; i < len; i++) {
             const geo = this.layer._geoList[i];
-            const type = geo.getType();
+            const type = geo.type;
             if (type === 'Point') {
+                if (!geo._painter) {
+                    geo._getPainter();
+                }
                 const painter = geo._painter;
                 if (!painter) {
                     continue;
                 }
-                const point = painter.getRenderPoints(PLACEMENT_CENTER)[0][0];
-                const altitude = geo.getAltitude();
+                // reduce getRenderPoints function call
                 //减少方法的调用
+                let point;
+                if (painter._renderPoints && painter._renderPoints[PLACEMENT_CENTER]) {
+                    point = painter._renderPoints[PLACEMENT_CENTER][0][0];
+                } else {
+                    point = painter.getRenderPoints(PLACEMENT_CENTER)[0][0];
+                }
+                let altitude;
+                if (layerOpts['enableAltitude']) {
+                    altitude = geo.getAltitude();
+                } else {
+                    // reduce getAltitude function call
+                    altitude = layerAltitude;
+                }
                 if (altitudeCache[altitude] == null) {
                     altitudeCache[altitude] = painter.getAltitude();
                 }
-                TEMP_POINTS[idx] = point;
-                TEMP_ALTITUDES[idx] = altitudeCache[altitude];
-                TEMP_GEOS[idx] = geo;
+                POINTS[idx] = point;
+                ALTITUDES[idx] = altitudeCache[altitude];
+                GEOS[idx] = geo;
                 idx++;
+            } else {
+                this._onlyHasPoint = false;
             }
         }
         if (idx === 0) {
@@ -300,6 +338,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 TEMP_FIXEDEXTENT.set(fixedExtent.xmin, fixedExtent.ymin, fixedExtent.xmax, fixedExtent.ymax);
                 TEMP_FIXEDEXTENT._add(pts[i]);
                 geo._inCurrentView = TEMP_FIXEDEXTENT.intersects(containerExtent);
+            }
+            //如果是点直接处理了，不用去checkGeo
+            if (geo._inCurrentView) {
+                if (!geo.isVisible() || !layer.isCanvasRender()) {
+                    geo._inCurrentView = false;
+                }
+                //如果当前图层上只有点，直接将点加入_geosToDraw,整个checkGeo都不用执行了
+                if (this._onlyHasPoint && geo._inCurrentView) {
+                    this._hasPoint = true;
+                    geo._isCheck = true;
+                    this._geosToDraw.push(geo);
+                }
             }
         }
         return pts;
