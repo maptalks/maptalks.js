@@ -107,14 +107,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             const geo = this._geosToDraw[i];
             if (!geo._isCheck) {
                 if (!geo.isVisible()) {
-                    delete geo._cPoint;
-                    delete geo._inCurrentView;
+                    geo._cPoint = undefined;
+                    geo._inCurrentView = undefined;
                     continue;
                 }
             }
-            geo._paint(this._displayExtent);
-            delete this._geosToDraw[i]._cPoint;
-            delete this._geosToDraw[i]._inCurrentView;
+            if (geo._dirtyCoords) {
+                geo._paint(this._displayExtent);
+            } else if (geo._painter) {
+                geo._painter.paint(this._displayExtent);
+            }
+            geo._cPoint = undefined;
+            geo._inCurrentView = undefined;
         }
     }
 
@@ -144,9 +148,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
-            this._geosToDraw[i]._paint();
-            delete this._geosToDraw[i]._cPoint;
-            delete this._geosToDraw[i]._inCurrentView;
+            const geo = this._geosToDraw[i];
+            if (geo._dirtyCoords) {
+                geo._painter.paint();
+            } else if (geo._painter) {
+                geo._painter.paint();
+            }
+            geo._cPoint = undefined;
+            geo._inCurrentView = undefined;
         }
     }
 
@@ -314,6 +323,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (idx === 0) {
             return [];
         }
+        const isCanvasRender = layer.isCanvasRender();
         const map = this.getMap();
         const pts = map._pointsToContainerPoints(TEMP_POINTS, glZoom, TEMP_ALTITUDES);
         const containerExtent = map.getContainerExtent();
@@ -341,7 +351,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
             //如果是点直接处理了，不用去checkGeo
             if (geo._inCurrentView) {
-                if (!geo.isVisible() || !layer.isCanvasRender()) {
+                if (!geo.isVisible() || !isCanvasRender) {
                     geo._inCurrentView = false;
                 }
                 //如果当前图层上只有点，直接将点加入_geosToDraw,整个checkGeo都不用执行了
