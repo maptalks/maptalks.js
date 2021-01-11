@@ -1,5 +1,6 @@
 import { extend, isString, isFunction, isNumber, isSupportVAO } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
+import { KEY_DISPOSED } from '../common/Constants.js';
 
 const UNIFORM_TYPE = {
     function : 'function',
@@ -251,8 +252,13 @@ class Shader {
 
     dispose() {
         for (const p in this.commands) {
-            if (this.commands[p].destroy) {
-                this.commands[p].destroy();
+            const command = this.commands[p];
+            if (!command) {
+                continue;
+            }
+            if (command.destroy && !command[KEY_DISPOSED]) {
+                command[KEY_DISPOSED] = true;
+                command.destroy();
             }
         }
         this.commands = {};

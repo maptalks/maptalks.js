@@ -35,3 +35,5 @@ export function getGroundTransform(out, map) {
     mat4.scale(localTransform, localTransform, vec3.set(SCALE, scaleX, scaleY, 1));
     return localTransform;
 }
+
+export const EMPTY_COLOR = [0, 0, 0, 0];

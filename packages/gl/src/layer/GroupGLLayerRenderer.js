@@ -132,18 +132,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         drawContext.jitter = NO_JITTER;
 
-        const ssrMode = this.isSSROn();
-        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
-            this._postProcessor.drawSSR(this._depthTex);
-        }
-
         let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
 
-        //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
-            tex = this._postProcessor.ssr(tex);
-        }
-
+        // bloom的绘制放在ssr之前，更新深度缓冲，避免ssr绘制时，深度值不正确
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
             const bloomConfig = config.bloom;
@@ -151,6 +142,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const factor = getValueOrDefault(bloomConfig, 'factor', 1);
             const radius = getValueOrDefault(bloomConfig, 'radius', 1);
             tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
+        }
+
+        const ssrMode = this.isSSROn();
+        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
+            this._postProcessor.drawSSR(this._depthTex);
+        }
+
+        //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
+        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
+            tex = this._postProcessor.ssr(tex);
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -528,6 +529,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             delete this._targetFBO;
             delete this._noAaFBO;
+            if (this._copyFBO) {
+                this._copyFBO.destroy();
+                delete this._copyFBO;
+            }
         }
     }
 
@@ -897,7 +902,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _createFBOInfo(config, depthTex) {
+    _createSimpleFBOInfo() {
         const width = this.canvas.width, height = this.canvas.height;
         const regl = this.regl;
         const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
@@ -916,6 +921,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // colorCount,
             colorFormat: 'rgba'
         };
+        return fboInfo;
+    }
+
+    _createFBOInfo(config, depthTex) {
+        const { width, height } = this.canvas;
+        const regl = this.regl;
+        const fboInfo = this._createSimpleFBOInfo();
         const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
         //depth(stencil) buffer 是可以共享的
         if (enableDepthTex) {
@@ -998,8 +1010,28 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
+        const enableSSR = this.isSSROn();
+        let copyFBO = this._copyFBO;
+        if (enableSSR) {
+            if (!copyFBO) {
+                const info = this._createSimpleFBOInfo();
+                copyFBO = this._copyFBO = this.regl.framebuffer(info);
+            }
+            const { width, height } = this.canvas;
+            if (copyFBO.width !== width || copyFBO.height !== height) {
+                copyFBO.resize(width, height);
+            }
+        } else {
+            copyFBO = null;
+            if (this._copyFBO) {
+                this._copyFBO.destroy();
+                delete this._copyFBO;
+            }
+        }
+
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
+            copyFBO,
             taaTex ? this._targetFBO.color[0] : tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
             taaTex,
@@ -1017,10 +1049,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineWidth,
             outlineColor
         );
-        const enableSSR = this.isSSROn();
+
         if (enableSSR) {
-            //TODO tex不包含fxaa texture，ssr中可能是错误的
-            this._postProcessor.genSsrMipmap(taaTex || tex, this._depthTex);
+            this._postProcessor.genSsrMipmap(copyFBO.color[0], this._depthTex);
+            this._postProcessor.copyFBOToScreen(copyFBO);
         }
     }
 }

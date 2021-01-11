@@ -1,5 +1,6 @@
 import * as reshader from '@maptalks/reshader.gl';
 import { vec2 } from 'gl-matrix';
+import { EMPTY_COLOR } from '../util/util.js';
 
 const RESOLUTION = [];
 const bloomFilter = m => m.getUniform('bloom');
@@ -12,6 +13,7 @@ export default class PostProcess {
         this._renderer = new reshader.Renderer(regl);
         this._fxaaShader = new reshader.FxaaShader();
         this._taaPass = new reshader.TaaPass(this._renderer, jitter);
+        this._copyShader = new reshader.CopyShader();
     }
 
     setContextIncludes(/*context*/) {
@@ -248,8 +250,11 @@ export default class PostProcess {
         }, sourceTex, depthTex);
     }
 
-    fxaa(source, noAaSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
+    fxaa(fbo, source, noAaSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
+        if (fbo && (fbo.width !== source.fbo || fbo.height !== source.height)) {
+            fbo.resize(source.width, source.height);
+        }
         const shaderDefines = {};
         if (taaTextureSource) {
             shaderDefines['HAS_TAA_TEX'] = 1;
@@ -281,6 +286,22 @@ export default class PostProcess {
             outlineFactor,
             outlineWidth,
             outlineColor
+        }, null, fbo);
+    }
+
+    copyFBOToScreen(fbo) {
+        if (!this._copyFBOSize) {
+            this._copyFBOSize = [];
+        }
+        this._copyFBOSize[0] = fbo.width;
+        this._copyFBOSize[1] = fbo.height;
+        this._regl.clear({
+            color: EMPTY_COLOR,
+            fbo: fbo
+        });
+        this._renderer.render(this._copyShader, {
+            texture: fbo.color[0],
+            size: this._copyFBOSize
         });
     }
 
@@ -326,6 +347,10 @@ export default class PostProcess {
         if (this._fxaaShader) {
             this._fxaaShader.dispose();
             delete this._fxaaShader;
+        }
+        if (this._copyShader) {
+            this._copyShader.dispose();
+            delete this._copyShader;
         }
     }
 

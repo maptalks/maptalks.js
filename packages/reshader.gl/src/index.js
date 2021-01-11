@@ -42,6 +42,7 @@ export { default as HeatmapShader } from './shader/HeatmapShader';
 export { default as SkyboxShader } from './skybox/SkyboxShader';
 export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
 export { default as WaterShader } from './water/WaterShader.js';
+export { default as CopyShader } from './shader/CopyShader.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };

@@ -123,7 +123,7 @@ class SsrPass {
 
     genMipMap(sourceTex, depthTex, projViewMatrix) {
         this.setup(sourceTex);
-        this._ssrBlur(sourceTex);
+        this._mipmap(sourceTex);
         // this.copyDepthTex(depthTex);
         if (!this._projViewMatrix) {
             this._projViewMatrix = [];
@@ -165,7 +165,7 @@ class SsrPass {
     //     return this._depthCopy;
     // }
 
-    _ssrBlur(inputTex) {
+    _mipmap(inputTex) {
         const output = this._targetFBO;
 
         const sizeRatio = 0.5;

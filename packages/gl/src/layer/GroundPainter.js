@@ -3,11 +3,10 @@ import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform } from './util/util.js';
+import { extend, getGroundTransform, EMPTY_COLOR } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
-const EMPTY_COLOR = [0, 0, 0, 0];
 
 class GroundPainter {
     static getGroundTransform(out, map) {
