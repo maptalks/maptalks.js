@@ -137,7 +137,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // bloom的绘制放在ssr之前，更新深度缓冲，避免ssr绘制时，深度值不正确
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
-            this._postProcessor.drawBloom(this._depthTex);
+            this._bloomPainted = this._postProcessor.drawBloom(this._depthTex);
         }
 
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
@@ -1055,7 +1055,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         // bloom后处理放到ssr之后，防止bloom被ssr遮住
-        if (enableBloom) {
+        if (enableBloom && this._bloomPainted) {
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
             const factor = getValueOrDefault(bloomConfig, 'factor', 1);
