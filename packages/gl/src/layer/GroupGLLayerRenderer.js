@@ -54,9 +54,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this.prepareCanvas();
         this.layer._updatePolygonOffset();
         this['_toRedraw'] = false;
-        const tex = this._renderChildLayers('render', args);
+        this._renderChildLayers('render', args);
         this._renderOutlines();
-        this._postProcess(tex);
+        this._postProcess();
     }
 
     drawOnInteracting(...args) {
@@ -65,9 +65,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this.layer._updatePolygonOffset();
         this['_toRedraw'] = false;
-        const tex = this._renderChildLayers('drawOnInteracting', args);
+        this._renderChildLayers('drawOnInteracting', args);
         this._renderOutlines();
-        this._postProcess(tex);
+        this._postProcess();
     }
 
     _renderChildLayers(methodName, args) {
@@ -83,7 +83,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const hasRenderTarget = this.hasRenderTarget();
         if (!hasRenderTarget) {
             this._renderInMode('default', null, methodName, args);
-            return null;
+            return;
         }
 
         const sceneConfig =  this.layer._getSceneConfig();
@@ -132,26 +132,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         drawContext.jitter = NO_JITTER;
 
-        let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
+        // let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
 
         // bloom的绘制放在ssr之前，更新深度缓冲，避免ssr绘制时，深度值不正确
         const enableBloom = config.bloom && config.bloom.enable;
         if (enableBloom) {
-            const bloomConfig = config.bloom;
-            const threshold = +bloomConfig.threshold || 0;
-            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
-            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, this._depthTex, threshold, factor, radius);
+            this._postProcessor.drawBloom(this._depthTex);
         }
 
+        // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const ssrMode = this.isSSROn();
-        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
+        if (ssrMode === SSR_IN_ONE_FRAME) {
             this._postProcessor.drawSSR(this._depthTex);
-        }
-
-        //ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        if (ssrMode === SSR_IN_ONE_FRAME && this._postProcessor) {
-            tex = this._postProcessor.ssr(tex);
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -159,7 +151,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderInMode('noAa', this._noAaFBO, methodName, args);
         this._noaaDrawCount = fGL.getDrawCalls();
 
-        return tex;
+        // return tex;
     }
 
     _renderInMode(mode, fbo, methodName, args) {
@@ -529,9 +521,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             delete this._targetFBO;
             delete this._noAaFBO;
-            if (this._copyFBO) {
-                this._copyFBO.destroy();
-                delete this._copyFBO;
+            if (this._postFBO) {
+                this._postFBO.destroy();
+                delete this._postFBO;
             }
         }
     }
@@ -952,7 +944,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return fboInfo;
     }
 
-    _postProcess(tex) {
+    _postProcess() {
         if (!this._targetFBO) {
             this._needRetireFrames = false;
             return;
@@ -963,20 +955,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         const map = this.layer.getMap();
-
-        const enableSSAO = this.isEnableSSAO();
-        if (enableSSAO) {
-            //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
-            //generate ssao texture for the next frame
-            tex = this._postProcessor.ssao(tex, this._depthTex, {
-                projMatrix: map.projMatrix,
-                cameraNear: map.cameraNear,
-                cameraFar: map.cameraFar,
-                ssaoBias: config.ssao && config.ssao.bias || 10,
-                ssaoRadius: config.ssao && config.ssao.radius || 100,
-                ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
-            });
-        }
 
         const enableTAA = this.isEnableTAA();
         let taaTex;
@@ -1010,28 +988,38 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
-        const enableSSR = this.isSSROn();
-        let copyFBO = this._copyFBO;
-        if (enableSSR) {
-            if (!copyFBO) {
+        const ssrMode = this.isSSROn();
+        const enableSSAO = this.isEnableSSAO();
+        const enableBloom = config.bloom && config.bloom.enable;
+        const hasPost = ssrMode || enableSSAO || enableBloom;
+
+        let postFBO = this._postFBO;
+        if (hasPost) {
+            if (!postFBO) {
                 const info = this._createSimpleFBOInfo();
-                copyFBO = this._copyFBO = this.regl.framebuffer(info);
+                postFBO = this._postFBO = this.regl.framebuffer(info);
             }
             const { width, height } = this.canvas;
-            if (copyFBO.width !== width || copyFBO.height !== height) {
-                copyFBO.resize(width, height);
+            if (postFBO.width !== width || postFBO.height !== height) {
+                postFBO.resize(width, height);
             }
         } else {
-            copyFBO = null;
-            if (this._copyFBO) {
-                this._copyFBO.destroy();
-                delete this._copyFBO;
+            postFBO = null;
+            if (this._postFBO) {
+                this._postFBO.destroy();
+                delete this._postFBO;
             }
+        }
+
+        let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
+
+        if (ssrMode === SSR_IN_ONE_FRAME) {
+            tex = this._postProcessor.ssr(tex);
         }
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
-            copyFBO,
+            postFBO,
             taaTex ? this._targetFBO.color[0] : tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
             taaTex,
@@ -1050,9 +1038,36 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor
         );
 
-        if (enableSSR) {
-            this._postProcessor.genSsrMipmap(copyFBO.color[0], this._depthTex);
-            this._postProcessor.copyFBOToScreen(copyFBO);
+        tex = postFBO.color[0];
+
+        if (enableSSAO) {
+            //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
+            //generate ssao texture for the next frame
+            tex = this._postProcessor.ssao(tex, this._depthTex, {
+                projMatrix: map.projMatrix,
+                cameraNear: map.cameraNear,
+                cameraFar: map.cameraFar,
+                ssaoBias: config.ssao && config.ssao.bias || 10,
+                ssaoRadius: config.ssao && config.ssao.radius || 100,
+                ssaoIntensity: config.ssao && config.ssao.intensity || 0.5
+            });
+        }
+
+        // bloom后处理放到ssr之后，防止bloom被ssr遮住
+        if (enableBloom) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
+            tex = this._postProcessor.bloom(tex, threshold, factor, radius);
+        }
+
+        if (ssrMode) {
+            this._postProcessor.genSsrMipmap(tex, this._depthTex);
+        }
+
+        if (hasPost) {
+            this._postProcessor.renderFBOToScreen(tex);
         }
     }
 }
