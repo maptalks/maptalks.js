@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -607,12 +607,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!enable || map.getPitch() <= MIN_SSR_PITCH) {
             return 0;
         }
-        // const projViewMat = map.projViewMatrix;
-        // const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
-        // return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        const projViewMat = map.projViewMatrix;
+        const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
+        return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
         // SSR_STATIC的思路是直接利用上一帧的深度纹理，来绘制ssr，这样无需额外的ssr pass。
         // 但当场景里有透明的物体时，被物体遮住的倒影会在SSR_STATIC阶段中绘制，但在SSR_IN_ONE_FRAME中不绘制，出现闪烁，故取消SSR_STATIC
-        return SSR_IN_ONE_FRAME;
+        // 2021-01-11 fuzhen 该问题通过在ssr shader中，通过手动比较深度值，决定是否绘制解决
+        // return SSR_IN_ONE_FRAME;
     }
 
     isEnableTAA() {

@@ -405,7 +405,7 @@ class GroundPainter {
         let updated = false;
         const defines = this._ground.defines;
         const sceneConfig = this._layer._getSceneConfig && this._layer._getSceneConfig();
-        // const groundConfig = this._layer.getGroundConfig();
+        const groundConfig = this._layer.getGroundConfig();
 
         function update(has, name) {
             if (has) {
@@ -419,8 +419,8 @@ class GroundPainter {
             }
         }
         update(this._hasIBL(), 'HAS_IBL_LIGHTING');
-        // const hasSSR = context && context.ssr && groundConfig && groundConfig.symbol && groundConfig.symbol.ssr;
-        // update(hasSSR, 'HAS_SSR');
+        const hasSSR = context && context.ssr && groundConfig && groundConfig.symbol && groundConfig.symbol.ssr;
+        update(hasSSR, 'HAS_SSR');
         const hasShadow = context && sceneConfig && sceneConfig.shadow && sceneConfig.shadow.enable;
         update(hasShadow, 'HAS_SHADOWING');
         update(hasShadow, 'USE_ESM');
