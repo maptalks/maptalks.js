@@ -92,7 +92,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableTAA = this.isEnableTAA();
         const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
-        //TODO 也许可以在未更新时，省略taa阶段的绘制
         this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
 
         const fGL = this.glCtx;
@@ -112,6 +111,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             fGL.resetDrawCalls();
             this._renderInMode('taa', taaFBO, methodName, args);
             this._taaDrawCount = fGL.getDrawCalls();
+            delete drawContext.onlyUpdateDepthInTaa;
+            drawContext.jitter = NO_JITTER;
 
             let fxaaFBO = this._fxaaFBO;
             if (!fxaaFBO) {
@@ -130,7 +131,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             delete this._taaFBO;
             delete this._fxaaFBO;
         }
-        drawContext.jitter = NO_JITTER;
 
         // let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
 
@@ -1039,7 +1039,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor
         );
 
-        tex = postFBO.color[0];
+        if (postFBO) {
+            tex = postFBO.color[0];
+        }
 
         if (enableSSAO) {
             //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
