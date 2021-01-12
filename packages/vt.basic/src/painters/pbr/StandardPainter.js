@@ -13,6 +13,16 @@ class StandardPainter extends MeshPainter {
         this.scene.sortFunction = this.sortByCommandKey;
     }
 
+    supportRenderMode(mode) {
+        // maptalks-studio#1120, 因为ssr有两种绘制模式，开启taa时会出现闪烁，
+        const symbol = this.getSymbol();
+        if (symbol.ssr) {
+            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+        } else {
+            return super.supportRenderMode(mode);
+        }
+    }
+
     createGeometry(glData) {
         if (Array.isArray(glData)) {
             return glData.map(data => this.createGeometry(data));
