@@ -22,7 +22,11 @@ class EnvironmentPainter {
     }
 
     update() {
-        const lightManager = this.getMap().getLightManager();
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        const lightManager = map.getLightManager();
         const resource = lightManager && lightManager.getAmbientResource();
         if (resource !== this._resource && this._iblTexes) {
             disposeIBLTextures(this._iblTexes);
