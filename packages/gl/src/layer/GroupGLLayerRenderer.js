@@ -78,7 +78,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
         this._envPainter.paint(drawContext);
         //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
-        this.drawGround();
+        this.drawGround(true);
 
         const hasRenderTarget = this.hasRenderTarget();
         if (!hasRenderTarget) {
@@ -544,7 +544,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         return this._drawContext;
     }
 
-    drawGround() {
+    drawGround(forceRender) {
         if (!this._groundPainter) {
             this._groundPainter = new GroundPainter(this.regl, this.layer);
         }
@@ -554,11 +554,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         context.jitter = NO_JITTER;
         context.offsetFactor = 1;
         context.offsetUnits = 4;
-        // 第一次绘制 ground 应该忽略 sceneFilter
-        // 否则 noSSRFilter 会把 ground 过滤掉
-        // 但当场景有透明物体时，物体背后没画ground，出现绘制问题。
-        const sceneFilter = context.sceneFilter;
-        delete context.sceneFilter;
+        let sceneFilter;
+        if (forceRender) {
+            // 第一次绘制 ground 应该忽略 sceneFilter
+            // 否则 noSSRFilter 会把 ground 过滤掉
+            // 但当场景有透明物体时，物体背后没画ground，出现绘制问题。
+            sceneFilter = context.sceneFilter;
+            delete context.sceneFilter;
+        }
         const drawn = this._groundPainter.paint(context);
         if (sceneFilter) {
             context.sceneFilter = sceneFilter;
