@@ -8,6 +8,7 @@ attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     uniform vec2 uvScale;
     uniform vec2 uvOffset;
+    uniform float uvRotation;
 #endif
 #if defined(HAS_TANGENT)
     attribute vec4 aTangent;
@@ -122,9 +123,21 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n, out highp vec3 t) {
         vec3(-2.0,  2.0,  2.0) * q.z * q.zwx;
 }
 
+const float mid = 0.5;
+//https://gist.github.com/ayamflow/c06bc0c8a64f985dd431bd0ac5b557cd
+vec2 rotateUV(vec2 uv, float rotation) {
+    return vec2(
+        cos(rotation) * (uv.x - mid) + sin(rotation) * (uv.y - mid) + mid,
+        cos(rotation) * (uv.y - mid) - sin(rotation) * (uv.x - mid) + mid
+    );
+}
+
 void main() {
     #if defined(HAS_MAP)
         vTexCoord = aTexCoord * uvScale + uvOffset;
+        if (uvRotation != 0.0) {
+            vTexCoord = rotateUV(vTexCoord, uvRotation);
+        }
     #endif
 
     #if defined(HAS_TANGENT)
