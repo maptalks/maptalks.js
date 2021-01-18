@@ -354,7 +354,8 @@ class GeometryDragHandler extends Handler {
 Geometry.mergeOptions({
     'draggable': false,
     'dragShadow': true,
-    'dragOnAxis': null
+    'dragOnAxis': null,
+    'dragOnAxisOnScreenCoordinates': false
 });
 
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
