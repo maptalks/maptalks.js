@@ -19,7 +19,7 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
  * @extends Handler
  * @ignore
  */
-class GeometryDragHandler extends Handler  {
+class GeometryDragHandler extends Handler {
 
     /**
      * @param  {Geometry} target geometry target to drag
@@ -120,8 +120,8 @@ class GeometryDragHandler extends Handler  {
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
             this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
-                enableAltitude : layer.options['enableAltitude'],
-                altitudeProperty : layer.options['altitudeProperty']
+                enableAltitude: layer.options['enableAltitude'],
+                altitudeProperty: layer.options['altitudeProperty']
             });
             map.addLayer(this._dragStageLayer);
         }
@@ -199,18 +199,36 @@ class GeometryDragHandler extends Handler  {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            coord = this._correctCoord(e['coordinate']),
+            dragOnAxisOnScreenCoordinates = this._shadow.options['dragOnAxisOnScreenCoordinates'],
             point = e['containerPoint'];
+        let coord = e['coordinate'];
+
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
-        const pointOffset = point.sub(this._lastPoint);
-        const coordOffset = coord.sub(this._lastCoord);
-        if (axis === 'x') {
-            pointOffset.y = coordOffset.y = 0;
-        } else if (axis === 'y') {
-            pointOffset.x = coordOffset.x = 0;
+        let newPoint;
+        // drag direction is ScreenCoordinates,The direction of the drag has nothing to do with the map rotation(bearing)
+        if (dragOnAxisOnScreenCoordinates) {
+            newPoint = e['containerPoint'].copy();
+            if (axis === 'x') {
+                newPoint.y = this._lastPoint.y;
+            } else if (axis === 'y') {
+                newPoint.x = this._lastPoint.x;
+            }
+            coord = map.containerPointToCoord(newPoint);
+        } else {
+            newPoint = point;
         }
-        this._lastPoint = point;
+        coord = this._correctCoord(coord);
+        const pointOffset = newPoint.sub(this._lastPoint);
+        const coordOffset = coord.sub(this._lastCoord);
+        if (!dragOnAxisOnScreenCoordinates) {
+            if (axis === 'x') {
+                pointOffset.y = coordOffset.y = 0;
+            } else if (axis === 'y') {
+                pointOffset.x = coordOffset.x = 0;
+            }
+        }
+        this._lastPoint = newPoint;
         this._lastCoord = coord;
         this._shadow.translate(coordOffset);
         if (!target.options['dragShadow']) {
