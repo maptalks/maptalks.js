@@ -41,7 +41,11 @@ export default class TRS {
         mat4.getTranslation(trans, animMatrix);
         mat4.getRotation(rotation, animMatrix);
         mat4.getScaling(scale, animMatrix);
-        if (!vec3.equals(trans, EMPTY_TRANS) && !quat.equals(rotation, EMPTY_ROTATION) && !vec3.equals(scale, EMPTY_SCALE)) {
+        if (!vec3.equals(trans, EMPTY_TRANS) && !quat.equals(rotation, EMPTY_ROTATION)) {
+            return true;
+        } else if (!vec3.equals(trans, EMPTY_TRANS) && !vec3.equals(scale, EMPTY_SCALE)) {
+            return true;
+        } else if (!quat.equals(rotation, EMPTY_ROTATION) && !vec3.equals(scale, EMPTY_SCALE)) {
             return true;
         }
         return false;
