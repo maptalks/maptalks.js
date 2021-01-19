@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { isNil, isNumber, sign, removeFromArray, UID } from '../../core/util';
+import { isNil, isNumber, sign, removeFromArray, UID, extend } from '../../core/util';
 import { lowerSymbolOpacity } from '../../core/util/style';
 import Class from '../../core/Class';
 import Eventable from '../../core/Eventable';
@@ -291,6 +291,7 @@ class GeometryEditor extends Eventable(Class) {
             'draggable': true,
             'dragShadow': false,
             'dragOnAxis': opts['axis'],
+            'dragOnAxisOnScreenCoordinates': opts['dragOnAxisOnScreenCoordinates'],
             'cursor': opts['cursor'],
             'symbol': symbol
         });
@@ -382,7 +383,7 @@ class GeometryEditor extends Eventable(Class) {
      * @param {fn} onHandleMove callback
      * @private
      */
-    _createResizeHandles(blackList, onHandleMove, onHandleUp) {
+    _createResizeHandles(blackList, onHandleMove, onHandleUp, options = {}) {
         //cursor styles.
         const cursors = [
             'nw-resize', 'n-resize', 'ne-resize',
@@ -396,8 +397,39 @@ class GeometryEditor extends Eventable(Class) {
             null, 'y', null
         ];
         const geometry = this._geometry;
+        //marker做特殊处理，利用像素求锚点
+        const { isMarker } = options;
+        const map = this.getMap();
+        const me = this;
 
         function getResizeAnchors(ext) {
+            if (isMarker) {
+                const { dxdy, defaultDxDy } = me._getMarkerDefaultDxDy();
+                const fixedExtent = geometry._getPainter().getFixedExtent();
+                const centerPoint = map.coordinateToPoint(geometry.getCenter());
+                const width = fixedExtent.getWidth(), height = fixedExtent.getHeight();
+                const offsetX = dxdy.x + defaultDxDy.x, offsetY = dxdy.y + defaultDxDy.y;
+                // 锚点坐标的偏移量
+                const dxdys = [
+                    [-width / 2 + offsetX, -height / 2 + offsetY],
+                    [offsetX, -height / 2 + offsetY],
+                    [width / 2 + offsetX, -height / 2 + offsetY],
+                    [-width / 2 + offsetX, offsetY],
+                    [width / 2 + offsetX, offsetY],
+                    [-width / 2 + offsetX, height / 2 + offsetY],
+                    [offsetX, height / 2 + offsetY],
+                    [width / 2 + offsetX, height / 2 + offsetY],
+                ];
+                return dxdys.map(xy => {
+                    return {
+                        point: centerPoint.copy(),
+                        symbol: {
+                            markerDx: xy[0],
+                            markerDy: xy[1]
+                        }
+                    };
+                });
+            }
             return [
                 // ext.getMin(),
                 new Point(ext['xmin'], ext['ymax']),
@@ -413,10 +445,8 @@ class GeometryEditor extends Eventable(Class) {
         if (!blackList) {
             blackList = [];
         }
-        const me = this;
         const resizeHandles = [],
             anchorIndexes = {},
-            map = this.getMap(),
             handleSymbol = this.options['vertexHandleSymbol'];
         const fnLocateHandles = () => {
             const pExt = geometry._getPainter().get2DExtent(),
@@ -430,17 +460,22 @@ class GeometryEditor extends Eventable(Class) {
                     }
                 }
                 const anchor = anchors[i],
-                    coordinate = map.pointToCoordinate(anchor);
+                    coordinate = map.pointToCoordinate(anchor.point || anchor);
+                const symbol = extend({}, handleSymbol, anchor.symbol);
                 if (resizeHandles.length < (anchors.length - blackList.length)) {
                     const handle = this.createHandle(coordinate, {
-                        'symbol': handleSymbol,
+                        'symbol': symbol,
                         'cursor': cursors[i],
                         'axis': axis[i],
+                        'dragOnAxisOnScreenCoordinates': isMarker,
+                        'dragSymbol': extend({}, handleSymbol),
+                        // eslint-disable-next-line no-loop-func
                         onMove: (function (_index) {
-                            return function (handleViewPoint) {
+                            return function (handleViewPoint, param) {
                                 me._updating = true;
-                                onHandleMove(handleViewPoint, _index);
+                                onHandleMove(handleViewPoint, _index, param);
                                 geometry.fire('resizing');
+
                             };
                         })(i),
                         onUp: () => {
@@ -454,6 +489,10 @@ class GeometryEditor extends Eventable(Class) {
                     resizeHandles.push(handle);
                 } else {
                     resizeHandles[anchorIndexes[i]].setCoordinates(coordinate);
+                    //更新锚点的symbol，即偏移量
+                    if (isMarker) {
+                        resizeHandles[anchorIndexes[i]].setSymbol(symbol);
+                    }
                 }
             }
 
@@ -463,6 +502,40 @@ class GeometryEditor extends Eventable(Class) {
         //refresh hooks to refresh handles' coordinates
         this._addRefreshHook(fnLocateHandles);
         return resizeHandles;
+    }
+
+    // 获取marker的默认偏移量和手动设置的偏移量
+    _getMarkerDefaultDxDy() {
+        const shadow = this._shadow;
+        const symbol = shadow._getInternalSymbol();
+        const dxdy = new Point(0, 0);
+        let defaultDy = 0, defaultDx = 0;
+        if (isNumber(symbol['markerDx'])) {
+            dxdy.x = symbol['markerDx'];
+        }
+        if (isNumber(symbol['markerDy'])) {
+            dxdy.y = symbol['markerDy'];
+        }
+        let markerHeight = 0, markerWidth = 0;
+        if (isNumber(symbol['markerHeight'])) {
+            markerHeight = symbol['markerHeight'];
+            defaultDy = -markerHeight / 2;
+        }
+        if (isNumber(symbol['markerWidth'])) {
+            markerWidth = symbol['markerWidth'];
+        }
+        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
+            //as these types of markers' anchor stands on its bottom
+            if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
+                defaultDy = -markerHeight / 2;
+            } else if (symbol['markerType'] === 'rectangle') {
+                defaultDy = markerHeight / 2;
+                defaultDx = markerWidth / 2;
+            } else {
+                defaultDy = 0;
+            }
+        }
+        return { dxdy, defaultDxDy: new Point(defaultDx, defaultDy) };
     }
 
     /**
@@ -500,6 +573,8 @@ class GeometryEditor extends Eventable(Class) {
             if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
                 //as these types of markers' anchor stands on its bottom
                 blackList = [5, 6, 7];
+            } else if (symbol['markerType'] === 'rectangle') {
+                blackList = [0, 1, 2, 3, 5];
             }
         } else if (Symbolizers.ImageMarkerSymbolizer.test(symbol) ||
             Symbolizers.VectorPathMarkerSymbolizer.test(symbol)) {
@@ -520,37 +595,48 @@ class GeometryEditor extends Eventable(Class) {
             aspectRatio = size.width / size.height;
         }
 
-        const resizeHandles = this._createResizeHandles(null, (handleViewPoint, i) => {
+        // eslint-disable-next-line no-unused-vars
+        const resizeHandles = this._createResizeHandles(blackList, (handleViewPoint, i, e) => {
+            //blacklist point can not change coordinate,if change coordinate by drag
             if (blackList && blackList.indexOf(i) >= 0) {
+                return;
                 //need to change marker's coordinates
-                const newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
-                const coordinates = shadow.getCoordinates();
-                newCoordinates.x = coordinates.x;
-                shadow.setCoordinates(newCoordinates);
-                this._updateCoordFromShadow(true);
-                // geometryToEdit.setCoordinates(newCoordinates);
-                //coordinates changed, and use mirror handle instead to caculate width and height
-                const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
-                const mirrorViewPoint = map.coordToViewPoint(mirrorHandle.getCoordinates());
-                handleViewPoint = mirrorViewPoint;
+                // const newCoordinates = map.viewPointToCoordinate(handleViewPoint.sub(dxdy));
+                // const coordinates = shadow.getCoordinates();
+                // newCoordinates.x = coordinates.x;
+                // shadow.setCoordinates(newCoordinates);
+                // this._updateCoordFromShadow(true);
+                // // geometryToEdit.setCoordinates(newCoordinates);
+                // //coordinates changed, and use mirror handle instead to caculate width and height
+                // const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
+                // const mirrorViewPoint = map.coordToViewPoint(mirrorHandle.getCoordinates());
+                // handleViewPoint = mirrorViewPoint;
             }
 
             //caculate width and height
-            const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint()).add(dxdy),
-                symbol = shadow._getInternalSymbol();
-            const wh = handleViewPoint.sub(viewCenter);
-            if (blackList && handleViewPoint.y > viewCenter.y) {
-                wh.y = 0;
-            }
+            // const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint()).add(dxdy),
+            //     symbol = shadow._getInternalSymbol();
+            // const wh = handleViewPoint.sub(viewCenter);
+            // if (blackList && handleViewPoint.y > viewCenter.y) {
+            //     wh.y = 0;
+            // }
+            const { containerPoint } = e;
+            const { dxdy } = this._getMarkerDefaultDxDy();
+            // 利用像素差计算宽和高
+            const pixel = map.coordToContainerPoint(shadow.getCoordinates());
+            const offset = [containerPoint.x - pixel.x - dxdy.x, containerPoint.y - pixel.y - dxdy.y];
+            const wh = new Point(Math.abs(offset[0]), Math.abs(offset[1]));
 
             //if this marker's anchor is on its bottom, height doesn't need to multiply by 2.
             const r = blackList ? 1 : 2;
-            let width = Math.abs(wh.x) * 2,
+            let width = Math.abs(wh.x) * (blackList && blackList.indexOf(0) > -1 ? 1 : 2),
                 height = Math.abs(wh.y) * r;
             if (aspectRatio) {
                 width = Math.max(width, height * aspectRatio);
                 height = width / aspectRatio;
             }
+            width = Math.ceil(width);
+            height = Math.ceil(height);
             const ability = resizeAbilities[i];
             if (!(shadow instanceof TextBox)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
@@ -573,7 +659,9 @@ class GeometryEditor extends Eventable(Class) {
             }
         }, () => {
             this._update(getUpdates());
-        });
+        }, extend({
+            isMarker: true,
+        }, this._getMarkerDefaultDxDy()));
 
         function getUpdates() {
             const updates = [
