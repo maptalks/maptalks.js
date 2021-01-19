@@ -468,14 +468,12 @@ class GeometryEditor extends Eventable(Class) {
                         'cursor': cursors[i],
                         'axis': axis[i],
                         'dragOnAxisOnScreenCoordinates': isMarker,
-                        'dragSymbol': extend({}, handleSymbol),
                         // eslint-disable-next-line no-loop-func
                         onMove: (function (_index) {
                             return function (handleViewPoint, param) {
                                 me._updating = true;
                                 onHandleMove(handleViewPoint, _index, param);
                                 geometry.fire('resizing');
-
                             };
                         })(i),
                         onUp: () => {
