@@ -1,6 +1,6 @@
 import { default as LinePack, EXTRUDE_SCALE }  from './LinePack';
-import { vec3, vec4 } from 'gl-matrix';
-import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
+// import { vec3, vec4 } from 'gl-matrix';
+import { buildNormals } from '@maptalks/tbn-packer';
 import { getPosArrayType } from './util/array';
 import { getFeaAltitudeAndHeight } from './util/util';
 
@@ -339,14 +339,18 @@ export default class LineExtrusionPack extends LinePack {
         if (this.options['top'] !== false && this.symbol['material'] && hasTexture(this.symbol['material'])) {
             //只给顶面顶点生成uv坐标
             uvs = buildUVS(aExtrudedPosition, aLinesofar, aUp);
-            tangents = buildTangents(aExtrudedPosition, normals, uvs, indices);
-            tangents = createQuaternion(normals, tangents);
+
+            // tangents = buildTangents(aExtrudedPosition, normals, uvs, indices);
+            // tangents = createQuaternion(normals, tangents);
         }
         arrays['aPosition'] = aPosition;
         if (tangents) {
             arrays['aTexCoord0'] = new Float32Array(uvs);
             arrays['aTangent'] = tangents;
         } else {
+            if (uvs) {
+                arrays['aTexCoord0'] = new Float32Array(uvs);
+            }
             //只有side需要aNormal
             arrays['aNormal'] = simpleNormal ? new Int8Array(normals) : new Float32Array(normals);
         }
@@ -368,6 +372,25 @@ export default class LineExtrusionPack extends LinePack {
         }
         pack.data = arrays;
         pack.buffers = buffers;
+
+        // const indices0 = indices.subarray(33, 36);
+        // const arrays0 = {};
+        // const count = data.aPosition.length / 3;
+        // for (const p in arrays) {
+        //     const size = arrays[p].length / count;
+        //     const shortened = new arrays[p].constructor(size * 3);
+        //     for (let i = 0; i < indices0.length; i++) {
+        //         const idx = indices0[i];
+        //         for (let ii = 0; ii < size; ii++) {
+        //             shortened[i * size + ii] = arrays[p][idx * size + ii];
+        //         }
+        //     }
+        //     arrays0[p] = shortened;
+        // }
+        // pack.data = arrays0;
+        // pack.indices = new Uint8Array([0, 1, 2]);
+        // debugger
+
         return pack;
     }
 }
@@ -389,18 +412,18 @@ function buildUVS(vertexes, aLinesofar, ups) {
     return uvs;
 }
 
-function createQuaternion(normals, tangents) {
-    const aTangent = new Float32Array(tangents.length);
-    const t = [], n = [], q = [];
-    for (let i = 0; i < tangents.length; i += 4) {
-        const ni = i / 4 * 3;
-        vec3.set(n, normals[ni], normals[ni + 1], normals[ni + 2]);
-        vec4.set(t, tangents[i], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
-        packTangentFrame(q, n, t);
-        vec4.copy(aTangent.subarray(i, i + 4), q);
-    }
-    return aTangent;
-}
+// function createQuaternion(normals, tangents) {
+//     const aTangent = new Float32Array(tangents.length);
+//     const t = [], n = [], q = [];
+//     for (let i = 0; i < tangents.length; i += 4) {
+//         const ni = i / 4 * 3;
+//         vec3.set(n, normals[ni], normals[ni + 1], normals[ni + 2]);
+//         vec4.set(t, tangents[i], tangents[i + 1], tangents[i + 2], tangents[i + 3]);
+//         packTangentFrame(q, n, t);
+//         vec4.copy(aTangent.subarray(i, i + 4), q);
+//     }
+//     return aTangent;
+// }
 
 function hasTexture(material) {
     for (const p in material) {
