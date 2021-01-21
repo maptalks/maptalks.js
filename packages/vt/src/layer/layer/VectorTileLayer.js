@@ -38,6 +38,7 @@ const defaultOptions = {
     textGamma: 1,
     //是否限制每帧的 tile mesh creation
     tileMeshCreationLimitPerFrame: 0,
+    maxIconSize: 256,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true

@@ -17,6 +17,7 @@ export default class IconRequestor {
             cb(null, { icons: null });
             return;
         }
+        const maxSize = this.options['maxSize'] || 256;
         const urls = Object.keys(icons);
         const images = {}, buffers = [];
         let count = 0;
@@ -45,9 +46,19 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
-                width = ctx.canvas.width = this.width;
-                height = ctx.canvas.height = this.height;
-                ctx.drawImage(this, 0, 0);
+                width = this.width;
+                height = this.height;
+                if (width > maxSize) {
+                    height = Math.floor(maxSize / width * height);
+                    width = maxSize;
+                }
+                if (height > maxSize) {
+                    width = Math.floor(maxSize / height * width);
+                    height = maxSize;
+                }
+                ctx.canvas.width = width;
+                ctx.canvas.height = height;
+                ctx.drawImage(this, 0, 0, width, height);
                 const data = ctx.getImageData(0, 0, width, height).data;
                 self._addCache(this.url, data, width, height);
             } catch (err) {
