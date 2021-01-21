@@ -8,6 +8,8 @@ import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
 import PostProcess from './postprocess/PostProcess.js';
 
+const EMPTY_COLOR = [0, 0, 0, 0];
+
 const MIN_SSR_PITCH = 10;
 const NO_JITTER = [0, 0];
 
@@ -376,36 +378,36 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const regl = this.regl;
         if (this._targetFBO) {
             regl.clear({
-                color: [0, 0, 0, 0],
+                color: EMPTY_COLOR,
                 depth: 1,
                 stencil: 0xFF,
                 framebuffer: this._targetFBO
             });
             regl.clear({
-                color: [0, 0, 0, 0],
+                color: EMPTY_COLOR,
                 framebuffer: this._noAaFBO
             });
             if (this._taaFBO && this._taaDrawCount) {
                 regl.clear({
-                    color: [0, 0, 0, 0],
+                    color: EMPTY_COLOR,
                     framebuffer: this._taaFBO
                 });
             }
             if (this._fxaaFBO && this._fxaaAfterTaaDrawCount) {
                 regl.clear({
-                    color: [0, 0, 0, 0],
+                    color: EMPTY_COLOR,
                     framebuffer: this._fxaaFBO
                 });
             }
         }
         if (this._outlineFBO) {
             regl.clear({
-                color: [0, 0, 0, 0],
+                color: EMPTY_COLOR,
                 framebuffer: this._outlineFBO
             });
         }
         regl.clear({
-            color: [0, 0, 0, 0],
+            color: EMPTY_COLOR,
             depth: 1,
             stencil: 0xFF
         });
@@ -702,7 +704,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             timestamp,
             renderMode: this._renderMode || 'default',
             includes: {},
-            states: this._getViewStates()
+            states: this._getViewStates(),
+            testSceneFilter: mesh => {
+                return !context.sceneFilter || context.sceneFilter(mesh);
+            }
         };
 
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
