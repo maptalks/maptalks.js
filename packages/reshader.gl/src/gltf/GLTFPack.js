@@ -105,11 +105,34 @@ export default class GLTFPack {
                 this._updateNodeMatrix(time, child, nodeMatrix);
             });
         }
+        this._updateSkinTexture(node);
         if (node.weights) {
             for (let i = 0; i < node.weights.length; i++) {
                 node.morphWeights[i] = node.weights[i];
             }
         }
+    }
+
+    _updateSkinTexture(node) {
+        if (!this.gltf.joints) {
+            return;
+        }
+        const animations = this.gltf.animations;
+        if (!animations) {
+            return;
+        }
+        const jointsLength = this.gltf.joints.length;
+        animations.forEach(animation => {
+            const channels = animation.channels;
+            for (let i = 0; i < channels.length; i++) {
+                const channel = channels[i];
+                const index = node.nodeIndex;
+                if (channel.target.node === index) {
+                    const skin = node.skin;
+                    skin.updateJointTexture(jointsLength);
+                }
+            }
+        });
     }
 
     _parserNode(node, geometries, parentNodeMatrix) {

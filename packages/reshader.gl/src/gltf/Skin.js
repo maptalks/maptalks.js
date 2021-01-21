@@ -22,6 +22,16 @@ export default class Skin {
         this.jointTextureSize = [4, 6];
     }
 
+    updateJointTexture(length) {
+        if (this.jointTexture) {
+            return;
+        }
+        this.jointTexture.texture({
+            width: 4,
+            height: length
+        });
+    }
+
     setJointTexture(jointTexture) {
         this.jointTexture = jointTexture;
     }
