@@ -11,6 +11,13 @@ import { extend, pushIn } from '../../common/Util';
 const EMPTY_ARRAY = [];
 const CLEAR_COLOR = [0, 0, 0, 0];
 
+// for context.sceneFilter
+const MOCK_MESH = {
+    getUniform() {
+        return 0;
+    }
+};
+
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     supportRenderMode() {
@@ -626,10 +633,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugin.updateCollision(context);
         });
 
+        const isFinalRender = (!mode || mode === 'default' || mode === 'noAa') && parentContext.testSceneFilter(MOCK_MESH);
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
-        if (!mode || mode === 'default' || mode === 'noAa') {
+        if (isFinalRender) {
             const groundOffset = -this.layer.getPolygonOffset();
             const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
             groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
@@ -664,7 +672,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (dirty) {
             this.layer.fire('canvasisdirty');
         }
-        if (!mode || mode === 'default' || mode === 'noAa') {
+        if (isFinalRender) {
             this._drawDebug();
         }
     }
