@@ -262,6 +262,14 @@ class Painter {
     }
 
     getPolygonOffset() {
+        // ssr offset和factor值较小时，会影响ssr逻辑中深度精度，造成屏幕边缘出现“阴影”现象。
+        const symbol = this.getSymbol();
+        if (symbol.ssr) {
+            return {
+                factor: 1,
+                units: 1
+            };
+        }
         const layer = this.layer;
         return {
             factor: () => {

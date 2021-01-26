@@ -126,8 +126,8 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
     vec4 rayTraceUnrealSimple(
     const in vec3 rayOriginUV, const in float rayLen, in float depthTolerance, const in vec3 rayDirView, const in float roughness, const in float frameMod) {
-        float invNumSteps = 1.0 / float(20);
-        if (uSsrQuality > 1.0) invNumSteps /= 2.0;
+        const int checkSteps = 20;
+        float invNumSteps = 1.0 / float(checkSteps);
         depthTolerance *= invNumSteps;
         vec3 rayDirUV = computeRayDirUV(rayOriginUV, rayLen, rayDirView);
         float sampleTime = /* getStepOffset(frameMod) * invNumSteps +  */invNumSteps;
@@ -138,14 +138,13 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         float hitDepth = 1.0;
         float steps;
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < checkSteps; i++) {
             sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
             z = fetchDepth(sampleUV.xy);
             depth = linearizeDepth(z);
             sampleDepth = -1.0 / sampleUV.z;
-            //z = 1时说明遇到了最远处的远视面，应该忽略这个depthDiff
-            float validSample = clamp(sign(0.95 - depth), 0.0, 1.0);
-            depthDiff = validSample * (sampleDepth - depth);
+            depthDiff = sampleDepth - depth;
+            depthDiff *= clamp(sign(abs(depthDiff) - rayLen * invNumSteps * invNumSteps), 0.0, 1.0);
             hit = abs(depthDiff + depthTolerance) < depthTolerance;
             timeLerp = clamp(diffSampleW.x / (diffSampleW.x - depthDiff), 0.0, 1.0);
             hitTime = hit ? (diffSampleW.y + timeLerp * invNumSteps - invNumSteps) : 1.0;
@@ -161,22 +160,6 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
                 break;
             }
             diffSampleW.y += invNumSteps;
-        }
-
-        // hitDepth = diffSampleW.z;
-        if (uSsrQuality > 1.0) {
-            for (int i = 0; i < 8; i++) {
-                sampleUV = rayOriginUV + rayDirUV * diffSampleW.y;
-                z = fetchDepth(sampleUV.xy);
-                depth = linearizeDepth(z);
-                depthDiff = sign(1.0 - z) * (-1.0 / sampleUV.z - depth);
-                hit = abs(depthDiff + depthTolerance) < depthTolerance;
-                timeLerp = clamp(diffSampleW.x / (diffSampleW.x - depthDiff), 0.0, 1.0);
-                hitTime = hit ? (diffSampleW.y + timeLerp * invNumSteps - invNumSteps) : 1.0;
-                diffSampleW.z = min(diffSampleW.z, hitTime);
-                diffSampleW.x = depthDiff;
-                diffSampleW.y += invNumSteps;
-            }
         }
 
         return vec4(rayOriginUV + rayDirUV * hitDepth, 1.0 - hitDepth);
@@ -200,6 +183,15 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
      * @param specularColor 材质的specularColor
     */
     vec3 ssr(const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness, const in vec3 normal, const in vec3 eyeVector) {
+        #if !defined(SSR_IN_ONE_FRAME)
+            // depth值较小时，说明该片元被遮住，则不绘制，与SSR_ONE_FRAME阶段的绘制结果保持一致
+            // 具体参考 GroupGLLayerRenderer.isSSROn 方法中的说明
+            vec2 gTexCoord = gl_FragCoord.xy / uGlobalTexSize;
+            float depth = fetchDepth(gTexCoord);
+            if (depth + 5E-4 < gl_FragCoord.z) {
+                return specularEnvironment;
+            }
+        #endif
         float uFrameModTaaSS = 0.0;
         vec4 result = vec4(0.0);
         float rough4 = roughness * roughness;
@@ -207,7 +199,7 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         vec3 upVector = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
         vec3 tangentX = normalize(cross(upVector, normal));
         vec3 tangentY = cross(normal, tangentX);
-        float maskSsr = uSsrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.45, 0.0, 1.0);
+        float maskSsr = uSsrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
         maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
         vec3 rayOriginUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz);
         rayOriginUV.z = 1.0 / rayOriginUV.z;
