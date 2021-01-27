@@ -40,14 +40,14 @@ class StandardShader extends MeshShader {
             {
                 name: 'uModelMatrix',
                 type: 'function',
-                fn: (context, props) => {
+                fn: (_, props) => {
                     return props['modelMatrix'];
                 }
             },
             {
                 name: 'uModelNormalMatrix',
                 type: 'function',
-                fn: (context, props) => {
+                fn: (_, props) => {
                     // const model3 = mat3.fromMat4([], props['modelMatrix']);
                     // const transposed = mat3.transpose(model3, model3);
                     // const inverted = mat3.invert(transposed, transposed);
@@ -58,7 +58,7 @@ class StandardShader extends MeshShader {
             {
                 name: 'uModelViewNormalMatrix',
                 type: 'function',
-                fn: (context, props) => {
+                fn: (_, props) => {
                     const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                     const inverted = mat4.invert(modelView, modelView);
                     const transposed = mat4.transpose(inverted, inverted);
@@ -68,26 +68,34 @@ class StandardShader extends MeshShader {
                 }
             },
             {
-                name : 'uProjectionMatrix',
-                type : 'function',
-                fn : (context, props) => {
+                name: 'uProjectionMatrix',
+                type: 'function',
+                fn: (_, props) => {
                     return props['projMatrix'];
                 }
             },
             // {
-            //     name : 'uProjViewModelMatrix',
-            //     type : 'function',
-            //     fn : (context, props) => {
+            //     name: 'uProjViewModelMatrix',
+            //     type: 'function',
+            //     fn: (_, props) => {
             //         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
             //     }
             // },
             {
-                name : 'uModelViewMatrix',
-                type : 'function',
-                fn : (context, props) => {
+                name: 'uModelViewMatrix',
+                type: 'function',
+                fn: (_, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                 }
             },
+            {
+                name: 'uEnvironmentTransform',
+                type: 'function',
+                fn: (_, props) => {
+                    const rotation = props['environmentRotation'] || 0;
+                    return mat3.fromRotation([], Math.PI * rotation / 180);
+                }
+            }
 
         ];
         if (extraUniforms) {

@@ -1,4 +1,5 @@
 import * as reshader from '@maptalks/reshader.gl';
+import { mat3 } from 'gl-matrix';
 
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
@@ -88,6 +89,7 @@ class EnvironmentPainter {
         const canvas = this._layer.getRenderer().canvas;
         const level = this._layer._getSceneConfig().environment.level || 0;
         const cubeSize = iblTexes.prefilterMap.width;
+        const transform = this._transform = this._transform || [];
         return {
             'rgbmRange': iblTexes.rgbmRange,
             'cubeMap': iblTexes.prefilterMap,
@@ -98,7 +100,8 @@ class EnvironmentPainter {
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,
             'resolution': [canvas.width, canvas.height],
-            'hsv': ambient && ambient.hsv || [0, 0, 0]
+            'hsv': ambient && ambient.hsv || [0, 0, 0],
+            'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.rotation || 0)
         };
     }
 
