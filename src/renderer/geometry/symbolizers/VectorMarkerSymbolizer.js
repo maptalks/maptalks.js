@@ -1,6 +1,6 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
-import { getAlignPoint } from '../../../core/util/strings';
+import { getAlignPoint, hashCode } from '../../../core/util/strings';
 import { hasFunctionDefinition, isFunctionDefinition } from '../../../core/mapbox';
 import Size from '../../../geo/Size';
 import Point from '../../../geo/Point';
@@ -137,7 +137,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     _stampSymbol() {
         if (!this._stamp) {
-            this._stamp = [
+            this._stamp = hashCode([
                 this.style['markerType'],
                 isGradient(this.style['markerFill']) ? getGradientStamp(this.style['markerFill']) : this.style['markerFill'],
                 this.style['markerFillOpacity'],
@@ -151,7 +151,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
                 this.style['markerHeight'],
                 this.style['markerHorizontalAlignment'],
                 this.style['markerVerticalAlignment']
-            ].join('_');
+            ].join('_'));
         }
         return this._stamp;
     }

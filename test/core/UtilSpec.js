@@ -33,7 +33,7 @@ describe('Util', function () {
         expect(now2 >= now).to.be.ok();
     });
 
-    it('getSymbolStamp', function () {
+    it('getSymbolHash', function () {
         var symbol = {
             'markerType' : 'ellipse',
             'markerFill' : {
@@ -46,8 +46,9 @@ describe('Util', function () {
             'markerWidth' : 10,
             'markerHeight' : 10
         };
-        var expected = 'markerType=ellipse;markerFill=radial_0,rgba(17, 172, 263, 0),0.4,rgba(17, 172, 263, 1);markerWidth=10;markerHeight=10';
-        expect(maptalks.Util.getSymbolStamp(symbol)).to.be.eql(expected);
+        // var expected = 'markerType=ellipse;markerFill=radial_0,rgba(17, 172, 263, 0),0.4,rgba(17, 172, 263, 1);markerWidth=10;markerHeight=10';
+        var expected = 1936604526;
+        expect(maptalks.Util.getSymbolHash(symbol)).to.be.eql(expected);
 
         symbol = [
             {
@@ -68,8 +69,9 @@ describe('Util', function () {
                 'markerHeight' : 10
             }
         ];
-        expected = '[ markerFile=foo.png;markerWidth=5;markerHeight=5 , markerType=ellipse;markerFill=radial_0,rgba(17, 172, 263, 0),0.4,rgba(17, 172, 263, 1);markerWidth=10;markerHeight=10 ]';
-        expect(maptalks.Util.getSymbolStamp(symbol)).to.be.eql(expected);
+        // expected = '[ markerFile=foo.png;markerWidth=5;markerHeight=5 , markerType=ellipse;markerFill=radial_0,rgba(17, 172, 263, 0),0.4,rgba(17, 172, 263, 1);markerWidth=10;markerHeight=10 ]';
+        expected = '1501174206,1936604526';
+        expect(maptalks.Util.getSymbolHash(symbol)).to.be.eql(expected);
     });
 
     describe('split content', function () {
