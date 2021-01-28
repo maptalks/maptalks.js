@@ -41,7 +41,7 @@ export function getGradientStamp(g) {
  */
 export function getSymbolHash(symbol) {
     if (!symbol) {
-        return 0;
+        return 1;
     }
     const keys = [];
     if (Array.isArray(symbol)) {

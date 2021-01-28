@@ -305,8 +305,8 @@ export function splitTextToRow(text, style) {
 
 export function hashCode(s) {
     let hash = 0;
-    const strlen = s && s.length;
-    if (strlen === 0) {
+    const strlen = s && s.length || 0;
+    if (!strlen) {
         return hash;
     }
     let c;
