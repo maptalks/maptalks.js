@@ -44,6 +44,7 @@ const options = {
     'animationDuration': 500,
     'pitchWithMap': false,
     'rotateWithMap': false,
+    'visible': true
 };
 
 /**
@@ -133,7 +134,7 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
-
+        this.options['visible'] = true;
         if (!this._mapEventsOn) {
             this._switchMapEvents('on');
         }
@@ -201,8 +202,9 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
             }
         }
-
-        dom.style.display = '';
+        if (this.type !== 'uimarker') {
+            dom.style.display = '';
+        }
 
         if (this.options['eventsToStop']) {
             on(dom, this.options['eventsToStop'], stopPropagation);
@@ -243,7 +245,7 @@ class UIComponent extends Eventable(Class) {
         if (!this.getDOM() || !this.getMap()) {
             return this;
         }
-
+        this.options['visible'] = false;
         const anim = this._getAnimation(),
             dom = this.getDOM();
         if (!this.options['animationOnHide']) {
@@ -284,6 +286,9 @@ class UIComponent extends Eventable(Class) {
      * @returns {Boolean} true|false
      */
     isVisible() {
+        if (!this.options['visible']) {
+            return false;
+        }
         const dom = this.getDOM();
         return this.getMap() && dom && dom.parentNode && dom.style.display !== 'none';
     }
@@ -602,6 +607,11 @@ class UIComponent extends Eventable(Class) {
     _setPosition() {
         const dom = this.getDOM();
         if (!dom) return;
+        if (!this.isVisible() && dom.style.display !== 'none') {
+            dom.style.display = 'none';
+        } else if (this.isVisible() && dom.style.display === 'none') {
+            dom.style.display = '';
+        }
         dom.style[TRANSITION] = null;
         const p = this.getPosition();
         this._pos = p;

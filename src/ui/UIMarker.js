@@ -1,4 +1,4 @@
-import { isString, flash } from '../core/util';
+import { isString, flash, isNil } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -25,7 +25,7 @@ const options = {
     'content': null,
     'altitude': 0,
     'minZoom': 0,
-    'maxZoom': Infinity
+    'maxZoom': null
 };
 
 const domEvents =
@@ -215,6 +215,7 @@ class UIMarker extends Handlerable(UIComponent) {
     constructor(coordinate, options) {
         super(options);
         this._markerCoord = new Coordinate(coordinate);
+        this.type = 'uimarker';
     }
 
     // TODO: obtain class in super
@@ -450,22 +451,37 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     onZoomEnd() {
-        if (this.isVisible()) {
-            // when zoomend, map container is reset, position should be updated in current frame
-            this._setPosition();
-        }
+        // if (this.isVisible()) {
+        //     // when zoomend, map container is reset, position should be updated in current frame
+        //     this._setPosition();
+        // }
         const map = this.getMap();
         if (!map) {
             return;
         }
+        const dom = this.getDOM();
+        if (!dom) {
+            return;
+        }
+        this._setPosition();
+    }
+
+    isVisible() {
+        const map = this.getMap();
+        if (!map) {
+            return false;
+        }
+        if (!this.options['visible']) {
+            return false;
+        }
         const zoom = map.getZoom();
         const { minZoom, maxZoom } = this.options;
-        if (zoom < minZoom || zoom > maxZoom) {
-            if (this.isVisible()) {
-                this.hide();
-            }
-        } else if (!this.isVisible()) {
-            this.show();
+        if (!isNil(minZoom) && zoom < minZoom || (!isNil(maxZoom) && zoom > maxZoom)) {
+            return false;
+        }
+        const dom = this.getDOM();
+        if (dom) {
+            return true;
         }
     }
 }
