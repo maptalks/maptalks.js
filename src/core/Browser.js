@@ -1,4 +1,4 @@
-import { IS_NODE } from './util';
+import { IS_NODE } from './util/env';
 
 let Browser = {};
 
