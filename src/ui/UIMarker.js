@@ -480,9 +480,7 @@ class UIMarker extends Handlerable(UIComponent) {
             return false;
         }
         const dom = this.getDOM();
-        if (dom) {
-            return true;
-        }
+        return dom && true;
     }
 }
 
