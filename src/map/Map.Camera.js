@@ -214,77 +214,56 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _pointToContainerPoint: function () {
-        const a = [0, 0, 0];
-        return function (point, zoom, altitude = 0, out) {
-            point = this._pointToPoint(point, zoom, out);
-            if (this.isTransforming() || altitude) {
-                //convert altitude at zoom to current zoom
-                altitude *= this._getResolution(zoom) / this._getResolution();
-                const scale = this._glScale;
-                set(a, point.x * scale, point.y * scale, altitude * scale);
-
-                const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
-                applyMatrix(t, t, this.projViewMatrix);
-
-                const w2 = this.width / 2, h2 = this.height / 2;
-                t[0] = (t[0] * w2) + w2;
-                t[1] = -(t[1] * h2) + h2;
-                if (out) {
-                    out.x = t[0];
-                    out.y = t[1];
-                    return out;
-                }
-                return new Point(t[0], t[1]);
-            } else {
-                const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-                if (out) {
-                    out.x = point.x;
-                    out.y = point.y;
-                } else {
-                    out = point;
-                }
-                out._sub(centerPoint.x, centerPoint.y);
-                out.set(out.x, -out.y);
-                return out._add(this.width / 2, this.height / 2);
-            }
-        };
-    }(),
+    _pointToContainerPoint: function (point, zoom, altitude = 0, out) {
+        if (!out) {
+            out = new Point(0, 0);
+        }
+        point = this._pointToPoint(point, zoom, out);
+        const isTransforming = this.isTransforming();
+        const res = this._getResolution(zoom) / this._getResolution();
+        let centerPoint;
+        if (!isTransforming && !altitude) {
+            centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
+        }
+        this._toContainerPoint(out, isTransforming, res, altitude, centerPoint);
+        return out;
+    },
 
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function () {
+    _pointsToContainerPoints: function (points, zoom, altitudes = []) {
+        const altitudeIsArray = Array.isArray(altitudes);
+        const isTransforming = this.isTransforming();
+        const res = this._getResolution(zoom) / this._getResolution();
+        const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
+        const pts = [];
+        for (let i = 0, len = points.length; i < len; i++) {
+            const point = points[i].copy()._multi(res);
+            const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
+            this._toContainerPoint(point, isTransforming, res, altitude, centerPoint);
+            pts.push(point);
+        }
+        return pts;
+    },
+
+    _toContainerPoint: function () {
         const a = [0, 0, 0];
-        return function (points, zoom, altitudes = []) {
-            const altitudeIsArray = Array.isArray(altitudes);
-            const isTransforming = this.isTransforming();
-            const res = this._getResolution(zoom) / this._getResolution();
+        return function (out, isTransforming, res, altitude, centerPoint) {
             const w2 = this.width / 2, h2 = this.height / 2;
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-            const pts = [];
-            for (let i = 0, len = points.length; i < len; i++) {
-                const point = points[i].copy()._multi(res);
-                let altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-                if (isTransforming || altitude) {
-                    altitude *= res;
-                    const scale = this._glScale;
-                    set(a, point.x * scale, point.y * scale, altitude * scale);
-                    const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
-                    applyMatrix(t, t, this.projViewMatrix);
-                    t[0] = (t[0] * w2) + w2;
-                    t[1] = -(t[1] * h2) + h2;
-                    point.x = t[0];
-                    point.y = t[1];
-                    pts.push(point);
-                } else {
-                    const out = point;
-                    out._sub(centerPoint.x, centerPoint.y);
-                    out.set(out.x, -out.y);
-                    pts.push(out._add(w2, h2));
-                }
+            if (isTransforming || altitude) {
+                altitude *= res;
+                const scale = this._glScale;
+                set(a, out.x * scale, out.y * scale, altitude * scale);
+                const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
+                applyMatrix(t, t, this.projViewMatrix);
+                out.x = (t[0] * w2) + w2;
+                out.y = -(t[1] * h2) + h2;
+            } else {
+                out._sub(centerPoint.x, centerPoint.y);
+                out.set(out.x, -out.y);
+                out._add(w2, h2);
             }
-            return pts;
         };
     }(),
 

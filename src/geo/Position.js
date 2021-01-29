@@ -1,4 +1,4 @@
-import { isNil } from '../core/util';
+import { isNil } from '../core/util/common';
 
 /**
  * Abstract parent class for Point and Coordinate

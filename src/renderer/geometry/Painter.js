@@ -324,7 +324,7 @@ class Painter extends Class {
         TEMP_BBOX.miny = miny;
         TEMP_BBOX.maxx = maxx;
         TEMP_BBOX.maxy = maxy;
-        this.__bbox = TEMP_BBOX;
+        this._containerBbox = TEMP_BBOX;
         return cPoints;
     }
 
