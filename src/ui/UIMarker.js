@@ -23,7 +23,9 @@ const options = {
     'draggable': false,
     'single': false,
     'content': null,
-    'altitude': 0
+    'altitude': 0,
+    'minZoom': 0,
+    'maxZoom': Infinity
 };
 
 const domEvents =
@@ -437,6 +439,34 @@ class UIMarker extends Handlerable(UIComponent) {
         }
         return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)
             ._add(this.options['dx'], this.options['dy']);
+    }
+
+    onEvent(e) {
+        if (e && e.type === 'zooming') {
+            this.onZoomEnd();
+        } else {
+            super.onEvent();
+        }
+    }
+
+    onZoomEnd() {
+        if (this.isVisible()) {
+            // when zoomend, map container is reset, position should be updated in current frame
+            this._setPosition();
+        }
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        const zoom = map.getZoom();
+        const { minZoom, maxZoom } = this.options;
+        if (zoom < minZoom || zoom > maxZoom) {
+            if (this.isVisible()) {
+                this.hide();
+            }
+        } else if (!this.isVisible()) {
+            this.show();
+        }
     }
 }
 
