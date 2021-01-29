@@ -22,8 +22,6 @@ import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
-import { set } from '../core/util/vec3';
-import { applyMatrix } from '../core/util/math';
 
 const TEMP_COORD = new Coordinate(0, 0);
 /**
