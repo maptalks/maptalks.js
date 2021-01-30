@@ -126,22 +126,20 @@ highp mat4 getViewFromClipMatrix() {
     return materialParams.invProjMatrix;
 }
 
-highp float linearizeDepth(highp float depth) {
-    // highp mat4 projection = getClipFromViewMatrix();
-    highp float z = depth * 2.0 - 1.0; // depth in clip space
-    highp float cameraNear = materialParams.cameraNearFar.x;
-    highp float cameraFar = materialParams.cameraNearFar.y;
-    // return -projection[3].z / (z + projection[2].z);
-    return (2.0 * cameraNear * cameraFar) / (cameraFar + cameraNear - z * (cameraFar - cameraNear));
-}
+// highp float linearizeDepth(highp float depth) {
+//     highp float z = depth * 2.0 - 1.0; // depth in clip space
+//     highp float cameraNear = materialParams.cameraNearFar.x;
+//     highp float cameraFar = materialParams.cameraNearFar.y;
+//     return (2.0 * cameraNear * cameraFar) / (cameraFar + cameraNear - z * (cameraFar - cameraNear));
+// }
 
 highp float fetchDepth(const vec2 uv) {
     return texture2D(materialParams_depth, uv).r;
 }
 
-highp float sampleDepthLinear(const vec2 uv) {
-    return linearizeDepth(fetchDepth(uv));
-}
+// highp float sampleDepthLinear(const vec2 uv) {
+//     return linearizeDepth(fetchDepth(uv));
+// }
 
 highp float projectDepth(highp float depth) {
     highp mat4 projection = getClipFromViewMatrix();
@@ -185,26 +183,47 @@ highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position, const 
 // Ambient Occlusion, largely inspired from:
 // Hemisphere Crysis-style SSAO. See "Screen Space Ambient Occlusion" by John Chapman
 
-float computeAmbientOcclusionSSAO(const highp vec3 origin, const highp float originDepth, const vec3 normal, const vec3 noise, const vec3 sphereSample) {
+float computeAmbientOcclusionSSAO(const highp vec3 origin, const highp float originDepth, mat3 TBN, const vec3 normal, const vec3 sphereSample) {
     highp mat4 projection = getClipFromViewMatrix();
     float radius0 = materialParams.radius;
     float bias0 = materialParams.bias;
 
-    vec3 r = sphereSample * radius0;
-    r = reflect(r, noise);
-    r = sign(dot(r, normal)) * r;
-    highp vec3 samplePos = origin + r;
+    // vec3 r = sphereSample * radius0;
+    // r = reflect(r, noise);
+    // r = sign(dot(r, normal)) * r;
+    // highp vec3 samplePos = origin + r;
+
+    // highp vec4 samplePosScreen = projection * vec4(samplePos, 1.0);
+    // samplePosScreen.xy = samplePosScreen.xy * (0.5 / samplePosScreen.w) + 0.5;
+
+    // highp float occlusionDepth = sampleDepthLinear(samplePosScreen.xy);
+
+    // // float t = saturate(radius0 / abs(originDepth - occlusionDepth));
+    // // float rangeCheck = t * t * (3.0 - 2.0 * t);
+    // float rangeCheck = abs(originDepth - occlusionDepth) < radius0 ? 1.0 : 0.0;
+    // float d = originDepth - occlusionDepth; // distance from depth to sample
+    // return (d <= bias0 ? 0.0 : rangeCheck);
+
+    //--------------------------
+    // 改用view坐标来计算ao
+    highp vec3 samplePos = TBN * sphereSample;
+    // fuzhenn/maptalks-studio#1126
+    // dot是为了忽略射入surface方向的射线的干扰，否则会出现acne
+    // https://www.gamedev.net/forums/topic/556666-ssao-implementation-problem/4575637/
+    float dir = dot(samplePos, normal);
+    samplePos = sign(dir) * samplePos;
+    samplePos = origin + samplePos * radius0;
 
     highp vec4 samplePosScreen = projection * vec4(samplePos, 1.0);
     samplePosScreen.xy = samplePosScreen.xy * (0.5 / samplePosScreen.w) + 0.5;
 
-    highp float occlusionDepth = sampleDepthLinear(samplePosScreen.xy);
+    highp float occlusionDepth = fetchDepth(samplePosScreen.xy);
+    occlusionDepth = projectDepth(occlusionDepth);
 
-    // float t = saturate(radius0 / abs(originDepth - occlusionDepth));
-    // float rangeCheck = t * t * (3.0 - 2.0 * t);
-    float rangeCheck = abs(originDepth - occlusionDepth) < radius0 ? 1.0 : 0.0;
-    float d = originDepth - occlusionDepth; // distance from depth to sample
-    return (d <= bias0 ? 0.0 : rangeCheck);
+    float t = saturate(radius0 / abs(originDepth - occlusionDepth));
+    float rangeCheck = t * t * (3.0 - 2.0 * t);
+
+    return (occlusionDepth >= samplePos.z + bias0 ? rangeCheck : 0.0);
 }
 
 void main() {
@@ -215,14 +234,20 @@ void main() {
     highp float prjDepth = projectDepth(depth);
     highp vec3 origin = computeViewSpacePositionFromDepth(uv, prjDepth);
     highp vec3 normal = computeViewSpaceNormalNotNormalized(origin, uv);
-    highp float linearDepth = linearizeDepth(depth);
+    // highp float linearDepth = linearizeDepth(depth);
 
     normal = normalize(normal);
     vec3 noise = getNoise(uv);
 
+    // https://learnopengl.com/Advanced-Lighting/SSAO
+    vec3 randomVec = noise.xyz;
+    vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    mat3 TBN       = mat3(tangent, bitangent, normal);
+
     float occlusion = 0.0;
     for (int i = 0; i < kSphereSampleCount; i++) {
-        occlusion += computeAmbientOcclusionSSAO(origin, linearDepth, normal, noise, kSphereSamples[i]);
+        occlusion += computeAmbientOcclusionSSAO(origin, prjDepth, TBN, normal, kSphereSamples[i]);
     }
 
     float ao = 1.0 - occlusion / float(kSphereSampleCount);
