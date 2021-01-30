@@ -202,7 +202,8 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
             }
         }
-        if (this.type !== 'uimarker') {
+        //not support zoom filter show dom
+        if (!this.isSupportZoomFilter()) {
             dom.style.display = '';
         }
 
@@ -637,6 +638,10 @@ class UIComponent extends Eventable(Class) {
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
+    }
+
+    isSupportZoomFilter() {
+        return false;
     }
 
     /*

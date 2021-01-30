@@ -215,7 +215,6 @@ class UIMarker extends Handlerable(UIComponent) {
     constructor(coordinate, options) {
         super(options);
         this._markerCoord = new Coordinate(coordinate);
-        this.type = 'uimarker';
     }
 
     // TODO: obtain class in super
@@ -481,6 +480,10 @@ class UIMarker extends Handlerable(UIComponent) {
         }
         const dom = this.getDOM();
         return dom && true;
+    }
+
+    isSupportZoomFilter() {
+        return true;
     }
 }
 
