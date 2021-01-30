@@ -450,16 +450,7 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     onZoomEnd() {
-        // if (this.isVisible()) {
-        //     // when zoomend, map container is reset, position should be updated in current frame
-        //     this._setPosition();
-        // }
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        const dom = this.getDOM();
-        if (!dom) {
+        if (!this.getMap() || !this.getDOM()) {
             return;
         }
         this._setPosition();
