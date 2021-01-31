@@ -8,9 +8,7 @@ const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
-const TEMP_POINTS = [];
-const TEMP_ALTITUDES = [];
-const TEMP_GEOS = [];
+
 /**
  * @classdesc
  * Renderer class based on HTML5 Canvas2D for VectorLayers
@@ -248,8 +246,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     // 优化前 11fps
     // 优化后 15fps
     _batchConversionMarkers(glZoom) {
-        //减少临时变量的使用
-        TEMP_ALTITUDES.length = TEMP_GEOS.length = TEMP_POINTS.length = 0;
+        const cPoints = [];
+        const markers = [];
+        const altitudes = [];
         const altitudeCache = {};
         //Traverse all Geo
         let idx = 0;
@@ -264,12 +263,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 const point = painter.getRenderPoints(PLACEMENT_CENTER)[0][0];
                 const altitude = geo.getAltitude();
                 //减少方法的调用
-                if (altitudeCache[altitude] == null) {
+                if (altitudeCache[altitude] === undefined) {
                     altitudeCache[altitude] = painter.getAltitude();
                 }
-                TEMP_POINTS[idx] = point;
-                TEMP_ALTITUDES[idx] = altitudeCache[altitude];
-                TEMP_GEOS[idx] = geo;
+                cPoints[idx] = point;
+                altitudes[idx] = altitudeCache[altitude];
+                markers[idx] = geo;
                 idx++;
             }
         }
@@ -277,23 +276,23 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return [];
         }
         const map = this.getMap();
-        const pts = map._pointsToContainerPoints(TEMP_POINTS, glZoom, TEMP_ALTITUDES);
+        const pts = map._pointsToContainerPoints(cPoints, glZoom, altitudes);
         const containerExtent = map.getContainerExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
-        const symbolkeyMap = {};
-        for (let i = 0, len = TEMP_GEOS.length; i < len; i++) {
-            const geo = TEMP_GEOS[i];
+        const extentCache = {};
+        for (let i = 0, len = markers.length; i < len; i++) {
+            const geo = markers[i];
             geo._cPoint = pts[i];
             const { x, y } = pts[i];
             //Is the point in view
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
-                const symbolkey = geo.__symbol;
+                const symbolkey = geo._symbolHash;
                 let fixedExtent;
                 if (symbolkey) {
                     //相同的symbol 不要重复计算
-                    fixedExtent = symbolkeyMap[symbolkey] = (symbolkeyMap[symbolkey] || geo._painter.getFixedExtent());
+                    fixedExtent = extentCache[symbolkey] = (extentCache[symbolkey] || geo._painter.getFixedExtent());
                 } else {
                     fixedExtent = geo._painter.getFixedExtent();
                 }

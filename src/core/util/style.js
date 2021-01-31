@@ -1,4 +1,5 @@
-import { extend, isNil, isFunction, hasOwn, isString, isObject } from './common';
+import { extend, isNil, isString, isObject } from './common';
+import { hashCode } from './strings';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
 /**
@@ -38,26 +39,24 @@ export function getGradientStamp(g) {
  * @return {String}        symbol's stamp
  * @memberOf Util
  */
-export function getSymbolStamp(symbol) {
+export function getSymbolHash(symbol) {
+    if (!symbol) {
+        return 1;
+    }
     const keys = [];
     if (Array.isArray(symbol)) {
         for (let i = 0; i < symbol.length; i++) {
-            keys.push(getSymbolStamp(symbol[i]));
+            keys.push(getSymbolHash(symbol[i]));
         }
-        return '[ ' + keys.join(' , ') + ' ]';
+        return keys.sort().join(',');
     }
-    for (const p in symbol) {
-        if (hasOwn(symbol, p)) {
-            if (!isFunction(symbol[p])) {
-                if (isGradient(symbol[p])) {
-                    keys.push(p + '=' + getGradientStamp(symbol[p]));
-                } else {
-                    keys.push(p + '=' + symbol[p]);
-                }
-            }
-        }
-    }
-    return keys.join(';');
+    const sortedKeys = Object.keys(symbol).sort();
+    const sortedSymbol = sortedKeys.reduce((accumulator, curValue) => {
+        accumulator[curValue] = symbol[curValue];
+        return accumulator;
+    }, {});
+    const hash = hashCode(JSON.stringify(sortedSymbol));
+    return hash;
 }
 
 /**

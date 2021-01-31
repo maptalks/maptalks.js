@@ -12,7 +12,7 @@ import {
     forEachCoord,
     flash
 } from '../core/util';
-import { extendSymbol } from '../core/util/style';
+import { extendSymbol, getSymbolHash } from '../core/util/style';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -271,8 +271,16 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setSymbol(symbol) {
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
-        this.__symbol = JSON.stringify(this._symbol);
+        this._symbolHash = getSymbolHash(symbol);
         return this;
+    }
+
+    /**
+     * Get symbol's hash code
+     * @return {String}
+     */
+    getSymbolHash() {
+        return this._symbolHash;
     }
 
     /**
