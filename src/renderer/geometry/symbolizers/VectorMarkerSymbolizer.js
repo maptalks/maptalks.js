@@ -425,6 +425,72 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
         return [];
     }
+
+    static getVectorMarkerDefaultAlignment() {
+        const defaultAlignment = {
+            markerHorizontalAlignment: 'middle',
+            markerVerticalAlignment: 'middle',
+        };
+        //这里的对齐是指最终绘制到画布上的对齐方式，
+        // 而不是默认对齐方式，defaultAlignment
+        // bar，pie,pin等最终落到画布上的对齐方式为原来(defaultAlignment)的方式加上默认偏移量形成的对齐方式
+        return {
+            'ellipse': defaultAlignment,
+            'cross': defaultAlignment,
+            'x': defaultAlignment,
+            'triangle': defaultAlignment,
+            'square': defaultAlignment,
+            'diamond': defaultAlignment,
+            'bar': {
+                markerHorizontalAlignment: 'middle',
+                markerVerticalAlignment: 'top'
+            },
+            'pie': {
+                markerHorizontalAlignment: 'middle',
+                markerVerticalAlignment: 'top'
+            },
+            'pin': {
+                markerHorizontalAlignment: 'middle',
+                markerVerticalAlignment: 'top'
+            },
+            'rectangle': {
+                markerHorizontalAlignment: 'right',
+                markerVerticalAlignment: 'bottom'
+            }
+        };
+    }
+
+    static getAlignPoint(markerType, markerWidth, markerHeight, symbol) {
+        let alignment = VectorMarkerSymbolizer.getVectorMarkerDefaultAlignment()[markerType];
+        if (!alignment) {
+            // this is image marker (markerFile)
+            // 虽然image marker的默认偏移量为(middle,middle)加上默认的偏移量后就形成新的对齐方式了
+            alignment = {
+                markerHorizontalAlignment: 'middle',
+                markerVerticalAlignment: 'top'
+            };
+        }
+        alignment = Object.assign({}, alignment, symbol);
+        const { markerHorizontalAlignment, markerVerticalAlignment } = alignment;
+        const width = markerWidth,
+            height = markerHeight;
+        let alignW, alignH;
+        if (markerHorizontalAlignment === 'left') {
+            alignW = -width / 2;
+        } else if (markerHorizontalAlignment === 'right') {
+            alignW = width / 2;
+        } else {
+            alignW = 0;
+        }
+        if (markerVerticalAlignment === 'top') {
+            alignH = -height / 2;
+        } else if (markerVerticalAlignment === 'bottom') {
+            alignH = height / 2;
+        } else {
+            alignH = 0;
+        }
+        return new Point(alignW, alignH);
+    }
 }
 
 

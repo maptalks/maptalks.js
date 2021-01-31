@@ -199,14 +199,14 @@ class GeometryDragHandler extends Handler {
             return;
         }
         const axis = this._shadow.options['dragOnAxis'],
-            dragOnAxisOnScreenCoordinates = this._shadow.options['dragOnAxisOnScreenCoordinates'],
+            dragOnScreenAxis = this._shadow.options['dragOnScreenAxis'],
             point = e['containerPoint'];
         let coord = e['coordinate'];
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
         let newPoint;
         // drag direction is ScreenCoordinates,The direction of the drag has nothing to do with the map rotation(bearing)
-        if (dragOnAxisOnScreenCoordinates) {
+        if (dragOnScreenAxis) {
             newPoint = e['containerPoint'].copy();
             if (axis === 'x') {
                 newPoint.y = this._lastPoint.y;
@@ -222,7 +222,7 @@ class GeometryDragHandler extends Handler {
 
         const pointOffset = newPoint.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
-        if (!dragOnAxisOnScreenCoordinates) {
+        if (!dragOnScreenAxis) {
             if (axis === 'x') {
                 pointOffset.y = coordOffset.y = 0;
             } else if (axis === 'y') {
@@ -356,7 +356,7 @@ Geometry.mergeOptions({
     'draggable': false,
     'dragShadow': true,
     'dragOnAxis': null,
-    'dragOnAxisOnScreenCoordinates': false
+    'dragOnScreenAxis': false
 });
 
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);

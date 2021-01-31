@@ -291,7 +291,7 @@ class GeometryEditor extends Eventable(Class) {
             'draggable': true,
             'dragShadow': false,
             'dragOnAxis': opts['axis'],
-            'dragOnAxisOnScreenCoordinates': opts['dragOnAxisOnScreenCoordinates'],
+            'dragOnScreenAxis': opts['dragOnScreenAxis'],
             'cursor': opts['cursor'],
             'symbol': symbol
         });
@@ -467,7 +467,7 @@ class GeometryEditor extends Eventable(Class) {
                         'symbol': symbol,
                         'cursor': cursors[i],
                         'axis': axis[i],
-                        'dragOnAxisOnScreenCoordinates': isMarker,
+                        'dragOnScreenAxis': isMarker,
                         // eslint-disable-next-line no-loop-func
                         onMove: (function (_index) {
                             return function (handleViewPoint, param) {
@@ -507,7 +507,6 @@ class GeometryEditor extends Eventable(Class) {
         const shadow = this._shadow;
         const symbol = shadow._getInternalSymbol();
         const dxdy = new Point(0, 0);
-        let defaultDy = 0, defaultDx = 0;
         if (isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
         }
@@ -517,23 +516,13 @@ class GeometryEditor extends Eventable(Class) {
         let markerHeight = 0, markerWidth = 0;
         if (isNumber(symbol['markerHeight'])) {
             markerHeight = symbol['markerHeight'];
-            defaultDy = -markerHeight / 2;
         }
         if (isNumber(symbol['markerWidth'])) {
             markerWidth = symbol['markerWidth'];
         }
-        if (Symbolizers.VectorMarkerSymbolizer.test(symbol)) {
-            //as these types of markers' anchor stands on its bottom
-            if (symbol['markerType'] === 'pin' || symbol['markerType'] === 'pie' || symbol['markerType'] === 'bar') {
-                defaultDy = -markerHeight / 2;
-            } else if (symbol['markerType'] === 'rectangle') {
-                defaultDy = markerHeight / 2;
-                defaultDx = markerWidth / 2;
-            } else {
-                defaultDy = 0;
-            }
-        }
-        return { dxdy, defaultDxDy: new Point(defaultDx, defaultDy) };
+        //所有的marker统一处理掉了，包括vector marker ,image marker
+        const defaultDxDy = Symbolizers.VectorMarkerSymbolizer.getAlignPoint(symbol['markerType'], markerWidth, markerHeight, symbol);
+        return { dxdy, defaultDxDy };
     }
 
     /**
