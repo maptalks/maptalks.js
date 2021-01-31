@@ -608,11 +608,6 @@ class UIComponent extends Eventable(Class) {
     _setPosition() {
         const dom = this.getDOM();
         if (!dom) return;
-        if (!this.isVisible() && dom.style.display !== 'none') {
-            dom.style.display = 'none';
-        } else if (this.isVisible() && dom.style.display === 'none') {
-            dom.style.display = '';
-        }
         dom.style[TRANSITION] = null;
         const p = this.getPosition();
         this._pos = p;

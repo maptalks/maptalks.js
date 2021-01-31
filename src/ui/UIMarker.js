@@ -1,4 +1,4 @@
-import { isString, flash, isNil } from '../core/util';
+import { isString, flash, isNil, extend } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -441,19 +441,24 @@ class UIMarker extends Handlerable(UIComponent) {
             ._add(this.options['dx'], this.options['dy']);
     }
 
-    onEvent(e) {
-        if (e && e.type === 'zooming') {
-            this.onZoomEnd();
-        } else {
-            super.onEvent();
-        }
+    _getDefaultEvents() {
+        return extend({}, super._getDefaultEvents(), { 'zooming zoomend': this.onZoomFilter });
     }
 
-    onZoomEnd() {
-        if (!this.getMap() || !this.getDOM()) {
-            return;
+    _setPosition() {
+        //show/hide zoomFilter
+        this.onZoomFilter();
+        super._setPosition();
+    }
+
+    onZoomFilter() {
+        const dom = this.getDOM();
+        if (!dom) return;
+        if (!this.isVisible() && dom.style.display !== 'none') {
+            dom.style.display = 'none';
+        } else if (this.isVisible() && dom.style.display === 'none') {
+            dom.style.display = '';
         }
-        this._setPosition();
     }
 
     isVisible() {
