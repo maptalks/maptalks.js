@@ -44,6 +44,7 @@ const options = {
     'animationDuration': 500,
     'pitchWithMap': false,
     'rotateWithMap': false,
+    'visible': true
 };
 
 /**
@@ -133,7 +134,7 @@ class UIComponent extends Eventable(Class) {
         if (!map) {
             return this;
         }
-
+        this.options['visible'] = true;
         if (!this._mapEventsOn) {
             this._switchMapEvents('on');
         }
@@ -201,8 +202,10 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
             }
         }
-
-        dom.style.display = '';
+        //not support zoom filter show dom
+        if (!this.isSupportZoomFilter()) {
+            dom.style.display = '';
+        }
 
         if (this.options['eventsToStop']) {
             on(dom, this.options['eventsToStop'], stopPropagation);
@@ -243,7 +246,7 @@ class UIComponent extends Eventable(Class) {
         if (!this.getDOM() || !this.getMap()) {
             return this;
         }
-
+        this.options['visible'] = false;
         const anim = this._getAnimation(),
             dom = this.getDOM();
         if (!this.options['animationOnHide']) {
@@ -284,6 +287,9 @@ class UIComponent extends Eventable(Class) {
      * @returns {Boolean} true|false
      */
     isVisible() {
+        if (!this.options['visible']) {
+            return false;
+        }
         const dom = this.getDOM();
         return this.getMap() && dom && dom.parentNode && dom.style.display !== 'none';
     }
@@ -627,6 +633,10 @@ class UIComponent extends Eventable(Class) {
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
+    }
+
+    isSupportZoomFilter() {
+        return false;
     }
 
     /*
