@@ -50,7 +50,7 @@ function getLightUniforms(map, iblTexes) {
     }
     uniforms['uRGBMRange'] = iblMaps ? iblTexes.rgbmRange : 7;
     uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
-    uniforms['environmentRotation'] = ambientLight.rotation || 0;
+    uniforms['environmentOrientation'] = ambientLight.orientation || 0;
 
     if (directionalLight) {
         uniforms['uLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];

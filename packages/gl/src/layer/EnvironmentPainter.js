@@ -101,7 +101,7 @@ class EnvironmentPainter {
             'projMatrix': map.projMatrix,
             'resolution': [canvas.width, canvas.height],
             'hsv': ambient && ambient.hsv || [0, 0, 0],
-            'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.rotation || 0)
+            'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.orientation || 0)
         };
     }
 
