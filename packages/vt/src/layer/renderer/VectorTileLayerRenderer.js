@@ -1253,6 +1253,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         delete this._outlineAll;
         this.setToRedraw();
     }
+
+    setZIndex() {
+        this.setToRedraw();
+        // 不retire的话，taa的图层不会更新，fuzhenn/maptalks-studio#1112
+        this._needRetire = true;
+        return super.setZIndex.apply(this, arguments);
+    }
 }
 
 VectorTileLayerRenderer.include({
