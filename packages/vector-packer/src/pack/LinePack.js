@@ -302,8 +302,9 @@ export default class LinePack extends VectorPack {
             } else {
                 this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
             }
+            //feaJoinPatternMode为1时，把join部分用uvStart的像素代替
             if (this.joinPatternModeFn) {
-                this.feaJoinPatternMode = this.dashColorFn(this.options['zoom'], feature.properties) || 0;
+                this.feaJoinPatternMode = this.joinPatternModeFn(this.options['zoom'], feature.properties) || 0;
             } else {
                 this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
