@@ -21,6 +21,6 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
-    vec3 color = decodeRGBM(texture2D(TextureBlurInput, gTexCoord.xy), uRGBMRange);
-    gl_FragColor = encodeRGBM(color.rgb, uRGBMRange);
+    vec4 color = texture2D(TextureBlurInput, gTexCoord.xy);
+    gl_FragColor = color;
 }

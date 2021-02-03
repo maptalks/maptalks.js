@@ -262,6 +262,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
+                // 如果图层发生变化，保存的depthTexture可能发生变化，所以ssr需要多重绘一次，更新depthTexture
+                this._needUpdateSSR = true;
                 return true;
             }
         }
@@ -1076,6 +1078,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         if (ssrMode) {
             this._postProcessor.genSsrMipmap(tex, this._depthTex);
+            if (this._needUpdateSSR) {
+                this.setToRedraw();
+                this._needUpdateSSR = false;
+            }
         }
 
         if (hasPost) {
