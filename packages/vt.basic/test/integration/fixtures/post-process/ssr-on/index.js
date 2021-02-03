@@ -8,11 +8,11 @@ const data = {
                 type: 'Polygon',
                 coordinates: [
                     [
-                        [-0.0005, 0.0005],
+                        [0.0015, 0.0015],
+                        [0.0015, 0.0015],
+                        [0.0015, 0.0005],
                         [0.0005, 0.0005],
-                        [0.0005, -0.0005],
-                        [-0.0005, -0.0005],
-                        [-0.0005, 0.0005]
+                        [0.0005, 0.0015]
                     ]
                 ]
             },
@@ -25,11 +25,11 @@ const data = {
             geometry: {
                 type: 'LineString',
                 coordinates: [
-                    [-0.0004, 0.0004],
+                    [0.0016, 0.0016],
+                    [0.0016, 0.0016],
+                    [0.0016, 0.0004],
                     [0.0004, 0.0004],
-                    [0.0004, -0.0004],
-                    [-0.0004, -0.0004],
-                    [-0.0004, 0.0004]
+                    [0.0004, 0.0016]
                 ]
             },
             properties: {
@@ -52,13 +52,13 @@ const plugin = {
 const material = {
     'baseColorFactor': [1, 1, 1, 1],
     'roughnessFactor': 0,
-    'metalnessFactor': 1,
-    'outputLinear': 1
+    'metalnessFactor': 1
 };
 const style = [
     {
         renderPlugin: plugin,
         symbol: {
+            bloom: false,
             polygonOpacity: 1,
             polygonFill: '#f00',
             material
@@ -79,8 +79,9 @@ const style = [
             }
         },
         symbol: {
+            bloom: true,
             lineWidth: 4,
-            lineColor: '#f00'
+            lineColor: '#0f0'
         },
         filter: [
             '=',
@@ -93,11 +94,12 @@ module.exports = {
     style,
     data,
     view: {
-        pitch: 70,
-        center: [0, 0],
-        zoom: 17
+        'center': [0.0001774231847093688, 0.00028917934585592775],
+        'zoom': 18.620460092039856,
+        'pitch': 80,
+        'bearing': 30.00000000000011
     },
-    renderingCount: 1,
+    renderingCount: 2,
     sceneConfig: {
         ground: {
             enable: true,
@@ -117,6 +119,9 @@ module.exports = {
                 enable: false
             },
             ssr: {
+                enable: true
+            },
+            bloom: {
                 enable: true
             }
         }
