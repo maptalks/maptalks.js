@@ -1,5 +1,4 @@
 import Material from '../Material.js';
-import { mat3 } from 'gl-matrix';
 import { extend } from '../common/Util.js';
 
 const DEFAULT_UNIFORMS = {
