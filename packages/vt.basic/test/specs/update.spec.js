@@ -567,6 +567,77 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can setZIndex, fuzhenn/maptalks-studio#1112', done => {
+        const plugin = {
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                // altitudeProperty: 'levels',
+                altitudeScale: 5,
+                defaultAltitude: 0
+            },
+            sceneConfig: {},
+        };
+        const material = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 1,
+            'metalnessFactor': 0
+        };
+        const styleRed = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material, polygonFill: '#f00' }
+            }
+        ];
+        const styleGreen = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material, polygonFill: '#0f0' }
+            }
+        ];
+        const layerRed = new GeoJSONVectorTileLayer('gvt1', {
+            data: polygon.features[0],
+            style: styleRed
+        });
+        const layerGreen = new GeoJSONVectorTileLayer('gvt2', {
+            data: polygon.features[0],
+            style: styleGreen
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: {
+                    enable: true,
+                    taa: true
+                }
+            }
+        };
+        const layer = new GroupGLLayer('group', [layerRed, layerGreen], { sceneConfig });
+        let count = 0;
+        const startCount = 2;
+        layerRed.once('canvasisdirty', () => {
+            layer.on('layerload', () => {
+                count++;
+                if (count === startCount) {
+                    const canvas = layer.getRenderer().canvas;
+                    const pixel = readPixel(canvas, canvas.width / 2 + 30, canvas.height / 2 + 30);
+                    assert(pixel[1] > pixel[0]);
+                    // 调用zindex后，红色就变为上层
+                    layerRed.setZIndex(2);
+                } else if (count === startCount + 4) {
+                    const canvas = layer.getRenderer().canvas;
+                    const pixel = readPixel(canvas, canvas.width / 2 + 30, canvas.height / 2 + 30);
+                    assert(pixel[1] < pixel[0]);
+                    done();
+                }
+            });
+
+        });
+        layer.addTo(map);
+    });
+
     it('should can update texture to none', done => {
         const plugin = {
             type: 'lit',
