@@ -103,11 +103,13 @@ describe('vector tile integration specs', () => {
             }
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
+            // style.debug = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             const sceneConfig = style.sceneConfig;
             const groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
             let generated = false;
             const limit = style.renderingCount || 1;
+            const diffCount = style.diffCount || 0;
             let count = 0;
             const groupLayerListener = () => {
                 const canvas = map.getRenderer().canvas;
@@ -129,7 +131,7 @@ describe('vector tile integration specs', () => {
                             done(err);
                             return;
                         }
-                        if (result.diffCount > 0) {
+                        if (result.diffCount > diffCount) {
                             //保存差异图片
                             const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
                             const diffPath = dir + 'diff.png';
@@ -137,7 +139,7 @@ describe('vector tile integration specs', () => {
                             const actualPath = dir + 'actual.png';
                             writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
-                        assert(result.diffCount === 0);
+                        assert(result.diffCount <= diffCount);
                         if (!finished) {
                             done();
                             finished = true;
@@ -150,6 +152,9 @@ describe('vector tile integration specs', () => {
                     //因为某些后处理（如阴影）是在第二帧才会正常绘制的，所以要监听第二次
                     count++;
                     if (count < limit) {
+                        if (style.callRedraw) {
+                            groupLayer.getRenderer().setToRedraw();
+                        }
                         return;
                     }
                     groupLayer.once('layerload', groupLayerListener);

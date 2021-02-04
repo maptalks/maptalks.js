@@ -100,6 +100,7 @@ module.exports = {
         'bearing': 30.00000000000011
     },
     renderingCount: 2,
+    diffCount: 1,
     sceneConfig: {
         ground: {
             enable: true,

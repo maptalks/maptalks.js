@@ -12,6 +12,7 @@ const EMPTY_ARRAY = [];
 const CLEAR_COLOR = [0, 0, 0, 0];
 
 // for context.sceneFilter
+// 含义是后处理阶段时，都返回0
 const MOCK_MESH = {
     getUniform() {
         return 0;
@@ -633,7 +634,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugin.updateCollision(context);
         });
 
-        const isFinalRender = (!mode || mode === 'default' || mode === 'noAa') && parentContext.testSceneFilter(MOCK_MESH);
+        const isFinalRender = !mode || (mode === 'default' || mode === 'noAa') && parentContext.testSceneFilter(MOCK_MESH);
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset

@@ -12,7 +12,7 @@
     "lint": "eslint src/**/*.js test/**/*.js",
     "pretest": "npm run lint && cd ../vt && npm run build && cd ../vt.basic && npm run build",
     "preversion": "npm test",
-    "test": "electron-mocha --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
+    "test": "electron-mocha -t 5000 --require-main ./test/ignore-gpu-blacklist.js --renderer ./test/**/*.spec.js",
     "tdd": "electron-mocha --interactive --renderer ./test/**/*.spec.js",
     "prepare": "npm run build"
   },
