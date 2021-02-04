@@ -17,27 +17,32 @@ const data = {
                 ]
             },
             properties: {
+                type: 'data',
                 levels: 3
             }
         },
         {
             type: 'Feature',
             geometry: {
-                type: 'LineString',
+                type: 'Polygon',
                 coordinates: [
-                    [0.0016, 0.0016],
-                    [0.0016, 0.0016],
-                    [0.0016, 0.0004],
-                    [0.0004, 0.0004],
-                    [0.0004, 0.0016]
+                    [
+                        [0.0010, 0.0020],
+                        [0.0020, 0.0020],
+                        [0.0020, 0.000],
+                        [0.000, 0.000],
+                        [0.000, 0.0020]
+                    ]
                 ]
             },
             properties: {
-                levels: 3
+                type: 'ground',
+                levels: 0
             }
         }
     ]
 };
+
 const plugin = {
     type: 'lit',
     dataConfig: {
@@ -65,28 +70,22 @@ const style = [
         },
         filter: [
             '==',
-            '$type',
-            'Polygon'
+            'type',
+            'data'
         ]
     },
     {
-        renderPlugin: {
-            type: 'line',
-            dataConfig: {
-                type: 'line'
-            },
-            sceneConfig: {
-            }
-        },
+        renderPlugin: plugin,
         symbol: {
-            bloom: true,
-            lineWidth: 4,
-            lineColor: '#0f0'
+            ssr: true,
+            polygonOpacity: 1,
+            polygonFill: '#fff',
+            material
         },
         filter: [
             '==',
-            '$type',
-            'LineString'
+            'type',
+            'ground'
         ]
     }
 ];
@@ -101,27 +100,12 @@ module.exports = {
     },
     renderingCount: 2,
     sceneConfig: {
-        ground: {
-            enable: true,
-            renderPlugin: {
-                type: 'lit'
-            },
-            symbol: {
-                ssr: true,
-                polygonFill: [1, 1, 1, 1],
-                polygonOpacity: 1,
-                material
-            }
-        },
         postProcess: {
             enable: true,
             antialias: {
                 enable: false
             },
             ssr: {
-                enable: true
-            },
-            bloom: {
                 enable: true
             }
         }
