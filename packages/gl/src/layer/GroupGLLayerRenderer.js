@@ -13,9 +13,8 @@ const EMPTY_COLOR = [0, 0, 0, 0];
 const MIN_SSR_PITCH = 10;
 const NO_JITTER = [0, 0];
 
-const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
+const noPostFilter = m => !m.getUniform('bloom');
 const noBloomFilter = m => !m.getUniform('bloom');
-const noSsrFilter = m => !m.getUniform('ssr');
 
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
@@ -145,7 +144,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const ssrMode = this.isSSROn();
         if (ssrMode === SSR_IN_ONE_FRAME) {
-            this._postProcessor.drawSSR(this._depthTex);
+            fGL.resetDrawCalls();
+            this._postProcessor.drawSSR(this._depthTex, this._fxaaFBO || this._targetFBO);
+            this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -621,7 +622,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // SSR_STATIC的思路是直接利用上一帧的深度纹理，来绘制ssr，这样无需额外的ssr pass。
         // 但当场景里有透明的物体时，被物体遮住的倒影会在SSR_STATIC阶段中绘制，但在SSR_IN_ONE_FRAME中不绘制，出现闪烁，故取消SSR_STATIC
         // 2021-01-11 fuzhen 该问题通过在ssr shader中，通过手动比较深度值，决定是否绘制解决
-        // return SSR_IN_ONE_FRAME;
+        // 2021-02-05 fuzhen 通过在drawSSR前copyDepth，ssr统一在StandardShader中绘制，不再需要ssr后处理, 之后SSR_IN_ONE_FRAME相比SSR_STATIC，只是多了drawSSR
     }
 
     isEnableTAA() {
@@ -749,8 +750,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             } else if (enableBloom) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
-            } else if (ssrMode === SSR_IN_ONE_FRAME) {
-                context['sceneFilter'] = noSsrFilter;
             }
 
             renderTarget = this._getFramebufferTarget();
@@ -1024,10 +1023,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
-
-        if (ssrMode === SSR_IN_ONE_FRAME) {
-            tex = this._postProcessor.ssr(tex);
-        }
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(

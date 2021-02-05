@@ -2,7 +2,8 @@ import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader.js';
 import vert from './glsl/depth.vert';
 import frag from './glsl/depth.frag';
-
+// 2021-02-05
+// ssr逻辑修改后不再需要
 class StandardDepthShader extends MeshShader {
     constructor(config = {}) {
         const uniforms = [

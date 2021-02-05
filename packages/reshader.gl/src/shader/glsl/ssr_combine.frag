@@ -1,3 +1,5 @@
+// 2021-02-05
+// ssr逻辑修改后不再需要
 #define SHADER_NAME SSR_COMBINE
 precision mediump float;
 

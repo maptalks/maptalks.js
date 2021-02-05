@@ -1,8 +1,9 @@
 import QuadShader from '../shader/QuadShader.js';
 import vert from '../shader/glsl/quad.vert';
 import frag from './glsl/ssr_combine.frag';
-
-class SsrShaderShader extends QuadShader {
+// 2021-02-05
+// ssr逻辑修改后不再需要
+class SsrCombineShader extends QuadShader {
     constructor() {
         super({
             vert, frag,
@@ -33,4 +34,4 @@ class SsrShaderShader extends QuadShader {
     }
 }
 
-export default SsrShaderShader;
+export default SsrCombineShader;

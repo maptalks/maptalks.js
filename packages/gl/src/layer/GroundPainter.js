@@ -3,7 +3,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform, EMPTY_COLOR } from './util/util.js';
+import { extend, getGroundTransform } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
@@ -69,55 +69,10 @@ class GroundPainter {
             this._layer.getRenderer().setCanvasUpdated();
             return true;
         }
-        const isSSR = this._layer.getRenderer().isEnableSSR && this._layer.getRenderer().isEnableSSR();
-        let updated = false;
         shader.filter = context.sceneFilter;
-        this._depthShader.filter = context.sceneFilter;
-        if (isSSR && symbol.ssr) {
-            if (context && context.ssr) {
-                const shaderDefines = shader.shaderDefines;
-                if (context.ssr.defines) {
-                    const defines = extend({}, shaderDefines, context.ssr.defines);
-                    shader.shaderDefines = defines;
-                }
-                if (context.ssr.fbo) {
-                    //清空depthTestFbo的颜色缓冲
-                    this._regl.clear({
-                        color: EMPTY_COLOR,
-                        framebuffer: context.ssr.depthTestFbo
-                    });
-                    const depthUniforms = {
-                        'uGlobalTexSize': uniforms['uGlobalTexSize'],
-                        'uHalton': uniforms['uHalton'],
-                        'lineWidth': uniforms['lineWidth'],
-                        'lineHeight': uniforms['lineHeight'],
-                        'linePixelScale': uniforms['linePixelScale'],
-                        'projMatrix': this.getMap().projMatrix,
-                        'viewMatrix': this.getMap().viewMatrix
-                    };
-                    this.renderer.render(this._depthShader, depthUniforms, this._groundScene, context.ssr.depthTestFbo);
-                    const ssrFbo = context && context.ssr.fbo;
-
-                    this.renderer.render(shader, uniforms, this._groundScene, ssrFbo);
-
-                } else {
-                    this.renderer.render(shader, uniforms, this._groundScene, fbo);
-                }
-                shader.shaderDefines = shaderDefines;
-            } else {
-                // ssr on，但没有context.ssr，说明是此帧的第一次绘制ground
-                this.renderer.render(shader, uniforms, this._groundScene, fbo);
-            }
-            updated = true;
-        } else {
-            //context中有ssr时，说明是drawSSR阶段，此时什么都不用绘制
-            this.renderer.render(shader, uniforms, this._groundScene, fbo);
-            updated = true;
-        }
-        if (updated) {
-            this._layer.getRenderer().setCanvasUpdated();
-        }
-        return updated;
+        this.renderer.render(shader, uniforms, this._groundScene, fbo);
+        this._layer.getRenderer().setCanvasUpdated();
+        return true;
     }
 
     _isInSSRPhase(context) {
@@ -296,11 +251,6 @@ class GroundPainter {
         uniforms.push(...reshader.SsrPass.getUniformDeclares());
         this._standardShader = new reshader.pbr.StandardShader({
             uniforms,
-            extraCommandProps
-        });
-
-        delete extraCommandProps.blend;
-        this._depthShader = new reshader.pbr.StandardDepthShader({
             extraCommandProps
         });
 

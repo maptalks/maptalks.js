@@ -1,9 +1,6 @@
 import { vec2, vec4, mat4 } from 'gl-matrix';
 import Renderer from '../Renderer.js';
-import SsrMipmapShader from './SsrMipmapShader.js';
-import SsrCombineShader from './SsrCombineShader.js';
 import CopyDepthShader from './CopyDepthShader.js';
-// import BoxBlurShader from './BoxBlurShader.js';
 
 import quadVert from './glsl/quad.vert';
 import quadFrag from './glsl/quad.frag';
@@ -64,28 +61,11 @@ class SsrPass {
         this._createTextures(sourceTex);
     }
 
-    // _blur(tex) {
-    //     this._initShaders();
-    //     this._createTextures(tex);
-    //     if (this._blurFBO.width !== tex.width ||
-    //         this._blurFBO.height !== tex.height) {
-    //         this._blurFBO.resize(tex.width, tex.height);
-    //     }
-    //     this._renderer.render(this._blurShader, {
-    //         resolution: [tex.width, tex.height],
-    //         textureSource:tex,
-    //         uRGBMRange: 7,
-    //         ignoreTransparent: 1
-    //     }, null, this._blurFBO);
-    //     return this._blurFBO.color[0];
-    // }
-
-    getSSRUniforms(map, factor, quality, mainDepthTex, depthTestTex) {
-        if (!mainDepthTex && !this._depthCopy) {
+    getSSRUniforms(map, factor, quality) {
+        if (!this._depthCopy) {
             return null;
         }
-        const depthTex = mainDepthTex || this._depthCopy;
-        // const depthTex = mainDepthTex;
+        const depthTex = this._depthCopy;
         const texture = this.getMipmapTexture();
         const uniforms = {
             'TextureDepth': depthTex,
@@ -100,25 +80,7 @@ class SsrPass {
             'prevProjViewMatrix': this._projViewMatrix || map.projViewMatrix,
             'cameraWorldMatrix': map.cameraWorldMatrix
         };
-        if (depthTestTex) {
-            uniforms.TextureDepthTest = depthTestTex;
-        }
         return uniforms;
-    }
-
-    combine(sourceTex, ssrTex) {
-        this.setup(sourceTex);
-        if (this._combineFBO.width !== sourceTex.width ||
-            this._combineFBO.height !== sourceTex.height) {
-            this._combineFBO.resize(sourceTex.width, sourceTex.height);
-        }
-        // ssrTex = this._blur(ssrTex);
-        this._renderer.render(this._combineShader, {
-            TextureInput: sourceTex,
-            TextureSSR: ssrTex,
-            uTextureOutputSize: [sourceTex.width, sourceTex.height]
-        }, null, this._combineFBO);
-        return this._combineTex;
     }
 
     genMipMap(sourceTex, depthTex, projViewMatrix) {
@@ -129,6 +91,7 @@ class SsrPass {
             this._projViewMatrix = [];
         }
         mat4.copy(this._projViewMatrix, projViewMatrix);
+        delete this._depthCopied;
         return this._outputTex;
     }
 
@@ -137,6 +100,11 @@ class SsrPass {
     }
 
     copyDepthTex(depthTex) {
+        // 说明depth已经在drawSSR阶段复制过了
+        if (this._depthCopied) {
+            return null;
+        }
+        this.setup(depthTex);
         if (!this._depthCopy) {
             const info = {
                 min: 'nearest',
@@ -162,6 +130,7 @@ class SsrPass {
         this._renderer.render(this._copyDepthShader, {
             'TextureDepth': depthTex
         }, null, this._depthCopyFBO);
+        this._depthCopied = true;
         return this._depthCopy;
     }
 
@@ -203,17 +172,13 @@ class SsrPass {
     }
 
     dispose() {
-        if (this._combineShader) {
-            this._mipmapShader.dispose();
-            // this._blurShader.dispose();
+        if (this._copyDepthShader) {
             this._ssrQuadShader.dispose();
             this._copyDepthShader.dispose();
 
             this._targetFBO.destroy();
-            this._combineFBO.destroy();
-            this._blurFBO.destroy();
 
-            delete this._combineShader;
+            delete this._copyDepthShader;
         }
         if (this._depthCopy) {
             this._depthCopyFBO.destroy();
@@ -223,11 +188,8 @@ class SsrPass {
     }
 
     _initShaders() {
-        if (!this._combineShader) {
-            this._mipmapShader = new SsrMipmapShader();
-            this._combineShader = new SsrCombineShader();
+        if (!this._copyDepthShader) {
             this._copyDepthShader = new CopyDepthShader();
-            // this._blurShader = new BoxBlurShader({ blurOffset: 2 });
 
             const config = {
                 vert: quadVert,
@@ -269,36 +231,6 @@ class SsrPass {
                 width: sourceTex.width,
                 height: sourceTex.height,
                 colors: [this._outputTex],
-                depth: false,
-                stencil: false
-            });
-
-            this._combineTex = regl.texture({
-                min: 'linear',
-                mag: 'linear',
-                type: 'uint8',
-                width: sourceTex.width,
-                height: sourceTex.height
-            });
-            this._combineFBO = regl.framebuffer({
-                width: sourceTex.width,
-                height: sourceTex.height,
-                colors: [this._combineTex],
-                depth: false,
-                stencil: false
-            });
-
-            this._blurTex = regl.texture({
-                min: 'linear',
-                mag: 'linear',
-                type: 'uint8',
-                width: sourceTex.width,
-                height: sourceTex.height
-            });
-            this._blurFBO = regl.framebuffer({
-                width: sourceTex.width,
-                height: sourceTex.height,
-                colors: [this._blurTex],
                 depth: false,
                 stencil: false
             });
