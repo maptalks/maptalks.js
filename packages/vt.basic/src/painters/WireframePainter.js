@@ -7,18 +7,14 @@ const vert = `
     attribute vec3 aPosition;
     attribute vec4 aColor;
 
-    uniform mat4 projMatrix;
-    uniform mat4 viewModelMatrix;
-    uniform vec2 halton;
+    uniform mat4 projViewModelMatrix;
     uniform vec2 globalTexSize;
 
     varying vec4 vColor;
 
     void main()
     {
-        mat4 jitteredProjection = projMatrix;
-        jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
-        gl_Position = jitteredProjection * viewModelMatrix * vec4(aPosition, 1.0);
+        gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
         vColor = aColor / 255.0;
     }
 `;
@@ -62,6 +58,7 @@ class WireframePainter extends Painter {
 
     createMesh(geometry, transform) {
         const mesh = new reshader.Mesh(geometry);
+        mesh.castShadow = false;
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
             const mat = [];
@@ -70,6 +67,7 @@ class WireframePainter extends Painter {
             transform = mat;
         }
         mesh.setLocalTransform(transform);
+        // mat4.fromScaling(mesh.positionMatrix, [1.1, 1.1, 1.1]);
         return mesh;
     }
 
@@ -112,27 +110,16 @@ class WireframePainter extends Painter {
             vert,
             frag,
             uniforms: [
-                // {
-                //     name: 'projViewModelMatrix',
-                //     type: 'function',
-                //     fn: function (context, props) {
-                //         const projViewModelMatrix = [];
-                //         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                //         return projViewModelMatrix;
-                //     }
-                // },
-                'projMatrix',
                 {
-                    name: 'viewModelMatrix',
+                    name: 'projViewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        const viewModelMatrix = [];
-                        mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                        return viewModelMatrix;
+                        const projViewModelMatrix = [];
+                        mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                        return projViewModelMatrix;
                     }
                 },
                 'globalTexSize',
-                'halton',
                 'opacity'
             ],
             extraCommandProps: {
@@ -163,16 +150,12 @@ class WireframePainter extends Painter {
         this.shader = new reshader.MeshShader(config);
     }
 
-    getUniformValues(map, context) {
-        // const projViewMatrix = map.projViewMatrix;
+    getUniformValues(map) {
         const opacity = this.sceneConfig.opacity || 0.3;
         const canvas = this.layer.getRenderer().canvas;
         return {
-            // projViewMatrix,
-            projMatrix: map.projMatrix,
-            viewMatrix: map.viewMatrix,
+            projViewMatrix: map.projViewMatrix,
             globalTexSize: [canvas.width, canvas.height],
-            halton: context && context.jitter || [0, 0],
             opacity
         };
     }
