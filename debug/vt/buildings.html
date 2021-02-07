@@ -11,7 +11,8 @@
 
   <link rel="stylesheet" href="screen.css" />
   <!-- 需要用 maptalks worker 分支下的版本 -->
-  <script src="/maptalks/dist/maptalks.js"></script>
+  <!-- <script src="/maptalks/dist/maptalks.js"></script> -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks@next/dist/maptalks.min.js"></script>
   <script src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <script src="buildings.js"></script>
   <script src="../../packages/vt/dist/maptalks.vt.js"></script>
@@ -73,6 +74,8 @@
       // //阴影有裂缝
       // "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.20000000000007,"bearing":-47.20000000000175,
+
       // bearing : -42,
       // baseLayer: osm
     });
@@ -129,7 +132,8 @@
           // exposure: 1.5
         },
         // color: [0.05, 0.05, 0.05],
-        exposure: 1.5
+        exposure: 1.5,
+        orientation: 0
       },
       directional: {
         color : [0.1, 0.1, 0.1],
@@ -187,7 +191,9 @@
           // shadowDir : [-1, -1, 0]
         },
         sceneConfig : {
-          // animation : 'easeOutBounce',
+          // animation: 'easeOutBounce',
+          // animationDuration:3000
+
         }
       };
       var renderPlugin2 = {
@@ -229,8 +235,8 @@
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.4,
-      'uMetalnessFactor': 0,
+      'uRoughnessFactor': 0.0,
+      'uMetalnessFactor': 1,
       'uOutputLinear': 1,
       'uHsv': [0, 0, 0],
       'contrast': 1.5
@@ -458,7 +464,7 @@
         ssao: {
           enable: true,
           bias: 0.1,
-          radius: 0.14,
+          radius: 0.2,
           intensity: 1.5
         },
         sharpen: {
@@ -552,12 +558,14 @@
         x: dirConfig[0],
         y: dirConfig[1],
         z: dirConfig[2],
+        r: lights.ambient.orientation || 0
       };
       var folder = gui.addFolder('direction');
       folder.open();
       var xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
       var yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
       var zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
+      var rCtrl = folder.add(direction, 'r', 0, 360, 0.1);
       xCtrl.onChange(function () {
         dirConfig[0] = direction.x;
         map.setLightConfig(lights);
@@ -573,13 +581,18 @@
         map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
+      rCtrl.onChange(function () {
+        lights.ambient.orientation = direction.r;
+        map.setLightConfig(lights);
+        groupLayer.setSceneConfig(sceneConfig);
+      });
 
       var ssaoConfig = sceneConfig.postProcess.ssao;
       var ssao = gui.addFolder('ssao');
       ssao.open();
-      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.0001, 0.001, 0.0001);
-      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.001, 0.01, 0.001);
-      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.01, 1, 0.01);
+      var biasCtrl = ssao.add(ssaoConfig, 'bias', 0.001, 0.2, 0.0001);
+      var radiusCtrl = ssao.add(ssaoConfig, 'radius', 0.01, 0.2, 0.001);
+      var intensityCtrl = ssao.add(ssaoConfig, 'intensity', 0.01, 2, 0.01);
       function onChange() {
         groupLayer.setSceneConfig(sceneConfig);
       }
