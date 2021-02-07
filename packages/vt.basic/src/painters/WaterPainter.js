@@ -47,9 +47,8 @@ class WaterPainter extends BasicPainter {
     }
 
     callShader(uniforms, context) {
-        this._stencilValue = 0;
         super.callShader(uniforms, context);
-        this.transformGround();
+        this.transformWater();
         const waterUniforms = this._getWaterUniform(this.getMap(), context);
         this.renderer.render(this._waterShader, waterUniforms, this._waterScene, this.getRenderFBO(context));
     }
@@ -76,37 +75,21 @@ class WaterPainter extends BasicPainter {
         }
         const isSsr = !!context.ssr && this.getSymbol().ssr;
         const shader = this._waterShader;
-        this.updateIBLDefines(shader);
-        const fbo = this.getRenderFBO(context);
         const shaderDefines = shader.shaderDefines;
         if (isSsr) {
+            const defines = extend({}, shaderDefines, context.ssr.defines);
+            shader.shaderDefines = defines;
+        }
+        this.updateIBLDefines(shader);
+        if (isSsr) {
             this._water.setUniform('ssr', 1);
-            if (context.ssr.fbo) {
-                this._renderSsrDepth(context);
-                context.renderTarget.fbo = context.ssr.fbo;
-            }
-            if (context.ssr.defines) {
-                const defines = extend({}, shaderDefines, context.ssr.defines);
-                shader.shaderDefines = defines;
-            }
         } else {
             this._water.setUniform('ssr', 0);
         }
-
         super.paint(context);
         if (isSsr) {
-            context.renderTarget.fbo = fbo;
             shader.shaderDefines = shaderDefines;
         }
-    }
-
-    _renderSsrDepth(context) {
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            framebuffer: context.ssr.depthTestFbo
-        });
-        this._depthShader.filter = context.sceneFilter;
-        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.ssr.depthTestFbo);
     }
 
     init(context) {
@@ -341,17 +324,6 @@ class WaterPainter extends BasicPainter {
             uniforms,
             extraCommandProps
         });
-        //TODO 按ssr的两种组合，都进行初始化，以解决第一次拖动时的卡顿问题
-        this._depthShader = new reshader.pbr.StandardDepthShader({
-            extraCommandProps: {
-                viewport,
-                depth: {
-                    enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
-                }
-            }
-        });
     }
 
     needClearStencil() {
@@ -453,7 +425,7 @@ class WaterPainter extends BasicPainter {
         this._waterScene = new reshader.Scene([this._water]);
     }
 
-    transformGround() {
+    transformWater() {
         const map = this.getMap();
         const localTransform = GroundPainter.getGroundTransform(this._water.localTransform, map);
         this._water.setLocalTransform(localTransform);

@@ -36,7 +36,6 @@ class StandardPainter extends MeshPainter {
         return geometry;
     }
 
-
     paint(context) {
         const hasShadow = !!context.shadow;
         if (context.states && context.states.includesChanged) {
@@ -46,27 +45,16 @@ class StandardPainter extends MeshPainter {
         }
         const isSsr = !!context.ssr && this.getSymbol().ssr;
         const shader = this.shader;
+        const shaderDefines = shader.shaderDefines;
+        if (isSsr) {
+            const defines = extend({}, shaderDefines, context.ssr.defines);
+            shader.shaderDefines = defines;
+        }
         if (context.onlyUpdateDepthInTaa) {
             this.shader = this._updateDepthShader;
         }
         this.updateIBLDefines(shader);
-        const shaderDefines = shader.shaderDefines;
-        const fbo = this.getRenderFBO(context);
-        if (isSsr) {
-            if (context.ssr.fbo) {
-                this._renderSsrDepth(context);
-                context.renderTarget.fbo = context.ssr.fbo;
-            }
-            if (context.ssr.defines) {
-                const defines = extend({}, shaderDefines, context.ssr.defines);
-                shader.shaderDefines = defines;
-            }
-        }
         super.paint(context);
-        if (isSsr) {
-            context.renderTarget.fbo = fbo;
-            shader.shaderDefines = shaderDefines;
-        }
         if (this.shadowCount !== undefined && hasShadow) {
             const count = this.scene.getMeshes().length;
             if (this.shadowCount !== count) {
@@ -74,17 +62,10 @@ class StandardPainter extends MeshPainter {
             }
         }
         this.shader = shader;
+        if (isSsr) {
+            shader.shaderDefines = shaderDefines;
+        }
         delete this.shadowCount;
-    }
-
-
-    _renderSsrDepth(context) {
-        this.regl.clear({
-            color: [0, 0, 0, 0],
-            framebuffer: context.ssr.depthTestFbo
-        });
-        this._depthShader.filter = context.sceneFilter;
-        this.renderer.render(this._depthShader, this.getUniformValues(this.layer.getMap(), context), this.scene, context.ssr.depthTestFbo);
     }
 
     getShadowMeshes() {
@@ -140,13 +121,13 @@ class StandardPainter extends MeshPainter {
         const regl = this.regl;
         this.renderer = new reshader.Renderer(regl);
 
-        this._createShader(context);
-
         this._bindedOnTextureLoad = this._onTextureLoad.bind(this);
         this._bindDisposeCachedTexture = this.disposeCachedTexture.bind(this);
         this._bindOnMaterialComplete = this._onMaterialComplete.bind(this);
 
         this._updateMaterial();
+
+        this._createShader(context);
 
         const pickingConfig = {
             vert: `
@@ -257,9 +238,6 @@ class StandardPainter extends MeshPainter {
             }
         `;
         this._updateDepthShader = new reshader.pbr.StandardShader(config);
-        this._depthShader = new reshader.pbr.StandardDepthShader({
-            extraCommandProps
-        });
     }
 
     _onTextureLoad({ resources }) {

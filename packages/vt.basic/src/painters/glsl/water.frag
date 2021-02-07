@@ -24,9 +24,6 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 #ifdef HAS_SSR
     varying vec4 vViewVertex;
     uniform mat3 uModelViewNormalMatrix;
-    #ifdef SSR_IN_ONE_FRAME
-        uniform sampler2D TextureDepthTest;
-    #endif
     uniform sampler2D TextureDepth;
     uniform highp vec2 uGlobalTexSize;
     uniform float uSsrFactor;
@@ -68,7 +65,7 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         return vec3(0.5 + 0.5 * projected.xy / projected.w, projected.w);
     }
     vec3 fetchColorLod(const in float level, const in vec2 uv) {
-        return decodeRGBM(texture2D(TextureToBeRefracted, uv), 7.0);
+        return texture2D(TextureToBeRefracted, uv).rgb;
     }
 
     float linearizeDepth(float depth) {
@@ -78,11 +75,7 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
     }
 
     float fetchDepth(const vec2 uv) {
-        #ifdef SSR_IN_ONE_FRAME
-            float depth = texture2D(TextureDepth, uv).r;
-        #else
-            float depth = decodeDepth(texture2D(TextureDepth, uv));
-        #endif
+        float depth = decodeDepth(texture2D(TextureDepth, uv));
         return depth;
     }
 
@@ -183,15 +176,6 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
      * @param specularColor 材质的specularColor
     */
     vec3 ssr(const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness, const in vec3 normal, const in vec3 eyeVector) {
-        #if !defined(SSR_IN_ONE_FRAME)
-            // depth值较小时，说明该片元被遮住，则不绘制，与SSR_ONE_FRAME阶段的绘制结果保持一致
-            // 具体参考 GroupGLLayerRenderer.isSSROn 方法中的说明
-            vec2 gTexCoord = gl_FragCoord.xy / uGlobalTexSize;
-            float depth = fetchDepth(gTexCoord);
-            if (depth + 5E-4 < gl_FragCoord.z) {
-                return specularEnvironment;
-            }
-        #endif
         float uFrameModTaaSS = 0.0;
         vec4 result = vec4(0.0);
         float rough4 = roughness * roughness;
@@ -408,15 +392,6 @@ vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
 }
 
 void main() {
-    #if defined(HAS_SSR) && defined(SSR_IN_ONE_FRAME)
-        //人工的深度测试，如果当前片元的深度值比TextureDepth(targetFBO的深度纹理)中的小，则抛弃这个片元
-        vec2 gTexCoord = gl_FragCoord.xy / uGlobalTexSize;
-        float depth = texture2D(TextureDepthTest, gTexCoord).r;
-        if (depth == 0.0) {
-            discard;
-            return;
-        }
-    #endif
     vec3 localUp = NORMAL;
     //切线空间
     vec3 tangentNormal = getWaterNormal(vUv, timeElapsed / 1000.0);
