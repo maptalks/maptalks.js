@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3, mat4 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -13,8 +13,9 @@ const EMPTY_COLOR = [0, 0, 0, 0];
 const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
 
-const noPostFilter = m => !m.getUniform('bloom');
+const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
+const noSsrFilter = m => !m.getUniform('ssr');
 
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
@@ -616,13 +617,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!enable || map.getPitch() <= MIN_SSR_PITCH) {
             return 0;
         }
-        const projViewMat = map.projViewMatrix;
-        const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
-        return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        // const projViewMat = map.projViewMatrix;
+        // const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
+        // return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        return SSR_IN_ONE_FRAME;
         // SSR_STATIC的思路是直接利用上一帧的深度纹理，来绘制ssr，这样无需额外的ssr pass。
         // 但当场景里有透明的物体时，被物体遮住的倒影会在SSR_STATIC阶段中绘制，但在SSR_IN_ONE_FRAME中不绘制，出现闪烁，故取消SSR_STATIC
         // 2021-01-11 fuzhen 该问题通过在ssr shader中，通过手动比较深度值，决定是否绘制解决
         // 2021-02-05 fuzhen 通过在drawSSR前copyDepth，ssr统一在StandardShader中绘制，不再需要ssr后处理, 之后SSR_IN_ONE_FRAME相比SSR_STATIC，只是多了drawSSR
+        // 2021-02-07 fuzhen ssr绘制顺序不同，会导致一些绘制问题，改为统一用SSR_IN_ONE_FRAME
     }
 
     isEnableTAA() {
@@ -750,6 +753,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             } else if (enableBloom) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
+            } else if (ssrMode === SSR_IN_ONE_FRAME) {
+                context['sceneFilter'] = noSsrFilter;
             }
 
             renderTarget = this._getFramebufferTarget();
