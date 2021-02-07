@@ -32,18 +32,21 @@ float unpack(vec2 depth) {
     return (depth.x * (256.0 / 257.0) + depth.y * (1.0 / 257.0));
 }
 
-float bilateralWeight(in float depth, in float sampleDepth) {
-    float diff = (sampleDepth - depth) * materialParams.farPlaneOverEdgeDistance;
-    return max(0.0, 1.0 - diff * diff);
-}
+// float bilateralWeight(in float depth, in float sampleDepth) {
+//     float diff = (sampleDepth - depth) * materialParams.farPlaneOverEdgeDistance;
+//     return max(0.0, 1.0 - diff * diff);
+// }
 
 void tap(inout float sum, inout float totalWeight, float weight, float depth, vec2 position) {
     // ambient occlusion sample
     vec3 data = texture2D(materialParams_ssao, position).rgb;
 
     // bilateral sample
-    float bilateral = bilateralWeight(depth, unpack(data.gb));
-    bilateral *= weight;
+    // float bilateral = bilateralWeight(depth, unpack(data.gb));
+    // bilateral *= weight;
+
+    float bilateral = weight;
+
     sum += data.r * bilateral;
     totalWeight += bilateral;
 }

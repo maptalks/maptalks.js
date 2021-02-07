@@ -1004,10 +1004,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             outlineColor = getValueOrDefault(config.outline, 'outlineColor', outlineColor);
         }
 
-        const ssrMode = this.isSSROn();
         const enableSSAO = this.isEnableSSAO();
+        const enableSSR = config.ssr && config.ssr.enable;
         const enableBloom = config.bloom && config.bloom.enable;
-        const hasPost = ssrMode || enableSSAO || enableBloom;
+        const hasPost = enableSSAO || enableBloom;
 
         let postFBO = this._postFBO;
         if (hasPost) {
@@ -1027,15 +1027,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
         }
 
-        let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
+        let tex = this._targetFBO.color[0];
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
             postFBO,
-            taaTex ? this._targetFBO.color[0] : tex,
+            tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
             taaTex,
-            taaTex ? tex : null,
+            this._fxaaFBO && this._fxaaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,
@@ -1067,7 +1067,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             });
         }
 
-        // bloom后处理放到ssr之后，防止bloom被ssr遮住
         if (enableBloom && this._bloomPainted) {
             const bloomConfig = config.bloom;
             const threshold = +bloomConfig.threshold || 0;
@@ -1076,7 +1075,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex = this._postProcessor.bloom(tex, threshold, factor, radius);
         }
 
-        if (ssrMode) {
+        if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex, this._depthTex);
             if (this._needUpdateSSR) {
                 const needRetireFrames = this._needRetireFrames;

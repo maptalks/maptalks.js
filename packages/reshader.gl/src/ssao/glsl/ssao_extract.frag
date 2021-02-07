@@ -222,6 +222,7 @@ float computeAmbientOcclusionSSAO(const highp vec3 origin, const highp float ori
 
     float t = saturate(radius0 / abs(originDepth - occlusionDepth));
     float rangeCheck = t * t * (3.0 - 2.0 * t);
+    // float rangeCheck = abs(originDepth - occlusionDepth) < radius0 ? 1.0 : 0.0;
 
     return (occlusionDepth >= samplePos.z + bias0 ? rangeCheck : 0.0);
 }
