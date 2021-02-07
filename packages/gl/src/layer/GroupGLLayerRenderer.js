@@ -10,7 +10,7 @@ import PostProcess from './postprocess/PostProcess.js';
 
 const EMPTY_COLOR = [0, 0, 0, 0];
 
-const MIN_SSR_PITCH = 10;
+const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
 
 const noPostFilter = m => !m.getUniform('bloom');
@@ -1074,7 +1074,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (ssrMode) {
             this._postProcessor.genSsrMipmap(tex, this._depthTex);
             if (this._needUpdateSSR) {
+                const needRetireFrames = this._needRetireFrames;
                 this.setToRedraw();
+                this._needRetireFrames = needRetireFrames;
                 this._needUpdateSSR = false;
             }
         }
