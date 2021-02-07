@@ -48,7 +48,7 @@ vec4 readFXAATexture(vec2 uv) {
     vec4 source = texture2D(textureSource, uv);
     vec4 taa = texture2D(taaTextureSource, uv);
     vec4 fxaa = texture2D(fxaaTextureSource, uv);
-    return fxaa + (taa + source * (1.0 - taa.a)) * (1.0 - fxaa.a);
+    return vec4(fxaa.rgb * fxaa.a, fxaa.a) + (vec4(taa.rgb * taa.a, taa.a) + source * (1.0 - taa.a)) * (1.0 - fxaa.a);
   #else
     return texture2D(textureSource, uv);
   #endif
