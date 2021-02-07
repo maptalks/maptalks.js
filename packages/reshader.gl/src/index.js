@@ -60,7 +60,6 @@ import * as PBRHelper from './pbr/PBRHelper.js';
 import StandardMaterial from './pbr/StandardMaterial.js';
 import StandardSpecularGlossinessMaterial from './pbr/StandardSpecularGlossinessMaterial.js';
 import StandardShader from './pbr/StandardShader';
-import StandardDepthShader from './pbr/StandardDepthShader';
 import * as PBRUtils from './pbr/PBRUtils';
 
 const pbr = {
@@ -68,7 +67,6 @@ const pbr = {
     StandardMaterial,
     StandardSpecularGlossinessMaterial,
     StandardShader,
-    StandardDepthShader,
     PBRUtils
     // LitShader,
     // LitMaterial,
