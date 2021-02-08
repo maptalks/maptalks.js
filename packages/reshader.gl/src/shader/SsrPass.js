@@ -67,6 +67,7 @@ class SsrPass {
         }
         const depthTex = this._depthCopy;
         const texture = this.getMipmapTexture();
+        const thickness = map.distanceToPoint(50, 0, map.getGLZoom());
         const uniforms = {
             'TextureDepth': depthTex,
             // 'TextureSource': currentTex,
@@ -78,7 +79,8 @@ class SsrPass {
             // 'uTextureToBeRefractedSize': [texture.width, texture.height],
             'fov': map.getFov() * Math.PI / 180,
             'prevProjViewMatrix': this._projViewMatrix || map.projViewMatrix,
-            'cameraWorldMatrix': map.cameraWorldMatrix
+            'cameraWorldMatrix': map.cameraWorldMatrix,
+            'ssrThickness': thickness.x
         };
         return uniforms;
     }
