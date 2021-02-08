@@ -36,6 +36,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._groundPainter) {
             this._groundPainter.update();
         }
+        if (this._envPainter) {
+            this._envPainter.update();
+        }
         this.setToRedraw();
     }
 
