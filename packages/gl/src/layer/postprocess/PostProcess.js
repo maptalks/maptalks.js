@@ -111,6 +111,7 @@ export default class PostProcess {
         const filter = context['sceneFilter'];
         context.renderMode = 'default';
         context['sceneFilter'] = ssrFilter;
+        context.renderTarget.fbo = fbo;
         const fGL = layerRenderer.glCtx;
         let cleared = false;
         if (event) {
@@ -210,6 +211,11 @@ export default class PostProcess {
             shaderDefines['HAS_TAA_TEX'] = 1;
         } else {
             delete shaderDefines['HAS_TAA_TEX'];
+        }
+        if (fxaaTextureSource) {
+            shaderDefines['HAS_FXAA_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_FXAA_TEX'];
         }
         if (textureOutline) {
             shaderDefines['HAS_OUTLINE_TEX'] = 1;

@@ -13,7 +13,7 @@ const EMPTY_COLOR = [0, 0, 0, 0];
 const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
 
-const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
+const noPostFilter = m => !m.getUniform('bloom');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
 
@@ -135,6 +135,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._fxaaFBO.destroy();
             delete this._taaFBO;
             delete this._fxaaFBO;
+            delete this._fxaaAfterTaaDrawCount;
         }
 
         // let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
@@ -148,9 +149,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const ssrMode = this.isSSROn();
         if (ssrMode === SSR_IN_ONE_FRAME) {
-            fGL.resetDrawCalls();
-            this._postProcessor.drawSSR(this._depthTex, this._fxaaFBO || this._targetFBO);
-            this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
+            // fGL.resetDrawCalls();
+            this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
+            // this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -1038,7 +1039,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex,
             this._noaaDrawCount && this._noAaFBO.color[0],
             taaTex,
-            this._fxaaFBO && this._fxaaFBO.color[0],
+            this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
             // +!!(config.antialias && config.antialias.enable),
             // +!!enableFXAA,
             1,
