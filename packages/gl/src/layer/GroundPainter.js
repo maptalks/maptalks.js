@@ -6,7 +6,10 @@ import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
-const TEX_SIZE = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
+const TEX_SIZE_W = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
+const TEX_SIZE_H = 128 / 256;
+const DEFAULT_TEX_OFFSET = [0, 0];
+const DEFAULT_TEX_SCALE = [1, 1];
 
 class GroundPainter {
     static getGroundTransform(out, map) {
@@ -342,12 +345,16 @@ class GroundPainter {
         const xmin = center[0] - width;
         const ymax = center[1] + height;
 
-        const uvStartX = (xmin / TEX_SIZE) % 1;
-        const uvStartY = (ymax / TEX_SIZE) % 1;
-        const w = extent.getWidth() / TEX_SIZE * 2;
-        const h = extent.getHeight() / TEX_SIZE * 2;
+        const offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
+        const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
+        const texWidth = TEX_SIZE_W * scale[0];
+        const texHeight = TEX_SIZE_H * scale[1];
+        const uvStartX = (xmin / texWidth) % 1;
+        const uvStartY = (ymax / texHeight) % 1;
+        const w = extent.getWidth() / texWidth * 2;
+        const h = extent.getHeight() / texHeight * 2;
 
-        this._ground.setUniform('uvOffset', [uvStartX, uvStartY]);
+        this._ground.setUniform('uvOffset', [uvStartX + offset[0] * scale[0], uvStartY + offset[1] * scale[1]]);
         this._ground.setUniform('uvScale', [w, -h]);
     }
 
