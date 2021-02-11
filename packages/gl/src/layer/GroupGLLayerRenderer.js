@@ -149,9 +149,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         const ssrMode = this.isSSROn();
         if (ssrMode === SSR_IN_ONE_FRAME) {
-            // fGL.resetDrawCalls();
-            this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
-            // this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
+            fGL.resetDrawCalls();
+            this._postProcessor.drawSSR(this._depthTex, this._fxaaFBO || this._targetFBO);
+            this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
