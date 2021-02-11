@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3, mat4 } from 'gl-matrix';
 import { GLContext } from '@maptalks/fusiongl';
 import ShadowPass from './shadow/ShadowProcess';
 import * as reshader from '@maptalks/reshader.gl';
@@ -13,7 +13,7 @@ const EMPTY_COLOR = [0, 0, 0, 0];
 const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
 
-const noPostFilter = m => !m.getUniform('bloom');
+const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
 const noBloomFilter = m => !m.getUniform('bloom');
 const noSsrFilter = m => !m.getUniform('ssr');
 
@@ -93,11 +93,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
+        const ssrMode = this.isSSROn();
 
         const enableTAA = this.isEnableTAA();
         const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
         this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
+
+        if (enableTAA && ssrMode === SSR_STATIC) {
+            // 重用上一帧的深度纹理，先绘制ssr图形
+            // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
+            this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
+        }
 
         const fGL = this.glCtx;
         if (enableTAA) {
@@ -147,11 +154,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        const ssrMode = this.isSSROn();
-        if (ssrMode === SSR_IN_ONE_FRAME) {
-            fGL.resetDrawCalls();
-            this._postProcessor.drawSSR(this._depthTex, this._fxaaFBO || this._targetFBO);
-            this._fxaaAfterTaaDrawCount += fGL.getDrawCalls();
+        if (!enableTAA || ssrMode === SSR_IN_ONE_FRAME) {
+            this._postProcessor.drawSSR(this._depthTex, this._targetFBO, true);
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -621,15 +625,16 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!enable || map.getPitch() <= MIN_SSR_PITCH) {
             return 0;
         }
-        // const projViewMat = map.projViewMatrix;
-        // const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
-        // return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
-        return SSR_IN_ONE_FRAME;
+        const projViewMat = map.projViewMatrix;
+        const prevSsrMat = this._postProcessor.getPrevSsrProjViewMatrix();
+        return prevSsrMat && mat4.exactEquals(prevSsrMat, projViewMat) ? SSR_STATIC : SSR_IN_ONE_FRAME;
+        // return SSR_IN_ONE_FRAME;
         // SSR_STATIC的思路是直接利用上一帧的深度纹理，来绘制ssr，这样无需额外的ssr pass。
         // 但当场景里有透明的物体时，被物体遮住的倒影会在SSR_STATIC阶段中绘制，但在SSR_IN_ONE_FRAME中不绘制，出现闪烁，故取消SSR_STATIC
         // 2021-01-11 fuzhen 该问题通过在ssr shader中，通过手动比较深度值，决定是否绘制解决
         // 2021-02-05 fuzhen 通过在drawSSR前copyDepth，ssr统一在StandardShader中绘制，不再需要ssr后处理, 之后SSR_IN_ONE_FRAME相比SSR_STATIC，只是多了drawSSR
         // 2021-02-07 fuzhen ssr绘制顺序不同，会导致一些绘制问题，改为统一用SSR_IN_ONE_FRAME
+        // 2021-02-11 fuzhen 重新分为SSR_STATIC和SSR_IN_ONE_FRAME，SSR_STATIC时重用上一帧depth纹理，在taa前绘制ssr图形，解决taa抖动造成的ssr图形边缘缝隙问题
     }
 
     isEnableTAA() {
@@ -751,13 +756,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             context['jitter'] = this._jitter;
             const enableBloom = config.bloom && config.bloom.enable;
-            if (enableBloom && ssrMode === SSR_IN_ONE_FRAME) {
+            if (enableBloom && ssrMode) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noPostFilter;
             } else if (enableBloom) {
                 context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
-            } else if (ssrMode === SSR_IN_ONE_FRAME) {
+            } else if (ssrMode) {
                 context['sceneFilter'] = noSsrFilter;
             }
 

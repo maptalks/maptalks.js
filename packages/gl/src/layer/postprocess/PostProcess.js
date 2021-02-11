@@ -99,8 +99,10 @@ export default class PostProcess {
         return this._ssrPass && this._ssrPass.getPrevProjViewMatrix();
     }
 
-    drawSSR(depthTex, fbo) {
-        this._ssrPass.copyDepthTex(depthTex);
+    drawSSR(depthTex, fbo, isCopyDepth) {
+        if (isCopyDepth) {
+            this._ssrPass.copyDepthTex(depthTex);
+        }
         //遍历开启了ssr的mesh重新绘制一遍，并只绘制有ssr的像素，discard掉其他像素
         const layerRenderer = this._layer.getRenderer();
         const timestamp = layerRenderer.getFrameTime();
