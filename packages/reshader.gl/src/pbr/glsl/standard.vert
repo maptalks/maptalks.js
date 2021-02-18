@@ -81,7 +81,7 @@ varying vec3 vModelVertex;
 #include <heatmap_render_vert>
 #include <fog_render_vert>
 
-#ifdef HAS_BUMP_MAP
+#if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
     varying vec3 vTangentViewPos;
     varying vec3 vTangentFragPos;
     #if __VERSION__ == 100
@@ -214,7 +214,7 @@ void main() {
         fog_getDist( modelMatrix * position);
     #endif
 
-    #ifdef HAS_BUMP_MAP
+    #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
         mat3 TBN = transposeMat3(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
         vTangentViewPos = TBN * uCameraPosition;
         vTangentFragPos = TBN * vModelVertex;
