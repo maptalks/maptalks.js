@@ -100,7 +100,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         drawContext.jitter = NO_JITTER;
         this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
 
-        if (enableTAA && ssrMode === SSR_STATIC) {
+        if (ssrMode === SSR_STATIC) {
             // 重用上一帧的深度纹理，先绘制ssr图形
             // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
             this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
@@ -154,7 +154,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
-        if (!enableTAA || ssrMode === SSR_IN_ONE_FRAME) {
+        if (ssrMode === SSR_IN_ONE_FRAME) {
             this._postProcessor.drawSSR(this._depthTex, this._targetFBO, true);
         }
 
@@ -788,12 +788,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (config && config.enable && this._postProcessor) {
             this._postProcessor.setContextIncludes(context);
         }
-        if (ssrMode === SSR_STATIC) {
-            const ssr = this._postProcessor.getSSRContext();
-            if (ssr) {
-                context.ssr = ssr;
-            }
-        }
+        // 2021-02-20 ssr的绘制全部统一到了drawSSR中，而不会在平时的绘制阶段绘制ssr了
+        // if (ssrMode === SSR_STATIC) {
+        //     const ssr = this._postProcessor.getSSRContext();
+        //     if (ssr) {
+        //         context.ssr = ssr;
+        //     }
+        // }
         return context;
     }
 
