@@ -122,7 +122,8 @@ const options = {
 
     'renderer': 'canvas',
 
-    'cascadePitches': [10, 60]
+    'cascadePitches': [10, 60],
+    'renderable': true
 };
 
 /**
