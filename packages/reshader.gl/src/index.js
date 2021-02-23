@@ -26,6 +26,7 @@ export { default as Shader } from './shader/Shader.js';
 export { default as MeshShader } from './shader/MeshShader.js';
 export { default as WireframeShader } from './shader/WireframeShader.js';
 export { default as PhongShader } from './shader/PhongShader.js';
+export { default as PointLineShader } from './shader/PointLineShader.js';
 export { default as ToonShader } from './shader/ToonShader.js';
 export { default as FxaaShader } from './shader/FxaaShader.js';
 export { default as BoxBlurShader } from './shader/BoxBlurShader.js';

@@ -86,11 +86,11 @@ export default class GLTFPack {
         const trs = node.trs;
         if (trs) {
             gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
-            node.trs.update(animMatrix);
             if (trs.isTRS(animMatrix)) {
                 //根据时间获取到的动画矩阵如果t、r、s都存在，需要直接赋给localMatrix
                 mat4.copy(node.localMatrix, animMatrix);
             } else {
+                node.trs.update(animMatrix);
                 trs.setMatrix(node.localMatrix);
             }
         }
@@ -99,7 +99,7 @@ export default class GLTFPack {
         } else {
             mat4.copy(node.nodeMatrix, node.localMatrix);
         }
-        const nodeMatrix = node.nodeMatrix;
+        const nodeMatrix = mat4.copy([], node.nodeMatrix);
         if (node.children) {
             node.children.forEach(child => {
                 this._updateNodeMatrix(time, child, nodeMatrix);
@@ -325,7 +325,7 @@ function createGeometry(primitive) {
         }
     }
     let indices = primitive.indices;
-    if (indices.bufferView === undefined && indices.array) {
+    if (indices && indices.bufferView === undefined && indices.array) {
         indices = indices.array;
     }
     const modelGeometry = new Geometry(
@@ -342,7 +342,7 @@ function createGeometry(primitive) {
             color0Attribute: 'COLOR_0'
         }
     );
-    if (!modelGeometry.data['NORMAL']) {
+    if (primitive.mode > 3 && !modelGeometry.data['NORMAL']) {
         modelGeometry.createNormal('NORMAL');
     }
     return modelGeometry;
