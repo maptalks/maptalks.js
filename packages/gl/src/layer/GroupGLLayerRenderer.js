@@ -359,7 +359,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             optionalExtensions: layer.options['optionalExtensions']
         });
         this.gl.regl = this.regl;
-
         this._jitter = [0, 0];
     }
 

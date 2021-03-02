@@ -47,6 +47,7 @@ export { default as CopyShader } from './shader/CopyShader.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };
+export { default as GLTFManager } from './gltf/GLTFManager.js';
 
 /*import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };*/
