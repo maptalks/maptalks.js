@@ -10,6 +10,7 @@ import { extend, pushIn } from '../../common/Util';
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
 const CLEAR_COLOR = [0, 0, 0, 0];
+const TILE_POINT = new maptalks.Point(0, 0);
 
 // for context.sceneFilter
 // 含义是后处理阶段时，都返回0
@@ -781,7 +782,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _addTileStencil(tileInfo, ref) {
         const EXTENT = this._EXTENT;
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z, EXTENT);
+        const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
         tileInfo.stencilRef = ref;
         this._stencilRenderer.add(ref, EXTENT, tileTransform);
     }
@@ -818,8 +820,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             //vector tile 的 extent (8192)
             this._EXTENT = tileData.extent;
         }
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tileInfo.point, tileInfo.z);
-        const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tileInfo.point, tileInfo.z);
+        const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
+        const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
         const pluginData = [];
         pushIn(pluginData, tileData.data);
         pushIn(pluginData, tileData.featureData);

@@ -188,7 +188,7 @@ export default class BaseLayerWorker {
         }
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
-            tilePoint = { x: tileInfo.point.x * glScale, y: tileInfo.point.y * glScale },
+            tilePoint = { x: tileInfo.extent2d.xmin * glScale, y: tileInfo.extent2d.ymax * glScale },
             data = [],
             featureData = [],
             pluginIndexes = [],

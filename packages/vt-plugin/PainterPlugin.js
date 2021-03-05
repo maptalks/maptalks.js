@@ -108,7 +108,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 var features = tileData.features;
                 var glData = tileData.data;
-                if (!glData) {
+                if (!glData || !glData.data || !glData.data.aPosition) {
                     return NO_REDRAW;
                 }
                 var data = glData;
@@ -142,7 +142,8 @@ function createPainterPlugin(type, Painter) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
-                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint: tileInfo.point.toArray(), tileZoom, tileTranslationMatrix });
+                const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
+                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
