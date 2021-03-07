@@ -32,7 +32,7 @@ const DEFAULT_UNIFORMS = {
     // 'uSubsurfaceTranslucencyThicknessFactor', //37.4193
     // 'uAnisotropyFlipXY', //unused
     // 'uDrawOpaque', //unused
-    'uEmitMultiplicative': 0, //0
+    'uEmitMultiplicative': 1, //0
     'uNormalMapFlipY': 0, //1
     'uOutputLinear': 0, //1
 
