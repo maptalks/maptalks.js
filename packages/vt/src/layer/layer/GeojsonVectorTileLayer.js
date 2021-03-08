@@ -26,7 +26,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     setData(data) {
-        if (isString(data) || data.url) {
+        if (data && (isString(data) || data.url)) {
             this._fetchData(data, (err, json) => {
                 if (err) {
                     throw err;

@@ -108,11 +108,11 @@ function createPainterPlugin(type, Painter) {
                 }
                 var features = tileData.features;
                 var glData = tileData.data;
-                if (!glData || !glData.data || !glData.data.aPosition) {
+                if (!glData || !Array.isArray(glData) && (!glData.data || glData.data && !glData.data.aPosition)) {
                     return NO_REDRAW;
                 }
                 var data = glData;
-                if (this.painter.colorSymbol && glData) {
+                if (this.painter.colorSymbol && !Array.isArray(glData)) {
                     var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition, glData.positionSize);
                     data.data.aColor = colors;
                 }
