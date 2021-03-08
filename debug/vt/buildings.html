@@ -11,8 +11,8 @@
 
   <link rel="stylesheet" href="screen.css" />
   <!-- 需要用 maptalks worker 分支下的版本 -->
-  <!-- <script src="/maptalks/dist/maptalks.js"></script> -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks@next/dist/maptalks.min.js"></script>
+  <script src="/maptalks/dist/maptalks.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks@next/dist/maptalks.min.js"></script> -->
   <script src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <script src="buildings.js"></script>
   <script src="../../packages/vt/dist/maptalks.vt.js"></script>
@@ -75,6 +75,8 @@
       // "center":[13.414905354183702,52.52913153292073],"zoom":20,"pitch":33.00000000000021,"bearing":145.20000000000005,
 
       "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.20000000000007,"bearing":-47.20000000000175,
+
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.60000000000008,"bearing":26.599999999998204
 
       // bearing : -42,
       // baseLayer: osm
@@ -235,7 +237,7 @@
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
       'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.0,
+      'uRoughnessFactor': 0.,
       'uMetalnessFactor': 1,
       'uOutputLinear': 1,
       'uHsv': [0, 0, 0],
@@ -248,6 +250,7 @@
           filter : true,
           renderPlugin,
           symbol: {
+            bloom: false,
             // ssr: true,
             material: litMaterial,
             polygonOpacity: 1,
@@ -463,13 +466,16 @@
         },
         ssao: {
           enable: true,
-          bias: 0.1,
-          radius: 0.2,
+          bias: 0.03,
+          radius: 0.08,
           intensity: 1.5
         },
         sharpen: {
           enable: false,
           factor: 0.2
+        },
+        bloom: {
+          enable: true,
         },
         outline: {
           enable: true
@@ -558,14 +564,13 @@
         x: dirConfig[0],
         y: dirConfig[1],
         z: dirConfig[2],
-        r: lights.ambient.orientation || 0
       };
       var folder = gui.addFolder('direction');
       folder.open();
       var xCtrl = folder.add(direction, 'x', -1, 1, 0.1);
       var yCtrl = folder.add(direction, 'y', -1, 1, 0.1);
       var zCtrl = folder.add(direction, 'z', -1, 1, 0.1);
-      var rCtrl = folder.add(direction, 'r', 0, 360, 0.1);
+
       xCtrl.onChange(function () {
         dirConfig[0] = direction.x;
         map.setLightConfig(lights);
@@ -581,11 +586,33 @@
         map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
+
+
+      var ambient = {
+        r: lights.ambient.orientation || 0,
+        mode: lights.ambient.mode || 1,
+        level: lights.ambient.level || 0,
+      };
+      var folder = gui.addFolder('ambient');
+      folder.open();
+      var rCtrl = folder.add(ambient, 'r', 0, 360, 0.1);
       rCtrl.onChange(function () {
-        lights.ambient.orientation = direction.r;
+        lights.ambient.orientation = ambient.r;
         map.setLightConfig(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
+      var mCtrl = folder.add(ambient, 'mode', 0, 1, 1);
+      mCtrl.onChange(function () {
+        sceneConfig.environment.mode = ambient.mode;
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      var lCtrl = folder.add(ambient, 'level', 0, 3, 1);
+      lCtrl.onChange(function () {
+        sceneConfig.environment.level = ambient.level;
+
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+
 
       var ssaoConfig = sceneConfig.postProcess.ssao;
       var ssao = gui.addFolder('ssao');
