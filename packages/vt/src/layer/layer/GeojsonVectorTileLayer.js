@@ -26,8 +26,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     setData(data) {
-        if (isString(data)) {
-            Ajax.getJSON(data, (err, json) => {
+        if (isString(data) || data.url) {
+            this._fetchData(data, (err, json) => {
                 if (err) {
                     throw err;
                 }
@@ -51,6 +51,14 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             }
         }
         return this;
+    }
+
+    _fetchData(data, cb) {
+        if (isString(data)) {
+            Ajax.getJSON(data, cb);
+        } else {
+            Ajax.getJSON(data.url, data, cb);
+        }
     }
 
     getData() {

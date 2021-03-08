@@ -67,9 +67,14 @@ const Ajax = {
             cb = options;
             options = t;
         }
+        options = options || {};
+        if (options.method) {
+            options.method = options.method.toUpperCase();
+        }
+        const isPost = options.method === 'POST';
         if (!USE_FETCH) {
             const client = Ajax._getClient(cb);
-            client.open('GET', url, true);
+            client.open(options.method || 'GET', url, true);
             if (options) {
                 for (const k in options.headers) {
                     client.setRequestHeader(k, options.headers[k]);
@@ -79,13 +84,18 @@ const Ajax = {
                     client.responseType = options['responseType'];
                 }
             }
-            client.send(null);
+            client.send(isPost ? options.body : null);
             return client;
         } else {
-            options = options || {};
             const controller = new AbortController();
             const signal = controller.signal;
-            fetch(url, { signal, method: 'GET', headers: options.headers, credentials: options.credentials, referrerPolicy: 'origin' }).then(response => {
+            const requestConfig = {
+                signal, method: options.method || 'GET', headers: options.headers, credentials: options.credentials, referrerPolicy: 'origin'
+            };
+            if (isPost) {
+                requestConfig.body = options.body;
+            }
+            fetch(url, requestConfig).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
                 if (parsed.message) {
                     cb(parsed);
