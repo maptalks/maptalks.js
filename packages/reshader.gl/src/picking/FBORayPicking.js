@@ -250,7 +250,7 @@ export default class FBORayPicking {
             return false;
         }).map(id => meshes[id]);
 
-        if (meshIds.length && shader === this._shader1 && meshes[0].geometry.data['aPickingId']) {
+        if (meshIds.length && shader === this._shader1 && (meshes[0].getUniform('uPickingId') !== undefined || meshes[0].geometry.data['aPickingId'])) {
             pickingIds = this._getPickingId(px, py, width, height, pixels, pickedMeshes, uniforms);
         }
 
