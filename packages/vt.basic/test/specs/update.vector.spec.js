@@ -474,7 +474,7 @@ describe('vector layers update style specs', () => {
         });
         let outlined = false;
         group.on('layerload', () => {
-            if (count === 1) {
+            if (count >= 1 && !outlined) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
@@ -519,7 +519,7 @@ describe('vector layers update style specs', () => {
         });
         let outlined = false;
         group.on('layerload', () => {
-            if (count === 1) {
+            if (count >= 1 && !outlined) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
