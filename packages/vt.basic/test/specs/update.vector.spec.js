@@ -104,7 +104,6 @@ describe('vector layers update style specs', () => {
             marker.updateSymbol({
                 markerDx: 50,
             });
-            return 2;
         });
     });
 

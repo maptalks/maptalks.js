@@ -6,37 +6,37 @@ import { extend, isNumber } from '../../common/Util';
 import { KEY_IDX } from '../../common/Constant';
 import Promise from '../../common/Promise';
 
-const SYMBOL_SIMPLE_PROPS = {
-    textFill: 1,
-    textSize: 1,
-    textOpacity: 1,
-    // textHaloRadius: 1,
-    textHaloFill: 1,
-    textHaloOpacity: 1,
-    textPitchAlignment: 1,
-    textRotationAlignment: 1,
-    textDx: 1, //TODO
-    textDy: 1, //TODO
+// const SYMBOL_SIMPLE_PROPS = {
+//     textFill: 1,
+//     textSize: 1,
+//     textOpacity: 1,
+//     // textHaloRadius: 1,
+//     textHaloFill: 1,
+//     textHaloOpacity: 1,
+//     textPitchAlignment: 1,
+//     textRotationAlignment: 1,
+//     textDx: 1, //TODO
+//     textDy: 1, //TODO
 
-    // markerWidth: 1,
-    // markerHeight: 1,
-    markerOpacity: 1,
-    markerPitchAlignment: 1,
-    markerRotationAlignment: 1,
-    markerDx: 1, //TODO
-    markerDy: 1, //TODO
+//     // markerWidth: 1,
+//     // markerHeight: 1,
+//     markerOpacity: 1,
+//     markerPitchAlignment: 1,
+//     markerRotationAlignment: 1,
+//     markerDx: 1, //TODO
+//     markerDy: 1, //TODO
 
-    lineColor: 1,
-    lineWidth: 1,
-    lineOpacity: 1,
-    lineDx: 1, //TODO
-    lineDy: 1, //TODO
-    lineGapWidth: 1, //TODO
-    lineDasharray: null,
+//     lineColor: 1,
+//     lineWidth: 1,
+//     lineOpacity: 1,
+//     lineDx: 1, //TODO
+//     lineDy: 1, //TODO
+//     lineGapWidth: 1, //TODO
+//     lineDasharray: null,
 
-    polygonFill: 1,
-    polygonOpacity: 1
-};
+//     polygonFill: 1,
+//     polygonOpacity: 1
+// };
 
 class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
