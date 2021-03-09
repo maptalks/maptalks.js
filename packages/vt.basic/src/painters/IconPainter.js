@@ -178,7 +178,7 @@ class IconPainter extends CollisionPainter {
             return [];
         }
         const geometries = glData.sort(sorting).map(data => {
-            if (data.empty) {
+            if (data && data.empty) {
                 //空icon，删除不需要的attribute数据
                 data.data = {
                     aPosition: new Uint8Array(data.data.aPosition),
@@ -252,6 +252,9 @@ class IconPainter extends CollisionPainter {
         let iconMesh, textMesh;
         for (let i = 0; i < geometries.length; i++) {
             const geometry = geometries[i];
+            if (!geometry) {
+                continue;
+            }
             if (geometry.properties.iconAtlas || geometry.properties.isEmpty) {
                 const mesh = iconMesh = this._createIconMesh(geometries[i], transform);
                 if (mesh) meshes.push(mesh);

@@ -70,3 +70,7 @@ export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty
 export function isOut(point, extent) {
     return extent < Infinity && (point.x < 0 || point.x > extent || point.y < 0 || point.y > extent);
 }
+
+export function isNil(v) {
+    return v === null || v === undefined;
+}

@@ -153,6 +153,25 @@ describe('vector layers update style specs', () => {
     });
 
 
+    it('should can update properties based text', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: ''
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [255, 0, 0, 255], [0, 0], () => {
+            marker.setProperties({
+                content: '■■■'
+            });
+            marker.updateSymbol({
+                textName: '{content}',
+                textFill: '#f00',
+            });
+        }, false, [0, 0, 0, 0]);
+    });
+
     it('should can update textHaloRadius', done => {
         const marker = new maptalks.Marker([0, 0], {
             symbol: {
@@ -517,7 +536,7 @@ describe('vector layers update style specs', () => {
     });
 
 
-    function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle) {
+    function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;
             offset = [0, 0];
@@ -540,7 +559,7 @@ describe('vector layers update style specs', () => {
             if (count === 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
-                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                assert.deepEqual(pixel, firstColor || [255, 0, 0, 255]);
                 endCount = changeFun(layer) || 3;
             } else if (count === endCount) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2 + offset[0], y / 2 + offset[1]);

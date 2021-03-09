@@ -6,9 +6,24 @@ import { allowsVerticalWritingMode } from './util/script_detection';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
 import Color from 'color';
-import { isOut } from './util/util';
+import { isOut, isNil } from './util/util';
 
 const DEFAULT_SPACING = 250;
+const DEFAULT_UNIFORMS = {
+    'textFill': [0, 0, 0, 1],
+    'textOpacity': 1,
+    'textPitchAlignment': 0,
+    'textRotationAlignment': 0,
+    'textHaloRadius': 0,
+    'textHaloFill': [1, 1, 1, 1],
+    'textHaloBlur': 0,
+    'textHaloOpacity': 1,
+    'textPerspectiveRatio': 0,
+    'textSize': 14,
+    'textDx': 0,
+    'textDy': 0,
+    'textRotation': 0
+};
 
 function getPackSDFFormat(symbol) {
     if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
@@ -415,6 +430,9 @@ export default class PointPack extends VectorPack {
             }
             if (this._textSizeFn) {
                 textSize = this._textSizeFn(null, properties);
+                if (isNil(textSize)) {
+                    textSize = DEFAULT_UNIFORMS['textSize'];
+                }
             }
             if (this._textHaloFillFn) {
                 textHaloFill = this._textHaloFillFn(null, properties);
@@ -429,10 +447,10 @@ export default class PointPack extends VectorPack {
                 textHaloRadius = this._textHaloRadiusFn(null, properties);
             }
             if (this._textDxFn) {
-                textDx = this._textDxFn(null, properties);
+                textDx = this._textDxFn(null, properties) || 0;
             }
             if (this._textDyFn) {
-                textDy = this._textDyFn(null, properties);
+                textDy = this._textDyFn(null, properties) || 0;
             }
             if (this._textPitchAlignFn) {
                 pitchAlign = +(this._textPitchAlignFn(null, properties) === 'map');

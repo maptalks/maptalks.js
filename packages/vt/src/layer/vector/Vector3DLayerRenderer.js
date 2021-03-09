@@ -449,9 +449,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         redraw(this);
     }
 
-    onGeometryPropertiesChange() {
+    onGeometryPropertiesChange(e) {
         //TODO 可能会更新textName
-        this._markRebuildGeometry();
+        // this._markRebuildGeometry();
+        const geo = e.target;
+        const uid = geo[ID_PROP];
+        this.features[uid] = convertToFeature(geo);
+        this.features[uid][ID_PROP] = uid;
+        this._markRebuild();
         redraw(this);
     }
 
