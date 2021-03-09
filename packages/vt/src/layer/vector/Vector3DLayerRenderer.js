@@ -67,17 +67,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.buildMesh();
             this._dirtyAll = false;
             this._dirtyGeo = false;
-            this._dirtySymbol = false;
+            // this._dirtySymbol = false;
         } else if (this._dirtyGeo) {
             const atlas = this.atlas;
             delete this.atlas;
             this.buildMesh(atlas);
             this._dirtyGeo = false;
-            this._dirtySymbol = false;
-        } else if (this._dirtySymbol) {
+            // this._dirtySymbol = false;
+        }/* else if (this._dirtySymbol) {
             this.updateSymbol();
             this._dirtySymbol = false;
-        }
+        }*/
         if (!this.meshes) {
             this.completeRender();
             return;
@@ -125,9 +125,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return this._frameTime;
     }
 
-    updateSymbol() {
-        this.painter.updateSymbol(this.painterSymbol, this.painterSymbol);
-    }
+    // updateSymbol() {
+    //     this.painter.updateSymbol(this.painterSymbol, this.painterSymbol);
+    // }
 
     _getFeaturesToRender(fn) {
         const features = [];
@@ -300,9 +300,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._dirtyAll = true;
     }
 
-    _markUpdateSymbol() {
-        this._dirtySymbol = true;
-    }
+    // _markUpdateSymbol() {
+    //     this._dirtySymbol = true;
+    // }
 
     _convertGeometries(geometries) {
         const layerId = this.layer.getId();
@@ -365,7 +365,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometrySymbolChange(e) {
-        const { properties } = e;
+        // const { properties } = e;
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
         const marker = e.target;
@@ -382,41 +382,45 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 feaProps['_symbol_' + p] = symbol[p];
             }
         }
-
-        if (this._dirtyAll) {
-            redraw(this);
-            return;
-        }
-
-
-        let rebuild = false;
-        for (const p in properties) {
-            if (properties[p] && !SYMBOL_SIMPLE_PROPS[p]) {
-                rebuild = true;
-                break;
-            }
-        }
-        if (!rebuild) {
-            if (this.painterSymbol) {
-                if (!this._dirtyGeo || !this._dirtySymbol) {
-                    for (const p in properties) {
-                        const old = this.painterSymbol[p];
-                        //new symbol property to force painter refresh geometry's attribute
-                        this.painterSymbol[p] = {
-                            type: old.type,
-                            default: old.default,
-                            property: old.property
-                        };
-
-                    }
-                    this._markUpdateSymbol();
-                }
-            }
-
-        } else {
-            this._markRebuild();
-        }
+        // TODO 实现geometry的局部更新
+        this._markRebuild();
         redraw(this);
+
+        // if (this._dirtyAll) {
+        //     redraw(this);
+        //     return;
+        // }
+
+
+        // let rebuild = false;
+        // for (const p in properties) {
+        //     if (properties[p] !== undefined && !SYMBOL_SIMPLE_PROPS[p]) {
+        //         rebuild = true;
+        //         break;
+        //     }
+        // }
+        // if (!rebuild) {
+        //     if (this.painterSymbol) {
+        //         if (!this._dirtyGeo || !this._dirtySymbol) {
+        //             for (const p in properties) {
+        //                 const old = this.painterSymbol[p];
+        //                 //new symbol property to force painter refresh geometry's attribute
+        //                 this.painterSymbol[p] = {
+        //                     type: old.type,
+        //                     default: old.default,
+        //                     property: old.property
+        //                 };
+
+        //             }
+        //             this._markUpdateSymbol();
+        //         }
+        //     }
+
+        // } else {
+        //     this._markRebuild();
+        // }
+        // this._markRebuild();
+        // redraw(this);
     }
 
     onGeometryShapeChange(e) {
