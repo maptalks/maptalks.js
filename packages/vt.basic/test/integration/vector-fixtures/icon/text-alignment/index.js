@@ -3,7 +3,7 @@ const maptalks = require('maptalks');
 const marker = new maptalks.Marker([0, 0], {
     symbol: {
         textName: '{name}',
-        textFill: '#f00',
+        textFill: [1, 0, 0, 1],
         textSize: 30,
         textHorizontalAlignment: 'left',
         textVerticalAlignment: 'top'

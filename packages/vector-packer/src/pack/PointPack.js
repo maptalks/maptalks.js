@@ -423,6 +423,8 @@ export default class PointPack extends VectorPack {
                 textFill = this._textFillFn(null, properties);
                 if (!Array.isArray(textFill)) {
                     textFill = Color(textFill).array();
+                } else {
+                    textFill = textFill.map(c => c * 255);
                 }
                 if (textFill.length === 3) {
                     textFill.push(255);
