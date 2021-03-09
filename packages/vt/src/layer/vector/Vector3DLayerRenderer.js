@@ -96,6 +96,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.layer.fire('canvasisdirty');
     }
 
+    supportRenderMode(mode) {
+        return this.painter && this.painter.supportRenderMode(mode);
+    }
+
     isForeground() {
         return true;
     }
