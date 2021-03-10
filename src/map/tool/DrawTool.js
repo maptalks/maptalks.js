@@ -269,7 +269,7 @@ class DrawTool extends MapTool {
         const actions = this._getRegisterMode()['action'];
         let dragging = false;
         for (let i = 0; i < actions.length; i++) {
-            if (actions[i].indexOf('mousemove') >= 0) {
+            if (actions[i].indexOf('mousedown') >= 0 || actions[i].indexOf('touchstart') >= 0) {
                 dragging = true;
                 break;
             }
