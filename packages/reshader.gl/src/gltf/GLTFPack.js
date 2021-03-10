@@ -7,6 +7,7 @@ import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 
 const animMatrix = [];
+const EMPTY_MAT = mat4.identity([]);
 let timespan = 0;
 const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 //将GLTF规范里面的sampler数码映射到regl接口的sampler
@@ -86,11 +87,11 @@ export default class GLTFPack {
         const trs = node.trs;
         if (trs) {
             gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
+            node.trs.update(animMatrix);
             if (trs.isTRS(animMatrix)) {
                 //根据时间获取到的动画矩阵如果t、r、s都存在，需要直接赋给localMatrix
                 mat4.copy(node.localMatrix, animMatrix);
-            } else {
-                node.trs.update(animMatrix);
+            } else if (!mat4.equals(animMatrix, EMPTY_MAT)) {
                 trs.setMatrix(node.localMatrix);
             }
         }
