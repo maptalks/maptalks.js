@@ -785,7 +785,7 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _checkSize() {
-        if (!this.map || this.map.isInteracting()) {
+        if (!this.map) {
             return;
         }
         // refresh map's dom position
