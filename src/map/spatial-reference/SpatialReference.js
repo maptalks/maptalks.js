@@ -164,6 +164,15 @@ export default class SpatialReference {
             }
         }
         this._resolutions = resolutions;
+        this._pyramid = true;
+        for (let i = 0; i < resolutions.length; i++) {
+            if (resolutions[i] && resolutions[i - 1]) {
+                if (resolutions[i] / resolutions[i - 1] === 2) {
+                    this._pyramid = false;
+                    break;
+                }
+            }
+        }
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
@@ -269,5 +278,9 @@ export default class SpatialReference {
             };
         }
         return this.json;
+    }
+
+    isPyramid() {
+        return this._pyramid;
     }
 }

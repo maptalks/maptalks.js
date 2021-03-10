@@ -1,4 +1,4 @@
-import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger } from '../../core/util';
+import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger, toRadian } from '../../core/util';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -9,6 +9,10 @@ import Layer from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
+
+const DEFAULT_MAXERROR = 1;
+const ROOT_NODE_ERROR = 768000 * 2;
+const TEMP_POINT = new Point(0, 0);
 
 const isSetAvailable = typeof Set !== 'undefined';
 class TileHashset {
@@ -112,14 +116,15 @@ const options = {
 
     'cascadeTiles' : true,
 
-    'zoomOffset' : 0
+    'zoomOffset' : 0,
+
+    'pyramidMode': 0
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
 // const MAX_VISIBLE_SIZE = 5;
 
-const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
@@ -166,11 +171,180 @@ class TileLayer extends Layer {
      * @return {Size}
      */
     getTileSize() {
+        if (this._tileSize) {
+            return this._tileSize;
+        }
         let size = this.options['tileSize'];
         if (isNumber(size)) {
             size = [size, size];
         }
-        return new Size(size);
+        this._tileSize = new Size(size);
+        return this._tileSize;
+    }
+
+    getTiles(z, parentLayer) {
+        const sr = this.getSpatialReference();
+        if (this.options['pyramidMode'] && sr && sr.isPyramid()) {
+            return this._getPyramidTiles(z, parentLayer || this);
+        } else {
+            return this._getCascadeTiles(z, parentLayer || this);
+        }
+    }
+
+
+    _getRootNode() {
+        if (this._rootNode) {
+            return this._rootNode;
+        }
+        const map = this.getMap();
+        const fov = toRadian(map.getFov());
+        const aspectRatio = this.map.width / this.map.height;
+        // const fov2 = 2 * Math.atan(Math.tan(0.5 * fov) * aspectRatio);
+        const cameraZ = map.cameraPosition[2];
+        const heightZ = cameraZ * Math.tan(0.5 * fov);
+        const widthZ = heightZ * aspectRatio;
+        const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
+
+        this._rootNode = {
+            z: 0,
+            error: ROOT_NODE_ERROR * (diagonalZ / cameraZ)
+        };
+        return this._rootNode;
+    }
+
+
+
+    _getPyramidTiles(z, layer) {
+        const map = this.getMap();
+        if (isNaN(+z)) {
+            z = this._getTileZoom(map.getZoom());
+        }
+        const maxZoom = Math.min(z, this.getMaxZoom());
+        const projectionView = map.projViewMatrix;
+
+        const root = this._getRootNode();
+        const queue = [root];
+        const extent = new PointExtent();
+        const tiles = [];
+        while (queue.length > 0) {
+            const node = queue.pop();
+            if (node.z === maxZoom) {
+                extent._combine(node.extent2d);
+                tiles.push(node);
+                continue;
+            }
+            this._splitNode(node, projectionView, queue, tiles, extent, layer && layer.getRenderer());
+        }
+        // console.log('tiles', tiles.sort((a, b) => { return a.z - b.z; }));
+        // const tileGrids = super.getTiles(z);
+        // console.log('super.tiles', tileGrids);
+        // console.log('map.extent2d', map._get2DExtent(map.getGLZoom()));
+        return {
+            tileGrids: [
+                {
+                    extent,
+                    count: tiles.length,
+                    tiles,
+                    offset: [0, 0],
+                    zoom: z
+                }
+            ],
+            count: tiles.length
+        };
+    }
+
+    _splitNode(node, projectionView, queue, tiles, gridExtent, renderer) {
+        // const renderer = this.getRenderer();
+        const map = this.getMap();
+        const z = node.z + 1;
+        const { x, y, extent2d } = node;
+        let width, height, minx, maxy;
+        if (node.z >= 1) {
+            const childScale = 2;
+            width = extent2d.getWidth() / 2 * childScale;
+            height = extent2d.getHeight() / 2 * childScale;
+            minx = extent2d.xmin * childScale;
+            maxy = extent2d.ymax * childScale;
+        }
+        const children = [];
+        const glScale = this.getMap().getGLScale(z);
+        for (let i = 0; i < 4; i++) {
+            const dx = (i % 2);
+            const dy = (i >> 1);
+            const childX = (x << 1) + dx;
+            const childY = (y << 1) + dy;
+            let extent;
+            if (z === 1) {
+                extent = this._getTileConfig().getTilePrjExtent(childX, childY, map._getResolution(z)).convertTo(c => map._prjToPoint(c, z, TEMP_POINT));
+            } else {
+                const nwx = minx + dx * width;
+                const nwy = maxy - dy * height;
+                extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
+            }
+            const tileId = this._getTileId(childX, childY, z);
+            const cached = renderer.isTileCachedOrLoading(tileId);
+            const childNode = cached && cached.info || {
+                x: childX,
+                y: childY,
+                z,
+                extent2d: extent,
+                error: node.error / 2,
+                id: tileId,
+                url: this.getTileUrl(childX, childY, z + this.options['zoomOffset'])
+            };
+            const visible = this._isTileVisible(childNode, projectionView, glScale);
+            if (visible === -1) {
+                continue;
+            } else if (visible === 0) {
+                tiles.push(node);
+                gridExtent._combine(node.extent2d);
+                return;
+            }
+            children.push(childNode);
+        }
+        queue.push(...children);
+    }
+
+    _isTileVisible(node, projectionView, glScale) {
+        if (node.z === 0) {
+            return 1;
+        }
+        if (!this._isTileInFrustum(node, projectionView, glScale)) {
+            return -1;
+        }
+        let maxError = this.options['maxError'];
+        if (isNil(maxError)) {
+            maxError = DEFAULT_MAXERROR;
+        }
+        const error = this._getScreenSpaceError(node, glScale);
+
+        return error >= maxError ? 1 : 0;
+    }
+
+    _isTileInFrustum(node, projectionView, glScale) {
+        const { xmin, ymin, xmax, ymax } = node.extent2d;
+        const box = [[xmin * glScale, ymin * glScale, 0], [xmax * glScale, ymax * glScale, 0]];
+        return intersectsBox(projectionView, box);
+    }
+
+    /**
+     * Compute tile's SSE
+     * from Cesium
+     * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
+     */
+    _getScreenSpaceError(node, glScale) {
+        // const fovDenominator = this._fovDenominator;
+        const geometricError = node.error;
+        const map = this.getMap();
+        const { xmin, ymin, xmax, ymax } = node.extent2d;
+        // const center = [node.center.x, node.center.y, 0];
+        // const distanceToCenter = vec3.dist(center, map.cameraPosition);
+        const distanceToCamera = distanceToRect([xmin * glScale, ymin * glScale, 0], [xmax * glScale, ymax * glScale, 0], map.cameraPosition);
+        const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
+        // const error = (geometricError * map.height) / (distance * fovDenominator);
+        const error = geometricError / distance;
+        // console.log(error, node.z);
+        return error;
     }
 
     /**
@@ -178,7 +352,7 @@ class TileLayer extends Layer {
      * @param {Number} z - zoom
      * @return {Object[]} tile descriptors
      */
-    getTiles(z, parentLayer) {
+    _getCascadeTiles(z, parentLayer) {
         const map = this.getMap();
         const pitch = map.getPitch();
         const parentRenderer = parentLayer && parentLayer.getRenderer();
@@ -471,6 +645,7 @@ class TileLayer extends Layer {
         const renderer = this.getRenderer() || parentRenderer,
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
+        const tilePoint = new Point(0, 0);
         for (let i = -top; i <= bottom; i++) {
             let j = -left;
             let leftVisitEnd = -Infinity;
@@ -496,8 +671,9 @@ class TileLayer extends Layer {
 
                 let p;
                 if (tileInfo) {
-                    const { point } = tileInfo;
-                    p = point;
+                    const { extent2d } = tileInfo;
+                    tilePoint.set(extent2d.xmin, extent2d.ymax);
+                    p = tilePoint;
                 } else if (!this._hasOwnSR) {
                     p = tileConfig.getTilePointNW(idx.x, idx.y, res);
                     // const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
@@ -548,16 +724,12 @@ class TileLayer extends Layer {
                             tileInfo = {
                                 //reserve point caculated by tileConfig
                                 //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
-                                'point': p,
                                 'z': z,
                                 'x': idx.x,
                                 'y': idx.y,
                                 'extent2d' : tileExtent,
-                                'mask': cascadeLevel,
-                                'size': [width, height],
                                 'id': tileId,
-                                'layer': this.getId(),
-                                'url': this.getTileUrl(idx.x, idx.y, zoom)
+                                'url': this.getTileUrl(idx.x, idx.y, z)
                             };
                         }
                         tiles.push(tileInfo);
@@ -579,8 +751,12 @@ class TileLayer extends Layer {
         if (tiles.length) {
             //sort tiles according to tile's distance to center
             const center = map._containerPointToPoint(containerExtent.getCenter(), z, TEMP_POINT)._add(offset);
+            const point0 = new Point(0, 0);
+            const point1 = new Point(0, 0);
             tiles.sort(function (a, b) {
-                return a.point.distanceTo(center) - b.point.distanceTo(center);
+                point0.set((a.extent2d.xmin + a.extent2d.xmax) / 2, (a.extent2d.ymin + a.extent2d.ymax) / 2);
+                point1.set((b.extent2d.xmin + b.extent2d.xmax) / 2, (b.extent2d.ymin + b.extent2d.ymax) / 2);
+                return point0.distanceTo(center) - point1.distanceTo(center);
             });
         }
         return {
@@ -714,6 +890,7 @@ class TileLayer extends Layer {
         //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
         // }
         this._hasOwnSR = sr !== map.getSpatialReference();
+        delete this._rootNode;
     }
 
     _getTileConfig() {
@@ -801,3 +978,9 @@ export default TileLayer;
 //     return c;
 // }
 
+function distanceToRect(min, max, xyz) {
+    const dx = Math.max(min[0] - xyz[0], 0, xyz[0] - max[0]);
+    const dy = Math.max(min[1] - xyz[1], 0, xyz[1] - max[1]);
+    const dz = Math.max(min[2] - xyz[2], 0, xyz[2] - max[2]);
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}

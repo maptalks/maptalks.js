@@ -12,6 +12,7 @@ import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 
+const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
@@ -248,11 +249,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         // const scale = map._getResolution(this._tileZoom) / map._getResolution(info.z);
         // offset[0] *= scale;
         // offset[1] *= scale;
-        info.point._sub(offset);
         info.extent2d._sub(offset);
         this.drawTile(info, image);
         //restore
-        info.point._add(offset);
         info.extent2d._add(offset);
         // offset[0] /= scale;
         // offset[1] /= scale;
@@ -470,11 +469,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tileImage || !this.getMap()) {
             return;
         }
-        const point = tileInfo.point,
+        const point = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax),
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
-            tileSize = tileInfo.size,
+            tileSize = this.layer.getTileSize(),
             zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
@@ -491,7 +490,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         let x = cp.x,
             y = cp.y;
-        let w = tileSize[0], h = tileSize[1];
+        let w = tileSize.width, h = tileSize.height;
         if (transformed) {
             ctx.save();
             ctx.translate(x, y);
