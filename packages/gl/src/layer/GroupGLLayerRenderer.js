@@ -588,7 +588,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const me = this;
         //drawBloom中会手动创建context
         return function (event, timestamp, context) {
-            if (isNumber(event)) {
+            const isInteracting = this.getMap().isInteracting();
+            if (!isInteracting) {
                 context = timestamp;
                 timestamp = event;
                 event = null;
@@ -598,7 +599,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget.getFramebuffer = getFramebuffer;
                 context.renderTarget.getDepthTexture = getDepthTexture;
             }
-            if (event) {
+            if (isInteracting) {
                 return drawMethod.call(this, event, timestamp, context || me._drawContext);
             } else {
                 return drawMethod.call(this, timestamp, context || me._drawContext);
