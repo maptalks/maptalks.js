@@ -180,7 +180,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 return;
             }
             if (mode === 'default' ||
-                !renderer.isSupportRenderMode && (mode === 'fxaa' || mode === 'fxaaAfterTaa') ||
+                !renderer.supportRenderMode && (mode === 'fxaa' || mode === 'fxaaAfterTaa') ||
                 renderer.supportRenderMode && renderer.supportRenderMode(mode)) {
                 this.clearStencil(renderer, fbo);
                 renderer[methodName].apply(renderer, args);
