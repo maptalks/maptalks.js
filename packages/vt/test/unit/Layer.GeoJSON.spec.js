@@ -89,6 +89,29 @@ describe('GeoJSONVectorTileLayer', () => {
         layer2.addTo(map);
     });
 
+    it('should can use convert fn', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points.features,
+            convertFn: `
+                function convert(data) {
+                    return { type: 'FeatureCollection', features: data }
+                }
+            `
+        });
+        const groupLayer = new GroupGLLayer('group', [layer]);
+        const json = groupLayer.toJSON();
+        const layer2 = maptalks.Layer.fromJSON(json);
+        layer2.on('layerload', e => {
+            assert.ok(e);
+            const data = layer2.getLayers()[0].getData();
+            assert.ok(data.type === 'FeatureCollection');
+            assert.ok(data.features.length === points.features.length);
+            assert.ok(data.features.length === points.features.length);
+            done();
+        });
+        layer2.addTo(map);
+    });
+
     it('should can update sceneConfig', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: points,
