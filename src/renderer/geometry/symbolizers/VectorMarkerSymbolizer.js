@@ -132,6 +132,12 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             this.prepareCanvas(context, this.strokeAndFill, resources);
         }
         this._drawVectorMarker(context, point, resources);
+        if (this.imageBitMapAvailable()) {
+            createImageBitmap(canvas).then(imageBitmap => {
+                const stamp = this._stampSymbol();
+                resources.addResource([stamp, canvas.width, canvas.height], imageBitmap);
+            });
+        }
         return canvas;
     }
 

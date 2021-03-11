@@ -90,6 +90,11 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
     _getImage(resources) {
         const img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
+        if (img && this.imageBitMapAvailable() && (!(img instanceof ImageBitmap))) {
+            createImageBitmap(img).then(imageBitmap => {
+                resources.addResource([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']], imageBitmap);
+            });
+        }
         return img;
     }
 
