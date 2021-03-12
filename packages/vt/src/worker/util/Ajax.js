@@ -1,4 +1,4 @@
-import { isFunction, uid } from '../../common/Util';
+import { isFunction, uid, isNil } from '../../common/Util';
 
 const USE_FETCH = typeof fetch === 'function' && typeof AbortController  === 'function';
 
@@ -90,10 +90,18 @@ const Ajax = {
             const controller = new AbortController();
             const signal = controller.signal;
             const requestConfig = {
-                signal, method: options.method || 'GET', headers: options.headers, credentials: options.credentials, referrerPolicy: 'origin'
+                signal, method: options.method || 'GET', referrerPolicy: 'origin'
             };
             if (isPost) {
-                requestConfig.body = options.body;
+                if (!isNil(options.body)) {
+                    requestConfig.body = JSON.stringify(options.body);
+                }
+            }
+            if (!isNil(options.headers)) {
+                requestConfig.headers = options.headers;
+            }
+            if (!isNil(options.credentials)) {
+                requestConfig.credentials = options.credentials;
             }
             fetch(url, requestConfig).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
