@@ -566,8 +566,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         //地面绘制不用引入jitter，会导致地面的晃动
         context.jitter = NO_JITTER;
         // 1 是留给开启了ssr的图形的
-        context.offsetFactor = 1;
-        context.offsetUnits = 1;
+        context.offsetFactor = 2;
+        context.offsetUnits = 2;
         let sceneFilter;
         if (forceRender) {
             // 第一次绘制 ground 应该忽略 sceneFilter
