@@ -6,6 +6,7 @@ import Size from '../../../geo/Size';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
+import Browser from '../../../core/Browser';
 import PointSymbolizer from './PointSymbolizer';
 
 const TEMP_SIZE = new Size(1, 1);
@@ -132,7 +133,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             this.prepareCanvas(context, this.strokeAndFill, resources);
         }
         this._drawVectorMarker(context, point, resources);
-        if (this.imageBitMapAvailable()) {
+        if (Browser.imageBitMap) {
             createImageBitmap(canvas).then(imageBitmap => {
                 const stamp = this._stampSymbol();
                 resources.addResource([stamp, canvas.width, canvas.height], imageBitmap);

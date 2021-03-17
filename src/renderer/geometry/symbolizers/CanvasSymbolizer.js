@@ -61,12 +61,6 @@ class CanvasSymbolizer extends Symbolizer {
             });
         }.bind(this)();
     }
-
-    // https://developer.mozilla.org/zh-CN/docs/Web/API/ImageBitmap
-    // this will Improve performance 2-3FPS
-    imageBitMapAvailable() {
-        return typeof window !== 'undefined' && window.createImageBitmap;
-    }
 }
 
 function set(arr, a0, a1) {
