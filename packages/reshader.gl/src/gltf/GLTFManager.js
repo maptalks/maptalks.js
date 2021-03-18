@@ -59,7 +59,7 @@ export default class GLTFManager {
                 gltfPack,
                 resources: geometries,
                 json: data,
-                count: this.resourceMap[url].refCount
+                refCount: this.resourceMap[url].refCount
             };
             return this.resourceMap[url];
         });
