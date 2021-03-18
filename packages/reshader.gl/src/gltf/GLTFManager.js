@@ -13,7 +13,7 @@ export default class GLTFManager {
     loginGLTF(url) {
         if (!this.resourceMap[url]) {
             this.resourceMap[url] = this._loadGLTFModel(url).catch(e => {
-                throw Error(e);
+                return e;
             });
             this.resourceMap[url].count = 1;
         } else {
