@@ -15,16 +15,16 @@ export default class GLTFManager {
             this.resourceMap[url] = this._loadGLTFModel(url).catch(e => {
                 return e;
             });
-            this.resourceMap[url].count = 1;
+            this.resourceMap[url].refCount = 1;
         } else {
-            this.resourceMap[url].count += 1;
+            this.resourceMap[url].refCount += 1;
         }
     }
 
     logoutGLTF(url) {
         if (this.resourceMap[url]) {
-            this.resourceMap[url].count -= 1;
-            if (this.resourceMap[url].count < 1) {
+            this.resourceMap[url].refCount -= 1;
+            if (this.resourceMap[url].refCount < 1) {
                 const resources = this.resourceMap[url].resources;
                 if (resources) {
                     for (let i = 0; i < resources.length; i++) {
@@ -59,7 +59,7 @@ export default class GLTFManager {
                 gltfPack,
                 resources: geometries,
                 json: data,
-                count: this.resourceMap[url].count
+                count: this.resourceMap[url].refCount
             };
             return this.resourceMap[url];
         });
