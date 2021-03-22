@@ -1,5 +1,6 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
+import { drawVectorMarker, translateMarkerLineAndFill } from '../../../core/util/draw';
 import { getAlignPoint, hashCode } from '../../../core/util/strings';
 import { hasFunctionDefinition, isFunctionDefinition } from '../../../core/mapbox';
 import Size from '../../../geo/Size';
@@ -26,7 +27,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         super(symbol, geometry, painter);
         this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
-        this.strokeAndFill = this._defineStyle(VectorMarkerSymbolizer.translateLineAndFill(this.style));
+        this.strokeAndFill = this._defineStyle(translateMarkerLineAndFill(this.style));
         const lineWidth = this.strokeAndFill['lineWidth'];
         if (lineWidth % 2 === 0) {
             this.padding = 2;
@@ -65,11 +66,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _drawMarkers(ctx, cookedPoints, resources) {
-        const strokeAndFill = this.strokeAndFill;
-        const gradient = isGradient(strokeAndFill['lineColor']) || isGradient(strokeAndFill['polygonFill']);
-        if (!gradient) {
-            this.prepareCanvas(ctx, strokeAndFill, resources);
-        }
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
@@ -127,10 +123,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             canvas = Canvas.createCanvas(size[0], size[1], canvasClass),
             point = this._getCacheImageAnchor(size[0], size[1]);
         const context = canvas.getContext('2d');
-        const gradient = isGradient(this.strokeAndFill['lineColor']) || isGradient(this.strokeAndFill['polygonFill']);
-        if (!gradient) {
-            this.prepareCanvas(context, this.strokeAndFill, resources);
-        }
         this._drawVectorMarker(context, point, resources);
         return canvas;
     }
@@ -203,72 +195,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     _drawVectorMarker(ctx, point, resources) {
-        const style = this.style,
-            strokeAndFill = this.strokeAndFill,
-            markerType = style['markerType'].toLowerCase(),
-            vectorArray = VectorMarkerSymbolizer._getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
-            lineOpacity = strokeAndFill['lineOpacity'],
-            fillOpacity = strokeAndFill['polygonOpacity'];
-        const gradient = isGradient(strokeAndFill['lineColor']) || isGradient(strokeAndFill['polygonFill']);
-        if (gradient) {
-            let gradientExtent;
-            if (isGradient(strokeAndFill['lineColor'])) {
-                gradientExtent = this._getGraidentExtent(point);
-                strokeAndFill['lineGradientExtent'] = gradientExtent.expand(strokeAndFill['lineWidth']);
-            }
-            if (isGradient(strokeAndFill['polygonFill'])) {
-                if (!gradientExtent) {
-                    gradientExtent = this._getGraidentExtent(point);
-                }
-                strokeAndFill['polygonGradientExtent'] = gradientExtent;
-            }
-            this.prepareCanvas(ctx, strokeAndFill, resources);
-        }
-
-
-        const width = style['markerWidth'],
-            height = style['markerHeight'],
-            hLineWidth = style['markerLineWidth'] / 2;
-        if (markerType === 'ellipse') {
-            //ellipse default
-            Canvas.ellipse(ctx, point, width / 2, height / 2, height / 2, lineOpacity, fillOpacity);
-        } else if (markerType === 'cross' || markerType === 'x') {
-            for (let j = vectorArray.length - 1; j >= 0; j--) {
-                vectorArray[j]._add(point);
-            }
-            //线类型
-            Canvas.path(ctx, vectorArray.slice(0, 2), lineOpacity);
-            Canvas.path(ctx, vectorArray.slice(2, 4), lineOpacity);
-        } else if (markerType === 'diamond' || markerType === 'bar' || markerType === 'square' || markerType === 'rectangle' || markerType === 'triangle') {
-            if (markerType === 'bar') {
-                point = point.add(0, -hLineWidth);
-            } else if (markerType === 'rectangle') {
-                point = point.add(hLineWidth, hLineWidth);
-            }
-            for (let j = vectorArray.length - 1; j >= 0; j--) {
-                vectorArray[j]._add(point);
-            }
-            //面类型
-            Canvas.polygon(ctx, vectorArray, lineOpacity, fillOpacity);
-        } else if (markerType === 'pin') {
-            point = point.add(0, -hLineWidth);
-            for (let j = vectorArray.length - 1; j >= 0; j--) {
-                vectorArray[j]._add(point);
-            }
-            const lineCap = ctx.lineCap;
-            ctx.lineCap = 'round'; //set line cap to round to close the pin bottom
-            Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
-            ctx.lineCap = lineCap;
-        } else if (markerType === 'pie') {
-            point = point.add(0, hLineWidth);
-            const angle = Math.atan(width / 2 / height) * 180 / Math.PI;
-            const lineCap = ctx.lineCap;
-            ctx.lineCap = 'round';
-            Canvas.sector(ctx, point, height, [90 - angle, 90 + angle], lineOpacity, fillOpacity);
-            ctx.lineCap = lineCap;
-        } else {
-            throw new Error('unsupported markerType: ' + markerType);
-        }
+        drawVectorMarker(ctx, point, this.style, resources);
     }
 
     getPlacement() {
@@ -346,84 +273,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             }
         }
         return result;
-    }
-
-    static translateLineAndFill(s) {
-        const result = {
-            'lineColor': s['markerLineColor'],
-            'linePatternFile': s['markerLinePatternFile'],
-            'lineWidth': s['markerLineWidth'],
-            'lineOpacity': s['markerLineOpacity'],
-            'lineDasharray': s['markerLineDasharray'],
-            'lineCap': 'butt',
-            'lineJoin': 'round',
-            'polygonFill': s['markerFill'],
-            'polygonPatternFile': s['markerFillPatternFile'],
-            'polygonOpacity': s['markerFillOpacity']
-        };
-        if (result['lineWidth'] === 0) {
-            result['lineOpacity'] = 0;
-        }
-        return result;
-    }
-
-    static _getVectorPoints(markerType, width, height) {
-        //half height and half width
-        const hh = height / 2,
-            hw = width / 2;
-        const left = 0,
-            top = 0;
-        let v0, v1, v2, v3;
-        if (markerType === 'triangle') {
-            v0 = new Point(left, top - hh);
-            v1 = new Point(left - hw, top + hh);
-            v2 = new Point(left + hw, top + hh);
-            return [v0, v1, v2];
-        } else if (markerType === 'cross') {
-            v0 = new Point((left - hw), top);
-            v1 = new Point((left + hw), top);
-            v2 = new Point((left), (top - hh));
-            v3 = new Point((left), (top + hh));
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'diamond') {
-            v0 = new Point((left - hw), top);
-            v1 = new Point(left, (top - hh));
-            v2 = new Point((left + hw), top);
-            v3 = new Point((left), (top + hh));
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'square') {
-            v0 = new Point((left - hw), (top + hh));
-            v1 = new Point((left + hw), (top + hh));
-            v2 = new Point((left + hw), (top - hh));
-            v3 = new Point((left - hw), (top - hh));
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'rectangle') {
-            v0 = new Point(left, top);
-            v1 = v0.add(width, 0);
-            v2 = v0.add(width, height);
-            v3 = v0.add(0, height);
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'x') {
-            v0 = new Point(left - hw, top + hh);
-            v1 = new Point(left + hw, top - hh);
-            v2 = new Point(left + hw, top + hh);
-            v3 = new Point(left - hw, top - hh);
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'bar') {
-            v0 = new Point((left - hw), (top - height));
-            v1 = new Point((left + hw), (top - height));
-            v2 = new Point((left + hw), top);
-            v3 = new Point((left - hw), top);
-            return [v0, v1, v2, v3];
-        } else if (markerType === 'pin') {
-            const extWidth = height * Math.atan(hw / hh);
-            v0 = new Point(left, top);
-            v1 = new Point(left - extWidth, top - height);
-            v2 = new Point(left + extWidth, top - height);
-            v3 = new Point(left, top);
-            return [v0, v1, v2, v3];
-        }
-        return [];
     }
 }
 

@@ -194,6 +194,7 @@ Map.include(/** @lends Map.prototype */ {
         if (type === 'contextmenu') {
             preventDefault(e);
         }
+        this._fireDOMEvent(this, e, 'dom:' + e.type);
         if (this._ignoreEvent(e)) {
             return;
         }
@@ -279,11 +280,15 @@ Map.include(/** @lends Map.prototype */ {
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam = extend(eventParam, {
-                    'coordinate' : this.containerPointToCoord(containerPoint),
                     'containerPoint' : containerPoint,
-                    'viewPoint' : this.containerPointToViewPoint(containerPoint),
-                    'point2d' : this._containerPointToPoint(containerPoint),
+                    'viewPoint' : this.containerPointToViewPoint(containerPoint)
                 });
+                if (this.getContainerExtent().contains(containerPoint)) {
+                    eventParam = extend(eventParam, {
+                        'coordinate' : this.containerPointToCoord(containerPoint),
+                        'point2d' : this._containerPointToPoint(containerPoint)
+                    });
+                }
             }
         }
         return eventParam;

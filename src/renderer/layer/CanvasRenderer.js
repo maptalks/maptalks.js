@@ -802,7 +802,8 @@ export class ResourceCache {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],
-            height: +url[2]
+            height: +url[2],
+            refCnt: 0
         };
     }
 
@@ -822,6 +823,20 @@ export class ResourceCache {
             return false;
         }
         return true;
+    }
+
+    login(url) {
+        const res = this.resources[url];
+        if (res) {
+            res.refCnt++;
+        }
+    }
+
+    logout(url) {
+        const res = this.resources[url];
+        if (res && res.refCnt-- <= 0) {
+            delete this.resources[url];
+        }
     }
 
     getImage(url) {

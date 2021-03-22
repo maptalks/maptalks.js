@@ -1,5 +1,6 @@
 import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { getAlignPoint } from '../../../core/util/strings';
+import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
@@ -34,7 +35,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             return;
         }
 
-        const img = this._getImage(resources);
+        const img = getImage(resources, this.style['markerFile']);
         if (!img) {
             if (typeof console !== 'undefined') {
                 console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
@@ -49,7 +50,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
-            const imgURL = [style['markerFile'], style['markerWidth'], style['markerHeight']];
+            const imgURL = style['markerFile'];
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
@@ -86,11 +87,6 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;
         }
-    }
-
-    _getImage(resources) {
-        const img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
-        return img;
     }
 
     getPlacement() {

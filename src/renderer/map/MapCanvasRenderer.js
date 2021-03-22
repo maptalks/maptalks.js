@@ -45,10 +45,9 @@ class MapCanvasRenderer extends MapRenderer {
         this.updateMapDOM();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
-        const updated = this.drawLayerCanvas(layers);
-        if (updated) {
-            this._drawCenterCross();
-        }
+        this.drawLayerCanvas(layers);
+        this.drawTops();
+        this._drawCenterCross();
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -765,6 +764,8 @@ class MapCanvasRenderer extends MapRenderer {
 
         canvas.height = r * mapSize['height'];
         canvas.width = r * mapSize['width'];
+        this.topLayer.width = canvas.width;
+        this.topLayer.height = canvas.height;
         if (canvas.style) {
             canvas.style.width = mapSize['width'] + 'px';
             canvas.style.height = mapSize['height'] + 'px';
@@ -774,6 +775,8 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     createCanvas() {
+        this.topLayer = createEl('canvas');
+        this.topCtx = this.topLayer.getContext('2d');
         if (this._containerIsCanvas) {
             this.canvas = this.map._containerDOM;
         } else {
@@ -882,6 +885,38 @@ class MapCanvasRenderer extends MapRenderer {
             return;
         }
         this.setToRedraw();
+    }
+
+    //----------- top elements methods -------------
+    // edit handles or edit outlines
+    addTopElement(e) {
+        if (!this._tops) {
+            this._tops = [];
+        }
+        this._tops.push(e);
+    }
+
+    getTopElements() {
+        return this._tops || [];
+    }
+
+    drawTops() {
+        // clear topLayer
+        this.topLayer.width = this.topLayer.width;
+        this.map.fire('drawtopstart');
+        this.map.fire('drawtop');
+        const tops = this.getTopElements();
+        let updated = false;
+        for (let i = 0; i < tops.length; i++) {
+            if (tops[i].render()) {
+                updated = true;
+            }
+        }
+        if (updated) {
+            this.context.drawImage(this.topLayer, 0, 0);
+            delete this.topLayer.updated;
+        }
+        this.map.fire('drawtopend');
     }
 }
 

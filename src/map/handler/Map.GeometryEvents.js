@@ -178,7 +178,8 @@ class MapGeometryEventsHandler extends Handler {
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
-        if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1)) {
+        const isMousedown = eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1);
+        if (isMousedown) {
             this._mouseDownTime = now();
         } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
@@ -205,6 +206,18 @@ class MapGeometryEventsHandler extends Handler {
         if (eventType === 'touchstart') {
             preventDefault(domEvent);
         }
+
+        const tops = this.target.getRenderer().getTopElements();
+        if (isMousedown && tops.length) {
+            for (let i = 0; i < tops.length; i++) {
+                if (tops[i].hitTest(containerPoint)) {
+                    tops[i].mousedown({ target: map, type: eventType, domEvent, containerPoint });
+                    return;
+                }
+            }
+        }
+
+
         let geometryCursorStyle = null;
         const identifyOptions = {
             'includeInternals': true,
@@ -266,6 +279,17 @@ class MapGeometryEventsHandler extends Handler {
                 }
 
                 map._setPriorityCursor(geometryCursorStyle);
+
+                if (tops.length) {
+                    for (let i = 0; i < tops.length; i++) {
+                        if (tops[i].hitTest(containerPoint)) {
+                            const cursor = tops[i].options['cursor'];
+                            if (cursor) {
+                                map._setPriorityCursor(cursor);
+                            }
+                        }
+                    }
+                }
 
                 const oldTargets = this._prevOverGeos && this._prevOverGeos.geos;
                 this._prevOverGeos = {
