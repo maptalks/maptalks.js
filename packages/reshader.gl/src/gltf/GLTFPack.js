@@ -34,11 +34,37 @@ export default class GLTFPack {
         if (this.geometries.length) {
             return this.geometries;
         }
+        this._createTextures(this.gltf.textures);
+        this._createSkins(this.gltf.skins);
         const nodes = this.gltf.scenes[0].nodes;
         nodes.forEach((node) => {
             this._parserNode(node, this.geometries);
         });
         return this.geometries;
+    }
+
+    _createSkins(skins) {
+        if (!skins) {
+            return;
+        }
+        this._skinMap = {};
+        for (let i = 0; i < skins.length; i++) {
+            const skin = skins[i];
+            skin.joints = skin.joints.map(j => this.gltf.nodes[j]);
+            this._skinMap[i] = new Skin(this.regl, skin.joints, skin.inverseBindMatrices.array);
+        }
+    }
+
+    _createTextures(textures) {
+        if (!textures) {
+            return;
+        }
+        this._textureMap = {};
+        for (let i = 0; i < textures.length; i++) {
+            const texture = textures[i];
+            this._textureMap[i] = this._toTexture(texture);
+        }
+
     }
 
     dispose() {
@@ -168,11 +194,11 @@ export default class GLTFPack {
                 this._parserNode(child, geometries, nodeMatrix);
             }
         }
-        if (node.skin) {
+        if (defined(node.skin)) {
             this._isAnimation = true;
             const skin = node.skin;
             node.trs = new TRS();
-            node.skin = new Skin(this.regl, skin.joints, skin.inverseBindMatrices.array);
+            node.skin = this._skinMap[skin];
         }
 
         if (node.weights) {
@@ -180,7 +206,8 @@ export default class GLTFPack {
         }
 
         if (defined(node.mesh)) {
-            node.mesh = node.meshes[0];
+            const meshIndex = node.mesh;
+            node.mesh = this.gltf.meshes[meshIndex];
             node.mesh.node = node;
             node.mesh.primitives.forEach(primitive => {
                 const geometry = createGeometry(primitive);
@@ -207,24 +234,23 @@ export default class GLTFPack {
         node.isParsed = true;
     }
 
-    _createMaterialInfo(material) {
+    _createMaterialInfo(materialIndex) {
         const materialUniforms = {
             baseColorFactor : [1, 1, 1, 1]
         };
-        if (material) {
+        if (this.gltf.materials && this.gltf.materials[materialIndex]) {
+            const material = this.gltf.materials[materialIndex];
             const pbrMetallicRoughness = material.pbrMetallicRoughness;
             if (pbrMetallicRoughness) {
                 const metallicRoughnessTexture = pbrMetallicRoughness.metallicRoughnessTexture;
                 const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
                 if (baseColorTexture) {
-                    const texture = this._toTexture(baseColorTexture);
-                    materialUniforms['baseColorTexture'] = texture;
+                    materialUniforms['baseColorTexture'] = this._getTexture(baseColorTexture);
                 } else if (pbrMetallicRoughness.baseColorFactor) {
                     materialUniforms['baseColorFactor'] = pbrMetallicRoughness.baseColorFactor;
                 }
                 if (metallicRoughnessTexture) {
-                    const texture = this._toTexture(metallicRoughnessTexture);
-                    materialUniforms['metallicRoughnessTexture'] = texture;
+                    materialUniforms['metallicRoughnessTexture'] = this._getTexture(metallicRoughnessTexture);
                 } else {
                     if (defined(pbrMetallicRoughness.metallicFactor)) {
                         materialUniforms['metallicFactor'] = pbrMetallicRoughness.metallicFactor;
@@ -234,27 +260,26 @@ export default class GLTFPack {
                     }
                 }
             }
-            const pbrSpecularGlossiness = material.pbrSpecularGlossiness;
-            if (pbrSpecularGlossiness) {
+            const extensions = material.extensions;
+            if (extensions) {
+                const pbrSpecularGlossiness = extensions['KHR_materials_pbrSpecularGlossiness'];
                 for (const p in pbrSpecularGlossiness) {
-                    if (pbrSpecularGlossiness[p].texture) {
-                        materialUniforms[p] = this._toTexture(pbrSpecularGlossiness[p]);
+                    if (defined(pbrSpecularGlossiness[p].index)) {
+                        materialUniforms.name = 'pbrSpecularGlossiness';
+                        materialUniforms[p] = this._getTexture(pbrSpecularGlossiness[p]);
                     } else {
                         materialUniforms[p] = pbrSpecularGlossiness[p];
                     }
                 }
             }
             if (material.normalTexture) {
-                const texture = this._toTexture(material.normalTexture);
-                materialUniforms['normalTexture'] = texture;
+                materialUniforms['normalTexture'] = this._getTexture(material.normalTexture);
             }
             if (material.occlusionTexture) {
-                const texture = this._toTexture(material.occlusionTexture);
-                materialUniforms['occlusionTexture'] = texture;
+                materialUniforms['occlusionTexture'] = this._getTexture(material.occlusionTexture);
             }
             if (material.emissiveTexture) {
-                const texture = this._toTexture(material.emissiveTexture);
-                materialUniforms['emissiveTexture'] = texture;
+                materialUniforms['emissiveTexture'] = this._getTexture(material.emissiveTexture);
             }
             if (material.emissiveFactor) {
                 materialUniforms['emissiveFactor'] = material.emissiveFactor;
@@ -265,17 +290,31 @@ export default class GLTFPack {
 
     _createExtralInfo(material) {
         const info = {};
-        if (material) {
-            info['doubleSided'] = material.doubleSided;
+        if (this.gltf.materials && this.gltf.materials[material]) {
+            info['doubleSided'] = this.gltf.materials[material].doubleSided;
         }
         return info;
     }
 
+    _getTexture(texInfo) {
+        const extensions = texInfo.extensions;
+        const index = texInfo.index;
+        if (!defined(index)) {
+            return null;
+        }
+        if (extensions && extensions['KHR_texture_transform']) {
+            texInfo['KHR_texture_transform'] = extensions['KHR_texture_transform'];
+        }
+        const texture = this._textureMap[index];
+        texture.texInfo = texInfo;
+        return texture;
+    }
+
     _toTexture(texture) {
-        const data = texture.texture.image.array;
-        const sampler = texture.texture.sampler || {};
-        const width = texture.texture.image.width;
-        const height = texture.texture.image.height;
+        const data = texture.image.array;
+        const sampler = texture.sampler || {};
+        const width = texture.image.width;
+        const height = texture.image.height;
         return this.regl.texture({
             width,
             height,

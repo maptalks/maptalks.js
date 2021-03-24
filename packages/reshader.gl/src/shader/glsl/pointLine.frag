@@ -1,7 +1,7 @@
 precision mediump float;
 #include <gl2_frag>
 
-#if defined(HAS_COLOR)
+#if defined(HAS_COLOR0)
     varying vec4 vColor;
 #endif
 
@@ -11,7 +11,7 @@ precision mediump float;
 #include <fog_render_frag>
 
 void main() {
-    #ifdef HAS_COLOR
+    #ifdef HAS_COLOR0
         glFragColor = vColor;
     #else
         glFragColor = vec4(1.0);

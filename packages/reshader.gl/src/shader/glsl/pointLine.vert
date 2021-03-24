@@ -1,5 +1,5 @@
 attribute vec3 aPosition;
-#ifdef HAS_COLOR
+#ifdef HAS_COLOR0
     attribute vec4 aColor0;
     varying vec4 vColor;
 #endif
@@ -27,7 +27,7 @@ void main()
     mat4 localPositionMatrix = getPositionMatrix();
     gl_PointSize = pointSize;
     gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
-    #ifdef HAS_COLOR
+    #ifdef HAS_COLOR0
         vColor = aColor0 / 255.0;
     #endif
 
