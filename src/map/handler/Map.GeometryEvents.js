@@ -208,11 +208,17 @@ class MapGeometryEventsHandler extends Handler {
         }
 
         const tops = this.target.getRenderer().getTopElements();
-        if (isMousedown && tops.length) {
-            for (let i = 0; i < tops.length; i++) {
+        const topOnlyEvent = (isMousedown || eventType === 'click') && domEvent.button !== 2;
+        for (let i = 0; i < tops.length; i++) {
+            if (topOnlyEvent || tops[i].events && tops[i].events.indexOf(eventType) >= 0) {
                 if (tops[i].hitTest(containerPoint)) {
-                    tops[i].mousedown({ target: map, type: eventType, domEvent, containerPoint });
-                    return;
+                    const e = { target: map, type: eventType, domEvent, containerPoint };
+                    if (topOnlyEvent) {
+                        tops[i].mousedown(e);
+                        return;
+                    } else {
+                        tops[i].onEvent(e);
+                    }
                 }
             }
         }

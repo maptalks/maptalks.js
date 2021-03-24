@@ -45,9 +45,12 @@ class MapCanvasRenderer extends MapRenderer {
         this.updateMapDOM();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
-        this.drawLayerCanvas(layers);
-        this.drawTops();
-        this._drawCenterCross();
+        const updated = this.drawLayerCanvas(layers);
+        if (updated) {
+            // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
+            this.drawTops();
+            this._drawCenterCross();
+        }
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -896,27 +899,36 @@ class MapCanvasRenderer extends MapRenderer {
         this._tops.push(e);
     }
 
+    removeTopElement(e) {
+        if (!this._tops) {
+            return;
+        }
+        const idx = this._tops.indexOf(e);
+        if (idx >= 0) {
+            this._tops.splice(idx, 1);
+        }
+    }
+
     getTopElements() {
         return this._tops || [];
     }
 
     drawTops() {
         // clear topLayer
-        this.topLayer.width = this.topLayer.width;
+        this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
         this.map.fire('drawtopstart');
-        this.map.fire('drawtop');
+        this.map.fire('drawtops');
         const tops = this.getTopElements();
         let updated = false;
         for (let i = 0; i < tops.length; i++) {
-            if (tops[i].render()) {
+            if (tops[i].render(this.topCtx)) {
                 updated = true;
             }
         }
         if (updated) {
             this.context.drawImage(this.topLayer, 0, 0);
-            delete this.topLayer.updated;
         }
-        this.map.fire('drawtopend');
+        this.map.fire('drawtopsend');
     }
 }
 
