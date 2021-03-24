@@ -13,7 +13,7 @@ import * as Symbolizers from '../../renderer/geometry/symbolizers';
 
 const EDIT_STAGE_LAYER_PREFIX = INTERNAL_LAYER_PREFIX + '_edit_stage_';
 
-function createHandleSymbol(markerType, opacity, dx) {
+function createHandleSymbol(markerType, opacity) {
     return {
         'markerType': markerType,
         'markerFill': '#fff',
@@ -21,7 +21,6 @@ function createHandleSymbol(markerType, opacity, dx) {
         'markerLineWidth': 2,
         'markerWidth': 10,
         'markerHeight': 10,
-        'markerDx': dx || 0,
         'opacity': opacity
     };
 }
@@ -33,7 +32,7 @@ const options = {
     'symbol': null,
     'removeVertexOn': 'contextmenu',
     //symbols of edit handles
-    'centerHandleSymbol': createHandleSymbol('ellipse', 1, 4),
+    'centerHandleSymbol': createHandleSymbol('ellipse', 1),
     'vertexHandleSymbol': createHandleSymbol('square', 1),
     'newVertexHandleSymbol': createHandleSymbol('square', 0.4)
 };
@@ -177,6 +176,7 @@ class GeometryEditor extends Eventable(Class) {
         this._switchGeometryEvents('off');
         const map = this.getMap();
         if (!map) {
+            this.fire('remove');
             return;
         }
         delete this._shadow;
@@ -192,6 +192,7 @@ class GeometryEditor extends Eventable(Class) {
             delete this._originalSymbol;
         }
         this.editing = false;
+        this.fire('remove');
     }
 
     /**
@@ -239,10 +240,21 @@ class GeometryEditor extends Eventable(Class) {
         const geometry = this._geometry;
         const outline = this._editOutline;
         if (!outline) {
-            this._editOutline = new EditOutline(this.getMap());
+            this._editOutline = new EditOutline(this, this.getMap());
             this._addRefreshHook(this._createOrRefreshOutline);
         }
-        this._editOutline.setContainerExtent(geometry.getContainerExtent());
+        let points = this._editOutline.points;
+
+        if (geometry instanceof Marker) {
+            this._editOutline.setPoints(geometry.getContainerExtent().toArray(points));
+        } else {
+            const map = this.getMap();
+            const extent = geometry._getPainter().get2DExtent();
+            points = extent.toArray(points);
+            points.forEach(c => map._pointToContainerPoint(c, undefined, 0, c));
+            this._editOutline.setPoints(points);
+        }
+
         return outline;
     }
 
@@ -250,6 +262,10 @@ class GeometryEditor extends Eventable(Class) {
     _createCenterHandle() {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
+        if (this._geometry instanceof LineString) {
+            // fix overlap of line's centerHandle and newVertexHandle
+            symbol['markerDx'] = 5;
+        }
         let shadow;
         const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
         const handle = this.createHandle(cointainerPoint, {
@@ -288,7 +304,7 @@ class GeometryEditor extends Eventable(Class) {
             ];
         });
         const removeVertexOn = this.options['removeVertexOn'];
-        const handle = new EditHandle(map, { symbol, cursor: opts['cursor'], events: removeVertexOn });
+        const handle = new EditHandle(this, map, { symbol, cursor: opts['cursor'], events: removeVertexOn });
         handle.setContainerPoint(containerPoint);
         return handle;
     }
@@ -382,9 +398,9 @@ class GeometryEditor extends Eventable(Class) {
         //marker做特殊处理，利用像素求锚点
         const isMarker = geometry instanceof Marker;
 
-        function getResizeAnchors(ext) {
+        function getResizeAnchors() {
             if (isMarker) {
-                ext = geometry._getPainter().getContainerExtent();
+                const ext = geometry._getPainter().getContainerExtent();
                 return [
                 // ext.getMin(),
                     new Point(ext['xmin'], ext['ymin']),
@@ -397,6 +413,7 @@ class GeometryEditor extends Eventable(Class) {
                     new Point(ext['xmax'], ext['ymax'])
                 ];
             }
+            const ext = geometry._getPrjExtent();
             return [
                 // ext.getMin(),
                 new Point(ext['xmin'], ext['ymax']),
@@ -412,14 +429,13 @@ class GeometryEditor extends Eventable(Class) {
         if (!blackList) {
             blackList = [];
         }
-        // const me = this;
+        const me = this;
         const resizeHandles = [],
             anchorIndexes = {},
             map = this.getMap(),
             handleSymbol = this.options['vertexHandleSymbol'];
         const fnLocateHandles = () => {
-            const pExt = geometry._getPainter().get2DExtent(),
-                anchors = getResizeAnchors(pExt);
+            const anchors = getResizeAnchors();
             for (let i = 0; i < anchors.length; i++) {
                 //ignore anchors in blacklist
                 if (Array.isArray(blackList)) {
@@ -429,7 +445,7 @@ class GeometryEditor extends Eventable(Class) {
                     }
                 }
                 const anchor = anchors[i],
-                    point = isMarker ? anchor : map._pointToContainerPoint(anchor);
+                    point = isMarker ? anchor : map._prjToContainerPoint(anchor);
                 if (resizeHandles.length < (anchors.length - blackList.length)) {
                     const handle = this.createHandle(point, {
                         'symbol': handleSymbol,
@@ -437,13 +453,13 @@ class GeometryEditor extends Eventable(Class) {
                         'axis': axis[i],
                         onMove: (function (_index) {
                             return function (e) {
-                                // me._updating = true;
+                                me._updating = true;
                                 onHandleMove(e.containerPoint, _index);
                                 geometry.fire('resizing');
                             };
                         })(i),
                         onUp: () => {
-                            // me._updating = false;
+                            me._updating = false;
                             onHandleUp();
                         }
                     });
@@ -538,7 +554,7 @@ class GeometryEditor extends Eventable(Class) {
                 // geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
                 const mirrorHandle = resizeHandles[resizeHandles.length - 1 - i];
-                const mirror = map.coordToContainerPoint(mirrorHandle.getCoordinates());
+                const mirror = mirrorHandle.getContainerPoint();
                 containerPoint = mirror;
             }
 
@@ -613,22 +629,12 @@ class GeometryEditor extends Eventable(Class) {
             ]);
         }
 
-        this._createResizeHandles(null, handleViewPoint => {
+        this._createResizeHandles(null, handleContainerPoint => {
             const center = circle.getCenter();
-            const mouseCoordinate = map.viewPointToCoordinate(handleViewPoint);
+            const mouseCoordinate = map.containerPointToCoord(handleContainerPoint);
             const wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
             const hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
             const r = Math.max(map.computeGeometryLength(wline), map.computeGeometryLength(hline));
-            // const viewCenter = map._pointToViewPoint(shadow._getCenter2DPoint());
-            // const wh = handleViewPoint.sub(viewCenter);
-            // const w = Math.abs(wh.x),
-            //     h = Math.abs(wh.y);
-            // let r;
-            // if (w > h) {
-            //     r = map.pixelToDistance(w, 0);
-            // } else {
-            //     r = map.pixelToDistance(0, h);
-            // }
             shadow.setRadius(r);
             circle.setRadius(r);
         }, () => {
@@ -661,23 +667,26 @@ class GeometryEditor extends Eventable(Class) {
         if (this.options['fixAspectRatio']) {
             aspectRatio = geometryToEdit.getWidth() / geometryToEdit.getHeight();
         }
-        const resizeHandles = this._createResizeHandles(null, (mouseViewPoint, i) => {
+        const resizeHandles = this._createResizeHandles(null, (mouseContainerPoint, i) => {
             //ratio of width and height
             const r = isRect ? 1 : 2;
             let pointSub, w, h;
-            const targetPoint = mouseViewPoint;
+            const handle = resizeHandles[i];
+            const targetPoint = handle.getContainerPoint(); //mouseContainerPoint;
             const ability = resizeAbilities[i];
             if (isRect) {
                 const mirror = resizeHandles[7 - i];
-                const mirrorViewPoint = map.coordToViewPoint(mirror.getCoordinates());
-                pointSub = targetPoint.sub(mirrorViewPoint);
+                const mirrorContainerPoint = mirror.getContainerPoint();
+                pointSub = targetPoint.sub(mirrorContainerPoint);
                 const absSub = pointSub.abs();
                 w = map.pixelToDistance(absSub.x, 0);
                 h = map.pixelToDistance(0, absSub.y);
                 const size = geometryToEdit.getSize();
-                const firstMirrorCoordinate = resizeHandles[0].getCoordinates();
-                const mouseCoordinate = map.viewPointToCoordinate(mouseViewPoint);
-                const mirrorCoordinate = mirror.getCoordinates();
+                const geoCoord = shadow.getCoordinates();
+                const width = shadow.getWidth();
+                const height = shadow.getHeight();
+                const mouseCoordinate = map.containerPointToCoord(mouseContainerPoint);
+                const mirrorCoordinate = map.containerPointToCoord(mirrorContainerPoint);
                 const wline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mouseCoordinate.x, mirrorCoordinate.y]]);
                 const hline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mirrorCoordinate.x, mouseCoordinate.y]]);
                 //fix distance cal error
@@ -695,12 +704,14 @@ class GeometryEditor extends Eventable(Class) {
                         size.height = Math.abs(absSub.y);
                         h = w / aspectRatio;
                     }
-                    targetPoint.y = mirrorViewPoint.y - size.height / 2;
-                    mouseCoordinate.y = firstMirrorCoordinate.y;
+                    targetPoint.y = mirrorContainerPoint.y - size.height / 2;
+                    mouseCoordinate.y = geoCoord.y;
                     if (i === 4) {
-                        mouseCoordinate.x = Math.min(mouseCoordinate.x, firstMirrorCoordinate.x);
+                        mouseCoordinate.x = Math.min(mouseCoordinate.x, geoCoord.x);
                     } else {
-                        mouseCoordinate.x = Math.min(mouseCoordinate.x, mirrorCoordinate.x);
+                        // use locate instead of containerPoint to fix precision problem
+                        const mirrorCoord = map.locate(geoCoord, width, 0);
+                        mouseCoordinate.x = map.locate(new Coordinate(mirrorCoord.x, mouseCoordinate.y), -w, 0).x;
                     }
                 } else if (ability === 1) {
                     // changing height
@@ -714,25 +725,32 @@ class GeometryEditor extends Eventable(Class) {
                         size.width = Math.abs(absSub.x);
                         w = h * aspectRatio;
                     }
-                    targetPoint.x = mirrorViewPoint.x - size.width / 2;
-                    mouseCoordinate.x = firstMirrorCoordinate.x;
+                    targetPoint.x = mirrorContainerPoint.x - size.width / 2;
+                    mouseCoordinate.x = geoCoord.x;
                     mouseCoordinate.y = Math.max(mouseCoordinate.y, mirrorCoordinate.y);
                 } else {
                     // corner handles, relocate the target point according to aspect ratio.
                     if (aspectRatio) {
                         if (w > h * aspectRatio) {
                             h = w / aspectRatio;
-                            targetPoint.y = mirrorViewPoint.y + absSub.x * sign(pointSub.y) / aspectRatio;
+                            targetPoint.y = mirrorContainerPoint.y + absSub.x * sign(pointSub.y) / aspectRatio;
                         } else {
                             w = h * aspectRatio;
-                            targetPoint.x = mirrorViewPoint.x + absSub.y * sign(pointSub.x) * aspectRatio;
+                            targetPoint.x = mirrorContainerPoint.x + absSub.y * sign(pointSub.x) * aspectRatio;
                         }
                     }
-                    mouseCoordinate.x = Math.min(mouseCoordinate.x, mirrorCoordinate.x);
+                    // anchor at northwest and south west
+                    if (i === 0 || i === 5) {
+                        // use locate instead of containerPoint to fix precision problem
+                        const mirrorCoord = i === 0 ? map.locate(geoCoord, width, 0) : map.locate(geoCoord, width, -height);
+                        mouseCoordinate.x = map.locate(new Coordinate(mirrorCoord.x, mouseCoordinate.y), -w, 0).x;
+                    } else {
+                        mouseCoordinate.x = Math.min(mouseCoordinate.x, mirrorCoordinate.x);
+                    }
                     mouseCoordinate.y = Math.max(mouseCoordinate.y, mirrorCoordinate.y);
                 }
                 //change rectangle's coordinates
-                // const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorViewPoint.x), Math.min(targetPoint.y, mirrorViewPoint.y)));
+                // const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorContainerPoint.x), Math.min(targetPoint.y, mirrorContainerPoint.y)));
                 shadow.setCoordinates(mouseCoordinate);
                 this._updateCoordFromShadow(true);
                 // geometryToEdit.setCoordinates(newCoordinates);
@@ -747,7 +765,7 @@ class GeometryEditor extends Eventable(Class) {
                 //     h = w / aspectRatio;
                 // }
                 const center = geometryToEdit.getCenter();
-                const mouseCoordinate = map.viewPointToCoordinate(targetPoint);
+                const mouseCoordinate = map.containerPointToCoord(targetPoint);
                 const wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
                 const hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
                 w = map.computeGeometryLength(wline);
