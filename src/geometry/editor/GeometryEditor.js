@@ -836,7 +836,7 @@ class GeometryEditor extends Eventable(Class) {
             if (prjCoordinates.length <= verticeLimit) {
                 return;
             }
-            const isEnd = index === 0 || index === prjCoordinates.length - 1;
+            const isEnd = (shadow instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
             prjCoordinates.splice(index, 1);
             if (ringIndex > 0) {
                 shadow._prjHoles[ringIndex - 1] = prjCoordinates;
