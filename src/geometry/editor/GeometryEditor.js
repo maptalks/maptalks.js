@@ -112,30 +112,35 @@ class GeometryEditor extends Eventable(Class) {
             return;
         }
         this.editing = true;
-        const geometry = this._geometry;
-        this._geometryDraggble = geometry.options['draggable'];
-        geometry.config('draggable', false);
         this.prepare();
-        //edits are applied to a shadow of geometry to improve performance.
-        const shadow = geometry.copy();
-        shadow.setSymbol(geometry._getInternalSymbol());
-        //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
-        //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
-        shadow.copyEventListeners(geometry);
-        if (geometry._getParent()) {
-            shadow.copyEventListeners(geometry._getParent());
+        const geometry = this._geometry;
+        let shadow;
+
+        const layer = this._geometry.getLayer();
+        const needShadow = layer.options['renderer'] === 'canvas';
+        if (needShadow) {
+            this._geometryDraggble = geometry.options['draggable'];
+            geometry.config('draggable', false);
+            //edits are applied to a shadow of geometry to improve performance.
+            shadow = geometry.copy();
+            shadow.setSymbol(geometry._getInternalSymbol());
+            //geometry copy没有将event复制到新建的geometry,对于编辑这个功能会存在一些问题
+            //原geometry上可能绑定了其它监听其click/dragging的事件,在编辑时就无法响应了.
+            shadow.copyEventListeners(geometry);
+            if (geometry._getParent()) {
+                shadow.copyEventListeners(geometry._getParent());
+            }
+            shadow._setEventTarget(geometry);
+            //drag shadow by center handle instead.
+            shadow.setId(null).config({
+                'draggable': false
+            });
+
+            this._shadow = shadow;
+
+            geometry.hide();
         }
-        shadow._setEventTarget(geometry);
-        //drag shadow by center handle instead.
-        shadow.setId(null).config({
-            'draggable': false
-        });
-
-        this._shadow = shadow;
-
         this._switchGeometryEvents('on');
-
-        geometry.hide();
         if (geometry instanceof Marker ||
             geometry instanceof Circle ||
             geometry instanceof Rectangle ||
@@ -143,10 +148,12 @@ class GeometryEditor extends Eventable(Class) {
             //ouline has to be added before shadow to let shadow on top of it, otherwise shadow's events will be overrided by outline
             this._createOrRefreshOutline();
         }
-        this._shadowLayer.bringToFront().addGeometry(shadow);
+        if (this._shadowLayer) {
+            this._shadowLayer.bringToFront().addGeometry(shadow);
+        }
         if (!(geometry instanceof Marker)) {
             this._createCenterHandle();
-        } else {
+        } else if (shadow) {
             shadow.config('draggable', true);
             shadow.on('dragend', this._onMarkerDragEnd, this);
         }
@@ -179,13 +186,17 @@ class GeometryEditor extends Eventable(Class) {
             this.fire('remove');
             return;
         }
-        delete this._shadow;
-        this._geometry.config('draggable', this._geometryDraggble);
-        delete this._geometryDraggble;
-        this._geometry.show();
+        if (this._shadow) {
+            delete this._shadow;
+            this._geometry.config('draggable', this._geometryDraggble);
+            delete this._geometryDraggble;
+            this._geometry.show();
+        }
 
-        this._shadowLayer.remove();
-        delete this._shadowLayer;
+        if (this._shadowLayer) {
+            this._shadowLayer.remove();
+            delete this._shadowLayer;
+        }
         this._refreshHooks = [];
         if (this.options['symbol']) {
             this._geometry.setSymbol(this._originalSymbol);
@@ -249,9 +260,9 @@ class GeometryEditor extends Eventable(Class) {
             this._editOutline.setPoints(geometry.getContainerExtent().toArray(points));
         } else {
             const map = this.getMap();
-            const extent = geometry._getPainter().get2DExtent();
+            const extent = geometry._getPrjExtent();
             points = extent.toArray(points);
-            points.forEach(c => map._pointToContainerPoint(c, undefined, 0, c));
+            points.forEach(c => map._prjToContainerPoint(c, undefined, 0, c));
             this._editOutline.setPoints(points);
         }
 
@@ -272,21 +283,30 @@ class GeometryEditor extends Eventable(Class) {
             'symbol': symbol,
             'cursor': 'move',
             onDown: () => {
-                shadow = this._shadow.copy();
-                const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
-                shadow.setSymbol(symbol).addTo(this._geometry.getLayer());
+                if (this._shadow) {
+                    shadow = this._shadow.copy();
+                    const symbol = lowerSymbolOpacity(shadow._getInternalSymbol(), 0.5);
+                    shadow.setSymbol(symbol).addTo(this._geometry.getLayer());
+                }
             },
             onMove: (param) => {
                 const offset = param['coordOffset'];
-                shadow.translate(offset);
+                if (shadow) {
+                    shadow.translate(offset);
+                } else {
+                    this._geometry.translate(offset);
+                }
             },
             onUp: () => {
-                this._update('setCoordinates', Coordinate.toNumberArrays(shadow.getCoordinates()));
-                shadow.remove();
+                const geo = shadow || this._geometry;
+                this._update('setCoordinates', Coordinate.toNumberArrays(geo.getCoordinates()));
+                if (shadow) {
+                    shadow.remove();
+                }
             }
         });
         this._addRefreshHook(() => {
-            const center = this._shadow.getCenter();
+            const center = this._geometry.getCenter();
             handle.setContainerPoint(map.coordToContainerPoint(center));
         });
     }
@@ -317,6 +337,7 @@ class GeometryEditor extends Eventable(Class) {
         const me = this;
 
         function onHandleDragstart(param) {
+            this._updating = true;
             if (opts.onDown) {
                 /**
                  * change geometry shape start event, fired when drag to change geometry shape.
@@ -362,6 +383,7 @@ class GeometryEditor extends Eventable(Class) {
                 this._geometry.fire('handledragend');
                 opts.onUp.call(me, ev);
             }
+            this._updating = false;
             return false;
         }
 
@@ -484,12 +506,11 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     createMarkerEditor() {
-        const geometryToEdit = this._geometry,
-            shadow = this._shadow,
+        const geometryToEdit = this._shadow || this._geometry,
             map = this.getMap();
-        if (!shadow._canEdit()) {
+        if (!geometryToEdit._canEdit()) {
             if (console) {
-                console.warn('A marker can\'t be resized with symbol:', shadow.getSymbol());
+                console.warn('A marker can\'t be resized with symbol:', geometryToEdit.getSymbol());
             }
             return;
         }
@@ -499,7 +520,7 @@ class GeometryEditor extends Eventable(Class) {
         }
         //only image marker and vector marker can be edited now.
 
-        const symbol = shadow._getInternalSymbol();
+        const symbol = geometryToEdit._getInternalSymbol();
         const dxdy = new Point(0, 0);
         if (isNumber(symbol['markerDx'])) {
             dxdy.x = symbol['markerDx'];
@@ -539,7 +560,7 @@ class GeometryEditor extends Eventable(Class) {
 
         let aspectRatio;
         if (this.options['fixAspectRatio']) {
-            const size = shadow.getSize();
+            const size = geometryToEdit.getSize();
             aspectRatio = size.width / size.height;
         }
 
@@ -547,9 +568,9 @@ class GeometryEditor extends Eventable(Class) {
             if (blackList && blackList.indexOf(i) >= 0) {
                 //need to change marker's coordinates
                 const newCoordinates = map.containerPointToCoordinate(containerPoint.sub(dxdy));
-                const coordinates = shadow.getCoordinates();
+                const coordinates = geometryToEdit.getCoordinates();
                 newCoordinates.x = coordinates.x;
-                shadow.setCoordinates(newCoordinates);
+                geometryToEdit.setCoordinates(newCoordinates);
                 this._updateCoordFromShadow(true);
                 // geometryToEdit.setCoordinates(newCoordinates);
                 //coordinates changed, and use mirror handle instead to caculate width and height
@@ -559,8 +580,8 @@ class GeometryEditor extends Eventable(Class) {
             }
 
             //caculate width and height
-            const viewCenter = map.coordToContainerPoint(shadow.getCoordinates()).add(dxdy),
-                symbol = shadow._getInternalSymbol();
+            const viewCenter = map.coordToContainerPoint(geometryToEdit.getCoordinates()).add(dxdy),
+                symbol = geometryToEdit._getInternalSymbol();
             const wh = containerPoint.sub(viewCenter);
             if (verticalAnchor === 'bottom' && containerPoint.y > viewCenter.y) {
                 wh.y = 0;
@@ -576,23 +597,29 @@ class GeometryEditor extends Eventable(Class) {
                 height = width / aspectRatio;
             }
             const ability = resizeAbilities[i];
-            if (!(shadow instanceof TextBox)) {
+            if (!(geometryToEdit instanceof TextBox)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
                     symbol['markerWidth'] = width;
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
                     symbol['markerHeight'] = height;
                 }
-                shadow.setSymbol(symbol);
                 geometryToEdit.setSymbol(symbol);
+                if (geometryToEdit !== this._geometry) {
+                    this._geometry.setSymbol(symbol);
+                }
             } else {
                 if (aspectRatio || ability === 0 || ability === 2) {
-                    shadow.setWidth(width);
                     geometryToEdit.setWidth(width);
+                    if (geometryToEdit !== this._geometry) {
+                        this._geometry.setWidth(width);
+                    }
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
-                    shadow.setHeight(height);
                     geometryToEdit.setHeight(height);
+                    if (geometryToEdit !== this._geometry) {
+                        this._geometry.setHeight(height);
+                    }
                 }
             }
         }, () => {
@@ -601,13 +628,13 @@ class GeometryEditor extends Eventable(Class) {
 
         function getUpdates() {
             const updates = [
-                ['setCoordinates', shadow.getCoordinates().toArray()]
+                ['setCoordinates', geometryToEdit.getCoordinates().toArray()]
             ];
-            if (shadow instanceof TextBox) {
-                updates.push(['setWidth', shadow.getWidth()]);
-                updates.push(['setHeight', shadow.getHeight()]);
+            if (geometryToEdit instanceof TextBox) {
+                updates.push(['setWidth', geometryToEdit.getWidth()]);
+                updates.push(['setHeight', geometryToEdit.getHeight()]);
             } else {
-                updates.push(['setSymbol', shadow.getSymbol()]);
+                updates.push(['setSymbol', geometryToEdit.getSymbol()]);
             }
             return updates;
         }
@@ -618,27 +645,28 @@ class GeometryEditor extends Eventable(Class) {
      * @private
      */
     createCircleEditor() {
-        const circle = this._geometry,
-            shadow = this._shadow;
+        const geo = this._shadow || this._geometry;
         const map = this.getMap();
 
         if (!this._history) {
             this._recordHistory([
-                ['setCoordinates', shadow.getCoordinates().toArray()],
-                ['setRadius', shadow.getRadius()]
+                ['setCoordinates', geo.getCoordinates().toArray()],
+                ['setRadius', geo.getRadius()]
             ]);
         }
 
         this._createResizeHandles(null, handleContainerPoint => {
-            const center = circle.getCenter();
+            const center = geo.getCenter();
             const mouseCoordinate = map.containerPointToCoord(handleContainerPoint);
             const wline = new LineString([[center.x, center.y], [mouseCoordinate.x, center.y]]);
             const hline = new LineString([[center.x, center.y], [center.x, mouseCoordinate.y]]);
             const r = Math.max(map.computeGeometryLength(wline), map.computeGeometryLength(hline));
-            shadow.setRadius(r);
-            circle.setRadius(r);
+            geo.setRadius(r);
+            if (geo !== this._geometry) {
+                this._geometry.setRadius(r);
+            }
         }, () => {
-            this._update('setRadius', shadow.getRadius());
+            this._update('setRadius', geo.getRadius());
         });
     }
 
@@ -654,8 +682,7 @@ class GeometryEditor extends Eventable(Class) {
             0, 0,
             2, 1, 2
         ];
-        const geometryToEdit = this._geometry,
-            shadow = this._shadow;
+        const geometryToEdit = this._shadow || this._geometry;
 
         if (!this._history) {
             this._recordHistory(getUpdates());
@@ -682,9 +709,9 @@ class GeometryEditor extends Eventable(Class) {
                 w = map.pixelToDistance(absSub.x, 0);
                 h = map.pixelToDistance(0, absSub.y);
                 const size = geometryToEdit.getSize();
-                const geoCoord = shadow.getCoordinates();
-                const width = shadow.getWidth();
-                const height = shadow.getHeight();
+                const geoCoord = geometryToEdit.getCoordinates();
+                const width = geometryToEdit.getWidth();
+                const height = geometryToEdit.getHeight();
                 const mouseCoordinate = map.containerPointToCoord(mouseContainerPoint);
                 const mirrorCoordinate = map.containerPointToCoord(mirrorContainerPoint);
                 const wline = new LineString([[mirrorCoordinate.x, mirrorCoordinate.y], [mouseCoordinate.x, mirrorCoordinate.y]]);
@@ -751,7 +778,7 @@ class GeometryEditor extends Eventable(Class) {
                 }
                 //change rectangle's coordinates
                 // const newCoordinates = map.viewPointToCoordinate(new Point(Math.min(targetPoint.x, mirrorContainerPoint.x), Math.min(targetPoint.y, mirrorContainerPoint.y)));
-                shadow.setCoordinates(mouseCoordinate);
+                geometryToEdit.setCoordinates(mouseCoordinate);
                 this._updateCoordFromShadow(true);
                 // geometryToEdit.setCoordinates(newCoordinates);
 
@@ -777,12 +804,16 @@ class GeometryEditor extends Eventable(Class) {
             }
 
             if (aspectRatio || ability === 0 || ability === 2) {
-                shadow.setWidth(w * r);
                 geometryToEdit.setWidth(w * r);
+                if (geometryToEdit !== this._geometry) {
+                    this._geometry.setWidth(w * r);
+                }
             }
             if (aspectRatio || ability === 1 || ability === 2) {
-                shadow.setHeight(h * r);
                 geometryToEdit.setHeight(h * r);
+                if (geometryToEdit !== this._geometry) {
+                    this._geometry.setHeight(h * r);
+                }
             }
         }, () => {
             this._update(getUpdates());
@@ -790,9 +821,9 @@ class GeometryEditor extends Eventable(Class) {
 
         function getUpdates() {
             return [
-                ['setCoordinates', shadow.getCoordinates().toArray()],
-                ['setWidth', shadow.getWidth()],
-                ['setHeight', shadow.getHeight()]
+                ['setCoordinates', geometryToEdit.getCoordinates().toArray()],
+                ['setWidth', geometryToEdit.getWidth()],
+                ['setHeight', geometryToEdit.getHeight()]
             ];
         }
     }
@@ -804,33 +835,33 @@ class GeometryEditor extends Eventable(Class) {
     createPolygonEditor() {
 
         const map = this.getMap(),
-            shadow = this._shadow,
+            geoToEdit = this._shadow || this._geometry,
             me = this;
         if (!this._history) {
-            this._recordHistory('setCoordinates', Coordinate.toNumberArrays(shadow.getCoordinates()));
+            this._recordHistory('setCoordinates', Coordinate.toNumberArrays(geoToEdit.getCoordinates()));
         }
 
-        const verticeLimit = shadow instanceof Polygon ? 3 : 2;
+        const verticeLimit = geoToEdit instanceof Polygon ? 3 : 2;
         const propertyOfVertexIndex = 'maptalks--editor-vertex-index';
         //{ ringIndex:ring }
         const vertexHandles = { 0: [] },
             newVertexHandles = { 0: [] };
 
         function getVertexCoordinates(ringIndex = 0) {
-            if (shadow instanceof Polygon) {
-                const coordinates = shadow.getCoordinates()[ringIndex] || [];
+            if (geoToEdit instanceof Polygon) {
+                const coordinates = geoToEdit.getCoordinates()[ringIndex] || [];
                 return coordinates.slice(0, coordinates.length - 1);
             } else {
-                return shadow.getCoordinates();
+                return geoToEdit.getCoordinates();
             }
 
         }
 
         function getVertexPrjCoordinates(ringIndex = 0) {
             if (ringIndex === 0) {
-                return shadow._getPrjCoordinates();
+                return geoToEdit._getPrjCoordinates();
             }
-            return shadow._getPrjHoles()[ringIndex - 1];
+            return geoToEdit._getPrjHoles()[ringIndex - 1];
         }
 
         function onVertexAddOrRemove() {
@@ -847,6 +878,7 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function removeVertex(param) {
+            me._updating = true;
             const handle = param['target'],
                 index = handle[propertyOfVertexIndex];
             const ringIndex = isNumber(handle._ringIndex) ? handle._ringIndex : 0;
@@ -854,14 +886,14 @@ class GeometryEditor extends Eventable(Class) {
             if (prjCoordinates.length <= verticeLimit) {
                 return;
             }
-            const isEnd = (shadow instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
+            const isEnd = (geoToEdit instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
             prjCoordinates.splice(index, 1);
             if (ringIndex > 0) {
-                shadow._prjHoles[ringIndex - 1] = prjCoordinates;
+                geoToEdit._prjHoles[ringIndex - 1] = prjCoordinates;
             } else {
-                shadow._setPrjCoordinates(prjCoordinates);
+                geoToEdit._setPrjCoordinates(prjCoordinates);
             }
-            shadow._updateCache();
+            geoToEdit._updateCache();
             //remove vertex handle
             vertexHandles[ringIndex].splice(index, 1)[0].delete();
             //remove two neighbor "new vertex" handles
@@ -880,6 +912,7 @@ class GeometryEditor extends Eventable(Class) {
                 newVertexHandles[ringIndex].splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
             }
             onVertexAddOrRemove();
+            me._updating = false;
         }
 
         function moveVertexHandle(handleConatainerPoint, index, ringIndex = 0) {
@@ -888,8 +921,8 @@ class GeometryEditor extends Eventable(Class) {
             const pVertex = vertice[index];
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
-            shadow._updateCache();
-            shadow.onShapeChanged();
+            geoToEdit._updateCache();
+            geoToEdit.onShapeChanged();
             me._updateCoordFromShadow(true);
             let nextIndex;
             if (index === 0) {
@@ -962,11 +995,11 @@ class GeometryEditor extends Eventable(Class) {
                     prjCoordinates.splice(vertexIndex + 1, 0, pVertex);
                     if (ringIndex > 0) {
                         //update hole
-                        shadow._prjHoles[ringIndex - 1] = prjCoordinates;
+                        geoToEdit._prjHoles[ringIndex - 1] = prjCoordinates;
                     } else {
-                        shadow._setPrjCoordinates(prjCoordinates);
+                        geoToEdit._setPrjCoordinates(prjCoordinates);
                     }
-                    shadow._updateCache();
+                    geoToEdit._updateCache();
 
                     handle.opacity = 1;
 
@@ -1009,8 +1042,8 @@ class GeometryEditor extends Eventable(Class) {
             handle[propertyOfVertexIndex] = index;
             return handle;
         }
-        if (shadow instanceof Polygon) {
-            const rings = shadow.getHoles().length + 1;
+        if (geoToEdit instanceof Polygon) {
+            const rings = geoToEdit.getHoles().length + 1;
             for (let ringIndex = 0; ringIndex < rings; ringIndex++) {
                 vertexHandles[ringIndex] = [];
                 newVertexHandles[ringIndex] = [];
@@ -1083,11 +1116,9 @@ class GeometryEditor extends Eventable(Class) {
     }
 
     _updateCoordFromShadow(ignoreRecord) {
-        if (!this._shadow) {
-            return;
-        }
+        const geoToEdit = this._shadow || this._geometry;
 
-        const coords = this._shadow.getCoordinates();
+        const coords = geoToEdit.getCoordinates();
         const geo = this._geometry;
         const updating = this._updating;
         this._updating = true;
@@ -1183,17 +1214,22 @@ class GeometryEditor extends Eventable(Class) {
         }
         const updating = this._updating;
         this._updating = true;
+        const geoToEdit = this._shadow || this._geometry;
         const geo = this._geometry;
         if (Array.isArray(record[0])) {
             record[0].forEach(o => {
                 const m = o[0],
                     args = o.slice(1);
-                this._shadow[m].apply(this._shadow, args);
-                geo[m].apply(geo, args);
+                geoToEdit[m].apply(geoToEdit, args);
+                if (geoToEdit !== geo) {
+                    geo[m].apply(geo, args);
+                }
             });
         } else {
-            this._shadow[record[0]].apply(this._shadow, record[1]);
-            geo[record[0]].apply(geo, record[1]);
+            geoToEdit[record[0]].apply(geoToEdit, record[1]);
+            if (geoToEdit !== geo) {
+                geo[record[0]].apply(geo, record[1]);
+            }
         }
         this._updating = updating;
     }

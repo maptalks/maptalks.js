@@ -166,15 +166,6 @@ class MapGeometryEventsHandler extends Handler {
         if (map.isInteracting() || map._ignoreEvent(domEvent)) {
             return;
         }
-        const layers = map._getLayers(layer => {
-            if (layer.identify && layer.options['geometryEvents']) {
-                return true;
-            }
-            return false;
-        });
-        if (!layers.length) {
-            return;
-        }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
@@ -207,13 +198,19 @@ class MapGeometryEventsHandler extends Handler {
             preventDefault(domEvent);
         }
 
+        let geometryCursorStyle = null;
         const tops = this.target.getRenderer().getTopElements();
         const topOnlyEvent = (isMousedown || eventType === 'click') && domEvent.button !== 2;
         for (let i = 0; i < tops.length; i++) {
-            if (topOnlyEvent || tops[i].events && tops[i].events.indexOf(eventType) >= 0) {
-                if (tops[i].hitTest(containerPoint)) {
+            if (tops[i].hitTest(containerPoint)) {
+                const cursor = tops[i].options['cursor'];
+                if (cursor) {
+                    geometryCursorStyle = cursor;
+                }
+                if (topOnlyEvent || tops[i].events && tops[i].events.indexOf(eventType) >= 0) {
                     const e = { target: map, type: eventType, domEvent, containerPoint };
                     if (topOnlyEvent) {
+                        map._setPriorityCursor(geometryCursorStyle);
                         tops[i].mousedown(e);
                         return;
                     } else {
@@ -223,8 +220,18 @@ class MapGeometryEventsHandler extends Handler {
             }
         }
 
+        const layers = map._getLayers(layer => {
+            if (layer.identify && layer.options['geometryEvents']) {
+                return true;
+            }
+            return false;
+        });
+        map._setPriorityCursor(geometryCursorStyle);
+        if (!layers.length) {
+            return;
+        }
 
-        let geometryCursorStyle = null;
+
         const identifyOptions = {
             'includeInternals': true,
             //return only one geometry on top,
@@ -285,17 +292,6 @@ class MapGeometryEventsHandler extends Handler {
                 }
 
                 map._setPriorityCursor(geometryCursorStyle);
-
-                if (tops.length) {
-                    for (let i = 0; i < tops.length; i++) {
-                        if (tops[i].hitTest(containerPoint)) {
-                            const cursor = tops[i].options['cursor'];
-                            if (cursor) {
-                                map._setPriorityCursor(cursor);
-                            }
-                        }
-                    }
-                }
 
                 const oldTargets = this._prevOverGeos && this._prevOverGeos.geos;
                 this._prevOverGeos = {
