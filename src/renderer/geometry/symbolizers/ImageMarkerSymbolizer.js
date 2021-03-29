@@ -2,8 +2,7 @@ import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../cor
 import { getAlignPoint } from '../../../core/util/strings';
 import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
-import Point from '../../../geo/Point';
-import PointExtent from '../../../geo/PointExtent';
+import { getImageMarkerFixedExtent } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 const TEMP_SIZE = new Size(1, 1);
@@ -89,43 +88,8 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    getPlacement() {
-        return this.symbol['markerPlacement'];
-    }
-
-    getRotation() {
-        const r = this.style['markerRotation'];
-        if (!isNumber(r)) {
-            return null;
-        }
-        //to radian
-        return -r * Math.PI / 180;
-    }
-
-    getDxDy() {
-        const s = this.style;
-        const dx = s['markerDx'],
-            dy = s['markerDy'];
-        return new Point(dx, dy);
-    }
-
     getFixedExtent(resources) {
-        const style = this.style;
-        const url = style['markerFile'],
-            img = resources ? resources.getImage(url) : null;
-        const width = style['markerWidth'] || (img ? img.width : 0),
-            height = style['markerHeight'] || (img ? img.height : 0);
-        const dxdy = this.getDxDy();
-        TEMP_SIZE.width = width;
-        TEMP_SIZE.height = height;
-        const alignPoint = getAlignPoint(TEMP_SIZE, style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
-        let result = new PointExtent(dxdy.add(0, 0), dxdy.add(width, height));
-        result._add(alignPoint);
-        const rotation = this.getRotation();
-        if (rotation) {
-            result = this._rotateExtent(result, rotation);
-        }
-        return result;
+        return getImageMarkerFixedExtent(this.style, resources);
     }
 
     translate() {

@@ -1,15 +1,15 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault, sign } from '../../../core/util';
+import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
+import { getVectorMarkerFixedExtent, calVectorMarkerSize, getVectorMarkerAnchor } from '../../../core/util/marker';
 import { drawVectorMarker, translateMarkerLineAndFill } from '../../../core/util/draw';
-import { getAlignPoint, hashCode } from '../../../core/util/strings';
-import { hasFunctionDefinition, isFunctionDefinition } from '../../../core/mapbox';
-import Size from '../../../geo/Size';
+import { hashCode } from '../../../core/util/strings';
+import { hasFunctionDefinition } from '../../../core/mapbox';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
-const TEMP_SIZE = new Size(1, 1);
+const MARKER_SIZE = [];
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
@@ -28,12 +28,13 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         this._dynamic = hasFunctionDefinition(symbol);
         this.style = this._defineStyle(this.translate());
         this.strokeAndFill = this._defineStyle(translateMarkerLineAndFill(this.style));
-        const lineWidth = this.strokeAndFill['lineWidth'];
-        if (lineWidth % 2 === 0) {
-            this.padding = 2;
-        } else {
-            this.padding = 1.5;
-        }
+        // const lineWidth = this.strokeAndFill['lineWidth'];
+        // if (lineWidth % 2 === 0) {
+        //     this.padding = 2;
+        // } else {
+        //     this.padding = 1.5;
+        // }
+        this.padding = 0;
     }
 
     symbolize(ctx, resources) {
@@ -56,13 +57,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             this._drawMarkersWithCache(ctx, cookedPoints, resources);
         }
 
-    }
-
-    getDxDy() {
-        const s = this.style;
-        const dx = s['markerDx'],
-            dy = s['markerDy'];
-        return new Point(dx, dy);
     }
 
     _drawMarkers(ctx, cookedPoints, resources) {
@@ -88,7 +82,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             image = this._createMarkerImage(ctx, resources);
             resources.addResource([stamp, image.width, image.height], image);
         }
-        const anchor = this._getAnchor(image.width, image.height);
+        const anchor = getVectorMarkerAnchor(this.style, image.width, image.height);
         for (let i = cookedPoints.length - 1; i >= 0; i--) {
             let point = cookedPoints[i];
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
@@ -103,23 +97,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
     }
 
-    _calMarkerSize() {
-        if (!this._size) {
-            const lineWidth = this.strokeAndFill['lineWidth'],
-                shadow = 2 * (this.symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
-                w = Math.round(this.style['markerWidth'] + lineWidth + 2 * shadow + this.padding * 2),
-                h = Math.round(this.style['markerHeight'] + lineWidth + 2 * shadow + this.padding * 2);
-            if (isFunctionDefinition(this.symbol['markerWidth']) || isFunctionDefinition(this.symbol['markerHeight'])) {
-                return [w, h];
-            }
-            this._size = [w, h];
-        }
-        return this._size;
-    }
-
     _createMarkerImage(ctx, resources) {
         const canvasClass = ctx.canvas.constructor,
-            size = this._calMarkerSize(),
+            size = calVectorMarkerSize(MARKER_SIZE, this.style),
             canvas = Canvas.createCanvas(size[0], size[1], canvasClass),
             point = this._getCacheImageAnchor(size[0], size[1]);
         const context = canvas.getContext('2d');
@@ -146,21 +126,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             ].join('_'));
         }
         return this._stamp;
-    }
-
-    _getAnchor(w, h) {
-        const shadow = 2 * (this.symbol['shadowBlur'] || 0),
-            margin = shadow + this.padding;
-        TEMP_SIZE.width = w;
-        TEMP_SIZE.height = h;
-        const p = getAlignPoint(TEMP_SIZE, this.style['markerHorizontalAlignment'], this.style['markerVerticalAlignment']);
-        if (p.x !== -w / 2) {
-            p.x -= sign(p.x + w / 2) * margin;
-        }
-        if (p.y !== -h / 2) {
-            p.y -= sign(p.y + h / 2) * margin;
-        }
-        return p;
     }
 
     _getCacheImageAnchor(w, h) {
@@ -198,32 +163,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         drawVectorMarker(ctx, point, this.style, resources);
     }
 
-    getPlacement() {
-        return this.symbol['markerPlacement'];
-    }
-
-    getRotation() {
-        const r = this.style['markerRotation'];
-        if (!isNumber(r)) {
-            return null;
-        }
-        //to radian
-        return -r * Math.PI / 180;
-    }
-
     getFixedExtent() {
-        const dxdy = this.getDxDy(),
-            padding = this.padding * 2;
-        const size = this._calMarkerSize().map(d => d - padding);
-        const alignPoint = this._getAnchor(size[0], size[1]);
-        let result = new PointExtent(dxdy.add(0, 0), dxdy.add(size[0], size[1]));
-        result._add(alignPoint);
-        const rotation = this.getRotation();
-        if (rotation) {
-            result = this._rotateExtent(result, rotation);
-        }
-
-        return result;
+        return getVectorMarkerFixedExtent(this.geometry._compiledSymbol);
     }
 
     translate() {

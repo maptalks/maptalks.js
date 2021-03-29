@@ -8,8 +8,8 @@ import {
 } from '../../../core/util';
 import Point from '../../../geo/Point';
 import { hasFunctionDefinition } from '../../../core/mapbox';
-import { splitTextToRow, getAlignPoint, replaceVariable } from '../../../core/util/strings';
-import PointExtent from '../../../geo/PointExtent';
+import { splitTextToRow, replaceVariable } from '../../../core/util/strings';
+import { getTextMarkerFixedExtent } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 
@@ -93,25 +93,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent() {
-        const dxdy = this.getDxDy(),
-            style = this.style;
-        let size = this.textDesc['size'];
-        const alignPoint = getAlignPoint(size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
-        const alignW = alignPoint.x,
-            alignH = alignPoint.y;
-        if (style['textHaloRadius']) {
-            const r = style['textHaloRadius'];
-            size = size.add(r * 2, r * 2);
-        }
-        let result = new PointExtent(
-            dxdy.add(alignW, alignH),
-            dxdy.add(alignW + size['width'], alignH + size['height'])
-        );
-        const rotation = this.getRotation();
-        if (rotation) {
-            result = this._rotateExtent(result, rotation);
-        }
-        return result;
+        return getTextMarkerFixedExtent(this.style, this.textDesc);
     }
 
     translate() {
