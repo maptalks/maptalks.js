@@ -3,8 +3,8 @@ import {
 } from '../../../core/util';
 import Point from '../../../geo/Point';
 import Canvas from '../../../core/Canvas';
+import { getVectorMarkerPoints } from '../../../core/util/draw';
 import PointSymbolizer from './PointSymbolizer';
-import VectorMarkerSymbolizer from './VectorMarkerSymbolizer';
 
 export default class DebugSymbolizer extends PointSymbolizer {
 
@@ -38,7 +38,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
         //center cross and id if have any.
         const points = this._getRenderContainerPoints(),
             id = this.geometry.getId(),
-            cross = VectorMarkerSymbolizer._getVectorPoints('cross', 10, 10);
+            cross = getVectorMarkerPoints('cross', 10, 10);
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             if (!isNil(id)) {

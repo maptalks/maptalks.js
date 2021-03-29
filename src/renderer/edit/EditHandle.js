@@ -97,8 +97,12 @@ export default class EditHandle extends Eventable(Class) {
     }
 
     delete() {
-        const renderer = this.map.getRenderer();
-        renderer.removeTopElement(this);
+        if (this.map) {
+            const renderer = this.map.getRenderer();
+            if (renderer) {
+                renderer.removeTopElement(this);
+            }
+        }
         resources.logout(this.url);
         if (this._dragger) {
             this._dragger.disable();

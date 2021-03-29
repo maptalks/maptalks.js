@@ -164,7 +164,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent() {
-        return getVectorMarkerFixedExtent(this.geometry._compiledSymbol);
+        return getVectorMarkerFixedExtent(this.style);
     }
 
     translate() {

@@ -53,7 +53,11 @@ export default class EditOutline {
     }
 
     delete() {
-        const renderer = this.map.getRenderer();
-        renderer.removeTopElement(this);
+        if (this.map) {
+            const renderer = this.map.getRenderer();
+            if (renderer) {
+                renderer.removeTopElement(this);
+            }
+        }
     }
 }

@@ -11,9 +11,9 @@ function getVectorPadding(/*symbol*/) {
 }
 
 const DXDY = new Point(0, 0);
-function getFixedExtent(dx, dy, rotation, alignPoint, x, y, w, h) {
+function getFixedExtent(dx, dy, rotation, alignPoint, w, h) {
     const dxdy = DXDY.set(dx, dy);
-    let result = new PointExtent(dxdy.add(x, y), dxdy.add(x + w, y + h));
+    let result = new PointExtent(dxdy, dxdy.add(w, h));
     result._add(alignPoint);
     if (rotation) {
         result = rotateExtent(result, rotation);
@@ -31,7 +31,7 @@ export function getVectorMarkerFixedExtent(symbol) {
     }
     const alignPoint = getVectorMarkerAnchor(symbol, size[0], size[1]);
     return getFixedExtent(symbol['markerDx'] || 0, symbol['markerDy'] || 0,
-        getMarkerRotation(symbol), alignPoint, 0, 0, size[0], size[1]);
+        getMarkerRotation(symbol), alignPoint, size[0], size[1]);
 }
 
 const TEMP_SIZE = new Size(0, 0);
@@ -84,19 +84,17 @@ export function getImageMarkerFixedExtent(symbol, resources) {
     TEMP_SIZE.height = height;
     const alignPoint = getAlignPoint(TEMP_SIZE, symbol['markerHorizontalAlignment'], symbol['markerVerticalAlignment']);
     return getFixedExtent(symbol['markerDx'] || 0, symbol['markerDy'] || 0,
-        getMarkerRotation(symbol), alignPoint, 0, 0, width, height);
+        getMarkerRotation(symbol), alignPoint, width, height);
 }
 
 
 export function getTextMarkerFixedExtent(symbol, textDesc) {
     let size = textDesc['size'];
     const alignPoint = getAlignPoint(size, symbol['textHorizontalAlignment'], symbol['textVerticalAlignment']);
-    const alignW = alignPoint.x,
-        alignH = alignPoint.y;
     if (symbol['textHaloRadius']) {
         const r = symbol['textHaloRadius'];
         size = size.add(r * 2, r * 2);
     }
     return getFixedExtent(symbol['textDx'] || 0, symbol['textDy'] || 0, getMarkerRotation(symbol, 'textRotation'),
-        alignPoint, alignW, alignH, size.width, size.height);
+        alignPoint, size.width, size.height);
 }

@@ -34,7 +34,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             return;
         }
 
-        const img = getImage(resources, this.style['markerFile']);
+        const img = this._getImage(resources);
         if (!img) {
             if (typeof console !== 'undefined') {
                 console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
@@ -86,6 +86,10 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;
         }
+    }
+
+    _getImage(resources) {
+        return getImage(resources, this.style['markerFile']);
     }
 
     getFixedExtent(resources) {

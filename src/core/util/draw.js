@@ -25,7 +25,7 @@ export function drawVectorMarker(ctx, point, symbol, resources) {
     const strokeAndFill = translateMarkerLineAndFill(symbol);
     const style = symbol,
         markerType = style['markerType'].toLowerCase(),
-        vectorArray = getVectorPoints(markerType, style['markerWidth'], style['markerHeight']),
+        vectorArray = getVectorMarkerPoints(markerType, style['markerWidth'], style['markerHeight']),
         lineOpacity = strokeAndFill['lineOpacity'],
         fillOpacity = strokeAndFill['polygonOpacity'];
     const gradient = isGradient(strokeAndFill['polygonFill']);
@@ -115,7 +115,7 @@ export function translateMarkerLineAndFill(s) {
     return result;
 }
 
-function getVectorPoints(markerType, width, height) {
+export function getVectorMarkerPoints(markerType, width, height) {
     //half height and half width
     const hh = height / 2,
         hw = width / 2;

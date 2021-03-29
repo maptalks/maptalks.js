@@ -204,8 +204,7 @@ function testRemoveHide(geometry, _context) {
             var testPoints = getTestPoints(geometry);
             layer.addGeometry(geometry);
             geometry.startEdit();
-            var editLayer = (geometry instanceof maptalks.GeometryCollection) ? geometry.getGeometries()[0]._editor._editStageLayer : geometry._editor._editStageLayer;
-            editLayer.once('layerload', function () {
+            setTimeout(function () {
                 if (layer.isEmpty()) {
                     return;
                 }
@@ -222,7 +221,7 @@ function testRemoveHide(geometry, _context) {
                     //remove the geometry in the next frame
                     geometry.remove();
                 },1);
-            });
+            }, 40);
         });
     });
 }
