@@ -226,7 +226,13 @@ export default class VectorPack {
 
         if (this.iconAtlas) {
             //icon纹理
-            vectorPack.data.iconAtlas = serializeAtlas(this.iconAtlas);
+            const atlas = vectorPack.data.iconAtlas = serializeAtlas(this.iconAtlas);
+            if (atlas.glyphMap) {
+                for (const p in atlas.glyphMap) {
+                    const map = atlas.glyphMap[p];
+                    buffers.push(map.data.data.buffer);
+                }
+            }
             buffers.push(vectorPack.data.iconAtlas.image.data.buffer);
         }
 
@@ -422,6 +428,7 @@ function serializeAtlas(atlas) {
             data: image.data,
             format
         },
+        glyphMap: atlas.glyphMap,
         positions: positions
     };
 }
