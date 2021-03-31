@@ -6,8 +6,6 @@ import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 
-const animMatrix = [];
-const EMPTY_MAT = mat4.identity([]);
 let timespan = 0;
 const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 //将GLTF规范里面的sampler数码映射到regl接口的sampler
@@ -112,19 +110,13 @@ export default class GLTFPack {
     _updateNodeMatrix(time, node, parentNodeMatrix) {
         const trs = node.trs;
         if (trs) {
-            gltf.GLTFLoader.getAnimationClip(animMatrix, this.gltf, Number(node.nodeIndex), time);
-            node.trs.update(animMatrix);
-            if (trs.isTRS(animMatrix)) {
-                //根据时间获取到的动画矩阵如果t、r、s都存在，需要直接赋给localMatrix
-                mat4.copy(node.localMatrix, animMatrix);
-            } else if (!mat4.equals(animMatrix, EMPTY_MAT)) {
-                trs.setMatrix(node.localMatrix);
-            }
+            const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time);
+            node.trs.update(animation);
         }
         if (parentNodeMatrix) {
-            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.localMatrix);
+            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.matrix || node.trs.getMatrix());
         } else {
-            mat4.copy(node.nodeMatrix, node.localMatrix);
+            mat4.copy(node.nodeMatrix, node.matrix || node.trs.getMatrix());
         }
         const nodeMatrix = mat4.copy([], node.nodeMatrix);
         if (node.children) {
@@ -174,18 +166,11 @@ export default class GLTFPack {
         } else {
             node.trs = new TRS(node.translation, node.rotation, node.scale);
         }
-        const trs = node.trs;
-        if (trs) {
-            if (node.matrix) {
-                mat4.copy(node.localMatrix, node.matrix);
-            } else {
-                trs.setMatrix(node.localMatrix);
-            }
-        }
+        node.localMatrix = node.trs.getMatrix();
         if (parentNodeMatrix) {
-            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.localMatrix);
+            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.matrix || node.localMatrix);
         } else {
-            mat4.copy(node.nodeMatrix, node.localMatrix);
+            mat4.copy(node.nodeMatrix, node.matrix || node.localMatrix);
         }
         const nodeMatrix = node.nodeMatrix;
         if (node.children) {
@@ -216,7 +201,7 @@ export default class GLTFPack {
                     nodeMatrix,
                     materialInfo : this._createMaterialInfo(primitive.material, node),
                     extraInfo: this._createExtralInfo(primitive.material),
-                    animationMatrix : node.trs.setMatrix()
+                    animationMatrix : node.trs.getMatrix()
                 };
                 if (node.skin) {
                     info.skin = {

@@ -1,8 +1,5 @@
 import { mat4, vec3, quat } from 'gl-matrix';
-const EMPTY_TRANS = [0, 0, 0], EMPTY_ROTATION = [0, 0, 0, 1], EMPTY_SCALE = [1, 1, 1];
-const trans = [0, 0, 0];
-const rotation = [0, 0, 0, 1];
-const scale = [1, 1, 1];
+const EMPTY_TRANS = [0, 0, 0], EMPTY_ROTATION = [0, 0, 0, 1], EMPTY_MAT = [];
 export default class TRS {
     constructor(translation = [0, 0, 0], rotation = [0, 0, 0, 1], scale = [1, 1, 1]) {
         this.translation = translation;
@@ -10,10 +7,8 @@ export default class TRS {
         this.scale = scale;
     }
 
-    setMatrix(dst) {
-        dst = dst || [];
-        mat4.fromRotationTranslationScale(dst, this.rotation, this.translation, this.scale);
-        return dst;
+    getMatrix() {
+        return mat4.fromRotationTranslationScale(EMPTY_MAT, this.rotation, this.translation, this.scale);
     }
 
     decompose(matrix) {
@@ -22,28 +17,18 @@ export default class TRS {
         mat4.getScaling(this.scale, matrix);
     }
 
-    update(animMatrix) {
-        mat4.getTranslation(trans, animMatrix);
-        mat4.getRotation(rotation, animMatrix);
-        mat4.getScaling(scale, animMatrix);
-        if (!vec3.equals(trans, EMPTY_TRANS)) {
-            vec3.copy(this.translation, trans);
+    update(animation) {
+        if (!animation) {
+            return;
         }
-        if (!quat.equals(rotation, EMPTY_ROTATION)) {
-            quat.copy(this.rotation, rotation);
+        if (animation.translation && !vec3.equals(animation.translation, EMPTY_TRANS)) {
+            vec3.copy(this.translation, animation.translation);
         }
-        if (!vec3.equals(scale, EMPTY_SCALE)) {
-            vec3.copy(this.scale, scale);
+        if (animation.rotation && !quat.equals(animation.rotation, EMPTY_ROTATION)) {
+            quat.copy(this.rotation, animation.rotation);
         }
-    }
-
-    isTRS(animMatrix) {
-        mat4.getTranslation(trans, animMatrix);
-        mat4.getRotation(rotation, animMatrix);
-        mat4.getScaling(scale, animMatrix);
-        if (!quat.equals(rotation, EMPTY_ROTATION) && !vec3.equals(scale, EMPTY_SCALE)) {
-            return true;
+        if (animation.scale) {
+            vec3.copy(this.scale, animation.scale);
         }
-        return false;
     }
 }
