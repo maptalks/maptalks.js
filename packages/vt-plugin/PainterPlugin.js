@@ -148,10 +148,10 @@ function createPainterPlugin(type, Painter) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
                         for (let i = 0; i < mesh.length; i++) {
-                            this._fillMeshProps(mesh[i], tileTransform, context, key + '-' + i, enableTileStencil);
+                            this._fillMeshProps(mesh[i], tileTransform, context.timestamp, key + '-' + i, enableTileStencil);
                         }
                     } else {
-                        this._fillMeshProps(mesh, tileTransform, context, key, enableTileStencil);
+                        this._fillMeshProps(mesh, tileTransform, context.timestamp, key, enableTileStencil);
                     }
                     if (sceneConfig.animation) {
                         mesh._animationTime = context.timestamp;
@@ -209,9 +209,9 @@ function createPainterPlugin(type, Painter) {
             };
         },
 
-        _fillMeshProps: function (mesh, tileTransform, context, key, enableTileStencil) {
+        _fillMeshProps: function (mesh, tileTransform, timestamp, key, enableTileStencil) {
             mesh.properties.tileTransform = tileTransform;
-            mesh.properties.createTime = context.timestamp;
+            mesh.properties.createTime = timestamp;
             mesh.properties.meshKey = key;
             if (enableTileStencil) {
                 const defines = mesh.defines || {};

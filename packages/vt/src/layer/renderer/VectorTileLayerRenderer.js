@@ -811,7 +811,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     drawTile(tileInfo, tileData) {
         if (!tileData.loadTime || tileData._empty) return;
-        const parentContext = this._parentContext;
+        // const parentContext = this._parentContext;
         let tileCache = tileData.cache;
         if (!tileCache) {
             tileCache = tileData.cache = {};
@@ -853,11 +853,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
                 tileInfo,
-                tileZoom: this['_tileZoom']
+                tileZoom: this['_tileZoom'],
+                bloom: this._parentContext && this._parentContext.bloom
             };
-            if (parentContext) {
-                extend(context, parentContext);
-            }
             const status = plugin.paintTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
