@@ -236,6 +236,8 @@ const SYMBOL = {
 
 };
 
+const MAX_MARKER_SIZE = 255;
+
 class PointLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
@@ -251,6 +253,20 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             this.onGeometryAdd(this.layer.getGeometries());
         }
         return painter;
+    }
+
+    onGeometryAdd(geometries) {
+        if (!geometries) {
+            return;
+        }
+        if (Array.isArray(geometries)) {
+            geometries.forEach(g => {
+                g.options['maxMarkerWidth'] = g.options['maxMarkerHeight'] = MAX_MARKER_SIZE;
+            });
+        } else {
+            geometries.options['maxMarkerWidth'] = geometries.options['maxMarkerHeight'] = MAX_MARKER_SIZE;
+        }
+        super.onGeometryAdd(geometries);
     }
 
     buildMesh(atlas) {
