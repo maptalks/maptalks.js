@@ -306,24 +306,24 @@ describe('Geometry.TextBox', function () {
         expect(vector.getContent()).to.be.eql('textbox');
     });
 
-    it('clear unused text caches', function (done) {
-        var cachekey = maptalks.symbolizer.TextMarkerSymbolizer.CACHE_KEY;
+    // it('clear unused text caches', function (done) {
+    //     var cachekey = maptalks.symbolizer.TextMarkerSymbolizer.CACHE_KEY;
 
-        var vector = new maptalks.TextBox('test label', center, 100, 40);
+    //     var vector = new maptalks.TextBox('test label', center, 100, 40);
 
-        layer = new maptalks.VectorLayer('id', vector);
-        layer.once('layerload', function () {
-            expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
-            layer.once('layerload', function () {
-                expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
-                done();
-            });
-            vector.setContent('1');
-            expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
-        });
-        map.addLayer(layer);
+    //     layer = new maptalks.VectorLayer('id', vector);
+    //     layer.once('layerload', function () {
+    //         expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
+    //         layer.once('layerload', function () {
+    //             expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
+    //             done();
+    //         });
+    //         vector.setContent('1');
+    //         expect(Object.keys(vector[cachekey]).length).to.be.eql(1);
+    //     });
+    //     map.addLayer(layer);
 
-    });
+    // });
 
     it('JSON of previous version\'s TextBox', function () {
         var json = { "content": "岭南站/SM/A", "feature": { "geometry": { "coordinates": [113.120816, 23.033914], "type": "Point" }, "id": "NWP_LABEL_3", "type": "Feature" }, "options": { "boxAutoSize": true, "boxMinHeight": 30, "boxMinWidth": 100, "boxPadding": { "height": 8, "width": 15 }, "draggable": true, "visible": true, "zIndex": 1 }, "subType": "TextBox", "symbol": { "markerFill": "#ffffff", "markerFillOpacity": 1, "markerHeight": 40, "markerLineColor": "#cccccc", "markerLineOpacity": 0.8, "markerLineWidth": 1, "markerOpacity": 0.8, "markerType": "square", "markerWidth": 140, "opacity": 1, "textDx": 0, "textDy": 0, "textFaceName": "microsoft yahei", "textFill": "#000000", "textHorizontalAlignment": "middle", "textLineSpacing": 1, "textName": "岭南站/SM/A", "textOpacity": 0.8, "textSize": 18, "textSpacing": 0, "textVerticalAlignment": "middle", "textWrapBefore": false, "textWrapCharacter": "\n" } };

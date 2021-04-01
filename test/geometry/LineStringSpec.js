@@ -520,7 +520,7 @@ describe('Geometry.LineString', function () {
                     altitude: 10
                 }
             }).addTo(layer);
-            var extent = polyline._getPainter().getContainerExtent().round().toString();
+            var extent = polyline.getContainerExtent().round().toString();
             console.log(extent);
             expect(extent).to.be.eql('-404,-38,320,151');
         });

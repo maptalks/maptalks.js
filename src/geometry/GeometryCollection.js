@@ -2,7 +2,10 @@ import { isFunction, isArrayHasData } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
+import PointExtent from '../geo/PointExtent';
 import Geometry from './Geometry';
+
+const TEMP_EXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -26,6 +29,14 @@ class GeometryCollection extends Geometry {
         super(opts);
         this.type = 'GeometryCollection';
         this.setGeometries(geometries);
+    }
+
+    getContainerExtent(out) {
+        const extent = out || new PointExtent();
+        this.forEach(geo => {
+            extent._combine(geo.getContainerExtent(TEMP_EXTENT));
+        });
+        return extent;
     }
 
     /**

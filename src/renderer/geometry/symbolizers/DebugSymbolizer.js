@@ -32,7 +32,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
         ctx.fillStyle = color;
 
         //outline
-        const outline = this.getPainter().getContainerExtent().toArray();
+        const outline = geometry.getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
 
         //center cross and id if have any.

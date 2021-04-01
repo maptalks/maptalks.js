@@ -97,7 +97,8 @@ function testRemoveHide(geometry, _context) {
         layer.clear();
         layer._clearAllListeners();
         map.setCenter(geometry.getFirstCoordinate());
-        if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString) {
+        if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString ||
+            geometry instanceof maptalks.MultiLineString || geometry instanceof maptalks.MultiPolygon) {
             geometry.setSymbol({
                 'lineWidth' : 2,
                 'lineColor' : '#000000',

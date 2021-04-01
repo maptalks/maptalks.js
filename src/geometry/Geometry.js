@@ -25,6 +25,7 @@ import PointExtent from '../geo/PointExtent';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
+import { isFunctionDefinition } from '../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -79,6 +80,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         super(opts);
         if (symbol) {
             this.setSymbol(symbol);
+        } else {
+            this._genSizeSymbol();
         }
         if (properties) {
             this.setProperties(properties);
@@ -370,7 +373,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             if (!textContent) {
                 return null;
             }
-            const symbol = this._getInternalSymbol();
+            const symbol = this._sizeSymbol;
             if (Array.isArray(symbol)) {
                 this._textDesc = symbol.map((s, i) => describeText(textContent[i], s));
             } else {
@@ -413,16 +416,18 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     getContainerExtent(out) {
         const extent2d = this.get2DExtent();
+        if (!extent2d || !extent2d.isValid()) {
+            return null;
+        }
         const map = this.getMap();
-        const z = map.getZoom();
         const center = this.getCenter();
         const zoom = map.getGLZoom();
         const minAltitude = this.getMinAltitude();
-        const altitude = map.distanceToPoint(minAltitude, 0, z, center).x * sign(minAltitude);
+        const altitude = map.distanceToPoint(minAltitude, 0, zoom, center).x * sign(minAltitude);
         const extent = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, altitude, TEMP_POINT0), out);
         let maxAltitude = this.getMaxAltitude();
         if (maxAltitude !== minAltitude) {
-            maxAltitude = map.distanceToPoint(maxAltitude, 0, z, center).x * sign(maxAltitude);
+            maxAltitude = map.distanceToPoint(maxAltitude, 0, zoom, center).x * sign(maxAltitude);
             const extent2 = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(extent2);
         }
@@ -446,8 +451,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!this._fixedExtent) {
             this._fixedExtent = new PointExtent();
         }
-        const symbol = this._getInternalSymbol();
-        const t = (symbol['lineWidth'] || 1) / 2;
+        const symbol = this._sizeSymbol;
+        const t = (symbol && symbol['lineWidth'] || 1) / 2;
         this._fixedExtent.set(-t, -t, t, t);
         return this._fixedExtent;
     }
@@ -461,6 +466,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this._extent2d;
         }
         const extent = this._getPrjExtent();
+        if (!extent.isValid()) {
+            return null;
+        }
         const min = extent.getMin();
         const max = extent.getMax();
         const z = map.getGLZoom();
@@ -1209,8 +1217,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             delete this._textDesc;
         }
-        const symbol = this._getInternalSymbol();
-        this._compiledSymbol = loadGeoSymbol(symbol, this);
+        this._genSizeSymbol();
 
         /**
          * symbolchange event.
@@ -1222,6 +1229,38 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
          * @property {Object} properties - symbol properties to update if has
          */
         this._fireEvent('symbolchange', e);
+    }
+
+    _genSizeSymbol() {
+        const symbol = this._getInternalSymbol();
+        if (!symbol) {
+            delete this._sizeSymbol;
+            return;
+        }
+        if (Array.isArray(symbol)) {
+            this._sizeSymbol = [];
+            let dynamicSize = false;
+            for (let i = 0; i < symbol.length; i++) {
+                const s = this._sizeSymbol[i] = this._getSizeSymbol(symbol[i]);
+                if (!dynamicSize && s && s._dynamic) {
+                    dynamicSize = true;
+                }
+            }
+            this._sizeSymbol._dynamic = dynamicSize;
+        } else {
+            this._sizeSymbol = this._getSizeSymbol(symbol);
+        }
+    }
+
+    _getSizeSymbol(symbol) {
+        let symbolSize;
+        if (isFunctionDefinition(symbol['lineWidth'])) {
+            symbolSize = loadGeoSymbol({ lineWidth: symbol['lineWidth'] }, this);
+            symbolSize._dynamic = true;
+        } else {
+            symbolSize = { lineWidth: symbol['lineWidth'] };
+        }
+        return symbolSize;
     }
 
     onConfig(conf) {

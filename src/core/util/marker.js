@@ -73,7 +73,7 @@ export function getVectorMarkerAnchor(symbol, w, h) {
 
 export function calVectorMarkerSize(out, symbol) {
     const padding = getVectorPadding(symbol);
-    const lineWidth = symbol['markerLineWidth'],
+    const lineWidth = symbol['markerLineWidth'] || 1,
         shadow = 2 * (symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
         w = Math.round(symbol['markerWidth'] + lineWidth + 2 * shadow + padding * 2),
         h = Math.round(symbol['markerHeight'] + lineWidth + 2 * shadow + padding * 2);
@@ -188,3 +188,13 @@ export function isPathSymbol(symbol) {
     }
     return false;
 }
+
+export const DYNAMIC_SYMBOL_PROPS = [
+    'markerWidth', 'markerHeight', 'markerHorizontalAlignment', 'markerVerticalAlignment', 'markerDx', 'markerDy',
+    'textName',
+    'textSize', 'textDx', 'textDy', 'textVerticalAlignment', 'textHorizontalAlignment', 'textRotation'
+];
+
+export const SIZE_SYMBOL_PROPS = [
+    'textName', 'markerType', 'markerFile', 'textHaloRadius',
+];
