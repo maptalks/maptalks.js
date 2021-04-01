@@ -22,7 +22,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/gltf-loader": "^0.6.0",
+    "@maptalks/gltf-loader": "^0.6.1",
     "@maptalks/tbn-packer": "^1.2.6",
     "gl-matrix": "^2.6.1",
     "zousan": "^2.3.3"
