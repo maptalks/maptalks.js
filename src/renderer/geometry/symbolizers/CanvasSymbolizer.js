@@ -1,4 +1,4 @@
-import { isNumber, extend } from '../../../core/util';
+import { isNumber } from '../../../core/util';
 import { loadGeoSymbol, isFunctionDefinition, interpolated } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';

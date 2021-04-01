@@ -1,8 +1,12 @@
 import Extent from '../geo/Extent';
+import PointExtent from '../geo/PointExtent';
 import CenterMixin from './CenterMixin';
 import Geometry from './Geometry';
 import Painter from '../renderer/geometry/Painter';
-import * as Symbolizers from '../renderer/geometry/symbolizers';
+import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol } from '../core/util/marker';
+import { isFunctionDefinition } from '../core/mapbox';
+
+const TEMP_EXTENT = new PointExtent();
 
 /**
  * @property {String} [options.hitTestForEvent=false] - use hit testing for events, be careful, it may fail due to tainted canvas.
@@ -58,12 +62,8 @@ class Marker extends CenterMixin(Geometry) {
     }
 
     getOutline() {
-        const painter = this._getPainter();
-        if (!painter) {
-            return null;
-        }
         const coord = this.getCoordinates();
-        const extent = painter.getContainerExtent();
+        const extent = this.getContainerExtent();
         const anchor = this.getMap().coordToContainerPoint(coord);
         return new Marker(coord, {
             'symbol': {
@@ -79,12 +79,58 @@ class Marker extends CenterMixin(Geometry) {
         });
     }
 
-    _isVectorMarker() {
+    setSymbol(...args) {
+        delete this._fixedExtent;
+        return super.setSymbol.call(this, ...args);
+    }
+
+    _setExternSymbol(symbol) {
+        if (!this._symbol) {
+            delete this._fixedExtent;
+        }
+        return super._setExternSymbol(symbol);
+    }
+
+    _isDynamicSize() {
+        const symbol = this._getInternalSymbol();
+        if (Array.isArray(symbol)) {
+            for (let i = 0; i < symbol.length; i++) {
+                if (isDynamic(symbol[i])) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return isDynamic(symbol);
+        }
+    }
+
+    _getFixedExtent() {
+        if (this._fixedExtent && !this._isDynamicSize()) {
+            return this._fixedExtent;
+        }
+        this._fixedExtent = this._fixedExtent || new PointExtent();
+        const symbol = this._getInternalSymbol();
+        const renderer = this.getLayer() && this.getLayer().getRenderer();
+        const resources = renderer && renderer.resources;
+        const textDesc = this.getTextDesc();
+        if (Array.isArray(symbol)) {
+            this._fixedExtent.set(null, null, null, null);
+            for (let i = 0; i < symbol.length; i++) {
+                this._fixedExtent.combine(getMarkerFixedExtent(TEMP_EXTENT, symbol, resources, textDesc[i]));
+            }
+        } else {
+            this._fixedExtent = getMarkerFixedExtent(this._fixedExtent, symbol, resources, textDesc);
+        }
+        return this._fixedExtent;
+    }
+
+    _isVectorSymbol() {
         const symbol = this._getInternalSymbol();
         if (Array.isArray(symbol)) {
             return false;
         }
-        return Symbolizers.VectorMarkerSymbolizer.test(symbol);
+        return isVectorSymbol(symbol);
     }
 
     /**
@@ -97,8 +143,7 @@ class Marker extends CenterMixin(Geometry) {
         if (Array.isArray(symbol)) {
             return false;
         }
-        return Symbolizers.VectorMarkerSymbolizer.test(symbol) || Symbolizers.VectorPathMarkerSymbolizer.test(symbol) ||
-            Symbolizers.ImageMarkerSymbolizer.test(symbol);
+        return isVectorSymbol(symbol) || isPathSymbol(symbol) || isImageSymbol(symbol);
     }
 
     _containsPoint(point, t) {
@@ -153,4 +198,12 @@ function computeExtent(fn) {
         return null;
     }
     return new Extent(coordinates, coordinates, this._getProjection());
+}
+
+function isDynamic(symbol) {
+    if (!symbol) {
+        return false;
+    }
+    return isFunctionDefinition(symbol['markerWidth']) || isFunctionDefinition(symbol['markerHeight']) ||
+            isFunctionDefinition(symbol['textSize']);
 }

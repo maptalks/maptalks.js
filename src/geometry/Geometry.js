@@ -10,15 +10,24 @@ import {
     isNumber,
     isObject,
     forEachCoord,
-    flash
+    flash,
+    sign
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
+import { loadGeoSymbol } from '../core/mapbox';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
+import { replaceVariable, describeText } from '../core/util/strings';
+import { isTextSymbol } from '../core/util/marker';
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import Extent from '../geo/Extent';
+import PointExtent from '../geo/PointExtent';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
+
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_EXTENT = new PointExtent();
 
 /**
  * @property {Object} options                       - geometry options
@@ -312,19 +321,63 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 throw new Error('Parameter of updateSymbol is not an array.');
             }
             for (let i = 0; i < props.length; i++) {
+                if (isTextSymbol(props[i])) {
+                    delete this._textDesc;
+                }
                 if (s[i] && props[i]) {
                     s[i] = extendSymbol(s[i], props[i]);
                 }
             }
         } else if (Array.isArray(props)) {
             throw new Error('Geometry\'s symbol is not an array to update.');
-        } else if (s) {
-            s = extendSymbol(s, props);
         } else {
-            s = extendSymbol(this._getInternalSymbol(), props);
+            if (isTextSymbol(s)) {
+                delete this._textDesc;
+            }
+            if (s) {
+                s = extendSymbol(s, props);
+            } else {
+                s = extendSymbol(this._getInternalSymbol(), props);
+            }
         }
         this._eventSymbolProperties = props;
         return this.setSymbol(s);
+    }
+
+    /**
+     * Get geometry's text content if it has
+     * @returns {String}
+     */
+    getTextContent() {
+        const symbol = this._getInternalSymbol();
+        if (Array.isArray(symbol)) {
+            const contents = [];
+            let has = false;
+            for (let i = 0; i < symbol.length; i++) {
+                contents[i] = replaceVariable(symbol[i] && symbol[i]['textName'], this.getProperties());
+                if (!isNil(contents[i])) {
+                    has = true;
+                }
+            }
+            return has ? contents : null;
+        }
+        return replaceVariable(symbol && symbol['textName'], this.getProperties());
+    }
+
+    getTextDesc() {
+        if (!this._textDesc) {
+            const textContent = this.getTextContent();
+            if (!textContent) {
+                return null;
+            }
+            const symbol = this._getInternalSymbol();
+            if (Array.isArray(symbol)) {
+                this._textDesc = symbol.map((s, i) => describeText(textContent[i], s));
+            } else {
+                this._textDesc = describeText(textContent, symbol);
+            }
+        }
+        return this._textDesc;
     }
 
     /**
@@ -359,8 +412,64 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {PointExtent}
      */
     getContainerExtent(out) {
-        const painter = this._getPainter();
-        return painter ? painter.getContainerExtent(out) : null;
+        const extent2d = this.get2DExtent();
+        const map = this.getMap();
+        const z = map.getZoom();
+        const center = this.getCenter();
+        const zoom = map.getGLZoom();
+        const minAltitude = this.getMinAltitude();
+        const altitude = map.distanceToPoint(minAltitude, 0, z, center).x * sign(minAltitude);
+        const extent = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, altitude, TEMP_POINT0), out);
+        let maxAltitude = this.getMaxAltitude();
+        if (maxAltitude !== minAltitude) {
+            maxAltitude = map.distanceToPoint(maxAltitude, 0, z, center).x * sign(maxAltitude);
+            const extent2 = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
+            extent._combine(extent2);
+        }
+        const layer = this.getLayer();
+        if (layer && this.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
+            const groundExtent = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, 0, TEMP_POINT0), TEMP_EXTENT);
+            extent._combine(groundExtent);
+        }
+        if (extent) {
+            extent._add(this._getFixedExtent());
+        }
+        const smoothness = this.options['smoothness'];
+        if (smoothness) {
+            extent._expand(extent.getWidth() * 0.15);
+        }
+        return extent;
+    }
+
+    _getFixedExtent() {
+        // only for LineString and Polygon, Marker's will be overrided
+        if (!this._fixedExtent) {
+            this._fixedExtent = new PointExtent();
+        }
+        const symbol = this._getInternalSymbol();
+        const t = (symbol['lineWidth'] || 1) / 2;
+        this._fixedExtent.set(-t, -t, t, t);
+        return this._fixedExtent;
+    }
+
+    get2DExtent() {
+        const map = this.getMap();
+        if (!map) {
+            return null;
+        }
+        if (this._extent2d) {
+            return this._extent2d;
+        }
+        const extent = this._getPrjExtent();
+        const min = extent.getMin();
+        const max = extent.getMax();
+        const z = map.getGLZoom();
+
+        map._prjToPoint(min, z, min);
+        map._prjToPoint(max, z, max);
+        this._extent2d = new PointExtent(min, max);
+        this._extent2d.z = map.getZoom();
+        return this._extent2d;
     }
 
     /**
@@ -895,6 +1004,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     _setExternSymbol(symbol) {
         this._eventSymbolProperties = symbol;
+        if (!this._symbol) {
+            delete this._textDesc;
+        }
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
@@ -994,11 +1106,15 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
                 if (layer.constructor.getCollectionPainterClass) {
                     const clazz = layer.constructor.getCollectionPainterClass();
-                    this._painter = new clazz(this);
+                    if (clazz) {
+                        this._painter = new clazz(this);
+                    }
                 }
             } else if (layer.constructor.getPainterClass) {
                 const clazz = layer.constructor.getPainterClass();
-                this._painter = new clazz(this);
+                if (clazz) {
+                    this._painter = new clazz(this);
+                }
             }
         }
         return this._painter;
@@ -1035,10 +1151,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _clearCache() {
         delete this._extent;
+        delete this._extent2d;
     }
 
     _clearProjection() {
         delete this._extent;
+        delete this._extent2d;
     }
 
     _repaint() {
@@ -1088,7 +1206,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._eventSymbolProperties) {
             e.properties = extend({}, this._eventSymbolProperties);
             delete this._eventSymbolProperties;
+        } else {
+            delete this._textDesc;
         }
+        const symbol = this._getInternalSymbol();
+        this._compiledSymbol = loadGeoSymbol(symbol, this);
+
         /**
          * symbolchange event.
          *
@@ -1215,8 +1338,48 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return altitude + layerAltitude;
     }
 
+    _genMinMaxAlt() {
+        const altitude = this.getAltitude();
+        if (Array.isArray(altitude)) {
+            this._minAlt = Number.MAX_VALUE;
+            this._maxAlt = Number.MIN_VALUE;
+            altitude.forEach(alt => {
+                const a = alt;
+                if (a < this._minAlt) {
+                    this._minAlt = a;
+                }
+                if (a > this._maxAlt) {
+                    this._maxAlt = a;
+                }
+            });
+        } else {
+            this._minAlt = this._maxAlt = altitude;
+        }
+    }
+
+    getMinAltitude() {
+        if (this._minAlt === undefined) {
+            this._genMinMaxAlt();
+        }
+        if (!this._minAlt) {
+            return 0;
+        }
+        return this._minAlt;
+    }
+
+    getMaxAltitude() {
+        if (this._maxAlt === undefined) {
+            this._genMinMaxAlt();
+        }
+        if (!this._maxAlt) {
+            return 0;
+        }
+        return this._maxAlt;
+    }
+
 }
 
 Geometry.mergeOptions(options);
 
 export default Geometry;
+

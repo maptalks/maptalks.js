@@ -1,6 +1,6 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
-import { getVectorMarkerFixedExtent, calVectorMarkerSize, getVectorMarkerAnchor } from '../../../core/util/marker';
+import { isVectorSymbol, getVectorMarkerFixedExtent, calVectorMarkerSize, getVectorMarkerAnchor } from '../../../core/util/marker';
 import { drawVectorMarker, translateMarkerLineAndFill } from '../../../core/util/draw';
 import { hashCode } from '../../../core/util/strings';
 import { hasFunctionDefinition } from '../../../core/mapbox';
@@ -8,25 +8,21 @@ import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
+import { getDefaultVAlign, getDefaultHAlign } from '../../../core/util/marker';
 
 const MARKER_SIZE = [];
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
-        if (!symbol) {
-            return false;
-        }
-        if (isNil(symbol['markerFile']) && !isNil(symbol['markerType']) && (symbol['markerType'] !== 'path')) {
-            return true;
-        }
-        return false;
+        return isVectorSymbol(symbol);
     }
 
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
-        this._dynamic = hasFunctionDefinition(symbol);
-        this.style = this._defineStyle(this.translate());
+        const style = this.translate();
+        this._dynamic = hasFunctionDefinition(style);
+        this.style = this._defineStyle(style);
         this.strokeAndFill = this._defineStyle(translateMarkerLineAndFill(this.style));
         // const lineWidth = this.strokeAndFill['lineWidth'];
         // if (lineWidth % 2 === 0) {
@@ -164,7 +160,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent() {
-        return getVectorMarkerFixedExtent(this.style);
+        this._fixedExtent = this._fixedExtent || new PointExtent();
+        return getVectorMarkerFixedExtent(this._fixedExtent, this.style);
     }
 
     translate() {
@@ -189,17 +186,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerRotation': getValueOrDefault(s['markerRotation'], 0)
         };
         const markerType = result['markerType'];
-        let ha, va;
-        if (markerType === 'bar' || markerType === 'pie' || markerType === 'pin') {
-            ha = 'middle';
-            va = 'top';
-        } else if (markerType === 'rectangle') {
-            ha = 'right';
-            va = 'bottom';
-        } else {
-            ha = 'middle';
-            va = 'middle';
-        }
+        const ha = getDefaultHAlign(markerType);
+        const va = getDefaultVAlign(markerType);
 
         result['markerHorizontalAlignment'] = getValueOrDefault(s['markerHorizontalAlignment'], ha); //left | middle | right
         result['markerVerticalAlignment'] = getValueOrDefault(s['markerVerticalAlignment'], va); // top | middle | bottom

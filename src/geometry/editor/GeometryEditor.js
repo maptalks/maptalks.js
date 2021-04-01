@@ -118,8 +118,8 @@ class GeometryEditor extends Eventable(Class) {
 
         const layer = this._geometry.getLayer();
         const needShadow = layer.options['renderer'] === 'canvas';
+        this._geometryDraggble = geometry.options['draggable'];
         if (needShadow) {
-            this._geometryDraggble = geometry.options['draggable'];
             geometry.config('draggable', false);
             //edits are applied to a shadow of geometry to improve performance.
             shadow = geometry.copy();
@@ -139,7 +139,10 @@ class GeometryEditor extends Eventable(Class) {
             this._shadow = shadow;
 
             geometry.hide();
+        } else if (geometry instanceof Marker) {
+            geometry.config('draggable', true);
         }
+
         this._switchGeometryEvents('on');
         if (geometry instanceof Marker ||
             geometry instanceof Circle ||
@@ -186,9 +189,9 @@ class GeometryEditor extends Eventable(Class) {
             this.fire('remove');
             return;
         }
+        this._geometry.config('draggable', this._geometryDraggble);
         if (this._shadow) {
             delete this._shadow;
-            this._geometry.config('draggable', this._geometryDraggble);
             delete this._geometryDraggble;
             this._geometry.show();
         }
@@ -220,7 +223,10 @@ class GeometryEditor extends Eventable(Class) {
     _getGeometryEvents() {
         return {
             'symbolchange': this._onGeoSymbolChange,
-            'positionchange shapechange': this._exeAndReset
+            // prevent _exeAndReset when dragging geometry in gl layers
+            'dragstart': this._onDragStart,
+            'dragend': this._onDragEnd,
+            'positionchange shapechange': this._exeAndReset,
         };
     }
 
@@ -262,7 +268,7 @@ class GeometryEditor extends Eventable(Class) {
             const map = this.getMap();
             const extent = geometry._getPrjExtent();
             points = extent.toArray(points);
-            points.forEach(c => map._prjToContainerPoint(c, undefined, 0, c));
+            points.forEach(c => map._prjToContainerPoint(c, null, c));
             this._editOutline.setPoints(points);
         }
 
@@ -422,7 +428,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function getResizeAnchors() {
             if (isMarker) {
-                const ext = geometry._getPainter().getContainerExtent();
+                const ext = geometry.getContainerExtent();
                 return [
                 // ext.getMin(),
                     new Point(ext['xmin'], ext['ymin']),
@@ -599,10 +605,10 @@ class GeometryEditor extends Eventable(Class) {
             const ability = resizeAbilities[i];
             if (!(geometryToEdit instanceof TextBox)) {
                 if (aspectRatio || ability === 0 || ability === 2) {
-                    symbol['markerWidth'] = width;
+                    symbol['markerWidth'] = Math.min(width, this._geometry.options['maxMarkerWidth'] || Infinity);
                 }
                 if (aspectRatio || ability === 1 || ability === 2) {
-                    symbol['markerHeight'] = height;
+                    symbol['markerHeight'] = Math.min(height, this._geometry.options['maxMarkerHeight'] || Infinity);
                 }
                 geometryToEdit.setSymbol(symbol);
                 if (geometryToEdit !== this._geometry) {
@@ -1206,6 +1212,14 @@ class GeometryEditor extends Eventable(Class) {
         this._history = history;
         this._historyPointer = pointer;
         this.start();
+    }
+
+    _onDragStart() {
+        this._updating = true;
+    }
+
+    _onDragEnd() {
+        this._updating = false;
     }
 
     _exeHistory(record) {

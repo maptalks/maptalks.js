@@ -174,6 +174,19 @@ export function replaceVariable(str, props) {
 }
 
 /**
+ * Generate text descriptors according to symbols
+ * @return {Object} text descriptor
+ */
+export function describeText(textContent, symbol) {
+    const maxHeight = symbol['textMaxHeight'] || 0;
+    const textDesc = splitTextToRow(textContent, symbol);
+    if (maxHeight && maxHeight < textDesc.size.height) {
+        textDesc.size.height = maxHeight;
+    }
+    return textDesc;
+}
+
+/**
  * Gets text's align point according to the horizontalAlignment and verticalAlignment
  * @param  {Size} size                  - text size
  * @param  {String} horizontalAlignment - horizontalAlignment: left/middle/right

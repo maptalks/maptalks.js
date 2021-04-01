@@ -1,8 +1,9 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { getAlignPoint } from '../../../core/util/strings';
 import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
-import { getImageMarkerFixedExtent } from '../../../core/util/marker';
+import PointExtent from '../../../geo/PointExtent';
+import { getImageMarkerFixedExtent, isImageSymbol } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 const TEMP_SIZE = new Size(1, 1);
@@ -10,13 +11,7 @@ const TEMP_SIZE = new Size(1, 1);
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
-        if (!symbol) {
-            return false;
-        }
-        if (!isNil(symbol['markerFile'])) {
-            return true;
-        }
-        return false;
+        return isImageSymbol(symbol);
     }
 
     constructor(symbol, geometry, painter) {
@@ -93,7 +88,8 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent(resources) {
-        return getImageMarkerFixedExtent(this.style, resources);
+        this._fixedExtent = this._fixedExtent || new PointExtent();
+        return getImageMarkerFixedExtent(this._fixedExtent, this.style, resources);
     }
 
     translate() {

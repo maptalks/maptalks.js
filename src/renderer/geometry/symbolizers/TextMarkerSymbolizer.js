@@ -1,46 +1,32 @@
 import { DEFAULT_TEXT_SIZE } from '../../../core/Constants';
 import {
-    IS_NODE,
-    isNil,
     isNumber,
     isArrayHasData,
     getValueOrDefault
 } from '../../../core/util';
 import Point from '../../../geo/Point';
+import PointExtent from '../../../geo/PointExtent';
 import { hasFunctionDefinition } from '../../../core/mapbox';
-import { splitTextToRow, replaceVariable } from '../../../core/util/strings';
-import { getTextMarkerFixedExtent } from '../../../core/util/marker';
+import { isTextSymbol, getTextMarkerFixedExtent } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
-
-export const CACHE_KEY = '___text_symbol_cache';
+import { replaceVariable, describeText } from '../../../core/util/strings';
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
-        if (!symbol) {
-            return false;
-        }
-        if (!isNil(symbol['textName'])) {
-            return true;
-        }
-        return false;
+        return isTextSymbol(symbol);
     }
 
     constructor(symbol, geometry, painter) {
         super(symbol, geometry, painter);
-        this._dynamic = hasFunctionDefinition(symbol);
-        this.style = this._defineStyle(this.translate());
+        const style = this.translate();
+        this._dynamic = hasFunctionDefinition(style);
+        this.style = this._defineStyle(style);
         if (this.style['textWrapWidth'] === 0) {
             return;
         }
         this.strokeAndFill = this._defineStyle(this.translateLineAndFill(this.style));
-        const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
-        if (!this._dynamic) {
-            // the key to cache text descriptor
-            this._cacheKey = genCacheKey(textContent, this.style);
-        }
-        this._descText(textContent);
     }
 
     symbolize(ctx, resources) {
@@ -56,7 +42,10 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         const style = this.style,
             strokeAndFill = this.strokeAndFill;
         const textContent = replaceVariable(this.style['textName'], this.geometry.getProperties());
-        this._descText(textContent);
+        if (this._dynamic) {
+            delete this._textDesc;
+        }
+        const textDesc = this._textDesc = this._textDesc || describeText(textContent, this.style);
         this._prepareContext(ctx);
         this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
@@ -67,7 +56,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 p = origin;
             }
-            Canvas.text(ctx, textContent, p, style, this.textDesc);
+            Canvas.text(ctx, textContent, p, style, textDesc);
             if (origin) {
                 ctx.restore();
             }
@@ -93,7 +82,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent() {
-        return getTextMarkerFixedExtent(this.style, this.textDesc);
+        const textDesc = this.geometry.getTextDesc();
+        this._fixedExtent = this._fixedExtent || new PointExtent();
+        return getTextMarkerFixedExtent(this._fixedExtent, this.style, textDesc);
     }
 
     translate() {
@@ -150,59 +141,4 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             'polygonOpacity': s['textOpacity']
         };
     }
-
-    _descText(textContent) {
-        if (this._dynamic) {
-            this.textDesc = this._measureText(textContent);
-            return;
-        }
-        this.textDesc = this._loadFromCache();
-        if (!this.textDesc) {
-            this.textDesc = this._measureText(textContent);
-            this._storeToCache(this.textDesc);
-        }
-    }
-
-    _measureText(textContent) {
-        const maxHeight = this.style['textMaxHeight'];
-        const textDesc = splitTextToRow(textContent, this.style);
-        if (maxHeight && maxHeight < textDesc.size.height) {
-            textDesc.size.height = maxHeight;
-        }
-        return textDesc;
-    }
-
-    _storeToCache(textDesc) {
-        if (IS_NODE) {
-            return;
-        }
-        if (!this.geometry[CACHE_KEY]) {
-            this.geometry[CACHE_KEY] = {};
-        }
-        this.geometry[CACHE_KEY][this._cacheKey] = { 'desc' : textDesc, 'active' : true };
-    }
-
-    _loadFromCache() {
-        if (!this.geometry[CACHE_KEY]) {
-            return null;
-        }
-        const cache = this.geometry[CACHE_KEY][this._cacheKey];
-        if (!cache) {
-            return null;
-        }
-        cache.active = true;
-        return cache.desc;
-    }
-}
-
-TextMarkerSymbolizer.CACHE_KEY = CACHE_KEY;
-
-function genCacheKey(textContent, style) {
-    const key = [textContent];
-    for (const p in style) {
-        if (style.hasOwnProperty(p) && p.length > 4 && p.substring(0, 4) === 'text') {
-            key.push(p + '=' + style[p]);
-        }
-    }
-    return key.join('-');
 }
