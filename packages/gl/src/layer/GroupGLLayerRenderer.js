@@ -51,7 +51,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 return;
             }
             renderer.draw = this._buildDrawFn(renderer.draw);
-            renderer.drawOnInteracting = this._buildDrawFn(renderer.drawOnInteracting);
+            renderer.drawOnInteracting = this._buildDrawOnInteractingFn(renderer.drawOnInteracting);
             renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
             renderer._replacedDrawFn = true;
         });
@@ -587,23 +587,26 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _buildDrawFn(drawMethod) {
         const me = this;
         //drawBloom中会手动创建context
-        return function (event, timestamp, context) {
-            const isInteracting = this.getMap().isInteracting();
-            if (!isInteracting) {
-                context = timestamp;
-                timestamp = event;
-                event = null;
-            }
+        return function (timestamp, context) {
             const hasRenderTarget = context && context.renderTarget;
             if (hasRenderTarget) {
                 context.renderTarget.getFramebuffer = getFramebuffer;
                 context.renderTarget.getDepthTexture = getDepthTexture;
             }
-            if (isInteracting) {
-                return drawMethod.call(this, event, timestamp, context || me._drawContext);
-            } else {
-                return drawMethod.call(this, timestamp, context || me._drawContext);
+            return drawMethod.call(this, timestamp, context || me._drawContext);
+        };
+    }
+
+    _buildDrawOnInteractingFn(drawMethod) {
+        const me = this;
+        //drawBloom中会手动创建context
+        return function (event, timestamp, context) {
+            const hasRenderTarget = context && context.renderTarget;
+            if (hasRenderTarget) {
+                context.renderTarget.getFramebuffer = getFramebuffer;
+                context.renderTarget.getDepthTexture = getDepthTexture;
             }
+            return drawMethod.call(this, event, timestamp, context || me._drawContext);
         };
     }
 
