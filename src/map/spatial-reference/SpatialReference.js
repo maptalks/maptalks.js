@@ -4,13 +4,14 @@ import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
 import Transformation from '../../geo/transformation/Transformation';
 import { Measurer } from '../../geo/measurer';
+const MAX_ZOOM = 23;
 
 const DefaultSpatialReference = {
     'EPSG:3857': {
         'resolutions': (function () {
             const resolutions = [];
             const d = 2 * 6378137 * Math.PI;
-            for (let i = 0; i < 21; i++) {
+            for (let i = 0; i < MAX_ZOOM; i++) {
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;
@@ -31,7 +32,7 @@ const DefaultSpatialReference = {
         },
         'resolutions': (function () {
             const resolutions = [];
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < MAX_ZOOM; i++) {
                 resolutions[i] = 180 / (Math.pow(2, i) * 128);
             }
             return resolutions;
@@ -41,7 +42,7 @@ const DefaultSpatialReference = {
         'resolutions': (function () {
             let res = Math.pow(2, 18);
             const resolutions = [];
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < MAX_ZOOM; i++) {
                 resolutions[i] = res;
                 res *= 0.5;
             }
@@ -54,11 +55,11 @@ const DefaultSpatialReference = {
             'right': 33554432
         }
     },
-    'IDENTITY' : {
+    'IDENTITY': {
         'resolutions': (function () {
             let res = Math.pow(2, 8);
             const resolutions = [];
-            for (let i = 0; i < 18; i++) {
+            for (let i = 0; i < MAX_ZOOM; i++) {
                 resolutions[i] = res;
                 res *= 0.5;
             }
@@ -267,14 +268,14 @@ export default class SpatialReference {
     toJSON() {
         if (!this.json) {
             this.json = {
-                'resolutions' : this._resolutions,
-                'fullExtent' : {
+                'resolutions': this._resolutions,
+                'fullExtent': {
                     'top': this._fullExtent.top,
                     'left': this._fullExtent.left,
                     'bottom': this._fullExtent.bottom,
                     'right': this._fullExtent.right
                 },
-                'projection' : this._projection.code
+                'projection': this._projection.code
             };
         }
         return this.json;

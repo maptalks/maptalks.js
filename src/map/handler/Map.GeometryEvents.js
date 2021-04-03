@@ -166,19 +166,11 @@ class MapGeometryEventsHandler extends Handler {
         if (map.isInteracting() || map._ignoreEvent(domEvent)) {
             return;
         }
-        const layers = map._getLayers(layer => {
-            if (layer.identify && layer.options['geometryEvents']) {
-                return true;
-            }
-            return false;
-        });
-        if (!layers.length) {
-            return;
-        }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
-        if (eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1)) {
+        const isMousedown = eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1);
+        if (isMousedown) {
             this._mouseDownTime = now();
         } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
@@ -205,7 +197,41 @@ class MapGeometryEventsHandler extends Handler {
         if (eventType === 'touchstart') {
             preventDefault(domEvent);
         }
+
         let geometryCursorStyle = null;
+        const tops = this.target.getRenderer().getTopElements();
+        const topOnlyEvent = (isMousedown || eventType === 'click') && domEvent.button !== 2;
+        for (let i = 0; i < tops.length; i++) {
+            if (tops[i].hitTest(containerPoint)) {
+                const cursor = tops[i].options['cursor'];
+                if (cursor) {
+                    geometryCursorStyle = cursor;
+                }
+                if (topOnlyEvent || tops[i].events && tops[i].events.indexOf(eventType) >= 0) {
+                    const e = { target: map, type: eventType, domEvent, containerPoint };
+                    if (topOnlyEvent) {
+                        map._setPriorityCursor(geometryCursorStyle);
+                        tops[i].mousedown(e);
+                        return;
+                    } else {
+                        tops[i].onEvent(e);
+                    }
+                }
+            }
+        }
+
+        const layers = map._getLayers(layer => {
+            if (layer.identify && layer.options['geometryEvents']) {
+                return true;
+            }
+            return false;
+        });
+        map._setPriorityCursor(geometryCursorStyle);
+        if (!layers.length) {
+            return;
+        }
+
+
         const identifyOptions = {
             'includeInternals': true,
             //return only one geometry on top,

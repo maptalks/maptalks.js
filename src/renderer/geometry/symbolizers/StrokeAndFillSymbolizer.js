@@ -49,10 +49,10 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         const isGradient = checkGradient(style['lineColor']),
             isPath = (this.geometry.getJSONType() === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
-            style['lineGradientExtent'] = this.getPainter().getContainerExtent()._expand(style['lineWidth']);
+            style['lineGradientExtent'] = this.geometry.getContainerExtent()._expand(style['lineWidth']);
         }
         if (checkGradient(style['polygonFill'])) {
-            style['polygonGradientExtent'] = this.getPainter().getContainerExtent();
+            style['polygonGradientExtent'] = this.geometry.getContainerExtent();
         }
 
         const points = paintParams[0],

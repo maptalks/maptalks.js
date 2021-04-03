@@ -335,9 +335,9 @@ describe('Map.Spec', function () {
             var zoom = map.getZoom();
             var w = extent.getWidth(),
                 h = extent.getHeight();
-            var fitZoom = map.getFitZoom(new maptalks.Extent(extent.min + w / 4, extent.ymin + h / 4, extent.xmax - w / 4, extent.ymax - h / 4));
+            var fitZoom = map.getFitZoom(new maptalks.Extent(extent.xmin + w / 4, extent.ymin + h / 4, extent.xmax - w / 4, extent.ymax - h / 4));
 
-            expect(fitZoom).to.eql(zoom + 3);
+            expect(fitZoom).to.eql(zoom + 1);
         });
 
         it('getFitZoom return fractional', function () {
@@ -553,9 +553,13 @@ describe('Map.Spec', function () {
                     expect(map.getCenter().toArray()).to.be.eql(center.toArray());
                     done();
                 });
-                container.style.display = '';
+                setTimeout(function () {
+                    container.style.display = '';
+                }, 17);
             });
-            container.style.display = 'none';
+            setTimeout(function () {
+                container.style.display = 'none';
+            }, 17);
         });
 
         it('event properties', function (done) {

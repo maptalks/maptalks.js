@@ -22,8 +22,6 @@ import Coordinate from '../geo/Coordinate';
 import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
-import { set } from '../core/util/vec3';
-import { applyMatrix } from '../core/util/math';
 
 const TEMP_COORD = new Coordinate(0, 0);
 /**
@@ -2183,35 +2181,15 @@ Map.include(/** @lends Map.prototype */{
             const resolution = this._getResolution(zoom);
             const res = resolution / this._getResolution();
             const projection = this.getProjection();
-            const tempOut = [0, 0, 0];
             const prjOut = new Coordinate(0, 0);
             const isTransforming = this.isTransforming();
             const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-            const w = this.width / 2, h = this.height / 2;
             for (let i = 0, len = coordinates.length; i < len; i++) {
                 const pCoordinate = projection.project(coordinates[i], prjOut);
                 let point = transformation.transform(pCoordinate, resolution);
                 point = point._multi(res);
-                if (isTransforming) {
-                    //convert altitude at zoom to current zoom
-                    // altitude=0;
-                    const scale = this._glScale;
-                    set(tempOut, point.x * scale, point.y * scale, 0);
-                    const t = this._projIfBehindCamera(tempOut, this.cameraPosition, this.cameraForward);
-                    applyMatrix(t, t, this.projViewMatrix);
-
-                    const w2 = w, h2 = h;
-                    t[0] = (t[0] * w2) + w2;
-                    t[1] = -(t[1] * h2) + h2;
-                    point.x = t[0];
-                    point.y = t[1];
-                    pts.push(point);
-                } else {
-                    const out = point;
-                    out._sub(centerPoint.x, centerPoint.y);
-                    out.set(out.x, -out.y);
-                    pts.push(out._add(w, h));
-                }
+                this._toContainerPoint(point, isTransforming, res, 0, centerPoint);
+                pts.push(point);
             }
             return pts;
         };

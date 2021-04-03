@@ -194,8 +194,10 @@ Map.include(/** @lends Map.prototype */ {
         if (type === 'contextmenu') {
             preventDefault(e);
         }
-
         this._fireDOMEvent(this, e, 'dom:' + e.type);
+        if (this._ignoreEvent(e)) {
+            return;
+        }
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
         // happen.js produce event without touches
@@ -290,7 +292,9 @@ Map.include(/** @lends Map.prototype */ {
                     'containerPoint' : containerPoint,
                     'viewPoint' : this.containerPointToViewPoint(containerPoint)
                 });
-                if (this.getContainerExtent().contains(containerPoint)) {
+                const maxVisualPitch = this.options['maxVisualPitch'];
+                // ignore coorindate out of visual extent
+                if (this.getPitch() <= maxVisualPitch || containerPoint.y >= (this.height - this._getVisualHeight(maxVisualPitch))) {
                     eventParam = extend(eventParam, {
                         'coordinate' : this.containerPointToCoord(containerPoint),
                         'point2d' : this._containerPointToPoint(containerPoint)

@@ -3,6 +3,7 @@ import PointExtent from '../../../geo/PointExtent';
 import Point from '../../../geo/Point';
 import CanvasSymbolizer from './CanvasSymbolizer';
 import { isFunctionDefinition } from '../../../core/mapbox';
+import { getMarkerRotation } from '../../../core/util/marker';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
@@ -98,6 +99,21 @@ class PointSymbolizer extends CanvasSymbolizer {
         return flat;
     }
 
+    getPlacement() {
+        return this.symbol['markerPlacement'];
+    }
+
+    getRotation() {
+        return getMarkerRotation(this.style);
+    }
+
+    getDxDy() {
+        const s = this.style;
+        const dx = s['markerDx'],
+            dy = s['markerDy'];
+        return new Point(dx, dy);
+    }
+
     _getRotationAt(i) {
         let r = this.getRotation();
         if (!r) {
@@ -129,7 +145,7 @@ class PointSymbolizer extends CanvasSymbolizer {
             ctx.save();
             ctx.translate(p.x, p.y);
             ctx.rotate(rotation);
-            return this.getDxDy();
+            return dxdy;
         }
         return null;
     }

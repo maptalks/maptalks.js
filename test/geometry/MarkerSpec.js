@@ -282,7 +282,7 @@ describe('Geometry.Marker', function () {
                     }
                 });
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(-5, -11);
+                    expect(layer).to.be.painted(-5, -10);
                     expect(layer).to.be.painted(5, 9);
                     done();
                 });

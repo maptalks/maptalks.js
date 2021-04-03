@@ -1,8 +1,9 @@
-import { isNil, isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
+import { isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { getAlignPoint } from '../../../core/util/strings';
+import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
-import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
+import { getImageMarkerFixedExtent, isImageSymbol } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 const TEMP_SIZE = new Size(1, 1);
@@ -10,13 +11,7 @@ const TEMP_SIZE = new Size(1, 1);
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
     static test(symbol) {
-        if (!symbol) {
-            return false;
-        }
-        if (!isNil(symbol['markerFile'])) {
-            return true;
-        }
-        return false;
+        return isImageSymbol(symbol);
     }
 
     constructor(symbol, geometry, painter) {
@@ -49,7 +44,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             height = img.height;
             style['markerWidth'] = width;
             style['markerHeight'] = height;
-            const imgURL = [style['markerFile'], style['markerWidth'], style['markerHeight']];
+            const imgURL = style['markerFile'];
             if (!resources.isResourceLoaded(imgURL)) {
                 resources.addResource(imgURL, img);
             }
@@ -89,47 +84,12 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getImage(resources) {
-        const img = !resources ? null : resources.getImage([this.style['markerFile'], this.style['markerWidth'], this.style['markerHeight']]);
-        return img;
-    }
-
-    getPlacement() {
-        return this.symbol['markerPlacement'];
-    }
-
-    getRotation() {
-        const r = this.style['markerRotation'];
-        if (!isNumber(r)) {
-            return null;
-        }
-        //to radian
-        return -r * Math.PI / 180;
-    }
-
-    getDxDy() {
-        const s = this.style;
-        const dx = s['markerDx'],
-            dy = s['markerDy'];
-        return new Point(dx, dy);
+        return getImage(resources, this.style['markerFile']);
     }
 
     getFixedExtent(resources) {
-        const style = this.style;
-        const url = style['markerFile'],
-            img = resources ? resources.getImage(url) : null;
-        const width = style['markerWidth'] || (img ? img.width : 0),
-            height = style['markerHeight'] || (img ? img.height : 0);
-        const dxdy = this.getDxDy();
-        TEMP_SIZE.width = width;
-        TEMP_SIZE.height = height;
-        const alignPoint = getAlignPoint(TEMP_SIZE, style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
-        let result = new PointExtent(dxdy.add(0, 0), dxdy.add(width, height));
-        result._add(alignPoint);
-        const rotation = this.getRotation();
-        if (rotation) {
-            result = this._rotateExtent(result, rotation);
-        }
-        return result;
+        this._fixedExtent = this._fixedExtent || new PointExtent();
+        return getImageMarkerFixedExtent(this._fixedExtent, this.style, resources);
     }
 
     translate() {

@@ -45,8 +45,6 @@ class Path extends Geometry {
         if (!painter) {
             return null;
         }
-        // const map = this.getMap();
-        // const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
         const extent = this.getExtent();
         return new Polygon(extent.toArray(), {
             symbol: {

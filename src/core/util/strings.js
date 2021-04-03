@@ -174,6 +174,19 @@ export function replaceVariable(str, props) {
 }
 
 /**
+ * Generate text descriptors according to symbols
+ * @return {Object} text descriptor
+ */
+export function describeText(textContent, symbol) {
+    const maxHeight = symbol['textMaxHeight'] || 0;
+    const textDesc = splitTextToRow(textContent, symbol);
+    if (maxHeight && maxHeight < textDesc.size.height) {
+        textDesc.size.height = maxHeight;
+    }
+    return textDesc;
+}
+
+/**
  * Gets text's align point according to the horizontalAlignment and verticalAlignment
  * @param  {Size} size                  - text size
  * @param  {String} horizontalAlignment - horizontalAlignment: left/middle/right
@@ -301,4 +314,19 @@ export function splitTextToRow(text, style) {
         'rows': textRows,
         'rawSize': size
     };
+}
+
+export function hashCode(s) {
+    let hash = 0;
+    const strlen = s && s.length || 0;
+    if (!strlen) {
+        return hash;
+    }
+    let c;
+    for (let i = 0; i < strlen; i++) {
+        c = s.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }
