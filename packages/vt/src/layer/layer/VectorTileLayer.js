@@ -439,7 +439,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (type === 0) {
             this.fire('updatesymbol', { index: idx, symbol });
         } else if (type === 1) {
-            this.fire('updatefeaturesymbol', { index: idx, featureStyleIdx: feaStyleIdx, symbol });
+            this.fire('updatefeaturesymbol', { index: idx, featureStyleIndex: feaStyleIdx, symbol });
         }
         return this;
     }
