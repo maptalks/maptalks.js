@@ -5,6 +5,7 @@ const defaultOptions = {
     picking: true,
     renderer: 'gl',
     textGamma: 1,
+    geometryEvents: true,
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
     forceRenderOnRotating: true

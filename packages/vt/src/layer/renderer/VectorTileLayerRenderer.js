@@ -247,7 +247,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!this.plugins) {
             this._initPlugins();
         }
-        if (!layer.isDefaultRender() && (!this.plugins || !this.plugins.length)) {
+        if (!layer.isDefaultRender() && (!this.plugins.length && !this.featurePlugins.length)) {
             this.completeRender();
             return;
         }

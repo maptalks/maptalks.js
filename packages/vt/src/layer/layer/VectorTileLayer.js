@@ -137,7 +137,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         style = uncompress(style);
         this._originFeatureStyle = style['featureStyle'] || [];
         this._featureStyle = parseFeatureStyle(style['featureStyle']);
-        this._vtStyle = style['style'];
+        this._vtStyle = style['style'] || [];
         const background = style.background || {};
         this._background = {
             enable: background.enable || false,
@@ -359,16 +359,21 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSymbol(0, idx, symbol);
     }
 
-    updateFeatureSymbol(idx, styleIdx, symbol) {
-        return this._updateSymbol(1, idx, symbol, styleIdx);
+    updateFeatureSymbol(idx, feaStyleIdx, symbol) {
+        return this._updateSymbol(1, idx, symbol, feaStyleIdx);
     }
 
-    _updateSymbol(type, idx, symbol, styleIdx) {
+    _updateSymbol(type, idx, symbol, feaStyleIdx) {
         const styles = this._getTargetStyle(type);
         if (!styles) {
             return this;
         }
-        const style = styles[idx];
+        let rendererIdx = idx;
+        if (feaStyleIdx !== undefined) {
+            checkFeaStyleExist(this._originFeatureStyle, idx, feaStyleIdx);
+            rendererIdx = this._originFeatureStyle[idx].style[feaStyleIdx]._renderIdx;
+        }
+        const style = styles[rendererIdx];
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
@@ -397,9 +402,9 @@ class VectorTileLayer extends maptalks.TileLayer {
                 styles = self._getTargetStyle(type, self.options.style);
             }
             const copy = JSON.parse(JSON.stringify(target));
-            if (styleIdx !== undefined) {
-                checkFeaStyleExist(styles, idx, styleIdx);
-                styles[idx].style[styleIdx].symbol = copy;
+            if (feaStyleIdx !== undefined) {
+                checkFeaStyleExist(styles, idx, feaStyleIdx);
+                styles[idx].style[feaStyleIdx].symbol = copy;
             } else {
                 checkStyleExist(styles, idx);
                 styles[idx].symbol = copy;
@@ -429,12 +434,12 @@ class VectorTileLayer extends maptalks.TileLayer {
             this.setStyle(this._vtStyle);
         } else {
             this._compileStyle();
-            renderer.updateSymbol(type, idx, symbol);
+            renderer.updateSymbol(type, rendererIdx, symbol);
         }
         if (type === 0) {
             this.fire('updatesymbol', { index: idx, symbol });
         } else if (type === 1) {
-            this.fire('updatefeaturesymbol', { index: idx, styleIdx, symbol });
+            this.fire('updatefeaturesymbol', { index: idx, featureStyleIdx: feaStyleIdx, symbol });
         }
         return this;
     }
@@ -685,8 +690,8 @@ function parseFeatureStyle(featureStyle) {
         const style = featureStyle[i].style;
         if (style && Array.isArray(style) && style.length) {
             for (let ii = 0; ii < style.length; ii++) {
-                const unitStyle = extend({}, featureStyle[i], style[i]);
-                style[i]._renderIdx = parsed.length;
+                const unitStyle = extend({}, featureStyle[i], style[ii]);
+                style[ii]._renderIdx = parsed.length;
                 delete unitStyle.style;
                 parsed.push(unitStyle);
             }

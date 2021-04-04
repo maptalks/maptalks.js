@@ -867,12 +867,43 @@ describe('update style specs', () => {
         });
     });
 
+    it('should can update feature symbol 2', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateFeatureSymbol(0, 1, {
+                lineColor: '#0f0'
+            });
+            assert(layer.options.style.featureStyle[0].style[1].symbol.lineColor === '#0f0');
+        }, false, {
+            featureStyle: [
+                {
+                    id: 0,
+                    style: [
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#f00', lineWidth: 0, lineOpacity: 0 }
+                        },
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                        }
+                    ]
+                }
+            ]
+        });
+    });
+
     it('should can update feature sceneConfig', done => {
         assertChangeStyle(done, [255, 0, 0, 255], layer => {
-            layer.updateFeatureSceneConfig(0, 0, {
+            layer.updateFeatureSceneConfig(0, 1, {
                 foo: 1
             });
-            assert(layer.options.style.featureStyle[0].style[0].renderPlugin.sceneConfig.foo === 1);
+            assert(layer.options.style.featureStyle[0].style[1].renderPlugin.sceneConfig.foo === 1);
         }, false, {
             style: [
                 {
@@ -894,6 +925,13 @@ describe('update style specs', () => {
                                 dataConfig: { type: 'line' },
                             },
                             symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                        },
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
                         }
                     ]
                 }
@@ -903,10 +941,10 @@ describe('update style specs', () => {
 
     it('should can update feature dataConfig', done => {
         assertChangeStyle(done, [255, 0, 0, 255], layer => {
-            layer.updateFeatureDataConfig(0, 0, {
+            layer.updateFeatureDataConfig(0, 1, {
                 foo: 1
             });
-            assert(layer.options.style.featureStyle[0].style[0].renderPlugin.dataConfig.foo === 1);
+            assert(layer.options.style.featureStyle[0].style[1].renderPlugin.dataConfig.foo === 1);
         }, true, {
             style: [
                 {
@@ -922,6 +960,13 @@ describe('update style specs', () => {
                 {
                     id: 0,
                     style: [
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                        },
                         {
                             renderPlugin: {
                                 type: 'line',
