@@ -177,7 +177,7 @@ export default class BaseLayerWorker {
                 buffers: []
             });
         }
-        const useDefault = !this.options.style.style.length;
+        const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
         let pluginConfigs = this.pluginConfig.slice(0);
         if (useDefault) {
             //图层没有定义任何style，通过数据动态生成pluginConfig
@@ -498,13 +498,14 @@ export default class BaseLayerWorker {
                 style.filter = ['in', '$id', ...style.id];
             } else {
                 styledFeatures[style.id] = 1;
-                style.filter = ['=', '$id', style.id];
+                style.filter = ['==', '$id', style.id];
             }
         });
         const pluginConfigs = compileStyle(style);
         for (let i = 0; i < style.length; i++) {
             if (pluginConfigs[i].filter) {
-                //设置def，是为了识别哪些feature归类到默认样式
+                // filter.value 是为方便studio，定义的对象结构
+                // 设置def，是为了识别哪些feature归类到默认样式
                 pluginConfigs[i].filter.def = style[i].filter ? (style[i].filter.value || style[i].filter) : undefined;
             }
             pluginConfigs[i].type = 0;
@@ -514,6 +515,8 @@ export default class BaseLayerWorker {
         const compiledFeatureStyle = compileStyle(featureStyle);
         for (let i = 0; i < featureStyle.length; i++) {
             compiledFeatureStyle[i].type = 1;
+            // 定义def，是为了与默认样式相区分(默认样式的filter没有def)
+            compiledFeatureStyle[i].filter.def = featureStyle[i].filter ? (featureStyle[i].filter.value || featureStyle[i].filter) : undefined;
             //没有renderPlugin就不生成数据，必须和VectorTileLayerRenderer的_initPlugins中的逻辑对应起来
             if (compiledFeatureStyle[i].renderPlugin) {
                 featurePlugins.push(compiledFeatureStyle[i]);
