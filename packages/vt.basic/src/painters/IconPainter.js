@@ -382,10 +382,10 @@ class IconPainter extends CollisionPainter {
 
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
-            const { aMarkerWidth, aMarkerHeight } = geometry.properties;
             if (!geometry) {
                 continue;
             }
+            const { aMarkerWidth, aMarkerHeight } = geometry.properties;
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);
                 aMarkerWidth.dirty = false;
