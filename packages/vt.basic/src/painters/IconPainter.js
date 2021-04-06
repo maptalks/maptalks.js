@@ -377,8 +377,8 @@ class IconPainter extends CollisionPainter {
             }
         }
         const z = this.getMap().getZoom();
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._textFnTypeConfig, meshes.filter(m => !!m.geometry.properties.glyphAtlas), z);
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._iconFnTypeConfig, meshes.filter(m => !!m.geometry.properties.iconAtlas), z);
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._textFnTypeConfig, meshes.filter(m => !!(m && m.geometry && m.geometry.properties.glyphAtlas)), z);
+        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._iconFnTypeConfig, meshes.filter(m => !!(m && m.geometry && m.geometry.properties.iconAtlas)), z);
 
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
