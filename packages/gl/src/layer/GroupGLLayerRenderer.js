@@ -103,7 +103,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         // 重用上一帧的深度纹理，先绘制ssr图形
         // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
         // #1545 SSR_ONE_FRAME模式里，建筑透明时，ssr后画会造成建筑后的ssr图形丢失，改为永远在每帧的开始，都绘制ssr图形
-        this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
+        if (ssrMode) {
+            this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
+        }
+
 
         const fGL = this.glCtx;
         if (enableTAA) {
