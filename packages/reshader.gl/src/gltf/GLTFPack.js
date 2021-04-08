@@ -221,7 +221,6 @@ export default class GLTFPack {
 
     _createMaterialInfo(materialIndex) {
         const materialUniforms = {
-            baseColorFactor : [1, 1, 1, 1]
         };
         if (this.gltf.materials && this.gltf.materials[materialIndex]) {
             const material = this.gltf.materials[materialIndex];
@@ -231,7 +230,8 @@ export default class GLTFPack {
                 const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
                 if (baseColorTexture) {
                     materialUniforms['baseColorTexture'] = this._getTexture(baseColorTexture);
-                } else if (pbrMetallicRoughness.baseColorFactor) {
+                }
+                if (pbrMetallicRoughness.baseColorFactor) {
                     materialUniforms['baseColorFactor'] = pbrMetallicRoughness.baseColorFactor;
                 }
                 if (metallicRoughnessTexture) {
@@ -246,11 +246,11 @@ export default class GLTFPack {
                 }
             }
             const extensions = material.extensions;
-            if (extensions) {
+            if (extensions && extensions['KHR_materials_pbrSpecularGlossiness']) {
                 const pbrSpecularGlossiness = extensions['KHR_materials_pbrSpecularGlossiness'];
+                materialUniforms.name = 'pbrSpecularGlossiness';
                 for (const p in pbrSpecularGlossiness) {
                     if (defined(pbrSpecularGlossiness[p].index)) {
-                        materialUniforms.name = 'pbrSpecularGlossiness';
                         materialUniforms[p] = this._getTexture(pbrSpecularGlossiness[p]);
                     } else {
                         materialUniforms[p] = pbrSpecularGlossiness[p];
@@ -276,7 +276,10 @@ export default class GLTFPack {
     _createExtralInfo(material) {
         const info = {};
         if (this.gltf.materials && this.gltf.materials[material]) {
-            info['doubleSided'] = this.gltf.materials[material].doubleSided;
+            const mat = this.gltf.materials[material];
+            info['doubleSided'] = mat.doubleSided;
+            info['alphaMode'] = mat.alphaMode || 'OPAQUE';
+            info['alphaCutoff'] = mat.alphaCutoff || 0.5;
         }
         return info;
     }

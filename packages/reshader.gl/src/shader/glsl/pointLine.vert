@@ -10,7 +10,10 @@ uniform mat4 positionMatrix;
 
 uniform mat4 projViewModelMatrix;
 uniform float pointSize;
-
+#if defined(HAS_MAP)
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+#endif
 #include <get_output>
 #include <viewshed_vert>
 #include <flood_vert>
@@ -29,6 +32,9 @@ void main()
     gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_COLOR0
         vColor = aColor0 / 255.0;
+    #endif
+    #ifdef HAS_MAP
+        vTexCoord = aTexCoord;
     #endif
 
     #ifdef HAS_VIEWSHED
