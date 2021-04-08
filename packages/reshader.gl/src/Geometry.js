@@ -135,7 +135,7 @@ export default class Geometry {
                 const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
                     const attr = p.name;
-                    const buffer = this._reglData[attr].buffer;
+                    const buffer = this._reglData[attr] && this._reglData[attr].buffer;
                     if (!buffer || !buffer.destroy) {
                         const data = this._reglData[attr];
                         const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
