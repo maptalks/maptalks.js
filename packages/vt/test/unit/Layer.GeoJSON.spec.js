@@ -1,4 +1,5 @@
 const maptalks = require('maptalks');
+const path = require('path');
 const assert = require('assert');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
@@ -146,5 +147,58 @@ describe('GeoJSONVectorTileLayer', () => {
         assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
     });
 
-    //TODO 增加url方式的style的测试
+    it('should can load data as url', done => {
+        const url = path.join(__dirname, 'point.json');
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: url,
+            style: {
+                $root: '.',
+                resources: [],
+                style: [
+                    {
+                        renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                        symbol: { markerType: 'square', markerSize: 20 }
+                    }
+                ]
+            }
+        });
+        layer.on('layerload', () => {
+            layer.updateSceneConfig(0, { foo2: 2 });
+            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+            assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+            assert.deepStrictEqual(layer.options.data, url);
+            done();
+        });
+        layer.addTo(map);
+    });
+
+    it('should can load data as url object', done => {
+        const dataUrl = {
+            url: path.join(__dirname, 'point.json'),
+            method: 'get'
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: dataUrl,
+            style: {
+                $root: '.',
+                resources: [],
+                style: [
+                    {
+                        renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                        symbol: { markerType: 'square', markerSize: 20 }
+                    }
+                ]
+            }
+        });
+        layer.on('layerload', () => {
+            layer.updateSceneConfig(0, { foo2: 2 });
+            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+            assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+            assert.deepStrictEqual(layer.options.data, dataUrl);
+            done();
+        });
+        layer.addTo(map);
+    });
 });

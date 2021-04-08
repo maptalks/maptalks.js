@@ -32,6 +32,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                     throw err;
                 }
                 this.setData(json);
+                this.options.data = data;
             });
             return this;
         }
