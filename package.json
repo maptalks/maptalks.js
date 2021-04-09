@@ -34,7 +34,7 @@
     "preversion": "npm run lint",
     "report-coverage": "codecov",
     "test": "gulp test --cov",
-    "version": "npm run build && npm run doc && git add -A docs/api"
+    "version": "npm run build"
   },
   "module": "dist/maptalks.es.js",
   "main": "dist/maptalks.js",
