@@ -145,6 +145,10 @@ class Painter {
         throw new Error('not implemented');
     }
 
+    isBloom() {
+        return !!this.getSymbol()['bloom'];
+    }
+
     addMesh(meshes) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
         // if (meshes[0].properties.tile.id === 'data_vt__85960__140839__19') {
@@ -152,11 +156,12 @@ class Painter {
         //     this.scene.addMesh(meshes[0]);
         // }
 
-        const bloom = this.getSymbol()['bloom'];
+
         if (Array.isArray(meshes)) {
             meshes.forEach(mesh => {
+                const bloom = this.isBloom(mesh);
                 const defines = mesh.defines || {};
-                if (!!defines['HAS_BLOOM'] !== !!bloom) {
+                if (!!defines['HAS_BLOOM'] !== bloom) {
                     if (bloom) {
                         defines['HAS_BLOOM'] = 1;
                     } else {
@@ -166,6 +171,7 @@ class Painter {
                 }
             });
         } else {
+            const bloom = this.isBloom(meshes);
             const defines = meshes.defines || {};
             if (!!defines['HAS_BLOOM'] !== !!bloom) {
                 if (bloom) {

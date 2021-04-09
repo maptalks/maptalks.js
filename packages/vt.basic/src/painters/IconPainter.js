@@ -627,6 +627,12 @@ class IconPainter extends CollisionPainter {
         super.deleteMesh(meshes, keepGeometry);
     }
 
+    isBloom(mesh) {
+        const isMarker = mesh && mesh.material && !isNil(mesh.material.get('markerOpacity'));
+        const symbol = this.getSymbol();
+        return !!(isMarker ? symbol['markerBloom'] : symbol['textBloom']);
+    }
+
     init() {
         const regl = this.regl;
         const canvas = this.canvas;
