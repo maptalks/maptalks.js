@@ -64,6 +64,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._postProcess();
     }
 
+    prepareCanvas() {
+        super.prepareCanvas();
+        this.forEachRenderer(renderer => {
+            renderer.prepareCanvas();
+        });
+    }
+
     drawOnInteracting(...args) {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
