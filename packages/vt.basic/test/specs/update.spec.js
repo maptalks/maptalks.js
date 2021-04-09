@@ -980,6 +980,43 @@ describe('update style specs', () => {
         });
     });
 
+    it('should can update dataConfig', done => {
+        const points = {
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', geometry: { type: 'Point', coordinates: [114.25814, 30.58595] }, properties: { type: 1 } }
+            ]
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points,
+            style: [
+                {
+                    renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                    symbol: { markerType: 'square', markerSize: 20 }
+                },
+                {
+                    renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
+                    symbol: { markerType: 'square', markerSize: 20 }
+                }
+            ]
+        });
+        let refreshCount = 0;
+        layer.on('refreshstyle', () => {
+            refreshCount++;
+        });
+        layer.once('pluginsinited', () => {
+            layer.updateDataConfig(0, { foo2: 2 });
+            layer.updateDataConfig(1, { foo3: 2 });
+            assert.equal(refreshCount, 2);
+            assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
+            assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
+            assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, { type: 'native-point', foo2: 2 });
+            assert.deepStrictEqual(layer.options.style[1].renderPlugin.dataConfig, { type: 'native-point', foo3: 2 });
+            done();
+        });
+        layer.addTo(map);
+    });
+
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style) {
         style = style || [

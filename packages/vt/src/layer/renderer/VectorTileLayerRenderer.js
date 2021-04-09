@@ -45,13 +45,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (this._workerConn) {
             this._styleCounter++;
-            this.clear();
-            this._clearPlugin();
             this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
                 if (err) throw new Error(err);
+                this.clear();
+                this._clearPlugin();
                 this._initPlugins();
                 this.setToRedraw();
             });
+            this.layer.fire('refreshstyle');
         } else {
             this._initPlugins();
         }
@@ -1024,6 +1025,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
         this.plugins = plugins;
         this.featurePlugins = featurePlugins;
+        this.layer.fire('pluginsinited');
         return plugins;
     }
 
