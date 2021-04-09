@@ -1,20 +1,12 @@
 import QuadShader from './QuadShader.js';
 import vert from './glsl/quad.vert';
+import frag from './glsl/copy.frag';
 
 class CopyShader extends QuadShader {
     constructor() {
         super({
             vert,
-            frag: `
-            precision highp float;
-
-            uniform sampler2D texture;
-            uniform vec2 size;
-            void main() {
-                vec2 uv = gl_FragCoord.xy / size;
-                gl_FragColor = texture2D(texture, uv);
-            }
-            `,
+            frag,
             extraCommandProps: {
                 viewport: {
                     x: 0,

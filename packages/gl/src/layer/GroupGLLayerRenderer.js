@@ -1044,6 +1044,14 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         let tex = this._targetFBO.color[0];
 
+        if (enableBloom && this._bloomPainted) {
+            const bloomConfig = config.bloom;
+            const threshold = +bloomConfig.threshold || 0;
+            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
+            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
+            tex = this._postProcessor.bloom(tex, threshold, factor, radius);
+        }
+
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
             postFBO,
@@ -1055,7 +1063,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             // +!!enableFXAA,
             1,
             +!!(config.toneMapping && config.toneMapping.enable),
-            +!!(config.sharpen && config.sharpen.enable),
+            +!!(!hasPost && config.sharpen && config.sharpen.enable),
             map.getDevicePixelRatio(),
             sharpFactor,
             enableOutline && this._outlineCounts > 0 && this._getOutlineFBO(),
@@ -1082,14 +1090,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             });
         }
 
-        if (enableBloom && this._bloomPainted) {
-            const bloomConfig = config.bloom;
-            const threshold = +bloomConfig.threshold || 0;
-            const factor = getValueOrDefault(bloomConfig, 'factor', 1);
-            const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, threshold, factor, radius);
-        }
-
         if (enableSSR) {
             this._postProcessor.genSsrMipmap(tex, this._depthTex);
             if (this._needUpdateSSR) {
@@ -1101,7 +1101,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (hasPost) {
-            this._postProcessor.renderFBOToScreen(tex);
+            this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
     }
 }

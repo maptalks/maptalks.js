@@ -247,7 +247,7 @@ export default class PostProcess {
         }, null, fbo);
     }
 
-    renderFBOToScreen(fbo) {
+    renderFBOToScreen(fbo, enableSharpen, sharpFactor, pixelRatio) {
         if (!this._copyFBOSize) {
             this._copyFBOSize = [];
         }
@@ -255,7 +255,10 @@ export default class PostProcess {
         this._copyFBOSize[1] = fbo.height;
         this._renderer.render(this._copyShader, {
             texture: fbo.color && fbo.color[0] || fbo,
-            size: this._copyFBOSize
+            size: this._copyFBOSize,
+            enableSharpen: +(!!enableSharpen),
+            sharpFactor,
+            pixelRatio
         });
     }
 
