@@ -345,7 +345,7 @@ void main() {
     if (enableFXAA == 1.0) {
         color = applyFXAA(gTexCoord * resolution);
     } else {
-        color = texture2D(textureSource, vTexCoord);
+        color = readFXAATexture(vTexCoord);
     }
     if (enableSharpen == 1.0) {
         color = sharpen(color);
