@@ -546,7 +546,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     onRemove() {
         super.onRemove();
-        this.painter.delete();
+        if (this.painter) {
+            this.painter.delete();
+        }
     }
 
     drawOutline(fbo) {
