@@ -212,7 +212,7 @@ class WaterPainter extends BasicPainter {
                 }
             },
             {
-                name: 'uModelViewNormalMatrix',
+                name: 'modelViewNormalMatrix',
                 type: 'function',
                 fn: (context, props) => {
                     const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
@@ -224,7 +224,7 @@ class WaterPainter extends BasicPainter {
                 }
             },
             {
-                name: 'uModelViewMatrix',
+                name: 'modelViewMatrix',
                 type: 'function',
                 fn: (context, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
@@ -336,8 +336,8 @@ class WaterPainter extends BasicPainter {
             projMatrix: map.projMatrix,
             projViewMatrix: map.projViewMatrix,
             viewMatrix: map.viewMatrix,
-            uGlobalTexSize: [canvas.width, canvas.height],
-            uHalton: [0, 0]
+            outSize: [canvas.width, canvas.height],
+            halton: [0, 0]
         };
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
@@ -358,13 +358,13 @@ class WaterPainter extends BasicPainter {
             specularPBR: this.iblTexes && this.iblTexes.prefilterMap,
             rgbmRange: this.iblTexes && this.iblTexes.rgbmRange,
             ambientColor: ambientLight.color || [0.2, 0.2, 0.2],
-            uGlobalTexSize: [this.canvas.width, this.canvas.height],
+            outSize: [this.canvas.width, this.canvas.height],
             // uniform vec3 diffuseSPH[9];
 
-            uProjectionMatrix: map.projMatrix,
+            projMatrix: map.projMatrix,
             projViewMatrix,
             viewMatrix: map.viewMatrix,
-            uNearFar: [map.cameraNear, map.cameraFar],
+            cameraNearFar: [map.cameraNear, map.cameraFar],
 
             lightDirection: directionalLight.direction || DEFAULT_DIR_LIGHT.direction,
             lightColor: directionalLight.color || DEFAULT_DIR_LIGHT.color,

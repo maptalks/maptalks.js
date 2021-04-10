@@ -23,19 +23,17 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
 #ifdef HAS_SSR
     varying vec4 vViewVertex;
-    uniform mat3 uModelViewNormalMatrix;
+    uniform mat3 modelViewNormalMatrix;
     uniform sampler2D TextureDepth;
-    uniform highp vec2 uGlobalTexSize;
-    uniform float uSsrFactor;
-    uniform float uSsrQuality;
-    uniform vec2 uPreviousGlobalTexSize;
-    uniform sampler2D TextureToBeRefracted;
-    uniform vec2 uTextureToBeRefractedSize;
-    uniform highp mat4 uProjectionMatrix;
-    uniform mat4 uInvProjMatrix;
-    uniform vec4 uTaaCornersCSLeft[2];
-    uniform mat4 uReprojectViewProj;
-    uniform vec2 uNearFar;
+    uniform highp vec2 outSize;
+    uniform float ssrFactor;
+    uniform float ssrQuality;
+    uniform sampler2D TextureReflected;
+    uniform highp mat4 projMatrix;
+    uniform mat4 invProjMatrix;
+    uniform vec4 outputFovInfo[2];
+    uniform mat4 reprojViewProjMatrix;
+    uniform vec2 cameraNearFar;
     float decodeDepth(const in vec4 pack) {
         // if(decodeProfile(pack) == 0) {
         //     const vec3 decode = 1.0 / vec3(1.0, 255.0, 65025.0);
@@ -65,11 +63,11 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         return vec3(0.5 + 0.5 * projected.xy / projected.w, projected.w);
     }
     vec3 fetchColorLod(const in float level, const in vec2 uv) {
-        return texture2D(TextureToBeRefracted, uv).rgb;
+        return texture2D(TextureReflected, uv).rgb;
     }
 
     float linearizeDepth(float depth) {
-        highp mat4 projection = uProjectionMatrix;
+        highp mat4 projection = projMatrix;
         highp float z = depth * 2.0 - 1.0; // depth in clip space
         return -projection[3].z / (z + projection[2].z);
     }
@@ -96,7 +94,7 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         return (interleavedGradientNoise(gl_FragCoord.xy, frameMod) - 0.5);
     }
     vec3 computeRayDirUV(const in vec3 rayOriginUV, const in float rayLen, const in vec3 rayDirView) {
-        vec3 rayDirUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz + rayDirView * rayLen);
+        vec3 rayDirUV = ssrViewToScreen(projMatrix, vViewVertex.xyz + rayDirView * rayLen);
         rayDirUV.z = 1.0 / rayDirUV.z;
         rayDirUV -= rayOriginUV;
         float scaleMaxX = min(1.0, 0.99 * (1.0 - rayOriginUV.x) / max(1e-5, rayDirUV.x));
@@ -160,9 +158,9 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
     vec4 fetchColorContribution(
     in vec4 resRay, const in float maskSsr, const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness) {
-        vec4 AB = mix(uTaaCornersCSLeft[0], uTaaCornersCSLeft[1], resRay.x);
+        vec4 AB = mix(outputFovInfo[0], outputFovInfo[1], resRay.x);
         resRay.xyz = vec3(mix(AB.xy, AB.zw, resRay.y), 1.0) * -1.0 / resRay.z;
-        resRay.xyz = (uReprojectViewProj * vec4(resRay.xyz, 1.0)).xyw;
+        resRay.xyz = (reprojViewProjMatrix * vec4(resRay.xyz, 1.0)).xyw;
         resRay.xy /= resRay.z;
 
         float maskEdge = clamp(6.0 - 6.0 * max(abs(resRay.x), abs(resRay.y)), 0.0, 1.0);
@@ -183,13 +181,13 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         vec3 upVector = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
         vec3 tangentX = normalize(cross(upVector, normal));
         vec3 tangentY = cross(normal, tangentX);
-        float maskSsr = uSsrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
+        float maskSsr = ssrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
         maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
-        vec3 rayOriginUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz);
+        vec3 rayOriginUV = ssrViewToScreen(projMatrix, vViewVertex.xyz);
         rayOriginUV.z = 1.0 / rayOriginUV.z;
         vec3 rayDirView = unrealImportanceSampling(uFrameModTaaSS, tangentX, tangentY, normal, eyeVector, rough4);
 
-        float rayLen = mix(uNearFar.y + vViewVertex.z, -vViewVertex.z - uNearFar.x, rayDirView.z * 0.5 + 0.5);
+        float rayLen = mix(cameraNearFar.y + vViewVertex.z, -vViewVertex.z - cameraNearFar.x, rayDirView.z * 0.5 + 0.5);
         float depthTolerance = 0.5 * rayLen;
         vec4 resRay;
         if (dot(rayDirView, normal) > 0.001 && maskSsr > 0.0) {
@@ -381,7 +379,7 @@ vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
     }
 
     #ifdef HAS_SSR
-        vec3 viewNormal = uModelViewNormalMatrix * n;
+        vec3 viewNormal = modelViewNormalMatrix * n;
         vec3 ssr = ssr(seaColor, vec3(1.0), roughness, viewNormal, -normalize(vViewVertex.xyz));
         return tonemapACES(reflSky + reflSea + linearizeGamma(ssr * fresnel.y) + specular);
     #else

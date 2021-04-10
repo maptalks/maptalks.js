@@ -14,7 +14,7 @@ varying vec2 vNoiseUv;
 varying vec3 vPos;
 varying mat3 vTbnMatrix;
 #ifdef HAS_SSR
-    uniform mat4 uModelViewMatrix;
+    uniform mat4 modelViewMatrix;
     varying vec4 vViewVertex;
 #endif
 
@@ -41,7 +41,7 @@ void main(void) {
     vNoiseUv = aTexCoord * uvScale * TIME_NOISE_TEXTURE_REPEAT + noiseUvOffset;
 
     #ifdef HAS_SSR
-        vec4 viewVertex = uModelViewMatrix * localVertex;
+        vec4 viewVertex = modelViewMatrix * localVertex;
         vViewVertex = viewVertex;
     #endif
 

@@ -678,7 +678,7 @@ function hasTexture(symbol) {
     }
     let t = 0;
     for (const p in symbol) {
-        if ((p === 'normalTexture' || p === 'uNormalTexture' || p === 'bumpTexture') && symbol[p]) {
+        if ((p === 'normalTexture' || p === 'bumpTexture') && symbol[p]) {
             return 2;
         } else if (p.indexOf('Texture') > 0 && symbol[p]) {
             t = 1;
