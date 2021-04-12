@@ -35,6 +35,7 @@ class LightManager {
             this._initAmbientResources();
             return;
         } else if (this._iblMaps && config.ambient.resource.sh) {
+            ambientUpdate = true;
             this._iblMaps.sh = config.ambient.resource.sh;
         }
         this._map.fire('updatelights', { ambientUpdate });
