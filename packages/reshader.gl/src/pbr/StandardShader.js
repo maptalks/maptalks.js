@@ -38,14 +38,7 @@ class StandardShader extends MeshShader {
         const uniforms = [
             //vert中的uniforms
             {
-                name: 'uModelMatrix',
-                type: 'function',
-                fn: (_, props) => {
-                    return props['modelMatrix'];
-                }
-            },
-            {
-                name: 'uModelNormalMatrix',
+                name: 'modelNormalMatrix',
                 type: 'function',
                 fn: (_, props) => {
                     // const model3 = mat3.fromMat4([], props['modelMatrix']);
@@ -56,7 +49,7 @@ class StandardShader extends MeshShader {
                 }
             },
             {
-                name: 'uModelViewNormalMatrix',
+                name: 'modelViewNormalMatrix',
                 type: 'function',
                 fn: (_, props) => {
                     const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
@@ -67,13 +60,6 @@ class StandardShader extends MeshShader {
                     // return mat3.fromMat4([], modelView);
                 }
             },
-            {
-                name: 'uProjectionMatrix',
-                type: 'function',
-                fn: (_, props) => {
-                    return props['projMatrix'];
-                }
-            },
             // {
             //     name: 'uProjViewModelMatrix',
             //     type: 'function',
@@ -82,7 +68,7 @@ class StandardShader extends MeshShader {
             //     }
             // },
             {
-                name: 'uModelViewMatrix',
+                name: 'modelViewMatrix',
                 type: 'function',
                 fn: (_, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);

@@ -4,11 +4,11 @@ precision highp float;
 attribute vec3 aPosition;
 #include <line_extrusion_vert>
 
-uniform mat4 uModelViewMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
-uniform mat4 uProjectionMatrix;
-uniform vec2 uGlobalTexSize;
-uniform vec2 uHalton;
+uniform mat4 projMatrix;
+uniform vec2 outSize;
+uniform vec2 halton;
 
 #include <get_output>
 
@@ -19,8 +19,8 @@ void main() {
     #else
         vec4 localVertex = getPosition(aPosition);
     #endif
-    vec4 viewVertex = uModelViewMatrix * localPositionMatrix * localVertex;
-    mat4 jitteredProjection = uProjectionMatrix;
-    jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;
+    vec4 viewVertex = modelViewMatrix * localPositionMatrix * localVertex;
+    mat4 jitteredProjection = projMatrix;
+    jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewVertex;
 }

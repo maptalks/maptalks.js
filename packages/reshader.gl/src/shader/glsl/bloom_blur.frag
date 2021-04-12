@@ -1,4 +1,4 @@
-#define SHADER_NAME BLOOM_BLUR
+#define SHADER_NAME GAUSSIAN_BLUR
 
 precision highp float;
 uniform sampler2D textureSampler;

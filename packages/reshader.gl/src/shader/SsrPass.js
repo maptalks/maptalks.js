@@ -13,20 +13,20 @@ class SsrPass {
         const invProjMatrix = new Array(16);
         return [
             {
-                name: 'uInvProjMatrix',
+                name: 'invProjMatrix',
                 type : 'function',
                 fn : (context, props) => {
                     return mat4.invert(invProjMatrix, props['projMatrix']);
                 }
             },
             {
-                name: 'uTaaCornersCSLeft',
+                name: 'outputFovInfo',
                 type: 'array',
                 length: 2,
                 fn: function (context, props) {
                     const cornerY = Math.tan(0.5 * props['fov']);
-                    const width = props['uGlobalTexSize'][0];
-                    const height = props['uGlobalTexSize'][1];
+                    const width = props['outSize'][0];
+                    const height = props['outSize'][1];
                     const aspect = width / height;
                     const cornerX = aspect * cornerY;
                     vec4.set(corners[0], cornerX, cornerY, cornerX, -cornerY);
@@ -35,7 +35,7 @@ class SsrPass {
                 }
             },
             {
-                name: 'uReprojectViewProj',
+                name: 'reprojViewProjMatrix',
                 type : 'function',
                 fn : (context, props) => {
                     return mat4.multiply([], props['prevProjViewMatrix'], props['cameraWorldMatrix']);
@@ -71,12 +71,12 @@ class SsrPass {
         const uniforms = {
             'TextureDepth': depthTex,
             // 'TextureSource': currentTex,
-            'TextureToBeRefracted': texture,
-            'uSsrFactor': factor || 1,
-            'uSsrQuality': quality || 2,
+            'TextureReflected': texture,
+            'ssrFactor': factor || 1,
+            'ssrQuality': quality || 2,
             // 'uPreviousGlobalTexSize': [texture.width, texture.height / 2],
-            'uGlobalTexSize': [depthTex.width, depthTex.height],
-            // 'uTextureToBeRefractedSize': [texture.width, texture.height],
+            'outSize': [depthTex.width, depthTex.height],
+            // 'uTextureReflectedSize': [texture.width, texture.height],
             'fov': map.getFov() * Math.PI / 180,
             'prevProjViewMatrix': this._projViewMatrix || map.projViewMatrix,
             'cameraWorldMatrix': map.cameraWorldMatrix
@@ -149,16 +149,15 @@ class SsrPass {
         let uniforms = this._blurUniforms;
         if (!uniforms) {
             uniforms = this._blurUniforms = {
-                'uRGBMRange': 7,
-                'uTextureOutputSize': [0, 0],
+                'rgbmRange': 7,
+                'outputSize': [0, 0],
             };
         }
 
-        uniforms['TextureBlurInput'] = inputTex;
+        uniforms['TextureInput'] = inputTex;
         uniforms['inputRGBM'] = +this._inputRGBM;
-        vec2.set(uniforms['uTextureOutputSize'], output.width, output.height);
+        vec2.set(uniforms['outputSize'], output.width, output.height);
 
-        uniforms['TextureBlurInput'] = inputTex;
         this._renderer.render(this._ssrQuadShader, uniforms, null, output);
     }
 
@@ -201,10 +200,10 @@ class SsrPass {
                         x: 0,
                         y: 0,
                         width : (context, props) => {
-                            return props['uTextureOutputSize'][0];
+                            return props['outputSize'][0];
                         },
                         height : (context, props) => {
-                            return props['uTextureOutputSize'][1];
+                            return props['outputSize'][1];
                         }
                     }
                 }

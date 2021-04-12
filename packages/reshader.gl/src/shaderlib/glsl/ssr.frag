@@ -1,3 +1,4 @@
+//DEPRECATED
 #version 100
 #extension GL_EXT_shader_texture_lod : enable
 #extension GL_OES_standard_derivatives : enable
@@ -9,44 +10,44 @@ uniform float uFrameMod;
 uniform float uFrameModTaaSS;
 uniform float uMetalnessPBRFactor;
 uniform float uQuality;
-uniform float uRGBMRange;
+uniform float rgbmRange;
 uniform float uRoughnessPBRFactor;
 uniform float uShadowReceive3_bias;
-uniform float uSpecularF0Factor;
-uniform float uSsrFactor;
+uniform float specularF0Factor;
+uniform float ssrFactor;
 uniform float uStaticFrameNumShadow3;
 uniform int uDrawOpaque;
-uniform int uEmitMultiplicative;
-uniform int uOutputLinear;
+uniform int emitMultiplicative;
+uniform int outputLinear;
 uniform mat3 uEnvironmentTransform;
 uniform mat4 uPreviousProjection;
 uniform mat4 uPreviousViewInvView;
 uniform mat4 uProjectionMatrix;
-uniform mat4 uReprojectViewProj;
+uniform mat4 reprojViewProjMatrix;
 uniform sampler2D Texture0;
 uniform sampler2D Texture15;
-uniform sampler2D sIntegrateBRDF;
+uniform sampler2D brdfLUT;
 uniform sampler2D uTextureMipmapDepth;
-uniform sampler2D uTextureToBeRefracted;
-uniform samplerCube sSpecularPBR;
+uniform sampler2D uTextureReflected;
+uniform samplerCube prefilterMap;
 uniform vec2 uGlobalTexRatio;
-uniform vec2 uNearFar;
+uniform vec2 cameraNearFar;
 uniform vec2 uPreviousGlobalTexRatio;
 uniform vec2 uPreviousGlobalTexSize;
 uniform vec2 uShadow_Texture3_depthRange;
 uniform vec2 uShadow_Texture3_renderSize;
-uniform vec2 uTextureEnvironmentSpecularPBRLodRange;
-uniform vec2 uTextureEnvironmentSpecularPBRTextureSize;
-uniform vec2 uTextureToBeRefractedSize;
-uniform vec3 uDiffuseSPH[9];
+uniform vec2 prefilterMiplevel;
+uniform vec2 prefilterSize;
+uniform vec2 uTextureReflectedSize;
+uniform vec3 diffuseSPH[9];
 uniform vec3 uShadow_Texture3_projection;
 uniform vec3 uSketchfabLight3_viewDirection;
-uniform vec4 uHalton;
+uniform vec4 halton;
 uniform vec4 uShadow_Texture3_viewLook;
 uniform vec4 uShadow_Texture3_viewRight;
 uniform vec4 uShadow_Texture3_viewUp;
 uniform vec4 uSketchfabLight3_diffuse;
-uniform vec4 uTaaCornersCSLeft[2];
+uniform vec4 outputFovInfo[2];
 varying vec3 vViewNormal;
 varying vec3 vModelVertex;
 varying vec3 vModelNormal;
@@ -107,7 +108,7 @@ float getMaterialMetalness() {
     return uMetalnessPBRFactor;
 }
 float getMaterialF0() {
-    return uSpecularF0Factor;
+    return specularF0Factor;
 }
 float getMaterialRoughness() {
     return uRoughnessPBRFactor;
@@ -407,19 +408,19 @@ const in vec3 normal, const in vec3 eyeVector, const in float NoL, const in vec4
 }
 vec3 computeDiffuseSPH(const in vec3 normal) {
     vec3 n = uEnvironmentTransform * normal;
-    vec3 result = uDiffuseSPH[0] +
-    uDiffuseSPH[1] * n.y +
-    uDiffuseSPH[2] * n.z +
-    uDiffuseSPH[3] * n.x +
-    uDiffuseSPH[4] * n.y * n.x +
-    uDiffuseSPH[5] * n.y * n.z +
-    uDiffuseSPH[6] * (3.0 * n.z * n.z - 1.0) +
-    uDiffuseSPH[7] * (n.z * n.x) +
-    uDiffuseSPH[8] * (n.x * n.x - n.y * n.y);
+    vec3 result = diffuseSPH[0] +
+    diffuseSPH[1] * n.y +
+    diffuseSPH[2] * n.z +
+    diffuseSPH[3] * n.x +
+    diffuseSPH[4] * n.y * n.x +
+    diffuseSPH[5] * n.y * n.z +
+    diffuseSPH[6] * (3.0 * n.z * n.z - 1.0) +
+    diffuseSPH[7] * (n.z * n.x) +
+    diffuseSPH[8] * (n.x * n.x - n.y * n.y);
     return max(result, vec3(0.0));
 }
 vec3 integrateBRDF(const in vec3 specular, const in float roughness, const in float NoV, const in float f90) {
-    vec4 rgba = texture2D(sIntegrateBRDF, vec2(NoV, roughness));
+    vec4 rgba = texture2D(brdfLUT, vec2(NoV, roughness));
     float b = (rgba[3] * 65280.0 + rgba[2] * 255.0);
     float a = (rgba[1] * 65280.0 + rgba[0] * 255.0);
     const float div = 1.0 / 65535.0;
@@ -430,14 +431,14 @@ float linRoughnessToMipmap(const in float roughnessLinear) {
 }
 vec3 prefilterEnvMapCube(const in float rLinear, const in vec3 R) {
     vec3 dir = R;
-    float lod = min(uTextureEnvironmentSpecularPBRLodRange.x, linRoughnessToMipmap(rLinear) * uTextureEnvironmentSpecularPBRLodRange.y);
-    float scale = 1.0 - exp2(lod) / uTextureEnvironmentSpecularPBRTextureSize.x;
+    float lod = min(prefilterMiplevel.x, linRoughnessToMipmap(rLinear) * prefilterMiplevel.y);
+    float scale = 1.0 - exp2(lod) / prefilterSize.x;
     vec3 absDir = abs(dir);
     float M = max(max(absDir.x, absDir.y), absDir.z);
     if (absDir.x ! = M) dir.x *= scale;
     if (absDir.y ! = M) dir.y *= scale;
     if (absDir.z ! = M) dir.z *= scale;
-    return LUVToRGB(textureCubeLodEXT(sSpecularPBR, dir, lod));
+    return LUVToRGB(textureCubeLodEXT(prefilterMap, dir, lod));
 }
 vec3 getSpecularDominantDir(const in vec3 N, const in vec3 R, const in float realRoughness) {
     float smoothness = 1.0 - realRoughness;
@@ -471,8 +472,8 @@ vec2 computeLodUVNearest(const in vec2 uvIn, const in vec3 pixelSizePowLevel) {
 }
 float fetchDepthLod(const in vec2 uv, const in vec3 pixelSizePowLevel) {
     float depth = decodeDepth(texture2D(uTextureMipmapDepth, uv * uGlobalTexRatio));
-    if (depth >= 1.0) return -uNearFar.y * 100.0;
-    return -uNearFar.x - depth * (uNearFar.y - uNearFar.x);
+    if (depth >= 1.0) return -cameraNearFar.y * 100.0;
+    return -cameraNearFar.x - depth * (cameraNearFar.y - cameraNearFar.x);
 }
 vec4 fetchDepthLod(const in vec4 uv0, const in vec4 uv1, const in vec3 pixelSizePowLevel) {
     vec4 result = vec4(0.0);
@@ -489,7 +490,7 @@ vec3 ssrViewToScreen(const in mat4 projection, const in vec3 viewVertex) {
 vec3 fetchColorLod(const in float level, const in vec2 uv) {
     vec3 pixelSizePowLevel = computeLodNearestPixelSizePowLevel(7.0 * level, 7.0, uPreviousGlobalTexSize);
     vec2 uvNearest = computeLodUVNearest(uv, pixelSizePowLevel);
-    return decodeRGBM(texture2D(uTextureToBeRefracted, uvNearest * uPreviousGlobalTexRatio), 7.0);
+    return decodeRGBM(texture2D(uTextureReflected, uvNearest * uPreviousGlobalTexRatio), 7.0);
 }
 vec3 unrealImportanceSampling(const in float frameMod, const in vec3 tangentX, const in vec3 tangentY, const in vec3 tangentZ, const in vec3 eyeVector, const in float rough4) {
     vec2 E;
@@ -518,7 +519,7 @@ vec3 computeRayDirUV(const in vec3 rayOriginUV, const in float rayLen, const in 
 }
 vec4 rayTraceUnrealSimple(
 const in vec3 rayOriginUV, const in float rayLen, in float depthTolerance, const in vec3 rayDirView, const in float roughness, const in float frameMod) {
-    vec3 pixelSizePowLevel = computeLodNearestPixelSizePowLevel(5.0 * roughness, 5.0, uTextureToBeRefractedSize);
+    vec3 pixelSizePowLevel = computeLodNearestPixelSizePowLevel(5.0 * roughness, 5.0, uTextureReflectedSize);
     float invNumSteps = 1.0 / float(8);
     if (uQuality > 1.0) invNumSteps /= 2.0;
     depthTolerance *= invNumSteps;
@@ -678,9 +679,9 @@ const in vec3 rayOriginUV, const in float rayLen, in float depthTolerance, const
 }
 vec4 fetchColorContribution(
 in vec4 resRay, const in float maskSsr, const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness) {
-    vec4 AB = mix(uTaaCornersCSLeft[0], uTaaCornersCSLeft[1], resRay.x);
+    vec4 AB = mix(outputFovInfo[0], outputFovInfo[1], resRay.x);
     resRay.xyz = vec3(mix(AB.xy, AB.zw, resRay.y), 1.0) * -1.0 / resRay.z;
-    resRay.xyz = (uReprojectViewProj * vec4(resRay.xyz, 1.0)).xyw;
+    resRay.xyz = (reprojViewProjMatrix * vec4(resRay.xyz, 1.0)).xyw;
     resRay.xy /= resRay.z;
     float maskEdge = clamp(6.0 - 6.0 * max(abs(resRay.x), abs(resRay.y)), 0.0, 1.0);
     resRay.xy = 0.5 + 0.5 * resRay.xy;
@@ -694,12 +695,12 @@ vec3 ssr(const in vec3 specularEnvironment, const in vec3 specularColor, const i
     vec3 upVector = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
     vec3 tangentX = normalize(cross(upVector, normal));
     vec3 tangentY = cross(normal, tangentX);
-    float maskSsr = uSsrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
+    float maskSsr = ssrFactor * clamp(-4.0 * dot(eyeVector, normal) + 3.8, 0.0, 1.0);
     maskSsr *= clamp(4.7 - roughness * 5.0, 0.0, 1.0);
     vec3 rayOriginUV = ssrViewToScreen(uProjectionMatrix, vViewVertex.xyz);
     rayOriginUV.z = 1.0 / rayOriginUV.z;
     vec3 rayDirView = unrealImportanceSampling(uFrameModTaaSS, tangentX, tangentY, normal, eyeVector, rough4);
-    float rayLen = mix(uNearFar.y + vViewVertex.z, -vViewVertex.z - uNearFar.x, rayDirView.z * 0.5 + 0.5);
+    float rayLen = mix(cameraNearFar.y + vViewVertex.z, -vViewVertex.z - cameraNearFar.x, rayDirView.z * 0.5 + 0.5);
     float depthTolerance = 0.5 * rayLen;
     if (dot(rayDirView, normal) > 0.001 && maskSsr > 0.0) {
         vec4 resRay = rayTraceUnrealSimple(rayOriginUV, rayLen, depthTolerance, rayDirView, roughness, uFrameModTaaSS);
@@ -765,7 +766,7 @@ void main() {
     diffuse += lightDiffuse;
     specular += lightSpecular;
     vec3 frag = diffuse + specular;
-    frag = uEmitMultiplicative == 1 ? frag * materialEmit : frag + materialEmit;
-    if (uOutputLinear ! = 1) frag = linearTosRGB(frag);
-    gl_FragColor = encodeRGBM(frag, uRGBMRange);
+    frag = emitMultiplicative == 1 ? frag * materialEmit : frag + materialEmit;
+    if (outputLinear ! = 1) frag = linearTosRGB(frag);
+    gl_FragColor = encodeRGBM(frag, rgbmRange);
 }

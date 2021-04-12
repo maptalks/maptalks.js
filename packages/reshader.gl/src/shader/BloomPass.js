@@ -35,9 +35,9 @@ class BloomPass {
         const { blurTex0, blurTex1, blurTex2, blurTex3, blurTex4 } = blurTexes;
         if (!uniforms) {
             uniforms = this._combineUniforms = {
-                'uBloomFactor': 0,
-                'uBloomRadius': 0,
-                'uRGBMRange': 7,
+                'bloomFactor': 0,
+                'bloomRadius': 0,
+                'rgbmRange': 7,
                 'TextureBloomBlur1': blurTex0,
                 'TextureBloomBlur2': blurTex1,
                 'TextureBloomBlur3': blurTex2,
@@ -45,14 +45,14 @@ class BloomPass {
                 'TextureBloomBlur5': blurTex4,
                 'TextureInput': null,
                 'TextureSource': null,
-                'uTextureOutputSize': [0, 0],
+                'outputSize': [0, 0],
             };
         }
-        uniforms['uBloomFactor'] = bloomFactor;
-        uniforms['uBloomRadius'] = bloomRadius;
+        uniforms['bloomFactor'] = bloomFactor;
+        uniforms['bloomRadius'] = bloomRadius;
         uniforms['TextureInput'] = inputTex;
         uniforms['TextureSource'] = sourceTex;
-        vec2.set(uniforms['uTextureOutputSize'], sourceTex.width, sourceTex.height);
+        vec2.set(uniforms['outputSize'], sourceTex.width, sourceTex.height);
 
         this._renderer.render(this._combineShader, uniforms, null, paintToScreen ? null : this._combineFBO);
         return paintToScreen ? null : this._combineTex;
@@ -113,10 +113,10 @@ class BloomPass {
                 x: 0,
                 y: 0,
                 width : (context, props) => {
-                    return props['uTextureOutputSize'][0];
+                    return props['outputSize'][0];
                 },
                 height : (context, props) => {
-                    return props['uTextureOutputSize'][1];
+                    return props['outputSize'][1];
                 }
             };
             this._blurPass = new BlurPass(this._regl, false);

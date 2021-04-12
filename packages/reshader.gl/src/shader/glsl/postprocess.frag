@@ -77,7 +77,7 @@ vec4 vignette(const in vec4 color) {
 //     return pack.a;
 // }
 // vec3 sharpColorFactor(const in vec3 color, const float sharp) {
-//     // vec2 off = uPixelRatio.xy / resolution.xy;
+//     // vec2 off = pixelRatio.xy / resolution.xy;
 //     vec2 off = vec2(1.0, 1.0) / resolution.xy;
 //     vec3 rgbNW = (texture2D(TextureInput, (min(vTexCoord + off * vec2(-1.0, -1.0), 1.0 - 1e+0 / resolution.xy)) * uTextureInputRatio)).rgb;
 //     vec3 rgbSE = (texture2D(TextureInput, (min(vTexCoord + off * vec2(1.0, 1.0), 1.0 - 1e+0 / resolution.xy)) * uTextureInputRatio)).rgb;

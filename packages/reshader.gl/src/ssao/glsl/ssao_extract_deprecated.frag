@@ -10,7 +10,7 @@ uniform float uSsaoRadius;
 uniform sampler2D TextureInput;
 uniform sampler2D TextureDepth;
 uniform vec2 uNearFar;
-uniform vec2 uTextureOutputSize;
+uniform vec2 outputSize;
 uniform vec4 uSsaoProjectionInfo;
 uniform mat4 projMatrix;
 uniform mat4 invProjMatrix;
@@ -73,8 +73,8 @@ highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position) {
 
 // compute normals directly from the depth texture, resulting in full resolution normals
 highp vec3 computeViewSpaceNormalNotNormalized(const highp vec3 position, const vec2 uv) {
-    vec2 uvdx = uv + vec2(1.0 / uTextureOutputSize.x, 0.0);
-    vec2 uvdy = uv + vec2(0.0, 1.0 / uTextureOutputSize.y);
+    vec2 uvdx = uv + vec2(1.0 / outputSize.x, 0.0);
+    vec2 uvdy = uv + vec2(0.0, 1.0 / outputSize.y);
     highp vec3 px = computeViewSpacePositionFromDepth(uvdx, sampleDepthLinear(uvdx));
     highp vec3 py = computeViewSpacePositionFromDepth(uvdy, sampleDepthLinear(uvdy));
     highp vec3 dpdx = px - position;
@@ -131,7 +131,7 @@ vec4 ssaoExtract() {
     return vec4(ao);
 }
 void main(void) {
-    gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
+    gTexCoord = gl_FragCoord.xy / outputSize.xy;
     vec4 color = ssaoExtract();
     gl_FragColor = color;
 }

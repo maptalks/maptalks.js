@@ -9,20 +9,19 @@ export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
     const uniforms = extend({
         viewMatrix,
         projMatrix,
-        projectionMatrix: projMatrix,
         projViewMatrix: map.projViewMatrix,
-        uCameraPosition: cameraPosition,
-        uGlobalTexSize: [canvas.width, canvas.height],
-        uNearFar: [map.cameraNear, map.cameraFar]
+        cameraPosition: cameraPosition,
+        outSize: [canvas.width, canvas.height],
+        cameraNearFar: [map.cameraNear, map.cameraFar]
     }, lightUniforms);
-    uniforms['sIntegrateBRDF'] = dfgLUT;
+    uniforms['brdfLUT'] = dfgLUT;
     if (context && context.ssr && context.ssr.renderUniforms) {
         extend(uniforms, context.ssr.renderUniforms);
     }
     if (context && context.jitter) {
-        uniforms['uHalton'] = context.jitter;
+        uniforms['halton'] = context.jitter;
     } else {
-        uniforms['uHalton'] = [0, 0];
+        uniforms['halton'] = [0, 0];
     }
     return uniforms;
 }
@@ -37,24 +36,24 @@ function getLightUniforms(map, iblTexes) {
         const cubeSize = iblTexes.prefilterMap.width;
         const mipLevel = Math.log(cubeSize) / Math.log(2);
         uniforms = {
-            'sSpecularPBR': iblTexes.prefilterMap,
-            'uDiffuseSPH': iblTexes.sh,
-            'uTextureEnvironmentSpecularPBRLodRange': [mipLevel, mipLevel],
-            'uTextureEnvironmentSpecularPBRTextureSize': [cubeSize, cubeSize],
-            'uHdrHsv': ambientLight.hsv || [0, 0, 0]
+            'prefilterMap': iblTexes.prefilterMap,
+            'diffuseSPH': iblTexes.sh,
+            'prefilterMiplevel': [mipLevel, mipLevel],
+            'prefilterSize': [cubeSize, cubeSize],
+            'hdrHSV': ambientLight.hsv || [0, 0, 0]
         };
     } else {
         uniforms = {
-            'uAmbientColor': ambientLight.color || [0.2, 0.2, 0.2]
+            'ambientColor': ambientLight.color || [0.2, 0.2, 0.2]
         };
     }
-    uniforms['uRGBMRange'] = iblMaps ? iblTexes.rgbmRange : 7;
-    uniforms['uEnvironmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
+    uniforms['rgbmRange'] = iblMaps ? iblTexes.rgbmRange : 7;
+    uniforms['environmentExposure'] = isNumber(ambientLight.exposure) ? ambientLight.exposure : 1; //2]
     uniforms['environmentOrientation'] = ambientLight.orientation || 0;
 
     if (directionalLight) {
-        uniforms['uLight0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
-        uniforms['uLight0_viewDirection'] = directionalLight.direction || [1, 1, -1];
+        uniforms['light0_diffuse'] = [...(directionalLight.color || [1, 1, 1]), 1];
+        uniforms['light0_viewDirection'] = directionalLight.direction || [1, 1, -1];
     }
     return uniforms;
 }

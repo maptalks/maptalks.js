@@ -7,9 +7,9 @@ uniform float opacity;
 uniform float ambientStrength;
 uniform float specularStrength;
 
-uniform vec3 uLight0_viewDirection;
-uniform vec3 uAmbientColor;
-uniform vec4 uLight0_diffuse;
+uniform vec3 light0_viewDirection;
+uniform vec3 ambientColor;
+uniform vec4 light0_diffuse;
 uniform vec3 lightSpecular;
 uniform vec3 cameraPosition;
 
@@ -129,7 +129,7 @@ vec3 getSpecularColor() {
 void main() {
     //环境光
     vec4 baseColor = getBaseColor();
-    vec3 ambient = ambientStrength * uAmbientColor * baseColor.rgb;
+    vec3 ambient = ambientStrength * ambientColor * baseColor.rgb;
 
     #ifdef HAS_INSTANCE_COLOR
         ambient *= vInstanceColor.rgb;
@@ -137,13 +137,13 @@ void main() {
 
     //漫反射光
     vec3 norm = transformNormal();
-    vec3 lightDir = normalize(-uLight0_viewDirection);
+    vec3 lightDir = normalize(-light0_viewDirection);
     float diff = max(dot(norm, lightDir), 0.0);
     #ifdef HAS_TOON
         float toon = floor(diff * toons);
         diff = toon / toons;
     #endif
-    vec3 diffuse = uLight0_diffuse.rgb * diff * baseColor.rgb;
+    vec3 diffuse = light0_diffuse.rgb * diff * baseColor.rgb;
     #if defined(HAS_COLOR)
         vec3 color = vColor.rgb;
     #elif defined(IS_LINE_EXTRUSION)

@@ -6,48 +6,48 @@ const DEFAULT_UNIFORMS = {
     'uvOffset': [0, 0],
     'uvRotation': 0,
 
-    'uBaseColorFactor': [1, 1, 1, 1],
-    'uEmissiveFactor': [0, 0, 0],
+    'baseColorFactor': [1, 1, 1, 1],
+    'emissiveFactor': [0, 0, 0],
 
-    'uAlbedoPBRFactor': 1, //1
-    'uAnisotropyDirection': 0, //0
-    'uAnisotropyFactor': 0, //1
-    'uClearCoatF0': 0.04, //0.04
-    'uClearCoatFactor': 0, //1
-    'uClearCoatIor': 1.4, //1.4
-    'uClearCoatRoughnessFactor': 0.04, //0.04
-    'uClearCoatThickness': 5, //5
-    'uEmitColorFactor': 1, //1
-    'uOcclusionFactor': 1,
-    'uRoughnessFactor': 0.4,
-    'uMetallicFactor': 0, //0
-    'uNormalMapFactor': 1, //1
+    'baseColorIntensity': 1, //1
+    'anisotropyDirection': 0, //0
+    'anisotropyFactor': 0, //1
+    'clearCoatF0': 0.04, //0.04
+    'clearCoatFactor': 0, //1
+    'clearCoatIor': 1.4, //1.4
+    'clearCoatRoughnessFactor': 0.04, //0.04
+    'clearCoatThickness': 5, //5
+    'emitColorFactor': 1, //1
+    'occlusionFactor': 1,
+    'roughnessFactor': 0.4,
+    'metallicFactor': 0, //0
+    'normalMapFactor': 1, //1
     // 'uScatteringFactorPacker', //unused
     // 'uShadowReceive3_bias',
-    'uSpecularF0Factor': 0.5, //0.5862
+    'specularF0Factor': 0.5, //0.5862
     // 'uStaticFrameNumShadow3', //14
     // 'uSubsurfaceScatteringFactor', //1
     // 'uSubsurfaceScatteringProfile', //unused
-    'uSubsurfaceTranslucencyFactor': 1, //1
+    // 'uSubsurfaceTranslucencyFactor': 1, //1
     // 'uSubsurfaceTranslucencyThicknessFactor', //37.4193
     // 'uAnisotropyFlipXY', //unused
     // 'uDrawOpaque', //unused
-    'uEmitMultiplicative': 1, //0
-    'uNormalMapFlipY': 0, //1
-    'uOutputLinear': 0, //1
+    'emitMultiplicative': 1, //0
+    'normalMapFlipY': 0, //1
+    'outputSRGB': 1,
 
-    'uBaseColorTexture': null,
-    'uNormalTexture': null,
-    'uOcclusionTexture': null,
-    'uMetallicRoughnessTexture': null,
-    'uEmissiveTexture': null,
+    'baseColorTexture': null,
+    'normalTexture': null,
+    'occlusionTexture': null,
+    'metallicRoughnessTexture': null,
+    'emissiveTexture': null,
 
-    'uClearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
+    'clearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
 
-    'uSpecularAntiAliasingVariance': 20,
-    'uSpecularAntiAliasingThreshold': 20,
+    'specularAAVariance': 20,
+    'specularAAThreshold': 20,
 
-    'uHsv': [0, 0, 0],
+    'hsv': [0, 0, 0],
     'contrast': 1,
 
     'bumpTexture': null,
@@ -59,9 +59,9 @@ const DEFAULT_UNIFORMS = {
 class StandardMaterial extends Material {
     constructor(uniforms) {
         const defaultUniforms = extend({}, DEFAULT_UNIFORMS);
-        if (uniforms['uMetallicRoughnessTexture'] || uniforms['metallicRoughnessTexture']) {
-            defaultUniforms['uRoughnessFactor'] = 1;
-            defaultUniforms['uMetallicFactor'] = 1;
+        if (uniforms['metallicRoughnessTexture'] || uniforms['metallicRoughnessTexture']) {
+            defaultUniforms['roughnessFactor'] = 1;
+            defaultUniforms['metallicFactor'] = 1;
         }
         super(uniforms, defaultUniforms);
     }
@@ -89,19 +89,19 @@ class StandardMaterial extends Material {
         if (!geometry.data[geometry.desc.uv0Attribute]) {
             return defines;
         }
-        if (uniforms['uBaseColorTexture']) {
+        if (uniforms['baseColorTexture']) {
             defines['HAS_ALBEDO_MAP'] = 1;
         }
-        if (uniforms['uMetallicRoughnessTexture']) {
+        if (uniforms['metallicRoughnessTexture']) {
             defines['HAS_METALLICROUGHNESS_MAP'] = 1;
         }
-        if (uniforms['uOcclusionTexture']) {
+        if (uniforms['occlusionTexture']) {
             defines['HAS_AO_MAP'] = 1;
         }
-        if (uniforms['uEmissiveTexture']) {
+        if (uniforms['emissiveTexture']) {
             defines['HAS_EMISSIVE_MAP'] = 1;
         }
-        if (uniforms['uNormalTexture']) {
+        if (uniforms['normalTexture']) {
             defines['HAS_NORMAL_MAP'] = 1;
         }
         if (uniforms['bumpTexture']) {

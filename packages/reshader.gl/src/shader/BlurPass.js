@@ -44,14 +44,14 @@ class BlurPass {
         let uniforms = this._blurUniforms;
         if (!uniforms) {
             uniforms = this._blurUniforms = {
-                'uRGBMRange': 7,
-                'uBlurDir': [0, 0],
-                'uGlobalTexSize': [0, 0],
-                'uPixelRatio': [1, 1],
-                'uTextureOutputSize': [0, 0],
+                'rgbmRange': 7,
+                'blurDir': [0, 0],
+                'outSize': [0, 0],
+                'pixelRatio': [1, 1],
+                'outputSize': [0, 0],
             };
         }
-        vec2.set(uniforms['uGlobalTexSize'], curTex.width, curTex.height);
+        vec2.set(uniforms['outSize'], curTex.width, curTex.height);
 
         //只有第一次blur需要用 luminThreshold 过滤像素
         this._blurOnce(this._blur0Shader, curTex, this._blur00FBO, this._blur01FBO, 0.5, luminThreshold);
@@ -79,17 +79,17 @@ class BlurPass {
         }
 
         const uniforms = this._blurUniforms;
-        uniforms['uLuminThreshold'] = luminThreshold;
+        uniforms['luminThreshold'] = luminThreshold;
         uniforms['TextureBlurInput'] = inputTex;
         //第一次输入是否需要decode rgbm
         uniforms['inputRGBM'] = +this._inputRGBM;
-        vec2.set(uniforms['uBlurDir'], 0, 1);
-        vec2.set(uniforms['uTextureOutputSize'], output0.width, output0.height);
+        vec2.set(uniforms['blurDir'], 0, 1);
+        vec2.set(uniforms['outputSize'], output0.width, output0.height);
         this._renderer.render(shader, uniforms, null, output0);
 
-        uniforms['uLuminThreshold'] = 0;
+        uniforms['luminThreshold'] = 0;
         uniforms['inputRGBM'] = 1;
-        vec2.set(uniforms['uBlurDir'], 1, 0);
+        vec2.set(uniforms['blurDir'], 1, 0);
         uniforms['TextureBlurInput'] = output0.color[0];
         this._renderer.render(shader, uniforms, null, output1);
     }
@@ -239,22 +239,22 @@ class BlurPass {
                 vert: quadVert,
                 uniforms: [
                     'inputRGBM',
-                    'uRGBMRange',
+                    'rgbmRange',
                     'TextureBlurInput',
-                    'uBlurDir',
-                    'uGlobalTexSize',
-                    'uPixelRatio',
-                    'uTextureOutputSize',
+                    'blurDir',
+                    'outSize',
+                    'pixelRatio',
+                    'outputSize',
                 ],
                 extraCommandProps: {
                     viewport: {
                         x: 0,
                         y: 0,
                         width : (context, props) => {
-                            return props['uTextureOutputSize'][0];
+                            return props['outputSize'][0];
                         },
                         height : (context, props) => {
-                            return props['uTextureOutputSize'][1];
+                            return props['outputSize'][1];
                         }
                     }
                 }

@@ -4,7 +4,7 @@
 varying vec2 vTexCoord;
 
 uniform vec2 axis;
-uniform vec2 uTextureOutputSize;
+uniform vec2 outputSize;
 uniform mat4 projMatrix;
 
 uniform sampler2D materialParams_ssao;
@@ -26,7 +26,7 @@ float kGaussianSamples[5];
 const float kGaussianWeightSum = 0.993872;
 
 vec2 clampToEdge(const sampler2D s, vec2 uv) {
-    vec2 size = uTextureOutputSize;
+    vec2 size = outputSize;
     return clamp(uv, vec2(0), size - vec2(1));
 }
 
@@ -48,7 +48,7 @@ float bilateralWeight(const vec2 p, in float depth) {
 
 void tap(inout float sum, inout float totalWeight, float weight, float depth, vec2 position) {
     position = clampToEdge(materialParams_ssao, position);
-    vec2 uv = position / uTextureOutputSize;
+    vec2 uv = position / outputSize;
     // ambient occlusion sample
     float ao = texture2D(materialParams_ssao, uv).r;
     // bilateral sample
@@ -68,7 +68,7 @@ void initKernels() {
 
 void main() {
     initKernels();
-    vec2 uv = vTexCoord.xy * uTextureOutputSize.xy;
+    vec2 uv = vTexCoord.xy * outputSize.xy;
 
     float depth = texture2D(materialParams_depth, vTexCoord).r;
 

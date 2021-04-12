@@ -8,14 +8,7 @@ class StandardDepthShader extends MeshShader {
     constructor(config = {}) {
         const uniforms = [
             {
-                name : 'uProjectionMatrix',
-                type : 'function',
-                fn : (context, props) => {
-                    return props['projMatrix'];
-                }
-            },
-            {
-                name : 'uModelViewMatrix',
+                name : 'modelViewMatrix',
                 type : 'function',
                 fn : (context, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);

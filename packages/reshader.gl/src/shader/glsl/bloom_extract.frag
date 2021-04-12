@@ -1,12 +1,12 @@
 //DEPRECATED
 #version 100
 precision mediump float;
-uniform float uRGBMRange;
+uniform float rgbmRange;
 uniform float uBloomThreshold;
 uniform sampler2D TextureInput;
 uniform vec2 uTextureInputRatio;
 uniform vec2 uTextureInputSize;
-uniform vec2 uTextureOutputSize;
+uniform vec2 outputSize;
 #define SHADER_NAME TextureBloomExtract
 
 const vec3 colorBright = vec3(0.2126, 0.7152, 0.0722);
@@ -35,6 +35,6 @@ vec4 encodeRGBM(const in vec3 color, const in float range) {
     return rgbm;
 }
 void main(void) {
-    gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
-    gl_FragColor = encodeRGBM(bloomExtract().rgb, uRGBMRange);
+    gTexCoord = gl_FragCoord.xy / outputSize.xy;
+    gl_FragColor = encodeRGBM(bloomExtract().rgb, rgbmRange);
 }

@@ -7,7 +7,7 @@ uniform sampler2D distributionMap;
 const float PI = 3.14159265359;
 
 vec4 packFloat(float a, float b) {
-    // vec4 rgba = texture2D(sIntegrateBRDF, vec2(NoV, roughness));
+    // vec4 rgba = texture2D(brdfLUT, vec2(NoV, roughness));
     // float b = (rgba[3] * 65280.0 + rgba[2] * 255.0);
     // float a = (rgba[1] * 65280.0 + rgba[0] * 255.0);
     // const float div = 1.0 / 65535.0;

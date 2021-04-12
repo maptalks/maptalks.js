@@ -1,3 +1,4 @@
+//DEPRECATED
 //reference:
 //https://www.gdcvault.com/play/1022970/Temporal-Reprojection-Anti-Aliasing-in
 //https://github.com/playdeadgames/temporal
@@ -6,7 +7,7 @@ precision highp float;
 uniform float uSSAARestart;
 uniform float uTaaEnabled;
 uniform float uClipAABBEnabled;
-uniform mat4 uProjectionMatrix;
+uniform mat4 projMatrix;
 uniform mat4 uTaaCurrentFramePVLeft;
 uniform mat4 uTaaInvViewMatrixLeft;
 uniform mat4 uTaaLastFramePVLeft;
@@ -18,11 +19,11 @@ uniform vec2 uTextureDepthSize;
 uniform vec2 uTextureInputRatio;
 uniform vec2 uTextureInputSize;
 uniform vec2 uTextureOutputRatio;
-uniform vec2 uTextureOutputSize;
+uniform vec2 outputSize;
 uniform vec2 uTexturePreviousRatio;
 uniform vec2 uTexturePreviousSize;
-uniform vec4 uHalton;
-uniform vec4 uTaaCornersCSLeft[2];
+uniform vec4 halton;
+uniform vec4 outputFovInfo[2];
 #define SHADER_NAME supersampleTaa
 
 vec2 gTexCoord;
@@ -82,7 +83,7 @@ int decodeProfile(const in vec4 pack) {
     return int(profile);
 }
 float linearizeDepth(float depth) {
-    highp mat4 projection = uProjectionMatrix;
+    highp mat4 projection = projMatrix;
     highp float z = depth * 2.0 - 1.0; // depth in clip space
     return -projection[3].z / (z + projection[2].z);
 }
@@ -174,7 +175,7 @@ vec2 computeSSVelocity(const in vec3 wsPos, const in mat4 currentFrameProjView, 
 }
 vec4 supersample() {
     vec4 currFragColor = (texture2D(TextureInput, (min(gTexCoord, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio)).rgba;
-    float haltz = abs(uHalton.z);
+    float haltz = abs(halton.z);
     if (haltz == 1.0) {
         return currFragColor;
     }
@@ -184,8 +185,8 @@ vec4 supersample() {
         accumColorN = clip_aabb(texelSize, accumColorN, currFragColor, false);
     }
 
-    float lerpFac = 1.0 / uHalton.w;
-    // if (uHalton.w == 1.0) lerpFac = uSSAARestart;
+    float lerpFac = 1.0 / halton.w;
+    // if (halton.w == 1.0) lerpFac = uSSAARestart;
     // if (haltz == 3.0) {
     //     return mix(currFragColor, accumColorN, lerpFac);
     // }
@@ -193,12 +194,12 @@ vec4 supersample() {
 }
 vec4 computeTaa(const in mat4 invView, const in mat4 currentFrameProjView, const in mat4 lastFrameProjView, const in vec4 corners0, const in vec4 corners1) {
     vec2 uv = gTexCoord;
-    float haltz = abs(uHalton.z);
+    float haltz = abs(halton.z);
     if (haltz == 1.0) {
         vec2 texelSize = vec2(1.0) / uTextureInputSize;
         vec3 closest = closestFragment(uv, texelSize);
         if (closest.z >= 1.0) {
-            return  (texture2D(TextureInput, (min(uv - 0.5 * uHalton.xy * texelSize, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
+            return  (texture2D(TextureInput, (min(uv - 0.5 * halton.xy * texelSize, 1.0 - 1e+0 / uTextureInputSize.xy)) * uTextureInputRatio));
         }
         float depth = linearizeDepth(closest.z);
         vec3 ws = reconstructWSPosition(closest.xy, corners0, corners1, invView, depth);
@@ -211,10 +212,10 @@ vec4 supersampleTaa() {
     if (uTaaEnabled == 0.0) {
         return supersample();
     }
-    return computeTaa(uTaaInvViewMatrixLeft, uTaaCurrentFramePVLeft, uTaaLastFramePVLeft, uTaaCornersCSLeft[0], uTaaCornersCSLeft[1]);
+    return computeTaa(uTaaInvViewMatrixLeft, uTaaCurrentFramePVLeft, uTaaLastFramePVLeft, outputFovInfo[0], outputFovInfo[1]);
 }
 void main(void) {
-    gTexCoord = gl_FragCoord.xy / uTextureOutputSize.xy;
+    gTexCoord = gl_FragCoord.xy / outputSize.xy;
     vec4 color = supersampleTaa();
     gl_FragColor = color;
 }

@@ -14,16 +14,6 @@ class Material {
                     get: getter
                 });
             }
-            //自动增加uFoo形式的uniform变量定义
-            if (shouldChangeName(p)) {
-                const key = 'u' + firstUpperCase(p);
-                this.uniforms[key] = uniforms[p];
-                if (getter) {
-                    Object.defineProperty(this.uniforms, key, {
-                        get: getter
-                    });
-                }
-            }
         }
         this._reglUniforms = {};
         this.refCount = 0;
@@ -55,12 +45,6 @@ class Material {
             this.uniforms[k] = v;
         } else if (!isNil(this.uniforms[k])) {
             delete this.uniforms[k];
-            if (shouldChangeName(k)) {
-                delete this.uniforms['u' + firstUpperCase(k)];
-            }
-        }
-        if (!isNil(v) && shouldChangeName(k)) {
-            this.uniforms['u' + firstUpperCase(k)] = v;
         }
         this._dirtyUniforms = true;
         if (this.isTexture(k)) {
@@ -198,11 +182,3 @@ class Material {
 }
 
 export default Eventable(Material);
-
-function firstUpperCase(str) {
-    return str.charAt(0).toUpperCase() + str.substring(1);
-}
-
-function shouldChangeName(k) {
-    return (k.length < 2 || k.charAt(0) !== 'u' || k.charAt(1) !== k.charAt(1).toUpperCase());
-}

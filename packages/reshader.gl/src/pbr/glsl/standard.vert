@@ -17,27 +17,22 @@ attribute vec3 aPosition;
 #endif
 
 vec3 Vertex;
-// vec2 TexCoord6;
 vec3 Normal;
 vec4 Tangent;
 
-// uniform float uDisplay2D;//0
-// uniform float uPointSize;//1070.9412
-uniform mat4 uModelMatrix;
-uniform mat4 uModelViewMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
-uniform mat4 uProjectionMatrix;
-// uniform mat4 uProjViewModelMatrix;
-// uniform mat4 uViewMatrix;
-// uniform vec2 uGlobalTexRatio;
-uniform vec2 uGlobalTexSize;
-uniform vec2 uHalton;
-uniform mediump vec3 uCameraPosition;
+uniform mat4 projMatrix;
 
-uniform mat3 uModelNormalMatrix;
+uniform vec2 outSize;
+uniform vec2 halton;
+uniform mediump vec3 cameraPosition;
+
+uniform mat3 modelNormalMatrix;
 
 #ifdef HAS_SSR
-    uniform mat3 uModelViewNormalMatrix;
+    uniform mat3 modelViewNormalMatrix;
     varying vec3 vViewNormal;
     #ifdef HAS_TANGENT
         varying vec4 vViewTangent;
@@ -145,8 +140,8 @@ void main() {
         toTangentFrame(aTangent, Normal, t);
         // Tangent = vec4(t, aTangent.w);
         // vec4 localTangent = Tangent;
-        // vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
-        vModelTangent = vec4(uModelNormalMatrix * t, aTangent.w);
+        // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
+        vModelTangent = vec4(modelNormalMatrix * t, aTangent.w);
     #else
         Normal = aNormal;
     #endif
@@ -159,30 +154,30 @@ void main() {
     #else
         vec4 localVertex = getPosition(aPosition);
     #endif
-    vModelVertex = (uModelMatrix * localVertex).xyz;
+    vModelVertex = (modelMatrix * localVertex).xyz;
 
     vec3 localNormal = Normal;
-    vModelNormal = uModelNormalMatrix * localNormal;
+    vModelNormal = modelNormalMatrix * localNormal;
 
     #if defined(HAS_TANGENT)
         vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
     #endif
 
     #ifdef HAS_SSR
-        vViewNormal = uModelViewNormalMatrix * Normal;
+        vViewNormal = modelViewNormalMatrix * Normal;
          #if defined(HAS_TANGENT)
             // Tangent = vec4(t, aTangent.w);
             vec4 localTangent = vec4(t, aTangent.w);;
-            vViewTangent = vec4(uModelViewNormalMatrix * localTangent.xyz, localTangent.w);
+            vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
         #endif
     #endif
 
     vec4 position = localPositionMatrix * localVertex;
-    vec4 viewVertex = uModelViewMatrix * position;
+    vec4 viewVertex = modelViewMatrix * position;
     vViewVertex = viewVertex;
-    // gl_Position = uProjectionMatrix * uModelViewMatrix * localVertex;
-    mat4 jitteredProjection = uProjectionMatrix;
-    jitteredProjection[2].xy += uHalton.xy / uGlobalTexSize.xy;
+    // gl_Position = projMatrix * modelViewMatrix * localVertex;
+    mat4 jitteredProjection = projMatrix;
+    jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewVertex;
     // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
 
@@ -207,7 +202,7 @@ void main() {
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(uProjectionMatrix * uModelViewMatrix * localPositionMatrix,localVertex);
+        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
     #endif
 
     #ifdef HAS_FOG
@@ -216,7 +211,7 @@ void main() {
 
     #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
         mat3 TBN = transposeMat3(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
-        vTangentViewPos = TBN * uCameraPosition;
+        vTangentViewPos = TBN * cameraPosition;
         vTangentFragPos = TBN * vModelVertex;
     #endif
 }

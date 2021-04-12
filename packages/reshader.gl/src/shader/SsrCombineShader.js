@@ -12,10 +12,10 @@ class SsrCombineShader extends QuadShader {
                     x: 0,
                     y: 0,
                     width: (context, props) => {
-                        return props['uTextureOutputSize'][0];
+                        return props['outputSize'][0];
                     },
                     height: (context, props) => {
-                        return props['uTextureOutputSize'][1];
+                        return props['outputSize'][1];
                     }
                 }
             }
