@@ -12,7 +12,7 @@ const DEFAULT_UNIFORMS = {
     'baseColorIntensity': 1, //1
     'anisotropyDirection': 0, //0
     'anisotropyFactor': 0, //1
-    'clearCoatF0': 0.04, //0.04
+    // 'clearCoatF0': 0.04, //0.04
     'clearCoatFactor': 0, //1
     'clearCoatIor': 1.4, //1.4
     'clearCoatRoughnessFactor': 0.04, //0.04
@@ -24,7 +24,7 @@ const DEFAULT_UNIFORMS = {
     'normalMapFactor': 1, //1
     // 'uScatteringFactorPacker', //unused
     // 'uShadowReceive3_bias',
-    'specularF0Factor': 0.5, //0.5862
+    'specularF0': 0.5, //0.5862
     // 'uStaticFrameNumShadow3', //14
     // 'uSubsurfaceScatteringFactor', //1
     // 'uSubsurfaceScatteringProfile', //unused
