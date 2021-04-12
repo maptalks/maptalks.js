@@ -27,15 +27,17 @@ class LightManager {
     setConfig(config) {
         const oldConfig = this._config;
         this._config = JSON.parse(JSON.stringify(config));
+        let ambientUpdate = false;
         if (!config || !config.ambient || !config.ambient.resource) {
             this._disposeCubeLight();
+            ambientUpdate = oldConfig && oldConfig.ambient && oldConfig.ambient.resource;
         } else if (!oldConfig || !oldConfig.ambient || !ambientEqual(oldConfig.ambient, config.ambient)) {
             this._initAmbientResources();
             return;
         } else if (this._iblMaps && config.ambient.resource.sh) {
             this._iblMaps.sh = config.ambient.resource.sh;
         }
-        this._map.fire('updatelights');
+        this._map.fire('updatelights', { ambientUpdate });
     }
 
     _tryToGetREGLContext(map) {
