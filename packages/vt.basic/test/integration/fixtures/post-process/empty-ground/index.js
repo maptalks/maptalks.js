@@ -13,7 +13,7 @@ const material = {
     'baseColorFactor': [1, 1, 1, 1],
     'roughnessFactor': 0,
     'metalnessFactor': 1,
-    'outputLinear': 1
+    'outputSRGB': 0
 };
 const style = [
     {

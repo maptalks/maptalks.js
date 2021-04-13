@@ -45,7 +45,7 @@ const material = {
     'baseColorFactor': [1, 1, 1, 1],
     'roughnessFactor': 0,
     'metalnessFactor': 0,
-    'outputLinear': 1,
+    'outputSRGB': 0,
     'normalTexture': 'file://' + path.resolve(__dirname, '../../../resources/brick_normal.jpg'),
     'uvScale': [0.001, 0.001]
 };

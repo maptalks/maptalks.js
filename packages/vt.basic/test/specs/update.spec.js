@@ -654,7 +654,7 @@ describe('update style specs', () => {
             'baseColorFactor': [1, 1, 1, 1],
             'roughnessFactor': 0,
             'metalnessFactor': 1,
-            'outputLinear': 1
+            'outputSRGB': 0
         };
         const style = [
             {
@@ -712,7 +712,7 @@ describe('update style specs', () => {
             'baseColorFactor': [1, 1, 1, 1],
             'roughnessFactor': 1,
             'metalnessFactor': 0,
-            'outputLinear': 1
+            'outputSRGB': 0
         };
         const style = [
             linePlugin,

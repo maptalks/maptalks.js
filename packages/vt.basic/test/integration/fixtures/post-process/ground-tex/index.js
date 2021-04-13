@@ -2,10 +2,10 @@ const path = require('path');
 
 const material = {
     'baseColorFactor': [1, 1, 1, 1],
-    'uBaseColorTexture': 'file://' + path.resolve(__dirname, '../../../resources/UV_Grid_Sm.jpg'),
+    'baseColorTexture': 'file://' + path.resolve(__dirname, '../../../resources/UV_Grid_Sm.jpg'),
     'roughnessFactor': 0,
     'metalnessFactor': 1,
-    'outputLinear': 1
+    'outputSRGB': 0
 };
 
 module.exports = {
