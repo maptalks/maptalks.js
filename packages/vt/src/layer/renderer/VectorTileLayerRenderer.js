@@ -78,6 +78,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!plugins || !plugins[idx]) {
             return;
         }
+        this._needRetire = true;
         const allStyles = this.layer._getComputedStyle();
         const styles = this.layer._getTargetStyle(type, allStyles);
         plugins[idx].config = styles[idx].renderPlugin;
@@ -92,6 +93,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!plugins || !plugins[idx]) {
             return;
         }
+        this._needRetire = true;
         if (plugins[idx].updateDataConfig(dataConfig, old)) {
             this.setStyle();
         } else {
