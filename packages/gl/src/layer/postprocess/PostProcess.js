@@ -2,8 +2,8 @@ import * as reshader from '@maptalks/reshader.gl';
 import { vec2 } from 'gl-matrix';
 
 const RESOLUTION = [];
-const bloomFilter = m => m.getUniform('bloom');
-const ssrFilter = m => m.getUniform('ssr');
+const bloomFilter = m => !!m.bloom;
+const ssrFilter = m => !!m.ssr;
 
 export default class PostProcess {
     constructor(regl, layer, jitter) {

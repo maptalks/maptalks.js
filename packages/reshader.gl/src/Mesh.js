@@ -14,8 +14,10 @@ class Mesh {
         this._version = 0;
         this._geometry = geometry;
         this._material = material;
-        this.config = config;
+        // this.config = config;
         this.transparent = !!config.transparent;
+        this.bloom = !!config.bloom;
+        this.ssr = !!config.ssr;
         this.castShadow = isNil(config.castShadow) || config.castShadow;
         this.picking = !!config.picking;
         this.uniforms = {};
@@ -88,6 +90,18 @@ class Mesh {
 
     get positionMatrix() {
         return this._positionMatrix;
+    }
+
+    get config() {
+        if (!this._cfg) {
+            this._cfg = {};
+        }
+        this._cfg['transparent'] = this.transparent;
+        this._cfg['castShadow'] = this.castShadow;
+        this._cfg['bloom'] = this.bloom;
+        this._cfg['ssr'] = this.ssr;
+        this._cfg['picking'] = this.picking;
+        return this._cfg;
     }
 
     setMaterial(material) {
@@ -234,6 +248,7 @@ class Mesh {
         if (!isSupportVAO(regl)) {
             props.elements = this._geometry.getElements();
         }
+        props.meshConfig = this.config;
         props.count = this._geometry.getDrawCount();
         props.offset = this._geometry.getDrawOffset();
         // command primitive : triangle, triangle strip, etc

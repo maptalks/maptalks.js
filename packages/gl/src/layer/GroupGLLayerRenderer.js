@@ -13,9 +13,9 @@ const EMPTY_COLOR = [0, 0, 0, 0];
 const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
 
-const noPostFilter = m => !m.getUniform('bloom') && !m.getUniform('ssr');
-const noBloomFilter = m => !m.getUniform('bloom');
-const noSsrFilter = m => !m.getUniform('ssr');
+const noPostFilter = m => !m.bloom && !m.ssr;
+const noBloomFilter = m => !m.bloom;
+const noSsrFilter = m => !m.ssr;
 
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
