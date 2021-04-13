@@ -87,9 +87,15 @@ class EnvironmentPainter {
             // })
         }
         const canvas = this._layer.getRenderer().canvas;
-        const level = this._layer._getSceneConfig().environment.level || 0;
+        const envConfig = this._layer._getSceneConfig().environment || {};
+        const level = envConfig.level || 0;
         const cubeSize = iblTexes.prefilterMap.width;
         const transform = this._transform = this._transform || [];
+        const hsv = ambient && ambient.hsv || [0, 0, 0];
+        const brightness = envConfig.brightness || 0;
+        if (brightness) {
+            hsv[2] += brightness;
+        }
         return {
             'rgbmRange': iblTexes.rgbmRange,
             'cubeMap': iblTexes.prefilterMap,
@@ -100,7 +106,7 @@ class EnvironmentPainter {
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,
             'resolution': [canvas.width, canvas.height],
-            'hsv': ambient && ambient.hsv || [0, 0, 0],
+            'hsv': hsv,
             'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.orientation || 0)
         };
     }
