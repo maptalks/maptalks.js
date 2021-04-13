@@ -196,11 +196,11 @@ function createPainterPlugin(type, Painter) {
                 if (Array.isArray(mesh)) {
                     mesh.forEach(m => {
                         const bloomValue = +(bloom && painter.isBloom(m));
-                        m.setUniform('bloom', bloomValue);
+                        m.bloom = bloomValue;
                     });
                 } else {
                     const bloomValue = +(bloom && painter.isBloom(mesh));
-                    mesh.setUniform('bloom', bloomValue);
+                    mesh.bloom = bloomValue;
                 }
 
                 painter.addMesh(mesh, progress);

@@ -46,6 +46,50 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
         this.GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
     }
 
+    buildMesh(atlas) {
+        const { features, center } = this._getFeaturesToRender();
+        if (!features.length) {
+            return;
+        }
+
+        //因为有虚线和没有虚线的line绘制逻辑不同，需要分开创建mesh
+        const feas = [];
+        const alphaFeas = [];
+        for (let i = 0; i < features.length; i++) {
+            const f = features[i];
+            if (f.properties && f.properties['_symbol_polygonOpacity'] < 1) {
+                alphaFeas.push(f);
+            } else {
+                feas.push(f);
+            }
+        }
+
+        const promises = [
+            this.createMesh(feas, atlas && atlas[0], center),
+            this.createMesh(alphaFeas, atlas && atlas[1], center)
+        ];
+
+        Promise.all(promises).then(mm => {
+            if (this.meshes) {
+                this.painter.deleteMesh(this.meshes);
+            }
+            const meshes = [];
+            const atlas = [];
+            for (let i = 0; i < mm.length; i++) {
+                if (mm[i] && mm[i].mesh) {
+                    meshes.push(mm[i].mesh);
+                    if (i === 1) {
+                        mm[i].mesh.transparent = true;
+                    }
+                    atlas[i] = mm[i].atlas;
+                }
+            }
+            this.meshes = meshes;
+            this.atlas = atlas;
+            this.setToRedraw();
+        });
+    }
+
     createPainter() {
         const FillPainter = Vector3DLayer.getPainterClass('fill');
         this.painterSymbol = extend({}, SYMBOL);

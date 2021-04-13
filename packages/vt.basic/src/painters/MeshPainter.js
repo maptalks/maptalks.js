@@ -134,9 +134,9 @@ class MeshPainter extends Painter {
         }
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
         if (this.getSymbol().ssr) {
-            mesh.setUniform('ssr', 1);
+            mesh.ssr = 1;
         } else {
-            mesh.setUniform('ssr', 0);
+            mesh.ssr = 0;
         }
     }
 

@@ -3,7 +3,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { isNumber, isNil, setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -228,6 +228,7 @@ class FillPainter extends BasicPainter {
                 return canvas ? canvas.height : 1;
             }
         };
+        const symbol = this.getSymbol();
         const renderer = this.layer.getRenderer();
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
@@ -261,7 +262,16 @@ class FillPainter extends BasicPainter {
                     // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
                     // 如果mask设为false，会出现 antialias 打开时，会被Ground的ssr覆盖的问题 （绘制时ssr需要对比深度值）
                     // 以上问题已经解决 #284
-                    // mask: false,
+                    mask: (context, props) => {
+                        if (!isNil(this.sceneConfig.depthMask)) {
+                            return !!this.sceneConfig.depthMask;
+                        }
+                        if (props.meshConfig.transparent) {
+                            return false;
+                        }
+                        const opacity = symbol['polygonOpacity'];
+                        return !(isNumber(opacity) && opacity < 1);
+                    },
                     func: this.sceneConfig.depthFunc || '<='
                 },
                 blend: {
