@@ -236,11 +236,11 @@
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
-      'uBaseColorFactor': [1, 1, 1, 1],
-      'uRoughnessFactor': 0.,
-      'uMetalnessFactor': 1,
-      'uOutputLinear': 1,
-      'uHsv': [0, 0, 0],
+      'baseColorFactor': [1, 1, 1, 1],
+      'roughnessFactor': 0.,
+      'metalnessFactor': 1,
+      'outputSRGB': 0,
+      'hsv': [0, 0, 0],
       'contrast': 1.5
     };
 
@@ -530,7 +530,7 @@
     }
 
     function updateTexture() {
-      litMaterial.uBaseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
+      litMaterial.baseColorTexture = 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg';
       layer.updateSymbol(0, style.style[0].symbol);
     }
 
@@ -592,6 +592,7 @@
         r: lights.ambient.orientation || 0,
         mode: lights.ambient.mode || 1,
         level: lights.ambient.level || 0,
+        brightness: lights.ambient.brightness || 0
       };
       var folder = gui.addFolder('ambient');
       folder.open();
@@ -609,6 +610,12 @@
       var lCtrl = folder.add(ambient, 'level', 0, 3, 1);
       lCtrl.onChange(function () {
         sceneConfig.environment.level = ambient.level;
+
+        groupLayer.setSceneConfig(sceneConfig);
+      });
+      var brightnessCtrl = folder.add(ambient, 'brightness', -1, 1, 0.001);
+      brightnessCtrl.onChange(function () {
+        sceneConfig.environment.brightness = ambient.brightness;
 
         groupLayer.setSceneConfig(sceneConfig);
       });
@@ -649,16 +656,16 @@
         layer.updateDataConfig(1, { defaultAltitude: scaleConfig.defaultAltitude });
       });
 
-      var hsvValue = { 色相: litMaterial.uHsv[0], 饱和度: litMaterial.uHsv[1], 亮度: litMaterial.uHsv[2], 对比度: litMaterial.contrast };
+      var hsvValue = { 色相: litMaterial.hsv[0], 饱和度: litMaterial.hsv[1], 亮度: litMaterial.hsv[2], 对比度: litMaterial.contrast };
       var hsvOnChange = function () {
         layer.updateSymbol(0, {
           material: {
-            "uHsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+            "hsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
           }
         });
         layer.updateSymbol(1, {
           material: {
-            "uHsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
+            "hsv": [hsvValue['色相'], hsvValue['饱和度'], hsvValue['亮度']]
           }
         });
       };
