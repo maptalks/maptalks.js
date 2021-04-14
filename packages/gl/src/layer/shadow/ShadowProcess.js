@@ -138,7 +138,6 @@ class ShadowProcess {
         this.renderer.render(this._shadowDisplayShader, {
             'halton': halton || [0, 0],
             'globalTexSize': [canvas.width, canvas.height],
-            'modelMatrix': ground.localTransform,
             'projMatrix': this._projMatrix,
             'viewMatrix': this._viewMatrix,
             'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),

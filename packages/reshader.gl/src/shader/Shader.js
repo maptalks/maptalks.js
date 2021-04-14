@@ -151,6 +151,9 @@ class Shader {
      * @returns {Any}
      */
     setUniforms(uniforms) {
+        if (uniforms['modelMatrix'] || uniforms['positionMatrix']) {
+            throw new Error('modelMatrix or positionMatrix is reserved uniform name for Mesh, please change to another name');
+        }
         if (this.context) {
             if (uniforms) {
                 for (const p in uniforms) {
