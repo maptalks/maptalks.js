@@ -7,10 +7,20 @@ const UNIFORM_TYPE = {
     array : 'array'
 };
 
+let uid = 0;
+
 class Shader {
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
         this.vert = vert;
         this.frag = frag;
+        const shaderId = uid++;
+        Object.defineProperty(this, 'uid', {
+            enumerable: true,
+            configurable: false,
+            get: () => {
+                return shaderId;
+            }
+        });
         //defines besides meshes : lights, etc
         this.shaderDefines = defines && extend({}, defines) || {};
 
@@ -75,36 +85,63 @@ class Shader {
     appendRenderUniforms(meshProps) {
         //append but not extend to save unnecessary object copies
         const context = this.context;
-        //TODO 这里以前是extend2，需要明确改用extend后是否会有bug
-        const props = extend(meshProps, context);
-        const uniforms = props;
-        const desc = this.contextDesc;
-        for (const p in desc) {
-            if (desc[p] && desc[p].type === 'array') {
-                //an array uniform's value
-                const name = p, len = desc[p].length;
-                // change uniform value to the following form as regl requires:
-                // foo[0]: 'value'
-                // foo[1]: 'value'
-                // foo[2]: 'value'
-                let values = context[p];
-                if (desc[p].fn) {
-                    // an array function
-                    values = desc[p].fn(context, props);
-                }
-                if (!values) {
-                    continue;
-                }
-                if (values.length !== len) {
-                    throw new Error(`${name} uniform's length is not ${len}`);
-                }
-                uniforms[name] = uniforms[name] || {};
-                for (let i = 0; i < len; i++) {
-                    uniforms[name][`${i}`] = values[i];
+        if (!meshProps._shaderUids) {
+            meshProps._shaderUids = {};
+        }
+        if (!meshProps._shaderUids[this.uid] || this._dirtyUniforms) {
+            this._dirtyUniforms = false;
+            for (const p in context) {
+                if (context.hasOwnProperty(p)) {
+                    Object.defineProperty(meshProps, p, {
+                        enumerable: true,
+                        configurable: true,
+                        get: () => {
+                            return meshProps._shaderContext && meshProps._shaderContext[p];
+                        }
+                    });
                 }
             }
+            const uniforms = meshProps;
+            const desc = this.contextDesc;
+            for (const p in desc) {
+                if (desc[p] && desc[p].type === 'array') {
+                    //an array uniform's value
+                    const name = p, len = desc[p].length;
+                    // change uniform value to the following form as regl requires:
+                    // foo[0]: 'value'
+                    // foo[1]: 'value'
+                    // foo[2]: 'value'
+                    uniforms[name] = uniforms[name] || {};
+                    for (let i = 0; i < len; i++) {
+                        // uniforms[name][`${i}`] = values[i];
+                        const index = i;
+                        Object.defineProperty(uniforms[name], `${i}`, {
+                            enumerable: true,
+                            configurable: true,
+                            get: () => {
+                                const context = meshProps._shaderContext;
+                                let values = context[p];
+                                if (desc[p].fn) {
+                                    // an array function
+                                    values = desc[p].fn(context, uniforms);
+                                }
+                                if (!values) {
+                                    return null;
+                                }
+                                if (values.length !== len) {
+                                    throw new Error(`${name} uniform's length is not ${len}`);
+                                }
+                                return values[index];
+                            }
+                        });
+                    }
+                }
+            }
+            meshProps._shaderUids[this.uid] = 1;
         }
-        return uniforms;
+        meshProps._shaderContext = context;
+
+        return meshProps;
     }
 
     /**
@@ -114,6 +151,21 @@ class Shader {
      * @returns {Any}
      */
     setUniforms(uniforms) {
+        if (this.context) {
+            if (uniforms) {
+                for (const p in uniforms) {
+                    const d0 = this.context.hasOwnProperty(p);
+                    const d1 = uniforms.hasOwnProperty(p);
+                    if (d0 !== d1) {
+                        this._dirtyUniforms = true;
+                        break;
+                    }
+                }
+            }
+        } else if (uniforms) {
+            this._dirtyUniforms = true;
+        }
+
         this.context = uniforms;
         return this;
     }
