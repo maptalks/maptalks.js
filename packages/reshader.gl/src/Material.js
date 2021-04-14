@@ -52,8 +52,8 @@ class Material {
         }
         if (dirty) {
             this._genUniformKeys();
+            this._incrVersion();
         }
-        this._incrVersion();
         return this;
     }
 
