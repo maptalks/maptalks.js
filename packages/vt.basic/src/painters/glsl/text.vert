@@ -41,7 +41,11 @@ attribute float aColorOpacity;
 #endif
 
 uniform float flipY;
-uniform float textRotation;
+#if defined(HAS_ROTATION)
+    attribute float aRotation;
+#else
+    uniform float textRotation;
+#endif
 
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
@@ -129,8 +133,11 @@ void main() {
         0.5 + 0.5 * (1.0 - distanceRatio),
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
-
-    float rotation = textRotation - mapRotation * isRotateWithMap;
+    #ifdef HAS_ROTATION
+        float rotation = aRotation / 9362.0 - mapRotation * isRotateWithMap;
+    #else
+        float rotation = textRotation - mapRotation * isRotateWithMap;
+    #endif
     if (isPitchWithMap == 1.0) {
         rotation += mapRotation;
     }

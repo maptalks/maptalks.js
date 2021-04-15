@@ -151,6 +151,11 @@ const SYMBOL = {
         default: 'viewport',
         property: '_symbol_markerRotationAlignment'
     },
+    markerRotation: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_markerRotation'
+    },
 
     //text properties
     textName: {
@@ -233,7 +238,11 @@ const SYMBOL = {
         default: 'viewport',
         property: '_symbol_textRotationAlignment'
     },
-
+    textRotation: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_textRotation'
+    },
 };
 
 const MAX_MARKER_SIZE = 255;

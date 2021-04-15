@@ -1,5 +1,5 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter } from '../../Util';
+import { setUniformFromSymbol, createColorSetter, wrap } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
@@ -48,7 +48,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
         prepareGeometry(geometry, enableCollision || enableUniquePlacement);
-        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign } = geometry.data;
+        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation } = geometry.data;
         if (aTextSize) {
             //for collision
             geometry.properties.aTextSize = geometry.properties[PREFIX + 'aTextSize'] || new aTextSize.constructor(aTextSize);
@@ -68,6 +68,10 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         if (aRotationAlign) {
             //for collision
             geometry.properties.aRotationAlign = geometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
+        }
+        if (aRotation) {
+            //for collision
+            geometry.properties.aRotation = geometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
         }
     }
 
@@ -160,6 +164,9 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         }
         if (geometry.data.aRotationAlign) {
             defines['HAS_ROTATION_ALIGN'] = 1;
+        }
+        if (geometry.data.aRotation) {
+            defines['HAS_ROTATION'] = 1;
         }
         mesh.setDefines(defines);
     });
@@ -353,8 +360,10 @@ export function getTextFnTypeConfig(map, symbolDef) {
     const textOpacityFn = interpolated(symbolDef['textOpacity']);
     const textPitchAlignmentFn = piecewiseConstant(symbolDef['textPitchAlignment']);
     const textRotationAlignmentFn = piecewiseConstant(symbolDef['textRotationAlignment']);
+    const textRotationFn = interpolated(symbolDef['textRotation']);
     const colorCache = {};
     const u8 = new Int16Array(1);
+    const u16 = new Uint16Array(1);
     return [
         {
             //geometry.data 中的属性数据
@@ -476,6 +485,18 @@ export function getTextFnTypeConfig(map, symbolDef) {
             evaluate: properties => {
                 const y = +(textRotationAlignmentFn(map.getZoom(), properties) === 'map');
                 return y;
+            }
+        },
+        {
+            attrName: 'aRotation',
+            symbolName: 'textRotation',
+            type: Uint16Array,
+            width: 1,
+            define: 'HAS_ROTATION',
+            evaluate: properties => {
+                const y = wrap(textRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                u16[0] = y * 9362;
+                return u16[0];
             }
         },
     ];

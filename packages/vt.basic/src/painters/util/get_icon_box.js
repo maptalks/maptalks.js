@@ -38,7 +38,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     // const { aShape, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
 
-    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign } = geoProps;
+    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign, aRotation } = geoProps;
     const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
     const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];
@@ -70,7 +70,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     vec2.mul(bl, bl, sizeScale);
     vec2.mul(br, br, sizeScale);
 
-    let rotation = -(symbol['markerRotation'] || 0) * Math.PI / 180;
+    let rotation = aRotation ? aRotation[i] / 9362 : -(symbol['markerRotation'] || 0) * Math.PI / 180;
 
     //1. 获得shape的tl, tr, bl, 和br
     //2. 计算旋转矩阵: shapeMatrix

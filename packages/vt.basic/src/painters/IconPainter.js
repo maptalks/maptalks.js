@@ -5,7 +5,7 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
-import { setUniformFromSymbol, isNil, fillArray } from '../Util';
+import { setUniformFromSymbol, isNil, fillArray, wrap } from '../Util';
 import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 
 import textVert from './glsl/text.vert';
@@ -75,7 +75,9 @@ class IconPainter extends CollisionPainter {
         this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
         this._markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
         this._markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
+        this._markerRotationFn = interpolated(symbolDef['markerRotation']);
         const u8 = new Int16Array(1);
+        const u16 = new Uint16Array(1);
         return [
             {
                 attrName: 'aMarkerWidth',
@@ -170,6 +172,18 @@ class IconPainter extends CollisionPainter {
                     return y;
                 }
             },
+            {
+                attrName: 'aRotation',
+                symbolName: 'textRotation',
+                type: Uint16Array,
+                width: 1,
+                define: 'HAS_ROTATION',
+                evaluate: properties => {
+                    const y = wrap(this._markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                    u16[0] = y * 9362;
+                    return u16[0];
+                }
+            },
         ];
     }
 
@@ -219,7 +233,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _prepareIconGeometry(iconGeometry) {
-        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign } = iconGeometry.data;
+        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation } = iconGeometry.data;
         if (aMarkerWidth) {
             //for collision
             iconGeometry.properties.aMarkerWidth = iconGeometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
@@ -244,7 +258,10 @@ class IconPainter extends CollisionPainter {
             //for collision
             iconGeometry.properties.aRotationAlign = iconGeometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
         }
-
+        if (aRotation) {
+            //for collision
+            iconGeometry.properties.aRotation = iconGeometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
+        }
     }
 
     createMesh(geometries, transform) {
@@ -354,6 +371,9 @@ class IconPainter extends CollisionPainter {
         }
         if (geometry.data.aRotationAlign) {
             defines['HAS_ROTATION_ALIGN'] = 1;
+        }
+        if (geometry.data.aRotation) {
+            defines['HAS_ROTATION'] = 1;
         }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);

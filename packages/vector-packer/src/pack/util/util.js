@@ -74,3 +74,12 @@ export function isOut(point, extent) {
 export function isNil(v) {
     return v === null || v === undefined;
 }
+
+export function wrap(n, min, max) {
+    if (n === max || n === min) {
+        return n;
+    }
+    const d = max - min;
+    const w = ((n - min) % d + d) % d + min;
+    return w;
+}
