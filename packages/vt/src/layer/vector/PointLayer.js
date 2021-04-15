@@ -246,7 +246,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
     }
 
     createPainter() {
-        const IconPainter = Vector3DLayer.getPainterClass('icon');
+        const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         this.painterSymbol = extend({}, SYMBOL);
         const painter = new IconPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
         if (this.layer.getGeometries()) {

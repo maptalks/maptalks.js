@@ -91,7 +91,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
     }
 
     createPainter() {
-        const FillPainter = Vector3DLayer.getPainterClass('fill');
+        const FillPainter = Vector3DLayer.get3DPainterClass('fill');
         this.painterSymbol = extend({}, SYMBOL);
         const painter = new FillPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
         if (this.layer.getGeometries()) {

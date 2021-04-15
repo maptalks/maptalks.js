@@ -104,6 +104,7 @@ class VectorTileLayer extends maptalks.TileLayer {
                     $root: root,
                     style: json
                 });
+                this.options['style'] = url;
             });
             return this;
         }
@@ -430,10 +431,10 @@ class VectorTileLayer extends maptalks.TileLayer {
 
         update();
 
+        this._compileStyle();
         if (needRefresh) {
-            this.setStyle(this._vtStyle);
+            renderer.setStyle();
         } else {
-            this._compileStyle();
             renderer.updateSymbol(type, rendererIdx, symbol);
         }
         if (type === 0) {
@@ -541,17 +542,40 @@ class VectorTileLayer extends maptalks.TileLayer {
         };
     }
 
+    /**
+     * Identify the data on the given container point
+     * @param  {maptalks.Point} point   - point to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Object[]} data identified
+     */
     identify(coordinate, options = {}) {
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
             return [];
         }
-        let cp = coordinate;
-        if (!(coordinate instanceof map.getViewPoint().constructor)) {
-            cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        return this.identifyOnPoint(cp, options);
+    }
+
+    /**
+     * Identify the data on the given container point
+     * @param  {maptalks.Point} point   - point to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Object[]} data identified
+     */
+    identifyAtPoint(point, options = {}) {
+        const map = this.getMap();
+        const renderer = this.getRenderer();
+        if (!map || !renderer) {
+            return [];
         }
-        return renderer.pick(cp.x, cp.y, options);
+        const dpr = map.getDevicePixelRatio();
+        return renderer.pick(point.x * dpr, point.y * dpr, options);
     }
 
     /**

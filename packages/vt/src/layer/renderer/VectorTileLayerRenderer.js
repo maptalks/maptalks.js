@@ -876,11 +876,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     pick(x, y, options) {
-        if (maptalks['Browser']['retina']) {
-            const dpr = this.getMap().getDevicePixelRatio();
-            x *= dpr;
-            y *= dpr;
-        }
         const hits = [];
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {

@@ -124,7 +124,7 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
     }
 
     createPainter() {
-        const LinePainter = Vector3DLayer.getPainterClass('line');
+        const LinePainter = Vector3DLayer.get3DPainterClass('line');
         this.painterSymbol = extend({}, SYMBOL);
         const painter = new LinePainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
         if (this.layer.getGeometries()) {

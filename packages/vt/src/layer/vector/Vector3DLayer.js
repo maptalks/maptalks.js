@@ -20,7 +20,7 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         Vector3DLayer.painters[name] = clazz;
     }
 
-    static getPainterClass(name) {
+    static get3DPainterClass(name) {
         return Vector3DLayer.painters[name];
     }
 
@@ -85,10 +85,25 @@ class Vector3DLayer extends maptalks.OverlayLayer {
             return [];
         }
         const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        return this.identifyAtPoint(cp, options);
+    }
+
+    /**
+     * Identify the geometries on the given container point
+     * @param  {maptalks.Point} point   - point to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Geometry[]} geometries identified
+     */
+    identifyAtPoint(point, options = {}) {
+        const map = this.getMap();
+        const renderer = this.getRenderer();
+        if (!map || !renderer) {
+            return [];
+        }
         const dpr = this.getMap().getDevicePixelRatio();
-        const x = cp.x * dpr;
-        const y = cp.y * dpr;
-        return renderer.pick(x, y, options);
+        return renderer.pick(point.x * dpr, point.y * dpr, options);
     }
 
     getComputedStyle() {
