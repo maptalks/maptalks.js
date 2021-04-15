@@ -62,6 +62,11 @@ uniform float tileRatio; //EXTENT / tileSize
         attribute float aTextHaloRadius;
         varying float vTextHaloRadius;
     #endif
+
+    #ifdef HAS_TEXT_HALO_OPACITY
+        attribute float aTextHaloOpacity;
+        varying float vTextHaloOpacity;
+    #endif
 #else
     #include <fbo_picking_vert>
 #endif
@@ -147,6 +152,10 @@ void main() {
 
         #ifdef HAS_TEXT_HALO_RADIUS
             vTextHaloRadius = aTextHaloRadius;
+        #endif
+
+        #ifdef HAS_TEXT_HALO_OPACITY
+            vTextHaloOpacity = aTextHaloOpacity;
         #endif
     #else
         #ifdef ENABLE_COLLISION

@@ -213,6 +213,11 @@ const SYMBOL = {
         default: undefined,
         property: '_symbol_textHaloFill'
     },
+    textHaloOpacity: {
+        type: 'identity',
+        default: 1,
+        property: '_symbol_textHaloOpacity'
+    },
     textDx: {
         type: 'identity',
         default: undefined,

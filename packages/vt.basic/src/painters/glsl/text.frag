@@ -10,7 +10,11 @@ uniform float textOpacity;
 uniform highp float gammaScale;
 uniform int isHalo;
 uniform highp float textHaloBlur;
-uniform float textHaloOpacity;
+#ifdef HAS_TEXT_HALO_OPACITY
+    varying float vTextHaloOpacity;
+#else
+    uniform float textHaloOpacity;
+#endif
 
 varying vec2 vTexCoord;
 varying float vSize;
@@ -60,7 +64,12 @@ void main() {
         color = haloFill;
         gamma = (textHaloBlur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * gammaScale);
         buff = (6.0 - haloRadius / fontScale) / SDF_PX;
-        color *= textHaloOpacity * 1.25;
+        #ifdef HAS_TEXT_HALO_OPACITY
+            float haloOpacity = vTextHaloOpacity / 255.0;
+        #else
+            float haloOpacity = textHaloOpacity;
+        #endif
+        color *= haloOpacity * 1.25;
     }
 
     float dist = texture2D(texture, vTexCoord).a;
