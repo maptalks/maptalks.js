@@ -150,9 +150,12 @@ class Mesh {
     }
 
     setDefines(defines) {
-        const old = this.defines;
+        const bak = this._bakDefines;
         this.defines = defines;
-        this.dirtyDefines = !!old !== !!defines || !equalDefine(old, defines);
+        this.dirtyDefines = !!bak !== !!defines || !equalDefine(bak, defines);
+        if (this.dirtyDefines) {
+            this._bakDefines = extend({}, defines);
+        }
         return this;
     }
 
@@ -317,8 +320,8 @@ Mesh.prototype.getWorldTransform = function () {
 export default Mesh;
 
 function equalDefine(obj0, obj1) {
-    if (!obj0 || !obj1) {
-        return false;
+    if (!obj0 && !obj1) {
+        return true;
     }
     const props0 = Object.getOwnPropertyNames(obj0);
     const props1 = Object.getOwnPropertyNames(obj1);
