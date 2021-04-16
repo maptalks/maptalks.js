@@ -61,9 +61,9 @@ class WaterPainter extends BasicPainter {
     _prepareMesh(mesh) {
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
         if (this.getSymbol().ssr) {
-            mesh.setUniform('ssr', 1);
+            mesh.ssr = 1;
         } else {
-            mesh.setUniform('ssr', 0);
+            mesh.ssr = 0;
         }
     }
 
@@ -82,9 +82,9 @@ class WaterPainter extends BasicPainter {
         }
         this.updateIBLDefines(shader);
         if (isSsr) {
-            this._water.setUniform('ssr', 1);
+            this._water.ssr = 1;
         } else {
-            this._water.setUniform('ssr', 0);
+            this._water.ssr = 0;
         }
         super.paint(context);
         if (isSsr) {
