@@ -97,8 +97,21 @@ class MeshShader extends Shader {
     }
 
     getMeshCommand(regl, mesh) {
-        const key = this._dkey || '';
-        const dKey = key + '_' + mesh.getCommandKey(regl);
+        if (!this._cmdKeys) {
+            this._cmdKeys = {};
+        }
+        const key = this._dkey || 'default';
+        let storedKeys = this._cmdKeys[key];
+        if (!storedKeys) {
+            storedKeys = this._cmdKeys[key] = {};
+        }
+        const meshKey = mesh.getCommandKey(regl);
+        if (!storedKeys[meshKey]) {
+            storedKeys[meshKey] = key + '_' + mesh.getCommandKey(regl);
+        }
+        const dKey = storedKeys[meshKey];
+        // const key = this._dkey || '';
+        // const dKey = key + '_' + mesh.getCommandKey(regl);
         let command = this.commands[dKey];
         if (!command) {
             const defines = mesh.getDefines();

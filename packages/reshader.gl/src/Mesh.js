@@ -150,8 +150,9 @@ class Mesh {
     }
 
     setDefines(defines) {
+        const old = this.defines;
         this.defines = defines;
-        this.dirtyDefines = true;
+        this.dirtyDefines = !!old !== !!defines || !equalDefine(old, defines);
         return this;
     }
 
@@ -314,3 +315,20 @@ Mesh.prototype.getWorldTransform = function () {
 }();
 
 export default Mesh;
+
+function equalDefine(obj0, obj1) {
+    if (!obj0 || !obj1) {
+        return false;
+    }
+    const props0 = Object.getOwnPropertyNames(obj0);
+    const props1 = Object.getOwnPropertyNames(obj1);
+    if (props0.length !== props1.length) {
+        return false;
+    }
+    for (let i = 0; i < props0.length; i++) {
+        if (obj0[props0[i]] !== obj1[props0[i]]) {
+            return false;
+        }
+    }
+    return true;
+}
