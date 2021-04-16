@@ -104,6 +104,14 @@ class Mesh {
         return this._cfg;
     }
 
+    get defines() {
+        return this._defines;
+    }
+
+    set defines(v) {
+        this.setDefines(v);
+    }
+
     setMaterial(material) {
         this._material = material;
         this._dirtyUniforms = true;
@@ -140,8 +148,8 @@ class Mesh {
 
     getDefines() {
         const defines = {};
-        if (this.defines) {
-            extend(defines, this.defines);
+        if (this._defines) {
+            extend(defines, this._defines);
         }
         if (this._material && this._geometry) {
             this._material.appendDefines(defines, this._geometry);
@@ -151,7 +159,7 @@ class Mesh {
 
     setDefines(defines) {
         const bak = this._bakDefines;
-        this.defines = defines;
+        this._defines = defines;
         this.dirtyDefines = !!bak !== !!defines || !equalDefine(bak, defines);
         if (this.dirtyDefines) {
             this._bakDefines = extend({}, defines);
