@@ -99,7 +99,7 @@ class Material {
                     enumerable: true,
                     configurable: true,
                     get: function () {
-                        return uniforms && uniforms[p];
+                        return uniforms[p];
                     }
                 });
             }
