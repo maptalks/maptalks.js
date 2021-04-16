@@ -203,7 +203,7 @@ class Mesh {
                             enumerable: true,
                             configurable: true,
                             get: function () {
-                                return materialUniforms && materialUniforms[p];
+                                return materialUniforms[p];
                             }
                         });
                     }
@@ -216,7 +216,7 @@ class Mesh {
                         enumerable: true,
                         configurable: true,
                         get: function () {
-                            return uniforms && uniforms[p];
+                            return uniforms[p];
                         }
                     });
                 }

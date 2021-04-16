@@ -56,6 +56,12 @@ class MeshShader extends Shader {
         if (!this.context) {
             return;
         }
+        if (!v._contextKeys) {
+            v._contextKeys = {};
+        }
+        if (v._contextKeys[this.uid] === this._contextKeys) {
+            return;
+        }
         for (const p in this.context) {
             if (!Object.getOwnPropertyDescriptor(v, p)) {
                 Object.defineProperty(v, p, {
@@ -67,6 +73,7 @@ class MeshShader extends Shader {
                 });
             }
         }
+        v._contextKeys[this.uid] = this._contextKeys;
     }
 
     // filter() {

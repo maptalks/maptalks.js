@@ -127,6 +127,7 @@ class Shader {
         if (uniforms['modelMatrix'] || uniforms['positionMatrix']) {
             throw new Error('modelMatrix or positionMatrix is reserved uniform name for Mesh, please change to another name');
         }
+        this._contextKeys = uniforms ? Object.keys(uniforms).join() : null;
         this.context = uniforms;
         return this;
     }
