@@ -36,9 +36,13 @@ class MeshShader extends Shader {
                 preCommand(props);
                 props.length = 0;
             }
-            const meshProps = meshes[i].getREGLProps(regl, command.activeAttributes);
-            this.appendRenderUniforms(meshProps);
-            props.push(meshProps);
+
+            const v = meshes[i].getREGLProps(regl, command.activeAttributes);
+            this._ensureContextDefines(v);
+            v._shaderContext = this.context;
+            this.appendDescUniforms(v);
+            props.push(v);
+
             if (i < l - 1) {
                 preCommand = command;
             } else if (i === l - 1) {
@@ -46,6 +50,23 @@ class MeshShader extends Shader {
             }
         }
         return this;
+    }
+
+    _ensureContextDefines(v) {
+        if (!this.context) {
+            return;
+        }
+        for (const p in this.context) {
+            if (!Object.getOwnPropertyDescriptor(v, p)) {
+                Object.defineProperty(v, p, {
+                    configurable: false,
+                    enumerable: true,
+                    get: function () {
+                        return this._shaderContext && this._shaderContext[p];
+                    }
+                });
+            }
+        }
     }
 
     // filter() {

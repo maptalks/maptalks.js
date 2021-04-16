@@ -82,66 +82,39 @@ class Shader {
      * Get shader's context uniforms values
      * @param {Object} meshProps - mesh uniforms
      */
-    appendRenderUniforms(meshProps) {
-        //append but not extend to save unnecessary object copies
-        const context = this.context;
-        if (!meshProps._shaderUids) {
-            meshProps._shaderUids = {};
-        }
-        if (!meshProps._shaderUids[this.uid] || this._dirtyUniforms) {
-            this._dirtyUniforms = false;
-            for (const p in context) {
-                if (context.hasOwnProperty(p)) {
-                    Object.defineProperty(meshProps, p, {
-                        enumerable: true,
-                        configurable: true,
-                        get: () => {
-                            return meshProps._shaderContext && meshProps._shaderContext[p];
-                        }
-                    });
+    appendDescUniforms(meshProps) {
+        // const context = this.context;
+        //TODO 这里以前是extend2，需要明确改用extend后是否会有bug
+        // const props = extend(meshProps, context);
+        const uniforms = meshProps;
+        const desc = this.contextDesc;
+        for (const p in desc) {
+            if (desc[p] && desc[p].type === 'array') {
+                //an array uniform's value
+                const name = p, len = desc[p].length;
+                // change uniform value to the following form as regl requires:
+                // foo[0]: 'value'
+                // foo[1]: 'value'
+                // foo[2]: 'value'
+                let values = meshProps[p];
+                if (desc[p].fn) {
+                    // an array function
+                    values = desc[p].fn(null, meshProps);
+                }
+                if (!values) {
+                    continue;
+                }
+                if (values.length !== len) {
+                    throw new Error(`${name} uniform's length is not ${len}`);
+                }
+                uniforms[name] = uniforms[name] || {};
+                for (let i = 0; i < len; i++) {
+                    uniforms[name][`${i}`] = values[i];
                 }
             }
-            const uniforms = meshProps;
-            const desc = this.contextDesc;
-            for (const p in desc) {
-                if (desc[p] && desc[p].type === 'array') {
-                    //an array uniform's value
-                    const name = p, len = desc[p].length;
-                    // change uniform value to the following form as regl requires:
-                    // foo[0]: 'value'
-                    // foo[1]: 'value'
-                    // foo[2]: 'value'
-                    uniforms[name] = uniforms[name] || {};
-                    for (let i = 0; i < len; i++) {
-                        // uniforms[name][`${i}`] = values[i];
-                        const index = i;
-                        Object.defineProperty(uniforms[name], `${i}`, {
-                            enumerable: true,
-                            configurable: true,
-                            get: () => {
-                                const context = meshProps._shaderContext;
-                                let values = context[p];
-                                if (desc[p].fn) {
-                                    // an array function
-                                    values = desc[p].fn(context, uniforms);
-                                }
-                                if (!values) {
-                                    return null;
-                                }
-                                if (values.length !== len) {
-                                    throw new Error(`${name} uniform's length is not ${len}`);
-                                }
-                                return values[index];
-                            }
-                        });
-                    }
-                }
-            }
-            meshProps._shaderUids[this.uid] = 1;
         }
-        meshProps._shaderContext = context;
 
-        return meshProps;
+        return uniforms;
     }
 
     /**
@@ -154,21 +127,6 @@ class Shader {
         if (uniforms['modelMatrix'] || uniforms['positionMatrix']) {
             throw new Error('modelMatrix or positionMatrix is reserved uniform name for Mesh, please change to another name');
         }
-        if (this.context) {
-            if (uniforms) {
-                for (const p in uniforms) {
-                    const d0 = this.context.hasOwnProperty(p);
-                    const d1 = uniforms.hasOwnProperty(p);
-                    if (d0 !== d1) {
-                        this._dirtyUniforms = true;
-                        break;
-                    }
-                }
-            }
-        } else if (uniforms) {
-            this._dirtyUniforms = true;
-        }
-
         this.context = uniforms;
         return this;
     }
