@@ -99,45 +99,43 @@ export default class Geometry {
     }
 
     getREGLData(regl, activeAttributes) {
-        const updated = !this._reglData;
-        if (updated || this._isAttrChanged(activeAttributes)) {
+        const updated = !this._reglData || !this._reglData[activeAttributes.key];
+        if (!this._reglData) {
+            this._reglData = {};
+        }
+        if (updated) {
+            const reglData = this._reglData[activeAttributes.key] = {};
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute, color0Attribute } = this.desc;
-            this._reglData = extend({}, this.data);
-            delete this._reglData[positionAttribute];
-            this._reglData['aPosition'] = data[positionAttribute];
+            extend(reglData, this.data);
+            reglData['aPosition'] = data[positionAttribute];
             if (data[normalAttribute]) {
-                delete this._reglData[normalAttribute];
-                this._reglData['aNormal'] = data[normalAttribute];
+                reglData['aNormal'] = data[normalAttribute];
             }
             if (data[uv0Attribute]) {
-                delete this._reglData[uv0Attribute];
-                this._reglData['aTexCoord'] = data[uv0Attribute];
+                reglData['aTexCoord'] = data[uv0Attribute];
             }
             if (data[uv1Attribute]) {
-                delete this._reglData[uv1Attribute];
-                this._reglData['aTexCoord1'] = data[uv1Attribute];
+                reglData['aTexCoord1'] = data[uv1Attribute];
             }
             if (data[tangentAttribute]) {
-                delete this._reglData[tangentAttribute];
-                this._reglData['aTangent'] = data[tangentAttribute];
+                reglData['aTangent'] = data[tangentAttribute];
             }
             if (data[color0Attribute]) {
-                delete this._reglData[color0Attribute];
-                this._reglData['aColor0'] = data[color0Attribute];
+                reglData['aColor0'] = data[color0Attribute];
             }
-            this._activeAttributes = activeAttributes;
         }
         //support vao
         if (isSupportVAO(regl)) {
             const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._elementsUpdated) {
+                const reglData = this._reglData[activeAttributes.key];
                 const vertexCount = this.getVertexCount();
                 const buffers = activeAttributes.map(p => {
                     const attr = p.name;
-                    const buffer = this._reglData[attr] && this._reglData[attr].buffer;
+                    const buffer = reglData[attr] && reglData[attr].buffer;
                     if (!buffer || !buffer.destroy) {
-                        const data = this._reglData[attr];
+                        const data = reglData[attr];
                         const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
                         if (data.data) {
                             data.dimension = dimension;
@@ -177,7 +175,7 @@ export default class Geometry {
             }
             return this._vao[key];
         }
-        return this._reglData;
+        return this._reglData[activeAttributes.key];
     }
 
     _isAttrChanged(activeAttributes) {
