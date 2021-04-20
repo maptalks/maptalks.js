@@ -156,6 +156,16 @@ const SYMBOL = {
         default: 0,
         property: '_symbol_markerRotation'
     },
+    markerAllowOverlap: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_markerAllowOverlap'
+    },
+    markerIgnorePlacement: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_markerIgnorePlacement'
+    },
 
     //text properties
     textName: {
@@ -247,6 +257,16 @@ const SYMBOL = {
         type: 'identity',
         default: 0,
         property: '_symbol_textRotation'
+    },
+    textAllowOverlap: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_textAllowOverlap'
+    },
+    textIgnorePlacement: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_textIgnorePlacement'
     },
 };
 

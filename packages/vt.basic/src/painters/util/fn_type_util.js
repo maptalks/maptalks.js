@@ -129,7 +129,7 @@ export function updateGeometryFnTypeAttrib(regl, symbolDef, config, meshes, z) {
             if (!arr) {
                 //原有的arr和define要删除
                 if (define) {
-                    const defines = mesh.getDefines();
+                    const defines = mesh.defines;
                     if (defines[define]) {
                         delete defines[define];
                         mesh.setDefines(defines);
@@ -139,7 +139,7 @@ export function updateGeometryFnTypeAttrib(regl, symbolDef, config, meshes, z) {
                 //增加了新的fn-type arr，相应的需要增加define
                 updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
                 if (define) {
-                    const defines = mesh.getDefines();
+                    const defines = mesh.defines;
                     defines[define] = 1;
                     mesh.setDefines(defines);
                 }

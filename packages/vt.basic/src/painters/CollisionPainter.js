@@ -250,7 +250,7 @@ export default class CollisionPainter extends BasicPainter {
         }
 
         if (visible || isFading) {
-            if (!symbol[this.propIgnorePlacement] && collision && collision.boxes) {
+            if (!this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes) {
                 // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
                 //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
                 // }
@@ -303,14 +303,47 @@ export default class CollisionPainter extends BasicPainter {
 
     _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex) {
         const symbol = mesh.geometry.properties.symbol;
-        if (symbol[this.propIgnorePlacement] && symbol[this.propAllowOverlap]) {
+        const isIgnorePlacement = this._isIgnorePlacement(symbol, mesh, elements[start]);
+        const isAllowOverlap = this._isAllowOverlap(symbol, mesh, elements[start]);
+        if (isIgnorePlacement && isAllowOverlap) {
             return NO_COLLISION;
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
-        if (symbol[this.propAllowOverlap]) {
+        if (isAllowOverlap) {
             collision.collides = 0;
         }
         return collision;
+    }
+
+    _isIgnorePlacement(symbol, mesh, index) {
+        const aOverlap = mesh.geometry.properties['aOverlap'];
+        if (!aOverlap) {
+            return +symbol[this.propIgnorePlacement] === 1;
+        }
+        const v = aOverlap[index];
+        const placement = v % 8;
+        // aOverlap中，最后四位的含义: [allowOverlap是否动态][allowOverlap的值][ignorePlacement是否动态][ignorePlacement的值]
+        if (v < 2) {
+            // 不是动态的 placement，直接读取symbol上的定义
+            return +symbol[this.propIgnorePlacement] === 1;
+        } else {
+            return placement % 2;
+        }
+    }
+
+    _isAllowOverlap(symbol, mesh, index) {
+        const aOverlap = mesh.geometry.properties['aOverlap'];
+        if (!aOverlap) {
+            return +symbol[this.propAllowOverlap] === 1;
+        }
+        const v = aOverlap[index];
+        const overlap = v >> 2;
+        if (v < 2) {
+            // 不是动态的 allowOverlap，直接读取symbol上的定义
+            return +symbol[this.propAllowOverlap] === 1;
+        } else {
+            return overlap % 2;
+        }
     }
 
     _fillCollisionIndex(boxes, mesh) {

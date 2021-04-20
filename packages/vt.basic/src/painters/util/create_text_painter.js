@@ -48,7 +48,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
         prepareGeometry(geometry, enableCollision || enableUniquePlacement);
-        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation } = geometry.data;
+        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = geometry.data;
         if (aTextSize) {
             //for collision
             geometry.properties.aTextSize = geometry.properties[PREFIX + 'aTextSize'] || new aTextSize.constructor(aTextSize);
@@ -72,6 +72,10 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         if (aRotation) {
             //for collision
             geometry.properties.aRotation = geometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
+        }
+        if (aOverlap) {
+            //for collision
+            geometry.properties.aOverlap = geometry.properties[PREFIX + 'aOverlap'] || new aOverlap.constructor(aOverlap);
         }
     }
 
@@ -365,6 +369,8 @@ export function getTextFnTypeConfig(map, symbolDef) {
     const textPitchAlignmentFn = piecewiseConstant(symbolDef['textPitchAlignment']);
     const textRotationAlignmentFn = piecewiseConstant(symbolDef['textRotationAlignment']);
     const textRotationFn = interpolated(symbolDef['textRotation']);
+    const textAllowOverlapFn = piecewiseConstant(symbolDef['textAllowOverlapFn']);
+    const textIgnorePlacementFn = piecewiseConstant(symbolDef['textIgnorePlacement']);
     const colorCache = {};
     const u8 = new Int16Array(1);
     const u16 = new Uint16Array(1);
@@ -515,6 +521,35 @@ export function getTextFnTypeConfig(map, symbolDef) {
                 return u16[0];
             }
         },
+        {
+            attrName: 'aOverlap',
+            symbolName: 'textAllowOverlap',
+            type: Uint8Array,
+            width: 1,
+            evaluate: properties => {
+                let overlap = textAllowOverlapFn(map.getZoom(), properties) || 0;
+                let placement = (textIgnorePlacementFn ? textIgnorePlacementFn(map.getZoom(), properties) : symbolDef['textIgnorePlacement']) || 0;
+                overlap = 1 << 3 + overlap * (1 << 2);
+                placement = (textIgnorePlacementFn ? 1 << 1 : 0) + placement;
+                return overlap + placement;
+            }
+        },
+        // 因为 textAllowOverlap 和 textIgnorePlacement 共用一个 aOverlap
+        // 如果 textAllowOverlap 和 textIgnorePlacement 同时定义，会重复计算一次。
+        // 这里稍微牺牲一些性能，保持程序逻辑的简洁
+        {
+            attrName: 'aOverlap',
+            symbolName: 'textIgnorePlacement',
+            type: Uint8Array,
+            width: 1,
+            evaluate: properties => {
+                let overlap = (textAllowOverlapFn ? textAllowOverlapFn(map.getZoom(), properties) : symbolDef['textAllowOverlap']) || 0;
+                let placement = textIgnorePlacementFn(map.getZoom(), properties) || 0;
+                overlap = (textAllowOverlapFn ? 1 << 3 : 0) + overlap * (1 << 2);
+                placement = 1 << 1 + placement;
+                return overlap + placement;
+            }
+        }
     ];
 }
 

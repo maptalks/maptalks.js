@@ -67,15 +67,17 @@ class IconPainter extends CollisionPainter {
     _getIconFnTypeConfig() {
         const map = this.getMap();
         const symbolDef = this.symbolDef;
-        this._markerWidthFn = interpolated(symbolDef['markerWidth']);
-        this._markerHeightFn = interpolated(symbolDef['markerHeight']);
-        this._markerDxFn = interpolated(symbolDef['markerDx']);
-        this._markerDyFn = interpolated(symbolDef['markerDy']);
-        this._markerOpacityFn = interpolated(symbolDef['markerOpacity']);
-        this._markerTextFitFn = interpolated(symbolDef['markerTextFit']);
-        this._markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
-        this._markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
-        this._markerRotationFn = interpolated(symbolDef['markerRotation']);
+        const markerWidthFn = interpolated(symbolDef['markerWidth']);
+        const markerHeightFn = interpolated(symbolDef['markerHeight']);
+        const markerDxFn = interpolated(symbolDef['markerDx']);
+        const markerDyFn = interpolated(symbolDef['markerDy']);
+        const markerOpacityFn = interpolated(symbolDef['markerOpacity']);
+        const markerTextFitFn = interpolated(symbolDef['markerTextFit']);
+        const markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
+        const markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
+        const markerRotationFn = interpolated(symbolDef['markerRotation']);
+        const markerAllowOverlapFn = piecewiseConstant(symbolDef['markerAllowOverlapFn']);
+        const markerIgnorePlacementFn = piecewiseConstant(symbolDef['markerIgnorePlacement']);
         const u8 = new Int16Array(1);
         const u16 = new Uint16Array(1);
         return [
@@ -88,11 +90,11 @@ class IconPainter extends CollisionPainter {
                 evaluate: (properties, value) => {
                     const markerTextFit = this.symbolDef['markerTextFit'];
                     //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
-                    const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'width') {
                         return value;
                     }
-                    const x = this._markerWidthFn(map.getZoom(), properties);
+                    const x = markerWidthFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -105,11 +107,11 @@ class IconPainter extends CollisionPainter {
                 define: 'HAS_MARKER_HEIGHT',
                 evaluate: (properties, value) => {
                     const markerTextFit = this.symbolDef['markerTextFit'];
-                    const textFit = this._markerTextFitFn ? this._markerTextFitFn(map.getZoom(), properties) : markerTextFit;
+                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                     if (textFit === 'both' || textFit === 'height') {
                         return value;
                     }
-                    const x = this._markerHeightFn(map.getZoom(), properties);
+                    const x = markerHeightFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -121,7 +123,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_MARKER_DX',
                 evaluate: properties => {
-                    const x = this._markerDxFn(map.getZoom(), properties);
+                    const x = markerDxFn(map.getZoom(), properties);
                     u8[0] = x;
                     return u8[0];
                 }
@@ -133,7 +135,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_MARKER_DY',
                 evaluate: properties => {
-                    const y = this._markerDyFn(map.getZoom(), properties);
+                    const y = markerDyFn(map.getZoom(), properties);
                     u8[0] = y;
                     return u8[0];
                 }
@@ -145,7 +147,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_OPACITY',
                 evaluate: properties => {
-                    const y = this._markerOpacityFn(map.getZoom(), properties);
+                    const y = markerOpacityFn(map.getZoom(), properties);
                     u8[0] = y * 255;
                     return u8[0];
                 }
@@ -157,7 +159,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_PITCH_ALIGN',
                 evaluate: properties => {
-                    const y = +(this._markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
+                    const y = +(markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
                     return y;
                 }
             },
@@ -168,7 +170,7 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_ROTATION_ALIGN',
                 evaluate: properties => {
-                    const y = +(this._markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
+                    const y = +(markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
                     return y;
                 }
             },
@@ -179,11 +181,40 @@ class IconPainter extends CollisionPainter {
                 width: 1,
                 define: 'HAS_ROTATION',
                 evaluate: properties => {
-                    const y = wrap(this._markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
+                    const y = wrap(markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
                     u16[0] = y * 9362;
                     return u16[0];
                 }
             },
+            {
+                attrName: 'aOverlap',
+                symbolName: 'markerAllowOverlap',
+                type: Uint8Array,
+                width: 1,
+                evaluate: properties => {
+                    let overlap = markerAllowOverlapFn(map.getZoom(), properties) || 0;
+                    let placement = (markerIgnorePlacementFn ? markerIgnorePlacementFn(map.getZoom(), properties) : symbolDef['markerIgnorePlacement']) || 0;
+                    overlap = 1 << 3 + overlap * (1 << 2);
+                    placement = (markerIgnorePlacementFn ? 1 << 1 : 0) + placement;
+                    return overlap + placement;
+                }
+            },
+            // 因为 markerAllowOverlap 和 markerIgnorePlacement 共用一个 aOverlap
+            // 如果 markerAllowOverlap 和 markerIgnorePlacement 同时定义，会重复计算一次。
+            // 这里稍微牺牲一些性能，保持程序逻辑的简洁
+            {
+                attrName: 'aOverlap',
+                symbolName: 'markerIgnorePlacement',
+                type: Uint8Array,
+                width: 1,
+                evaluate: properties => {
+                    let overlap = (markerAllowOverlapFn ? markerAllowOverlapFn(map.getZoom(), properties) : symbolDef['markerAllowOverlap']) || 0;
+                    let placement = markerIgnorePlacementFn(map.getZoom(), properties) || 0;
+                    overlap = (markerAllowOverlapFn ? 1 << 3 : 0) + overlap * (1 << 2);
+                    placement = (1 << 1) + placement;
+                    return overlap + placement;
+                }
+            }
         ];
     }
 
@@ -233,7 +264,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _prepareIconGeometry(iconGeometry) {
-        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation } = iconGeometry.data;
+        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = iconGeometry.data;
         if (aMarkerWidth) {
             //for collision
             iconGeometry.properties.aMarkerWidth = iconGeometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
@@ -261,6 +292,10 @@ class IconPainter extends CollisionPainter {
         if (aRotation) {
             //for collision
             iconGeometry.properties.aRotation = iconGeometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
+        }
+        if (aOverlap) {
+            //for placement
+            iconGeometry.properties.aOverlap = iconGeometry.properties[PREFIX + 'aOverlap'] || new aOverlap.constructor(aOverlap);
         }
     }
 
