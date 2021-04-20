@@ -27,7 +27,7 @@ uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 positionMatrix;
 uniform vec2 halton;
-uniform vec2 globalTexSize;
+uniform vec2 outSize;
 
 uniform mat4 projViewMatrix;
 // uniform mat4 projViewModelMatrix;
@@ -95,7 +95,7 @@ void main()
     vNormal = normalize(vec3(localNormalMatrix * localNormal));
 
     mat4 jitteredProjection = projMatrix;
-    jitteredProjection[2].xy += halton.xy / globalTexSize.xy;
+    jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
         vTexCoord = (aTexCoord + uvOffset) * uvScale;

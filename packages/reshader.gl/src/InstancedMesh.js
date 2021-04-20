@@ -33,7 +33,7 @@ export default class InstancedMesh extends Mesh {
     }
 
     _getREGLAttrData(regl, activeAttributes) {
-        const geoBuffers = this.geometry.getREGLData();
+        const geoBuffers = this.geometry.getREGLData(regl, activeAttributes);
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
             if (!this._vao[key] || this._instanceDataUpdated) {

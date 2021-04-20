@@ -161,6 +161,10 @@ class GroundPainter {
             this._dfgLUT.destroy();
             delete this._dfgLUT;
         }
+        const map = this.getMap();
+        if (map) {
+            map.off('updatelights', this._updateLights, this);
+        }
     }
 
     _getShader() {
