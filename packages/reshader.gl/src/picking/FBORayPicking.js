@@ -178,7 +178,7 @@ export default class FBORayPicking {
         if (once) {
             this.clear();
         }
-
+        meshes = meshes.filter(m => m && m.isValid());
         this._scene.setMeshes(meshes);
         const shader = this._getShader(meshes, once);
         shader.filter = this.filter;
