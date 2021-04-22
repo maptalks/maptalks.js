@@ -98,13 +98,14 @@ export default class Geometry {
         }
     }
 
-    getREGLData(regl, activeAttributes) {
-        const updated = !this._reglData || !this._reglData[activeAttributes.key];
+    getAttrData(activeAttributes) {
+        const key = activeAttributes.key;
+        const updated = !this._reglData || !this._reglData[key];
         if (!this._reglData) {
             this._reglData = {};
         }
         if (updated) {
-            const reglData = this._reglData[activeAttributes.key] = {};
+            const reglData = this._reglData[key] = {};
             const data = this.data;
             const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute, color0Attribute } = this.desc;
             extend(reglData, this.data);
@@ -125,31 +126,45 @@ export default class Geometry {
                 reglData['aColor0'] = data[color0Attribute];
             }
         }
+        return this._reglData[key];
+    }
+
+    getREGLData(regl, activeAttributes) {
+        this.getAttrData(activeAttributes);
+        const updated = !this._reglData || !this._reglData[activeAttributes.key];
         //support vao
         if (isSupportVAO(regl)) {
             const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._elementsUpdated) {
                 const reglData = this._reglData[activeAttributes.key];
                 const vertexCount = this.getVertexCount();
-                const buffers = activeAttributes.map(p => {
+                const buffers = [];
+
+                for (let i = 0; i < activeAttributes.length; i++) {
+                    const p = activeAttributes[i];
                     const attr = p.name;
                     const buffer = reglData[attr] && reglData[attr].buffer;
                     if (!buffer || !buffer.destroy) {
                         const data = reglData[attr];
+                        if (!data) {
+                            continue;
+                        }
                         const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
                         if (data.data) {
                             data.dimension = dimension;
-                            return data;
+                            buffers.push(data);
                         } else {
-                            return {
+                            buffers.push({
                                 data,
                                 dimension
-                            };
+                            });
                         }
                     } else {
-                        return buffer;
+                        buffers.push(buffer);
                     }
-                });
+                }
+
+
                 const vaoData = {
                     attributes: buffers,
                     primitive: this.getPrimitive()

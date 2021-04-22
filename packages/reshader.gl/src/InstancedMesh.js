@@ -33,7 +33,8 @@ export default class InstancedMesh extends Mesh {
     }
 
     _getREGLAttrData(regl, activeAttributes) {
-        const geoBuffers = this.geometry.getREGLData(regl, activeAttributes);
+        // 只需要获得 geometry的 attr 数据，不需要elements
+        const geoBuffers = this.geometry.getAttrData(activeAttributes);
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
             if (!this._vao[key] || this._instanceDataUpdated) {
