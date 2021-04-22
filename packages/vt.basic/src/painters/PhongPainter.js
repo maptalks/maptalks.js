@@ -187,7 +187,7 @@ class PhongPainter extends MeshPainter {
             uniforms['halton'] = [0, 0];
         }
         const canvas = this.layer.getRenderer().canvas;
-        uniforms['globalTexSize'] = [canvas.width, canvas.height];
+        uniforms['outSize'] = [canvas.width, canvas.height];
         return uniforms;
     }
 

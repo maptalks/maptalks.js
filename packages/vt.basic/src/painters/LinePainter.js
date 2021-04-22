@@ -393,7 +393,7 @@ class LinePainter extends BasicPainter {
             cameraPosition: map.cameraPosition
             // projMatrix: map.projMatrix,
             // halton: context.jitter || [0, 0],
-            // globalTexSize: [this.canvas.width, this.canvas.height],
+            // outSize: [this.canvas.width, this.canvas.height],
         };
 
         this.setIncludeUniformValues(uniforms, context);

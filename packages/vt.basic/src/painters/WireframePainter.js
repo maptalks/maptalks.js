@@ -8,7 +8,7 @@ const vert = `
     attribute vec4 aColor;
 
     uniform mat4 projViewModelMatrix;
-    uniform vec2 globalTexSize;
+    uniform vec2 outSize;
 
     varying vec4 vColor;
 
@@ -119,7 +119,7 @@ class WireframePainter extends Painter {
                         return projViewModelMatrix;
                     }
                 },
-                'globalTexSize',
+                'outSize',
                 'opacity'
             ],
             extraCommandProps: {
@@ -155,7 +155,7 @@ class WireframePainter extends Painter {
         const canvas = this.layer.getRenderer().canvas;
         return {
             projViewMatrix: map.projViewMatrix,
-            globalTexSize: [canvas.width, canvas.height],
+            outSize: [canvas.width, canvas.height],
             opacity
         };
     }

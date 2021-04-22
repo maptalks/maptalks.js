@@ -557,7 +557,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return [];
         }
         const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
-        return this.identifyOnPoint(cp, options);
+        return this.identifyAtPoint(cp, options);
     }
 
     /**

@@ -104,7 +104,7 @@ varying float vGammaScale;
 // uniform mat4 projMatrix;
 // uniform mat4 viewModelMatrix;
 // uniform vec2 halton;
-// uniform vec2 globalTexSize;
+// uniform vec2 outSize;
 
 varying vec3 vVertex;
 
