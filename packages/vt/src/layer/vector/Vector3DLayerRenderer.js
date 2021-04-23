@@ -90,7 +90,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const context = this._preparePaintContext();
         this.painter.startFrame(context);
         this.painter.addMesh(this.meshes);
-        this.painter.updateCollision(context);
+        if (layer.options.collision) {
+            this.painter.updateCollision(context);
+        }
+
         this.painter.render(context);
         this.completeRender();
         this.layer.fire('canvasisdirty');

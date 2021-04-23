@@ -7,6 +7,7 @@ import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 
 class LinePainter extends BasicPainter {
@@ -77,7 +78,7 @@ class LinePainter extends BasicPainter {
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas) {
             const isVectorTile = geometry.data.aPosition instanceof Int16Array;
-            uniforms.linePatternFile = this.createAtlasTexture(iconAtlas, false);
+            uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false);
             uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
             uniforms.flipY = isVectorTile ? -1 : 1;
             this.drawDebugAtlas(iconAtlas);

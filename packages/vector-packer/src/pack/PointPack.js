@@ -126,6 +126,14 @@ function getPackMarkerFormat() {
 export default class PointPack extends VectorPack {
 
     static splitPointSymbol(symbol) {
+        const results = [];
+        if (Array.isArray(symbol)) {
+            const symbols = symbol;
+            for (let i = 0; i < symbols.length; i++) {
+                results.push(...PointPack.splitPointSymbol(symbols[i]));
+            }
+            return results;
+        }
         let iconSymbol = null;
         let textSymbol = null;
         for (const name in symbol) {
@@ -137,7 +145,6 @@ export default class PointPack extends VectorPack {
                 textSymbol[name] = symbol[name];
             }
         }
-        const results = [];
         if (iconSymbol) {
             iconSymbol['isIconText'] = true;
             results.push(iconSymbol);

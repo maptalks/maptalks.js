@@ -5,6 +5,7 @@ import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
@@ -74,7 +75,7 @@ class FillPainter extends BasicPainter {
             });
             // uniforms.tileRatio = geometry.properties.tileResolution / resolution / geometry.properties.tileRatio;
             //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
-            uniforms.polygonPatternFile = this.createAtlasTexture(iconAtlas, false);
+            uniforms.polygonPatternFile = createAtlasTexture(this.regl, iconAtlas, false);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
             this.drawDebugAtlas(iconAtlas);
         }

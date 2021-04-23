@@ -1,3 +1,5 @@
+import * as maptalks from 'maptalks';
+import { loadFunctionTypes } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
@@ -5,15 +7,17 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
-import { setUniformFromSymbol, isNil, fillArray, wrap } from '../Util';
+import { isNil, fillArray } from '../Util';
 import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
+import MeshGroup from './MeshGroup';
 
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
 import textPickingVert from './glsl/text.vert';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
-import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from './Constant';
+import { updateGeometryFnTypeAttrib, PREFIX } from './util/fn_type_util';
+import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
+import { GLYPH_SIZE } from './Constant';
+import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex } from './util/create_marker_painter';
 
 const BOX_ELEMENT_COUNT = 6;
 const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
@@ -48,8 +52,9 @@ class IconPainter extends CollisionPainter {
 
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
-        this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
-        this._iconFnTypeConfig = this._getIconFnTypeConfig();
+        // this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
+        // this._iconFnTypeConfig = this._getIconFnTypeConfig();
+        this._fnTypeConfigs = {};
         this.isLabelCollides = isLabelCollides.bind(this);
 
         this._iconFilter0 = ICON_FILTER.bind(this);
@@ -60,169 +65,19 @@ class IconPainter extends CollisionPainter {
 
     updateSymbol(...args) {
         super.updateSymbol(...args);
-        this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
-        this._iconFnTypeConfig = this._getIconFnTypeConfig();
-    }
-
-    _getIconFnTypeConfig() {
-        const map = this.getMap();
-        const symbolDef = this.symbolDef;
-        const markerWidthFn = interpolated(symbolDef['markerWidth']);
-        const markerHeightFn = interpolated(symbolDef['markerHeight']);
-        const markerDxFn = interpolated(symbolDef['markerDx']);
-        const markerDyFn = interpolated(symbolDef['markerDy']);
-        const markerOpacityFn = interpolated(symbolDef['markerOpacity']);
-        const markerTextFitFn = interpolated(symbolDef['markerTextFit']);
-        const markerPitchAlignmentFn = piecewiseConstant(symbolDef['markerPitchAlignment']);
-        const markerRotationAlignmentFn = piecewiseConstant(symbolDef['markerRotationAlignment']);
-        const markerRotationFn = interpolated(symbolDef['markerRotation']);
-        const markerAllowOverlapFn = piecewiseConstant(symbolDef['markerAllowOverlapFn']);
-        const markerIgnorePlacementFn = piecewiseConstant(symbolDef['markerIgnorePlacement']);
-        const u8 = new Int16Array(1);
-        const u16 = new Uint16Array(1);
-        return [
-            {
-                attrName: 'aMarkerWidth',
-                symbolName: 'markerWidth',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_MARKER_WIDTH',
-                evaluate: (properties, value) => {
-                    const markerTextFit = this.symbolDef['markerTextFit'];
-                    //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
-                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
-                    if (textFit === 'both' || textFit === 'width') {
-                        return value;
-                    }
-                    const x = markerWidthFn(map.getZoom(), properties);
-                    u8[0] = x;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aMarkerHeight',
-                symbolName: 'markerHeight',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_MARKER_HEIGHT',
-                evaluate: (properties, value) => {
-                    const markerTextFit = this.symbolDef['markerTextFit'];
-                    const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
-                    if (textFit === 'both' || textFit === 'height') {
-                        return value;
-                    }
-                    const x = markerHeightFn(map.getZoom(), properties);
-                    u8[0] = x;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aMarkerDx',
-                symbolName: 'markerDx',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_MARKER_DX',
-                evaluate: properties => {
-                    const x = markerDxFn(map.getZoom(), properties);
-                    u8[0] = x;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aMarkerDy',
-                symbolName: 'markerDy',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_MARKER_DY',
-                evaluate: properties => {
-                    const y = markerDyFn(map.getZoom(), properties);
-                    u8[0] = y;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aColorOpacity',
-                symbolName: 'markerOpacity',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_OPACITY',
-                evaluate: properties => {
-                    const y = markerOpacityFn(map.getZoom(), properties);
-                    u8[0] = y * 255;
-                    return u8[0];
-                }
-            },
-            {
-                attrName: 'aPitchAlign',
-                symbolName: 'markerPitchAlignment',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_PITCH_ALIGN',
-                evaluate: properties => {
-                    const y = +(markerPitchAlignmentFn(map.getZoom(), properties) === 'map');
-                    return y;
-                }
-            },
-            {
-                attrName: 'aRotationAlign',
-                symbolName: 'markerRotationAlignment',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_ROTATION_ALIGN',
-                evaluate: properties => {
-                    const y = +(markerRotationAlignmentFn(map.getZoom(), properties) === 'map');
-                    return y;
-                }
-            },
-            {
-                attrName: 'aRotation',
-                symbolName: 'textRotation',
-                type: Uint16Array,
-                width: 1,
-                define: 'HAS_ROTATION',
-                evaluate: properties => {
-                    const y = wrap(markerRotationFn(map.getZoom(), properties), 0, 360) * Math.PI / 180;
-                    u16[0] = y * 9362;
-                    return u16[0];
-                }
-            },
-            {
-                attrName: 'aOverlap',
-                symbolName: 'markerAllowOverlap',
-                type: Uint8Array,
-                width: 1,
-                evaluate: properties => {
-                    let overlap = markerAllowOverlapFn(map.getZoom(), properties) || 0;
-                    let placement = (markerIgnorePlacementFn ? markerIgnorePlacementFn(map.getZoom(), properties) : symbolDef['markerIgnorePlacement']) || 0;
-                    overlap = 1 << 3 + overlap * (1 << 2);
-                    placement = (markerIgnorePlacementFn ? 1 << 1 : 0) + placement;
-                    return overlap + placement;
-                }
-            },
-            // 因为 markerAllowOverlap 和 markerIgnorePlacement 共用一个 aOverlap
-            // 如果 markerAllowOverlap 和 markerIgnorePlacement 同时定义，会重复计算一次。
-            // 这里稍微牺牲一些性能，保持程序逻辑的简洁
-            {
-                attrName: 'aOverlap',
-                symbolName: 'markerIgnorePlacement',
-                type: Uint8Array,
-                width: 1,
-                evaluate: properties => {
-                    let overlap = (markerAllowOverlapFn ? markerAllowOverlapFn(map.getZoom(), properties) : symbolDef['markerAllowOverlap']) || 0;
-                    let placement = markerIgnorePlacementFn(map.getZoom(), properties) || 0;
-                    overlap = (markerAllowOverlapFn ? 1 << 3 : 0) + overlap * (1 << 2);
-                    placement = (1 << 1) + placement;
-                    return overlap + placement;
-                }
-            }
-        ];
+        // this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
+        // this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }
 
     createGeometry(glData, features) {
         if (!glData || !glData.length) {
             return [];
         }
-        const geometries = glData.sort(sorting).map(data => {
+        const map = this.getMap();
+        glData = glData.sort(sorting);
+        const geometries = [];
+        for (let i = 0; i < glData.length; i++) {
+            const data = glData[i];
             if (data && data.empty) {
                 //空icon，删除不需要的attribute数据
                 data.data = {
@@ -230,189 +85,48 @@ class IconPainter extends CollisionPainter {
                     aPickingId: data.data.aPickingId
                 };
             }
-            return super.createGeometry(data, features);
-        });
-        const iconGeometry = geometries[0];
-        if (glData[0].empty) {
-            iconGeometry.properties.isEmpty = true;
-        }
-        // if (!iconGeometry || !iconGeometry.getElements().length) {
-        //     return [];
-        // }
-        prepareFnTypeData(iconGeometry, this.symbolDef, this._iconFnTypeConfig);
-        this._prepareIconGeometry(iconGeometry);
-        const textGeometry = geometries[1];
-        const markerTextFit = this.symbolDef['markerTextFit'];
-        const labelIndex = buildLabelIndex(iconGeometry, textGeometry, markerTextFit);
-        if (!iconGeometry.getElements().length) {
-            return [];
-        }
-        if ((!markerTextFit || markerTextFit === 'none') && !labelIndex.length) {
-            return [iconGeometry];
-        }
-        iconGeometry.properties.labelIndex = labelIndex;
-        const hasTextFit = labelIndex.length && markerTextFit && markerTextFit !== 'none';
-        if (hasTextFit && textGeometry) {
-            const labelShape = buildLabelShape(iconGeometry, textGeometry);
-            if (labelShape.length) {
-                iconGeometry.properties.labelShape = labelShape;
-                this._fillTextFitData(iconGeometry, textGeometry);
+            const geometry = super.createGeometry(data, features);
+            const symbolDef = geometry.properties.symbolDef;
+            const hash = maptalks.Util.getSymbolHash(symbolDef);
+            geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
+                return [map.getZoom()];
+            });
+            if (isMarkerGeo(geometry)) {
+                const fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
+                this._fnTypeConfigs[hash] = fnTypeConfig;
+                geometry.properties.fnTypeConfig = fnTypeConfig;
+                prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig);
+            } else if (isTextGeo(geometry)) {
+                const fnTypeConfig = getTextFnTypeConfig(map, symbolDef);
+                geometry.properties.fnTypeConfig = fnTypeConfig;
+                if (symbolDef.isIconText) {
+                    const iconGeometry = geometries[i - 1];
+                    const markerTextFit = iconGeometry.properties.symbol['markerTextFit'];
+                    prepareLabelIndex(iconGeometry, geometry, markerTextFit);
+                }
             }
+            geometries.push(geometry);
         }
-
         return geometries;
-    }
-
-    _prepareIconGeometry(iconGeometry) {
-        const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = iconGeometry.data;
-        if (aMarkerWidth) {
-            //for collision
-            iconGeometry.properties.aMarkerWidth = iconGeometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
-        }
-        if (aMarkerHeight) {
-            //for collision
-            iconGeometry.properties.aMarkerHeight = iconGeometry.properties[PREFIX + 'aMarkerHeight'] || new aMarkerHeight.constructor(aMarkerHeight);
-        }
-        if (aMarkerDx) {
-            //for collision
-            iconGeometry.properties.aMarkerDx = iconGeometry.properties[PREFIX + 'aMarkerDx'] || new aMarkerDx.constructor(aMarkerDx);
-        }
-        if (aMarkerDy) {
-            //for collision
-            iconGeometry.properties.aMarkerDy = iconGeometry.properties[PREFIX + 'aMarkerDy'] || new aMarkerDy.constructor(aMarkerDy);
-        }
-        if (aPitchAlign) {
-            //for collision
-            iconGeometry.properties.aPitchAlign = iconGeometry.properties[PREFIX + 'aPitchAlign'] || new aPitchAlign.constructor(aPitchAlign);
-        }
-        if (aRotationAlign) {
-            //for collision
-            iconGeometry.properties.aRotationAlign = iconGeometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
-        }
-        if (aRotation) {
-            //for collision
-            iconGeometry.properties.aRotation = iconGeometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
-        }
-        if (aOverlap) {
-            //for placement
-            iconGeometry.properties.aOverlap = iconGeometry.properties[PREFIX + 'aOverlap'] || new aOverlap.constructor(aOverlap);
-        }
     }
 
     createMesh(geometries, transform) {
         const meshes = [];
-        let iconMesh, textMesh;
         for (let i = 0; i < geometries.length; i++) {
             const geometry = geometries[i];
             if (!geometry) {
                 continue;
             }
-            if (geometry.properties.iconAtlas || geometry.properties.isEmpty) {
-                const mesh = iconMesh = this._createIconMesh(geometries[i], transform);
+            const { fnTypeConfig, symbol } = geometry.properties;
+            if (isMarkerGeo(geometry)) {
+                const mesh = createMarkerMesh(this.regl, geometry, transform, symbol, fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh) meshes.push(mesh);
-            } else if (geometry.properties.glyphAtlas) {
-                const symbol = this.getSymbol();
-                this.symbolDef['isIconText'] = symbol['isIconText'] = true;
-                const mesh = textMesh = createTextMesh.call(this, this.regl, geometry, transform, symbol, this._textFnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
+            } else if (isTextGeo(geometry)) {
+                const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbol, fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
         }
-        if (iconMesh && textMesh && textMesh.length) {
-            iconMesh._textMesh = textMesh[0];
-        }
-        return meshes;
-    }
-
-    _createIconMesh(geometry, transform) {
-        const enableCollision = this.isEnableCollision();
-        if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
-            return null;
-        }
-        const iconAtlas = geometry.properties.iconAtlas;
-        if (!iconAtlas && !geometry.properties.isEmpty) {
-            return null;
-        }
-        const symbol = this.getSymbol();
-        geometry.properties.symbol = symbol;
-        const uniforms = {
-            flipY: 0,
-            tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio
-        };
-
-        //!geometry.properties.aAnchor 以避免重复创建collision数据
-        if ((enableCollision || this.isEnableUniquePlacement()) && !geometry.properties.aAnchor) {
-            const { aPosition, aShape } = geometry.data;
-            const vertexCount = geometry.data.aPosition.length / geometry.desc.positionSize;
-            //initialize opacity array
-            //aOpacity用于fading透明度的调整
-            const aOpacity = new Uint8Array(vertexCount);
-            for (let i = 0; i < aOpacity.length; i++) {
-                aOpacity[i] = 0;
-            }
-            geometry.data.aOpacity = {
-                usage: 'dynamic',
-                data: aOpacity
-            };
-            geometry.properties.aOpacity = new Uint8Array(vertexCount);
-
-            geometry.properties.aAnchor = aPosition;
-            geometry.properties.aShape = aShape;
-            //保存elements，隐藏icon时，从elements中删除icon的索引数据
-            geometry.properties.elements = geometry.elements;
-            geometry.properties.elemCtor = geometry.elements.constructor;
-        }
-
-        setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
-        setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', 1);
-        setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', DEFAULT_MARKER_WIDTH);
-        setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight', DEFAULT_MARKER_HEIGHT);
-        setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx', 0);
-        setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy', 0);
-        setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', 0, v => v * Math.PI / 180);
-        setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
-        setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
-
-        uniforms['texture'] = iconAtlas ? this.createAtlasTexture(iconAtlas, false) : null;
-        uniforms['texSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
-        geometry.generateBuffers(this.regl);
-        const material = new reshader.Material(uniforms);
-        const mesh = new reshader.Mesh(geometry, material, {
-            transparent: true,
-            castShadow: false,
-            picking: true
-        });
-        const defines = {};
-        if (enableCollision) {
-            defines['ENABLE_COLLISION'] = 1;
-        }
-        if (geometry.data.aMarkerWidth) {
-            defines['HAS_MARKER_WIDTH'] = 1;
-        }
-        if (geometry.data.aMarkerHeight) {
-            defines['HAS_MARKER_HEIGHT'] = 1;
-        }
-        if (geometry.data.aColorOpacity) {
-            defines['HAS_OPACITY'] = 1;
-        }
-        if (geometry.data.aMarkerDx) {
-            defines['HAS_MARKER_DX'] = 1;
-        }
-        if (geometry.data.aMarkerDy) {
-            defines['HAS_MARKER_DY'] = 1;
-        }
-        if (geometry.data.aPitchAlign) {
-            defines['HAS_PITCH_ALIGN'] = 1;
-        }
-        if (geometry.data.aRotationAlign) {
-            defines['HAS_ROTATION_ALIGN'] = 1;
-        }
-        if (geometry.data.aRotation) {
-            defines['HAS_ROTATION'] = 1;
-        }
-        mesh.setDefines(defines);
-        mesh.setLocalTransform(transform);
-        return mesh;
+        return new MeshGroup(meshes);
     }
 
     updateCollision(context) {
@@ -605,7 +319,6 @@ class IconPainter extends CollisionPainter {
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
         const map = this.getMap();
         const textMesh = mesh._textMesh;
-        const iconBoxes = [];
         const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
         // debugger
         //icon and text
@@ -1069,154 +782,6 @@ function sorting(a) {
     return 1;
 }
 
-function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
-    let markerTextFitFn;
-    if (isFunctionDefinition(markerTextFit)) {
-        markerTextFitFn = interpolated(markerTextFit);
-    }
-    const isTextFit = markerTextFit !== 'none';
-    const labelIndex = [];
-    const iconElements = iconGeometry.getElements();
-    const iconIds = iconGeometry.data.aPickingId;
-
-    let textElements, textIds, textCounts;
-    if (textGeometry) {
-        textElements = textGeometry.getElements();
-        textIds = textGeometry.data.aPickingId;
-        textCounts = textGeometry.data.aCount;
-    }
-
-    const features = iconGeometry.properties.features;
-
-    let currentLabel;
-    if (textGeometry) {
-        let textId = textElements[0];
-        currentLabel = {
-            pickingId: textIds[textId],
-            start: 0,
-            end: textCounts[textId] * BOX_ELEMENT_COUNT
-        };
-    }
-
-    let labelVisitEnd = false;
-    let hasLabel = false;
-    let count = 0;
-    const unused = [];
-    //遍历所有的icon，当icon和aPickingId和text的相同时，则认为是同一个icon + text，并记录它的序号
-    for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
-        const idx = iconElements[i];
-        const pickingId = iconIds[idx];
-        if (!labelVisitEnd && currentLabel) {
-            //label的pickingId比icon的小，说明当前文字没有icon，则往前找到下一个label pickingId比当前icon大的label
-            while (currentLabel.pickingId < pickingId && currentLabel.end < textElements.length) {
-                const start = currentLabel.end;
-                const textId = textElements[start];
-                currentLabel.start = start;
-                currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
-                currentLabel.pickingId = textIds[textId];
-            }
-        }
-        if (!labelVisitEnd && currentLabel && currentLabel.pickingId < pickingId) {
-            //后面的icon都没有label
-            labelVisitEnd = true;
-            if (!isTextFit) {
-                //如果不是textfit, 直接填充labelIndex并退出
-                if (!hasLabel) {
-                    return [];
-                }
-                for (let ii = i; ii < iconElements.length; ii += BOX_ELEMENT_COUNT) {
-                    labelIndex[count++] = [-1, -1];
-                }
-                return labelIndex;
-            }
-        }
-        const feature = features[pickingId] && features[pickingId].feature;
-        const properties = feature && feature.properties || {};
-        properties['$layer'] = feature && feature.layer;
-        properties['$type'] = feature && feature.type;
-        const textFit = markerTextFitFn ? markerTextFitFn(null, properties) : markerTextFit;
-        delete properties['$layer'];
-        delete properties['$type'];
-        if (currentLabel && pickingId === currentLabel.pickingId) {
-            labelIndex[count++] = [currentLabel.start, currentLabel.end];
-            const start = currentLabel.end;
-            const textId = textElements[start];
-            currentLabel.start = start;
-            currentLabel.end = start + textCounts[textId] * BOX_ELEMENT_COUNT;
-            currentLabel.pickingId = textIds[textId];
-            hasLabel = true;
-        } else if (textFit && textFit !== 'none') {
-            //如果icon设置了markerTextFit，但没有label，则从elements中去掉这个icon
-            for (let ii = i; ii < i + BOX_ELEMENT_COUNT; ii++) {
-                unused.push(ii);
-            }
-        } else {
-            labelIndex[count++] = [-1, -1];
-        }
-    }
-    if (unused.length) {
-        if (unused.length === iconElements.length) {
-            iconGeometry.setElements([]);
-        } else {
-            const elements = [];
-            let cur = 0;
-            let delIndex = unused[cur];
-            for (let i = 0; i < iconElements.length; i++) {
-                if (i < delIndex) {
-                    elements.push(iconElements[i]);
-                } else if (i === delIndex) {
-                    cur++;
-                    delIndex = unused[cur];
-                }
-            }
-            iconGeometry.setElements(new iconElements.constructor(elements));
-        }
-    }
-    if (!hasLabel) {
-        return [];
-    }
-    return labelIndex;
-}
-
-function buildLabelShape(iconGeometry, textGeometry) {
-    const labelShape = [];
-    const labelIndex = iconGeometry.properties.labelIndex;
-    const { aShape } = textGeometry.data;
-    let hasValue = false;
-    for (let i = 0; i < labelIndex.length; i++) {
-        const [start, end] = labelIndex[i];
-        if (start === -1) {
-            labelShape.push(0, 0, 0, 0);
-        } else {
-            hasValue = true;
-            let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
-            const elements = textGeometry.elements;
-            for (let ii = start; ii < end; ii++) {
-                const idx = elements[ii];
-                const x = aShape[idx * 2];
-                const y = aShape[idx * 2 + 1];
-                if (x < minx) {
-                    minx = x;
-                }
-                if (x > maxx) {
-                    maxx = x;
-                }
-                if (y < miny) {
-                    miny = y;
-                }
-                if (y > maxy) {
-                    maxy = y;
-                }
-            }
-            labelShape.push(minx, miny, maxx, maxy);
-        }
-    }
-    if (!hasValue) {
-        return [];
-    }
-    return labelShape;
-}
-
 function sortByLevel(m0, m1) {
     const r = m0.uniforms['level'] - m1.uniforms['level'];
     if (r === 0) {
@@ -1227,3 +792,11 @@ function sortByLevel(m0, m1) {
 }
 
 export default IconPainter;
+
+function isMarkerGeo(geo) {
+    return geo && (geo.properties.iconAtlas || geo.properties.isEmpty);
+}
+
+function isTextGeo(geo) {
+    return geo && geo.properties.glyphAtlas;
+}

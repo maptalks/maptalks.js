@@ -340,7 +340,8 @@ export default class VectorPack {
             // format,
             indices: elements,
             positionSize: 3, //!this.maxAltitude ? 2 : 3,
-            buffers
+            buffers,
+            symbol: this.symbolDef
         };
 
         if (featIds.length) {

@@ -4,6 +4,7 @@ import { extend } from '../../common/Util';
 const defaultOptions = {
     picking: true,
     renderer: 'gl',
+    collision: false,
     textGamma: 1,
     geometryEvents: true,
     forceRenderOnZooming: true,

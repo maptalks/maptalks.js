@@ -6,6 +6,7 @@ import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';
+import { createAtlasTexture } from './atlas_util';
 
 const GAMMA_SCALE = 1;
 
@@ -79,7 +80,7 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         }
     }
 
-    const glyphTexture = this.createAtlasTexture(glyphAtlas, false);
+    const glyphTexture = createAtlasTexture(regl, glyphAtlas, false);
     const uniforms = {
         flipY: 0,
         tileResolution: geometry.properties.tileResolution,
