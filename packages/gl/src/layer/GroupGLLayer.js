@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
+import { vec3 } from 'gl-matrix';
 
 const options = {
     renderer : 'gl',
@@ -23,7 +24,6 @@ const options = {
     forceRenderOnRotating : true,
     viewMoveThreshold: 100
 };
-
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -298,6 +298,45 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (renderer) {
             renderer.setToRedraw();
         }
+    }
+
+    identify(coordinate, options) {
+        const map = this.getMap();
+        if (!map) {
+            return [];
+        }
+        const containerPoint =  map.coordinateToContainerPoint(new maptalks.Coordinate(coordinate));
+        return this.identifyAtPoint(containerPoint, options);
+    }
+
+    identifyAtPoint(point, options) {
+        const layers = this.getLayers();
+        const map = this.getMap();
+        if (!map) {
+            return [];
+        }
+        const cameraPosition = map.cameraPosition;
+        let result = null;
+        let minDistance = 0;
+        for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i];
+            if (!layer.identifyAtPoint) {
+                continue;
+            }
+            const picked = layer.identifyAtPoint(point, options)[0];
+            if (!picked) {
+                continue;
+            }
+            const distanceFromCamera = vec3.dist(picked.point, cameraPosition);
+            if (!minDistance) {
+                minDistance = distanceFromCamera;
+                result = picked;
+            } else if (minDistance > distanceFromCamera) {
+                minDistance = distanceFromCamera;
+                result = picked;
+            }
+        }
+        return result ? [result] : [];
     }
 }
 
