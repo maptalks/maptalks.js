@@ -310,7 +310,8 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     identifyAtPoint(point, options) {
-        const layers = this.getLayers();
+        const childLayers = this.getLayers();
+        const layers = (options && options.layers) || childLayers;
         const map = this.getMap();
         if (!map) {
             return [];
@@ -320,7 +321,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         let minDistance = 0;
         for (let i = 0; i < layers.length; i++) {
             const layer = layers[i];
-            if (!layer.identifyAtPoint) {
+            if (childLayers.indexOf(layer) < 0 || !layer.identifyAtPoint) {
                 continue;
             }
             const picked = layer.identifyAtPoint(point, options)[0];
