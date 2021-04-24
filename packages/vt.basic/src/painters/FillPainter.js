@@ -3,7 +3,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { isNumber, isNil, setUniformFromSymbol, createColorSetter } from '../Util';
+import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
@@ -133,9 +133,8 @@ class FillPainter extends BasicPainter {
                     let color = this._polygonFillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
+                    } else {
+                        color = toUint8ColorInGlobalVar(color);
                     }
                     return color;
                 }

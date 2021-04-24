@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { isFunctionDefinition } from '@maptalks/function-type';
 import Color from 'color';
 
 /**
@@ -74,10 +75,23 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, 
     Object.defineProperty(uniforms, name, {
         enumerable: true,
         get: function () {
-            const v = isNil(symbol[key]) ? defaultValue : symbol[key];
+            const v = (isNil(symbol[key]) || isFunctionDefinition(symbol[key])) ? defaultValue : symbol[key];
             return fn ? fn(v) : v;
         }
     });
+}
+
+const ARR0 = [];
+// 结果存储在一个全局临时数组中，
+export function toUint8ColorInGlobalVar(color) {
+    for (let i = 0; i < color.length; i++) {
+        ARR0[i] = color[i];
+        ARR0[i] *= 255;
+    }
+    if (color.length === 3) {
+        ARR0[3] = 255;
+    }
+    return ARR0;
 }
 
 export function createColorSetter(cache, size = 4) {

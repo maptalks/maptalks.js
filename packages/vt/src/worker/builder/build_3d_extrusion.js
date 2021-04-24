@@ -142,6 +142,7 @@ function createQuaternion(normals, tangents) {
     return aTangent;
 }
 
+const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const fnTypes = {};
     if (isFnTypeSymbol('polygonFill', symbol)) {
@@ -154,13 +155,18 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             if (!Array.isArray(color)) {
                 color = colorCache[color] = colorCache[color] || Color(color).array();
             }
-            if (color.length === 3) {
-                color.push(255);
+            if (Array.isArray(color)) {
+                for (let i = 0; i < color.length; i++) {
+                    ARR0[i] = color[i] * 255;
+                }
+                if (color.length === 3) {
+                    ARR0[3] = 255;
+                }
             }
-            aColor[i * 4] = color[0];
-            aColor[i * 4 + 1] = color[1];
-            aColor[i * 4 + 2] = color[2];
-            aColor[i * 4 + 3] = color[3];
+            aColor[i * 4] = ARR0[0];
+            aColor[i * 4 + 1] = ARR0[1];
+            aColor[i * 4 + 2] = ARR0[2];
+            aColor[i * 4 + 3] = ARR0[3];
         }
         fnTypes.aColor = aColor;
     }

@@ -166,6 +166,11 @@ const SYMBOL = {
         default: 0,
         property: '_symbol_markerIgnorePlacement'
     },
+    markerTextFit: {
+        type: 'identity',
+        default: null,
+        property: '_symbol_markerTextFit'
+    },
 
     //text properties
     textName: {

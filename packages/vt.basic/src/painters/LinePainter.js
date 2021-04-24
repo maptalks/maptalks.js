@@ -5,7 +5,7 @@ import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
@@ -223,9 +223,8 @@ class LinePainter extends BasicPainter {
                     let color = this._aColorFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
+                    } else {
+                        color = toUint8ColorInGlobalVar(color);
                     }
                     return color;
                 }

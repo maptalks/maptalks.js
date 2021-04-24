@@ -146,11 +146,11 @@ export default class PointPack extends VectorPack {
             }
         }
         if (iconSymbol) {
-            iconSymbol['isIconText'] = true;
             results.push(iconSymbol);
         }
         if (textSymbol) {
             if (iconSymbol) {
+                iconSymbol['isTextIcon'] = true;
                 //用marker的placement和spacing 覆盖文字的
                 textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
                 textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
@@ -473,7 +473,7 @@ export default class PointPack extends VectorPack {
                 }
             }
             if (this._textSizeFn) {
-                textSize = this._textSizeFn(null, properties);
+                textSize = this._textSizeFn(this.options['zoom'], properties);
                 if (isNil(textSize)) {
                     textSize = DEFAULT_UNIFORMS['textSize'];
                 }

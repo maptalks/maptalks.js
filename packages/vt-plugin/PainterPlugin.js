@@ -137,13 +137,18 @@ function createPainterPlugin(type, Painter) {
                 return NO_REDRAW;
             }
 
-            var mesh = this._getMesh(key);
+            var meshModel = this._getMesh(key);
+            var mesh = meshModel;
             if (!mesh) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
                 const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
-                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+                meshModel = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+                if (meshModel.meshes) {
+                    // a MeshGroup
+                    mesh = meshModel.meshes;
+                }
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
@@ -165,6 +170,10 @@ function createPainterPlugin(type, Painter) {
 
             //更新stencil level值，不同zoom会发生变化
             var level = getUniformLevel(tileInfo.z, tileZoom);
+            if (meshModel.meshes) {
+                // a MeshGroup
+                mesh = meshModel.meshes;
+            }
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
@@ -203,7 +212,7 @@ function createPainterPlugin(type, Painter) {
                     mesh.bloom = bloomValue;
                 }
 
-                painter.addMesh(mesh, progress);
+                painter.addMesh(meshModel, progress);
                 this._frameCache[key] = 1;
             }
 

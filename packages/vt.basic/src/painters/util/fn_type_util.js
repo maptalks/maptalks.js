@@ -59,14 +59,18 @@ function prepareAttr(geometry, symbolDef, config) {
 function createZoomFnTypes(geometry, symbolDef, config) {
     const { attrName, symbolName } = config;
     const stopValues = getFnTypePropertyStopValues(symbolDef[symbolName].stops);
-    if (!stopValues.length) {
-        //说明stops中没有function-type类型
-        removeFnTypePropArrs(geometry, attrName);
-        return;
+    const isFeatureConstant = interpolated(symbolDef[symbolName]).isFeatureConstant;
+    if (isFeatureConstant) {
+        if (!stopValues.length) {
+            //说明stops中没有function-type类型
+            removeFnTypePropArrs(geometry, attrName);
+            return;
+        }
     }
+
     const geoProps = geometry.properties;
     const { features, aPickingId } = geoProps;
-    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues);
+    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, isFeatureConstant);
     if (!aIndex.length) {
         //说明瓦片中没有 function-type 中涉及的 feature
         removeFnTypePropArrs(geometry, attrName);
@@ -90,63 +94,67 @@ function removeFnTypePropArrs(geometry, attrName) {
  * @param {Array} meshes
  */
 export function updateGeometryFnTypeAttrib(regl, symbolDef, config, meshes, z) {
-    for (let c = 0; c < config.length; c++) {
-        const { attrName, evaluate, define } = config[c];
-        for (let i = 0; i < meshes.length; i++) {
-            const mesh = meshes[i];
-            if (!mesh) {
+    for (let i = 0; i < meshes.length; i++) {
+        updateOneGeometryFnTypeAttrib(regl, symbolDef, config, meshes[i], z);
+    }
+}
+
+export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z) {
+    if (!mesh) {
+        return;
+    }
+    const geometry = mesh.geometry;
+    if (!geometry) {
+        return;
+    }
+    for (let i = 0; i < configs.length; i++) {
+        const config = configs[i];
+        const { attrName, evaluate, define } = config;
+        const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+        if (!symbolChanged(geometry, symbolDef, config)) {
+            const { aPickingId } = geometry.properties;
+            if (!aPickingId || !aIndex) {
                 continue;
             }
-            const geometry = mesh.geometry;
-            if (!geometry) {
+            if (geometry._fnDataZoom === z) {
                 continue;
             }
-            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
-            if (!symbolChanged(geometry, symbolDef, config[c])) {
-                const { aPickingId } = geometry.properties;
-                if (!aPickingId || !aIndex) {
-                    continue;
-                }
-                if (geometry._fnDataZoom === z) {
-                    continue;
-                }
-                //fn-type的二级stops与zoom有关，更新数据
-                updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
-                geometry._fnDataZoom = z;
-                continue;
+            //fn-type的二级stops与zoom有关，更新数据
+            updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            continue;
+        }
+        // debugger
+        //symbol有变化，需要删除原有的arr重新生成
+        if (geometry.data[attrName]) {
+            const arr = geometry.data[attrName];
+            if (arr && arr.buffer && arr.buffer.destroy) {
+                arr.buffer.destroy();
             }
-            // debugger
-            //symbol有变化，需要删除原有的arr重新生成
-            if (geometry.data[attrName]) {
-                const arr = geometry.data[attrName];
-                if (arr && arr.buffer && arr.buffer.destroy) {
-                    arr.buffer.destroy();
-                }
-                delete geometry.data[attrName];
-            }
-            // debugger
-            const arr = prepareAttr(geometry, symbolDef, config[c]);
-            if (!arr) {
-                //原有的arr和define要删除
-                if (define) {
-                    const defines = mesh.defines;
-                    if (defines[define]) {
-                        delete defines[define];
-                        mesh.setDefines(defines);
-                    }
-                }
-            } else {
-                //增加了新的fn-type arr，相应的需要增加define
-                updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
-                if (define) {
-                    const defines = mesh.defines;
-                    defines[define] = 1;
+            delete geometry.data[attrName];
+        }
+        // debugger
+        const arr = prepareAttr(geometry, symbolDef, config);
+        if (!arr) {
+            //原有的arr和define要删除
+            if (define) {
+                const defines = mesh.defines;
+                if (defines[define]) {
+                    delete defines[define];
                     mesh.setDefines(defines);
                 }
-                geometry.generateBuffers(regl);
             }
+        } else {
+            //增加了新的fn-type arr，相应的需要增加define
+            updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            if (define) {
+                const defines = mesh.defines;
+                defines[define] = 1;
+                mesh.setDefines(defines);
+            }
+            geometry.generateBuffers(regl);
         }
     }
+    geometry._fnDataZoom = z;
 }
 
 function symbolChanged(geometry, symbolDef, config) {
@@ -176,13 +184,13 @@ function isFnTypeFeature(feature, property, stopValues) {
  * @param {String} property
  * @param {Array} stopValues
  */
-function createFnTypeFeatureIndex(features, aPickingId, property, stopValues) {
+function createFnTypeFeatureIndex(features, aPickingId, property, stopValues, isFeatureConstant) {
     const aIndex = [];
     let start = 0;
     let current = aPickingId[0];
     for (let ii = 1, l = aPickingId.length; ii < l; ii++) {
         if (aPickingId[ii] !== current || ii === l - 1) {
-            if (isFnTypeFeature(features[current].feature, property, stopValues)) {
+            if (!isFeatureConstant || isFnTypeFeature(features[current].feature, property, stopValues)) {
                 aIndex.push(start, ii === l - 1 ? l : ii);
             }
             current = aPickingId[ii];

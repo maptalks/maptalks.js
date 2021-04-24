@@ -1,7 +1,7 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, wrap } from '../../Util';
+import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
-import { interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
@@ -43,7 +43,6 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         return meshes;
     }
     prepareFnTypeData(geometry, symbol.def || symbol, fnTypeConfig);
-    geometry.properties.symbol = symbol;
 
 
     //避免重复创建属性数据
@@ -389,9 +388,8 @@ export function getTextFnTypeConfig(map, symbolDef) {
                 let color = textFillFn(map.getZoom(), properties);
                 if (!Array.isArray(color)) {
                     color = colorCache[color] = colorCache[color] || Color(color).array();
-                }
-                if (color.length === 3) {
-                    color.push(255);
+                } else {
+                    color = toUint8ColorInGlobalVar(color);
                 }
                 return color;
             }
@@ -403,7 +401,11 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                const size = textSizeFn(map.getZoom(), properties);
+                let size = textSizeFn(map.getZoom(), properties);
+                if (isFunctionDefinition(size)) {
+                    const fn = interpolated(size);
+                    size = fn(map.getZoom(), properties);
+                }
                 u8[0] = size;
                 return u8[0];
             }

@@ -1,13 +1,14 @@
 import { reshader } from '@maptalks/gl';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { setUniformFromSymbol, wrap } from '../../Util';
-import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT } from '../Constant';
+import { setUniformFromSymbol, wrap, fillArray } from '../../Util';
+import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from '../Constant';
 import { createAtlasTexture } from './atlas_util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { getIconBox } from './get_icon_box';
 
 const BOX_ELEMENT_COUNT = 6;
-// const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
+const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
+const U8 = new Uint16Array(1);
 
 export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
     // const enableCollision = this.isEnableCollision();
@@ -252,7 +253,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
         },
         {
             attrName: 'aRotation',
-            symbolName: 'textRotation',
+            symbolName: 'markerRotation',
             type: Uint16Array,
             width: 1,
             define: 'HAS_ROTATION',
@@ -294,7 +295,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
     ];
 }
 
-export function prepareLabelIndex(iconGeometry, textGeometry, markerTextFit) {
+export function prepareLabelIndex(map, iconGeometry, textGeometry, markerTextFit) {
     if (!textGeometry || !markerTextFit || markerTextFit === 'none') {
         return;
     }
@@ -312,16 +313,16 @@ export function prepareLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         const labelShape = buildLabelShape(iconGeometry, textGeometry);
         if (labelShape.length) {
             iconGeometry.properties.labelShape = labelShape;
-            this._fillTextFitData(iconGeometry, textGeometry);
+            fillTextFitData(map, iconGeometry, textGeometry);
         }
     }
 }
 
 
 function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
-    let markerTextFitFn;
+    let markerTextFitFn = iconGeometry.properties.textFitFn;
     if (isFunctionDefinition(markerTextFit)) {
-        markerTextFitFn = interpolated(markerTextFit);
+        markerTextFitFn = iconGeometry.properties.textFitFn = piecewiseConstant(markerTextFit);
     }
     const isTextFit = markerTextFit !== 'none';
     const labelIndex = [];
@@ -464,6 +465,209 @@ function buildLabelShape(iconGeometry, textGeometry) {
         return [];
     }
     return labelShape;
+}
+
+function fillTextFitData(map, iconGeometry) {
+    const { symbolDef } = iconGeometry.properties;
+    //1. markerTextFit 是否是 fn-type，如果是，则遍历features创建 fitIcons, fitWidthIcons, fitHeightIcons
+    //2. 检查data中是否存在aMarkerWidth或aMarkerHeight，如果没有则添加
+    //3. 如果textSize是zoomConstant，说明 markerWidth和markerHeight是静态的，提前计算，未来无需再更新
+    const markerTextFit = symbolDef['markerTextFit'];
+    const props = iconGeometry.properties;
+    let hasWidth = markerTextFit === 'both' || markerTextFit === 'width';
+    let hasHeight = markerTextFit === 'both' || markerTextFit === 'height';
+
+    if (isFunctionDefinition(symbolDef['markerTextFit'])) {
+        let markerTextFitFn = iconGeometry.properties.textFitFn;
+        if (!markerTextFitFn) {
+            markerTextFitFn = iconGeometry.properties.textFitFn = interpolated(symbolDef['markerTextFit']);
+        }
+        const { features } = iconGeometry.properties;
+        const elements = iconGeometry.properties.elements || iconGeometry.elements;
+        const { aPickingId } = iconGeometry.data;
+        const fitWidthIcons = [];
+        const fitHeightIcons = [];
+        let onlyBoth = true;
+        for (let i = 0; i < elements.length; i += BOX_ELEMENT_COUNT) {
+            const idx = elements[i];
+            const pickingId = aPickingId[idx];
+            const feature = features[pickingId];
+            const properties = feature && feature.feature && feature.feature.properties;
+            let v = markerTextFitFn(null, properties);
+            if (isFunctionDefinition(v)) {
+                const fn = properties.textFitFn = properties.textFitFn || interpolated(v);
+                v = fn(null, properties);
+            }
+            if (v === 'both') {
+                fitWidthIcons.push(i / BOX_ELEMENT_COUNT);
+                fitHeightIcons.push(i / BOX_ELEMENT_COUNT);
+            } else if (v === 'width') {
+                onlyBoth = false;
+                fitWidthIcons.push(i / BOX_ELEMENT_COUNT);
+            } else if (v === 'height') {
+                onlyBoth = false;
+                fitHeightIcons.push(i / BOX_ELEMENT_COUNT);
+            }
+        }
+        if (onlyBoth) {
+            props.fitIcons = fitWidthIcons;
+            hasWidth = true;
+            hasHeight = true;
+        } else {
+            if (fitWidthIcons.length) {
+                props.fitWidthIcons = fitWidthIcons;
+                hasWidth = true;
+            }
+            if (fitHeightIcons.length) {
+                props.fitHeightIcons = fitHeightIcons;
+                hasHeight = true;
+            }
+        }
+    }
+
+    if (!props['aPickingId']) {
+        props['aPickingId'] = new iconGeometry.data.aPickingId.constructor(iconGeometry.data.aPickingId);
+    }
+    const { aMarkerWidth, aMarkerHeight, aPickingId } = props;
+    const count = aPickingId.length;
+    //把aMarkerWidth和aMarkerHeight从Uint8Array改为Uint16Array，因为text-fit后的宽度或高度很可能超过255
+    if (hasWidth) {
+        if (!aMarkerWidth) {
+            props.aMarkerWidth = new Uint16Array(count);
+            iconGeometry.data.aMarkerWidth = new Uint16Array(count);
+        } else {
+            const arr = iconGeometry.data.aMarkerWidth;
+            //在 fn-type 中已经创建
+            iconGeometry.data.aMarkerWidth = new Uint16Array(arr);
+            props.aMarkerWidth = new Uint16Array(arr);
+            if (props[PREFIX + 'aMarkerWidth']) {
+                props[PREFIX + 'aMarkerWidth'] = props.aMarkerWidth;
+            }
+        }
+
+    }
+    if (hasHeight) {
+        if (!aMarkerHeight) {
+            props.aMarkerHeight = new Uint16Array(count);
+            iconGeometry.data.aMarkerHeight = new Uint16Array(count);
+        } else {
+            const arr = iconGeometry.data.aMarkerHeight;
+            //在 fn-type 中已经创建
+            iconGeometry.data.aMarkerHeight = new Uint16Array(arr);
+            props.aMarkerHeight = new Uint16Array(arr);
+            if (props[PREFIX + 'aMarkerHeight']) {
+                props[PREFIX + 'aMarkerHeight'] = props.aMarkerHeight;
+            }
+        }
+    }
+
+    const { symbolDef: textSymbolDef } = iconGeometry.properties.textGeo.properties;
+    const textFitFn = interpolated(textSymbolDef['textSize']);
+    if (!isFunctionDefinition(textSymbolDef['textSize']) || textFitFn.isZoomConstant && textFitFn.isFeatureConstant) {
+        updateMarkerFitSize(map, iconGeometry);
+        props.isFitConstant = true;
+        return;
+    }
+}
+
+export function updateMarkerFitSize(map, iconGeometry) {
+    const textGeometry = iconGeometry.properties.textGeo;
+    if (!textGeometry) {
+        return;
+    }
+    const textProps = textGeometry.properties;
+    const props = iconGeometry.properties;
+    if (props.isFitConstant || !props.labelShape || !props.labelShape.length) {
+        return;
+    }
+    const { symbolDef, symbol } = textProps;
+
+    const textSizeDef = symbolDef['textSize'];
+    let textSizeFn;
+    if (isFunctionDefinition(textSizeDef)) {
+        if (!textProps._textSizeFn) {
+            textSizeFn = textProps._textSizeFn = interpolated(textSizeDef);
+        } else {
+            textSizeFn = textProps._textSizeFn;
+        }
+    }
+    const padding = symbol['markerTextFitPadding'] || [0, 0];
+    const zoom = map.getZoom();
+    //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
+    const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
+    const { aMarkerWidth, aMarkerHeight, labelShape } = props;
+    const elements = props.elements || iconGeometry.elements;
+    const { features, aPickingId } = props;
+    const fn = (idx, iconIndex, hasWidth, hasHeight) => {
+        const minx = labelShape[iconIndex * 4];
+        const miny = labelShape[iconIndex * 4 + 1];
+        const maxx = labelShape[iconIndex * 4 + 2];
+        const maxy = labelShape[iconIndex * 4 + 3];
+        if (!minx && !miny && !maxx && !maxy) {
+            return;
+        }
+        const pickingId = aPickingId[idx];
+        const feature = features[pickingId] && features[pickingId].feature;
+        const properties = feature && feature.properties || {};
+        properties['$layer'] = feature && feature.layer;
+        properties['$type'] = feature && feature.layer;
+        let textSize = (textSizeFn ? textSizeFn(zoom, properties) : textSizeDef);
+        if (isFunctionDefinition(textSize)) {
+            const fn = properties.textSizeFn = properties.textSizeFn || interpolated(textSize);
+            textSize = fn(zoom, properties);
+        }
+        textSize /=  GLYPH_SIZE;
+        delete properties['$layer'];
+        delete properties['$type'];
+        if (aMarkerWidth && hasWidth) {
+            //除以10是因为为了增加精度，shader中的aShape乘以了10
+            const width = Math.abs((maxx - minx) / 10 * textSize) + (padding[0] || 0) * 2;
+            U8[0] = width;
+            if (aMarkerWidth[idx] !== U8[0]) {
+                fillArray(aMarkerWidth, U8[0], idx, idx + BOX_VERTEX_COUNT);
+                aMarkerWidth.dirty = true;
+            }
+        }
+        if (aMarkerHeight && hasHeight) {
+            const height = Math.abs((maxy - miny) / 10 * textSize) + (padding[1] || 0) * 2;
+            U8[0] = height;
+            if (aMarkerHeight[idx] !== U8[0]) {
+                fillArray(aMarkerHeight, U8[0], idx, idx + BOX_VERTEX_COUNT);
+                aMarkerHeight.dirty = true;
+            }
+        }
+    };
+    if (!fitIcons && !fitWidthIcons && !fitHeightIcons) {
+        // markerTextFit 不是 fn-type，遍历所有的icon
+        for (let i = 0; i < elements.length; i += BOX_ELEMENT_COUNT) {
+            const iconIndex = i / BOX_ELEMENT_COUNT;
+            const idx = elements[i];
+            fn(idx, iconIndex, true, true);
+        }
+    } else if (fitIcons) {
+        // markerTextFit 是 fn-type，且是both
+        for (let i = 0; i < fitIcons.length; i++) {
+            const iconIndex = fitIcons[i];
+            const idx = elements[iconIndex * BOX_ELEMENT_COUNT];
+            fn(idx, iconIndex, true, true);
+        }
+    } else if (fitWidthIcons || fitHeightIcons) {
+        // markerTextFit 是 fn-type, 且值可能为both，也可能为width, height
+        if (fitWidthIcons) {
+            for (let i = 0; i < fitWidthIcons.length; i++) {
+                const iconIndex = fitWidthIcons[i];
+                const idx = elements[iconIndex * BOX_ELEMENT_COUNT];
+                fn(idx, iconIndex, true, false);
+            }
+        }
+        if (fitHeightIcons) {
+            for (let i = 0; i < fitHeightIcons.length; i++) {
+                const iconIndex = fitHeightIcons[i];
+                const idx = elements[iconIndex * BOX_ELEMENT_COUNT];
+                fn(idx, iconIndex, false, true);
+            }
+        }
+    }
 }
 
 export function isMarkerCollides(map, mesh, elements, boxCount, start, end, matrix) {

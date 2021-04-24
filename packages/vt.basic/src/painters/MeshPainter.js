@@ -2,7 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant } from '@maptalks/function-type';
-import { setUniformFromSymbol, createColorSetter, isNumber } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar } from '../Util';
 import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -211,9 +211,8 @@ class MeshPainter extends Painter {
                     let color = this._fillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    }
-                    if (color.length === 3) {
-                        color.push(255);
+                    } else {
+                        color = toUint8ColorInGlobalVar(color);
                     }
                     return color;
                 }
