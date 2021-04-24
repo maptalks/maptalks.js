@@ -7,6 +7,7 @@ import { extend } from '../common/Util';
 class HeatmapShader extends MeshShader {
     constructor(config) {
         const extraCommandProps = config ? config.extraCommandProps || {} : {};
+        const projViewModelMatrix = [];
         super({
             vert, frag,
             uniforms: [
@@ -21,7 +22,7 @@ class HeatmapShader extends MeshShader {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

@@ -2,12 +2,15 @@ import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import  { getGroundTransform } from '../util/util';
 
+const EMPTY_HALTON = [0, 0];
+const DEFAULT_SHADOW_COLOR = [0, 0, 0];
 //阴影覆盖的pitch范围
 const SHADOW_MAX_PITCH = 62;
 let VISUAL_EXTENT;
 
 class ShadowProcess {
     static getUniformDeclares() {
+        const shadowLightProjViewModelMatrix = [];
         const uniforms = [];
         uniforms.push({
             name: 'shadow_lightProjViewModelMatrix',
@@ -15,7 +18,7 @@ class ShadowProcess {
             fn: function (context, props) {
                 const lightProjViews = props['shadow_lightProjViewMatrix'];
                 const model = props['modelMatrix'];
-                return  mat4.multiply([], lightProjViews, model);
+                return  mat4.multiply(shadowLightProjViewModelMatrix, lightProjViews, model);
             }
         });
         uniforms.push('shadow_shadowMap', 'shadow_opacity', 'esm_shadow_threshold', 'shadow_color', 'shadow_nearFar');
@@ -67,8 +70,10 @@ class ShadowProcess {
         const changed = forceRefresh || this._shadowChanged(map, scene, !!displayShadow);
         let matrix, smap;
         if (changed) {
-            const cameraProjViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-            const lightDir = vec3.normalize([], lightDirection);
+            this._tempMat0 = this._tempMat0 || [];
+            this._tempMat1 = this._tempMat1 || [];
+            const cameraProjViewMatrix = mat4.multiply(this._tempMat0, projMatrix, viewMatrix);
+            const lightDir = vec3.normalize(this._tempMat1, lightDirection);
 
             if (!VISUAL_EXTENT) {
                 VISUAL_EXTENT = map.getContainerExtent();
@@ -134,17 +139,20 @@ class ShadowProcess {
         const ground = this._ground;
         const groundLightProjViewModelMatrix = this._groundLightProjViewModelMatrix || [];
         const canvas = this._layer.getRenderer().canvas;
+        const texSize = this._texSize = this._texSize || [];
+        texSize[0] = canvas.width;
+        texSize[1] = canvas.height;
         //display ground shadows
         this.renderer.render(this._shadowDisplayShader, {
-            'halton': halton || [0, 0],
-            'globalTexSize': [canvas.width, canvas.height],
+            'halton': halton || EMPTY_HALTON,
+            'globalTexSize': texSize,
             'projMatrix': this._projMatrix,
             'viewMatrix': this._viewMatrix,
             'shadow_lightProjViewModelMatrix': mat4.multiply(groundLightProjViewModelMatrix, matrix, ground.localTransform),
             'shadow_shadowMap': this._shadowMap,
             'esm_shadow_threshold': this._esmShadowThreshold,
             'shadow_opacity': opacity,
-            'color': color || [0, 0, 0]
+            'color': color || DEFAULT_SHADOW_COLOR
         }, this._groundScene, framebuffer);
     }
 

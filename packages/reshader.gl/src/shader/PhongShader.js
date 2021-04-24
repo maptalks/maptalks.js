@@ -5,6 +5,8 @@ import MeshShader from '../shader/MeshShader.js';
 
 class PhongShader extends MeshShader {
     constructor(config = {}) {
+        const normalMatrix = [];
+        const viewModelMatrix = [];
         super({
             vert: phongVert,
             frag: phongFrag,
@@ -13,7 +15,6 @@ class PhongShader extends MeshShader {
                     name: 'normalMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        const normalMatrix = [];
                         mat4.invert(normalMatrix, props['modelMatrix']);
                         mat4.transpose(normalMatrix, normalMatrix);
                         return normalMatrix;
@@ -23,7 +24,7 @@ class PhongShader extends MeshShader {
                     name: 'viewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

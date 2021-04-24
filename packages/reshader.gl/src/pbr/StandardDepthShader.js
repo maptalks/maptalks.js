@@ -6,12 +6,13 @@ import frag from './glsl/depth.frag';
 // ssr逻辑修改后不再需要
 class StandardDepthShader extends MeshShader {
     constructor(config = {}) {
+        const modelViewMatrix = [];
         const uniforms = [
             {
                 name : 'modelViewMatrix',
                 type : 'function',
                 fn : (context, props) => {
-                    return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                 }
             }
         ];

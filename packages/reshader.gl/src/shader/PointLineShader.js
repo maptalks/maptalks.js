@@ -5,6 +5,7 @@ import MeshShader from './MeshShader.js';
 
 class PointLineShader extends MeshShader {
     constructor(config = {}) {
+        const projViewModelMatrix = [];
         super({
             vert: pointLineVert,
             frag: pointLineFrag,
@@ -13,7 +14,7 @@ class PointLineShader extends MeshShader {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

@@ -34,6 +34,11 @@ class StandardShader extends MeshShader {
         // const inverted = mat4.invert(modelView, modelView);
         // const transposed = mat4.transpose(inverted, inverted);
         // console.log(mat3.fromMat4([], transposed));
+        const modelNormalMatrix = [];
+        const tempMat4 = [];
+        const modelViewNormalMatrix = [];
+        const modelViewMatrix = [];
+        const uEnvironmentTransform = [];
 
         const uniforms = [
             //vert中的uniforms
@@ -45,17 +50,17 @@ class StandardShader extends MeshShader {
                     // const transposed = mat3.transpose(model3, model3);
                     // const inverted = mat3.invert(transposed, transposed);
                     // return inverted;
-                    return mat3.fromMat4([], props['modelMatrix']);
+                    return mat3.fromMat4(modelNormalMatrix, props['modelMatrix']);
                 }
             },
             {
                 name: 'modelViewNormalMatrix',
                 type: 'function',
                 fn: (_, props) => {
-                    const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    const modelView = mat4.multiply(tempMat4, props['viewMatrix'], props['modelMatrix']);
                     const inverted = mat4.invert(modelView, modelView);
                     const transposed = mat4.transpose(inverted, inverted);
-                    return mat3.fromMat4([], transposed);
+                    return mat3.fromMat4(modelViewNormalMatrix, transposed);
                     // const modelView = mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
                     // return mat3.fromMat4([], modelView);
                 }
@@ -71,7 +76,7 @@ class StandardShader extends MeshShader {
                 name: 'modelViewMatrix',
                 type: 'function',
                 fn: (_, props) => {
-                    return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                 }
             },
             {
@@ -79,7 +84,7 @@ class StandardShader extends MeshShader {
                 type: 'function',
                 fn: (_, props) => {
                     const orientation = props['environmentOrientation'] || 0;
-                    return mat3.fromRotation([], Math.PI * orientation / 180);
+                    return mat3.fromRotation(uEnvironmentTransform, Math.PI * orientation / 180);
                 }
             }
 

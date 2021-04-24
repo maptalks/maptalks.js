@@ -238,12 +238,13 @@ class GroundPainter {
         //fill shader
         const extraCommandProps = this._getExtraCommandProps();
         const fillUniforms = ShadowProcess.getUniformDeclares();
+        const projViewModelMatrix = [];
         fillUniforms.push(
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                 }
             }
         );

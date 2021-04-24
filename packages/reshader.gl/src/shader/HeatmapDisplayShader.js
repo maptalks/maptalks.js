@@ -25,6 +25,8 @@ export default class HeatmapDisplayShader extends MeshShader {
         if (config && config.extraCommandProps) {
             extend(extraCommandProps, config.extraCommandProps);
         }
+        const projViewModelMatrix = [];
+        const textureOutputSize = [];
         super({
             vert, frag,
             uniforms: [
@@ -32,14 +34,16 @@ export default class HeatmapDisplayShader extends MeshShader {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
                 {
                     name: 'textureOutputSize',
                     type: 'function',
                     fn: function (context) {
-                        return [context.drawingBufferWidth, context.drawingBufferHeight];
+                        textureOutputSize[0] = context.drawingBufferWidth;
+                        textureOutputSize[1] = context.drawingBufferHeight;
+                        return textureOutputSize;
                     }
                 }
             ],

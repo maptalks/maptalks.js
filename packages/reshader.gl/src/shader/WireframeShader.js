@@ -8,6 +8,7 @@ class WireframeShader extends MeshShader {
 
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
+        const projViewModelMatrix = [];
         extraCommandProps = extend({}, extraCommandProps, {
             blend: {
                 enable: true,
@@ -29,7 +30,7 @@ class WireframeShader extends MeshShader {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     }
                 }
             ],
