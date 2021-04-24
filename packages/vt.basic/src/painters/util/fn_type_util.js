@@ -78,7 +78,7 @@ function createZoomFnTypes(geometry, symbolDef, config) {
     }
     const arr = geometry.data[attrName];
     geoProps[PREFIX + attrName + 'Index'] = aIndex;
-    geoProps[PREFIX + attrName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : config.type(arr.length);
+    geoProps[PREFIX + attrName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : new config.type(arr.length);
 
 }
 
