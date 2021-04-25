@@ -403,7 +403,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             evaluate: properties => {
                 let size = textSizeFn(map.getZoom(), properties);
                 if (isFunctionDefinition(size)) {
-                    const fn = interpolated(size);
+                    const fn = properties['_textSizeFn'] = properties['_textSizeFn'] || interpolated(size);
                     size = fn(map.getZoom(), properties);
                 }
                 u8[0] = size;

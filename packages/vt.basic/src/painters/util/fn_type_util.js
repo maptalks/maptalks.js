@@ -2,6 +2,7 @@ import { fillArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 export const PREFIX = '_fn_type_';
+export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = ['textSize', 'markerWidth', 'markerHeight'];
 const SAVED_FN_TYPE = '__current_fn_types';
 /**
  * 如果 symbolDef 有 function-type 类型，则准备需要的数据
@@ -59,18 +60,19 @@ function prepareAttr(geometry, symbolDef, config) {
 function createZoomFnTypes(geometry, symbolDef, config) {
     const { attrName, symbolName } = config;
     const stopValues = getFnTypePropertyStopValues(symbolDef[symbolName].stops);
-    const isFeatureConstant = interpolated(symbolDef[symbolName]).isFeatureConstant;
-    if (isFeatureConstant) {
-        if (!stopValues.length) {
-            //说明stops中没有function-type类型
-            removeFnTypePropArrs(geometry, attrName);
-            return;
-        }
+    const isIdentityFn = symbolDef[symbolName].type === 'identity';
+    // symbol是identity类型，且属性支持 fn type 值
+    // TODO 这里应该遍历features，检查是否有 fn type 的值
+    const hasFnTypeInIdentity = isIdentityFn && SYMBOLS_SUPPORT_IDENTITY_FN_TYPE.indexOf(symbolName) >= 0;
+    if (!hasFnTypeInIdentity && !stopValues.length) {
+        //说明stops中没有function-type类型
+        removeFnTypePropArrs(geometry, attrName);
+        return;
     }
 
     const geoProps = geometry.properties;
     const { features, aPickingId } = geoProps;
-    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, isFeatureConstant);
+    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, hasFnTypeInIdentity);
     if (!aIndex.length) {
         //说明瓦片中没有 function-type 中涉及的 feature
         removeFnTypePropArrs(geometry, attrName);
@@ -184,13 +186,13 @@ function isFnTypeFeature(feature, property, stopValues) {
  * @param {String} property
  * @param {Array} stopValues
  */
-function createFnTypeFeatureIndex(features, aPickingId, property, stopValues, isFeatureConstant) {
+function createFnTypeFeatureIndex(features, aPickingId, property, stopValues, hasFnTypeInProperty) {
     const aIndex = [];
     let start = 0;
     let current = aPickingId[0];
     for (let ii = 1, l = aPickingId.length; ii < l; ii++) {
         if (aPickingId[ii] !== current || ii === l - 1) {
-            if (!isFeatureConstant || isFnTypeFeature(features[current].feature, property, stopValues)) {
+            if (!hasFnTypeInProperty || isFnTypeFeature(features[current].feature, property, stopValues)) {
                 aIndex.push(start, ii === l - 1 ? l : ii);
             }
             current = aPickingId[ii];

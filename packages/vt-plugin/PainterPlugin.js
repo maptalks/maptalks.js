@@ -145,6 +145,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
                 meshModel = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+                mesh = meshModel;
                 if (meshModel.meshes) {
                     // a MeshGroup
                     mesh = meshModel.meshes;
