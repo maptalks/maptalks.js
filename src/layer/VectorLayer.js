@@ -6,6 +6,7 @@ import OverlayLayer from './OverlayLayer';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import { LineString, Curve } from '../geometry';
 import PointExtent from '../geo/PointExtent';
 
@@ -81,23 +82,41 @@ class VectorLayer extends OverlayLayer {
      */
     identify(coordinate, options = {}) {
         const renderer = this.getRenderer();
-        // only iterate drawn geometries when onlyVisible is true.
-        if (options['onlyVisible'] && renderer && renderer.identify) {
-            return renderer.identify(coordinate, options);
-        }
         if (!(coordinate instanceof Coordinate)) {
             coordinate = new Coordinate(coordinate);
         }
-        return this._hitGeos(this._geoList, coordinate, options);
+        const cp = this.getMap().coordToContainerPoint(coordinate);
+        // only iterate drawn geometries when onlyVisible is true.
+        if (options['onlyVisible'] && renderer && renderer.identifyAtPoint) {
+            return renderer.identifyAtPoint(cp, options);
+        }
+        return this._hitGeos(this._geoList, cp, options);
     }
 
-    _hitGeos(geometries, coordinate, options = {}) {
+    /**
+     * Identify the geometries on the given container point
+     * @param  {maptalks.Point} point   - container point to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Geometry[]} geometries identified
+     */
+    identifyAtPoint(point, options = {}) {
+        const renderer = this.getRenderer();
+        if (!(point instanceof Point)) {
+            point = new Point(point);
+        }
+        // only iterate drawn geometries when onlyVisible is true.
+        if (options['onlyVisible'] && renderer && renderer.identifyAtPoint) {
+            return renderer.identifyAtPoint(point, options);
+        }
+        return this._hitGeos(this._geoList, point, options);
+    }
+
+    _hitGeos(geometries, cp, options = {}) {
         const filter = options['filter'],
             tolerance = options['tolerance'],
             hits = [];
-        const map = this.getMap();
-        const point = map.coordToPoint(coordinate);
-        const cp = map._pointToContainerPoint(point, undefined, 0, point);
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {

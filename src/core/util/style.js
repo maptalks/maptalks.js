@@ -33,6 +33,11 @@ export function getGradientStamp(g) {
     return keys.join('_');
 }
 
+// back-compatibility alias
+export function getSymbolStamp(symbol, prefix) {
+    return getSymbolHash(symbol, prefix);
+}
+
 /**
  * Get stamp of a symbol
  * @param  {Object|Object[]} symbol symbol

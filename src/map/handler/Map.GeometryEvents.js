@@ -228,7 +228,7 @@ class MapGeometryEventsHandler extends Handler {
                 return true;
             },
             'count': 1,
-            'coordinate': coordinate,
+            'containerPoint': containerPoint,
             'onlyVisible' : map.options['onlyVisibleGeometryEvents'],
             'layers': layers
         };
@@ -239,10 +239,10 @@ class MapGeometryEventsHandler extends Handler {
                 if (map.isInteracting()) {
                     return;
                 }
-                map.identify(identifyOptions, callback);
+                map.identifyAtPoint(identifyOptions, callback);
             });
         } else {
-            map.identify(identifyOptions, callback);
+            map.identifyAtPoint(identifyOptions, callback);
         }
 
         function fireGeometryEvent(geometries) {

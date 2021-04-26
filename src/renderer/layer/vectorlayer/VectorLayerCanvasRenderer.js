@@ -209,12 +209,12 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._displayExtent = extent2D;
     }
 
-    identify(coordinate, options = {}) {
+    identifyAtPoint(point, options = {}) {
         const geometries = this._geosToDraw;
         if (!geometries) {
             return [];
         }
-        return this.layer._hitGeos(geometries, coordinate, options);
+        return this.layer._hitGeos(geometries, point, options);
     }
 
     _updateMapStateCache() {
