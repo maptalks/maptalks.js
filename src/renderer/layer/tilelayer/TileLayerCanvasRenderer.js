@@ -9,7 +9,7 @@ import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
-import LRUCache from '../../../core/util/LRUCache';
+import LRUCache from '../../../core/util/LruCache';
 import Canvas from '../../../core/Canvas';
 
 const TILE_POINT = new Point(0, 0);
