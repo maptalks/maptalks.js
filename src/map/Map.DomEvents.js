@@ -245,7 +245,7 @@ Map.include(/** @lends Map.prototype */ {
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && !preTarget['eventsPropagation']))) {
+                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
                     return true;
                 }
                 preTarget = target;
