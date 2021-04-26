@@ -446,20 +446,21 @@ class TileLayer extends Layer {
         }
         //Get description of center tile including left and top offset
         const prjCenter = map._containerPointToPrj(containerExtent.getCenter(), TEMP_POINT0);
-        const centerPoint = map._prjToPoint(prjCenter, undefined, TEMP_POINT1);
+        const centerPoint = map._prjToPoint(prjCenter, zoom, TEMP_POINT1);
         let c;
         if (hasOffset) {
-            c = this._project(map._pointToPrj(centerPoint._add(offset), undefined, TEMP_POINT1), TEMP_POINT1);
+            c = this._project(map._pointToPrj(centerPoint._add(offset), zoom, TEMP_POINT1), TEMP_POINT1);
         } else {
             c = this._project(prjCenter, TEMP_POINT1);
         }
 
-        TEMP_POINT2.x = extent2d.xmin;
-        TEMP_POINT2.y = extent2d.ymax;
-        TEMP_POINT3.x = extent2d.xmax;
-        TEMP_POINT3.y = extent2d.ymin;
-        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), undefined, TEMP_POINT2), TEMP_POINT2);
-        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), undefined, TEMP_POINT3), TEMP_POINT3);
+        const extentScale = map.getGLScale() / map.getGLScale(zoom);
+        TEMP_POINT2.x = extent2d.xmin * extentScale;
+        TEMP_POINT2.y = extent2d.ymax * extentScale;
+        TEMP_POINT3.x = extent2d.xmax * extentScale;
+        TEMP_POINT3.y = extent2d.ymin * extentScale;
+        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), zoom, TEMP_POINT2), TEMP_POINT2);
+        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), zoom, TEMP_POINT3), TEMP_POINT3);
 
         const centerTile = tileConfig.getTileIndex(c, res, repeatWorld);
         const ltTile = tileConfig.getTileIndex(pmin, res, repeatWorld);
