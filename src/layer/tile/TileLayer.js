@@ -166,11 +166,15 @@ class TileLayer extends Layer {
      * @return {Size}
      */
     getTileSize() {
+        if (this._tileSize) {
+            return this._tileSize;
+        }
         let size = this.options['tileSize'];
         if (isNumber(size)) {
             size = [size, size];
         }
-        return new Size(size);
+        this._tileSize = new Size(size);
+        return this._tileSize;
     }
 
     /**
@@ -430,7 +434,7 @@ class TileLayer extends Layer {
             return result;
         });
         // const innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
-        extent2d._add(offset);
+        // extent2d._add(offset);
 
         const maskExtent = this._getMask2DExtent();
         if (maskExtent) {
@@ -454,8 +458,8 @@ class TileLayer extends Layer {
         TEMP_POINT2.y = extent2d.ymax;
         TEMP_POINT3.x = extent2d.xmax;
         TEMP_POINT3.y = extent2d.ymin;
-        const pmin = this._project(map._pointToPrj(TEMP_POINT2, undefined, TEMP_POINT2), TEMP_POINT2);
-        const pmax = this._project(map._pointToPrj(TEMP_POINT3, undefined, TEMP_POINT3), TEMP_POINT3);
+        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), undefined, TEMP_POINT2), TEMP_POINT2);
+        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), undefined, TEMP_POINT3), TEMP_POINT3);
 
         const centerTile = tileConfig.getTileIndex(c, res, repeatWorld);
         const ltTile = tileConfig.getTileIndex(pmin, res, repeatWorld);
@@ -471,6 +475,7 @@ class TileLayer extends Layer {
         const renderer = this.getRenderer() || parentRenderer,
             scale = this._getTileConfig().tileSystem.scale;
         const tiles = [], extent = new PointExtent();
+        const tilePoint = new Point(0, 0);
         for (let i = -top; i <= bottom; i++) {
             let j = -left;
             let leftVisitEnd = -Infinity;
@@ -496,8 +501,9 @@ class TileLayer extends Layer {
 
                 let p;
                 if (tileInfo) {
-                    const { point } = tileInfo;
-                    p = point;
+                    const { extent2d } = tileInfo;
+                    tilePoint.set(extent2d.xmin, extent2d.ymax);
+                    p = tilePoint;
                 } else if (!this._hasOwnSR) {
                     p = tileConfig.getTilePointNW(idx.x, idx.y, res);
                     // const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
@@ -530,35 +536,32 @@ class TileLayer extends Layer {
 
 
                 const tileExtent = tileInfo && tileInfo.extent2d || new PointExtent(p.x, p.y - height, p.x + width, p.y);
-                if (hasOffset) {
-                    tileExtent.set(p.x, p.y - height, p.x + width, p.y);
-                    tileExtent._sub(offset);
-                }
-                if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, glScale)) {
+                // if (hasOffset) {
+                //     tileExtent.set(p.x, p.y - height, p.x + width, p.y);
+                // }
+                if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, offset, glScale)) {
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
                     if (cascadeLevel === 0) {
-                        tileExtent._add(offset);
                         this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets);
-                        tileExtent._sub(offset);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
                             tileInfo = {
                                 //reserve point caculated by tileConfig
                                 //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
-                                'point': p,
                                 'z': z,
                                 'x': idx.x,
                                 'y': idx.y,
-                                'extent2d' : tileExtent,
-                                'mask': cascadeLevel,
-                                'size': [width, height],
+                                'extent2d': tileExtent,
+                                'offset': offset,
                                 'id': tileId,
-                                'layer': this.getId(),
-                                'url': this.getTileUrl(idx.x, idx.y, zoom)
+                                'url': this.getTileUrl(idx.x, idx.y, z)
                             };
+                        } else {
+                            tileInfo.offset[0] = offset[0];
+                            tileInfo.offset[1] = offset[1];
                         }
                         tiles.push(tileInfo);
                         extent._combine(tileExtent);
@@ -579,14 +582,18 @@ class TileLayer extends Layer {
         if (tiles.length) {
             //sort tiles according to tile's distance to center
             const center = map._containerPointToPoint(containerExtent.getCenter(), z, TEMP_POINT)._add(offset);
+            const point0 = new Point(0, 0);
+            const point1 = new Point(0, 0);
             tiles.sort(function (a, b) {
-                return a.point.distanceTo(center) - b.point.distanceTo(center);
+                point0.set((a.extent2d.xmin + a.extent2d.xmax) / 2, (a.extent2d.ymin + a.extent2d.ymax) / 2);
+                point1.set((b.extent2d.xmin + b.extent2d.xmax) / 2, (b.extent2d.ymin + b.extent2d.ymax) / 2);
+                return point0.distanceTo(center) - point1.distanceTo(center);
             });
         }
         return {
-            'offset' : offset,
+            'offset': offset,
             'zoom' : tileZoom,
-            'extent' : extent,
+            'extent': extent,
             'tiles': tiles
         };
     }
@@ -625,25 +632,21 @@ class TileLayer extends Layer {
         }
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const childExtent = new PointExtent(corner.x + i * w, corner.y + yOrder * j * h, corner.x + (i + 1) * w, corner.y + yOrder * (j + 1) * h);
-        childExtent._sub(offset);
         if (/*!rightVisitEnd && */
-            !this._isSplittedTileInExtent(frustumMatrix, childExtent, glScale)) {
+            !this._isSplittedTileInExtent(frustumMatrix, childExtent, offset, glScale)) {
             return null;
         }
-        childExtent._add(offset);
         let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
         if (!tileInfo) {
             //reserve point caculated by tileConfig
             //so add offset because we have p._sub(offset) and p._add(dx, dy) if hasOffset
             tileInfo = {
-                'point': new Point(childExtent.xmin, childExtent.ymax),
                 'z': z,
-                'x' : x + i,
-                'y' : y + j,
+                'x': x + i,
+                'y': y + j,
                 'extent2d' : childExtent,
-                'size': [w, h],
                 'id': tileId,
-                'layer': this.getId(),
+                'offset': offset,
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
             };
         } else {
@@ -735,12 +738,12 @@ class TileLayer extends Layer {
         return super._bindMap.apply(this, arguments);
     }
 
-    _isTileInExtent(frustumMatrix, tileExtent, glScale) {
+    _isTileInExtent(frustumMatrix, tileExtent, offset, glScale) {
         const map = this.getMap();
 
         let matrix;
         if (frustumMatrix !== map.projViewMatrix) {
-            const tileCenter = tileExtent.getCenter(TEMP_POINT6)._multi(glScale);
+            const tileCenter = tileExtent.getCenter(TEMP_POINT6)._sub(offset[0], offset[1])._multi(glScale);
             vec3.set(ARR3, tileCenter.x, tileCenter.y, 0);
             const ndc = vec3.transformMat4(ARR3, ARR3, map.projViewMatrix);
             //地图中心下方的瓦片与 map.projViewMatrix 比较
@@ -750,19 +753,19 @@ class TileLayer extends Layer {
             matrix = map.projViewMatrix;
         }
 
-        TILE_BOX[0][0] = tileExtent.xmin * glScale;
-        TILE_BOX[0][1] = tileExtent.ymin * glScale;
-        TILE_BOX[1][0] = tileExtent.xmax * glScale;
-        TILE_BOX[1][1] = tileExtent.ymax * glScale;
+        TILE_BOX[0][0] = (tileExtent.xmin - offset[0]) * glScale;
+        TILE_BOX[0][1] = (tileExtent.ymin - offset[1]) * glScale;
+        TILE_BOX[1][0] = (tileExtent.xmax - offset[0]) * glScale;
+        TILE_BOX[1][1] = (tileExtent.ymax - offset[1]) * glScale;
         return intersectsBox(matrix, TILE_BOX);
     }
 
-    _isSplittedTileInExtent(frustumMatrix, tileExtent, glScale) {
+    _isSplittedTileInExtent(frustumMatrix, tileExtent, offset, glScale) {
         const map = this.getMap();
-        TILE_BOX[0][0] = tileExtent.xmin * glScale;
-        TILE_BOX[0][1] = tileExtent.ymin * glScale;
-        TILE_BOX[1][0] = tileExtent.xmax * glScale;
-        TILE_BOX[1][1] = tileExtent.ymax * glScale;
+        TILE_BOX[0][0] = (tileExtent.xmin - offset[0]) * glScale;
+        TILE_BOX[0][1] = (tileExtent.ymin - offset[1]) * glScale;
+        TILE_BOX[1][0] = (tileExtent.xmax - offset[0]) * glScale;
+        TILE_BOX[1][1] = (tileExtent.ymax - offset[1]) * glScale;
         return intersectsBox(map.projViewMatrix, TILE_BOX);
     }
 
