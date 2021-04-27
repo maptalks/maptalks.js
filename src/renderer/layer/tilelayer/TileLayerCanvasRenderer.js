@@ -516,27 +516,25 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            //TODO 这个offset能直接用吗？
-            offset = info.offset,
             pmin = layer._project(map._pointToPrj(min, info.z, TEMP_POINT1), TEMP_POINT1),
             pmax = layer._project(map._pointToPrj(max, info.z, TEMP_POINT2), TEMP_POINT2);
         const zoomDiff = 2;
         for (let i = 1; i < zoomDiff; i++) {
-            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i, offset);
+            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
         }
 
         return children;
     }
 
-    _findChildTilesAt(children, pmin, pmax, layer, childZoom, offset) {
+    _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
         const zoomOffset = layer.options['zoomOffset'];
         const layerId = layer.getId(),
             res = layer.getSpatialReference().getResolution(childZoom + zoomOffset);
         if (!res) {
             return;
         }
-        const dmin = layer._getTileConfig().getTileIndex(pmin, res, offset),
-            dmax = layer._getTileConfig().getTileIndex(pmax, res, offset);
+        const dmin = layer._getTileConfig().getTileIndex(pmin, res),
+            dmax = layer._getTileConfig().getTileIndex(pmax, res);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
         const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
         let id, tile;
@@ -563,13 +561,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             zoomOffset = layer.options['zoomOffset'],
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
-            offset = info.offset,
             prj = layer._project(map._pointToPrj(center, info.z));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
             const res = sr.getResolution(z + zoomOffset);
             if (!res) continue;
-            const tileIndex = layer._getTileConfig().getTileIndex(prj, res, offset);
+            const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
             const id = layer._getTileId(tileIndex.x, tileIndex.y, z + zoomOffset, info.layer);
             if (this.tileCache.has(id)) {
                 const tile = this.tileCache.getAndRemove(id);
