@@ -545,7 +545,7 @@ class TileLayer extends Layer {
                         this._visitedTiles.add(tileId);
                     }
                     if (cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets, parentRenderer);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
@@ -560,6 +560,9 @@ class TileLayer extends Layer {
                                 'id': tileId,
                                 'url': this.getTileUrl(idx.x, idx.y, z)
                             };
+                            if (parentRenderer) {
+                                tileInfo['layer'] = this.getId();
+                            }
                         } else {
                             tileInfo.offset[0] = offset[0];
                             tileInfo.offset[1] = offset[1];
@@ -599,7 +602,7 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, tileExtent, dx, dy, tileOffsets) {
+    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, tileExtent, dx, dy, tileOffsets, parentRenderer) {
         // const hasOffset = offset[0] || offset[1];
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const glScale = this.getMap().getGLScale(z);
@@ -612,17 +615,17 @@ class TileLayer extends Layer {
         const x = tileIdx.x * 2;
         const y = tileIdx.y * 2;
 
-        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 0, w, h, corner, glScale, tileOffsets);
+        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 1, w, h, corner, glScale, tileOffsets);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 0, w, h, corner, glScale, tileOffsets);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 1, w, h, corner, glScale, tileOffsets);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
     }
 
-    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, i, j, w, h, corner, glScale, tileOffsets) {
+    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, i, j, w, h, corner, glScale, tileOffsets, parentRenderer) {
         const tileId = this._getTileId(idx + i, idy + j, z);
         if (this._visitedTiles && this._visitedTiles.has(tileId)) {
             return null;
@@ -650,6 +653,9 @@ class TileLayer extends Layer {
                 'offset': offset,
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
             };
+            if (parentRenderer) {
+                tileInfo['layer'] = this.getId();
+            }
         } else {
             tileInfo = tileInfo.info;
         }
