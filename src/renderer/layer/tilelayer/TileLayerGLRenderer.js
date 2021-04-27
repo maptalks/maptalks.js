@@ -47,7 +47,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             super.drawTile(tileInfo, tileImage);
             return;
         }
-        const point = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
+        const { extent2d, offset } = tileInfo;
+        const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
         const opacity = this.getTileOpacity(tileImage);

@@ -62,7 +62,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.completeRender();
             return;
         }
-        this._tileOffsets = {};
         let loadingCount = 0;
         let loading = false;
         const checkedTiles = {};
@@ -191,9 +190,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context);
 
         this._parentTiles.forEach(t => this._drawTileAndCache(t));
-        this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
+        this._childTiles.forEach(t => this._drawTile(t.info, t.image));
 
-        placeholders.forEach(t => this._drawTileOffset(t.info, t.image));
+        placeholders.forEach(t => this._drawTile(t.info, t.image));
 
         const layer = this.layer,
             map = this.getMap();
@@ -232,41 +231,18 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     onDrawTileStart() {}
     onDrawTileEnd() {}
 
-    _drawTileOffset(info, image) {
+    _drawTile(info, image) {
         if (!image) {
             return;
         }
-        const offset = this._getTileOffset(info.z);
-        if (!offset[0] && !offset[1]) {
-            this.drawTile(info, image);
-            return;
-        }
-        // const map = this.getMap();
-        //tempararily add offset to tile info
-        // const scale = map._getResolution(this._tileZoom) / map._getResolution(info.z);
-        // offset[0] *= scale;
-        // offset[1] *= scale;
-        info.extent2d._sub(offset);
         this.drawTile(info, image);
-        //restore
-        info.extent2d._add(offset);
-        // offset[0] /= scale;
-        // offset[1] /= scale;
     }
 
     _drawTileAndCache(tile) {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
-        this._drawTileOffset(tile.info, tile.image);
+        this._drawTile(tile.info, tile.image);
         this.tileCache.add(tile.info.id, tile);
-    }
-
-    _getTileOffset(z) {
-        if (!this._tileOffsets[z]) {
-            const offset = this.layer._getTileOffset(z);
-            this._tileOffsets[z] = offset;
-        }
-        return this._tileOffsets[z];
     }
 
     drawOnInteracting() {
@@ -466,7 +442,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tileImage || !this.getMap()) {
             return;
         }
-        const point = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax),
+        const { extent2d, offset } = tileInfo;
+        const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]),
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
