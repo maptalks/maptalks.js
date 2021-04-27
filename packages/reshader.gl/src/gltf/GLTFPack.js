@@ -118,7 +118,7 @@ export default class GLTFPack {
         } else {
             mat4.copy(node.nodeMatrix, node.matrix || node.trs.getMatrix());
         }
-        const nodeMatrix = mat4.copy([], node.nodeMatrix);
+        const nodeMatrix = node.nodeMatrix;
         if (node.children) {
             node.children.forEach(child => {
                 this._updateNodeMatrix(time, child, nodeMatrix);

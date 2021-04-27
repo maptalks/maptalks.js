@@ -10,6 +10,12 @@ class BoundingBox {
         this.updateVertex();
     }
 
+    static copy(out, bbox) {
+        vec3.copy(out.min, bbox.min);
+        vec3.copy(out.max, bbox.max);
+        return out;
+    }
+
     dirty() {
         this._dirty = true;
         return this;
@@ -57,16 +63,43 @@ class BoundingBox {
     }
 
     updateVertex() {
-        this.vertex = [
-            [this.min[0], this.min[1], this.min[2]],
-            [this.min[0], this.min[1], this.max[2]],
-            [this.min[0], this.max[1], this.max[2]],
-            [this.min[0], this.max[1], this.min[2]],
-            [this.max[0], this.min[1], this.min[2]],
-            [this.max[0], this.min[1], this.max[2]],
-            [this.max[0], this.max[1], this.max[2]],
-            [this.max[0], this.max[1], this.min[2]]
-        ];
+        if (!this.vertex) {
+            this.vertex = [];
+            for (let i = 0; i < 8; i++) {
+                this.vertex.push([]);
+            }
+        }
+        this.vertex[0][0] = this.min[0];
+        this.vertex[0][1] = this.min[1];
+        this.vertex[0][2] = this.min[2];
+
+        this.vertex[1][0] = this.min[0];
+        this.vertex[1][1] = this.min[1];
+        this.vertex[1][2] = this.max[2];
+
+        this.vertex[2][0] = this.min[0];
+        this.vertex[2][1] = this.max[1];
+        this.vertex[2][2] = this.max[2];
+
+        this.vertex[3][0] = this.min[0];
+        this.vertex[3][1] = this.max[1];
+        this.vertex[3][2] = this.min[2];
+
+        this.vertex[4][0] = this.max[0];
+        this.vertex[4][1] = this.min[1];
+        this.vertex[4][2] = this.min[2];
+
+        this.vertex[5][0] = this.max[0];
+        this.vertex[5][1] = this.min[1];
+        this.vertex[5][2] = this.max[2];
+
+        this.vertex[6][0] = this.max[0];
+        this.vertex[6][1] = this.max[1];
+        this.vertex[6][2] = this.max[2];
+
+        this.vertex[7][0] = this.max[0];
+        this.vertex[7][1] = this.max[1];
+        this.vertex[7][2] = this.min[2];
         return this.vertex;
     }
 
