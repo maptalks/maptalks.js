@@ -94,7 +94,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         const hasRenderTarget = this.hasRenderTarget();
         if (!hasRenderTarget) {
-            this._renderInMode('default', null, methodName, args);
+            this._renderInMode('default', null, methodName, args, true);
             return;
         }
 
@@ -169,19 +169,22 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
         fGL.resetDrawCalls();
-        this._renderInMode('noAa', this._noAaFBO, methodName, args);
+        this._renderInMode('noAa', this._noAaFBO, methodName, args, true);
         this._noaaDrawCount = fGL.getDrawCalls();
 
         // return tex;
     }
 
-    _renderInMode(mode, fbo, methodName, args) {
+    _renderInMode(mode, fbo, methodName, args, isFinalRender) {
         //noAA需要最后绘制，如果有noAa的图层，分为aa和noAa两个阶段分别绘制
         this._renderMode = mode;
         const drawContext = this._getDrawContext(args);
         drawContext.renderMode = this._renderMode;
         if (drawContext.renderTarget) {
             drawContext.renderTarget.fbo = fbo;
+        }
+        if (isFinalRender) {
+            drawContext.isFinalRender = true;
         }
 
         this.forEachRenderer((renderer, layer) => {
@@ -735,7 +738,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             states: this._getViewStates(),
             testSceneFilter: mesh => {
                 return !context.sceneFilter || context.sceneFilter(mesh);
-            }
+            },
+            isFinalRender: false
         };
 
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
