@@ -48,7 +48,7 @@ describe('TileLayer with Offset Specs', function () {
         expect(tiles.tileGrids.length).to.be.eql(1);
         expect(tiles.tileGrids[0].tiles.length).to.be.eql(36);
         expect(tile._getTileOffset(tiles.tileGrids[0].tiles[0].z)).to.be.eql([-207, 109]);
-        console.log(tiles.tileGrids[0].tiles[0]);
+        // console.log(tiles.tileGrids[0].tiles[0]);
 
     });
 });

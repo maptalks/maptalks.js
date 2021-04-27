@@ -9,9 +9,10 @@ import Canvas2D from '../../../core/Canvas';
 import TileLayer from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
-import LruCache from '../../../core/util/LruCache';
+import LRUCache from '../../../core/util/LruCache';
 import Canvas from '../../../core/Canvas';
 
+const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
@@ -36,7 +37,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.tilesLoading = {};
         this._parentTiles = [];
         this._childTiles = [];
-        this.tileCache = new LruCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
     }
 
     getCurrentTileZoom() {
@@ -61,7 +62,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.completeRender();
             return;
         }
-        this._tileOffsets = {};
         let loadingCount = 0;
         let loading = false;
         const checkedTiles = {};
@@ -190,9 +190,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context);
 
         this._parentTiles.forEach(t => this._drawTileAndCache(t));
-        this._childTiles.forEach(t => this._drawTileOffset(t.info, t.image));
+        this._childTiles.forEach(t => this._drawTile(t.info, t.image));
 
-        placeholders.forEach(t => this._drawTileOffset(t.info, t.image));
+        placeholders.forEach(t => this._drawTile(t.info, t.image));
 
         const layer = this.layer,
             map = this.getMap();
@@ -231,43 +231,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     onDrawTileStart() {}
     onDrawTileEnd() {}
 
-    _drawTileOffset(info, image) {
-        if (!image) {
-            return;
-        }
-        const offset = this._getTileOffset(info.z);
-        if (!offset[0] && !offset[1]) {
+    _drawTile(info, image) {
+        if (image) {
             this.drawTile(info, image);
-            return;
         }
-        // const map = this.getMap();
-        //tempararily add offset to tile info
-        // const scale = map._getResolution(this._tileZoom) / map._getResolution(info.z);
-        // offset[0] *= scale;
-        // offset[1] *= scale;
-        info.point._sub(offset);
-        info.extent2d._sub(offset);
-        this.drawTile(info, image);
-        //restore
-        info.point._add(offset);
-        info.extent2d._add(offset);
-        // offset[0] /= scale;
-        // offset[1] /= scale;
     }
 
     _drawTileAndCache(tile) {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
-        this._drawTileOffset(tile.info, tile.image);
+        this._drawTile(tile.info, tile.image);
         this.tileCache.add(tile.info.id, tile);
-    }
-
-    _getTileOffset(z) {
-        if (!this._tileOffsets[z]) {
-            const offset = this.layer._getTileOffset(z);
-            this._tileOffsets[z] = offset;
-        }
-        return this._tileOffsets[z];
     }
 
     drawOnInteracting() {
@@ -467,11 +441,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tileImage || !this.getMap()) {
             return;
         }
-        const point = tileInfo.point,
+        const { extent2d, offset } = tileInfo;
+        const point = TILE_POINT.set(extent2d.xmin - offset[0], extent2d.ymax - offset[1]),
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
-            tileSize = tileInfo.size,
+            tileSize = this.layer.getTileSize(),
             zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
@@ -488,7 +463,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         let x = cp.x,
             y = cp.y;
-        let w = tileSize[0], h = tileSize[1];
+        let w = tileSize.width, h = tileSize.height;
         if (transformed) {
             ctx.save();
             ctx.translate(x, y);
@@ -541,25 +516,27 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const children = [];
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
+            //TODO 这个offset能直接用吗？
+            offset = info.offset,
             pmin = layer._project(map._pointToPrj(min, info.z, TEMP_POINT1), TEMP_POINT1),
             pmax = layer._project(map._pointToPrj(max, info.z, TEMP_POINT2), TEMP_POINT2);
         const zoomDiff = 2;
         for (let i = 1; i < zoomDiff; i++) {
-            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
+            this._findChildTilesAt(children, pmin, pmax, layer, info.z + i, offset);
         }
 
         return children;
     }
 
-    _findChildTilesAt(children, pmin, pmax, layer, childZoom) {
+    _findChildTilesAt(children, pmin, pmax, layer, childZoom, offset) {
         const zoomOffset = layer.options['zoomOffset'];
         const layerId = layer.getId(),
             res = layer.getSpatialReference().getResolution(childZoom + zoomOffset);
         if (!res) {
             return;
         }
-        const dmin = layer._getTileConfig().getTileIndex(pmin, res),
-            dmax = layer._getTileConfig().getTileIndex(pmax, res);
+        const dmin = layer._getTileConfig().getTileIndex(pmin, res, offset),
+            dmax = layer._getTileConfig().getTileIndex(pmax, res, offset);
         const sx = Math.min(dmin.idx, dmax.idx), ex = Math.max(dmin.idx, dmax.idx);
         const sy = Math.min(dmin.idy, dmax.idy), ey = Math.max(dmin.idy, dmax.idy);
         let id, tile;
@@ -586,12 +563,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             zoomOffset = layer.options['zoomOffset'],
             zoomDiff = layer.options['backgroundZoomDiff'];
         const center = info.extent2d.getCenter(),
+            offset = info.offset,
             prj = layer._project(map._pointToPrj(center, info.z));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
             const res = sr.getResolution(z + zoomOffset);
             if (!res) continue;
-            const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
+            const tileIndex = layer._getTileConfig().getTileIndex(prj, res, offset);
             const id = layer._getTileId(tileIndex.x, tileIndex.y, z + zoomOffset, info.layer);
             if (this.tileCache.has(id)) {
                 const tile = this.tileCache.getAndRemove(id);
