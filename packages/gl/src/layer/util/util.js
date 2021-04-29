@@ -21,6 +21,10 @@ export function extend(dest) {
     return dest;
 }
 
+export function isNil(v) {
+    return v === undefined || v === null;
+}
+
 export function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
 }

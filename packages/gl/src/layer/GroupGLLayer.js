@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from 'gl-matrix';
+import { isNil } from './util/util.js';
 
 const options = {
     renderer : 'gl',
@@ -309,35 +310,48 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this.identifyAtPoint(containerPoint, options);
     }
 
-    identifyAtPoint(point, options) {
+    /**
+     * Identify the data at the given point
+     * @param {Point} point - container point to identify
+     * @param {Object} options - the identify options
+     * @param {Number}   [opts.count=1]  - limit of the result count, no limit if 0
+     * @param {Number}   [opts.closest=false]  - sort by distance to camera, only support data has identified point
+     * @return {Array} result
+     **/
+    identifyAtPoint(point, options = {}) {
         const childLayers = this.getLayers();
         const layers = (options && options.layers) || childLayers;
         const map = this.getMap();
         if (!map) {
             return [];
         }
-        const cameraPosition = map.cameraPosition;
-        let result = null;
-        let minDistance = 0;
+        const count = isNil(options.count) ? 1 : options.count;
+        let result = [];
         for (let i = 0; i < layers.length; i++) {
             const layer = layers[i];
             if (childLayers.indexOf(layer) < 0 || !layer.identifyAtPoint) {
                 continue;
             }
-            const picked = layer.identifyAtPoint(point, options)[0];
-            if (!picked) {
+            const picks = layer.identifyAtPoint(point, options);
+            if (!picks || picks.length) {
                 continue;
             }
-            const distanceFromCamera = vec3.dist(picked.point, cameraPosition);
-            if (!minDistance) {
-                minDistance = distanceFromCamera;
-                result = picked;
-            } else if (minDistance > distanceFromCamera) {
-                minDistance = distanceFromCamera;
-                result = picked;
+            if (options.closest) {
+                result.push(...picks.filter(p => !!p.point));
+            } else {
+                result.push(...picks);
             }
         }
-        return result ? [result] : [];
+        if (options.closest) {
+            const cameraPosition = map.cameraPosition;
+            result.sort((a, b) => {
+                return vec3.dist(a.picked, cameraPosition) - vec3.dist(b.picked, cameraPosition);
+            });
+        }
+        if (count) {
+            result = result.slice(0, count);
+        }
+        return result;
     }
 }
 
@@ -357,3 +371,4 @@ function sortLayersByZIndex(a, b) {
     }
     return c;
 }
+
