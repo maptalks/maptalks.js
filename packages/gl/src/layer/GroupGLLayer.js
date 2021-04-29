@@ -315,7 +315,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @param {Point} point - container point to identify
      * @param {Object} options - the identify options
      * @param {Number}   [opts.count=1]  - limit of the result count, no limit if 0
-     * @param {Number}   [opts.closest=false]  - sort by distance to camera, only support data has identified point
+     * @param {Number}   [opts.orderByCamera=false]  - sort by distance to camera, only support data has identified point
      * @return {Array} result
      **/
     identifyAtPoint(point, options = {}) {
@@ -333,19 +333,19 @@ export default class GroupGLLayer extends maptalks.Layer {
                 continue;
             }
             const picks = layer.identifyAtPoint(point, options);
-            if (!picks || picks.length) {
+            if (!picks || !picks.length) {
                 continue;
             }
-            if (options.closest) {
+            if (options.orderByCamera) {
                 result.push(...picks.filter(p => !!p.point));
             } else {
                 result.push(...picks);
             }
         }
-        if (options.closest) {
+        if (options.orderByCamera) {
             const cameraPosition = map.cameraPosition;
             result.sort((a, b) => {
-                return vec3.dist(a.picked, cameraPosition) - vec3.dist(b.picked, cameraPosition);
+                return vec3.dist(a.point, cameraPosition) - vec3.dist(b.point, cameraPosition);
             });
         }
         if (count) {
