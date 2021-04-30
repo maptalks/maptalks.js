@@ -129,11 +129,11 @@ export default class Geometry {
         return this._reglData[key];
     }
 
-    getREGLData(regl, activeAttributes) {
+    getREGLData(regl, activeAttributes, disableVAO) {
         this.getAttrData(activeAttributes);
         const updated = !this._reglData || !this._reglData[activeAttributes.key];
         //support vao
-        if (isSupportVAO(regl)) {
+        if (isSupportVAO(regl) && !disableVAO) {
             const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._elementsUpdated) {
                 const reglData = this._reglData[activeAttributes.key];

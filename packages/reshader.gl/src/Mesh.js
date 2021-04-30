@@ -20,6 +20,7 @@ class Mesh {
         this.ssr = !!config.ssr;
         this.castShadow = isNil(config.castShadow) || config.castShadow;
         this.picking = !!config.picking;
+        this.disableVAO = !!config.disableVAO;
         this.uniforms = {};
         this._localTransform = mat4.identity(new Array(16));
         this._positionMatrix = mat4.identity(new Array(16));
@@ -182,6 +183,7 @@ class Mesh {
             let dKey = this._getDefinesKey();
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
+            dKey += '_' + +(!!this.disableVAO);
             this._commandKey = dKey;
             if (this._material) {
                 this._materialKeys = this._material.getUniformKeys();
@@ -251,13 +253,13 @@ class Mesh {
     }
 
     _getREGLAttrData(regl, activeAttributes) {
-        return this._geometry.getREGLData(regl, activeAttributes);
+        return this._geometry.getREGLData(regl, activeAttributes, this.disableVAO);
     }
 
     getREGLProps(regl, activeAttributes) {
         const props = this.getUniforms(regl);
         extend(props, this._getREGLAttrData(regl, activeAttributes));
-        if (!isSupportVAO(regl)) {
+        if (!isSupportVAO(regl) || this.disableVAO) {
             props.elements = this._geometry.getElements();
         }
         props.meshConfig = this.config;

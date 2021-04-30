@@ -199,8 +199,8 @@ class Shader {
         };
     }
 
-    createREGLCommand(regl, materialDefines, elements, isInstanced) {
-        const isVAO = isSupportVAO(regl);
+    createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO) {
+        const isVAO = isSupportVAO(regl) && !disableVAO;
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
         const vert = this.getVersion(regl, vertSource) + vertSource;

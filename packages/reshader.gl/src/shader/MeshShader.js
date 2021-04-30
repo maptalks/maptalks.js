@@ -127,7 +127,8 @@ class MeshShader extends Shader {
                     regl,
                     defines,
                     mesh.getElements(),
-                    mesh instanceof InstancedMesh
+                    mesh instanceof InstancedMesh,
+                    mesh.disableVAO
                 );
         }
         return command;
