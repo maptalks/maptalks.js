@@ -209,11 +209,11 @@ function createPainterPlugin(type, Painter) {
                 }
                 if (Array.isArray(mesh)) {
                     mesh.forEach(m => {
-                        const bloomValue = +(bloom && painter.isBloom(m));
+                        const bloomValue = +(!!bloom && painter.isBloom(m));
                         m.bloom = bloomValue;
                     });
                 } else {
-                    const bloomValue = +(bloom && painter.isBloom(mesh));
+                    const bloomValue = +(!!bloom && painter.isBloom(mesh));
                     mesh.bloom = bloomValue;
                 }
 

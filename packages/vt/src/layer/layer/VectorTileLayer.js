@@ -510,7 +510,7 @@ class VectorTileLayer extends maptalks.TileLayer {
                 }
             };
         }
-        const background = this._getComputedStyle().background;
+        const background = this._getComputedStyle().background || {};
         this._backgroundConfig.enable = background.enable;
         this._backgroundConfig.symbol.polygonFill = background.color;
         this._backgroundConfig.symbol.polygonOpacity = background.opacity;

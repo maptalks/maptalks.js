@@ -20,6 +20,8 @@ const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 const EMPTY_BOXES = [];
 
+const INVISIBLE_BOX = { visible: false };
+
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -121,14 +123,14 @@ export default class CollisionPainter extends BasicPainter {
         const renderer = layer.getRenderer();
         const isForeground = renderer.isForeground(mesh);
         if (this.shouldIgnoreBackground() && !isForeground) {
-            return false;
+            return INVISIBLE_BOX;
         }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
         if (this.shouldLimitBox(isForeground) && boxIndex > layer.options['boxLimitOnZoomout']) {
-            return false;
+            return INVISIBLE_BOX;
         }
         if (this.isEnableUniquePlacement() && this._isReplacedPlacement(meshKey, boxIndex)) {
-            return false;
+            return INVISIBLE_BOX;
         }
         const map = this.getMap();
         const zoom = map.getZoom();

@@ -63,6 +63,7 @@ class IconPainter extends CollisionPainter {
 
     updateSymbol(...args) {
         super.updateSymbol(...args);
+        // TODO 需要更新 fn type config
         // this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         // this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }
@@ -94,14 +95,12 @@ class IconPainter extends CollisionPainter {
             geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
                 return [map.getZoom()];
             });
+            const fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
+            this._fnTypeConfigs[hash] = fnTypeConfig;
+            geometry.properties.fnTypeConfig = fnTypeConfig;
             if (isMarkerGeo(geometry)) {
-                const fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
-                this._fnTypeConfigs[hash] = fnTypeConfig;
-                geometry.properties.fnTypeConfig = fnTypeConfig;
                 prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig);
             } else if (isTextGeo(geometry)) {
-                const fnTypeConfig = getTextFnTypeConfig(map, symbolDef);
-                geometry.properties.fnTypeConfig = fnTypeConfig;
                 if (symbolDef.isIconText) {
                     const iconGeometry = geometries[i - 1];
                     const markerTextFit = iconGeometry.properties.symbolDef['markerTextFit'];

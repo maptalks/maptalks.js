@@ -1,4 +1,5 @@
 import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
+import { loadFunctionTypes } from '@maptalks/function-type';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -105,6 +106,11 @@ export default class TextPainter extends CollisionPainter {
         this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
 
+    isBloom(mesh) {
+        const { symbol } = mesh.geometry.properties;
+        return !!symbol['textBloom'];
+    }
+
     createGeometry(glData) {
         if (!glData || !glData.length) {
             return null;
@@ -127,6 +133,12 @@ export default class TextPainter extends CollisionPainter {
             //现在geometry只会有一个，所以统一为0
             geometry.properties.line.id = 0;
         }
+        const map = this.getMap();
+        const symbolDef = geometry.properties.symbolDef;
+        // point pack 因为涉及到多symbol，symbol定义是每个geometry分开的
+        geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
+            return [map.getZoom()];
+        });
         return geometry;
     }
 
@@ -199,11 +211,14 @@ export default class TextPainter extends CollisionPainter {
         const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-            const visible = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
-            if (visible) {
+            const collision = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
+            if (collision.visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(elements[i]);
                 }
+            }
+            if (collision.updateIndex) {
+                this._fillCollisionIndex(collision.boxes);
             }
         };
         const enableCollision = this.isEnableCollision();
@@ -251,7 +266,7 @@ export default class TextPainter extends CollisionPainter {
                 this.startMeshCollision(meshKey);
                 const { elements, aOpacity } = geometry.properties;
                 const visibleElements = geometry.properties.visibleElements = [];
-                this.forEachBox(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex, label) => {
+                this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex, label) => {
                     fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex, label);
                 });
 
@@ -262,8 +277,8 @@ export default class TextPainter extends CollisionPainter {
                 const allHided = !visibleElements.length && !geometry.count;
                 if (!allVisilbe && !allHided) {
                     geometry.setElements(new elements.constructor(visibleElements));
+                    // geometry.setElements(new elements.constructor(elements));
                 }
-
                 this.endMeshCollision(meshKey);
             }
         }
@@ -338,11 +353,14 @@ export default class TextPainter extends CollisionPainter {
                 return;
             }
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-            visible = this.updateBoxCollisionFading(visible, mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
-            if (visible) {
+            const collision = this.updateBoxCollisionFading(visible, mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
+            if (collision.visible) {
                 for (let i = start; i < end; i++) {
                     visibleElements.push(allElements[i]);
                 }
+            }
+            if (collision.updateIndex) {
+                this._fillCollisionIndex(collision.boxes);
             }
         });
         if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
