@@ -12,14 +12,6 @@ const EMPTY_ARRAY = [];
 const CLEAR_COLOR = [0, 0, 0, 0];
 const TILE_POINT = new maptalks.Point(0, 0);
 
-// for context.sceneFilter
-// 含义是后处理阶段时，都返回0
-const MOCK_MESH = {
-    getUniform() {
-        return 0;
-    }
-};
-
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     supportRenderMode() {
@@ -625,7 +617,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
-        if (this.options.collision) {
+        if (this.layer.options.collision) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
                 if (!hasMesh(plugin)) {
@@ -639,7 +631,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         }
 
-        const isFinalRender = !mode || (mode === 'default' || mode === 'noAa') && parentContext.testSceneFilter(MOCK_MESH);
+        const isFinalRender = parentContext.isFinalRender;
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset

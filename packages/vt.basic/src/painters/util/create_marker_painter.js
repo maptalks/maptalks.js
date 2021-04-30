@@ -47,7 +47,6 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
         geometry.properties.aShape = aShape;
         //保存elements，隐藏icon时，从elements中删除icon的索引数据
         geometry.properties.elements = geometry.elements;
-        geometry.properties.elemCtor = geometry.elements.constructor;
     }
 
     setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);

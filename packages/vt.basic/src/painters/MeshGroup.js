@@ -1,6 +1,7 @@
 export default class MeshGroup {
     constructor(meshes) {
-        this._meshes = meshes;
+        this._meshes = meshes || [];
+        this.properties = {};
     }
 
     set meshes(m) {

@@ -153,6 +153,9 @@ function createPainterPlugin(type, Painter) {
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
+                        if (meshModel.meshes) {
+                            meshModel.properties.meshKey = key;
+                        }
                         for (let i = 0; i < mesh.length; i++) {
                             this._fillMeshProps(mesh[i], tileTransform, context.timestamp, key + '-' + i, enableTileStencil);
                         }
@@ -162,7 +165,7 @@ function createPainterPlugin(type, Painter) {
                     if (sceneConfig.animation) {
                         mesh._animationTime = context.timestamp;
                     }
-                    this._meshCache[key] = mesh;
+                    this._meshCache[key] = meshModel;
                 }
             }
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
@@ -174,6 +177,7 @@ function createPainterPlugin(type, Painter) {
             if (meshModel.meshes) {
                 // a MeshGroup
                 mesh = meshModel.meshes;
+                meshModel.properties.level = level;
             }
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {

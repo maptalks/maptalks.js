@@ -193,6 +193,7 @@ function prepareGeometry(geometry, enableCollision) {
     if ((enableCollision || isLinePlacement)) {
         geometry.properties.aAnchor = aPosition;
         geometry.properties.aShape = aShape;
+        geometry.properties.elements = geometry.elements;
     }
 
     if (isLinePlacement) {
@@ -223,11 +224,6 @@ function prepareGeometry(geometry, enableCollision) {
         if (aTextHaloRadius && !geometry.properties.aTextHaloRadius) {
             geometry.properties.aTextHaloRadius = geometry.properties[PREFIX + 'aTextHaloRadius'] || new aTextHaloRadius.constructor(aTextHaloRadius);
         }
-    }
-
-    if (isLinePlacement || enableCollision) {
-        geometry.properties.elements = geometry.elements;
-        geometry.properties.elemCtor = geometry.elements.constructor;
     }
 }
 
@@ -566,7 +562,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const symbol = geoProps.symbol;
     const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
     const { aTextSize, aTextHaloRadius, aShape } = geoProps;
-    const textSize = aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize;
+    const textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize) || DEFAULT_UNIFORMS['textSize'];
     const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
 
     const anchor = getAnchor(ANCHOR, mesh, elements[start]);

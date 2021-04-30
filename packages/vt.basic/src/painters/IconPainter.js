@@ -8,7 +8,7 @@ import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil } from '../Util';
-import { createTextMesh, createTextShader, DEFAULT_UNIFORMS, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
+import { createTextMesh, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import MeshGroup from './MeshGroup';
 
 import textVert from './glsl/text.vert';
@@ -58,6 +58,7 @@ class IconPainter extends CollisionPainter {
         this._iconFilter1 = ICON_FILTER_N.bind(this);
         this._textFilter0 = TEXT_FILTER.bind(this);
         this._textFilter1 = TEXT_FILTER_N.bind(this);
+        this._meshesToCheck = [];
     }
 
     updateSymbol(...args) {
@@ -66,12 +67,17 @@ class IconPainter extends CollisionPainter {
         // this._iconFnTypeConfig = this._getIconFnTypeConfig();
     }
 
+    startFrame(...args) {
+        this._meshesToCheck.length = 0;
+        return super.startFrame(...args);
+    }
+
     createGeometry(glData, features) {
         if (!glData || !glData.length) {
             return [];
         }
         const map = this.getMap();
-        glData = glData.sort(sorting);
+        // glData = glData.sort(sorting);
         const geometries = [];
         for (let i = 0; i < glData.length; i++) {
             const data = glData[i];
@@ -84,7 +90,7 @@ class IconPainter extends CollisionPainter {
             }
             const geometry = super.createGeometry(data, features);
             const symbolDef = geometry.properties.symbolDef;
-            const hash = maptalks.Util.getSymbolStamp(symbolDef);
+            const hash = maptalks.Util.getSymbolHash(symbolDef);
             geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
                 return [map.getZoom()];
             });
@@ -108,6 +114,32 @@ class IconPainter extends CollisionPainter {
         return geometries;
     }
 
+    _prepareCollideIndex(geo) {
+        if (!this.isEnableCollision()) {
+            return;
+        }
+        const { aPickingId, elements } = geo.properties;
+        const collideBoxIndex = {};
+
+        let index = 0;
+        let idx = elements[0];
+        let start = 0, current = aPickingId[idx];
+        for (let ii = 0; ii <= elements.length; ii += BOX_ELEMENT_COUNT) {
+            idx = elements[ii];
+            //pickingId发生变化，新的feature出现
+            if (aPickingId[idx] !== current || ii === elements.length) {
+                collideBoxIndex[current] = [
+                    start,
+                    ii,
+                    index++
+                ];
+                current = aPickingId[idx];
+                start = ii;
+            }
+        }
+        geo.properties.collideBoxIndex = collideBoxIndex;
+    }
+
     createMesh(geometries, transform) {
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
@@ -123,11 +155,17 @@ class IconPainter extends CollisionPainter {
                 const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
+            this._prepareCollideIndex(geometry);
         }
-        return new MeshGroup(meshes);
+        const group = new MeshGroup(meshes);
+        if (meshes.length) {
+            group.properties.aPickingId = Object.keys(meshes[0].geometry.properties.features);
+        }
+        return group;
     }
 
     addMesh(meshes) {
+        this._meshesToCheck.push(meshes);
         if (meshes instanceof MeshGroup) {
             meshes = meshes.meshes;
         }
@@ -169,6 +207,7 @@ class IconPainter extends CollisionPainter {
         }
 
         this._updateIconCollision(context.timestamp);
+        this._meshesToCheck = [];
     }
 
     callCurrentTileShader(uniforms, context) {
@@ -201,7 +240,7 @@ class IconPainter extends CollisionPainter {
         if (!this.isEnableCollision()) {
             return;
         }
-        let meshes = this.scene.getMeshes();
+        let meshes = this._meshesToCheck;
         if (!meshes || !meshes.length) {
             return;
         }
@@ -209,117 +248,223 @@ class IconPainter extends CollisionPainter {
         this._updateIconAndText(meshes);
     }
 
-    _updateIconAndText(meshes) {
-        const fn = (textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, iconIndex) => {
-            // const labelIndex = iconMesh.geometry.properties.labelIndex[iconIndex];
-            // if (labelIndex[0] !== -1) {
-            //     const idx = textElements[labelIndex[0]];
-            //     const pickingId = textMesh.geometry.properties.aPickingId[idx];
-            //     const feature = textMesh.geometry.properties.features[pickingId];
-            //     if (feature && feature.feature.properties.name === '中一路隧道') {
-            //         debugger
-            //     }
-            // }
-            //icon的element值，是text的element值处于text的char count
-            const visible = this.updateBoxCollisionFading(true, iconMesh, iconElements, (end - start) / BOX_ELEMENT_COUNT, start, end, mvpMatrix, iconIndex);
+    _updateBox(mesh, start, end, mvpMatrix, globalBoxIndex) {
+        const boxCount = (end - start) / BOX_ELEMENT_COUNT;
+        const { elements } = mesh.geometry.properties;
+        const collision = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, globalBoxIndex);
+        if (collision.updateIndex) {
+            this._savedBoxes.push(...collision.boxes);
+        }
+        // if (groupCount || boxCount > 1) {
+        //     if (boxIndex === 0 && (groupCount === 0 || groupIndex === 0)) {
+        //         // 如果groupCount不为0，则在groupIndex === 0 时创建
+        //         // 如果groupCount为0，则在boxIndex === 0 时创建
+        //         this._savedBoxes = [];
+        //     }
+        //     if (!collision.visible) {
+        //         return false;
+        //     }
+        //     if (collision.updateIndex) {
+        //         this._savedBoxes.push(...collision.boxes);
+        //     }
+        //     if ((groupCount === 0 || groupIndex === groupCount - 1) && boxIndex === boxCount - 1) {
+        //         //TODO fill collision index
+        //         this._fillCollisionIndex(this._savedBoxes);
+        //     }
+        //     return true;
+        // } else {
+        //     if (collision.updateIndex) {
+        //         this._fillCollisionIndex(collision.boxes);
+        //     }
+        //     return collision.visible;
+        // }
+        return collision.visible;
+    }
 
-            if (visible) {
-                if (textMesh) {
-                    const labelIndex = iconMesh.geometry.properties.labelIndex[iconIndex];
-                    if (labelIndex && labelIndex[0] !== -1) {
-                        const [textStart, textEnd] = labelIndex;
-                        for (let i = textStart; i < textEnd; i++) {
-                            textVisibleElements.push(textElements[i]);
-                        }
-                    }
-                }
-                for (let i = start; i < end; i++) {
-                    iconVisibleElements.push(iconElements[i]);
-                }
-            }
-        };
+    _updateIconAndText(meshes) {
         meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
-            const iconMesh = meshes[m];
-            if (!iconMesh || !iconMesh.geometry || !iconMesh.geometry.properties.isEmpty && !this.isMeshIterable(iconMesh)) {
+            const mesh = meshes[m];
+            if (!mesh) {
                 continue;
             }
-            const textMesh = iconMesh._textMesh;
-            const meshKey = iconMesh.properties.meshKey;
+            if (mesh instanceof MeshGroup) {
+                if (!mesh.meshes.length) {
+                    continue;
+                }
+            } else if (!mesh.geometry || !mesh.geometry.properties.isEmpty && !this.isMeshIterable(mesh)) {
+                continue;
+            }
+            const meshKey = mesh.properties.meshKey;
             this.startMeshCollision(meshKey);
-            let textGeometry, textElements, textVisibleElements;
-            if (textMesh) {
-                const symbol = textMesh.geometry.properties.symbol;
-                textMesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
-                textMesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
-                textGeometry = textMesh.geometry;
-                textElements = textGeometry.properties.elements;
-                textVisibleElements = [];
+            this.forEachBox(mesh, this._updateBox);
+            this.endMeshCollision(meshKey);
+
+            if (mesh instanceof MeshGroup) {
+                for (let i = 0; i < mesh.meshes.length; i++) {
+                    this._updateOpacity(mesh.meshes[i]);
+                }
+            } else {
+                this._updateOpacity(mesh);
             }
+        }
+    }
 
-            const iconGeometry = iconMesh.geometry;
-            const iconElements = iconGeometry.properties.elements;
-            const iconVisibleElements = [];
+    _updateOpacity(mesh) {
+        const aOpacity = mesh && mesh.geometry && mesh.geometry.properties.aOpacity;
+        if (aOpacity && aOpacity.dirty) {
+            mesh.geometry.updateData('aOpacity', aOpacity);
+            aOpacity.dirty = false;
+        }
+    }
 
-            this.forEachBox(iconMesh, iconElements, (mesh, start, end, mvpMatrix, index) => {
-                fn(textElements, iconElements, textVisibleElements, iconVisibleElements, iconMesh, textMesh, start, end, mvpMatrix, index);
-            });
+    // setCollisionOpacity(mesh, allElements, value, start, end, boxIndex) {
+    //     super.setCollisionOpacity(mesh, allElements, value, start, end);
+    //     const textMesh = mesh._textMesh;
+    //     if (textMesh && mesh.geometry.properties.labelIndex) {
+    //         //icon and text
+    //         const textElements = textMesh.geometry.properties.elements;
+    //         const labelIndex = mesh.geometry.properties.labelIndex;
+    //         if (!labelIndex || !labelIndex[boxIndex]) {
+    //             return;
+    //         }
+    //         const [textStart, textEnd] = labelIndex[boxIndex];
+    //         if (textStart !== -1) {
+    //             super.setCollisionOpacity(textMesh, textElements, value, textStart, textEnd);
+    //         }
+    //     }
+    // }
 
-            iconGeometry.setElements(new iconGeometry.properties.elemCtor(iconVisibleElements));
-            const iconOpacity = iconGeometry.properties.aOpacity;
-            if (iconOpacity && iconOpacity.dirty) {
-                iconGeometry.updateData('aOpacity', iconOpacity);
-                iconOpacity.dirty = false;
+    forEachBox(mesh, fn) {
+        const aPickingId = mesh instanceof MeshGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
+
+        this._startCheckMesh(mesh);
+        const context = { boxIndex: 0 };
+        for (let i = 0; i < aPickingId.length; i++) {
+            const pickingId = aPickingId[i];
+            this._savedBoxes = [];
+            let visible = true;
+            // const visible = fn.call(this, mesh, aPickingId[i]);
+            if (mesh instanceof MeshGroup) {
+                const meshes = mesh.meshes;
+                const l = meshes.length;
+                for (let i = 0; i < l; i++) {
+                    const mesh = meshes[i];
+                    if (!mesh || !mesh.geometry) {
+                        continue;
+                    }
+                    visible = this._iterateMeshBox(mesh, pickingId, fn, context);
+                    if (!visible) {
+                        break;
+                    }
+                }
+            } else {
+                visible = this._iterateMeshBox(mesh, pickingId, fn, context);
             }
-            if (textGeometry) {
-                textGeometry.setElements(new textGeometry.properties.elemCtor(textVisibleElements));
-                const textOpacity = textGeometry.properties.aOpacity;
-                if (textOpacity && textOpacity.dirty) {
-                    textGeometry.updateData('aOpacity', textOpacity);
-                    textOpacity.dirty = false;
+            if (visible) {
+                this._markerVisible(mesh, pickingId);
+                this._fillCollisionIndex(this._savedBoxes);
+            }
+        }
+        this._endCheckMesh(mesh);
+    }
+
+    _iterateMeshBox(mesh, pickingIndex, fn, contextIndex) {
+        const map = this.getMap();
+        const { elements, collideBoxIndex, aCount } = mesh.geometry.properties;
+        const boxInfo = collideBoxIndex[pickingIndex];
+        if (!boxInfo) {
+            return false;
+        }
+        const [start, end] = boxInfo;
+        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
+        if (aCount) {
+            // a text
+            const charCount = aCount[elements[start]];
+            for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
+                const visible = fn.call(this, mesh, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, contextIndex.boxIndex++);
+                if (!visible) {
+                    return false;
                 }
             }
-            this.endMeshCollision(meshKey);
+        } else {
+            for (let ii = start; ii < end; ii += BOX_ELEMENT_COUNT) {
+                const visible = fn.call(this, mesh, ii, ii + BOX_ELEMENT_COUNT, matrix, contextIndex.boxIndex++);
+                if (!visible) {
+                    return false;
+                }
+            }
         }
+        return true;
     }
 
-    setCollisionOpacity(mesh, allElements, value, start, end, boxIndex) {
-        super.setCollisionOpacity(mesh, allElements, value, start, end);
-        const textMesh = mesh._textMesh;
-        if (textMesh && mesh.geometry.properties.labelIndex) {
-            //icon and text
-            const textElements = textMesh.geometry.properties.elements;
-            const labelIndex = mesh.geometry.properties.labelIndex;
-            if (!labelIndex || !labelIndex[boxIndex]) {
+    _startCheckMesh(mesh) {
+        if (mesh instanceof MeshGroup) {
+            const meshes = mesh.meshes;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                this._startCheckMesh(mesh);
+            }
+        } else {
+            const geometry = mesh && mesh.geometry;
+            if (!geometry) {
                 return;
             }
-            const [textStart, textEnd] = labelIndex[boxIndex];
-            if (textStart !== -1) {
-                super.setCollisionOpacity(textMesh, textElements, value, textStart, textEnd);
+            const { elements, visElemts } = geometry.properties;
+            if (!visElemts) {
+                geometry.properties.visElemts = new elements.constructor(elements.length);
             }
+            geometry.properties.visElemts.count = 0;
         }
     }
 
-    forEachBox(mesh, elements, fn) {
-        const { aPickingId } = mesh.geometry.properties;
-        const map = this.getMap();
-        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        let index = 0;
-
-        let idx = elements[0];
-        let start = 0, current = aPickingId[idx];
-        for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
-            idx = elements[i];
-            //pickingId发生变化，新的feature出现
-            if (aPickingId[idx] !== current || i === elements.length) {
-                fn.call(this, mesh, start, i, matrix, index++);
-                current = aPickingId[idx];
-                start = i;
+    _markerVisible(mesh, pickingId) {
+        if (mesh instanceof MeshGroup) {
+            const meshes = mesh.meshes;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                this._markerVisible(mesh, pickingId);
             }
+        } else {
+            const geometry = mesh && mesh.geometry;
+            if (!geometry) {
+                return;
+            }
+            const { collideBoxIndex, elements, visElemts } = geometry.properties;
+            const boxInfo = collideBoxIndex[pickingId];
+            if (!boxInfo) {
+                return;
+            }
+            const [start, end] = boxInfo;
+            let count = visElemts.count;
+            for (let i = start; i < end; i++) {
+                visElemts[count++] = elements[i];
+            }
+            visElemts.count = count;
+        }
+    }
+
+    _endCheckMesh(mesh) {
+        if (mesh instanceof MeshGroup) {
+            const meshes = mesh.meshes;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                this._endCheckMesh(mesh);
+            }
+        } else {
+            const geometry = mesh && mesh.geometry;
+            if (!geometry) {
+                return;
+            }
+            const { visElemts } = geometry.properties;
+            geometry.setElements(visElemts, visElemts.count);
         }
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
+        if (isTextGeo(mesh.geometry)) {
+            return isLabelCollides.call(this, 0, mesh, elements, boxCount, start, end, matrix);
+        }
         const map = this.getMap();
         const textMesh = mesh._textMesh;
         const iconBoxes = [];
@@ -602,21 +747,16 @@ class IconPainter extends CollisionPainter {
     }
 }
 
-function sorting(a) {
-    //empty只会当symbol只有text没有icon时出现
-    if (a && (a.iconAtlas || a.empty)) {
-        return -1;
-    }
-    return 1;
-}
+// function sorting(a) {
+//     //empty只会当symbol只有text没有icon时出现
+//     if (a && (a.iconAtlas || a.empty)) {
+//         return -1;
+//     }
+//     return 1;
+// }
 
 function sortByLevel(m0, m1) {
-    const r = m0.uniforms['level'] - m1.uniforms['level'];
-    if (r === 0) {
-        return m0.properties.meshKey.localeCompare(m1.properties.meshKey);
-    } else {
-        return r;
-    }
+    return m0.properties.level - m1.properties.level;
 }
 
 export default IconPainter;

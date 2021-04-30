@@ -198,7 +198,7 @@ export default class TextPainter extends CollisionPainter {
         const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
         const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
-            const boxCount = (end - start) / 6;
+            const boxCount = (end - start) / BOX_ELEMENT_COUNT;
             const visible = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
             if (visible) {
                 for (let i = start; i < end; i++) {
@@ -249,7 +249,7 @@ export default class TextPainter extends CollisionPainter {
                 }
             } else if (enableCollision) {
                 this.startMeshCollision(meshKey);
-                const { elements, aOpacity, elemCtor } = geometry.properties;
+                const { elements, aOpacity } = geometry.properties;
                 const visibleElements = geometry.properties.visibleElements = [];
                 this.forEachBox(mesh, elements, (mesh, start, end, mvpMatrix, labelIndex, label) => {
                     fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex, label);
@@ -261,7 +261,7 @@ export default class TextPainter extends CollisionPainter {
                 const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
                 const allHided = !visibleElements.length && !geometry.count;
                 if (!allVisilbe && !allHided) {
-                    geometry.setElements(new elemCtor(visibleElements));
+                    geometry.setElements(new elements.constructor(visibleElements));
                 }
 
                 this.endMeshCollision(meshKey);
@@ -325,7 +325,7 @@ export default class TextPainter extends CollisionPainter {
         const enableCollision = this.isEnableCollision();
         let visibleElements = enableCollision ? [] : allElements;
 
-        this.forEachBox(mesh, allElements, (mesh, start, end, mvpMatrix, labelIndex) => {
+        this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             // const meshKey = mesh.properties.meshKey;
             // let collision = this.getCachedCollision(meshKey, labelIndex);
@@ -362,10 +362,10 @@ export default class TextPainter extends CollisionPainter {
         return prjLine;
     }
 
-    forEachBox(mesh, elements, fn) {
+    forEachBox(mesh, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        const { aPickingId, aCount, features } = mesh.geometry.properties;
+        const { aPickingId, aCount, features, elements } = mesh.geometry.properties;
         const enableUniquePlacement = this.isEnableUniquePlacement();
 
         let index = 0;

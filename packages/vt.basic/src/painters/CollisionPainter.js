@@ -18,6 +18,7 @@ const UINT8 = new Uint8Array(1);
 const COLLISION_OFFSET_THRESHOLD = 2;
 const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
+const EMPTY_BOXES = [];
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
@@ -249,14 +250,14 @@ export default class CollisionPainter extends BasicPainter {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
-        if (visible || isFading) {
-            if (!this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes) {
-                // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
-                //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
-                // }
-                this._fillCollisionIndex(collision.boxes, mesh);
-            }
-        }
+        // if (visible || isFading) {
+        //     if (!this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes) {
+        //         // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
+        //         //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
+        //         // }
+        //         this._fillCollisionIndex(collision.boxes, mesh);
+        //     }
+        // }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
             this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
@@ -265,7 +266,11 @@ export default class CollisionPainter extends BasicPainter {
         //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
         //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
-        return visible && fadingOpacity > 0;
+        return {
+            visible: visible && fadingOpacity > 0,
+            updateIndex: (visible || isFading) && !this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes,
+            boxes: collision && collision.boxes || EMPTY_BOXES
+        };
     }
 
     isMeshIterable() {
@@ -346,13 +351,13 @@ export default class CollisionPainter extends BasicPainter {
         }
     }
 
-    _fillCollisionIndex(boxes, mesh) {
+    _fillCollisionIndex(boxes) {
         if (Array.isArray(boxes[0])) {
             for (let i = 0; i < boxes.length; i++) {
-                this.insertCollisionBox(boxes[i], mesh.properties.tile);
+                this.insertCollisionBox(boxes[i]);
             }
         } else {
-            this.insertCollisionBox(boxes, mesh.properties.tile);
+            this.insertCollisionBox(boxes);
         }
     }
 
@@ -797,7 +802,7 @@ export default class CollisionPainter extends BasicPainter {
             if (!this.isMeshUniquePlaced(mesh)) {
                 continue;
             }
-            this.forEachBox(mesh, mesh.geometry.properties.elements, fn);
+            this.forEachBox(mesh, fn);
         }
     }
 
