@@ -61,9 +61,11 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
 
     uniforms['texture'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : null;
     uniforms['texSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
-    geometry.generateBuffers(regl);
+    geometry.generateBuffers(regl, { excludeElementsInVAO: true });
     const material = new reshader.Material(uniforms);
     const mesh = new reshader.Mesh(geometry, material, {
+        // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
+        disableVAO: true,
         transparent: true,
         castShadow: false,
         picking: true

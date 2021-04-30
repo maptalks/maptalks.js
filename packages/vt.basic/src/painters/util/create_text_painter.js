@@ -95,9 +95,11 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     }
 
     geometry.properties.memorySize = geometry.getMemorySize();
-    geometry.generateBuffers(regl);
+    geometry.generateBuffers(regl, { excludeElementsInVAO: true });
     const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
     const mesh = new reshader.Mesh(geometry, material, {
+        // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
+        disableVAO: true,
         transparent,
         castShadow: false,
         picking: true
@@ -127,6 +129,8 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
         setMeshUniforms(geometry, uniforms, symbol);
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
+            // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
+            disableVAO: true,
             transparent,
             castShadow: false,
             picking: true
