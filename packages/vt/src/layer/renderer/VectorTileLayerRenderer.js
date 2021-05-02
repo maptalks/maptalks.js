@@ -631,7 +631,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         }
 
-        const isFinalRender = parentContext.isFinalRender;
+        const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
