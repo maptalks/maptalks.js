@@ -8,7 +8,7 @@ import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil } from '../Util';
-import { createTextMesh, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
+import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import MeshGroup from './MeshGroup';
 
 import textVert from './glsl/text.vert';
@@ -91,7 +91,7 @@ class IconPainter extends CollisionPainter {
             }
             const geometry = super.createGeometry(data, features);
             const symbolDef = geometry.properties.symbolDef;
-            const hash = maptalks.Util.getSymbolHash(symbolDef);
+            const hash = maptalks.Util.getSymbolStamp(symbolDef);
             geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
                 return [map.getZoom()];
             });
@@ -527,6 +527,9 @@ class IconPainter extends CollisionPainter {
     deleteMesh(meshes, keepGeometry) {
         if (!meshes) {
             return;
+        }
+        if (meshes instanceof MeshGroup) {
+            meshes = meshes.meshes;
         }
         if (keepGeometry) {
             //keepGeometry时，文字纹理应该保留

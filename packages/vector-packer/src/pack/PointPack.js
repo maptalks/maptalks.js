@@ -146,6 +146,7 @@ export default class PointPack extends VectorPack {
             }
         }
         if (iconSymbol) {
+            iconSymbol['isIconText'] = true;
             results.push(iconSymbol);
         }
         if (textSymbol) {

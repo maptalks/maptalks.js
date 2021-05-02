@@ -581,7 +581,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
     if (props.isFitConstant || !props.labelShape || !props.labelShape.length) {
         return;
     }
-    const { symbolDef, symbol } = textProps;
+    const { symbolDef: markerSymbol } = props;
+    const { symbolDef } = textProps;
 
     const textSizeDef = symbolDef['textSize'];
     let textSizeFn;
@@ -592,7 +593,15 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSizeFn = textProps._textSizeFn;
         }
     }
-    const padding = symbol['markerTextFitPadding'] || [0, 0];
+    const padding = markerSymbol['markerTextFitPadding'] || [0, 0];
+    let paddingFn;
+    if (isFunctionDefinition(padding)) {
+        if (!props._paddingFn) {
+            paddingFn = props._paddingFn = piecewiseConstant(padding);
+        } else {
+            paddingFn = props._paddingFn;
+        }
+    }
     const zoom = map.getZoom();
     //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
     const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
@@ -618,11 +627,16 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSize = fn(zoom, properties);
         }
         textSize /=  GLYPH_SIZE;
+        let fitPadding = (paddingFn ? paddingFn(zoom, properties) : padding);
+        if (isFunctionDefinition(fitPadding)) {
+            const fn = properties.fitPaddingFn = properties.fitPaddingFn || piecewiseConstant(fitPadding);
+            fitPadding = fn(zoom, properties);
+        }
         delete properties['$layer'];
         delete properties['$type'];
         if (aMarkerWidth && hasWidth) {
             //除以10是因为为了增加精度，shader中的aShape乘以了10
-            const width = Math.abs((maxx - minx) / 10 * textSize) + (padding[0] || 0) * 2;
+            const width = Math.abs((maxx - minx) / 10 * textSize) + (fitPadding[0] || 0) * 2;
             U8[0] = width;
             if (aMarkerWidth[idx] !== U8[0]) {
                 fillArray(aMarkerWidth, U8[0], idx, idx + BOX_VERTEX_COUNT);
@@ -630,7 +644,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
             }
         }
         if (aMarkerHeight && hasHeight) {
-            const height = Math.abs((maxy - miny) / 10 * textSize) + (padding[1] || 0) * 2;
+            const height = Math.abs((maxy - miny) / 10 * textSize) + (fitPadding[1] || 0) * 2;
             U8[0] = height;
             if (aMarkerHeight[idx] !== U8[0]) {
                 fillArray(aMarkerHeight, U8[0], idx, idx + BOX_VERTEX_COUNT);
