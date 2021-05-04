@@ -362,7 +362,12 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
-            const meshes = this.painter.createMesh(geometries, posMatrix);
+            const modelMesh = this.painter.createMesh(geometries, posMatrix);
+            let meshes = modelMesh;
+            if (modelMesh.meshes) {
+                // a MeshGroup
+                meshes = modelMesh.meshes;
+            }
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
@@ -373,7 +378,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
                 // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
             }
 
-            this.meshes = meshes;
+            this.meshes = modelMesh;
             this.setToRedraw();
         });
     }

@@ -90,6 +90,9 @@ class IconPainter extends CollisionPainter {
                 };
             }
             const geometry = super.createGeometry(data, features);
+            if (!geometry) {
+                continue;
+            }
             const symbolDef = geometry.properties.symbolDef;
             const hash = maptalks.Util.getSymbolStamp(symbolDef);
             geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
