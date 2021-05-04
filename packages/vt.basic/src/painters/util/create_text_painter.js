@@ -197,6 +197,8 @@ function prepareGeometry(geometry, enableCollision) {
     if ((enableCollision || isLinePlacement)) {
         geometry.properties.aAnchor = aPosition;
         geometry.properties.aShape = aShape;
+    }
+    if (!geometry.properties.elements) {
         geometry.properties.elements = geometry.elements;
     }
 

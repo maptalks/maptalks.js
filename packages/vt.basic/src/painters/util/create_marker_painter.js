@@ -45,6 +45,8 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
 
         geometry.properties.aAnchor = aPosition;
         geometry.properties.aShape = aShape;
+    }
+    if (!geometry.properties.elements) {
         //保存elements，隐藏icon时，从elements中删除icon的索引数据
         geometry.properties.elements = geometry.elements;
     }
