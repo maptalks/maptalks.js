@@ -332,23 +332,6 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    // setCollisionOpacity(mesh, allElements, value, start, end, boxIndex) {
-    //     super.setCollisionOpacity(mesh, allElements, value, start, end);
-    //     const textMesh = mesh._textMesh;
-    //     if (textMesh && mesh.geometry.properties.labelIndex) {
-    //         //icon and text
-    //         const textElements = textMesh.geometry.properties.elements;
-    //         const labelIndex = mesh.geometry.properties.labelIndex;
-    //         if (!labelIndex || !labelIndex[boxIndex]) {
-    //             return;
-    //         }
-    //         const [textStart, textEnd] = labelIndex[boxIndex];
-    //         if (textStart !== -1) {
-    //             super.setCollisionOpacity(textMesh, textElements, value, textStart, textEnd);
-    //         }
-    //     }
-    // }
-
     forEachBox(mesh, fn) {
         const aPickingId = mesh instanceof MeshGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
 
@@ -489,11 +472,7 @@ class IconPainter extends CollisionPainter {
         }
 
         const map = this.getMap();
-        // const textMesh = mesh._textMesh;
         const iconBoxes = [];
-        // const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
-        // debugger
-        //icon and text
         let collides = 0;
 
         let offscreenCount = 0;
@@ -520,29 +499,6 @@ class IconPainter extends CollisionPainter {
             collides,
             boxes: iconBoxes
         };
-
-        // const [textStart, textEnd] = labelIndex;
-        // let hasCollides = collides === 1 ? 1 : 0;
-        // const textElements = textMesh.geometry.properties.elements;
-        // const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
-
-        // const textCollision = this.isLabelCollides(collides, textMesh, textElements, charCount, textStart, textEnd, matrix);
-        // if (!hasCollides) {
-        //     if (textCollision.collides === -1 && collides === -1) {
-        //         hasCollides = -1;
-        //     } else if (textCollision.collides === 1) {
-        //         hasCollides = 1;
-        //     }
-        // }
-
-        // if (iconBoxes.length) {
-        //     textCollision.boxes.push(...iconBoxes);
-        // }
-
-        // return {
-        //     collides: hasCollides,
-        //     boxes: textCollision.boxes
-        // };
     }
 
     deleteMesh(meshes, keepGeometry) {
@@ -749,24 +705,12 @@ class IconPainter extends CollisionPainter {
         };
     }
 
-    getUniqueEntryKey(mesh, idx, boxIndex) {
-        if (!mesh._textMesh) {
+    getUniqueEntryKey(mesh, idx) {
+        if (!isTextGeo(mesh.geometry)) {
             return null;
         }
-        const { labelIndex } = mesh.geometry.properties;
-        if (!labelIndex) {
-            return null;
-        }
-        const textIndexes = labelIndex[boxIndex];
-        if (!textIndexes) {
-            return null;
-        }
-        const [textStart] = textIndexes;
-        if (textStart === -1) {
-            return null;
-        }
-        const { elements } = mesh._textMesh.geometry.properties;
-        return getLabelEntryKey(mesh._textMesh, elements[textStart]);
+        const { elements } = mesh.geometry.properties;
+        return getLabelEntryKey(mesh, elements[idx]);
     }
 }
 

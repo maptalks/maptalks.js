@@ -779,10 +779,11 @@ export default class CollisionPainter extends BasicPainter {
         const meshes = this.scene.getMeshes();
         const fn = (mesh, start, end, matrix, boxIndex) => {
             //初始化label，
-            const elements = mesh.geometry.properties.elements;
-            let placements = mesh.geometry.properties.uniquePlacements;
+            const geoProps = mesh.geometry.properties;
+            const elements = geoProps.elements;
+            let placements = geoProps.uniquePlacements;
             if (!placements) {
-                placements = mesh.geometry.properties.uniquePlacements = [];
+                placements = geoProps.uniquePlacements = [];
             }
             if (placements[boxIndex] === undefined) {
                 const key = this.getUniqueEntryKey(mesh, elements[start], boxIndex);
