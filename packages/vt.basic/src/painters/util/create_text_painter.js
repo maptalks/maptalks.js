@@ -387,10 +387,9 @@ export function getTextFnTypeConfig(map, symbolDef) {
             evaluate: properties => {
                 let color = textFillFn(map.getZoom(), properties);
                 if (!Array.isArray(color)) {
-                    color = colorCache[color] = colorCache[color] || Color(color).array();
-                } else {
-                    color = toUint8ColorInGlobalVar(color);
+                    color = colorCache[color] = colorCache[color] || Color(color).unitArray();
                 }
+                color = toUint8ColorInGlobalVar(color);
                 return color;
             }
         },

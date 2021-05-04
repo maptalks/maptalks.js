@@ -210,10 +210,9 @@ class MeshPainter extends Painter {
                 evaluate: properties => {
                     let color = this._fillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).array();
-                    } else {
-                        color = toUint8ColorInGlobalVar(color);
+                        color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
+                    color = toUint8ColorInGlobalVar(color);
                     return color;
                 }
             },
