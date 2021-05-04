@@ -8,7 +8,7 @@ import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil } from '../Util';
-import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
+import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey, getTextFnTypeConfig } from './util/create_text_painter';
 import MeshGroup from './MeshGroup';
 
 import textVert from './glsl/text.vert';
@@ -95,12 +95,15 @@ class IconPainter extends CollisionPainter {
             geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
                 return [map.getZoom()];
             });
-            const fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
-            this._fnTypeConfigs[hash] = fnTypeConfig;
-            geometry.properties.fnTypeConfig = fnTypeConfig;
+            let fnTypeConfig;
+
             if (isMarkerGeo(geometry)) {
+                fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
+                geometry.properties.fnTypeConfig = fnTypeConfig;
                 prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig);
             } else if (isTextGeo(geometry)) {
+                const fnTypeConfig = this._fnTypeConfigs[hash] || getTextFnTypeConfig(map, symbolDef);
+                geometry.properties.fnTypeConfig = fnTypeConfig;
                 if (symbolDef.isIconText) {
                     const iconGeometry = geometries[i - 1];
                     const markerTextFit = iconGeometry.properties.symbolDef['markerTextFit'];
@@ -108,6 +111,7 @@ class IconPainter extends CollisionPainter {
                     prepareLabelIndex(map, iconGeometry, geometry, markerTextFit);
                 }
             }
+            this._fnTypeConfigs[hash] = fnTypeConfig;
             geometries.push(geometry);
         }
         return geometries;
