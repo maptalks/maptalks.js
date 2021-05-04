@@ -98,6 +98,9 @@ class IconPainter extends CollisionPainter {
             let fnTypeConfig;
 
             if (isMarkerGeo(geometry)) {
+                if (!geometry.properties.iconAtlas) {
+                    geometry.properties.isEmpty = true;
+                }
                 fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
                 geometry.properties.fnTypeConfig = fnTypeConfig;
                 prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig);
@@ -123,6 +126,11 @@ class IconPainter extends CollisionPainter {
         }
         const { aPickingId, elements } = geo.properties;
         const collideBoxIndex = {};
+        if (!elements) {
+            // an empty icon
+            geo.properties.collideBoxIndex = collideBoxIndex;
+            return;
+        }
 
         let index = 0;
         let idx = elements[0];
@@ -353,7 +361,7 @@ class IconPainter extends CollisionPainter {
                 const l = meshes.length;
                 for (let i = 0; i < l; i++) {
                     const mesh = meshes[i];
-                    if (!mesh || !mesh.geometry) {
+                    if (!mesh || !mesh.geometry || mesh.geometry.properties.isEmpty || mesh.properties.isHalo) {
                         continue;
                     }
                     visible = this._iterateMeshBox(mesh, pickingId, fn, context);
@@ -429,8 +437,11 @@ class IconPainter extends CollisionPainter {
                 this._markerVisible(mesh, pickingId);
             }
         } else {
+            if (mesh.properties.isHalo) {
+                return;
+            }
             const geometry = mesh && mesh.geometry;
-            if (!geometry) {
+            if (!geometry || geometry.properties.isEmpty) {
                 return;
             }
             const { collideBoxIndex, elements, visElemts } = geometry.properties;
@@ -464,68 +475,71 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    isBoxCollides(mesh, elements, boxCount, start, end, matrix, boxIndex) {
+    isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
         if (isTextGeo(mesh.geometry)) {
             return isLabelCollides.call(this, 0, mesh, elements, boxCount, start, end, matrix);
         }
+        if (mesh.geometry.properties.isEmpty) {
+            return {
+                colliides: -1
+            };
+        }
+
         const map = this.getMap();
-        const textMesh = mesh._textMesh;
+        // const textMesh = mesh._textMesh;
         const iconBoxes = [];
-        const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
+        // const labelIndex = mesh.geometry.properties.labelIndex && mesh.geometry.properties.labelIndex[boxIndex];
         // debugger
         //icon and text
         let collides = 0;
-        if (!mesh.geometry.properties.isEmpty) {
-            let offscreenCount = 0;
-            //insert every character's box into collision index
-            for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
-                //use int16array to save some memory
-                const box = getIconBox([], mesh, elements[j], matrix, map);
-                iconBoxes.push(box);
-                if (!collides) {
-                    const boxCollides = this.isCollides(box);
-                    if (boxCollides === 1) {
-                        collides = 1;
-                    } else if (boxCollides === -1) {
-                        //offscreen
-                        offscreenCount++;
-                    }
+
+        let offscreenCount = 0;
+        //insert every character's box into collision index
+        for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
+            //use int16array to save some memory
+            const box = getIconBox([], mesh, elements[j], matrix, map);
+            iconBoxes.push(box);
+            if (!collides) {
+                const boxCollides = this.isCollides(box);
+                if (boxCollides === 1) {
+                    collides = 1;
+                } else if (boxCollides === -1) {
+                    //offscreen
+                    offscreenCount++;
                 }
             }
-            if (offscreenCount === boxCount) {
-                //所有box都offscreen时，可认为存在碰撞
-                collides = -1;
-            }
-            if (!textMesh || !labelIndex || labelIndex && labelIndex[0] === -1) {
-                return {
-                    collides,
-                    boxes: iconBoxes
-                };
-            }
         }
-
-        const [textStart, textEnd] = labelIndex;
-        let hasCollides = collides === 1 ? 1 : 0;
-        const textElements = textMesh.geometry.properties.elements;
-        const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
-
-        const textCollision = this.isLabelCollides(collides, textMesh, textElements, charCount, textStart, textEnd, matrix);
-        if (!hasCollides) {
-            if (textCollision.collides === -1 && collides === -1) {
-                hasCollides = -1;
-            } else if (textCollision.collides === 1) {
-                hasCollides = 1;
-            }
+        if (offscreenCount === boxCount) {
+            //所有box都offscreen时，可认为存在碰撞
+            collides = -1;
         }
-
-        if (iconBoxes.length) {
-            textCollision.boxes.push(...iconBoxes);
-        }
-
         return {
-            collides: hasCollides,
-            boxes: textCollision.boxes
+            collides,
+            boxes: iconBoxes
         };
+
+        // const [textStart, textEnd] = labelIndex;
+        // let hasCollides = collides === 1 ? 1 : 0;
+        // const textElements = textMesh.geometry.properties.elements;
+        // const charCount = (textEnd - textStart) / BOX_ELEMENT_COUNT;
+
+        // const textCollision = this.isLabelCollides(collides, textMesh, textElements, charCount, textStart, textEnd, matrix);
+        // if (!hasCollides) {
+        //     if (textCollision.collides === -1 && collides === -1) {
+        //         hasCollides = -1;
+        //     } else if (textCollision.collides === 1) {
+        //         hasCollides = 1;
+        //     }
+        // }
+
+        // if (iconBoxes.length) {
+        //     textCollision.boxes.push(...iconBoxes);
+        // }
+
+        // return {
+        //     collides: hasCollides,
+        //     boxes: textCollision.boxes
+        // };
     }
 
     deleteMesh(meshes, keepGeometry) {
@@ -768,7 +782,8 @@ function sortByLevel(m0, m1) {
 export default IconPainter;
 
 function isMarkerGeo(geo) {
-    return geo && (geo.properties.iconAtlas || geo.properties.isEmpty);
+    const symbolDef = geo && geo.properties.symbolDef;
+    return symbolDef && (symbolDef.markerFile || symbolDef.markerType);
 }
 
 function isTextGeo(geo) {
