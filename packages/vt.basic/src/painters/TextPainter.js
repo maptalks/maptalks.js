@@ -208,14 +208,17 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const bearing = -map.getBearing() * Math.PI / 180;
         const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
-        const fn = (elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex) => {
+        const fn = (elements, visElemts, mesh, start, end, mvpMatrix, labelIndex) => {
             // debugger
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
             const collision = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
             if (collision.visible) {
+                let count = visElemts.count;
                 for (let i = start; i < end; i++) {
-                    visibleElements.push(elements[i]);
+                    // visElemts.push(elements[i]);
+                    visElemts[count++] = elements[i];
                 }
+                visElemts.count = count;
             }
             if (collision.updateIndex) {
                 this._fillCollisionIndex(collision.boxes);
@@ -265,19 +268,19 @@ export default class TextPainter extends CollisionPainter {
             } else if (enableCollision) {
                 this.startMeshCollision(meshKey);
                 const { elements, aOpacity } = geometry.properties;
-                const visibleElements = geometry.properties.visibleElements = [];
+                const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new elements.constructor(elements.length);
+                visElemts.count = 0;
                 this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex, label) => {
-                    fn(elements, visibleElements, mesh, start, end, mvpMatrix, labelIndex, label);
+                    fn(elements, visElemts, mesh, start, end, mvpMatrix, labelIndex, label);
                 });
 
                 if (aOpacity && aOpacity.dirty) {
                     geometry.updateData('aOpacity', aOpacity);
                 }
-                const allVisilbe = visibleElements.length === elements.length && geometry.count === elements.length;
-                const allHided = !visibleElements.length && !geometry.count;
+                const allVisilbe = visElemts.count === elements.length && geometry.count === elements.length;
+                const allHided = !visElemts.count && !geometry.count;
                 if (!allVisilbe && !allHided) {
-                    geometry.setElements(new elements.constructor(visibleElements));
-                    // geometry.setElements(new elements.constructor(elements));
+                    geometry.setElements(visElemts, visElemts.count);
                 }
                 this.endMeshCollision(meshKey);
             }
@@ -338,7 +341,10 @@ export default class TextPainter extends CollisionPainter {
             line = this._projectLine(out, line, matrix, map.width, map.height);
         }
         const enableCollision = this.isEnableCollision();
-        let visibleElements = enableCollision ? [] : allElements;
+        const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
+        if (enableCollision) {
+            visElemts.count = 0;
+        }
 
         this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex) => {
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
@@ -355,16 +361,18 @@ export default class TextPainter extends CollisionPainter {
             const boxCount = (end - start) / BOX_ELEMENT_COUNT;
             const collision = this.updateBoxCollisionFading(visible, mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
             if (collision.visible) {
+                let count = visElemts.count;
                 for (let i = start; i < end; i++) {
-                    visibleElements.push(allElements[i]);
+                    visElemts[count++] = allElements[i];
                 }
+                visElemts.count = count;
             }
             if (collision.updateIndex) {
                 this._fillCollisionIndex(collision.boxes);
             }
         });
-        if (visibleElements.length !== allElements.length || geometry.count !== visibleElements.length) {
-            geometry.setElements(new geometryProps.elemCtor(visibleElements));
+        if (enableCollision && (visElemts.count !== allElements.length || geometry.count !== visElemts.count)) {
+            geometry.setElements(visElemts, visElemts.count);
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
         }
     }
