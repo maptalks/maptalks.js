@@ -365,7 +365,7 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             const modelMesh = this.painter.createMesh(geometries, posMatrix);
             let meshes = modelMesh;
             if (modelMesh.meshes) {
-                // a MeshGroup
+                // a CollisionGroup
                 meshes = modelMesh.meshes;
             }
             if (this.meshes) {

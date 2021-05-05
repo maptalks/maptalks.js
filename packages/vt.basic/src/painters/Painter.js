@@ -2,7 +2,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes, interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import { extend, isNil } from '../Util';
-import MeshGroup from './MeshGroup';
+import CollisionGroup from './CollisionGroup';
 import outlineFrag from './glsl/outline.frag';
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
@@ -156,7 +156,7 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
-        if (meshes instanceof MeshGroup) {
+        if (meshes instanceof CollisionGroup) {
             meshes = meshes.meshes;
         }
 

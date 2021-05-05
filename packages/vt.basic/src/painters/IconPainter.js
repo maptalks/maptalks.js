@@ -9,7 +9,7 @@ import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
 import { isNil } from '../Util';
 import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey, getTextFnTypeConfig } from './util/create_text_painter';
-import MeshGroup from './MeshGroup';
+import CollisionGroup from './CollisionGroup';
 
 import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
@@ -171,7 +171,7 @@ class IconPainter extends CollisionPainter {
             }
             this._prepareCollideIndex(geometry);
         }
-        const group = new MeshGroup(meshes);
+        const group = new CollisionGroup(meshes);
         if (meshes.length) {
             group.properties.aPickingId = Object.keys(meshes[0].geometry.properties.features);
         }
@@ -180,7 +180,7 @@ class IconPainter extends CollisionPainter {
 
     addMesh(meshes) {
         this._meshesToCheck.push(meshes);
-        if (meshes instanceof MeshGroup) {
+        if (meshes instanceof CollisionGroup) {
             meshes = meshes.meshes;
         }
         for (let i = 0; i < meshes.length; i++) {
@@ -302,7 +302,7 @@ class IconPainter extends CollisionPainter {
             if (!mesh) {
                 continue;
             }
-            if (mesh instanceof MeshGroup) {
+            if (mesh instanceof CollisionGroup) {
                 if (!mesh.meshes.length) {
                     continue;
                 }
@@ -314,7 +314,7 @@ class IconPainter extends CollisionPainter {
             this.forEachBox(mesh, this._updateBox);
             this.endMeshCollision(meshKey);
 
-            if (mesh instanceof MeshGroup) {
+            if (mesh instanceof CollisionGroup) {
                 for (let i = 0; i < mesh.meshes.length; i++) {
                     this._updateOpacity(mesh.meshes[i]);
                 }
@@ -333,7 +333,7 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(mesh, fn) {
-        const aPickingId = mesh instanceof MeshGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
+        const aPickingId = mesh instanceof CollisionGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
 
         this._startCheckMesh(mesh);
         const context = { boxIndex: 0 };
@@ -342,7 +342,7 @@ class IconPainter extends CollisionPainter {
             this._savedBoxes = [];
             let visible = true;
             // const visible = fn.call(this, mesh, aPickingId[i]);
-            if (mesh instanceof MeshGroup) {
+            if (mesh instanceof CollisionGroup) {
                 const meshes = mesh.meshes;
                 const l = meshes.length;
                 for (let i = 0; i < l; i++) {
@@ -396,7 +396,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _startCheckMesh(mesh) {
-        if (mesh instanceof MeshGroup) {
+        if (mesh instanceof CollisionGroup) {
             const meshes = mesh.meshes;
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
@@ -416,7 +416,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _markerVisible(mesh, pickingId) {
-        if (mesh instanceof MeshGroup) {
+        if (mesh instanceof CollisionGroup) {
             const meshes = mesh.meshes;
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
@@ -445,7 +445,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _endCheckMesh(mesh) {
-        if (mesh instanceof MeshGroup) {
+        if (mesh instanceof CollisionGroup) {
             const meshes = mesh.meshes;
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
@@ -505,7 +505,7 @@ class IconPainter extends CollisionPainter {
         if (!meshes) {
             return;
         }
-        if (meshes instanceof MeshGroup) {
+        if (meshes instanceof CollisionGroup) {
             meshes = meshes.meshes;
         }
         if (keepGeometry) {

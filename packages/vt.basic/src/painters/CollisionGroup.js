@@ -1,4 +1,4 @@
-export default class MeshGroup {
+export default class CollisionGroup {
     constructor(meshes) {
         this._meshes = meshes || [];
         this.properties = {};
