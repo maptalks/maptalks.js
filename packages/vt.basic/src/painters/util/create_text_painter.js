@@ -402,7 +402,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             evaluate: properties => {
-                let size = textSizeFn(map.getZoom(), properties);
+                let size = textSizeFn(map.getZoom(), properties) || DEFAULT_UNIFORMS['textSize'];
                 if (isFunctionDefinition(size)) {
                     const fn = properties['_textSizeFn'] = properties['_textSizeFn'] || interpolated(size);
                     size = fn(map.getZoom(), properties);

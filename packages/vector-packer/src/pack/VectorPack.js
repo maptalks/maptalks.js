@@ -125,30 +125,31 @@ export default class VectorPack {
         }
         for (; i < l; i++) {
             const feature = features[i];
-            let vector;
-            if (Array.isArray(feature.properties)) {
-                vector = [];
-                for (let j = 0; j < feature.properties.length; j++) {
-                    const fea = extend({}, feature);
-                    fea.properties = feature.properties[j];
-                    const v = this.createStyledVector(fea, symbol, options, iconReqs, glyphReqs);
-                    if (v) {
+            // let vector;
+            // PointLayer中，Marker的symbol有多个时，properties就会是数组了，但这个设计并不是很好，需要调整
+            // if (Array.isArray(feature.properties)) {
+            //     vector = [];
+            //     for (let j = 0; j < feature.properties.length; j++) {
+            //         const fea = extend({}, feature);
+            //         fea.properties = feature.properties[j];
+            //         const v = this.createStyledVector(fea, symbol, options, iconReqs, glyphReqs);
+            //         if (v) {
 
-                        vector.push(v);
-                    }
-                }
-                vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
-                if (!vector.length) {
-                    continue;
-                }
-            } else {
-                vector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
-                if (!vector) {
-                    continue;
-                }
-                vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
-
+            //             vector.push(v);
+            //         }
+            //     }
+            //     vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+            //     if (!vector.length) {
+            //         continue;
+            //     }
+            // } else {
+            const vector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+            if (!vector) {
+                continue;
             }
+            vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+
+            // }
             this.count++;
             vectors.push(vector);
         }

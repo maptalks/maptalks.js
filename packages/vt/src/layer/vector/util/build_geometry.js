@@ -48,19 +48,29 @@ export function convertToFeature(geo) {
             }
         }
     }
-    let properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
+    const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']();
     if (Array.isArray(symbol) && symbol.length) {
-        const props = [];
-        for (let i = 0; i < symbol.length; i++) {
-            props.push(extend({}, properties));
+        // symbol为数组时，则重复添加相同的Feature
+        const features = [];
+        const len = symbol.length;
+        for (let i = 0; i < len; i++) {
+            const props = i === len - 1 ? properties : extend({}, properties);
             for (const p in symbol[i]) {
                 if (symbol[i].hasOwnProperty(p)) {
-                    props[i]['_symbol_' + p] = symbol[i][p];
+                    props['_symbol_' + p] = symbol[i][p];
                 }
             }
+            features.push({
+                type,
+                id: geo[ID_PROP],
+                properties: props,
+                visible: geo.isVisible(),
+                geometry,
+                extent: Infinity
+            });
         }
-        properties = props;
+        return features;
     } else {
         for (const p in symbol) {
             if (symbol.hasOwnProperty(p)) {

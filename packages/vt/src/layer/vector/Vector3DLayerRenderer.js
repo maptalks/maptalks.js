@@ -145,17 +145,32 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         for (const p in this.features) {
             if (this.features.hasOwnProperty(p)) {
                 const feature = this.features[p];
-                if (feature.visible) {
-                    this.addCoordsToCenter(feature.geometry, center);
-                    feature[keyName] = count++;
-                    features.push(feature);
+                if (Array.isArray(feature)) {
+                    count = count++;
+                    for (let i = 0; i < feature.length; i++) {
+                        const fea = feature[i];
+                        if (fea.visible) {
+                            this.addCoordsToCenter(fea.geometry, center);
+                            fea[keyName] = count;
+                            features.push(fea);
+                        }
+                        if (fn) {
+                            fn(fea);
+                        }
+                    }
+                } else {
+                    if (feature.visible) {
+                        this.addCoordsToCenter(feature.geometry, center);
+                        feature[keyName] = count++;
+                        features.push(feature);
+                    }
+                    if (fn) {
+                        fn(feature);
+                    }
                 }
-                if (fn) {
-                    fn(feature);
-                }
+
             }
         }
-        this._currentFeatures = features;
 
         if (!features.length) {
             if (this.meshes) {
@@ -389,6 +404,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 feaProps['_symbol_' + p] = symbol[p];
             }
         }
+        // this.features[id] = convertToFeature(marker);
         // TODO 实现geometry的局部更新
         this._markRebuild();
         redraw(this);
@@ -462,7 +478,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const geo = e.target;
         const uid = geo[ID_PROP];
         this.features[uid] = convertToFeature(geo);
-        this.features[uid][ID_PROP] = uid;
+        if (Array.isArray(this.features[uid])) {
+            const feature = this.features[uid];
+            for (let i = 0; i < feature.length; i++) {
+                feature[i][ID_PROP] = uid;
+            }
+        } else {
+            this.features[uid][ID_PROP] = uid;
+        }
         this._markRebuild();
         redraw(this);
     }
