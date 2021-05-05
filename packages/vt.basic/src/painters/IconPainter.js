@@ -171,18 +171,23 @@ class IconPainter extends CollisionPainter {
             }
             this._prepareCollideIndex(geometry);
         }
-        const group = new CollisionGroup(meshes);
-        if (meshes.length) {
-            group.properties.aPickingId = Object.keys(meshes[0].geometry.properties.features);
-        }
-        return group;
+        return meshes;
     }
 
     addMesh(meshes) {
-        this._meshesToCheck.push(meshes);
-        if (meshes instanceof CollisionGroup) {
-            meshes = meshes.meshes;
+        if (Array.isArray(meshes)) {
+            const l = meshes.length;
+            if (l) {
+                const group = new CollisionGroup(meshes);
+                group.properties.aPickingId = Object.keys(meshes[0].geometry.properties.features);
+                group.properties.meshKey = meshes[0].geometry.properties.meshKey;
+                group.properties.level = meshes[0].geometry.properties.level;
+                this._meshesToCheck.push(group);
+            }
+        } else {
+            this._meshesToCheck.push(meshes);
         }
+
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
             if (!geometry) {

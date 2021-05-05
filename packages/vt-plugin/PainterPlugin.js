@@ -137,25 +137,16 @@ function createPainterPlugin(type, Painter) {
                 return NO_REDRAW;
             }
 
-            var meshModel = this._getMesh(key);
-            var mesh = meshModel;
+            var mesh = this._getMesh(key);
             if (!mesh) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
                 const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
-                meshModel = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
-                mesh = meshModel;
-                if (meshModel.meshes) {
-                    // a MeshGroup
-                    mesh = meshModel.meshes;
-                }
+                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
                 if (mesh) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
-                        if (meshModel.meshes) {
-                            meshModel.properties.meshKey = key;
-                        }
                         for (let i = 0; i < mesh.length; i++) {
                             this._fillMeshProps(mesh[i], tileTransform, context.timestamp, key + '-' + i, enableTileStencil);
                         }
@@ -165,7 +156,7 @@ function createPainterPlugin(type, Painter) {
                     if (sceneConfig.animation) {
                         mesh._animationTime = context.timestamp;
                     }
-                    this._meshCache[key] = meshModel;
+                    this._meshCache[key] = mesh;
                 }
             }
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
@@ -174,11 +165,6 @@ function createPainterPlugin(type, Painter) {
 
             //更新stencil level值，不同zoom会发生变化
             var level = getUniformLevel(tileInfo.z, tileZoom);
-            if (meshModel.meshes) {
-                // a MeshGroup
-                mesh = meshModel.meshes;
-                meshModel.properties.level = level;
-            }
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
@@ -217,7 +203,7 @@ function createPainterPlugin(type, Painter) {
                     mesh.bloom = bloomValue;
                 }
 
-                painter.addMesh(meshModel, progress);
+                painter.addMesh(mesh, progress);
                 this._frameCache[key] = 1;
             }
 
