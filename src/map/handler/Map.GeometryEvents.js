@@ -192,8 +192,7 @@ class MapGeometryEventsHandler extends Handler {
         if (!actual) {
             return;
         }
-        const containerPoint = getEventContainerPoint(actual, map._containerDOM),
-            coordinate = map.containerPointToCoordinate(containerPoint);
+        const containerPoint = getEventContainerPoint(actual, map._containerDOM);
         if (eventType === 'touchstart') {
             preventDefault(domEvent);
         }
