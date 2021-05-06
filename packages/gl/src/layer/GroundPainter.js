@@ -57,9 +57,9 @@ class GroundPainter {
         const groundConfig = this._layer.getGroundConfig();
         const symbol = groundConfig && groundConfig.symbol;
         if (symbol.ssr) {
-            this._ground.setUniform('ssr', 1);
+            this._ground.ssr = 1;
         } else {
-            this._ground.setUniform('ssr', 0);
+            this._ground.ssr = 0;
         }
         this._transformGround();
         const uniforms = this._getUniformValues(context);
