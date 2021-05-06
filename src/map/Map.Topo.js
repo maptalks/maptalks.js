@@ -1,6 +1,7 @@
 import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
-import { extend, isString, isArrayHasData, pushIn } from '../core/util';
+import { isString, isArrayHasData, pushIn } from '../core/util';
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import Map from './Map';
 
 /**
@@ -67,9 +68,48 @@ Map.include(/** @lends Map.prototype */ {
      *  });
      */
     identify: function (opts, callback) {
-        if (!opts) {
-            return this;
-        }
+        opts = opts || {};
+        const coordinate = new Coordinate(opts['coordinate']);
+        return this._identify(opts, callback, layer => layer.identify(coordinate, opts));
+    },
+
+    /**
+     * Identify the geometries on the given container point.
+     * @param {Object} opts - the identify options
+     * @param {Point} opts.containerPoint - container point to identify
+     * @param {Object}   opts.layers        - the layers to perform identify on.
+     * @param {Function} [opts.filter=null] - filter function of the result geometries, return false to exclude.
+     * @param {Number}   [opts.count=null]  - limit of the result count.
+     * @param {Number}   [opts.tolerance=0] - identify tolerance in pixel.
+     * @param {Boolean}  [opts.includeInternals=false] - whether to identify internal layers.
+     * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
+     * @param {Function} callback           - the callback function using the result geometries as the parameter.
+     * @return {Map} this
+     * @example
+     * map.identifyAtPoint({
+     *      containerPoint: [200, 300],
+     *      layers: [layer]
+     *  },
+     *  geos => {
+     *      console.log(geos);
+     *  });
+     */
+    identifyAtPoint: function (opts, callback) {
+        opts = opts || {};
+        const containerPoint = new Point(opts['containerPoint']);
+        const coordinate = this.containerPointToCoord(containerPoint);
+        return this._identify(opts, callback, layer => {
+            if (layer.identifyAtPoint) {
+                return layer.identifyAtPoint(containerPoint, opts);
+            } else if (coordinate) {
+                return layer.identify(coordinate, opts);
+            } else {
+                return [];
+            }
+        });
+    },
+
+    _identify: function (opts, callback, fn) {
         const reqLayers = opts['layers'];
         if (!isArrayHasData(reqLayers)) {
             return this;
@@ -82,8 +122,7 @@ Map.include(/** @lends Map.prototype */ {
                 layers.push(reqLayers[i]);
             }
         }
-        const coordinate = new Coordinate(opts['coordinate']);
-        const options = extend({}, opts);
+
         const hits = [];
         for (let i = layers.length - 1; i >= 0; i--) {
             if (opts['count'] && hits.length >= opts['count']) {
@@ -93,7 +132,7 @@ Map.include(/** @lends Map.prototype */ {
             if (!layer || !layer.getMap() || (!opts['includeInvisible'] && !layer.isVisible()) || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                 continue;
             }
-            const layerHits = layer.identify(coordinate, options);
+            const layerHits = fn(layer);
             if (layerHits) {
                 if (Array.isArray(layerHits)) {
                     pushIn(hits, layerHits);

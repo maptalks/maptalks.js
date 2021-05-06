@@ -232,10 +232,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     onDrawTileEnd() {}
 
     _drawTile(info, image) {
-        if (!image) {
-            return;
+        if (image) {
+            this.drawTile(info, image);
         }
-        this.drawTile(info, image);
     }
 
     _drawTileAndCache(tile) {

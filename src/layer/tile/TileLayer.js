@@ -715,7 +715,7 @@ class TileLayer extends Layer {
                         this._visitedTiles.add(tileId);
                     }
                     if (cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets, parentRenderer);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {

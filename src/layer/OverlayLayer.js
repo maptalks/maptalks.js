@@ -555,6 +555,7 @@ class OverlayLayer extends Layer {
         if (len === 0) {
             return -1;
         }
+        this._sortGeometries();
         let low = 0,
             high = len - 1,
             middle;
