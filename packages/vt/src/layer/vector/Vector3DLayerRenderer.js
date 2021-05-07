@@ -100,7 +100,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     supportRenderMode(mode) {
-        return this.painter && this.painter.supportRenderMode(mode);
+        return mode === 'noAa';
     }
 
     isForeground() {
