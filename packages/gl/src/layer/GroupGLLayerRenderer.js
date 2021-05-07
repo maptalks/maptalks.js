@@ -909,9 +909,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const lightDirection = map.getLightManager().getDirectionalLight().direction;
         const displayShadow = !sceneConfig.ground || !sceneConfig.ground.enable;
         const uniforms = this._shadowPass.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
-        if (this._shadowPass.isUpdated()) {
-            this.setRetireFrames();
-        }
+        // if (this._shadowPass.isUpdated()) {
+        //     this.setRetireFrames();
+        // }
         return uniforms;
     }
 
