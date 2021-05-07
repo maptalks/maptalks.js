@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
 import { extend } from '../../common/Util';
+import { ID_PROP } from './util/build_geometry';
 
 const defaultOptions = {
     picking: true,
@@ -123,12 +124,25 @@ class Vector3DLayer extends maptalks.OverlayLayer {
 
     }
 
-    outline(featureIds) {
+    outline(geoIds) {
+        if (!Array.isArray(geoIds)) {
+            return this;
+        }
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.outline(featureIds);
+        const ids = [];
+        for (let i = 0; i < geoIds.length; i++) {
+            const geo = this.getGeometryById(geoIds[i]);
+            if (geo) {
+                ids.push(geo[ID_PROP]);
+            }
+        }
+        if (ids.length) {
+            renderer.outline(ids);
+        }
+
         return this;
     }
 

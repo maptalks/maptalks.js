@@ -523,7 +523,7 @@ describe('vector layers update style specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.outline([1]);
+                layer.outline([0]);
                 outlined = true;
             } else if (outlined) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
