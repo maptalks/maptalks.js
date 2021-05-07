@@ -1,7 +1,11 @@
 import * as reshader from '@maptalks/reshader.gl';
-import { mat3 } from 'gl-matrix';
+import { mat3, vec3 } from 'gl-matrix';
 
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
+
+const EMPTY_HSV = [0, 0, 0];
+const HSV = [];
+const OUTSIZE = [];
 
 class EnvironmentPainter {
     constructor(regl, layer) {
@@ -91,11 +95,14 @@ class EnvironmentPainter {
         const level = envConfig.level || 0;
         const cubeSize = iblTexes.prefilterMap.width;
         const transform = this._transform = this._transform || [];
-        const hsv = ambient && ambient.hsv || [0, 0, 0];
+        const hsv = ambient && ambient.hsv || EMPTY_HSV;
         const brightness = envConfig.brightness || 0;
+        vec3.copy(HSV, hsv);
         if (brightness) {
-            hsv[2] += brightness;
+            HSV[2] += brightness;
         }
+        OUTSIZE[0] = canvas.width;
+        OUTSIZE[1] = canvas.height;
         return {
             'rgbmRange': iblTexes.rgbmRange,
             'cubeMap': iblTexes.prefilterMap,
@@ -105,8 +112,8 @@ class EnvironmentPainter {
             'diffuseSPH': iblTexes.sh,
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,
-            'resolution': [canvas.width, canvas.height],
-            'hsv': hsv,
+            'resolution': OUTSIZE,
+            'hsv': HSV,
             'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.orientation || 0)
         };
     }
