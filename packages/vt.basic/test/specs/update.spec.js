@@ -775,7 +775,7 @@ describe('update style specs', () => {
                 type: 'line',
                 dataConfig: { type: 'line' },
             },
-            symbol: { bloom: true, lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+            symbol: { lineBloom: true, lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
         };
         const style = [
             linePlugin
@@ -815,7 +815,7 @@ describe('update style specs', () => {
                     if (!painted) {
                         assert(pixel[1] > 0);
                         assert(pixel[3] > 0);
-                        layer.updateSymbol(0, { bloom: false });
+                        layer.updateSymbol(0, { lineBloom: false });
                         painted = true;
                     }
                 }

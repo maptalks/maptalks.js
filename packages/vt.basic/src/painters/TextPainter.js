@@ -106,8 +106,8 @@ export default class TextPainter extends CollisionPainter {
         this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
     }
 
-    isBloom(mesh) {
-        const { symbol } = mesh.geometry.properties;
+    isBloom() {
+        const symbol = this.getSymbol();
         return !!symbol['textBloom'];
     }
 

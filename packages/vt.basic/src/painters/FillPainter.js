@@ -39,6 +39,11 @@ class FillPainter extends BasicPainter {
         }
     }
 
+    isBloom() {
+        const symbol = this.getSymbol();
+        return !!symbol['polygonBloom'];
+    }
+
     needPolygonOffset() {
         return true;
     }

@@ -40,6 +40,11 @@ class LinePainter extends BasicPainter {
         return animation && animation.enable || symbol['linePatternAnimSpeed'] || super.needToRedraw();
     }
 
+    isBloom() {
+        const symbol = this.getSymbol();
+        return !!symbol['lineBloom'];
+    }
+
     needPolygonOffset() {
         return true;
     }

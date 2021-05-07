@@ -79,7 +79,7 @@ const style = [
             }
         },
         symbol: {
-            bloom: true,
+            lineBloom: true,
             lineWidth: 4,
             lineColor: '#0f0'
         },

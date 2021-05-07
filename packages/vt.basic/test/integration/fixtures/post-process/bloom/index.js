@@ -52,7 +52,7 @@ const style = [
             },
         },
         symbol: {
-            bloom: false,
+            polygonBloom: false,
             polygonOpacity: 1,
             polygonFill: '#0f0'
         },
@@ -70,7 +70,7 @@ const style = [
             }
         },
         symbol: {
-            bloom: true,
+            lineBloom: true,
             lineColor: '#f00',
             lineWidth: 4
         },
