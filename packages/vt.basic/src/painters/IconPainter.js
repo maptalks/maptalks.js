@@ -600,10 +600,14 @@ class IconPainter extends CollisionPainter {
                     func: this.sceneConfig.depthFunc || 'always',
                     mask: false
                 },
+                polygonOffset: {
+                    enable: true,
+                    offset: this.getPolygonOffset()
+                }
             }
         });
 
-        const { uniforms, extraCommandProps } = createTextShader(this.layer, this.sceneConfig);
+        const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
         // extraCommandProps.stencil.enable = false;
 

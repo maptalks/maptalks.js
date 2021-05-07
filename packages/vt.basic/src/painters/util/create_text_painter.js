@@ -352,6 +352,10 @@ export function createTextShader(layer, sceneConfig) {
             func: sceneConfig.depthFunc || 'always',
             mask: false
         },
+        polygonOffset: {
+            enable: true,
+            offset: this.getPolygonOffset()
+        }
     };
     return {
         uniforms,

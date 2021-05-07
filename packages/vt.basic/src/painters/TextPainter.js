@@ -648,7 +648,7 @@ export default class TextPainter extends CollisionPainter {
 
         this.renderer = new reshader.Renderer(regl);
 
-        const { uniforms, extraCommandProps } = createTextShader(this.layer, this.sceneConfig);
+        const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
 
         this.shader = new reshader.MeshShader({
             // vert: vertAlongLine, frag,
