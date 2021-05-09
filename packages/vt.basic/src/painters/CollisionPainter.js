@@ -765,7 +765,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     isEnableUniquePlacement() {
-        return this.sceneConfig['uniquePlacement'] !== false;
+        return this.isEnableCollision() && this.sceneConfig['uniquePlacement'] !== false;
     }
 
     isMeshUniquePlaced(mesh) {

@@ -316,7 +316,9 @@ class IconPainter extends CollisionPainter {
             }
             const meshKey = mesh.properties.meshKey;
             this.startMeshCollision(meshKey);
+            this._startCheckMesh(mesh);
             this.forEachBox(mesh, this._updateBox);
+            this._endCheckMesh(mesh);
             this.endMeshCollision(meshKey);
 
             if (mesh instanceof CollisionGroup) {
@@ -338,9 +340,8 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(mesh, fn) {
+        const enableCollision = this.isEnableCollision();
         const aPickingId = mesh instanceof CollisionGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
-
-        this._startCheckMesh(mesh);
         const context = { boxIndex: 0 };
         for (let i = 0; i < aPickingId.length; i++) {
             const pickingId = aPickingId[i];
@@ -363,12 +364,11 @@ class IconPainter extends CollisionPainter {
             } else {
                 visible = this._iterateMeshBox(mesh, pickingId, fn, context);
             }
-            if (visible) {
+            if (enableCollision && visible) {
                 this._markerVisible(mesh, pickingId);
                 this._fillCollisionIndex(this._savedBoxes);
             }
         }
-        this._endCheckMesh(mesh);
     }
 
     _iterateMeshBox(mesh, pickingIndex, fn, contextIndex) {
