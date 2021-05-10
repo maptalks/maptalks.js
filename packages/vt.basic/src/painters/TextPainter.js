@@ -225,6 +225,7 @@ export default class TextPainter extends CollisionPainter {
             }
         };
         const enableCollision = this.isEnableCollision();
+        const renderer = this.layer.getRenderer();
 
         // console.log('meshes数量', meshes.length, '字符数量', meshes.reduce((v, mesh) => {
         //     return v + mesh.geometry.count / BOX_ELEMENT_COUNT;
@@ -234,6 +235,10 @@ export default class TextPainter extends CollisionPainter {
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
             if (!this.isMeshIterable(mesh)) {
+                continue;
+            }
+            const isForeground = renderer.isForeground(mesh);
+            if (this.shouldIgnoreBackground() && !isForeground) {
                 continue;
             }
             const geometry = mesh.geometry;
@@ -250,7 +255,7 @@ export default class TextPainter extends CollisionPainter {
                     continue;
                 }
                 if (enableCollision) {
-                    this.startMeshCollision(meshKey);
+                    this.startMeshCollision(mesh);
                 }
                 this._updateLineLabel(mesh, planeMatrix);
                 const { aOffset, aOpacity } = geometry.properties;
@@ -266,7 +271,7 @@ export default class TextPainter extends CollisionPainter {
                     this.endMeshCollision(meshKey);
                 }
             } else if (enableCollision) {
-                this.startMeshCollision(meshKey);
+                this.startMeshCollision(mesh);
                 const { elements, aOpacity } = geometry.properties;
                 const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new elements.constructor(elements.length);
                 visElemts.count = 0;
@@ -315,10 +320,13 @@ export default class TextPainter extends CollisionPainter {
         const layer = this.layer;
         const renderer = layer.getRenderer();
         const isForeground = renderer.isForeground(mesh);
-        if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(isForeground)) {
-            geometry.setElements([]);
+        if (this.shouldIgnoreBackground() && !isForeground) {
             return;
         }
+        // if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(isForeground)) {
+        //     geometry.setElements([]);
+        //     return;
+        // }
 
         let line = geometryProps.line;
         if (!line) {
@@ -426,7 +434,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     // start and end is the start and end index of a label
-    _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix, labelIndex) {
+    _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix/*, labelIndex*/) {
         const enableCollision = this.isEnableCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
@@ -435,16 +443,16 @@ export default class TextPainter extends CollisionPainter {
         const { aShape, aOffset, aAnchor } = geometry.properties;
         const aTextSize = geometry.properties['aTextSize'];
 
-        const layer = this.layer;
-        const renderer = layer.getRenderer();
-        const isForeground = renderer.isForeground(mesh);
+        // const layer = this.layer;
+        // const renderer = layer.getRenderer();
+        // const isForeground = renderer.isForeground(mesh);
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(isForeground, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
-            if (!enableCollision) {
-                resetOffset(aOffset, meshElements, start, end);
-            }
-            return false;
-        }
+        // if (this.shouldLimitBox(isForeground, true) && labelIndex > this.layer.options['boxLimitOnZoomout']) {
+        //     if (!enableCollision) {
+        //         resetOffset(aOffset, meshElements, start, end);
+        //     }
+        //     return false;
+        // }
 
         const isProjected = !planeMatrix;
         const idx = meshElements[start] * positionSize;
@@ -853,7 +861,7 @@ function resetOffset(aOffset, meshElements, start, end) {
 function sortByLevel(m0, m1) {
     const r = m0.uniforms['level'] - m1.uniforms['level'];
     if (r === 0) {
-        return m0.properties.meshKey.localeCompare(m1.properties.meshKey);
+        return m0.properties.meshKey - m1.properties.meshKey;
     } else {
         return r;
     }

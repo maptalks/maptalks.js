@@ -18,7 +18,8 @@ export default class BasicPainter extends Painter {
         const geometry = new reshader.Geometry(data, glData.indices);
         geometry.properties = {
             features,
-            symbolDef: glData.symbol
+            symbolDef: glData.symbol,
+            uniquePickingIds: features ? Object.keys(features) : []
         };
         if (glData.iconAtlas) {
             geometry.properties.iconAtlas = glData.iconAtlas.image;

@@ -12,6 +12,7 @@ var NO_REDRAW = {
 var EMPTY_ARRAY = [];
 
 var THROTTLE_KEY = '__vt_plugin_mesh_throttle';
+var meshUID = 1;
 /**
  * Create a VT Plugin with a given painter
  */
@@ -148,7 +149,7 @@ function createPainterPlugin(type, Painter) {
                     var enableTileStencil = layer.getRenderer().isEnableTileStencil();
                     if (Array.isArray(mesh)) {
                         for (let i = 0; i < mesh.length; i++) {
-                            this._fillMeshProps(mesh[i], tileTransform, context.timestamp, key + '-' + i, enableTileStencil);
+                            this._fillMeshProps(mesh[i], tileTransform, context.timestamp, meshUID++, enableTileStencil);
                         }
                     } else {
                         this._fillMeshProps(mesh, tileTransform, context.timestamp, key, enableTileStencil);
@@ -378,8 +379,12 @@ function createPainterPlugin(type, Painter) {
 
         _getMeshKey: function (context) {
             var tileInfo = context.tileInfo;
-            var pluginIndex = context.pluginIndex;
-            return pluginIndex + '-' + tileInfo.id;
+            // var pluginIndex = context.pluginIndex;
+            var meshKey = tileInfo.meshKey;
+            if (!meshKey) {
+                tileInfo.meshKey = meshUID++;
+            }
+            return tileInfo.meshKey;
         },
 
         _getMesh: function (key) {

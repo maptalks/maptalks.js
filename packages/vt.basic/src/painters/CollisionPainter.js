@@ -4,6 +4,7 @@ import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
 import { clamp } from '../Util';
+import CollisionGroup from './CollisionGroup';
 // import { getLabelContent } from './util/get_label_content';
 
 const DEFAULT_SCENE_CONFIG = {
@@ -28,7 +29,10 @@ export default class CollisionPainter extends BasicPainter {
         this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
     }
 
-    startMeshCollision(meshKey) {
+    startMeshCollision(mesh) {
+        const { meshKey } = mesh.properties;
+        const { renderer } = this._cachedInstances;
+        mesh.properties.isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
         this._startTime = performance.now();
         this._canProceed = this._canProceedCollision();
         this._meshCollisionStale = this._isCachedCollisionStale(meshKey);
@@ -72,6 +76,14 @@ export default class CollisionPainter extends BasicPainter {
                 tags: {}
             };
         }
+        this._cachedInstances = {
+            layer: this.layer,
+            renderer: this.layer.getRenderer(),
+            map: this.getMap(),
+            zoom: map.getZoom(),
+            collisionTags: this._collisionContext.tags,
+            isEnableUniquePlacement: this.isEnableUniquePlacement()
+        };
     }
 
     _getCachedCollision(meshKey, boxIndex) {
@@ -81,7 +93,7 @@ export default class CollisionPainter extends BasicPainter {
 
     _setCollisionCache(meshKey, boxIndex, value) {
         const context = this._collisionContext;
-        context.tags[meshKey] = context.tags[meshKey] || {};
+        context.tags[meshKey] = context.tags[meshKey] || [];
         context.tags[meshKey][boxIndex] = value;
     }
 
@@ -118,22 +130,18 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     updateBoxCollisionFading(boxVisible, mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const { meshKey } = mesh.properties;
-        const layer = this.layer;
-        const renderer = layer.getRenderer();
-        const isForeground = renderer.isForeground(mesh);
-        if (this.shouldIgnoreBackground() && !isForeground) {
-            return INVISIBLE_BOX;
-        }
+        const { meshKey, isForeground } = mesh.properties;
+        const { layer, renderer, zoom, collisionTags, isEnableUniquePlacement } = this._cachedInstances;
+        // if (this.shouldIgnoreBackground() && !isForeground) {
+        //     return INVISIBLE_BOX;
+        // }
         //地图缩小时限制绘制的box数量，以及fading时，父级瓦片中的box数量，避免大量的box绘制，提升缩放的性能
-        if (this.shouldLimitBox(isForeground) && boxIndex > layer.options['boxLimitOnZoomout']) {
+        // if (this.shouldLimitBox(isForeground) && boxIndex > layer.options['boxLimitOnZoomout']) {
+        //     return INVISIBLE_BOX;
+        // }
+        if (isEnableUniquePlacement && this._isReplacedPlacement(meshKey, boxIndex)) {
             return INVISIBLE_BOX;
         }
-        if (this.isEnableUniquePlacement() && this._isReplacedPlacement(meshKey, boxIndex)) {
-            return INVISIBLE_BOX;
-        }
-        const map = this.getMap();
-        const zoom = map.getZoom();
         // let debugging = false;
         // const label = getLabelContent(mesh, allElements[start]);
         // if (label === '上庸') {
@@ -142,10 +150,10 @@ export default class CollisionPainter extends BasicPainter {
         //     // console.log('湖北', isForeground, collision && collision.collides, stamps[boxIndex]);
         //     // console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
         // }
-        const { symbol } = mesh.geometry.properties;
+        // const { symbol } = mesh.geometry.properties;
         //为了解决缩小地图时，大量文字会突然挤在一起
 
-        const canProceed = this._canProceed;
+        // const canProceed = this._canProceed;
 
         //尽量重用缓存的collision，能提升碰撞检测的性能，但在必要的时候需要刷新缓存的collision
         //这里逻辑如下：
@@ -156,98 +164,105 @@ export default class CollisionPainter extends BasicPainter {
         //* canProceed且collision stale时刷新collision
 
 
-        let visible = false;
-        let collision = this._getCachedCollision(meshKey, boxIndex);
-        const isCollidedOnZooming = this._zooming && collision && collision.collides !== 0;
-        const uncollidedOnZooming = this._zooming && collision && collision.collides === 0;
+        // let collision = this._getCachedCollision(meshKey, boxIndex);
+        let collision = collisionTags[meshKey] && collisionTags[meshKey][boxIndex];
+        const zoomColliding = this._zooming && collision;
+        const isCollidedOnZooming = zoomColliding && collision.collides !== 0;
+        if (!isCollidedOnZooming && boxVisible) {
+            const uncollidedOnZooming = zoomColliding && collision.collides === 0;
+            if (this._canProceed || uncollidedOnZooming) {
+                if (this._meshCollisionStale || collision && collision.z !== zoom) {
+                    collision = null;
+                }
+                if (!collision) {
+                    collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+                    collision.z = zoom;
 
-        if (!isCollidedOnZooming && boxVisible && (canProceed || uncollidedOnZooming)) {
-            if (this._meshCollisionStale || collision && collision.z !== zoom) {
-                collision = null;
-            }
-            if (!collision) {
-                collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
-                collision.z = zoom;
-
-                this._setCollisionCache(meshKey, boxIndex, collision);
-            } else if (collision.boxes) {
-                //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
-                //但zooming时不检查，有collides的仍继续隐藏
-                const { boxes } = collision;
-                let collides = 0;
-                let offscreenCount = 0;
-                for (let i = 0; i < boxes.length; i++) {
-                    if (!collides) {
-                        const boxCollides = this.isCollides(boxes[i]);
-                        if (boxCollides === -1) {
-                            offscreenCount++;
-                        } else if (boxCollides === 1) {
-                            collides = 1;
-                            break;
+                    this._setCollisionCache(meshKey, boxIndex, collision);
+                } else if (collision.boxes) {
+                    //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
+                    //但zooming时不检查，有collides的仍继续隐藏
+                    const { boxes } = collision;
+                    let collides = 0;
+                    let offscreenCount = 0;
+                    for (let i = 0; i < boxes.length; i++) {
+                        if (!collides) {
+                            const boxCollides = this.isCollides(boxes[i]);
+                            if (boxCollides === -1) {
+                                offscreenCount++;
+                            } else if (boxCollides === 1) {
+                                collides = 1;
+                                break;
+                            }
                         }
                     }
+                    if (offscreenCount === boxes.length) {
+                        collides = -1;
+                    }
+                    collision.collides = collides;
                 }
-                if (offscreenCount === boxes.length) {
-                    collides = -1;
-                }
-                collision.collides = collides;
             }
         }
 
-        const stamps = this._getBoxTimestamps(mesh);
-        // const current = stamps[boxIndex];
-        // if (getLabelContent(mesh, allElements[start]) === '汉阳大道') {
-        //     // console.log('湖北', isForeground, collision && collision.collides, stamps[boxIndex]);
-        //     console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
-        // }
-        visible = boxVisible && collision && collision.collides === 0;
-        // if (debugging && visible && this._zoomingOut) {
-        //     debugger
-        // }
+        let visible = boxVisible && collision && collision.collides === 0;
+
         let fadingOpacity = 1;
         let isFading = false;
-        //zoomingOut过程中，直接根据collides结果显示或隐藏，不fading，避免fading造成的聚团现象
-        //不能用this._zooming判断，因为zooming没有延迟
-        if (this.sceneConfig.fading && !this._zoomingOut) {
-            if (isForeground) {
-                delete mesh._fadeOutStartTime;
-            }
-            // const stamps = this._getBoxTimestamps(meshKey);
-            fadingOpacity = this._getBoxFading(isForeground, visible, stamps, boxIndex);
-            //如果是当前tile，执行fading逻辑
-            if (isForeground) {
-                if (fadingOpacity > 0) {
-                    visible = true;
+        if (this.sceneConfig.fading) {
+            const stamps = this._getBoxTimestamps(mesh);
+            // const current = stamps[boxIndex];
+            // if (getLabelContent(mesh, allElements[start]) === '汉阳大道') {
+            //     // console.log('湖北', isForeground, collision && collision.collides, stamps[boxIndex]);
+            //     console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
+            // }
+
+            // if (debugging && visible && this._zoomingOut) {
+            //     debugger
+            // }
+            //zoomingOut过程中，直接根据collides结果显示或隐藏，不fading，避免fading造成的聚团现象
+            //不能用this._zooming判断，因为zooming没有延迟
+            if (!this._zoomingOut) {
+                if (isForeground) {
+                    delete mesh._fadeOutStartTime;
                 }
-                isFading = this.isBoxFading(mesh, boxIndex);
-                if (isFading) {
-                    this.setToRedraw();
-                }
-            } else if (!visible) {
-                //为解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
-                //当瓦片不是当前tile，则跳过fading，立即隐藏有collision的box
-                this._markFadingCollided(stamps, boxIndex);
-                fadingOpacity = 0;
-            }
-            if (visible) {
-                const fadeOutStart = mesh._fadeOutStartTime;
-                if (fadeOutStart && fadingOpacity === 1 && stamps[boxIndex] > 0) {
-                    const { fadeOutDelay, fadingDuration } = this.sceneConfig;
-                    const timestamp = renderer.getFrameTimestamp();
-                    const zoomEndFading = clamp(1 - (timestamp - fadeOutStart - fadeOutDelay) / fadingDuration, 0, 1);
-                    fadingOpacity *= zoomEndFading;
-                    if (zoomEndFading > 0) {
+                // const stamps = this._getBoxTimestamps(meshKey);
+                fadingOpacity = this._getBoxFading(isForeground, visible, stamps, boxIndex);
+                //如果是当前tile，执行fading逻辑
+                if (isForeground) {
+                    if (fadingOpacity > 0) {
+                        visible = true;
+                    }
+                    isFading = this.isBoxFading(mesh, boxIndex);
+                    if (isFading) {
                         this.setToRedraw();
                     }
-                    // if (getLabelContent(mesh, allElements[start]) === '湖北') {
-                    //     console.log('湖北', visible, mesh.uniforms.level, fadingOpacity, zoomEndFading);
-                    // }
+                } else if (!visible) {
+                    //为解决zoom in 过程中，大量box挤在一起，造成的用户体验不佳的问题
+                    //当瓦片不是当前tile，则跳过fading，立即隐藏有collision的box
+                    this._markFadingCollided(stamps, boxIndex);
+                    fadingOpacity = 0;
                 }
-            }
+                if (visible) {
+                    const fadeOutStart = mesh._fadeOutStartTime;
+                    if (fadeOutStart && fadingOpacity === 1 && stamps[boxIndex] > 0) {
+                        const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+                        const timestamp = renderer.getFrameTimestamp();
+                        const zoomEndFading = clamp(1 - (timestamp - fadeOutStart - fadeOutDelay) / fadingDuration, 0, 1);
+                        fadingOpacity *= zoomEndFading;
+                        if (zoomEndFading > 0) {
+                            this.setToRedraw();
+                        }
+                        // if (getLabelContent(mesh, allElements[start]) === '湖北') {
+                        //     console.log('湖北', visible, mesh.uniforms.level, fadingOpacity, zoomEndFading);
+                        // }
+                    }
+                }
 
-        } else {
-            stamps[boxIndex] = visible ? 1 : -1;
+            } else {
+                stamps[boxIndex] = visible ? 1 : -1;
+            }
         }
+
         if (collision && layer.options['debugCollision']) {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
@@ -264,13 +279,18 @@ export default class CollisionPainter extends BasicPainter {
             const opacity = UINT8[0] = fadingOpacity * 255;
             this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
         }
+        let updateIndex = (visible || isFading) && collision && collision.boxes;
+        if (updateIndex) {
+            const symbol = mesh.geometry.properties.symbol;
+            updateIndex = !this._isIgnorePlacement(symbol, mesh, start);
+        }
         // if (getLabelContent(mesh, allElements[start]) === '会稽山') {
         //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
         //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
         return {
             visible: visible && fadingOpacity > 0,
-            updateIndex: (visible || isFading) && !this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes,
+            updateIndex,
             boxes: collision && collision.boxes || EMPTY_BOXES
         };
     }
@@ -612,13 +632,13 @@ export default class CollisionPainter extends BasicPainter {
         return !map.isZooming() && !this._zoomEndMeshes;
     }
 
-    shouldLimitBox(isForeground, ignoreZoomOut) {
-        const map = this.getMap();
-        return !map.options['seamlessZoom'] &&
-            this.layer.options['boxLimitOnZoomout'] &&
-            (ignoreZoomOut || this._zoomingOut) &&
-            (map.isZooming() || this._zoomEndTimestamp !== undefined && !isForeground);
-    }
+    // shouldLimitBox(isForeground, ignoreZoomOut) {
+    //     const map = this.getMap();
+    //     return !map.options['seamlessZoom'] &&
+    //         this.layer.options['boxLimitOnZoomout'] &&
+    //         (ignoreZoomOut || this._zoomingOut) &&
+    //         (map.isZooming() || this._zoomEndTimestamp !== undefined && !isForeground);
+    // }
 
     _prepareZoomEndMeshes() {
         const map = this.getMap();
@@ -954,7 +974,7 @@ function getUniqueKey(key, scale) {
 function sortByLevel(m0, m1) {
     const r = m1.uniforms['level'] - m0.uniforms['level'];
     if (r === 0) {
-        return m0.properties.meshKey.localeCompare(m1.properties.meshKey);
+        return m0.properties.meshKey - m1.properties.meshKey;
     } else {
         return r;
     }

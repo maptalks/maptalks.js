@@ -171,7 +171,7 @@ class IconPainter extends CollisionPainter {
             }
             this._prepareCollideIndex(geometry);
         }
-        return meshes;
+        return meshes.length === 1 ? meshes[0] : meshes;
     }
 
     addMesh(meshes) {
@@ -179,15 +179,18 @@ class IconPainter extends CollisionPainter {
             const l = meshes.length;
             if (l) {
                 const group = new CollisionGroup(meshes);
-                group.properties.aPickingId = Object.keys(meshes[0].geometry.properties.features);
-                group.properties.meshKey = meshes[0].geometry.properties.meshKey;
+                group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
+                group.properties.meshKey = meshes[0].properties.meshKey;
                 group.properties.level = meshes[0].geometry.properties.level;
                 this._meshesToCheck.push(group);
             }
         } else {
             this._meshesToCheck.push(meshes);
         }
-
+        const meshModel = meshes;
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
         for (let i = 0; i < meshes.length; i++) {
             const geometry = meshes[i].geometry;
             if (!geometry) {
@@ -215,7 +218,7 @@ class IconPainter extends CollisionPainter {
                 aMarkerHeight.dirty = false;
             }
         }
-        return super.addMesh(meshes);
+        return super.addMesh(meshModel);
     }
 
     updateCollision(context) {
@@ -300,7 +303,13 @@ class IconPainter extends CollisionPainter {
         return collision.visible;
     }
 
+    isEnableUniquePlacement() {
+        return this.isEnableCollision() && this.sceneConfig['uniquePlacement'] === true;
+    }
+
     _updateIconAndText(meshes) {
+        const layer = this.layer;
+        const renderer = layer.getRenderer();
         meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
@@ -314,8 +323,12 @@ class IconPainter extends CollisionPainter {
             } else if (!mesh.geometry || !mesh.geometry.properties.isEmpty && !this.isMeshIterable(mesh)) {
                 continue;
             }
+            const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
+            if (this.shouldIgnoreBackground() && !isForeground) {
+                continue;
+            }
             const meshKey = mesh.properties.meshKey;
-            this.startMeshCollision(meshKey);
+            this.startMeshCollision(mesh);
             this._startCheckMesh(mesh);
             this.forEachBox(mesh, this._updateBox);
             this._endCheckMesh(mesh);
@@ -341,31 +354,36 @@ class IconPainter extends CollisionPainter {
 
     forEachBox(mesh, fn) {
         const enableCollision = this.isEnableCollision();
-        const aPickingId = mesh instanceof CollisionGroup ? mesh.properties.aPickingId : mesh.geometry.properties.aPickingId;
+        const isGroup = mesh instanceof CollisionGroup;
+        let meshes, l;
+        if (isGroup) {
+            meshes = mesh.meshes;
+            l = meshes.length;
+        }
+        const uniquePickingIds = isGroup ? mesh.properties.uniquePickingIds : mesh.geometry.properties.uniquePickingIds;
         const context = { boxIndex: 0 };
-        for (let i = 0; i < aPickingId.length; i++) {
-            const pickingId = aPickingId[i];
-            this._savedBoxes = [];
-            let visible = true;
-            // const visible = fn.call(this, mesh, aPickingId[i]);
-            if (mesh instanceof CollisionGroup) {
-                const meshes = mesh.meshes;
-                const l = meshes.length;
-                for (let i = 0; i < l; i++) {
-                    const mesh = meshes[i];
-                    if (!mesh || !mesh.geometry || mesh.geometry.properties.isEmpty || mesh.properties.isHalo) {
+        let visible;
+        const count = uniquePickingIds.length;
+        for (let i = 0; i < count; i++) {
+            if (enableCollision) {
+                this._savedBoxes = [];
+            }
+            // const visible = fn.call(this, mesh, uniquePickingIds[i]);
+            if (isGroup) {
+                for (let j = 0; j < l; j++) {
+                    if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
                         continue;
                     }
-                    visible = this._iterateMeshBox(mesh, pickingId, fn, context);
+                    visible = this._iterateMeshBox(meshes[j], uniquePickingIds[i], fn, context);
                     if (!visible) {
                         break;
                     }
                 }
             } else {
-                visible = this._iterateMeshBox(mesh, pickingId, fn, context);
+                visible = this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
             }
             if (enableCollision && visible) {
-                this._markerVisible(mesh, pickingId);
+                this._markerVisible(mesh, uniquePickingIds[i]);
                 this._fillCollisionIndex(this._savedBoxes);
             }
         }

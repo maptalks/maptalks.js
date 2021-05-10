@@ -277,6 +277,8 @@ const SYMBOL = {
 
 const MAX_MARKER_SIZE = 255;
 
+let meshUID = 1;
+
 class PointLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
@@ -362,23 +364,22 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
-            const modelMesh = this.painter.createMesh(geometries, posMatrix);
-            let meshes = modelMesh;
-            if (modelMesh.meshes) {
-                // a CollisionGroup
-                meshes = modelMesh.meshes;
-            }
+            const meshes = this.painter.createMesh(geometries, posMatrix);
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
-            for (let i = 0; i < meshes.length; i++) {
-                meshes[i].setUniform('level', 0);
-                meshes[i].material.set('flipY', 1);
-                meshes[i].properties.meshKey = this.layer.getId() + (meshes[i].geometry.properties.iconAtlas ? '_icon' : '_text');
-                // meshes[i].setLocalTransform(mat4.fromScaling([], [2, 2, 1]));
+            if (Array.isArray(meshes)) {
+                for (let i = 0; i < meshes.length; i++) {
+                    meshes[i].setUniform('level', 0);
+                    meshes[i].material.set('flipY', 1);
+                    meshes[i].properties.meshKey = meshUID++;                }
+            } else {
+                meshes.setUniform('level', 0);
+                meshes.material.set('flipY', 1);
+                meshes.properties.meshKey = meshUID++;
             }
 
-            this.meshes = modelMesh;
+            this.meshes = meshes;
             this.setToRedraw();
         });
     }
