@@ -87,6 +87,7 @@ export default class CollisionPainter extends BasicPainter {
         this._cachedInstances = {
             layer: this.layer,
             renderer: this.layer.getRenderer(),
+            frameTimestamp: this.layer.getRenderer().getFrameTimestamp(),
             map: this.getMap(),
             zoom: map.getZoom(),
             collisionTags: this._collisionContext.tags,
@@ -329,10 +330,10 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     isBoxFading(mesh, boxIndex) {
-        const timestamp = this.layer.getRenderer().getFrameTimestamp(),
+        const { frameTimestamp } = this._cachedInstances,
             fadingDuration = this.sceneConfig.fadingDuration;
         const boxTimestamp = Math.abs(this._getBoxTimestamps(mesh)[boxIndex]);
-        return timestamp - boxTimestamp < fadingDuration;
+        return frameTimestamp - boxTimestamp < fadingDuration;
     }
 
 
@@ -394,8 +395,7 @@ export default class CollisionPainter extends BasicPainter {
     _getBoxFading(isForeground, visible, stamps, index) {
         //level大于0，不fading
         const { fadingDuration, fadeInDelay, fadeOutDelay } = this.sceneConfig;
-        const renderer = this.layer.getRenderer();
-        const timestamp = renderer.getFrameTimestamp();
+        const { frameTimestamp: timestamp } = this._cachedInstances;
         let boxTimestamp = stamps[index];
         let fadingOpacity = visible ? 1 : 0;
         if (!boxTimestamp) {
@@ -456,9 +456,9 @@ export default class CollisionPainter extends BasicPainter {
 
     _getBoxTimestamps(mesh) {
         if (!mesh['_fading_timestamps']) {
-            const framestamp = this.layer.getRenderer().getFrameTimestamp();
+            const { frameTimestamp } = this._cachedInstances;
             mesh['_fading_timestamps'] = {
-                'timestamp': framestamp
+                'timestamp': frameTimestamp
             };
         }
         return mesh['_fading_timestamps'];
@@ -488,9 +488,9 @@ export default class CollisionPainter extends BasicPainter {
         if (!stamps) {
             return;
         }
-        const framestamp = this.layer.getRenderer().getFrameTimestamp();
+        const { frameTimestamp } = this._cachedInstances;
         const { fadingDuration } = this.sceneConfig;
-        stamps[index] = -(framestamp - fadingDuration - 1);
+        stamps[index] = -(frameTimestamp - fadingDuration - 1);
     }
 
 
