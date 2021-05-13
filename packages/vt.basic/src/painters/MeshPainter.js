@@ -3,7 +3,7 @@ import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
 import { piecewiseConstant } from '@maptalks/function-type';
 import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
@@ -25,16 +25,17 @@ class MeshPainter extends Painter {
         return false;
     }
 
-    createMesh(geometry, transform) {
+    createMesh(geo, transform) {
         if (!this.material) {
             //还没有初始化
             this.setToRedraw();
             return null;
         }
 
-        if (Array.isArray(geometry)) {
-            return geometry.map(geo => this.createMesh(geo, transform));
+        if (Array.isArray(geo)) {
+            return geo.map(geo => this.createMesh(geo, transform));
         }
+        const { geometry, symbolIndex } = geo;
         const mesh = new reshader.Mesh(geometry, this.material);
         if (this.sceneConfig.animation) {
             SCALE[2] = 0.01;
@@ -43,10 +44,12 @@ class MeshPainter extends Painter {
             mat4.multiply(mat, transform, mat);
             transform = mat;
         }
-        prepareFnTypeData(geometry, this.symbolDef, this.getFnTypeConfig());
+        const symbolDef = this.getSymbolDef(symbolIndex);
+        const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+        prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
         const shader = this.getShader();
         const defines = shader.getGeometryDefines ? shader.getGeometryDefines(geometry) : {};
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbol(symbolIndex);
         this._colorCache = this._colorCache || {};
         if (geometry.data.aExtrude) {
             defines['IS_LINE_EXTRUSION'] = 1;
@@ -90,6 +93,7 @@ class MeshPainter extends Painter {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 
@@ -133,7 +137,7 @@ class MeshPainter extends Painter {
             this._needPolygonOffset = true;
         }
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
-        if (this.getSymbol().ssr) {
+        if (this.getSymbol(mesh.properties.symbolIndex).ssr) {
             mesh.ssr = 1;
         } else {
             mesh.ssr = 0;
@@ -160,23 +164,6 @@ class MeshPainter extends Painter {
         }
     }
 
-    preparePaint(...args) {
-        super.preparePaint(...args);
-        const meshes = this.scene.getMeshes();
-        if (!meshes || !meshes.length) {
-            return;
-        }
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this.getFnTypeConfig(), meshes, this.getMap().getZoom());
-    }
-
-    updateSymbol(...args) {
-        super.updateSymbol(...args);
-        const symbolDef = this.symbolDef;
-        this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
-        this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
-        this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-    }
-
     updateDataConfig(dataConfig, old) {
         if (this.dataConfig.type === 'line-extrusion' && !dataConfig['altitudeProperty'] && !old['altitudeProperty']) {
             return false;
@@ -184,20 +171,15 @@ class MeshPainter extends Painter {
         return true;
     }
 
-    getFnTypeConfig() {
-        if (this._fnTypeConfig) {
-            return this._fnTypeConfig;
-        }
-        const symbolDef = this.symbolDef;
-        this._fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
-        this._opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
-        this._aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        const map = this.getMap();
+    createFnTypeConfig(map, symbolDef) {
+        const fillFn = piecewiseConstant(symbolDef['polygonFill'] || symbolDef['lineColor']);
+        const opacityFn = interpolated(symbolDef['polygonOpacity'] || symbolDef['lineOpacity']);
+        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
         const u8 = new Uint8Array(1);
         const u16 = new Uint16Array(1);
-        const fillName = this.symbolDef['polygonFill'] ? 'polygonFill' : this.symbolDef['lineColor'] ? 'lineColor' : 'polygonFill';
-        const opacityName = this.symbolDef['polygonOpacity'] ? 'polygonOpacity' : this.symbolDef['lineOpacity'] ? 'lineOpacity' : 'polygonOpacity';
-        this._fnTypeConfig = [
+        const fillName = symbolDef['polygonFill'] ? 'polygonFill' : symbolDef['lineColor'] ? 'lineColor' : 'polygonFill';
+        const opacityName = symbolDef['polygonOpacity'] ? 'polygonOpacity' : symbolDef['lineOpacity'] ? 'lineOpacity' : 'polygonOpacity';
+        return [
             {
                 //geometry.data 中的属性数据
                 attrName: 'aColor',
@@ -208,7 +190,7 @@ class MeshPainter extends Painter {
                 define: 'HAS_COLOR',
                 //
                 evaluate: properties => {
-                    let color = this._fillFn(map.getZoom(), properties);
+                    let color = fillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
@@ -222,7 +204,7 @@ class MeshPainter extends Painter {
                 width: 1,
                 symbolName: opacityName,
                 evaluate: properties => {
-                    const polygonOpacity = this._opacityFn(map.getZoom(), properties);
+                    const polygonOpacity = opacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;
                     return u8[0];
                 }
@@ -234,14 +216,13 @@ class MeshPainter extends Painter {
                 symbolName: 'lineWidth',
                 define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
-                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
+                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }
             }
         ];
-        return this._fnTypeConfig;
     }
 
     getPolygonOffset() {

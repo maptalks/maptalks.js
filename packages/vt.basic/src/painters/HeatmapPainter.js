@@ -5,15 +5,7 @@ import { prepareFnTypeData } from './util/fn_type_util';
 import { setUniformFromSymbol } from '../Util';
 
 export default class HeatmapPainter extends BasicPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
-
-        this._fnTypeConfig = this._getFnTypeConfig();
-    }
-
-    _getFnTypeConfig() {
-        const map = this.getMap();
-        const symbolDef = this.symbolDef;
+    createFnTypeConfig(map, symbolDef) {
         const heatWeightFn = interpolated(symbolDef['heatWeight']);
         const u8 = new Int16Array(1);
         return [
@@ -33,12 +25,16 @@ export default class HeatmapPainter extends BasicPainter {
 
     createGeometry(glData, features) {
         const geometry = super.createGeometry(glData, features);
-        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        // heatmap 只支持一个symbol
+        const symbolDef = this.getSymbolDef({ index: 0 });
+        const fnTypeConfig = this.getFnTypeConfig({ index: 0 });
+        prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
         return geometry;
     }
 
     createMesh(geometry, transform) {
-        const symbol = this.getSymbol();
+        // heatmap 只支持一个symbol
+        const symbol = this.getSymbol({ index: 0 });
         const uniforms = {
             tileRatio: geometry.properties.tileRatio,
             dataResolution: geometry.properties.tileResolution
@@ -109,7 +105,7 @@ export default class HeatmapPainter extends BasicPainter {
             }
         };
         const polygonOfffset = this.getPolygonOffset();
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbols()[0];
         this._process = new HeatmapProcess(this.regl, this.sceneConfig, this.layer, symbol.heatmapColor, stencil, polygonOfffset);
     }
 }

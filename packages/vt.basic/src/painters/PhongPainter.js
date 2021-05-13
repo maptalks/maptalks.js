@@ -10,7 +10,8 @@ class PhongPainter extends MeshPainter {
             return glData.map(data => this.createGeometry(data));
         }
         const data = glData.data;
-        const extrusionOpacity = this.getSymbol().material && this.getSymbol().material.extrusionOpacity;
+        const symbol = this.getSymbols()[0];
+        const extrusionOpacity = symbol.material && symbol.material.extrusionOpacity;
         if (extrusionOpacity) {
             const aExtrusionOpacity = new Uint8Array(data.aPosition.length / 3);
             for (let i = 0; i < data.aPosition.length; i += 3) {
@@ -24,7 +25,11 @@ class PhongPainter extends MeshPainter {
             data.aExtrusionOpacity = aExtrusionOpacity;
         }
         const geometry = new reshader.Geometry(data, glData.indices);
-        return geometry;
+        extend(geometry.properties, glData.properties);
+        return {
+            geometry,
+            symbolIndex: { index: 0 }
+        };
     }
 
     updateSceneConfig(config) {
@@ -161,7 +166,7 @@ class PhongPainter extends MeshPainter {
         if (this.material) {
             this.material.dispose();
         }
-        const materialConfig = this.getSymbol().material;
+        const materialConfig = this.getSymbols()[0].material;
         const material = {};
         for (const p in materialConfig) {
             if (materialConfig.hasOwnProperty(p)) {

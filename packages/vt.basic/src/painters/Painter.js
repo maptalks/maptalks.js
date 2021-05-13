@@ -1,8 +1,10 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import { loadFunctionTypes, interpolated, isFunctionDefinition } from '@maptalks/function-type';
+import { loadFunctionTypes, isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { extend, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
+import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
+
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
 const TEX_CACHE_KEY = '__gl_textures';
@@ -32,7 +34,8 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
-        this.symbolDef = symbol;
+        this.symbolDef = Array.isArray(symbol) ? symbol : [symbol];
+        this._compileSymbols();
         this.pickingViewport = {
             x: 0,
             y: 0,
@@ -51,8 +54,26 @@ class Painter {
     }
 
     isVisible() {
-        const visible = this.getSymbol().visible;
-        return visible !== false && visible !== 0 || this._visibleFn && !this._visibleFn.isFeatureConstant;
+        //TODO visibleFn没有支持多symbol
+        // if (this._visibleFn && !this._visibleFn.isFeatureConstant) {
+        //     return true;
+        // }
+        const visibleFns = this._visibleFn;
+        if (visibleFns.length) {
+            for (let i = 0; i < visibleFns.length; i++) {
+                if (visibleFns[i] && !visibleFns[i].isFeatureConstant) {
+                    return true;
+                }
+            }
+        }
+        const symbols = this.getSymbols();
+        for (let i = 0; i < symbols.length; i++) {
+            const visible = symbols[i].visible;
+            if (visible !== false && visible !== 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     needToRedraw() {
@@ -97,18 +118,22 @@ class Painter {
         if (Array.isArray(geometry)) {
             for (let i = 0; i < geometry.length; i++) {
                 const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
-                geometry[i].properties.features = features;
-                if (hasFeaIds) {
-                    geometry[i].properties.feaIdPickingMap = pickingIdMap;
-                    geometry[i].properties.feaPickingIdMap = idPickingMap;
+                if (geometry[i] && geometry[i].geometry) {
+                    const props = geometry[i].geometry.properties;
+                    props.features = features;
+                    if (hasFeaIds) {
+                        props.feaIdPickingMap = pickingIdMap;
+                        props.feaPickingIdMap = idPickingMap;
+                    }
                 }
             }
-        } else if (geometry && geometry.properties) {
+        } else if (geometry && geometry.geometry) {
             const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData);
-            geometry.properties.features = features;
+            const props = geometry.geometry.properties;
+            props.features = features;
             if (hasFeaIds) {
-                geometry.properties.feaIdPickingMap = pickingIdMap;
-                geometry.properties.feaPickingIdMap = idPickingMap;
+                props.feaIdPickingMap = pickingIdMap;
+                props.feaPickingIdMap = idPickingMap;
             }
         }
         return geometry;
@@ -145,8 +170,8 @@ class Painter {
         throw new Error('not implemented');
     }
 
-    isBloom() {
-        return !!this.getSymbol()['bloom'];
+    isBloom(mesh) {
+        return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
     }
 
     addMesh(meshes) {
@@ -193,14 +218,32 @@ class Painter {
     render(context) {
         this.pluginIndex = context.pluginIndex;
         this.polygonOffsetIndex = context.polygonOffsetIndex;
-        if (this._currentTimestamp !== context.timestamp) {
-            this.preparePaint(context);
-            this._currentTimestamp = context.timestamp;
-        }
         return this.paint(context);
     }
 
-    preparePaint() {}
+    prepareRender(context) {
+        if (this._currentTimestamp === context.timestamp) {
+            return;
+        }
+        this._currentTimestamp = context.timestamp;
+        if (!this.createFnTypeConfig) {
+            return;
+        }
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        const z = this.getMap().getZoom();
+        for (let i = 0; i < meshes.length; i++) {
+            if (!meshes[i] || !meshes[i].geometry) {
+                continue;
+            }
+            const { symbolIndex } = meshes[i].properties;
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            updateOneGeometryFnTypeAttrib(this.regl, symbolDef, fnTypeConfig, meshes[i], z);
+        }
+    }
 
     paint(context) {
         const layer = this.layer;
@@ -267,21 +310,22 @@ class Painter {
     }
 
     getPolygonOffset() {
-        // ssr offset和factor值较小时，会影响ssr逻辑中深度精度，造成屏幕边缘出现“阴影”现象。
-        const symbol = this.getSymbol();
-        if (symbol.ssr) {
-            return {
-                factor: 1,
-                units: 1
-            };
-        }
         const layer = this.layer;
         return {
-            factor: () => {
+            factor: (_, props) => {
+                if (props.meshConfig.ssr) {
+                    // ssr offset和factor值较小时，会影响ssr逻辑中深度精度，造成屏幕边缘出现“阴影”现象。
+                    return 1;
+                }
                 const factor = -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0));
                 return factor;
             },
-            units: () => { return -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0)); }
+            units: (_, props) => {
+                if (props.meshConfig.ssr) {
+                    return 1;
+                }
+                return -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0));
+            }
         };
     }
 
@@ -414,52 +458,99 @@ class Painter {
     }
 
     updateSymbol(symbolDef, all) {
-        // const styles = this.layer.getCompiledStyle();
-        // this.symbolDef = styles.style[this.pluginIndex].symbol;
-        this.symbolDef = all;
+        if (!Array.isArray(symbolDef)) {
+            symbolDef = [symbolDef];
+            all = [all];
+        }
+        for (let i = 0; i < symbolDef.length; i++) {
+            this._updateChildSymbol(i, symbolDef[i], all[i]);
+        }
+
+
+        delete this._fnTypeConfigs;
+        this.setToRedraw(this.supportRenderMode('taa'));
+    }
+
+    _updateChildSymbol(i, symbolDef, all) {
+        this.symbolDef[i] = all;
         if (!this._symbol) {
             return;
         }
-        for (const p in this._symbol) {
-            delete this._symbol[p];
+        const symbol = this._symbol[i];
+        for (const p in symbol) {
+            delete symbol[p];
         }
+        const map = this.getMap();
         // extend(this._symbol, this.symbolDef);
-        const loadedSymbol = loadFunctionTypes(this.symbolDef, () => {
-            return [this.getMap().getZoom()];
+        const loadedSymbol = loadFunctionTypes(this.symbolDef[i], () => {
+            return [map.getZoom()];
         });
         for (const p in loadedSymbol) {
             const d = Object.getOwnPropertyDescriptor(loadedSymbol, p);
             if (d.get) {
-                Object.defineProperty(this._symbol, p, {
+                Object.defineProperty(symbol, p, {
                     get: d.get,
                     set: d.set,
                     configurable: true,
                     enumerable: true
                 });
             } else {
-                this._symbol[p] = loadedSymbol[p];
+                symbol[p] = loadedSymbol[p];
             }
         }
-        if (isFunctionDefinition(this.symbolDef.visible)) {
-            this._visibleFn = interpolated(this.symbolDef.visible);
-        } else {
-            delete this._visibleFn;
+        if (isFunctionDefinition(all.visible)) {
+            this._visibleFn[i] = interpolated(all.visible);
         }
-        this.setToRedraw(this.supportRenderMode('taa'));
+        // if (isFunctionDefinition(this.symbolDef.visible)) {
+        //     this._visibleFn = interpolated(this.symbolDef.visible);
+        // } else {
+        //     delete this._visibleFn;
+        // }
     }
 
-    getSymbol() {
-        if (this._symbol) {
-            return this._symbol;
+    getSymbolDef(symbolIndex) {
+        return this.symbolDef[symbolIndex.index];
+    }
+
+    getSymbols() {
+        return this._symbol;
+    }
+
+    getSymbol(symbolIndex) {
+        const index = symbolIndex.index;
+        return this._symbol[index];
+    }
+
+    _compileSymbols() {
+        const map = this.getMap();
+        const fn = () => {
+            return [map.getZoom()];
+        };
+        this._symbol = [];
+        this._visibleFn = [];
+        for (let i = 0; i < this.symbolDef.length; i++) {
+            this._symbol[i] = loadFunctionTypes(extend({}, this.symbolDef[i]), fn);
+            if (isFunctionDefinition(this.symbolDef[i].visible)) {
+                this._visibleFn[i] = interpolated(this.symbolDef[i].visible);
+            }
         }
-        this._symbol = loadFunctionTypes(extend({}, this.symbolDef), () => {
-            return [this.getMap().getZoom()];
-        });
-        if (isFunctionDefinition(this.symbolDef.visible)) {
-            this._visibleFn = interpolated(this.symbolDef.visible);
+    }
+
+    getFnTypeConfig(symbolIndex) {
+        if (!this._fnTypeConfigs) {
+            this._fnTypeConfigs = [];
         }
-        this._symbol.def = this.symbolDef;
-        return this.getSymbol();
+        const index = symbolIndex.index;
+        if (!this._fnTypeConfigs[index]) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const map = this.getMap();
+            this._fnTypeConfigs[index] = this.createFnTypeConfig(map, symbolDef);
+        }
+        return this._fnTypeConfigs[index];
+    }
+
+    _deleteFnTypeConfigs() {
+        delete this._fnTypeConfigs;
     }
 
     loginTextureCache() {

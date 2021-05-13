@@ -1,6 +1,6 @@
-import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn } from '../../common/Util';
+import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack/*, CirclePack*/ } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
 import Promise from '../../common/Promise';
 import { createFilter } from '@maptalks/feature-filter';
@@ -208,6 +208,7 @@ export default class BaseLayerWorker {
                 typeIndex = 0;
                 currentType = pluginConfig.type;
             }
+            // type = 0 是普通 style， type = 1 是 feature style
             const targetData = pluginConfig.type === 0 ? data : featureData;
             if (pluginConfig.symbol && pluginConfig.symbol.visible === false) {
                 //数据不存在，则在data中添加个占位的null，不然renderer中featureData与data，对应的plugin会不正确
@@ -256,6 +257,9 @@ export default class BaseLayerWorker {
 
         return Promise.all(promises).then(([styleCount, ...tileDatas]) => {
             function handleTileData(tileData, i) {
+                if (tileData.ref !== undefined) {
+                    return;
+                }
                 tileData.data.type = pluginConfigs[pluginIndexes[i].idx].renderPlugin.dataConfig.type;
                 tileData.data.filter = pluginConfigs[pluginIndexes[i].idx].filter.def;
 
@@ -268,7 +272,6 @@ export default class BaseLayerWorker {
             if (styleCount !== this._styleCounter) {
                 return { canceled: true };
             }
-
             for (let i = 0; i < tileDatas.length; i++) {
                 if (!tileDatas[i]) {
                     continue;
@@ -364,16 +367,13 @@ export default class BaseLayerWorker {
             const symbols = PointPack.splitPointSymbol(symbol);
 
             return Promise.all(symbols.map(symbol => new PointPack(features, symbol, options).load(tileRatio)));
-            // const pack = new PointPack(features, symbol, options);
-            // return pack.load(extent / tileSize);
         } else if (type === 'native-point') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 zoom,
                 debugIndex
             });
-            const pack = new NativePointPack(features, symbol, options);
-            return pack.load(extent / tileSize);
+            return parseSymbolAndGenPromises(features, symbol, options, NativePointPack, extent / tileSize);
         } else if (type === 'line') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -382,8 +382,7 @@ export default class BaseLayerWorker {
                 zoom,
                 debugIndex
             });
-            const pack = new LinePack(features, symbol, options);
-            return pack.load();
+            return parseSymbolAndGenPromises(features, symbol, options, LinePack);
             // return Promise.resolve(null);
         } else if (type === 'native-line') {
             const options = extend({}, dataConfig, {
@@ -391,8 +390,7 @@ export default class BaseLayerWorker {
                 zoom,
                 debugIndex
             });
-            const pack = new NativeLinePack(features, symbol, options);
-            return pack.load();
+            return parseSymbolAndGenPromises(features, symbol, options, NativeLinePack);
         } else if (type === 'fill') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -400,8 +398,7 @@ export default class BaseLayerWorker {
                 zoom,
                 debugIndex
             });
-            const pack = new PolygonPack(features, symbol, options);
-            return pack.load();
+            return parseSymbolAndGenPromises(features, symbol, options, PolygonPack);
         } else if (type === 'line-extrusion') {
             //line-extrusion 不需要 lineGradientProperty 属性，以免错误的把linesofar转化到了 0-2^15
             delete symbol['lineGradientProperty'];
@@ -442,7 +439,7 @@ export default class BaseLayerWorker {
             } else {
                 return new LineExtrusionPack(features, symbol, options).load();
             }
-        } else if (type === 'circle') {
+        }/* else if (type === 'circle') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 zoom,
@@ -450,7 +447,7 @@ export default class BaseLayerWorker {
             });
             const pack = new CirclePack(features, symbol, options);
             return pack.load();
-        }
+        }*/
         return Promise.resolve(null);
     }
 
@@ -692,4 +689,42 @@ function hasTexture(symbol) {
         }
     }
     return t;
+}
+
+function parseSymbolAndGenPromises(features, symbol, options, clazz, scale) {
+    const parsed = {};
+    const symbols = Array.isArray(symbol) ? symbol : [symbol];
+    let first = -1;
+    for (let i = 0; i < symbols.length; i++) {
+        parsed[i] = hasFnTypeKeys(symbols[i]);
+        if (!parsed[i] && symbols[i] && first === -1) {
+            first = i;
+        }
+    }
+    const promises = [];
+    for (let i = 0; i < symbols.length; i++) {
+        symbols[i].index = { index: i };
+        if (!parsed[i]) {
+            if (i === first) {
+                promises.push(new clazz(features, symbols[i], options).load(scale));
+            } else {
+                promises.push({ data: { ref: first, symbolIndex: { index: i }}});
+            }
+        } else {
+            promises.push(new clazz(features, symbols[i], options).load(scale));
+        }
+    }
+    return Promise.all(promises);
+}
+
+function hasFnTypeKeys(symbol) {
+    if (!symbol) {
+        return 0;
+    }
+    for (const p in symbol) {
+        if (isFnTypeSymbol(p, symbol)) {
+            return 1;
+        }
+    }
+    return 0;
 }

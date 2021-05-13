@@ -90,6 +90,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const context = this._preparePaintContext();
         this.painter.startFrame(context);
         this.painter.addMesh(this.meshes);
+        this.painter.prepareRender(context);
         if (layer.options.collision) {
             this.painter.updateCollision(context);
         }
@@ -229,7 +230,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 return null;
             }
             const geometry = this.painter.prepareGeometry(packData.data, features.map(feature => { return { feature }; }));
-            this.fillCommonProps(geometry);
+            this.fillCommonProps(geometry.geometry);
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));

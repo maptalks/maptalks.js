@@ -15,8 +15,7 @@ class StandardPainter extends MeshPainter {
 
     supportRenderMode(mode) {
         // maptalks-studio#1120, 因为ssr有两种绘制模式，开启taa时会出现闪烁，
-        const symbol = this.getSymbol();
-        if (symbol.ssr) {
+        if (this.getSymbols()[0].ssr) {
             return mode === 'fxaa' || mode === 'fxaaAfterTaa';
         } else {
             return super.supportRenderMode(mode);
@@ -30,10 +29,11 @@ class StandardPainter extends MeshPainter {
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'
         });
-        if (glData.properties) {
-            extend(geometry.properties, glData.properties);
-        }
-        return geometry;
+        extend(geometry.properties, glData.properties);
+        return {
+            geometry,
+            symbolIndex: { index: 0 }
+        };
     }
 
     paint(context) {
@@ -43,7 +43,7 @@ class StandardPainter extends MeshPainter {
             delete this.shader;
             this._createShader(context);
         }
-        const isSsr = !!context.ssr && this.getSymbol().ssr;
+        let isSsr = !!context.ssr && this.getSymbols()[0].ssr;
         const shader = this.shader;
         const shaderDefines = shader.shaderDefines;
         if (isSsr) {
@@ -252,7 +252,7 @@ class StandardPainter extends MeshPainter {
     }
 
     _updateMaterial(config) {
-        const materialConfig = config || this.getSymbol().material;
+        const materialConfig = config || this.getSymbols()[0].material;
         const material = {};
         let hasTexture = false;
         for (const p in materialConfig) {

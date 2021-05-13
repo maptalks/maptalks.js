@@ -32,7 +32,15 @@ export default class CollisionPainter extends BasicPainter {
     startMeshCollision(mesh) {
         const { meshKey } = mesh.properties;
         const { renderer } = this._cachedInstances;
-        mesh.properties.isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
+        const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
+        if (mesh instanceof CollisionGroup) {
+            for (let i = 0; i < mesh.meshes.length; i++) {
+                mesh.meshes[i].properties.isForeground = isForeground;
+            }
+        } else {
+            mesh.properties.isForeground = isForeground;
+        }
+
         this._startTime = performance.now();
         this._canProceed = this._canProceedCollision();
         this._meshCollisionStale = this._isCachedCollisionStale(meshKey);
@@ -281,7 +289,7 @@ export default class CollisionPainter extends BasicPainter {
         }
         let updateIndex = (visible || isFading) && collision && collision.boxes;
         if (updateIndex) {
-            const symbol = mesh.geometry.properties.symbol;
+            const symbol = this.getSymbol(mesh.properties.symbolIndex);
             updateIndex = !this._isIgnorePlacement(symbol, mesh, start);
         }
         // if (getLabelContent(mesh, allElements[start]) === '会稽山') {
@@ -329,7 +337,7 @@ export default class CollisionPainter extends BasicPainter {
 
 
     _isBoxVisible(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const symbol = mesh.geometry.properties.symbol;
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         const isIgnorePlacement = this._isIgnorePlacement(symbol, mesh, elements[start]);
         const isAllowOverlap = this._isAllowOverlap(symbol, mesh, elements[start]);
         if (isIgnorePlacement && isAllowOverlap) {

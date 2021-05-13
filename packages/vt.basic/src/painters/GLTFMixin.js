@@ -1,5 +1,5 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, isNil, isNumber } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNil, isNumber, extend } from '../Util';
 
 const V3 = [];
 const Q4 = [];
@@ -28,7 +28,7 @@ const pickingVert = `
         //传入gl_Position的depth值
         fbo_picking_setData(gl_Position.w, true);
     }`;
-
+// TODO 缺少 updateSymbol 的支持
 const GLTFMixin = Base =>
 
     class extends Base {
@@ -36,10 +36,21 @@ const GLTFMixin = Base =>
             super(regl, layer, symbol, sceneConfig, pluginIndex);
             this._ready = false;
             this.scene.sortFunction = this.sortByCommandKey;
+            this._gltfMeshInfos = [];
         }
 
         isAnimating() {
-            return this._isSkinAnimating();
+            const symbols = this.getSymbols();
+            for (let i = 0; i < symbols.length; i++) {
+                const symbol = symbols[i];
+                if (!symbol || !this._gltfPack[i]) {
+                    continue;
+                }
+                if (this._isSkinAnimating(i)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         createGeometry(glData, features) {
@@ -50,21 +61,27 @@ const GLTFMixin = Base =>
             if (!this._ready) {
                 return null;
             }
-            const { data, positionSize } = glData;
-            return {
-                properties: {},
-                data,
-                positionSize,
-                features
+            // 无论多少个symbol，gltf插件的数据只会来源于glData中的第一条数据
+            const { data, positionSize } = glData[0];
+            const geometry = {
+                geometry: {
+                    properties: extend({}, glData.properties),
+                    data,
+                    positionSize,
+                    features
+                },
+                symbolIndex: glData.symbolIndex
             };
+            return geometry;
         }
 
         getFnTypeConfig() {
             return EMPTY_ARRAY;
         }
 
-        createMesh(geometry, transform, { tileTranslationMatrix, tileExtent }) {
+        createMesh(geo, transform, { tileTranslationMatrix, tileExtent }) {
             const map = this.getMap();
+            const { geometry } = geo;
             const { positionSize, features } = geometry;
             const { aPosition } = geometry.data;
             const count = aPosition.length / positionSize;
@@ -92,79 +109,91 @@ const GLTFMixin = Base =>
                 };
             }
 
-            const { translation, rotation, scale } = this.getSymbol();
-            const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
-            const meshInfos = this._gltfMeshInfos;
-            const symbol = this.getSymbol();
-            let zOffset = 0;
-            //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
-            meshInfos.forEach(info => {
-                const { geometry, nodeMatrix } = info;
-                const positionMatrix = mat4.multiply(TEMP_MATRIX, gltfMatrix, nodeMatrix);
-                const gltfBBox = geometry.boundingBox;
-                const meshBox = gltfBBox.copy();
-                meshBox.transform(positionMatrix);
+            const meshes = [];
+            const symbols = this.getSymbols();
+            for (let i = 0; i < symbols.length; i++) {
+                const symbol = symbols[i];
+                const meshInfos = this._gltfMeshInfos[i];
+                if (!meshInfos) {
+                    continue;
+                }
 
-                const offset = this._calAnchorTranslation(meshBox);
-                if (offset > zOffset) {
-                    zOffset = offset;
-                }
-            });
-            const anchorTranslation = [0, 0, zOffset];
-            const meshes = meshInfos.map(info => {
-                const { geometry, nodeMatrix, materialInfo, skin, morphWeights } = info;
-                const MatClazz = this.getMaterialClazz(materialInfo);
-                const material = new MatClazz(materialInfo);
-                const defines = {};
-                // material.set('uOutputLinear', 1);
-                const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
-                    transparent: false,
-                    // castShadow: false,
-                    picking: true
-                });
-                if (skin) {
-                    mesh.setUniform('jointTexture', skin.jointTexture);
-                    mesh.setUniform('jointTextureSize', skin.jointTextureSize);
-                    mesh.setUniform('numJoints', skin.numJoints);
-                    mesh.setUniform('skinAnimation', 0);
-                    defines['HAS_SKIN'] = 1;
-                }
-                if (morphWeights) {
-                    mesh.setUniform('morphWeights', morphWeights);
-                    defines['HAS_MORPH'] = 1;
-                    //TODO 什么时候设置 HAS_MORPHNORMALS
-                }
-                setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
-                setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
-                // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
-                const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
-                const matrix = [];
-                mat4.fromTranslation(matrix, anchorTranslation);
-                mat4.multiply(positionMatrix, matrix, positionMatrix);
+                const { translation, rotation, scale, fixSizeOnZoom } = symbol;
+                const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
+                let zOffset = 0;
+                //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
+                meshInfos.forEach(info => {
+                    const { geometry, nodeMatrix } = info;
+                    const positionMatrix = mat4.multiply(TEMP_MATRIX, gltfMatrix, nodeMatrix);
+                    const gltfBBox = geometry.boundingBox;
+                    const meshBox = gltfBBox.copy();
+                    meshBox.transform(positionMatrix);
 
-                mesh.setPositionMatrix(() => {
-                    const fixZoom = this.getSymbol().fixSizeOnZoom;
-                    if (isNumber(fixZoom)) {
-                        const scale = map.getGLScale() / map.getGLScale(fixZoom);
-                        vec3.set(V3, scale, scale, scale);
-                        mat4.fromScaling(matrix, V3);
-                        return mat4.multiply(matrix, matrix, positionMatrix);
-                    } else {
-                        return positionMatrix;
+                    const offset = this._calAnchorTranslation(meshBox, symbol);
+                    if (offset > zOffset) {
+                        zOffset = offset;
                     }
                 });
-                mesh.setLocalTransform(tileTranslationMatrix);
+                const anchorTranslation = [0, 0, zOffset];
+                const childMeshes = meshInfos.map(info => {
+                    const { geometry, nodeMatrix, materialInfo, skin, morphWeights } = info;
+                    const MatClazz = this.getMaterialClazz(materialInfo);
+                    const material = new MatClazz(materialInfo);
+                    const defines = {};
+                    // material.set('uOutputLinear', 1);
+                    const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
+                        transparent: false,
+                        // castShadow: false,
+                        picking: true
+                    });
+                    if (skin) {
+                        mesh.setUniform('jointTexture', skin.jointTexture);
+                        mesh.setUniform('jointTextureSize', skin.jointTextureSize);
+                        mesh.setUniform('numJoints', skin.numJoints);
+                        mesh.setUniform('skinAnimation', 0);
+                        defines['HAS_SKIN'] = 1;
+                    }
+                    if (morphWeights) {
+                        mesh.setUniform('morphWeights', morphWeights);
+                        defines['HAS_MORPH'] = 1;
+                        //TODO 什么时候设置 HAS_MORPHNORMALS
+                    }
+                    setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
+                    setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
+                    // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
+                    const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
+                    const matrix = [];
+                    mat4.fromTranslation(matrix, anchorTranslation);
+                    mat4.multiply(positionMatrix, matrix, positionMatrix);
 
-                geometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
-                //上面已经生成了buffer，无需再生成
-                // mesh.generateInstancedBuffers(this.regl);
-                if (instanceData['instance_color']) {
-                    defines['HAS_INSTANCE_COLOR'] = 1;
-                }
-                mesh.properties.features = features;
-                mesh.setDefines(defines);
-                return mesh;
-            });
+                    mesh.setPositionMatrix(() => {
+                        if (isNumber(fixSizeOnZoom)) {
+                            const scale = map.getGLScale() / map.getGLScale(fixSizeOnZoom);
+                            vec3.set(V3, scale, scale, scale);
+                            mat4.fromScaling(matrix, V3);
+                            return mat4.multiply(matrix, matrix, positionMatrix);
+                        } else {
+                            return positionMatrix;
+                        }
+                    });
+                    mesh.setLocalTransform(tileTranslationMatrix);
+
+                    geometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
+                    //上面已经生成了buffer，无需再生成
+                    // mesh.generateInstancedBuffers(this.regl);
+                    if (instanceData['instance_color']) {
+                        defines['HAS_INSTANCE_COLOR'] = 1;
+                    }
+                    mesh.properties.features = features;
+                    mesh.setDefines(defines);
+                    mesh.properties.symbolIndex = {
+                        index: i
+                    };
+                    return mesh;
+                });
+                meshes.push(...childMeshes);
+            }
+
             meshes.insContext = {
                 instanceData,
                 tileTranslationMatrix,
@@ -186,8 +215,8 @@ const GLTFMixin = Base =>
         //     return ratio;
         // }
 
-        _calAnchorTranslation(gltfBBox) {
-            const anchorZ = this.getSymbol().anchorZ || 'bottom';
+        _calAnchorTranslation(gltfBBox, symbol) {
+            const anchorZ = symbol.anchorZ || 'bottom';
             let zOffset = 0;
             if (anchorZ === 'bottom') {
                 zOffset = -gltfBBox.min[2];
@@ -207,30 +236,44 @@ const GLTFMixin = Base =>
             if (level > 2) {
                 return null;
             }
-            const isAnimated = this._isSkinAnimating();
             for (let i = 0; i < meshes.length; i++) {
+                if (!meshes[i] || !meshes[i].geometry) {
+                    continue;
+                }
+                const isAnimated = this._isSkinAnimating(meshes[i].properties.symbolIndex.index);
                 meshes[i].setUniform('skinAnimation', +isAnimated);
             }
             this.scene.addMesh(meshes);
             return this;
         }
 
-        preparePaint(context) {
-            const symbol = this.getSymbol();
-            const isAnimated = this._isSkinAnimating();
-            if (isAnimated && this._gltfPack) {
-                let speed = symbol.speed;
-                const loop = !!symbol.loop;
-                if (isNil(speed)) {
-                    speed = 1;
+        prepareRender(context) {
+            const symbols = this.getSymbols();
+            let isAnimated = false;
+            for (let i = 0; i < symbols.length; i++) {
+                const symbol = symbols[i];
+                if (!symbol || !this._gltfPack[i]) {
+                    continue;
                 }
-                this._gltfPack.updateAnimation(context.timestamp, loop, speed);
+                const hasAnim = this._isSkinAnimating(i);
+                if (hasAnim && this._gltfPack[i]) {
+                    if (!isAnimated) {
+                        isAnimated = true;
+                    }
+                    let speed = symbol.speed;
+                    const loop = !!symbol.loop;
+                    if (isNil(speed)) {
+                        speed = 1;
+                    }
+                    this._gltfPack[i].updateAnimation(context.timestamp, loop, speed);
+                }
             }
+
             if (isAnimated) {
                 //TODO retire shadow frame，可能会造成性能问题
                 this.setToRedraw(true);
             }
-            super.preparePaint(context);
+            super.prepareRender(context);
         }
 
         getShadowMeshes() {
@@ -242,9 +285,10 @@ const GLTFMixin = Base =>
             return meshes;
         }
 
-        _isSkinAnimating() {
-            const symbol = this.getSymbol();
-            return symbol.animation && this._gltfPack && this._gltfPack.hasSkinAnimation();
+        _isSkinAnimating(index) {
+            const symbols = this.getSymbols();
+            const symbol = symbols[index];
+            return symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index].hasSkinAnimation();
         }
 
         _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
@@ -293,33 +337,46 @@ const GLTFMixin = Base =>
 
 
         //TODO 缺乏GLTF模型的更新逻辑
+        //TODO 缺乏多个symbols的支持
         _initGLTF() {
             if (this._gltfPack) {
                 return;
             }
-            const url = this.getSymbol().url;
+            this._gltfPack = [];
             const renderer = this.layer.getRenderer();
-            if (renderer.isCachePlaced(url)) {
-                return;
-            }
-            const cacheItem = renderer.fetchCache(url);
-            if (cacheItem) {
-                this._gltfPack = cacheItem;
-                this._gltfMeshInfos = cacheItem.getMeshesInfo();
-                this._ready = true;
-                renderer.addToCache(url);
-            } else {
-                renderer.placeCache(url);
-                reshader.GLTFHelper.load(url).then(gltfData => {
-                    const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, this.regl);
-                    this._gltfPack = pack;
-                    this._gltfMeshInfos = pack.getMeshesInfo();
-                    renderer.addToCache(url, pack, pack => {
-                        pack.dispose();
+            const symbols = this.getSymbols();
+            this._loaded = 0;
+            for (let i = 0; i < symbols.length; i++) {
+                const symbol = symbols[i];
+                const url = symbol.url;
+                if (renderer.isCachePlaced(url)) {
+                    continue;
+                }
+                const cacheItem = renderer.fetchCache(url);
+                if (cacheItem) {
+                    this._gltfPack[i] = [cacheItem];
+                    this._gltfMeshInfos[i] = cacheItem.getMeshesInfo();
+                    this._loaded++;
+                    renderer.addToCache(url);
+                } else {
+                    renderer.placeCache(url);
+                    reshader.GLTFHelper.load(url).then(gltfData => {
+                        const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, this.regl);
+                        this._gltfPack[i] = [pack];
+                        this._gltfMeshInfos[i] = pack.getMeshesInfo();
+                        renderer.addToCache(url, pack, pack => {
+                            pack.dispose();
+                        });
+                        this._loaded++;
+                        if (this._loaded >= symbols.length) {
+                            this._ready = true;
+                        }
+                        this.setToRedraw(true);
                     });
-                    this._ready = true;
-                    this.setToRedraw(true);
-                });
+                }
+            }
+            if (this._loaded >= symbols.length) {
+                this._ready = true;
             }
         }
 
@@ -341,23 +398,27 @@ const GLTFMixin = Base =>
 
         delete(/* context */) {
             super.delete();
-            const url = this.getSymbol().url;
+            const url = this.getSymbols()[0].url;
             const renderer = this.layer.getRenderer();
             renderer.removeCache(url);
             if (this._gltfMeshInfos) {
-                this._gltfMeshInfos.forEach(info => {
-                    const { geometry, materialInfo } = info;
-                    if (geometry) {
-                        geometry.dispose();
-                    }
-                    if (materialInfo) {
-                        for (const p in materialInfo) {
-                            if (materialInfo[p] && materialInfo[p].destroy) {
-                                materialInfo[p].destroy();
+                for (let i = 0; i < this._gltfMeshInfos.length; i++) {
+                    const meshInfos = this._gltfMeshInfos[i];
+                    for (let j = 0; j < meshInfos.length; j++) {
+                        const info = meshInfos[i];
+                        const { geometry, materialInfo } = info;
+                        if (geometry) {
+                            geometry.dispose();
+                        }
+                        if (materialInfo) {
+                            for (const p in materialInfo) {
+                                if (materialInfo[p] && materialInfo[p].destroy) {
+                                    materialInfo[p].destroy();
+                                }
                             }
                         }
                     }
-                });
+                }
             }
         }
 

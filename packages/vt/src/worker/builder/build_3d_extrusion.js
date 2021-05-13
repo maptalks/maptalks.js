@@ -1,9 +1,9 @@
-import { getIndexArrayType } from '../../common/Util';
+import { getIndexArrayType, isFnTypeSymbol } from '../../common/Util';
 import { buildExtrudeFaces } from './Extrusion';
 // import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
-import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
 import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
 
@@ -181,8 +181,4 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         fnTypes.aOpacity = aOpacity;
     }
     return fnTypes;
-}
-
-function isFnTypeSymbol(name, symbolDef) {
-    return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
 }

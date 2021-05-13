@@ -472,9 +472,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         delete pluginData.styledFeatures;
         pluginData.features = pluginFeas;
+        let data = pluginData.data;
+        if (Array.isArray(data)) {
+            // 多symbol返回的数据
+            data = data[0];
+        }
         return {
             isUpdated,
-            layer: useDefault ? { layer: pluginData.data.layer, type: pluginData.data.type } : null
+            layer: useDefault ? { layer: data.layer, type: data.type } : null
         };
     }
 
@@ -503,6 +508,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _updatePluginIfNecessary(styleType, i, data) {
+        if (Array.isArray(data)) {
+            // 是个多symbol数据
+            data = data[0];
+        }
         const layer = this.layer;
         let isUpdated = false;
         let style;
@@ -617,6 +626,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
         const plugins = this._getFramePlugins();
+
         if (this.layer.options.collision) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
@@ -627,7 +637,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                plugin.prepareRender(context);
                 plugin.updateCollision(context);
+            });
+        } else {
+            plugins.forEach((plugin) => {
+                if (!hasMesh(plugin)) {
+                    return;
+                }
+                if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
+                    return;
+                }
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                plugin.prepareRender(context);
             });
         }
 

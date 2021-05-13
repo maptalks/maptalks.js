@@ -1,5 +1,5 @@
 import { mat4, vec4, reshader } from '@maptalks/gl';
-import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar } from '../../Util';
+import { setUniformFromSymbol, createColorSetter, wrap, toUint8ColorInGlobalVar, isIconText } from '../../Util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
@@ -28,7 +28,7 @@ const DEFAULT_UNIFORMS = {
 
 export { DEFAULT_UNIFORMS, GAMMA_SCALE };
 
-export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
+export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
     const meshes = [];
 
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -42,12 +42,12 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
     if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
         return meshes;
     }
-    prepareFnTypeData(geometry, symbol.def || symbol, fnTypeConfig);
+    prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
 
 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
-        prepareGeometry(geometry, enableCollision || enableUniquePlacement);
+        prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement);
         const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = geometry.data;
         if (aTextSize) {
             //for collision
@@ -180,14 +180,15 @@ export function createTextMesh(regl, geometry, transform, symbol, fnTypeConfig, 
             defines['HAS_ROTATION'] = 1;
         }
         mesh.setDefines(defines);
+        mesh.properties.symbolIndex = geometry.properties.symbolIndex;
     });
 
     return meshes;
 }
 
 function prepareGeometry(geometry, enableCollision) {
-    const { symbol } = geometry.properties;
-    const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
+    const symbol = this.getSymbol(geometry.properties.symbolIndex);
+    const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
     const { aPosition, aShape } = geometry.data;
     const vertexCount = aPosition.length / geometry.desc.positionSize;
     geometry.properties.aPickingId = geometry.data.aPickingId;
@@ -568,8 +569,8 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     hasCollides = hasCollides === 1 ? 1 : 0;
     const map = this.getMap();
     const geoProps = mesh.geometry.properties;
-    const symbol = geoProps.symbol;
-    const isLinePlacement = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
+    const symbol = this.getSymbol(geoProps.symbolIndex);
+    const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
     const { aTextSize, aTextHaloRadius, aShape } = geoProps;
     const textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize) || DEFAULT_UNIFORMS['textSize'];
     const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
@@ -593,8 +594,8 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
             const shapeY = aShape[chrIdx * 2 + 1];
             if (currentShapeY !== shapeY || i === end - 6) {
                 const lastChrIdx = elements[(i === end - 6 ? i : i - 6)];
-                const tlBox = getLabelBox(BOX0, anchor, projAnchor, mesh, textSize, haloRadius, firstChrIdx, matrix, map),
-                    brBox = getLabelBox(BOX1, anchor, projAnchor, mesh, textSize, haloRadius, lastChrIdx, matrix, map);
+                const tlBox = getLabelBox.call(this, BOX0, anchor, projAnchor, mesh, textSize, haloRadius, firstChrIdx, matrix, map),
+                    brBox = getLabelBox.call(this, BOX1, anchor, projAnchor, mesh, textSize, haloRadius, lastChrIdx, matrix, map);
                 const box = [];
                 box[0] = Math.min(tlBox[0], brBox[0]);
                 box[1] = Math.min(tlBox[1], brBox[1]);
@@ -613,7 +614,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
         //insert every character's box into collision index
         for (let j = start; j < start + charCount * 6; j += 6) {
             //use int16array to save some memory
-            const box = getLabelBox([], anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
+            const box = getLabelBox.call(this, [], anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
             boxes.push(box);
             if (!hasCollides) {
                 const collides = this.isCollides(box);

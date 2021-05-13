@@ -1,6 +1,8 @@
+// import Color from 'color';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
+// import { toUint8ColorInGlobalVar } from '../Util';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 const vert = `
@@ -39,12 +41,12 @@ const SCALE = [1, 1, 1];
 class WireframePainter extends Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
-        if (isFunctionDefinition(this.symbolDef['lineColor'])) {
+        if (isFunctionDefinition(this.symbolDef[0]['lineColor'])) {
             const map = layer.getMap();
             const fn = piecewiseConstant(this.symbolDef['lineColor']);
             this.colorSymbol = properties => fn(map.getZoom(), properties);
         } else {
-            this.colorSymbol = this.getSymbol()['lineColor'] || '#bbb';
+            this.colorSymbol = this.getSymbol({ index: 0 })['lineColor'] || '#bbb';
         }
     }
 
@@ -52,11 +54,14 @@ class WireframePainter extends Painter {
         const { data, indices } = glData;
         const geometry = new reshader.Geometry(data, indices, 0, { 'primitive': 'lines' });
         geometry.generateBuffers(this.regl);
-
-        return geometry;
+        return {
+            geometry,
+            symbolIndex: { index: 0 }
+        };
     }
 
-    createMesh(geometry, transform) {
+    createMesh(geo, transform) {
+        const { geometry } = geo;
         const mesh = new reshader.Mesh(geometry);
         mesh.castShadow = false;
         if (this.sceneConfig.animation) {

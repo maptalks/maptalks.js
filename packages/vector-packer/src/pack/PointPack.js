@@ -125,12 +125,12 @@ function getPackMarkerFormat() {
  */
 export default class PointPack extends VectorPack {
 
-    static splitPointSymbol(symbol) {
+    static splitPointSymbol(symbol, idx = 0) {
         const results = [];
         if (Array.isArray(symbol)) {
             const symbols = symbol;
             for (let i = 0; i < symbols.length; i++) {
-                results.push(...PointPack.splitPointSymbol(symbols[i]));
+                results.push(...PointPack.splitPointSymbol(symbols[i]), i);
             }
             return results;
         }
@@ -151,7 +151,6 @@ export default class PointPack extends VectorPack {
         }
         if (textSymbol) {
             if (iconSymbol) {
-                iconSymbol['isTextIcon'] = true;
                 //用marker的placement和spacing 覆盖文字的
                 textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
                 textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
@@ -166,6 +165,18 @@ export default class PointPack extends VectorPack {
             if (textSymbol) {
                 textSymbol['visible'] = symbol['visible'];
             }
+        }
+        if (iconSymbol) {
+            iconSymbol.index = {
+                index: idx,
+                type: 0
+            };
+        }
+        if (textSymbol) {
+            textSymbol.index = {
+                index: idx,
+                type: 1
+            };
         }
         return results;
     }

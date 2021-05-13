@@ -339,10 +339,10 @@ export default class VectorPack {
         const result = {
             data: arrays,
             // format,
-            indices: elements,
+            indices: this.hasElements() ? elements : null,
             positionSize: 3, //!this.maxAltitude ? 2 : 3,
             buffers,
-            symbol: this.symbolDef
+            symbolIndex: this.symbolDef.index || { index: 0 }
         };
 
         if (featIds.length) {

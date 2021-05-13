@@ -11,31 +11,44 @@ const MAX_LINE_COUNT = 128;
 class LineGradientPainter extends LinePainter {
 
     createGeometry(glData, features) {
-        const geometry = super.createGeometry(glData, features);
-        if (!geometry) {
-            return null;
-        }
-        const symbol = this.getSymbol();
-        const gradProp = symbol['lineGradientProperty'];
-        const featureIndexes = glData.data.aPickingId;
-        const aGradIndex = new Uint8Array(featureIndexes.length);
-        const grads = [];
-        let current = featureIndexes[0];
-        grads.push(features[current].feature.properties[gradProp]);
-        for (let i = 1; i < featureIndexes.length; i++) {
-            if (featureIndexes[i] !== current) {
-                current = featureIndexes[i];
-                grads.push(features[current].feature.properties[gradProp]);
+        const geometries = super.createGeometry(glData, features);
+        for (let i = 0; i < geometries.length; i++) {
+            const { symbolIndex, geometry } = geometries[i];
+            const symbol = this.getSymbol(symbolIndex);
+            const gradProp = symbol['lineGradientProperty'];
+            const featureIndexes = geometry.data.aPickingId;
+            const aGradIndex = new Uint8Array(featureIndexes.length);
+            const grads = [];
+            let current = featureIndexes[0];
+            grads.push(features[current].feature.properties[gradProp]);
+            for (let i = 1; i < featureIndexes.length; i++) {
+                if (featureIndexes[i] !== current) {
+                    current = featureIndexes[i];
+                    grads.push(features[current].feature.properties[gradProp]);
+                }
+                aGradIndex[i] = grads.length - 1;
             }
-            aGradIndex[i] = grads.length - 1;
+            geometry.data.aGradIndex = aGradIndex;
+            geometry.properties.gradients = grads;
         }
-        geometry.data.aGradIndex = aGradIndex;
-        geometry.properties.gradients = grads;
-        return geometry;
+
+        return geometries;
     }
 
-    createMesh(geometry, transform) {
-        prepareFnTypeData(geometry, this.symbolDef, this.fnTypeConfig);
+    createMesh(geo, transform) {
+        if (Array.isArray(geo)) {
+            const meshes = [];
+            for (let i = 0; i < geo.length; i++) {
+                meshes.push(this.createMesh(geo[i], transform));
+            }
+            return meshes;
+        }
+        const { geometry, symbolIndex, ref } = geo;
+        if (ref === undefined) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+        }
 
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
@@ -43,7 +56,8 @@ class LineGradientPainter extends LinePainter {
             tileExtent: geometry.properties.tileExtent
         };
 
-        this.setLineUniforms(uniforms);
+        const symbol = this.getSymbol(symbolIndex);
+        this.setLineUniforms(symbol, uniforms);
 
         const gradients = geometry.properties.gradients;
         let height = gradients.length * 2;
@@ -62,8 +76,9 @@ class LineGradientPainter extends LinePainter {
 
         uniforms['lineGradientTexture'] = texture;
         uniforms['lineGradientTextureHeight'] = texture.height;
-
-        geometry.generateBuffers(this.regl);
+        if (ref === undefined) {
+            geometry.generateBuffers(this.regl);
+        }
 
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -77,12 +92,12 @@ class LineGradientPainter extends LinePainter {
         };
         this.setMeshDefines(defines, geometry);
         mesh.setDefines(defines);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 
-    getFnTypeConfig() {
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
-        const map = this.getMap();
+    createFnTypeConfig(map, symbolDef) {
+        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
         const u16 = new Uint16Array(1);
         return [
             {
@@ -92,7 +107,7 @@ class LineGradientPainter extends LinePainter {
                 size: 1,
                 define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
-                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
+                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }

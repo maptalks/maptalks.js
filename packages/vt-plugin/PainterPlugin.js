@@ -66,6 +66,14 @@ function createPainterPlugin(type, Painter) {
             return null;
         },
 
+        prepareRender: function (context) {
+            var painter = this.painter;
+            if (painter && painter.isVisible()) {
+                return painter.prepareRender(context);
+            }
+            return null;
+        },
+
         endFrame: function (context) {
             var painter = this.painter;
             if (painter && painter.isVisible()) {
@@ -121,16 +129,21 @@ function createPainterPlugin(type, Painter) {
                 if (geometry) {
                     if (Array.isArray(geometry)) {
                         for (let i = 0; i < geometry.length; i++) {
-                            geometry[i].properties.features = features;
-                            this._fillCommonProps(geometry[i], context);
+                            if (geometry[i] && geometry[i].geometry) {
+                                geometry[i].geometry.properties.features = features;
+                                this._fillCommonProps(geometry[i].geometry, context);
+                            }
                         }
-                    } else if (geometry.properties) {
-                        geometry.properties.features = features;
-                        this._fillCommonProps(geometry, context);
-                    }
-                    if (tileCache.excludes !== this._excludes) {
-                        this._filterElements(geometry, tileData.data);
-                        tileCache.excludes = this._excludes;
+                    } if (geometry.geometry) {
+                        const geo = geometry.geometry;
+                        if (geo.properties) {
+                            geo.properties.features = features;
+                            this._fillCommonProps(geo, context);
+                        }
+                        if (tileCache.excludes !== this._excludes) {
+                            this._filterElements(geo, tileData.data);
+                            tileCache.excludes = this._excludes;
+                        }
                     }
                 }
             }

@@ -102,6 +102,7 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
     }
     mesh.setDefines(defines);
     mesh.setLocalTransform(transform);
+    mesh.properties.symbolIndex = geometry.properties.symbolIndex;
     return mesh;
 }
 
@@ -316,7 +317,7 @@ export function prepareLabelIndex(map, iconGeometry, textGeometry, markerTextFit
         const labelShape = buildLabelShape(iconGeometry, textGeometry);
         if (labelShape.length) {
             iconGeometry.properties.labelShape = labelShape;
-            fillTextFitData(map, iconGeometry, textGeometry);
+            fillTextFitData.call(this, map, iconGeometry, textGeometry);
         }
     }
 }
@@ -471,7 +472,7 @@ function buildLabelShape(iconGeometry, textGeometry) {
 }
 
 function fillTextFitData(map, iconGeometry) {
-    const { symbolDef } = iconGeometry.properties;
+    const symbolDef = this.getSymbolDef(iconGeometry.properties.symbolIndex);
     //1. markerTextFit 是否是 fn-type，如果是，则遍历features创建 fitIcons, fitWidthIcons, fitHeightIcons
     //2. 检查data中是否存在aMarkerWidth或aMarkerHeight，如果没有则添加
     //3. 如果textSize是zoomConstant，说明 markerWidth和markerHeight是静态的，提前计算，未来无需再更新
@@ -564,10 +565,10 @@ function fillTextFitData(map, iconGeometry) {
         }
     }
 
-    const { symbolDef: textSymbolDef } = iconGeometry.properties.textGeo.properties;
+    const textSymbolDef = this.getSymbolDef(iconGeometry.properties.textGeo.properties.symbolIndex);
     const textFitFn = interpolated(textSymbolDef['textSize']);
     if (!isFunctionDefinition(textSymbolDef['textSize']) || textFitFn.isZoomConstant && textFitFn.isFeatureConstant) {
-        updateMarkerFitSize(map, iconGeometry);
+        updateMarkerFitSize.call(this, map, iconGeometry);
         props.isFitConstant = true;
         return;
     }
@@ -583,8 +584,10 @@ export function updateMarkerFitSize(map, iconGeometry) {
     if (props.isFitConstant || !props.labelShape || !props.labelShape.length) {
         return;
     }
-    const { symbolDef: markerSymbol } = props;
-    const { symbolDef } = textProps;
+    // const { symbolDef: markerSymbol } = props;
+    // const { symbolDef } = textProps;
+    const markerSymbol = this.getSymbolDef(iconGeometry.properties.symbolIndex);
+    const symbolDef = this.getSymbolDef(textGeometry.properties.symbolIndex);
 
     const textSizeDef = symbolDef['textSize'];
     let textSizeFn;
@@ -694,7 +697,7 @@ export function isMarkerCollides(map, mesh, elements, boxCount, start, end, matr
     //insert every character's box into collision index
     for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
         //use int16array to save some memory
-        const box = getIconBox([], mesh, elements[j], matrix, map);
+        const box = getIconBox.call(this, [], mesh, elements[j], matrix, map);
         iconBoxes.push(box);
         if (!collides) {
             const boxCollides = this.isCollides(box);

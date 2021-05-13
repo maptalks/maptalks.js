@@ -135,3 +135,7 @@ export function fillArray(arr, value, start, end) {
 export function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
 }
+
+export function isIconText(symbolDef) {
+    return symbolDef && (symbolDef.markerFile || symbolDef.markerType) && symbolDef.textName !== undefined;
+}

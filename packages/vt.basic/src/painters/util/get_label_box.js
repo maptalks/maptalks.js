@@ -1,5 +1,5 @@
 import { vec2, vec3 } from '@maptalks/gl';
-import { clamp } from '../../Util';
+import { clamp, isIconText } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
 
@@ -17,8 +17,8 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
-    const symbol = geoProps.symbol;
-    const isAlongLine = (symbol['textPlacement'] === 'line' && !symbol['isIconText']);
+    const symbol = this.getSymbol(geoProps.symbolIndex);
+    const isAlongLine = symbol['textPlacement'] === 'line' && !isIconText(symbol);
 
     const glyphSize = GLYPH_SIZE;
 

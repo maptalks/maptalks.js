@@ -4,7 +4,7 @@ import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
@@ -15,11 +15,6 @@ const DEFAULT_UNIFORMS = {
 };
 
 class FillPainter extends BasicPainter {
-    constructor(...args) {
-        super(...args);
-        this._fnTypeConfig = this._getFnTypeConfig();
-    }
-
     prepareSymbol(symbol) {
         const polygonFill = symbol.polygonFill;
         if (Array.isArray(polygonFill)) {
@@ -39,8 +34,8 @@ class FillPainter extends BasicPainter {
         }
     }
 
-    isBloom() {
-        const symbol = this.getSymbol();
+    isBloom(mesh) {
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return !!symbol['polygonBloom'];
     }
 
@@ -48,18 +43,35 @@ class FillPainter extends BasicPainter {
         return true;
     }
 
-    createMesh(geometry, transform, { tilePoint }) {
+    createMesh(geo, transform, params) {
+        if (Array.isArray(geo)) {
+            const meshes = [];
+            for (let i = 0; i < geo.length; i++) {
+                meshes.push(this.createMesh(geo[i], transform, params));
+            }
+            return meshes;
+        }
+        const { tilePoint } = params;
+        const { geometry, symbolIndex, ref } = geo;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
         this._colorCache = this._colorCache || {};
-        const symbol = this.getSymbol();
         const uniforms = {
             tileExtent: geometry.properties.tileExtent,
             tileRatio: geometry.properties.tileRatio
         };
 
-        prepareFnTypeData(geometry, this.symbolDef, this._fnTypeConfig);
+        const symbol = this.getSymbol(symbolIndex);
+
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
+
+        if (ref === undefined) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+            geometry.generateBuffers(this.regl);
+        }
+
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexInfo) {
             // const resolution = this.getMap().getResolution();
@@ -84,7 +96,7 @@ class FillPainter extends BasicPainter {
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
             this.drawDebugAtlas(iconAtlas);
         }
-        geometry.generateBuffers(this.regl);
+
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
@@ -107,22 +119,13 @@ class FillPainter extends BasicPainter {
 
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 
-    preparePaint(...args) {
-        super.preparePaint(...args);
-        const meshes = this.scene.getMeshes();
-        if (!meshes || !meshes.length) {
-            return;
-        }
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
-    }
-
-    _getFnTypeConfig() {
-        this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
-        this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
-        const map = this.getMap();
+    createFnTypeConfig(map, symbolDef) {
+        const polygonFillFn = piecewiseConstant(symbolDef['polygonFill']);
+        const polygonOpacityFn = interpolated(symbolDef['polygonOpacity']);
         const u8 = new Uint8Array(1);
         return [
             {
@@ -135,7 +138,7 @@ class FillPainter extends BasicPainter {
                 define: 'HAS_COLOR',
                 //
                 evaluate: properties => {
-                    let color = this._polygonFillFn(map.getZoom(), properties);
+                    let color = polygonFillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
@@ -150,18 +153,12 @@ class FillPainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_OPACITY',
                 evaluate: properties => {
-                    const polygonOpacity = this._polygonOpacityFn(map.getZoom(), properties);
+                    const polygonOpacity = polygonOpacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;
                     return u8[0];
                 }
             }
         ];
-    }
-
-    updateSymbol(...args) {
-        super.updateSymbol(...args);
-        this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
-        this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
     }
 
     paint(context) {
@@ -232,7 +229,6 @@ class FillPainter extends BasicPainter {
                 return canvas ? canvas.height : 1;
             }
         };
-        const symbol = this.getSymbol();
         const renderer = this.layer.getRenderer();
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
@@ -266,14 +262,14 @@ class FillPainter extends BasicPainter {
                     // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
                     // 如果mask设为false，会出现 antialias 打开时，会被Ground的ssr覆盖的问题 （绘制时ssr需要对比深度值）
                     // 以上问题已经解决 #284
-                    mask: (context, props) => {
+                    mask: (_, props) => {
                         if (!isNil(this.sceneConfig.depthMask)) {
                             return !!this.sceneConfig.depthMask;
                         }
                         if (props.meshConfig.transparent) {
                             return false;
                         }
-                        const opacity = symbol['polygonOpacity'];
+                        const opacity = props['polygonOpacity'];
                         return !(isNumber(opacity) && opacity < 1);
                     },
                     func: this.sceneConfig.depthFunc || '<='

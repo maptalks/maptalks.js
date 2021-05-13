@@ -14,9 +14,11 @@ const AXIS_FACTOR = [1, -1];
 const SIZE_SCALE = [1, 1];
 
 export function getIconBox(out, mesh, i, matrix, map) {
+
     const uniforms = mesh.material.uniforms;
     const cameraToCenterDistance = map.cameraToCenterDistance;
     const geoProps = mesh.geometry.properties;
+    const symbol = this.getSymbol(geoProps.symbolIndex);
 
     const positionSize = mesh.geometry.desc.positionSize;
     const aAnchor = geoProps.aAnchor;
@@ -38,7 +40,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     // const { aShape, aRotation, aDxDy } = geoProps;
     // const dxdy = vec2.set(DXDY, aDxDy[i * 2], aDxDy[i * 2 + 1]);
 
-    const { aShape, symbol, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign, aRotation } = geoProps;
+    const { aShape, aMarkerDx, aMarkerDy, aMarkerWidth, aMarkerHeight, aPitchAlign, aRotationAlign, aRotation } = geoProps;
     const markerDx = aMarkerDx ? aMarkerDx[i] : symbol['markerDx'];
     const markerDy = aMarkerDy ? aMarkerDy[i] : symbol['markerDy'];
     const pitchWithMap = aPitchAlign ? aPitchAlign[i] : uniforms['pitchWithMap'];

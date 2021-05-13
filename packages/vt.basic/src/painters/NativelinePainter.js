@@ -1,14 +1,15 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend, setUniformFromSymbol, createColorSetter } from '../Util';
-import Painter from './Painter';
+import { setUniformFromSymbol, createColorSetter } from '../Util';
+import BasicPainter from './BasicPainter';
 import vert from './glsl/native-line.vert';
 import frag from './glsl/native-line.frag';
 import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
-class NativeLinePainter extends Painter {
+class NativeLinePainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
+        this.primitive = 'lines';
         if (isFunctionDefinition(this.symbolDef['lineColor'])) {
             const map = layer.getMap();
             const fn = piecewiseConstant(this.symbolDef['lineColor']);
@@ -20,23 +21,27 @@ class NativeLinePainter extends Painter {
         return true;
     }
 
-    createGeometry(glData) {
-        const data = extend({}, glData.data);
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: 'lines', positionSize: glData.positionSize });
-        return geometry;
-
-    }
-
-    createMesh(geometry, transform) {
-        const symbol = this.getSymbol();
+    createMesh(geo, transform) {
+        if (Array.isArray(geo)) {
+            const meshes = [];
+            for (let i = 0; i < geo.length; i++) {
+                meshes.push(this.createMesh(geo[i], transform));
+            }
+            return meshes;
+        }
+        const { geometry, symbolIndex, ref } = geo;
+        const symbol = this.getSymbol(symbolIndex);
         const uniforms = this.getMeshUniforms(geometry, symbol);
-        geometry.generateBuffers(this.regl);
+        if (ref === undefined) {
+            geometry.generateBuffers(this.regl);
+        }
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,
             picking: true
         });
         mesh.setLocalTransform(transform);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 
@@ -141,6 +146,10 @@ class NativeLinePainter extends Painter {
         return {
             projViewMatrix
         };
+    }
+
+    getPrimitive() {
+        return 'lines';
     }
 }
 

@@ -1,5 +1,4 @@
 import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
-import { loadFunctionTypes } from '@maptalks/function-type';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -14,27 +13,30 @@ import linePickingVert from './glsl/text.line.vert';
 import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
-import { updateGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE } from './Constant';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    const symbol = this.getSymbol(mesh.properties.symbolIndex);
+    return renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+    const symbol = this.getSymbol(mesh.properties.symbolIndex);
+    return !renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    const symbol = this.getSymbol(mesh.properties.symbolIndex);
+    return renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isForeground(mesh) && mesh.geometry.properties.symbol['textPlacement'] === 'line';
+    const symbol = this.getSymbol(mesh.properties.symbolIndex);
+    return !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
 };
 
 //label box 或 icon box 对应的element数量
@@ -77,37 +79,52 @@ export default class TextPainter extends CollisionPainter {
         //     e.preventDefault();
 
         // }, false);
-        this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
         this._colorCache = {};
         this._filter0 = shaderFilter0.bind(this);
         this._filter1 = shaderFilterN.bind(this);
         this._lineFilter0 = shaderLineFilter0.bind(this);
         this._lineFilter1 = shaderLineFilterN.bind(this);
         this.isLabelCollides = isLabelCollides.bind(this);
-        const symbolDef = this.symbolDef;
-        if (isFunctionDefinition(symbolDef['textName'])) {
-            this._textNameFn = interpolated(symbolDef['textName']);
+        this._genTextNames();
+    }
+
+    _genTextNames() {
+        this._textNameFn = [];
+        for (let i = 0; i < this.symbolDef.length; i++) {
+            const symbolDef = this.symbolDef[i];
+            if (isFunctionDefinition(symbolDef['textName'])) {
+                this._textNameFn[i] = interpolated(symbolDef['textName']);
+            }
         }
-        this._textHaloRadius = this.symbolDef.textHaloRadius;
+    }
+
+    updateSymbol(...args) {
+        super.updateSymbol(...args);
+        this._genTextNames();
     }
 
     shouldDeleteMeshOnUpdateSymbol(symbol) {
-        if ((symbol.textHaloRadius === 0 || this._textHaloRadius === 0) && symbol.textHaloRadius !== this._textHaloRadius) {
-            return true;
+        if (!Array.isArray(symbol)) {
+            return (symbol.textHaloRadius === 0 || this.symbolDef[0].textHaloRadius === 0) && symbol.textHaloRadius !== this.symbolDef[0].textHaloRadius;
+        } else {
+            for (let i = 0; i < symbol.length; i++) {
+                if (!symbol[i]) {
+                    continue;
+                }
+                if ((symbol[i].textHaloRadius === 0 || this.symbolDef[i].textHaloRadius === 0) && symbol[i].textHaloRadius !== this.symbolDef[i].textHaloRadius) {
+                    return true;
+                }
+            }
         }
         return false;
     }
 
-    updateSymbol(symbol, all) {
-        if (all.textHaloRadius !== undefined) {
-            this._textHaloRadius = all.textHaloRadius;
-        }
-        super.updateSymbol(symbol, all);
-        this._fnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
+    createFnTypeConfig(map, symbolDef) {
+        return getTextFnTypeConfig(map, symbolDef);
     }
 
-    isBloom() {
-        const symbol = this.getSymbol();
+    isBloom(mesh) {
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return !!symbol['textBloom'];
     }
 
@@ -116,45 +133,58 @@ export default class TextPainter extends CollisionPainter {
             return null;
         }
         //pointpack因为可能有splitSymbol，所以返回的glData是个数组，有多个pack
-        let geometry;
-        let pack;
+        const geometries = [];
+
         for (let i = 0; i < glData.length; i++) {
-            pack = glData[i];
+            const pack = glData[i];
             if (pack.glyphAtlas) {
-                geometry = super.createGeometry(pack);
+                const geo = super.createGeometry(pack);
+                if (!geo || !geo.geometry) {
+                    continue;
+                }
+                if (geo) {
+                    geometries.push(geo);
+                }
+                const { geometry } = geo;
+                if (geometry && pack.lineVertex) {
+                    geometry.properties.line = pack.lineVertex;
+                    //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
+                    //现在geometry只会有一个，所以统一为0
+                    geometry.properties.line.id = i;
+                }
             }
         }
-        if (!geometry) {
-            return null;
-        }
-        if (pack.lineVertex) {
-            geometry.properties.line = pack.lineVertex;
-            //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
-            //现在geometry只会有一个，所以统一为0
-            geometry.properties.line.id = 0;
-        }
-        const map = this.getMap();
-        const symbolDef = geometry.properties.symbolDef;
-        // point pack 因为涉及到多symbol，symbol定义是每个geometry分开的
-        geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
-            return [map.getZoom()];
-        });
-        return geometry;
+
+        return geometries;
     }
 
-    createMesh(geometry, transform) {
-        const symbol = this.getSymbol();
-
-        const meshes = createTextMesh.call(this, this.regl, geometry, transform, symbol, this._fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
-        if (meshes.length) {
-            const isLinePlacement = symbol['textPlacement'] === 'line';
-            //tags for picking
-            if (isLinePlacement) {
-                this._hasLineText = true;
-            } else {
-                this._hasNormalText = true;
+    createMesh(geometries, transform) {
+        const enableCollision = this.isEnableCollision();
+        const enableUniquePlacement = this.isEnableUniquePlacement();
+        const meshes = [];
+        for (let i = 0; i < geometries.length; i++) {
+            const geo = geometries[i];
+            if (!geo || !geo.geometry) {
+                continue;
+            }
+            const { geometry, symbolIndex } = geo;
+            geometry.properties.symbolIndex = symbolIndex;
+            const symbol = this.getSymbol(symbolIndex);
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, enableUniquePlacement);
+            if (mesh.length) {
+                const isLinePlacement = symbol['textPlacement'] === 'line';
+                //tags for picking
+                if (isLinePlacement) {
+                    this._hasLineText = true;
+                } else {
+                    this._hasNormalText = true;
+                }
+                meshes.push(...mesh);
             }
         }
+
         return meshes;
     }
 
@@ -164,7 +194,6 @@ export default class TextPainter extends CollisionPainter {
         if (!meshes || !meshes.length) {
             return;
         }
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this._fnTypeConfig, meshes, this.getMap().getZoom());
 
         this._projectedLinesCache = {};
         this._updateLabels(context.timestamp);
@@ -242,7 +271,7 @@ export default class TextPainter extends CollisionPainter {
                 continue;
             }
             const geometry = mesh.geometry;
-            const { symbol }  = geometry.properties;
+            const symbol = this.getSymbol(mesh.properties.symbolIndex);
             mesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
             mesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
 
@@ -301,8 +330,7 @@ export default class TextPainter extends CollisionPainter {
         if (!this.isMeshIterable(mesh)) {
             return false;
         }
-        const geometry = mesh.geometry;
-        const { symbol }  = geometry.properties;
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return symbol['textPlacement'] !== 'line';
     }
 
@@ -416,7 +444,7 @@ export default class TextPainter extends CollisionPainter {
                     const properties = feature.properties || {};
                     properties['$layer'] = feature.layer;
                     properties['$type'] = feature.type;
-                    const textName = this._textNameFn ? this._textNameFn(null, properties) : this.getSymbol()['textName'];
+                    const textName = this._textNameFn[i] ? this._textNameFn[i](null, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
                     const label = resolveText(textName, properties);
                     delete properties['$layer'];
                     delete properties['$type'];
@@ -554,7 +582,7 @@ export default class TextPainter extends CollisionPainter {
             } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne) {
                 offset = LAST_CHAROFFSET;
             } else {
-                offset = getCharOffset(CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
+                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
             }
             if (!offset) {
                 //remove whole text if any char is missed
@@ -609,7 +637,7 @@ export default class TextPainter extends CollisionPainter {
     _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix) {
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
-        const normal = onlyOne ? 0 : getLabelNormal(FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
+        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
 
         return normal;
     }
@@ -691,7 +719,9 @@ export default class TextPainter extends CollisionPainter {
                 this.pickingFBO
             );
             this.picking.filter = mesh => {
-                return mesh.geometry.properties.symbol['textPlacement'] !== 'line';
+                const symbolIndex = mesh.properties.symbolIndex;
+                const symbol = this.getSymbol(symbolIndex);
+                return symbol['textPlacement'] !== 'line';
             };
 
             this._linePicking = new reshader.FBORayPicking(
@@ -706,12 +736,15 @@ export default class TextPainter extends CollisionPainter {
                 this.pickingFBO
             );
             this._linePicking.filter = mesh => {
-                return mesh.geometry.properties.symbol['textPlacement'] === 'line';
+                const symbolIndex = mesh.properties.symbolIndex;
+                const symbol = this.getSymbol(symbolIndex);
+                return symbol['textPlacement'] === 'line';
             };
         }
     }
 
     pick(x, y, tolerance = 1) {
+        //TODO 需要支持多symbol
         if (!this._hasLineText) {
             return super.pick(x, y, tolerance);
         }

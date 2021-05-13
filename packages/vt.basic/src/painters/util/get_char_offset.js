@@ -13,7 +13,8 @@ export function getCharOffset(out, mesh, textSize, line, i, anchor, scale, flip)
     // 与aDxDy和aRotation相加后，写回到 aOffset 和 aRotation 中
 
 
-    const { aGlyphOffset, aSegment, symbol, aTextDx, aTextDy } = mesh.geometry.properties;
+    const { aGlyphOffset, aSegment, aTextDx, aTextDy, symbolIndex } = mesh.geometry.properties;
+    const symbol = this.getSymbol(symbolIndex);
     const textDx = aTextDx ? aTextDx[i] : symbol['textDx'];
     const textDy = aTextDy ? aTextDy[i] : symbol['textDy'];
     const dxdy = vec2.set(DXDY, textDx || 0, textDy || 0);

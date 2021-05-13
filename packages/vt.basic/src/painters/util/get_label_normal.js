@@ -12,12 +12,12 @@ export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, 
     //2. 读取anchor第一个文字和最后一个文字的位置
     //3. 计算flip和vertical的值并设置
 
-    let offset = getCharOffset(FIRST_POINT, mesh, textSize, line, firstChrIdx, labelAnchor, scale, false);
+    let offset = getCharOffset.call(this, FIRST_POINT, mesh, textSize, line, firstChrIdx, labelAnchor, scale, false);
     if (!offset) {
         return null;
     }
     vec3.copy(firstCharOffset, offset);
-    offset = getCharOffset(LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
+    offset = getCharOffset.call(this, LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
     if (!offset) {
         return null;
     }

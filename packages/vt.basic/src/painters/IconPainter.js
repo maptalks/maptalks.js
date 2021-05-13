@@ -1,5 +1,3 @@
-import * as maptalks from 'maptalks';
-import { loadFunctionTypes } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
@@ -7,7 +5,7 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
-import { isNil } from '../Util';
+import { isNil, isIconText } from '../Util';
 import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey, getTextFnTypeConfig } from './util/create_text_painter';
 import CollisionGroup from './CollisionGroup';
 
@@ -61,11 +59,13 @@ class IconPainter extends CollisionPainter {
         this._meshesToCheck = [];
     }
 
-    updateSymbol(...args) {
-        super.updateSymbol(...args);
-        // TODO 需要更新 fn type config
-        // this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
-        // this._iconFnTypeConfig = this._getIconFnTypeConfig();
+    createFnTypeConfig(map, symbolDef) {
+        const icon = getMarkerFnTypeConfig(map, symbolDef);
+        const text = getTextFnTypeConfig(map, symbolDef);
+        return {
+            icon,
+            text
+        };
     }
 
     startFrame(...args) {
@@ -89,36 +89,29 @@ class IconPainter extends CollisionPainter {
                     aPickingId: data.data.aPickingId
                 };
             }
-            const geometry = super.createGeometry(data, features);
-            if (!geometry) {
+            const geo = super.createGeometry(data, features);
+            if (!geo || !geo.geometry) {
                 continue;
             }
-            const symbolDef = geometry.properties.symbolDef;
-            const hash = maptalks.Util.getSymbolStamp(symbolDef);
-            geometry.properties.symbol = loadFunctionTypes(symbolDef, () => {
-                return [map.getZoom()];
-            });
-            let fnTypeConfig;
+            const { geometry, symbolIndex } = geo;
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            geometry.properties.symbolIndex = symbolIndex;
 
-            if (isMarkerGeo(geometry)) {
+            if (this._isMarkerGeo(geometry)) {
                 if (!geometry.properties.iconAtlas) {
                     geometry.properties.isEmpty = true;
                 }
-                fnTypeConfig = this._fnTypeConfigs[hash] || getMarkerFnTypeConfig(map, symbolDef);
-                geometry.properties.fnTypeConfig = fnTypeConfig;
-                prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig);
-            } else if (isTextGeo(geometry)) {
-                const fnTypeConfig = this._fnTypeConfigs[hash] || getTextFnTypeConfig(map, symbolDef);
-                geometry.properties.fnTypeConfig = fnTypeConfig;
-                if (symbolDef.isIconText) {
-                    const iconGeometry = geometries[i - 1];
-                    const markerTextFit = iconGeometry.properties.symbolDef['markerTextFit'];
+                prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig.icon);
+            } else if (this._isTextGeo(geometry)) {
+                if (isIconText(symbolDef)) {
+                    const iconGeometry = geometries[i - 1].geometry;
+                    const markerTextFit = symbolDef['markerTextFit'];
                     iconGeometry.properties.textGeo = geometry;
-                    prepareLabelIndex(map, iconGeometry, geometry, markerTextFit);
+                    prepareLabelIndex.call(this, map, iconGeometry, geometry, markerTextFit);
                 }
             }
-            this._fnTypeConfigs[hash] = fnTypeConfig;
-            geometries.push(geometry);
+            geometries.push(geo);
         }
         return geometries;
     }
@@ -157,16 +150,20 @@ class IconPainter extends CollisionPainter {
     createMesh(geometries, transform) {
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
-            const geometry = geometries[i];
-            if (!geometry) {
+            const geo = geometries[i];
+            if (!geo || !geo.geometry) {
                 continue;
             }
-            const { fnTypeConfig, symbolDef } = geometry.properties;
-            if (isMarkerGeo(geometry)) {
-                const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
+            const { geometry, symbolIndex } = geo;
+            geometry.properties.symbolIndex = symbolIndex;
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const symbol = this.getSymbol(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            if (this._isMarkerGeo(geometry)) {
+                const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig.icon, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh) meshes.push(mesh);
-            } else if (isTextGeo(geometry)) {
-                const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, fnTypeConfig, this.isEnableCollision(), this.isEnableUniquePlacement());
+            } else if (this._isTextGeo(geometry)) {
+                const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.text, this.isEnableCollision(), this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
             this._prepareCollideIndex(geometry);
@@ -196,8 +193,10 @@ class IconPainter extends CollisionPainter {
             if (!geometry) {
                 continue;
             }
-            if (geometry.properties.symbolDef.isTextIcon) {
-                updateMarkerFitSize(this.getMap(), geometry);
+            const { symbolIndex } = geometry.properties;
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            if (isIconText(symbolDef)) {
+                updateMarkerFitSize.call(this, this.getMap(), geometry);
             }
         }
         const z = this.getMap().getZoom();
@@ -206,8 +205,11 @@ class IconPainter extends CollisionPainter {
             if (!geometry) {
                 continue;
             }
-            const { symbolDef, fnTypeConfig } = geometry.properties;
-            updateOneGeometryFnTypeAttrib(this.regl, symbolDef, fnTypeConfig, meshes[i], z);
+            const { symbolIndex } = geometry.properties;
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+
+            updateOneGeometryFnTypeAttrib(this.regl, symbolDef, symbolIndex.type === 0 ? fnTypeConfig.icon : fnTypeConfig.text, meshes[i], z);
             const { aMarkerWidth, aMarkerHeight } = geometry.properties;
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);
@@ -485,7 +487,7 @@ class IconPainter extends CollisionPainter {
     }
 
     isBoxCollides(mesh, elements, boxCount, start, end, matrix) {
-        if (isTextGeo(mesh.geometry)) {
+        if (this._isTextGeo(mesh.geometry)) {
             return isLabelCollides.call(this, 0, mesh, elements, boxCount, start, end, matrix);
         }
         if (mesh.geometry.properties.isEmpty) {
@@ -502,7 +504,7 @@ class IconPainter extends CollisionPainter {
         //insert every character's box into collision index
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
             //use int16array to save some memory
-            const box = getIconBox([], mesh, elements[j], matrix, map);
+            const box = getIconBox.call(this, [], mesh, elements[j], matrix, map);
             iconBoxes.push(box);
             if (!collides) {
                 const boxCollides = this.isCollides(box);
@@ -548,7 +550,7 @@ class IconPainter extends CollisionPainter {
 
     isBloom(mesh) {
         const isMarker = mesh && mesh.material && !isNil(mesh.material.get('markerOpacity'));
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return !!(isMarker ? symbol['markerBloom'] : symbol['textBloom']);
     }
 
@@ -733,11 +735,21 @@ class IconPainter extends CollisionPainter {
     }
 
     getUniqueEntryKey(mesh, idx) {
-        if (!isTextGeo(mesh.geometry)) {
+        if (!this._isTextGeo(mesh.geometry)) {
             return null;
         }
         const { elements } = mesh.geometry.properties;
         return getLabelEntryKey(mesh, elements[idx]);
+    }
+
+    _isMarkerGeo(geo) {
+        const { symbolIndex } = geo.properties;
+        return symbolIndex.type === 0;
+    }
+
+    _isTextGeo(geo) {
+        const { symbolIndex } = geo.properties;
+        return symbolIndex.type === 1;
     }
 }
 
@@ -754,12 +766,3 @@ function sortByLevel(m0, m1) {
 }
 
 export default IconPainter;
-
-function isMarkerGeo(geo) {
-    const symbolDef = geo && geo.properties.symbolDef;
-    return symbolDef && (symbolDef.markerFile || symbolDef.markerType);
-}
-
-function isTextGeo(geo) {
-    return geo && geo.properties.glyphAtlas;
-}

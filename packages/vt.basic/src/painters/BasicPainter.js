@@ -3,9 +3,28 @@ import { reshader } from '@maptalks/gl';
 import { extend } from '../Util';
 
 export default class BasicPainter extends Painter {
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
+    }
+
     createGeometry(glData, features) {
         if (!glData) {
             return null;
+        }
+        if (Array.isArray(glData)) {
+            const geometries = [];
+            for (let i = 0; i < glData.length; i++) {
+                if (glData[i].ref !== undefined) {
+                    geometries.push({
+                        geometry: geometries[glData[i].ref].geometry,
+                        symbolIndex: glData[i].symbolIndex,
+                        ref: glData[i].ref
+                    });
+                } else {
+                    geometries.push(this.createGeometry(glData[i], features));
+                }
+            }
+            return geometries;
         }
         if (glData.iconAtlas && glData.iconAtlas.image) {
             glData.iconAtlas.image.dataType = glData.type;
@@ -15,10 +34,9 @@ export default class BasicPainter extends Painter {
             glData.glyphAtlas.image.type = 'glyph';
         }
         const data = extend({}, glData.data);
-        const geometry = new reshader.Geometry(data, glData.indices);
+        const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: this.getPrimitive(), positionSize: glData.positionSize });
         geometry.properties = {
             features,
-            symbolDef: glData.symbol,
             uniquePickingIds: features ? Object.keys(features) : []
         };
         if (glData.iconAtlas) {
@@ -28,7 +46,14 @@ export default class BasicPainter extends Painter {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;
         }
         extend(geometry.properties, glData.properties);
-        return geometry;
+        return {
+            geometry,
+            symbolIndex: glData.symbolIndex
+        };
+    }
+
+    getPrimitive() {
+        return 'triangles';
     }
 
     getRenderFBO(context) {

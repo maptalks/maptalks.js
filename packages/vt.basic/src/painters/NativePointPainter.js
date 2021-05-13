@@ -1,6 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend } from '../Util';
-import Painter from './Painter';
+import BasicPainter from './BasicPainter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
 import pickingVert from './glsl/native-point.vert';
@@ -12,17 +11,26 @@ const DEFAULT_UNIFORMS = {
     markerSize: 10
 };
 
-class NativePointPainter extends Painter {
+class NativePointPainter extends BasicPainter {
 
-    createGeometry(glData) {
-        const data = extend({}, glData.data);
-        const geometry = new reshader.Geometry(data, null, 0, { primitive: 'points', positionSize: glData.positionSize });
-        return geometry;
+    getPrimitive() {
+        return 'points';
     }
 
-    createMesh(geometry, transform) {
-        const symbol = this.getSymbol();
-        geometry.generateBuffers(this.regl);
+    createMesh(geo, transform) {
+        if (Array.isArray(geo)) {
+            const meshes = [];
+            for (let i = 0; i < geo.length; i++) {
+                meshes.push(this.createMesh(geo[i], transform));
+            }
+            return meshes;
+        }
+        const { geometry, symbolIndex, ref } = geo;
+        const symbol = this.getSymbol(symbolIndex);
+        if (ref === undefined) {
+            geometry.generateBuffers(this.regl);
+        }
+
         this._colorCache = this._colorCache || {};
         const uniforms = {};
         setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
@@ -49,6 +57,7 @@ class NativePointPainter extends Painter {
             picking: true
         });
         mesh.setLocalTransform(transform);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 

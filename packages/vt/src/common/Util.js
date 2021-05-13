@@ -1,4 +1,5 @@
 import { compileStyle as compile } from '@maptalks/feature-filter';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 let id = 0;
 export function uid() {
@@ -192,4 +193,8 @@ export function compileStyle(styles) {
         return style;
     });
     return compile(styles);
+}
+
+export function isFnTypeSymbol(name, symbolDef) {
+    return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
 }

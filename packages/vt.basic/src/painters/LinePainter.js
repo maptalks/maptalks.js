@@ -6,15 +6,11 @@ import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
-import { prepareFnTypeData, updateGeometryFnTypeAttrib } from './util/fn_type_util';
+import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
 
 class LinePainter extends BasicPainter {
-    constructor(...args) {
-        super(...args);
-        this.fnTypeConfig = this.getFnTypeConfig();
-    }
 
     prepareSymbol(symbol) {
         const lineColor = symbol.lineColor;
@@ -35,13 +31,22 @@ class LinePainter extends BasicPainter {
     }
 
     needToRedraw() {
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbols();
         const animation = this.sceneConfig.trailAnimation;
-        return animation && animation.enable || symbol['linePatternAnimSpeed'] || super.needToRedraw();
+        const needToRedraw = animation && animation.enable || super.needToRedraw();
+        if (needToRedraw) {
+            return true;
+        }
+        for (let i = 0; i < symbol.length; i++) {
+            if (symbol['linePatternAnimSpeed']) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    isBloom() {
-        const symbol = this.getSymbol();
+    isBloom(mesh) {
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return !!symbol['lineBloom'];
     }
 
@@ -49,16 +54,29 @@ class LinePainter extends BasicPainter {
         return true;
     }
 
-    createMesh(geometry, transform) {
-        prepareFnTypeData(geometry, this.symbolDef, this.fnTypeConfig);
+    createMesh(geo, transform) {
+        if (Array.isArray(geo)) {
+            const meshes = [];
+            for (let i = 0; i < geo.length; i++) {
+                meshes.push(this.createMesh(geo[i], transform));
+            }
+            return meshes;
+        }
 
-        const symbol = this.getSymbol();
+        const { geometry, symbolIndex, ref } = geo;
+        if (ref === undefined) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+        }
+
+        const symbol = this.getSymbol(symbolIndex);
         const uniforms = {
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
             tileExtent: geometry.properties.tileExtent
         };
-        this.setLineUniforms(uniforms);
+        this.setLineUniforms(symbol, uniforms);
 
         this._colorCache = this._colorCache || {};
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
@@ -105,8 +123,9 @@ class LinePainter extends BasicPainter {
         //     const ndc = [glPos[0] / glPos[3], glPos[1] / glPos[3], glPos[2] / glPos[3]];
         //     console.log(vector, tilePos, glPos, ndc);
         // }
-
-        geometry.generateBuffers(this.regl);
+        if (ref === undefined) {
+            geometry.generateBuffers(this.regl);
+        }
 
         const material = new reshader.Material(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
@@ -119,7 +138,8 @@ class LinePainter extends BasicPainter {
         if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;
         }
-        this._prepareDashDefines(geometry, defines);
+        mesh.properties.symbolIndex = symbolIndex;
+        this._prepareDashDefines(mesh, defines);
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
@@ -143,12 +163,13 @@ class LinePainter extends BasicPainter {
             return;
         }
         const defines = mesh.defines;
-        this._prepareDashDefines(mesh.geometry, defines);
+        this._prepareDashDefines(mesh, defines);
         mesh.setDefines(defines);
     }
 
-    _prepareDashDefines(geometry, defines) {
-        const symbol = this.getSymbol();
+    _prepareDashDefines(mesh, defines) {
+        const geometry = mesh.geometry;
+        const symbol = this.getSymbol(mesh.properties.symbolIndex);
         if (geometry.data['aDasharray'] || Array.isArray(symbol.lineDasharray) &&
             symbol.lineDasharray.reduce((accumulator, currentValue)=> {
                 return accumulator + currentValue;
@@ -165,8 +186,7 @@ class LinePainter extends BasicPainter {
         }
     }
 
-    setLineUniforms(uniforms) {
-        const symbol = this.getSymbol();
+    setLineUniforms(symbol, uniforms) {
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
@@ -174,6 +194,7 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
+        setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
         // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
     }
 
@@ -192,16 +213,6 @@ class LinePainter extends BasicPainter {
         }
     }
 
-    preparePaint(...args) {
-        super.preparePaint(...args);
-        const meshes = this.scene.getMeshes();
-        if (!meshes || !meshes.length) {
-            return;
-        }
-        const zoom = this.getMap().getZoom();
-        updateGeometryFnTypeAttrib(this.regl, this.symbolDef, this.fnTypeConfig, meshes, zoom);
-    }
-
     paint(context) {
         if (context.states && context.states.includesChanged['shadow']) {
             this.shader.dispose();
@@ -210,10 +221,9 @@ class LinePainter extends BasicPainter {
         super.paint(context);
     }
 
-    getFnTypeConfig() {
-        this._aColorFn = piecewiseConstant(this.symbolDef['lineColor']);
-        this._aLineWidthFn = interpolated(this.symbolDef['lineWidth']);
-        const map = this.getMap();
+    createFnTypeConfig(map, symbolDef) {
+        const aColorFn = piecewiseConstant(symbolDef['lineColor']);
+        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
         const u16 = new Uint16Array(1);
         return [
             {
@@ -225,7 +235,7 @@ class LinePainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 evaluate: properties => {
-                    let color = this._aColorFn(map.getZoom(), properties);
+                    let color = aColorFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
@@ -240,18 +250,13 @@ class LinePainter extends BasicPainter {
                 width: 1,
                 define: 'HAS_LINE_WIDTH',
                 evaluate: properties => {
-                    const lineWidth = this._aLineWidthFn(map.getZoom(), properties);
+                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }
             }
         ];
-    }
-
-    updateSymbol(...args) {
-        super.updateSymbol(...args);
-        this.fnTypeConfig = this.getFnTypeConfig();
     }
 
     updateSceneConfig(config) {
@@ -384,7 +389,6 @@ class LinePainter extends BasicPainter {
         // const unit = [resolution * 100 * glScale, 0, 0];
         // const v = vec3.transformMat4([], vec3.add([], map.cameraLookAt, unit), projViewMatrix);
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
-        const symbol = this.getSymbol();
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
             projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
@@ -392,7 +396,6 @@ class LinePainter extends BasicPainter {
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            linePatternAnimSpeed: symbol.linePatternAnimSpeed || 0,
             blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
             cameraPosition: map.cameraPosition
             // projMatrix: map.projMatrix,
