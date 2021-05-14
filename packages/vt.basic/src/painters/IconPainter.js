@@ -762,7 +762,7 @@ class IconPainter extends CollisionPainter {
 // }
 
 function sortByLevel(m0, m1) {
-    return m0.properties.level - m1.properties.level;
+    return m0.properties.level - m1.properties.level || m0.properties.meshKey - m1.properties.meshKey;
 }
 
 export default IconPainter;
