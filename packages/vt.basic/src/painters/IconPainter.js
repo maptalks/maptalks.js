@@ -384,9 +384,13 @@ class IconPainter extends CollisionPainter {
             } else {
                 visible = this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
             }
-            if (enableCollision && visible) {
-                this._markerVisible(mesh, uniquePickingIds[i]);
-                this._fillCollisionIndex(this._savedBoxes);
+            if (enableCollision) {
+                if (visible) {
+                    this._markerVisible(mesh, uniquePickingIds[i]);
+                }
+                if (this._savedBoxes.length) {
+                    this._fillCollisionIndex(this._savedBoxes);
+                }
             }
         }
     }
