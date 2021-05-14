@@ -48,7 +48,7 @@ export default class CollisionPainter extends BasicPainter {
 
     endMeshCollision(meshKey) {
         const meshContext = this._collisionContext.tags[meshKey];
-        if (this._canProceed && meshContext && this._isCachedCollisionStale(meshKey)) {
+        if (this._canProceed && meshContext && this._meshCollisionStale) {
             const map = this.getMap();
             meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0);
             meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1);
@@ -131,6 +131,8 @@ export default class CollisionPainter extends BasicPainter {
             cp0.z = anchor0.z;
             MESH_ANCHORS[0] = cp0;
             MESH_ANCHORS[1] = cp1;
+            cp0.width = anchor0.width;
+            cp0.height = anchor0.height;
             return MESH_ANCHORS;
         } else {
             MESH_ANCHORS[0] = MESH_ANCHORS[1] = null;
