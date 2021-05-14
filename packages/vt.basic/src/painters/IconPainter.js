@@ -252,7 +252,7 @@ class IconPainter extends CollisionPainter {
 
     isMeshIterable(mesh) {
         //halo和正文共享的同一个geometry，无需更新
-        return mesh && mesh.geometry && !!mesh.geometry.properties.iconAtlas && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
+        return mesh && mesh.geometry && !mesh.geometry.properties.isHalo && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
 
