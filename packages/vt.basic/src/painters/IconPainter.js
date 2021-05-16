@@ -124,7 +124,7 @@ class IconPainter extends CollisionPainter {
         if (!this.isEnableCollision()) {
             return;
         }
-        const { aPickingId, elements } = geo.properties;
+        const { aPickingId, elements, aCount } = geo.properties;
         const collideBoxIndex = {};
         if (!elements) {
             // an empty icon
@@ -135,6 +135,10 @@ class IconPainter extends CollisionPainter {
         let index = 0;
         let idx = elements[0];
         let start = 0, current = aPickingId[idx];
+        let charCount = 1;
+        if (aCount) {
+            charCount = aCount[elements[start]];
+        }
         for (let ii = 0; ii <= elements.length; ii += BOX_ELEMENT_COUNT) {
             idx = elements[ii];
             //pickingId发生变化，新的feature出现
@@ -142,10 +146,14 @@ class IconPainter extends CollisionPainter {
                 collideBoxIndex[current] = [
                     start,
                     ii,
+                    (ii - start) / (charCount * BOX_ELEMENT_COUNT),
                     index++
                 ];
                 current = aPickingId[idx];
                 start = ii;
+                if (aCount) {
+                    charCount = aCount[elements[start]];
+                }
             }
         }
         geo.properties.collideBoxIndex = collideBoxIndex;
@@ -275,14 +283,12 @@ class IconPainter extends CollisionPainter {
 
         this._updateIconAndText(meshes);
     }
-
-    _updateBox(mesh, start, end, mvpMatrix, globalBoxIndex) {
-        const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-        const { elements } = mesh.geometry.properties;
-        const collision = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, globalBoxIndex);
-        if (collision.updateIndex) {
-            this._savedBoxes.push(...collision.boxes);
-        }
+    // mesh, meshBoxes, matrix, contextIndex.boxIndex++
+    _updateBox(mesh, meshBoxes, mvpMatrix, globalBoxIndex) {
+        return this.updateBoxCollisionFading(true, mesh, meshBoxes, mvpMatrix, globalBoxIndex);
+        // if (collision.updateIndex) {
+        //     this._savedBoxes.push(...collision.boxes);
+        // }
         // if (groupCount || boxCount > 1) {
         //     if (boxIndex === 0 && (groupCount === 0 || groupIndex === 0)) {
         //         // 如果groupCount不为0，则在groupIndex === 0 时创建
@@ -306,7 +312,6 @@ class IconPainter extends CollisionPainter {
         //     }
         //     return collision.visible;
         // }
-        return collision.visible;
     }
 
     isEnableUniquePlacement() {
@@ -359,71 +364,95 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(mesh, fn) {
-        const enableCollision = this.isEnableCollision();
         const isGroup = mesh instanceof CollisionGroup;
-        let meshes, l;
-        if (isGroup) {
-            meshes = mesh.meshes;
-            l = meshes.length;
+
+        if (!isGroup && (!mesh || !mesh.geometry || mesh.geometry.properties.isEmpty || mesh.properties.isHalo)) {
+            return;
         }
         const uniquePickingIds = isGroup ? mesh.properties.uniquePickingIds : mesh.geometry.properties.uniquePickingIds;
         const context = { boxIndex: 0 };
-        let visible;
         const count = uniquePickingIds.length;
         for (let i = 0; i < count; i++) {
-            if (enableCollision) {
-                this._savedBoxes = [];
-            }
             // const visible = fn.call(this, mesh, uniquePickingIds[i]);
-            if (isGroup) {
-                for (let j = 0; j < l; j++) {
-                    if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
-                        continue;
-                    }
-                    visible = this._iterateMeshBox(meshes[j], uniquePickingIds[i], fn, context);
-                    if (!visible) {
-                        break;
-                    }
-                }
-            } else {
-                visible = this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
-            }
-            if (enableCollision) {
-                if (visible) {
-                    this._markerVisible(mesh, uniquePickingIds[i]);
-                }
-                if (this._savedBoxes.length) {
-                    this._fillCollisionIndex(this._savedBoxes);
-                }
-            }
+            // if (isGroup) {
+            //     // for (let j = 0; j < l; j++) {
+            //     //     if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
+            //     //         continue;
+            //     //     }
+            //     //     visible = this._iterateMeshBox(meshes[j], uniquePickingIds[i], fn, context);
+            //     //     if (!visible) {
+            //     //         break;
+            //     //     }
+            //     // }
+            // } else {
+            //     visible = this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
+            // }
+            this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
         }
     }
 
     _iterateMeshBox(mesh, pickingIndex, fn, contextIndex) {
         const map = this.getMap();
-        const { elements, collideBoxIndex, aCount } = mesh.geometry.properties;
+        // TODO  meshes[0]可能是不合法的数据
+        const { collideBoxIndex } = (mesh.meshes ? mesh.meshes[0] : mesh).geometry.properties;
         const boxInfo = collideBoxIndex[pickingIndex];
         if (!boxInfo) {
             return false;
         }
-        const [start, end] = boxInfo;
-        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        if (aCount) {
-            // a text
-            const charCount = aCount[elements[start]];
-            for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
-                const visible = fn.call(this, mesh, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, contextIndex.boxIndex++);
-                if (!visible) {
-                    return false;
+        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, (mesh.meshes ? mesh.meshes[0] : mesh).localTransform);
+        // IconPainter中，一个数据，只会有一个box，所以不需要循环
+        const isGroup = mesh instanceof CollisionGroup;
+        const meshBoxes = mesh.meshes ? getMeshBoxes(mesh.meshes.length) : getMeshBoxes(1);
+        let updated = false;
+        if (isGroup) {
+            const meshes = mesh.meshes;
+            for (let j = 0; j < meshes.length; j++) {
+                if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
+                    continue;
                 }
+                updated = true;
+                const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
+                const boxInfo = collideBoxIndex[pickingIndex];
+                const [start, end, boxCount] = boxInfo;
+                let charCount = 1;
+                if (aCount) {
+                    charCount = aCount[elements[start]];
+                }
+                const startIndex = start + 0 * charCount * BOX_ELEMENT_COUNT;
+                if (!meshBoxes[j]) {
+                    meshBoxes[j] = {};
+                }
+                meshBoxes[j].mesh = meshes[j];
+                meshBoxes[j].start = startIndex;
+                meshBoxes[j].end = end;//startIndex + charCount * BOX_ELEMENT_COUNT;
+                meshBoxes[j].boxCount = boxCount;
+                meshBoxes[j].allElements = elements;
             }
         } else {
-            for (let ii = start; ii < end; ii += BOX_ELEMENT_COUNT) {
-                const visible = fn.call(this, mesh, ii, ii + BOX_ELEMENT_COUNT, matrix, contextIndex.boxIndex++);
-                if (!visible) {
-                    return false;
-                }
+            updated = true;
+            const { elements, aCount, collideBoxIndex } = mesh.geometry.properties;
+            const [start, end, boxCount] = collideBoxIndex[pickingIndex];
+            let charCount = 1;
+            if (aCount) {
+                charCount = aCount[elements[start]];
             }
+            const startIndex = start + 0 * charCount * BOX_ELEMENT_COUNT;
+            if (!meshBoxes[0]) {
+                meshBoxes[0] = {};
+            }
+            meshBoxes[0].mesh = mesh;
+            meshBoxes[0].start = startIndex;
+            meshBoxes[0].end = end; //startIndex + charCount * BOX_ELEMENT_COUNT;
+            meshBoxes[0].boxCount = boxCount;
+            meshBoxes[0].allElements = elements;
+        }
+        if (!updated) {
+            return false;
+        }
+        const visible = fn.call(this, mesh, meshBoxes, matrix, contextIndex.boxIndex++);
+
+        if (visible) {
+            this._markerVisible(mesh, pickingIndex);
         }
         return true;
     }
@@ -773,3 +802,12 @@ function sortByLevel(m0, m1) {
 }
 
 export default IconPainter;
+
+const MESH_BOXES = [];
+
+function getMeshBoxes(count) {
+    if (!MESH_BOXES[count]) {
+        MESH_BOXES[count] = [];
+    }
+    return MESH_BOXES[count];
+}

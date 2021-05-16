@@ -4,7 +4,7 @@ import { setUniformFromSymbol, wrap, fillArray } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from '../Constant';
 import { createAtlasTexture } from './atlas_util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
-import { getIconBox } from './get_icon_box';
+// import { getIconBox } from './get_icon_box';
 
 const BOX_ELEMENT_COUNT = 6;
 const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据

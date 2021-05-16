@@ -19,11 +19,6 @@ const UINT8 = new Uint8Array(1);
 const COLLISION_OFFSET_THRESHOLD = 2;
 const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
-const EMPTY_BOXES = [];
-
-const INVISIBLE_BOX = { visible: false };
-
-const BOX_RESULT = {};
 
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
@@ -35,12 +30,12 @@ export default class CollisionPainter extends BasicPainter {
         const { meshKey } = mesh.properties;
         const { renderer } = this._cachedInstances;
         const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
-        if (mesh instanceof CollisionGroup) {
+        mesh.properties.isForeground = isForeground;
+        if (mesh instanceof CollisionGroup && mesh.meshes.length) {
+            mesh.properties.level = mesh.meshes[0].properties.level;
             for (let i = 0; i < mesh.meshes.length; i++) {
                 mesh.meshes[i].properties.isForeground = isForeground;
             }
-        } else {
-            mesh.properties.isForeground = isForeground;
         }
 
         this._startTime = performance.now();
@@ -142,9 +137,13 @@ export default class CollisionPainter extends BasicPainter {
         return MESH_ANCHORS;
     }
 
-    updateBoxCollisionFading(boxVisible, mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex) {
-        const { meshKey, isForeground } = mesh.properties;
+    updateBoxCollisionFading(boxVisible, mesh, meshBoxes, mvpMatrix, boxIndex) {
         const { layer, renderer, zoom, collisionTags, isEnableUniquePlacement } = this._cachedInstances;
+        const { meshKey, isForeground } = mesh.properties;
+        if (isEnableUniquePlacement && this._isReplacedPlacement(meshKey, boxIndex)) {
+            return false;
+        }
+        const l = meshBoxes.length;
         // if (this.shouldIgnoreBackground() && !isForeground) {
         //     return INVISIBLE_BOX;
         // }
@@ -152,22 +151,8 @@ export default class CollisionPainter extends BasicPainter {
         // if (this.shouldLimitBox(isForeground) && boxIndex > layer.options['boxLimitOnZoomout']) {
         //     return INVISIBLE_BOX;
         // }
-        if (isEnableUniquePlacement && this._isReplacedPlacement(meshKey, boxIndex)) {
-            return INVISIBLE_BOX;
-        }
-        // let debugging = false;
-        // const label = getLabelContent(mesh, allElements[start]);
-        // if (label === '上庸') {
-        //     // console.log(label);
-        //     // debugging = true;
-        //     // console.log('湖北', isForeground, collision && collision.collides, stamps[boxIndex]);
-        //     // console.log('汉阳大道', tile.z, collision && collision.collides, stamps[boxIndex]);
-        // }
-        // const { symbol } = mesh.geometry.properties;
+
         //为了解决缩小地图时，大量文字会突然挤在一起
-
-        // const canProceed = this._canProceed;
-
         //尽量重用缓存的collision，能提升碰撞检测的性能，但在必要的时候需要刷新缓存的collision
         //这里逻辑如下：
         //## zooming时
@@ -175,12 +160,11 @@ export default class CollisionPainter extends BasicPainter {
         //* zooming时是uncollided，则重新计算collision
         //## 非zooming时
         //* canProceed且collision stale时刷新collision
-
-
-        // let collision = this._getCachedCollision(meshKey, boxIndex);
         let collision = collisionTags[meshKey] && collisionTags[meshKey][boxIndex];
+        const cachedCollision = collision;
         const zoomColliding = this._zooming && collision;
         const isCollidedOnZooming = zoomColliding && collision.collides !== 0;
+
         if (!isCollidedOnZooming && boxVisible) {
             const uncollidedOnZooming = zoomColliding && collision.collides === 0;
             if (this._canProceed || uncollidedOnZooming) {
@@ -188,9 +172,21 @@ export default class CollisionPainter extends BasicPainter {
                     collision = null;
                 }
                 if (!collision) {
-                    collision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+                    collision = cachedCollision || { collides: 0, boxes: [] };
+                    collision.boxes.length = 0;
                     collision.z = zoom;
-
+                    let collides = 0;
+                    for (let i = 0; i < l; i++) {
+                        const { mesh, allElements, boxCount, start, end } = meshBoxes[i];
+                        const childCollision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+                        if (collides === 0) {
+                            collides = childCollision.collides;
+                        }
+                        if (childCollision.boxes) {
+                            collision.boxes.push(...childCollision.boxes);
+                        }
+                    }
+                    collision.collides = collides;
                     this._setCollisionCache(meshKey, boxIndex, collision);
                 } else if (collision.boxes) {
                     //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
@@ -216,8 +212,8 @@ export default class CollisionPainter extends BasicPainter {
                 }
             }
         }
-
         let visible = boxVisible && collision && collision.collides === 0;
+
 
         let fadingOpacity = 1;
         let isFading = false;
@@ -280,32 +276,29 @@ export default class CollisionPainter extends BasicPainter {
             this.addCollisionDebugBox(collision.boxes, collision.collides ? 0 : 1);
         }
 
-        // if (visible || isFading) {
-        //     if (!this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes) {
-        //         // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
-        //         //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
-        //         // }
-        //         this._fillCollisionIndex(collision.boxes, mesh);
-        //     }
-        // }
+        if (visible || isFading) {
+            const { mesh, start } = meshBoxes[0];
+            const symbol = this.getSymbol(mesh.properties.symbolIndex);
+            if (!this._isIgnorePlacement(symbol, mesh, start) && collision && collision.boxes) {
+                // if (getLabelContent(mesh, allElements[start]) === 'Indonesia') {
+                //     console.log(renderer.getFrameTimestamp(), meshKey, JSON.stringify(collision.boxes));
+                // }
+                this._fillCollisionIndex(collision.boxes, mesh);
+            }
+        }
         if (visible) {
             const opacity = UINT8[0] = fadingOpacity * 255;
-            this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
-        }
-        let updateIndex = (visible || isFading) && collision && collision.boxes;
-        if (updateIndex) {
-            const symbol = this.getSymbol(mesh.properties.symbolIndex);
-            updateIndex = !this._isIgnorePlacement(symbol, mesh, start);
+            for (let i = 0; i < l; i++) {
+                const { mesh, allElements, start, end, boxIndex } = meshBoxes[i];
+                this.setCollisionOpacity(mesh, allElements, opacity, start, end, boxIndex);
+            }
         }
         // if (getLabelContent(mesh, allElements[start]) === '会稽山') {
         //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
         //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
 
-        BOX_RESULT.visible = visible && fadingOpacity > 0;
-        BOX_RESULT.updateIndex = updateIndex;
-        BOX_RESULT.boxes = collision && collision.boxes || EMPTY_BOXES;
-        return BOX_RESULT;
+        return visible && fadingOpacity > 0;
     }
 
     isMeshIterable() {
@@ -459,13 +452,17 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _getBoxTimestamps(mesh) {
-        if (!mesh['_fading_timestamps']) {
+        if (!this._boxTimestamps) {
+            this._boxTimestamps = {};
+        }
+        const { meshKey } = mesh.properties;
+        if (!this._boxTimestamps[meshKey]) {
             const { frameTimestamp } = this._cachedInstances;
-            mesh['_fading_timestamps'] = {
+            this._boxTimestamps[meshKey] = {
                 'timestamp': frameTimestamp
             };
         }
-        return mesh['_fading_timestamps'];
+        return this._boxTimestamps[meshKey];
     }
 
     _refreshTimeStamps(timestamp) {
@@ -506,10 +503,12 @@ export default class CollisionPainter extends BasicPainter {
             for (let i = 0; i < meshes.length; i++) {
                 const key = meshes[i].properties.meshKey;
                 if (this._collisionContext) delete this._collisionContext.tags[key];
+                if (this._boxTimestamps) delete this._boxTimestamps[key];
             }
         } else {
             const key = meshes.properties.meshKey;
             if (this._collisionContext) delete this._collisionContext.tags[key];
+            if (this._boxTimestamps) delete this._boxTimestamps[key];
         }
         super.deleteMesh(meshes, keepGeometry);
     }
