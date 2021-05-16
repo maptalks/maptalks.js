@@ -9,6 +9,7 @@ import { getLabelContent } from './get_label_content';
 import { createAtlasTexture } from './atlas_util';
 
 const GAMMA_SCALE = 1;
+const BOX_ELEMENT_COUNT = 6;
 
 const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],
@@ -579,7 +580,9 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
 
     const charCount = boxCount;
-    const boxes = [];
+    // const boxes = [];
+    const { boxes, collision } = this._getCollideBoxes(mesh, start);
+    let boxIndex = 0;
     //1, 获取每个label的collision boxes
     //2, 将每个box在collision index中测试
     //   2.1 如果不冲突，则显示label
@@ -596,12 +599,12 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
                 const lastChrIdx = elements[(i === end - 6 ? i : i - 6)];
                 const tlBox = getLabelBox.call(this, BOX0, anchor, projAnchor, mesh, textSize, haloRadius, firstChrIdx, matrix, map),
                     brBox = getLabelBox.call(this, BOX1, anchor, projAnchor, mesh, textSize, haloRadius, lastChrIdx, matrix, map);
-                const box = [];
+                const box = boxes[boxIndex] = boxes[boxIndex] || [];
+                boxIndex++;
                 box[0] = Math.min(tlBox[0], brBox[0]);
                 box[1] = Math.min(tlBox[1], brBox[1]);
                 box[2] = Math.max(tlBox[2], brBox[2]);
                 box[3] = Math.max(tlBox[3], brBox[3]);
-                boxes.push(box);
                 firstChrIdx = elements[i];
                 currentShapeY = shapeY;
                 if (!hasCollides && this.isCollides(box)) {
@@ -612,10 +615,11 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     } else {
         let offscreenCount = 0;
         //insert every character's box into collision index
-        for (let j = start; j < start + charCount * 6; j += 6) {
+        for (let j = start; j < start + charCount * BOX_ELEMENT_COUNT; j += BOX_ELEMENT_COUNT) {
             //use int16array to save some memory
-            const box = getLabelBox.call(this, [], anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
-            boxes.push(box);
+            const boxArr = boxes[boxIndex] = boxes[boxIndex] || [];
+            boxIndex++;
+            const box = getLabelBox.call(this, boxArr, anchor, projAnchor, mesh, textSize, haloRadius, elements[j], matrix, map);
             if (!hasCollides) {
                 const collides = this.isCollides(box);
                 if (collides === 1) {
@@ -631,10 +635,8 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
             hasCollides = -1;
         }
     }
-    return {
-        collides: hasCollides,
-        boxes
-    };
+    collision.collides = hasCollides;
+    return collision;
 }
 
 export function getLabelEntryKey(mesh, idx) {

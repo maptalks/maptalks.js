@@ -23,6 +23,8 @@ const EMPTY_BOXES = [];
 
 const INVISIBLE_BOX = { visible: false };
 
+const BOX_RESULT = {};
+
 export default class CollisionPainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -299,11 +301,11 @@ export default class CollisionPainter extends BasicPainter {
         //     // console.log(renderer.getFrameTimestamp(), meshKey, visible, 'level:' + mesh.uniforms.level, 'fading:' + isFading, 'opacity:' + fadingOpacity, 'timestart:' + current, 'timeend:' + stamps[boxIndex]);
         //     console.log(visible, 'level:' + mesh.uniforms.level, boxIndex, fadingOpacity, meshKey);
         // }
-        return {
-            visible: visible && fadingOpacity > 0,
-            updateIndex,
-            boxes: collision && collision.boxes || EMPTY_BOXES
-        };
+
+        BOX_RESULT.visible = visible && fadingOpacity > 0;
+        BOX_RESULT.updateIndex = updateIndex;
+        BOX_RESULT.boxes = collision && collision.boxes || EMPTY_BOXES;
+        return BOX_RESULT;
     }
 
     isMeshIterable() {
@@ -973,6 +975,33 @@ export default class CollisionPainter extends BasicPainter {
     _isReplacedPlacement(meshKey, index) {
         return this._replacedPlacements && this._replacedPlacements[meshKey] && this._replacedPlacements[meshKey][index];
     }
+
+    _getCollideBoxes(mesh, start) {
+        const { symbolIndex } = mesh.properties;
+        const type = symbolIndex.type || 0;
+        let allBoxes = mesh.properties['_collidesBoxes'];
+        if (!allBoxes) {
+            allBoxes = mesh.properties['_collidesBoxes'] = [];
+        }
+        let iconBoxes = allBoxes[symbolIndex.index];
+        if (!iconBoxes) {
+            iconBoxes = mesh.properties['_collidesBoxes'] = [];
+        }
+        if (!iconBoxes[type]) {
+            iconBoxes[type] = [];
+        }
+        iconBoxes = iconBoxes[type];
+        const index = start / 6;
+        if (!iconBoxes[index]) {
+            const boxes = [];
+            iconBoxes[index] = {
+                boxes,
+                collision: { boxes }
+            };
+        }
+        return iconBoxes[index];
+    }
+
 }
 
 const UNIQUE_TOLERANCE = 10;

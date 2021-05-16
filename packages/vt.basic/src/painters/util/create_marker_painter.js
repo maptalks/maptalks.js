@@ -689,32 +689,3 @@ export function updateMarkerFitSize(map, iconGeometry) {
         }
     }
 }
-
-export function isMarkerCollides(map, mesh, elements, boxCount, start, end, matrix) {
-    const iconBoxes = [];
-    let collides = 0;
-    let offscreenCount = 0;
-    //insert every character's box into collision index
-    for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
-        //use int16array to save some memory
-        const box = getIconBox.call(this, [], mesh, elements[j], matrix, map);
-        iconBoxes.push(box);
-        if (!collides) {
-            const boxCollides = this.isCollides(box);
-            if (boxCollides === 1) {
-                collides = 1;
-            } else if (boxCollides === -1) {
-                //offscreen
-                offscreenCount++;
-            }
-        }
-    }
-    if (offscreenCount === boxCount) {
-        //所有box都offscreen时，可认为存在碰撞
-        collides = -1;
-    }
-    return {
-        collides,
-        boxes: iconBoxes
-    };
-}

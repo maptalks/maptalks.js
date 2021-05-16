@@ -41,6 +41,10 @@ const TEXT_FILTER_N = function (mesh) {
 //temparary variables
 const PROJ_MATRIX = [];
 
+const EMPTY_COLLISION = {
+    colliides: -1
+};
+
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -495,21 +499,22 @@ class IconPainter extends CollisionPainter {
             return isLabelCollides.call(this, 0, mesh, elements, boxCount, start, end, matrix);
         }
         if (mesh.geometry.properties.isEmpty) {
-            return {
-                colliides: -1
-            };
+            return EMPTY_COLLISION;
         }
 
         const map = this.getMap();
-        const iconBoxes = [];
+        const { boxes: iconBoxes, collision } = this._getCollideBoxes(mesh, start);
         let collides = 0;
 
         let offscreenCount = 0;
+        let boxIndex = 0;
         //insert every character's box into collision index
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
+            const boxArr = iconBoxes[boxIndex] = iconBoxes[boxIndex] || [];
+            boxIndex++;
             //use int16array to save some memory
-            const box = getIconBox.call(this, [], mesh, elements[j], matrix, map);
-            iconBoxes.push(box);
+            const box = getIconBox.call(this, boxArr, mesh, elements[j], matrix, map);
+            // iconBoxes.push(box);
             if (!collides) {
                 const boxCollides = this.isCollides(box);
                 if (boxCollides === 1) {
@@ -524,10 +529,8 @@ class IconPainter extends CollisionPainter {
             //所有box都offscreen时，可认为存在碰撞
             collides = -1;
         }
-        return {
-            collides,
-            boxes: iconBoxes
-        };
+        collision.collides = collides;
+        return collision;
     }
 
     deleteMesh(meshes, keepGeometry) {
