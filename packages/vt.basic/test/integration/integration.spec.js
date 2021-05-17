@@ -220,6 +220,15 @@ describe('vector tile integration specs', () => {
         }
     });
 
+    context('native line specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'native-line'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
+
     context('default render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'default'));
         for (const p in specs) {
