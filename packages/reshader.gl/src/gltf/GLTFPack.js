@@ -89,6 +89,9 @@ export default class GLTFPack {
         const json = this.gltf;
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
         const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * 0.001);
+        if (!this._startTime) {
+            this._startTime = time;
+        }
         json.scenes[0].nodes.forEach(node => {
             this._updateNodeMatrix(animTime, node);
         });
@@ -101,6 +104,12 @@ export default class GLTFPack {
                 this._fillMorphWeights(node.morphWeights);
             }
         }
+    }
+
+    isFirstLoop(time, speed) {
+        const json = this.gltf;
+        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
+        return ((time - this._startTime) * speed * 0.001) / (timespan.max - timespan.min) < 1;
     }
 
     hasSkinAnimation() {
