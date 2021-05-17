@@ -190,7 +190,7 @@ class IconPainter extends CollisionPainter {
                 const group = new CollisionGroup(meshes);
                 group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
                 group.properties.meshKey = meshes[0].properties.meshKey;
-                group.properties.level = meshes[0].geometry.properties.level;
+                group.properties.level = meshes[0].properties.level;
                 this._meshesToCheck.push(group);
             }
         } else {
@@ -402,7 +402,7 @@ class IconPainter extends CollisionPainter {
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, (mesh.meshes ? mesh.meshes[0] : mesh).localTransform);
         // IconPainter中，一个数据，只会有一个box，所以不需要循环
         const isGroup = mesh instanceof CollisionGroup;
-        const meshBoxes = mesh.meshes ? getMeshBoxes(mesh.meshes.length) : getMeshBoxes(1);
+        const meshBoxes = mesh.meshes ? this._getMeshBoxes(mesh.meshes.length) : this._getMeshBoxes(1);
         let updated = false;
         if (isGroup) {
             const meshes = mesh.meshes;
@@ -802,12 +802,3 @@ function sortByLevel(m0, m1) {
 }
 
 export default IconPainter;
-
-const MESH_BOXES = [];
-
-function getMeshBoxes(count) {
-    if (!MESH_BOXES[count]) {
-        MESH_BOXES[count] = [];
-    }
-    return MESH_BOXES[count];
-}

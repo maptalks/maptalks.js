@@ -32,7 +32,6 @@ export default class CollisionPainter extends BasicPainter {
         const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
         mesh.properties.isForeground = isForeground;
         if (mesh instanceof CollisionGroup && mesh.meshes.length) {
-            mesh.properties.level = mesh.meshes[0].properties.level;
             for (let i = 0; i < mesh.meshes.length; i++) {
                 mesh.meshes[i].properties.isForeground = isForeground;
             }
@@ -1000,6 +999,18 @@ export default class CollisionPainter extends BasicPainter {
         }
         return iconBoxes[index];
     }
+
+    _getMeshBoxes(count) {
+        let meshBoxes = this._MeshBoxes;
+        if (!meshBoxes) {
+            meshBoxes = this._MeshBoxes = [];
+        }
+        if (!meshBoxes[count]) {
+            meshBoxes[count] = [];
+        }
+        return meshBoxes[count];
+    }
+
 
 }
 
