@@ -237,20 +237,18 @@ export default class TextPainter extends CollisionPainter {
         const map = this.getMap();
         const bearing = -map.getBearing() * Math.PI / 180;
         const planeMatrix = mat2.fromRotation(PLANE_MATRIX, bearing);
-        const fn = (elements, visElemts, mesh, start, end, mvpMatrix, labelIndex) => {
+        //boxVisible, mesh, meshBoxes, mvpMatrix, boxIndex
+        const fn = (visElemts, meshBoxes, mvpMatrix, labelIndex) => {
             // debugger
-            const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-            const collision = this.updateBoxCollisionFading(true, mesh, elements, boxCount, start, end, mvpMatrix, labelIndex);
-            if (collision.visible) {
+            const { start, end, mesh, allElements: elements } = meshBoxes[0];
+            const visible = this.updateBoxCollisionFading(true, mesh, meshBoxes, mvpMatrix, labelIndex);
+            if (visible) {
                 let count = visElemts.count;
                 for (let i = start; i < end; i++) {
                     // visElemts.push(elements[i]);
                     visElemts[count++] = elements[i];
                 }
                 visElemts.count = count;
-            }
-            if (collision.updateIndex) {
-                this._fillCollisionIndex(collision.boxes);
             }
         };
         const enableCollision = this.isEnableCollision();
@@ -304,8 +302,8 @@ export default class TextPainter extends CollisionPainter {
                 const { elements, aOpacity } = geometry.properties;
                 const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new elements.constructor(elements.length);
                 visElemts.count = 0;
-                this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex, label) => {
-                    fn(elements, visElemts, mesh, start, end, mvpMatrix, labelIndex, label);
+                this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex, label) => {
+                    fn(visElemts, meshBoxes, mvpMatrix, labelIndex, label);
                 });
 
                 if (aOpacity && aOpacity.dirty) {
@@ -382,7 +380,8 @@ export default class TextPainter extends CollisionPainter {
             visElemts.count = 0;
         }
 
-        this.forEachBox(mesh, (mesh, start, end, mvpMatrix, labelIndex) => {
+        this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex) => {
+            const { start, end } = meshBoxes[0];
             let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             // const meshKey = mesh.properties.meshKey;
             // let collision = this.getCachedCollision(meshKey, labelIndex);
@@ -394,17 +393,13 @@ export default class TextPainter extends CollisionPainter {
                 //offset 计算 miss，则立即隐藏文字，不进入fading
                 return;
             }
-            const boxCount = (end - start) / BOX_ELEMENT_COUNT;
-            const collision = this.updateBoxCollisionFading(visible, mesh, allElements, boxCount, start, end, mvpMatrix, labelIndex);
-            if (collision.visible) {
+            visible = this.updateBoxCollisionFading(visible, mesh, meshBoxes, mvpMatrix, labelIndex);
+            if (visible) {
                 let count = visElemts.count;
                 for (let i = start; i < end; i++) {
                     visElemts[count++] = allElements[i];
                 }
                 visElemts.count = count;
-            }
-            if (collision.updateIndex) {
-                this._fillCollisionIndex(collision.boxes);
             }
         });
         if (enableCollision && (visElemts.count !== allElements.length || geometry.count !== visElemts.count)) {
@@ -430,6 +425,10 @@ export default class TextPainter extends CollisionPainter {
         const { aPickingId, aCount, features, elements } = mesh.geometry.properties;
         const enableUniquePlacement = this.isEnableUniquePlacement();
 
+        const meshBox = this._getMeshBoxes(1);
+        meshBox[0].allElements = elements;
+        meshBox[0].mesh = mesh;
+
         let index = 0;
 
         let idx = elements[0];
@@ -452,8 +451,12 @@ export default class TextPainter extends CollisionPainter {
                 }
                 const end = i/*  === elements.length - 6 ? elements.length : i */;
                 const charCount = aCount[elements[start]];
+
                 for (let ii = start; ii < end; ii += charCount * BOX_ELEMENT_COUNT) {
-                    fn.call(this, mesh, ii, ii + charCount * BOX_ELEMENT_COUNT, matrix, index++);
+                    meshBox[0].start = ii;
+                    meshBox[0].end = ii + charCount * BOX_ELEMENT_COUNT;
+                    meshBox[0].boxCount = charCount;
+                    fn.call(this, mesh, meshBox, matrix, index++);
                 }
                 current = aPickingId[idx];
                 start = i;

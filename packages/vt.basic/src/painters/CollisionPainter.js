@@ -807,7 +807,9 @@ export default class CollisionPainter extends BasicPainter {
             return;
         }
         const meshes = this.scene.getMeshes();
-        const fn = (mesh, start, end, matrix, boxIndex) => {
+        const fn = (mesh, meshBoxes, matrix, boxIndex) => {
+            // 目前支持 unique placement 的都是单symbol的情况。
+            const { start, end } = meshBoxes[0];
             //初始化label，
             const geoProps = mesh.geometry.properties;
             const elements = geoProps.elements;
@@ -1007,6 +1009,9 @@ export default class CollisionPainter extends BasicPainter {
         }
         if (!meshBoxes[count]) {
             meshBoxes[count] = [];
+            for (let i = 0; i < count; i++) {
+                meshBoxes[count][i] = {};
+            }
         }
         return meshBoxes[count];
     }
