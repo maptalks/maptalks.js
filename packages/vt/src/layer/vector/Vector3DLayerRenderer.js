@@ -605,6 +605,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     cancelOutline() {
         delete this._outlineAll;
         delete this._outlineFeatures;
+        this.setToRedraw();
     }
 
     isEnableWorkAround(key) {

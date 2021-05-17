@@ -146,6 +146,15 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         return this;
     }
 
+    cancelOutline() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.cancelOutline();
+        return this;
+    }
+
     /**
      * Export the Layer's JSON. <br>
      * @return {Object} layer's JSON
