@@ -134,6 +134,65 @@ describe('update style specs', () => {
         });
     });
 
+    it('should can update multiple symbol', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: [
+                    {
+                        lineColor: '#00f', lineWidth: 8, lineOpacity: 1
+                    },
+                    {
+                        lineColor: '#f00', lineWidth: 8, lineOpacity: 1
+                    },
+                ]
+            }
+        ];
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbol(0, [null, {
+                lineColor: '#0f0',
+                lineOpacity: 1
+            }]);
+            assert(layer.options.style[0].symbol[1].lineColor === '#0f0');
+        }, false, style);
+    });
+
+    it('should can set visible of multiple symbol', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: [
+                    {
+                        lineColor: '#00f', lineWidth: 8, lineOpacity: 1
+                    },
+                    {
+                        lineColor: '#f00', lineWidth: 8, lineOpacity: 1
+                    },
+                ]
+            }
+        ];
+        assertChangeStyle(done, [0, 0, 255, 255], layer => {
+            layer.updateSymbol(0, [null, {
+                visible: 0
+            }]);
+            assert(layer.options.style[0].symbol[1].visible === 0);
+        }, false, style);
+    });
+
     it('should hide by setting visible to false', done => {
         assertChangeStyle(done, [0, 0, 0, 0], layer => {
             layer.updateSymbol(0, {

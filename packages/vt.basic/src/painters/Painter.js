@@ -265,6 +265,9 @@ class Painter {
             }
             const { symbolIndex } = meshes[i].properties;
             const symbolDef = this.getSymbolDef(symbolIndex);
+            if (!symbolDef) {
+                continue;
+            }
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             updateOneGeometryFnTypeAttrib(this.regl, symbolDef, fnTypeConfig, meshes[i], z);
         }
@@ -488,7 +491,9 @@ class Painter {
             all = [all];
         }
         for (let i = 0; i < symbolDef.length; i++) {
-            this._updateChildSymbol(i, symbolDef[i], all[i]);
+            if (symbolDef[i]) {
+                this._updateChildSymbol(i, symbolDef[i], all[i]);
+            }
         }
 
 
