@@ -184,27 +184,31 @@ class IconPainter extends CollisionPainter {
     }
 
     addMesh(meshes) {
-        if (Array.isArray(meshes)) {
-            const l = meshes.length;
-            if (l) {
-                const group = new CollisionGroup(meshes);
-                group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
-                group.properties.meshKey = meshes[0].properties.meshKey;
-                group.properties.level = meshes[0].properties.level;
-                this._meshesToCheck.push(group);
+        const isEnableCollision = this.isEnableCollision();
+        if (isEnableCollision) {
+            if (Array.isArray(meshes)) {
+                const l = meshes.length;
+                if (l) {
+                    const group = new CollisionGroup(meshes);
+                    group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
+                    group.properties.meshKey = meshes[0].properties.meshKey;
+                    group.properties.level = meshes[0].properties.level;
+                    this._meshesToCheck.push(group);
+                }
+            } else {
+                this._meshesToCheck.push(meshes);
             }
-        } else {
-            this._meshesToCheck.push(meshes);
         }
+
         const meshModel = meshes;
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
         }
         for (let i = 0; i < meshes.length; i++) {
-            const geometry = meshes[i].geometry;
-            if (!geometry) {
+            if (!this.isMeshIterable(meshes[i])) {
                 continue;
             }
+            const geometry = meshes[i].geometry;
             const { symbolIndex } = geometry.properties;
             const symbolDef = this.getSymbolDef(symbolIndex);
             if (isIconText(symbolDef)) {
@@ -213,10 +217,10 @@ class IconPainter extends CollisionPainter {
         }
         const z = this.getMap().getZoom();
         for (let i = 0; i < meshes.length; i++) {
-            const geometry = meshes[i] && meshes[i].geometry;
-            if (!geometry) {
+            if (!this.isMeshIterable(meshes[i])) {
                 continue;
             }
+            const geometry = meshes[i].geometry;
             const { symbolIndex } = geometry.properties;
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
@@ -232,7 +236,7 @@ class IconPainter extends CollisionPainter {
                 aMarkerHeight.dirty = false;
             }
         }
-        return super.addMesh(meshModel);
+        super.addMesh(meshModel);
     }
 
     updateCollision(context) {
@@ -264,7 +268,9 @@ class IconPainter extends CollisionPainter {
 
     isMeshIterable(mesh) {
         //halo和正文共享的同一个geometry，无需更新
-        return mesh && mesh.geometry && !mesh.geometry.properties.isHalo && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
+        return mesh && mesh.geometry && !mesh.geometry.properties.isEmpty &&
+            !mesh.geometry.properties.isHalo && this.isMeshVisible(mesh) &&
+            !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
 
@@ -305,7 +311,7 @@ class IconPainter extends CollisionPainter {
                 if (!mesh.meshes.length) {
                     continue;
                 }
-            } else if (!mesh.geometry || !mesh.geometry.properties.isEmpty && !this.isMeshIterable(mesh)) {
+            } else if (!this.isMeshIterable(mesh)) {
                 continue;
             }
             const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
@@ -369,7 +375,7 @@ class IconPainter extends CollisionPainter {
             const meshes = mesh.meshes;
             let count = 0;
             for (let j = 0; j < meshes.length; j++) {
-                if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
+                if (!this.isMeshIterable(meshes[j])) {
                     continue;
                 }
                 count++;
@@ -380,7 +386,7 @@ class IconPainter extends CollisionPainter {
             meshBoxes = this._getMeshBoxes(count);
             let index = 0;
             for (let j = 0; j < meshes.length; j++) {
-                if (!meshes[j] || !meshes[j].geometry || meshes[j].geometry.properties.isEmpty || meshes[j].properties.isHalo) {
+                if (!this.isMeshIterable(meshes[j])) {
                     continue;
                 }
                 updated = true;

@@ -76,6 +76,26 @@ class Painter {
         return false;
     }
 
+    isMeshVisible(mesh) {
+        const symbolIndex = mesh && mesh.properties && mesh.properties.symbolIndex;
+        if (!symbolIndex) {
+            return false;
+        }
+        const visibleFns = this._visibleFn;
+        const i = symbolIndex.index;
+        let visible;
+        if (visibleFns[i]) {
+            if (!visibleFns[i].isFeatureConstant) {
+                return true;
+            } else {
+                visible = visibleFns[i](this.getMap().getZoom());
+            }
+        } else {
+            visible = this.getSymbol(symbolIndex).visible;
+        }
+        return visible !== false && visible !== 0;
+    }
+
     needToRedraw() {
         return this._redraw;
     }
@@ -180,6 +200,11 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+        if (Array.isArray(meshes)) {
+            meshes = meshes.filter(m => this.isMeshVisible(m));
+        } else if (!this.isMeshVisible(meshes)) {
+            return;
+        }
 
         if (Array.isArray(meshes)) {
             meshes.forEach(mesh => {
@@ -208,7 +233,7 @@ class Painter {
         }
 
         this.scene.addMesh(meshes);
-        return meshes;
+        return;
     }
 
     updateCollision(/*context*/) {

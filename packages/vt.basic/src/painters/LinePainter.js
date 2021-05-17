@@ -155,7 +155,7 @@ class LinePainter extends BasicPainter {
                 this._prepareMesh(m);
             });
         }
-        return super.addMesh(...args);
+        super.addMesh(...args);
     }
 
     _prepareMesh(mesh) {
