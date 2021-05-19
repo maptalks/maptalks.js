@@ -156,7 +156,7 @@ describe('vector layers update style specs', () => {
     it('should can update properties based text', done => {
         const marker = new maptalks.Marker([0, 0], {
             symbol: {
-                textName: ''
+                textName: '_'
             }
         });
 

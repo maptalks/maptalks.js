@@ -10,7 +10,11 @@ const defaultOptions = {
     geometryEvents: true,
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
-    forceRenderOnRotating: true
+    forceRenderOnRotating: true,
+    workarounds: {
+        //#94, text rendering crashes on windows with intel gpu
+        'win-intel-gpu-crash': true
+    }
 };
 
 class Vector3DLayer extends maptalks.OverlayLayer {
@@ -125,24 +129,14 @@ class Vector3DLayer extends maptalks.OverlayLayer {
     }
 
     outline(geoIds) {
-        if (!Array.isArray(geoIds)) {
+        if (!Array.isArray(geoIds) || !geoIds.length) {
             return this;
         }
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        const ids = [];
-        for (let i = 0; i < geoIds.length; i++) {
-            const geo = this.getGeometryById(geoIds[i]);
-            if (geo) {
-                ids.push(geo[ID_PROP]);
-            }
-        }
-        if (ids.length) {
-            renderer.outline(ids);
-        }
-
+        renderer.outline(geoIds);
         return this;
     }
 

@@ -1,11 +1,13 @@
 import { extend } from '../../../common/Util';
 import * as maptalks from 'maptalks';
+import { KEY_IDX } from '../../../common/Constant';
 
 const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
 
 //需要解决精度问题
-export function convertToFeature(geo) {
+export function convertToFeature(geo, kidGen) {
+    const keyName = (KEY_IDX + '').trim();
     const map = geo.getMap();
     const glZoom = map.getGLZoom();
     let coordinates = geo.getCoordinates();
@@ -50,6 +52,7 @@ export function convertToFeature(geo) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']();
+    const kid = kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
         const features = [];
@@ -61,14 +64,16 @@ export function convertToFeature(geo) {
                     props['_symbol_' + p] = symbol[i][p];
                 }
             }
-            features.push({
+            const fea = {
                 type,
-                id: geo[ID_PROP],
+                id: kid,
                 properties: props,
                 visible: geo.isVisible(),
                 geometry,
                 extent: Infinity
-            });
+            };
+            fea[keyName] = kid;
+            features.push(fea);
         }
         return features;
     } else {
@@ -78,13 +83,14 @@ export function convertToFeature(geo) {
             }
         }
     }
-
-    return {
+    const feature = {
         type,
-        id: geo[ID_PROP],
+        id: kid,
         properties,
         visible: geo.isVisible(),
         geometry,
         extent: Infinity
     };
+    feature[keyName] = kid;
+    return feature;
 }

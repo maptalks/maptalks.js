@@ -109,10 +109,12 @@ class IconPainter extends CollisionPainter {
                 prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig.icon);
             } else if (this._isTextGeo(geometry)) {
                 if (isIconText(symbolDef)) {
-                    const iconGeometry = geometries[i - 1].geometry;
-                    const markerTextFit = symbolDef['markerTextFit'];
-                    iconGeometry.properties.textGeo = geometry;
-                    prepareLabelIndex.call(this, map, iconGeometry, geometry, markerTextFit);
+                    const iconGeometry = geometries[i - 1] && geometries[i - 1].geometry;
+                    if (iconGeometry) {
+                        const markerTextFit = symbolDef['markerTextFit'];
+                        iconGeometry.properties.textGeo = geometry;
+                        prepareLabelIndex.call(this, map, iconGeometry, geometry, markerTextFit);
+                    }
                 }
             }
             geometries.push(geo);
