@@ -64,9 +64,10 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             }
         }
 
+        const symbol = extend({}, SYMBOL);
         const promises = [
-            this.createMesh(feas, atlas && atlas[0], center),
-            this.createMesh(alphaFeas, atlas && atlas[1], center)
+            this.createMesh(this.painter, symbol, feas, atlas && atlas[0], center),
+            this.createMesh(this.painter, symbol, alphaFeas, atlas && atlas[1], center)
         ];
 
         Promise.all(promises).then(mm => {
@@ -94,9 +95,6 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
         const FillPainter = Vector3DLayer.get3DPainterClass('fill');
         this.painterSymbol = extend({}, SYMBOL);
         const painter = new FillPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
-        if (this.layer.getGeometries()) {
-            this.onGeometryAdd(this.layer.getGeometries());
-        }
         return painter;
     }
 }

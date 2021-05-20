@@ -1,11 +1,6 @@
 import * as maptalks from 'maptalks';
-import { PointPack } from '@maptalks/vector-packer';
-import { mat4, vec3 } from '@maptalks/gl';
-import { extend, isNil } from '../../common/Util';
-import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
-import Promise from '../../common/Promise';
 import { fromJSON } from './util/from_json';
 
 const defaultOptions = {
@@ -75,12 +70,6 @@ class PointLayerRenderer extends Vector3DLayerRenderer {
         }
         super.onGeometryAdd(geometries);
     }
-
-    buildMesh(atlas) {
-        const { features, center } = this._getFeaturesToRender();
-        this._buildMarkerMesh(features, center, atlas);
-    }
-
 }
 
 PointLayer.registerRenderer('gl', PointLayerRenderer);

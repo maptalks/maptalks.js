@@ -220,3 +220,56 @@ export const TEXT_SYMBOL = {
         property: '_symbol_textIgnorePlacement'
     }
 };
+
+export const LINE_SYMBOL = {
+    lineWidth: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineWidth'
+    },
+    lineColor: {
+        type: 'identity',
+        default: 20,
+        property: '_symbol_lineColor'
+    },
+    lineDx: {
+        type: 'identity',
+        default: 20,
+        property: '_symbol_lineDx'
+    },
+    lineDy: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineDy'
+    },
+    linePatternFile: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_linePatternFile'
+    },
+    lineOpacity: {
+        type: 'identity',
+        default: 1,
+        property: '_symbol_lineOpacity'
+    },
+    lineJoin: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineJoin'
+    },
+    lineCap: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineCap'
+    },
+    lineDasharray: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineDasharray'
+    },
+    lineDashColor: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_lineDashColor'
+    }
+};

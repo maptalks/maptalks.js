@@ -722,6 +722,9 @@ class Painter {
     }
 
     _outlineOne(fbo, featureId) {
+        if (!this.picking) {
+            return;
+        }
         if (!this._outlineShader) {
             this._outlineScene = new reshader.Scene();
             this._initOutlineShader();
@@ -764,6 +767,9 @@ class Painter {
     }
 
     outlineAll(fbo) {
+        if (!this.picking) {
+            return;
+        }
         if (!this._outlineShader) {
             this._initOutlineShader();
             if (!this._outlineShader) {
