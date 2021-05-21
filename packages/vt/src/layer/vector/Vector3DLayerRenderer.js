@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
-import { IconRequestor, GlyphRequestor, PointPack } from '@maptalks/vector-packer';
+import { IconRequestor, GlyphRequestor, PointPack, LinePack } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
@@ -227,31 +227,31 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    buildMesh(atlas) {
-        if (!this.painter) {
-            return;
-        }
-        //TODO 更新symbol的优化
-        //1. 如果只影响texture，则只重新生成texture
-        //2. 如果不影响Geometry，则直接调用painter.updateSymbol
-        //3. Geometry和Texture全都受影响时，则全部重新生成
-        const { features, center } = this._getFeaturesToRender();
-        if (!features.length) {
-            return;
-        }
+    buildMesh(/*atlas*/) {
+        // if (!this.painter) {
+        //     return;
+        // }
+        // //TODO 更新symbol的优化
+        // //1. 如果只影响texture，则只重新生成texture
+        // //2. 如果不影响Geometry，则直接调用painter.updateSymbol
+        // //3. Geometry和Texture全都受影响时，则全部重新生成
+        // const { features, center } = this._getFeaturesToRender();
+        // if (!features.length) {
+        //     return;
+        // }
 
-        this.createMesh(features, atlas, center).then(m => {
-            if (this.meshes) {
-                this.painter.deleteMesh(this.meshes);
-            }
-            const { mesh, atlas } = m;
-            this.meshes = mesh;
-            this.atlas = atlas;
-            this.setToRedraw();
-        });
+        // this.createMesh(this.painter, this.PackClass, features, atlas, center).then(m => {
+        //     if (this.meshes) {
+        //         this.painter.deleteMesh(this.meshes);
+        //     }
+        //     const { mesh, atlas } = m;
+        //     this.meshes = mesh;
+        //     this.atlas = atlas;
+        //     this.setToRedraw();
+        // });
     }
 
-    createMesh(painter, symbol, features, atlas, center) {
+    createMesh(painter, PackClass, symbol, features, atlas, center) {
         if (!painter || !features || !features.length) {
             return Promise.resolve(null);
         }
@@ -264,7 +264,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             positionType: Float32Array
         };
 
-        const pack = new this.PackClass(features, symbol, options);
+        const pack = new PackClass(features, symbol, options);
         const v0 = [], v1 = [];
         return pack.load().then(packData => {
             if (!packData) {
@@ -514,8 +514,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const symbol = extend({}, LINE_SYMBOL);
         const promises = [
-            this.createMesh(this.linePainter, symbol, feas, atlas && atlas[0], center),
-            this.createMesh(this.linePainter, symbol, dashFeas, atlas && atlas[1], center)
+            this.createMesh(this.linePainter, LinePack, symbol, feas, atlas && atlas[0], center),
+            this.createMesh(this.linePainter, LinePack, symbol, dashFeas, atlas && atlas[1], center)
         ];
 
         Promise.all(promises).then(mm => {

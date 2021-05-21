@@ -50,7 +50,6 @@ class MeshPainter extends Painter {
         const shader = this.getShader();
         const defines = shader.getGeometryDefines ? shader.getGeometryDefines(geometry) : {};
         const symbol = this.getSymbol(symbolIndex);
-        this._colorCache = this._colorCache || {};
         if (geometry.data.aExtrude) {
             defines['IS_LINE_EXTRUSION'] = 1;
             const { tileResolution, tileRatio } = geometry.properties;

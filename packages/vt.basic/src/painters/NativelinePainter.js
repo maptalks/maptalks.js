@@ -46,7 +46,6 @@ class NativeLinePainter extends BasicPainter {
     }
 
     getMeshUniforms(geometry, symbol) {
-        this._colorCache = this._colorCache || {};
         const uniforms = {};
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);

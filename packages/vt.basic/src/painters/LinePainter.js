@@ -78,7 +78,6 @@ class LinePainter extends BasicPainter {
         };
         this.setLineUniforms(symbol, uniforms);
 
-        this._colorCache = this._colorCache || {};
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;

@@ -1,5 +1,4 @@
 import * as maptalks from 'maptalks';
-import { LinePack } from '@maptalks/vector-packer';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import { fromJSON } from './util/from_json';
@@ -23,7 +22,6 @@ LineStringLayer.registerJSONType('LineStringLayer');
 class LineStringLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
-        this.PackClass = LinePack;
         this.GeometryTypes = [maptalks.LineString, maptalks.MultiLineString];
     }
 }

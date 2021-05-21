@@ -54,7 +54,6 @@ class FillPainter extends BasicPainter {
         const { tilePoint } = params;
         const { geometry, symbolIndex, ref } = geo;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
-        this._colorCache = this._colorCache || {};
         const uniforms = {
             tileExtent: geometry.properties.tileExtent,
             tileRatio: geometry.properties.tileRatio

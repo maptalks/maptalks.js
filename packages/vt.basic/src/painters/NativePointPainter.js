@@ -31,7 +31,6 @@ class NativePointPainter extends BasicPainter {
             geometry.generateBuffers(this.regl);
         }
 
-        this._colorCache = this._colorCache || {};
         const uniforms = {};
         setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
         setUniformFromSymbol(uniforms, 'markerSize', symbol, 'markerSize', 10);

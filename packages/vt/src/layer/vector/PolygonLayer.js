@@ -66,8 +66,8 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
 
         const symbol = extend({}, SYMBOL);
         const promises = [
-            this.createMesh(this.painter, symbol, feas, atlas && atlas[0], center),
-            this.createMesh(this.painter, symbol, alphaFeas, atlas && atlas[1], center)
+            this.createMesh(this.painter, PolygonPack, symbol, feas, atlas && atlas[0], center),
+            this.createMesh(this.painter, PolygonPack, symbol, alphaFeas, atlas && atlas[1], center)
         ];
 
         Promise.all(promises).then(mm => {
