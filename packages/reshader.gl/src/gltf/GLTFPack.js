@@ -16,9 +16,9 @@ const TEXTURE_SAMPLER = {
     '9985' : 'linear mipmap nearest',
     '9986' : 'nearest mipmap linear',
     '9987' : 'linear mipmap linear',
-    '33071' : 'clamp ro edge',
-    '33684' : 'mirrored repeat',
-    '10497' : 'repeat'
+    '33071' : 'clamp', //gl.CLAMP_TO_EDGE
+    '33684' : 'mirrored', //gl.MIRRORED_REPEAT
+    '10497' : 'repeat' //gl.REPEAT
 };
 export default class GLTFPack {
 
@@ -278,6 +278,7 @@ export default class GLTFPack {
             if (material.emissiveFactor) {
                 materialUniforms['emissiveFactor'] = material.emissiveFactor;
             }
+            materialUniforms['alphaCutoff'] = material.alphaCutoff || 0.5;
         }
         return materialUniforms;
     }
@@ -288,7 +289,6 @@ export default class GLTFPack {
             const mat = this.gltf.materials[material];
             info['doubleSided'] = mat.doubleSided;
             info['alphaMode'] = mat.alphaMode || 'OPAQUE';
-            info['alphaCutoff'] = mat.alphaCutoff || 0.5;
         }
         return info;
     }
