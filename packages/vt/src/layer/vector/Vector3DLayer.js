@@ -1,6 +1,5 @@
 import * as maptalks from 'maptalks';
 import { extend } from '../../common/Util';
-import { ID_PROP } from './util/build_geometry';
 
 const defaultOptions = {
     picking: true,
