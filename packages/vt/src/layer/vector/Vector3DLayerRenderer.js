@@ -66,8 +66,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const redraw = super.needToRedraw();
         if (!redraw) {
             return this.painter && this.painter.needToRedraw() ||
-                this.markerPainter && this.markerPainter.needToRedraw() ||
-                this.linePainter && this.linePainter.needToRedraw();
+                this._markerPainter && this._markerPainter.needToRedraw() ||
+                this._linePainter && this._linePainter.needToRedraw();
         }
         return redraw;
     }
@@ -85,11 +85,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             // this._dirtySymbol = false;
         } else if (this._dirtyGeo) {
             const atlas = this.atlas;
-            const markerAtlas = this.markerAtlas;
-            const lineAtlas = this.lineAtlas;
+            const markerAtlas = this._markerAtlas;
+            const lineAtlas = this._lineAtlas;
             delete this.atlas;
-            delete this.markerAtlas;
-            delete this.lineAtlas;
+            delete this._markerAtlas;
+            delete this._lineAtlas;
             this.buildMesh(atlas);
             this._buildMarkerMesh(markerAtlas);
             this._buildLineMesh(lineAtlas);
@@ -99,7 +99,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.updateSymbol();
             this._dirtySymbol = false;
         }*/
-        if (!this.meshes && !this.markerMeshes && !this.lineMeshes) {
+        if (!this.meshes && !this._markerMeshes && !this._lineMeshes) {
             this.completeRender();
             return;
         }
@@ -116,22 +116,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.painter.render(context);
         }
 
-        if (this.lineMeshes) {
-            this.linePainter.startFrame(context);
-            this.linePainter.addMesh(this.lineMeshes);
-            this.linePainter.prepareRender(context);
-            this.linePainter.render(context);
+        if (this._lineMeshes) {
+            this._linePainter.startFrame(context);
+            this._linePainter.addMesh(this._lineMeshes);
+            this._linePainter.prepareRender(context);
+            this._linePainter.render(context);
         }
 
-        if (this.markerMeshes) {
-            this.markerPainter.startFrame(context);
-            this.markerPainter.addMesh(this.markerMeshes);
-            this.markerPainter.prepareRender(context);
+        if (this._markerMeshes) {
+            this._markerPainter.startFrame(context);
+            this._markerPainter.addMesh(this._markerMeshes);
+            this._markerPainter.prepareRender(context);
             if (layer.options.collision) {
-                this.markerPainter.updateCollision(context);
+                this._markerPainter.updateCollision(context);
             }
 
-            this.markerPainter.render(context);
+            this._markerPainter.render(context);
         }
 
         this.completeRender();
@@ -189,13 +189,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     for (let i = 0; i < feature.length; i++) {
                         const fea = feature[i];
                         if (fea.visible) {
-                            this.addCoordsToCenter(fea.geometry, center);
+                            this._addCoordsToCenter(fea.geometry, center);
                             // fea[keyName] = count++;
                             features.push(fea);
                         }
                     }
                 } if (feature.visible) {
-                    this.addCoordsToCenter(feature.geometry, center);
+                    this._addCoordsToCenter(feature.geometry, center);
                     // feature[keyName] = count++;
                     features.push(feature);
                 }
@@ -208,13 +208,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this.painter.deleteMesh(this.meshes);
                 delete this.meshes;
             }
-            if (this.markerMeshes) {
-                this.markerPainter.deleteMesh(this.meshes);
-                delete this.markerMeshes;
+            if (this._markerMeshes) {
+                this._markerPainter.deleteMesh(this.meshes);
+                delete this._markerMeshes;
             }
-            if (this.lineMeshes) {
-                this.linePainter.deleteMesh(this.meshes);
-                delete this.lineMeshes;
+            if (this._lineMeshes) {
+                this._linePainter.deleteMesh(this.meshes);
+                delete this._lineMeshes;
             }
         }
         if (center[3]) {
@@ -271,7 +271,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 return null;
             }
             const geometry = painter.prepareGeometry(packData.data, features.map(feature => { return { feature }; }));
-            this.fillCommonProps(geometry.geometry);
+            this._fillCommonProps(geometry.geometry);
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
@@ -296,7 +296,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         });
     }
 
-    addCoordsToCenter(geometry, center) {
+    _addCoordsToCenter(geometry, center) {
         for (let i = 0; i < geometry.length; i++) {
             if (isNumber(geometry[i][0])) {
                 center[0] += geometry[i][0];
@@ -320,7 +320,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
-    fillCommonProps(geometry) {
+    _fillCommonProps(geometry) {
         const map = this.getMap();
         const props = geometry.properties;
         Object.defineProperty(props, 'tileResolution', {
@@ -393,9 +393,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const markerUIDs = Object.keys(this._markerFeatures);
         const textUIDs = Object.keys(this._textFeatures);
         if (!markerUIDs.length && !textUIDs.length) {
-            if (this.markerMeshes) {
-                this.markerPainter.deleteMesh(this.markerMeshes);
-                delete this.markerMeshes;
+            if (this._markerMeshes) {
+                this._markerPainter.deleteMesh(this._markerMeshes);
+                delete this._markerMeshes;
             }
             return;
         }
@@ -415,9 +415,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
         if (!markerFeatures.length && !textFeatures.length) {
-            if (this.markerMeshes) {
-                this.markerPainter.deleteMesh(this.markerMeshes);
-                delete this.markerMeshes;
+            if (this._markerMeshes) {
+                this._markerPainter.deleteMesh(this._markerMeshes);
+                delete this._markerMeshes;
             }
             return;
         }
@@ -436,30 +436,30 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const symbols = PointPack.splitPointSymbol(this._markerSymbol);
         const pointPacks = symbols.map((symbol, idx) => new PointPack(idx === 0 ? markerFeatures : textFeatures, symbol, idx === 0 ? markerOptions : textOptions).load());
-        this.markerAtlas = {
+        this._markerAtlas = {
         };
         const v0 = [], v1 = [];
         Promise.all(pointPacks).then(packData => {
-            if (this.markerMeshes) {
-                this.markerPainter.deleteMesh(this.markerMeshes);
-                delete this.markerMeshes;
+            if (this._markerMeshes) {
+                this._markerPainter.deleteMesh(this._markerMeshes);
+                delete this._markerMeshes;
             }
             if (!packData || !packData.length) {
                 this.setToRedraw();
                 return;
             }
-            const geometries = this.markerPainter.prepareGeometry(packData.map(d => d && d.data), this._allFeatures);
+            const geometries = this._markerPainter.prepareGeometry(packData.map(d => d && d.data), this._allFeatures);
 
             for (let i = 0; i < geometries.length; i++) {
-                this.fillCommonProps(geometries[i].geometry, packData[i] && packData[i].data);
+                this._fillCommonProps(geometries[i].geometry, packData[i] && packData[i].data);
             }
             const iconAtlas = packData[0] && packData[0].data.iconAtlas;
             const glyphAtlas = packData[0] && packData[0].data.glyphAtlas || packData[1] && packData[1].data.glyphAtlas;
             if (iconAtlas) {
-                this.markerAtlas.iconAtlas = iconAtlas;
+                this._markerAtlas.iconAtlas = iconAtlas;
             }
             if (glyphAtlas) {
-                this.markerAtlas.glyphAtlas = glyphAtlas;
+                this._markerAtlas.glyphAtlas = glyphAtlas;
             }
 
 
@@ -468,7 +468,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
-            const meshes = this.markerPainter.createMesh(geometries, posMatrix);
+            const meshes = this._markerPainter.createMesh(geometries, posMatrix);
             if (Array.isArray(meshes)) {
                 for (let i = 0; i < meshes.length; i++) {
                     meshes[i].setUniform('level', 0);
@@ -481,7 +481,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 meshes.properties.meshKey = meshUID++;
             }
 
-            this.markerMeshes = meshes;
+            this._markerMeshes = meshes;
             this.setToRedraw();
         });
     }
@@ -489,9 +489,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _buildLineMesh(atlas) {
         const lineUIDs = Object.keys(this._lineFeatures);
         if (!lineUIDs.length) {
-            if (this.lineMeshes) {
-                this.linePainter.deleteMesh(this.lineMeshes);
-                delete this.lineMeshes;
+            if (this._lineMeshes) {
+                this._linePainter.deleteMesh(this._lineMeshes);
+                delete this._lineMeshes;
             }
             return;
         }
@@ -514,13 +514,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const symbol = extend({}, LINE_SYMBOL);
         const promises = [
-            this.createMesh(this.linePainter, LinePack, symbol, feas, atlas && atlas[0], center),
-            this.createMesh(this.linePainter, LinePack, symbol, dashFeas, atlas && atlas[1], center)
+            this.createMesh(this._linePainter, LinePack, symbol, feas, atlas && atlas[0], center),
+            this.createMesh(this._linePainter, LinePack, symbol, dashFeas, atlas && atlas[1], center)
         ];
 
         Promise.all(promises).then(mm => {
-            if (this.lineMeshes) {
-                this.linePainter.deleteMesh(this.lineMeshes);
+            if (this._lineMeshes) {
+                this._linePainter.deleteMesh(this._lineMeshes);
             }
             const meshes = [];
             const atlas = [];
@@ -530,8 +530,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     atlas[i] = mm[i].atlas;
                 }
             }
-            this.lineMeshes = meshes;
-            this.lineAtlas = atlas;
+            this._lineMeshes = meshes;
+            this._lineAtlas = atlas;
             this.setToRedraw();
         });
     }
@@ -635,7 +635,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     pick(x, y, options) {
         const hits = [];
-        const painters = [this.painter, this.markerPainter, this.linePainter];
+        const painters = [this.painter, this._markerPainter, this._linePainter];
         painters.forEach(painter => {
             if (!painter) {
                 return;
@@ -795,11 +795,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.painter = this.createPainter();
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
-        this.markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, this.layer.options.sceneConfig, 0);
+        this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, this.layer.options.sceneConfig, 0);
 
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);
-        this.linePainter = new LinePainter(this.regl, this.layer, lineSymbol, this.layer.options.sceneConfig, 0);
+        this._linePainter = new LinePainter(this.regl, this.layer, lineSymbol, this.layer.options.sceneConfig, 0);
 
         if (this.layer.getGeometries()) {
             this.onGeometryAdd(this.layer.getGeometries());
@@ -879,11 +879,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this.painter) {
             this.painter.delete();
         }
-        if (this.markerPainter) {
-            this.markerPainter.delete();
+        if (this._markerPainter) {
+            this._markerPainter.delete();
         }
-        if (this.linePainter) {
-            this.linePainter.delete();
+        if (this._linePainter) {
+            this._linePainter.delete();
         }
     }
 
@@ -892,16 +892,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (this.painter) {
                 this.painter.outlineAll(fbo);
             }
-            this.markerPainter.outlineAll(fbo);
-            this.linePainter.outlineAll(fbo);
+            this._markerPainter.outlineAll(fbo);
+            this._linePainter.outlineAll(fbo);
         }
         if (this._outlineFeatures) {
             for (let i = 0; i < this._outlineFeatures.length; i++) {
                 if (this.painter) {
                     this.painter.outline(fbo, this._outlineFeatures[i]);
                 }
-                this.markerPainter.outline(fbo, this._outlineFeatures[i]);
-                this.linePainter.outline(fbo, this._outlineFeatures[i]);
+                this._markerPainter.outline(fbo, this._outlineFeatures[i]);
+                this._linePainter.outline(fbo, this._outlineFeatures[i]);
 
             }
         }
