@@ -996,18 +996,25 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (!config || !config.enable) {
             return;
         }
+        this.layer.fire('postprocessstart');
         const map = this.layer.getMap();
 
         const enableTAA = this.isEnableTAA();
         let taaTex;
         if (enableTAA) {
+            const needClear = this._needRetireFrames || map.getRenderer().isViewChanged();
+            if (needClear) {
+                this.layer.fire('taastart');
+            }
             const { outputTex, redraw } = this._postProcessor.taa(this._taaFBO.color[0], this._depthTex, {
                 projMatrix: map.projMatrix,
-                needClear: this._needRetireFrames || map.getRenderer().isViewChanged()
+                needClear
             });
             taaTex = outputTex;
             if (redraw) {
                 this.setToRedraw();
+            } else {
+                this.layer.fire('taaend');
             }
             this._needRetireFrames = false;
         }
@@ -1115,6 +1122,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (hasPost) {
             this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio(), enableAntialias);
         }
+        this.layer.fire('postprocessend');
     }
 }
 
