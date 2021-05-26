@@ -6,7 +6,8 @@ import Color from 'color';
 var DEFAULT_ANIMATION_DURATION = 800;
 
 var NO_REDRAW = {
-    redraw: false
+    redraw: false,
+    retire: false
 };
 
 var EMPTY_ARRAY = [];
@@ -105,10 +106,9 @@ function createPainterPlugin(type, Painter) {
             } = context;
             var painter = this.painter;
             if (!painter) {
-                return {
-                    redraw: false
-                };
+                return NO_REDRAW;
             }
+            var retire = false;
             var key = this._getMeshKey(context);
             let geometry = tileCache.geometry;
             if (!geometry) {
@@ -145,6 +145,7 @@ function createPainterPlugin(type, Painter) {
                             tileCache.excludes = this._excludes;
                         }
                     }
+                    retire = true;
                 }
             }
             if (!geometry) {
@@ -171,6 +172,7 @@ function createPainterPlugin(type, Painter) {
                         mesh._animationTime = context.timestamp;
                     }
                     this._meshCache[key] = mesh;
+                    retire = true;
                 }
             }
             if (!mesh || Array.isArray(mesh) && !mesh.length) {
@@ -222,7 +224,8 @@ function createPainterPlugin(type, Painter) {
             }
 
             return {
-                redraw
+                redraw,
+                retire
             };
         },
 

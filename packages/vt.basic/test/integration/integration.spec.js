@@ -3,7 +3,7 @@ const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
-const { match, readSpecs } = require('./util');
+const { match, readSpecs, writeImageData } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
@@ -274,18 +274,3 @@ describe('vector tile integration specs', () => {
         }
     });
 });
-
-const canvas = document.createElement('canvas');
-function writeImageData(path, arr, width, height) {
-    canvas.width = width;
-    canvas.height = height;
-    const imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
-
-    for (let i = 0; i < arr.length; i++) {
-        imageData.data[i] = arr[i];
-    }
-    canvas.getContext('2d').putImageData(imageData, 0, 0);
-    const dataURL = canvas.toDataURL();
-    const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
-    fs.writeFileSync(path, base64Data, 'base64');
-}

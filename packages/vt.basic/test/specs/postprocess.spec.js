@@ -4,6 +4,7 @@ const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
+const { match, writeImageData } = require('../integration/util');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -76,23 +77,77 @@ describe('postprocess specs', () => {
             postProcess: {
                 enable: true,
                 antialias: {
-                    enable: true
-                },
-                taa: {
-                    enable: false
+                    enable: true,
+                    taa: false
                 }
             }
         };
         let groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
-        layer.once('canvasisdirty', () => {
-            sceneConfig.postProcess.taa.enable = true;
-            groupLayer.once('layerload', () => {
+        groupLayer.once('postprocessend', () => {
+            sceneConfig.postProcess.antialias.taa = true;
+            groupLayer.once('taaend', () => {
                 done();
             });
             groupLayer.setSceneConfig(sceneConfig);
         });
         groupLayer.addTo(map);
     });
+
+    it('should can draw correctly with taa', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: DATA,
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: getRenderPlugin('lit'),
+                    symbol: {
+                        material: getMaterial('lit')
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: {
+                    enable: true,
+                    taa: true
+                }
+            }
+        };
+        let groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        groupLayer.on('taaend', () => {
+            count++;
+            if (count === 1) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'beforeSetStyle', 'expected.png');
+                compareExpected(canvas, expectedPath);
+                layer.setStyle([
+                    {
+                        renderPlugin: {
+                            dataConfig: {
+                                type: 'fill',
+                            },
+                            sceneConfig: {},
+                            type: 'fill',
+                        },
+                        symbol: {
+                            polygonFill: [1, 0, 0, 1],
+                            polygonOpacity: 1
+                        },
+                        filter: true,
+                    },
+                ]);
+            } else if (count >= 2) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'setStyle', 'expected.png');
+                compareExpected(canvas, expectedPath, done);
+            }
+        });
+        groupLayer.addTo(map);
+    });
+
 
     it.skip('should can update symbol', done => {
         assertStyle(layer => {
@@ -174,4 +229,27 @@ function getMaterial(type) {
         };
     }
     return null;
+}
+
+function compareExpected(canvas, expectedPath, done) {
+    match(canvas, expectedPath, (err, result) => {
+        if (err) {
+            if (done) {
+                done(err);
+            }
+            return;
+        }
+        if (result.diffCount > 0) {
+            //保存差异图片
+            const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
+            const diffPath = dir + 'diff.png';
+            writeImageData(diffPath, result.diffImage, result.width, result.height);
+            const actualPath = dir + 'actual.png';
+            writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+        }
+        assert(result.diffCount === 0);
+        if (done) {
+            done();
+        }
+    });
 }

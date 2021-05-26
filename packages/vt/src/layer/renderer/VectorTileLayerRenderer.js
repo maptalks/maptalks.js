@@ -39,6 +39,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._styleCounter++;
             this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
                 if (err) throw new Error(err);
+                this._needRetire = true;
                 this.clear();
                 this._clearPlugin();
                 this._initPlugins();
@@ -879,11 +880,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
                 pluginData[idx] = 1;
             }
-            if (status && status.redraw) {
+            if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
+                this._needRetire = true;
+            }
+            if (status.redraw) {
                 //let plugin to determine when to redraw
-                if (plugin.supportRenderMode('taa')) {
-                    this._needRetire = true;
-                }
                 this.setToRedraw();
             }
         });
