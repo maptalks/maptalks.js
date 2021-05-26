@@ -120,8 +120,11 @@ function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
         uniforms : {
             'hsv': [0, 0, 0],
             'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' :  regl.context('viewMatrix'),
-            'cubeMap' : cubemap
+            'viewMatrix' : regl.context('viewMatrix'),
+            'cubeMap' : cubemap,
+            'bias': 0,
+            'size': regl.prop('size'),
+            'environmentExposure': 1,
         },
         elements : cubeData.indices
     });

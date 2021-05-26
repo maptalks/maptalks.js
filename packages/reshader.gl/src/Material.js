@@ -38,9 +38,9 @@ class Material {
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 
-        if (this.uniforms[k] && this.isTexture(k)) {
-            this.uniforms[k].dispose();
-        }
+        // if (this.uniforms[k] && this.isTexture(k)) {
+        //     this.uniforms[k].dispose();
+        // }
         if (!isNil(v)) {
             this.uniforms[k] = v;
         } else if (!isNil(this.uniforms[k])) {
@@ -91,9 +91,14 @@ class Material {
         const uniforms = this.uniforms;
         const realUniforms = {};
         for (const p in uniforms) {
-            const v = this.uniforms[p];
             if (this.isTexture(p)) {
-                realUniforms[p] = v.getREGLTexture(regl);
+                Object.defineProperty(realUniforms, p, {
+                    enumerable: true,
+                    configurable: true,
+                    get: function () {
+                        return uniforms[p].getREGLTexture(regl);
+                    }
+                });
             } else {
                 Object.defineProperty(realUniforms, p, {
                     enumerable: true,

@@ -106,7 +106,7 @@ void main()
                 envColor = encodeRGBM(envColor.rgb, rgbmRange);
             }
         #endif
-        glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0, 1.0));
+        glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0), 1.0);
     #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
         glFragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
         if (length(hsv) > 0.0) {

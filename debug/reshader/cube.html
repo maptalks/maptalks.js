@@ -8,7 +8,7 @@
     .container{width:1000px;height:800px}
   </style>
   <script src="js/maptalks.js" type="text/javascript"></script>
-  <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+  <script src="/maptalksgl/dist/maptalksgl-dev.js" type="text/javascript"></script>
   <body>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
     <!-- <script src="./common/regl.js" type="text/javascript"></script> -->
@@ -76,9 +76,13 @@
             extraCommandProps : null
         });
 
+        const loader = new reshader.ResourceLoader(regl.texture(2));
         const renderer = new reshader.Renderer(regl);
+        let cubeMesh;
 
         render();
+
+        setTimeout(update, 500);
 
         //主绘制方法
         function render() {
@@ -100,6 +104,8 @@
                 scene,
                 null  //最后一个参数是framebuffer，可以指定framebuffer目标
             );
+
+            requestAnimationFrame(render);
         }
 
         function getScene() {
@@ -131,7 +137,7 @@
             //方便实际绘制时，不再重复拷贝数据 (bufferData)
             cube.generateBuffers(regl);
 
-            const cubeMesh = new reshader.Mesh(cube);
+            cubeMesh = new reshader.Mesh(cube);
 
             const transformMat = mat4.identity([]);
             mat4.scale(transformMat, transformMat, [0.5, 0.5, 0.5]);

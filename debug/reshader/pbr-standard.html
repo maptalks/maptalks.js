@@ -8,8 +8,8 @@
     .container{width:1000px;height:800px}
   </style>
   <script type="text/javascript" src="http://localhost/maptalks/dist/maptalks.js"></script>
-    <script src="../../packages/gl/dist/maptalksgl-dev.js" type="text/javascript"></script>
-    <script src="js/gltf-loader-dev.js" type="text/javascript"></script>
+    <script src="/maptalksgl/dist/maptalksgl-dev.js" type="text/javascript"></script>
+    <!-- <script src="js/gltf-loader-dev.js" type="text/javascript"></script> -->
     <script type="text/javascript" src="js/dat.gui.min.js"></script>
   <body>
     <canvas id="canvas" width=1000 height=800 class="container" style="border : 1px solid"></canvas>
@@ -30,6 +30,7 @@
             ]
         });
         let iblMaps;
+        let dfgLUT;
         let mouseDown = false;
         let roll = Math.PI;
         let pitch = 0.0;
@@ -48,6 +49,17 @@
         let ROUGHNESS_METALLIC_TEXTURE;
         let BASE_COLOR_TEXTURE;
         let CLEAR_COAT_NORMAL_TEXTURE;
+        let mesh;
+
+        function updateTexture() {
+            mesh.material.set('baseColorTexture', BASE_COLOR_TEXTURE);
+
+        }
+
+        function updateTexture2() {
+            mesh.material.set('baseColorTexture', ROUGHNESS_METALLIC_TEXTURE);
+
+        }
 
         function main() {
             const skyboxTextures = [
@@ -86,6 +98,7 @@
 
             Promise.all(promises).then(images => {
                 iblMaps = createMaps(images.slice(0, 6));
+                dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(regl);
                 NORMAL_TEXTURE = new reshader.Texture2D(regl.texture(images[6]));
                 ROUGHNESS_METALLIC_TEXTURE = new reshader.Texture2D(regl.texture(images[7]));
                 BASE_COLOR_TEXTURE = new reshader.Texture2D(regl.texture(images[8]));
@@ -97,18 +110,33 @@
                 const mipLevel = Math.log(PREFILTER_CUBE_SIZE) / Math.log(2);
                 UNIFORMS = {
                     'light_ambientColor': [0.5, 0.5, 0.5],
-                    'light_iblDFG': iblMaps.dfgLUT,
+                    // 'light_iblDFG': iblMaps.dfgLUT,
                     'light_iblSpecular': iblMaps.prefilterMap,
-                    'iblSH': iblMaps.sh,
+
                     'lightColorIntensity': [1, 1, 1, 30000],
                     'sun': [1, 1, 1, -1],
                     'lightDirection': [1, 0, -1],
                     'iblLuminance': 8000,
                     'exposure': EV100toExposure(ev100),
                     'ev100': ev100,
-                    'resolution': [canvas.width, canvas.height, 1 / canvas.width, 1 / canvas.height],
+
+
+
+                    'outSize': [canvas.width, canvas.height],
+                    'halton': [0, 0],
                     'cameraPosition':camPos,
-                    'iblMaxMipLevel': [mipLevel, 1 << mipLevel]
+                    'environmentExposure': 1,
+                    'rgbmRange': 7,
+                    'hdrHSV': [0, 0, 0],
+                    'diffuseSPH': iblMaps.sh,
+                    'prefilterMiplevel': [mipLevel, mipLevel],
+                    'prefilterMap': iblMaps.prefilterMap,
+                    'brdfLUT': dfgLUT,
+                    'prefilterSize': [PREFILTER_CUBE_SIZE, PREFILTER_CUBE_SIZE],
+                    'light0_viewDirection': [1, 0, -1],
+                    'light0_diffuse': [1, 1, 1, 1],
+                    'polygonFill': [1, 1, 1, 1],
+                    'polygonOpacity': 1
                 };
                 MatUNIFORMS = {
                     // 'baseColorFactor': [0.9, 0.9, 0.9, 0.3],
@@ -135,6 +163,8 @@
             //绘制gltf模型
             // drawGLTFModel();
             drawSphere();
+            setTimeout(updateTexture, 1500);
+            setTimeout(updateTexture2, 3000);
         }
         function drawScene() {
             const { viewMatrix, projMatrix } = getViewProjection(camPos, canvas.width / canvas.height);
@@ -142,6 +172,7 @@
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.cameraPosition = camPos;
             UNIFORMS.projViewMatrix = projViewMatrix;
+            UNIFORMS.projMatrix = projMatrix;
             UNIFORMS.time = Date.now() / 1000;
             UNIFORMS.viewMatrix = viewMatrix;
             UNIFORMS.projViewMatrix = projViewMatrix;
@@ -151,12 +182,12 @@
                 UNIFORMS,
                 SCENE
             );
-            reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
+            // reshader.SkyboxHelper.drawSkybox(regl, iblMaps.envMap, viewMatrix, projMatrix, true);
             requestAnimationFrame(drawScene);
         }
 
         function drawSphere() {
-            SHADER = new reshader.pbr.LitShader();
+            SHADER = new reshader.pbr.StandardShader();
             SCENE = getScene();
             drawScene();
         }
@@ -186,7 +217,7 @@
         function getScene() {
             const meshes = [];
             //创建纹理
-            const material = new reshader.pbr.LitMaterial(MatUNIFORMS);
+            const material = new reshader.pbr.StandardMaterial(MatUNIFORMS);
 
             const { data, indices } = generateSphereData();
             const modelMatrix = mat4.identity([]);
@@ -194,7 +225,7 @@
             const geometry = new reshader.Geometry(data, indices, 0, { uv0Attribute: 'aTexCoord0' });
             geometry.createTangent('aTangent');
             const defines = getGeometryDefines(geometry);
-            const mesh = new reshader.Mesh(geometry, material);
+            mesh = new reshader.Mesh(geometry, material);
             mesh.setLocalTransform(modelMatrix);
             mesh.setDefines(defines);
             meshes.push(mesh);
