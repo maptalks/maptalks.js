@@ -23,7 +23,6 @@ class PointLayer extends Vector3DLayer {
         const sceneConfig = this.options.sceneConfig;
         //disable unique placement
         sceneConfig['uniquePlacement'] = false;
-        sceneConfig.collision = true;
         sceneConfig.depthFunc = sceneConfig.depthFunc || 'always';
     }
 
