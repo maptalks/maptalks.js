@@ -109,10 +109,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._frameTime = timestamp;
         this._parentContext = parentContext || {};
         const context = this._preparePaintContext();
+        let polygonOffset = 0;
         if (this.painter && this.meshes) {
             this.painter.startFrame(context);
             this.painter.addMesh(this.meshes);
             this.painter.prepareRender(context);
+            context.polygonOffsetIndex = polygonOffset++;
             this.painter.render(context);
         }
 
@@ -120,6 +122,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._linePainter.startFrame(context);
             this._linePainter.addMesh(this._lineMeshes);
             this._linePainter.prepareRender(context);
+            context.polygonOffsetIndex = polygonOffset++;
             this._linePainter.render(context);
         }
 
@@ -127,6 +130,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._markerPainter.startFrame(context);
             this._markerPainter.addMesh(this._markerMeshes);
             this._markerPainter.prepareRender(context);
+            context.polygonOffsetIndex = polygonOffset++;
             if (layer.options.collision) {
                 this._markerPainter.updateCollision(context);
             }
