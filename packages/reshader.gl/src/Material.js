@@ -38,9 +38,9 @@ class Material {
         const dirty = isNil(this.uniforms[k]) && !isNil(v) ||
             !isNil(this.uniforms[k]) && isNil(v);
 
-        // if (this.uniforms[k] && this.isTexture(k)) {
-        //     this.uniforms[k].dispose();
-        // }
+        if (this.uniforms[k] && this.isTexture(k)) {
+            this.uniforms[k].dispose();
+        }
         if (!isNil(v)) {
             this.uniforms[k] = v;
         } else if (!isNil(this.uniforms[k])) {

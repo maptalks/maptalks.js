@@ -109,11 +109,14 @@ class AbstractTexture {
         if (this._texture && !this._texture[KEY_DISPOSED]) {
             this._texture.destroy();
             this._texture[KEY_DISPOSED] = true;
+            delete this._texture;
         }
         delete this.resLoader;
         const url = this.config && this.config.url;
         delete this.config;
-        this.fire('disposed', { target: this, url });
+        if (url) {
+            this.fire('disposed', { target: this, url });
+        }
     }
 
     _needPowerOf2() {
