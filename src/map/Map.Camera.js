@@ -487,21 +487,27 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
+    _getFovZ(zoom) {
+        const scale = this.getGLScale(zoom);
+        const ratio = this._getFovRatio();
+        return scale * (this.height || 1) / 2 / ratio;
+    },
+
     _getCameraWorldMatrix: function () {
         const q = {};
         return function () {
             const targetZ = this.getGLZoom();
 
-            const size = this.getSize(),
-                scale = this.getGLScale();
             const center2D = this._prjToPoint(this._prjCenter, targetZ);
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
 
             const pitch = this.getPitch() * RADIAN;
             const bearing = this.getBearing() * RADIAN;
 
-            const ratio = this._getFovRatio();
-            const z = scale * (size.height || 1) / 2 / ratio;
+            // const ratio = this._getFovRatio();
+            // const z = scale * (size.height || 1) / 2 / ratio;
+            // const cz = z * Math.cos(pitch);
+            const z = this._getFovZ();
             const cz = z * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
             const dist = Math.sin(pitch) * z;

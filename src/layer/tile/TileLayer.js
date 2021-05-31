@@ -11,7 +11,6 @@ import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
 
 const DEFAULT_MAXERROR = 1;
-const ROOT_NODE_ERROR = 768000 * 2;
 const TEMP_POINT = new Point(0, 0);
 
 const isSetAvailable = typeof Set !== 'undefined';
@@ -206,12 +205,15 @@ class TileLayer extends Layer {
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
 
         this._rootNode = {
-            z: 0,
-            error: ROOT_NODE_ERROR * (diagonalZ / cameraZ)
+            z: -1,
+            error: 2 * this._getRootError() * (diagonalZ / cameraZ)
         };
         return this._rootNode;
     }
 
+    _getRootError() {
+        return this.getMap()._getFovZ(0);
+    }
 
 
     _getPyramidTiles(z, layer) {
@@ -233,7 +235,7 @@ class TileLayer extends Layer {
                 tiles.push(node);
                 continue;
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, layer && layer.getRenderer());
+            this._splitNode(node, projectionView, queue, tiles, extent, z, layer && layer.getRenderer());
         }
         // console.log('tiles', tiles.sort((a, b) => { return a.z - b.z; }));
         // const tileGrids = super.getTiles(z);
@@ -253,7 +255,7 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitNode(node, projectionView, queue, tiles, gridExtent, renderer) {
+    _splitNode(node, projectionView, queue, tiles, gridExtent, currentZ, renderer) {
         // const renderer = this.getRenderer();
         const map = this.getMap();
         const z = node.z + 1;
@@ -274,7 +276,7 @@ class TileLayer extends Layer {
             const childX = (x << 1) + dx;
             const childY = (y << 1) + dy;
             let extent;
-            if (z === 1) {
+            if (z === 0) {
                 extent = this._getTileConfig().getTilePrjExtent(childX, childY, map._getResolution(z)).convertTo(c => map._prjToPoint(c, z, TEMP_POINT));
             } else {
                 const nwx = minx + dx * width;
@@ -290,9 +292,10 @@ class TileLayer extends Layer {
                 extent2d: extent,
                 error: node.error / 2,
                 id: tileId,
-                url: this.getTileUrl(childX, childY, z + this.options['zoomOffset'])
+                url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
+                offset: [0, 0]
             };
-            const visible = this._isTileVisible(childNode, projectionView, glScale);
+            const visible = this._isTileVisible(childNode, projectionView, glScale, currentZ);
             if (visible === -1) {
                 continue;
             } else if (visible === 0) {
@@ -305,7 +308,7 @@ class TileLayer extends Layer {
         queue.push(...children);
     }
 
-    _isTileVisible(node, projectionView, glScale) {
+    _isTileVisible(node, projectionView, glScale, currentZ) {
         if (node.z === 0) {
             return 1;
         }
@@ -316,7 +319,7 @@ class TileLayer extends Layer {
         if (isNil(maxError)) {
             maxError = DEFAULT_MAXERROR;
         }
-        const error = this._getScreenSpaceError(node, glScale);
+        const error = this._getScreenSpaceError(node, glScale, currentZ);
 
         return error >= maxError ? 1 : 0;
     }
@@ -332,7 +335,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node, glScale) {
+    _getScreenSpaceError(node, glScale, currentZ) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
@@ -342,8 +345,8 @@ class TileLayer extends Layer {
         const distanceToCamera = distanceToRect([xmin * glScale, ymin * glScale, 0], [xmax * glScale, ymax * glScale, 0], map.cameraPosition);
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
         // const error = (geometricError * map.height) / (distance * fovDenominator);
-        const error = geometricError / distance;
-        // console.log(error, node.z);
+        const r = Math.abs(node.z - currentZ) <= 1 ? 1.2 : 1;
+        const error = geometricError * r / distance;
         return error;
     }
 
