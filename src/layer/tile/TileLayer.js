@@ -132,6 +132,8 @@ const TEMP_POINT4 = new Point(0, 0);
 const TEMP_POINT6 = new Point(0, 0);
 // const TEMP_POINT_EXTENT = new PointExtent();
 const TILE_BOX = [[0, 0, 0], [0, 0, 0]];
+const TILE_MIN = [0, 0, 0];
+const TILE_MAX = [0, 0, 0];
 const ARR3 = [];
 
 /**
@@ -252,11 +254,13 @@ class TileLayer extends Layer {
         const maxZoom = Math.min(z, this.getMaxZoom());
         const projectionView = map.projViewMatrix;
 
+        const offset0 = this._getTileOffset(0);
         const root = this._getRootNode();
+        root.offset[0] = offset0[0];
+        root.offset[1] = offset0[1];
         let queue;
 
         if (this.options['repeatWorld']) {
-
             const mapContainerExtent = map.getContainerExtent();
             const mapExtent2D = this._convertToExtent2d(mapContainerExtent);
             const scale = map.getResolution(0) / map.getResolution();
@@ -277,7 +281,9 @@ class TileLayer extends Layer {
         } else {
             queue = [root];
         }
-
+        const offsets = {
+            0: offset0
+        };
         const extent = new PointExtent();
         const tiles = [];
         while (queue.length > 0) {
@@ -287,7 +293,10 @@ class TileLayer extends Layer {
                 tiles.push(node);
                 continue;
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, z, layer && layer.getRenderer());
+            if (!offsets[node.z + 1]) {
+                offsets[node.z + 1] = this._getTileOffset(node.z + 1);
+            }
+            this._splitNode(node, projectionView, queue, tiles, extent, z, offsets[node.z + 1], layer && layer.getRenderer());
         }
         // tiles = tiles.filter(t => t.z === z);
         // console.log('tiles', tiles.sort((a, b) => { return a.z - b.z; }));
@@ -308,10 +317,9 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitNode(node, projectionView, queue, tiles, gridExtent, currentZ, renderer) {
+    _splitNode(node, projectionView, queue, tiles, gridExtent, currentZ, offset, renderer) {
         const z = node.z + 1;
         const { x, y, extent2d, idx, idy } = node;
-
         const childScale = 2;
         const width = extent2d.getWidth() / 2 * childScale;
         const height = extent2d.getHeight() / 2 * childScale;
@@ -330,6 +338,7 @@ class TileLayer extends Layer {
 
             const nwx = minx + dx * width;
             const nwy = maxy - dy * height;
+            // extent2d 是 node.z 级别上的 extent
             const extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
 
             const tileId = this._getTileId(childIdx, childIdy, z);
@@ -344,9 +353,11 @@ class TileLayer extends Layer {
                 error: node.error / 2,
                 id: tileId,
                 url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
-                offset: [0, 0]
+                offset
             };
-            const visible = this._isTileVisible(childNode, projectionView, glScale, currentZ);
+            childNode.offset[0] = offset[0];
+            childNode.offset[1] = offset[1];
+            const visible = this._isTileVisible(childNode, projectionView, glScale, currentZ, offset);
             if (visible === -1) {
                 continue;
             } else if (visible === 0) {
@@ -359,26 +370,29 @@ class TileLayer extends Layer {
         queue.push(...children);
     }
 
-    _isTileVisible(node, projectionView, glScale, currentZ) {
+    _isTileVisible(node, projectionView, glScale, currentZ, offset) {
         if (node.z === 0) {
             return 1;
         }
-        if (!this._isTileInFrustum(node, projectionView, glScale)) {
+        if (!this._isTileInFrustum(node, projectionView, glScale, offset)) {
             return -1;
         }
         let maxError = this.options['maxError'];
         if (isNil(maxError)) {
             maxError = DEFAULT_MAXERROR;
         }
-        const error = this._getScreenSpaceError(node, glScale, currentZ);
+        const error = this._getScreenSpaceError(node, glScale, currentZ, offset);
 
         return error >= maxError ? 1 : 0;
     }
 
-    _isTileInFrustum(node, projectionView, glScale) {
+    _isTileInFrustum(node, projectionView, glScale, offset) {
         const { xmin, ymin, xmax, ymax } = node.extent2d;
-        const box = [[xmin * glScale, ymin * glScale, 0], [xmax * glScale, ymax * glScale, 0]];
-        return intersectsBox(projectionView, box);
+        TILE_BOX[0][0] = (xmin - offset[0]) * glScale;
+        TILE_BOX[0][1] = (ymin - offset[1]) * glScale;
+        TILE_BOX[1][0] = (xmax - offset[0]) * glScale;
+        TILE_BOX[1][1] = (ymax - offset[1]) * glScale;
+        return intersectsBox(projectionView, TILE_BOX);
     }
 
     /**
@@ -386,14 +400,18 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node, glScale, currentZ) {
+    _getScreenSpaceError(node, glScale, currentZ, offset) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
         const { xmin, ymin, xmax, ymax } = node.extent2d;
         // const center = [node.center.x, node.center.y, 0];
         // const distanceToCenter = vec3.dist(center, map.cameraPosition);
-        const distanceToCamera = distanceToRect([xmin * glScale, ymin * glScale, 0], [xmax * glScale, ymax * glScale, 0], map.cameraPosition);
+        TILE_MIN[0] = (xmin - offset[0]) * glScale;
+        TILE_MIN[1] = (ymin - offset[1]) * glScale;
+        TILE_MAX[0] = (xmax - offset[0]) * glScale;
+        TILE_MAX[1] = (ymax - offset[1]) * glScale;
+        const distanceToCamera = distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition);
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
         // const error = (geometricError * map.height) / (distance * fovDenominator);
         const r = Math.abs(node.z - currentZ) === 0 ? 1.3 : Math.abs(node.z - currentZ) <= 1 ? 1 : 0.505;
