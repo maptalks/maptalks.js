@@ -117,7 +117,7 @@ const options = {
 
     'zoomOffset' : 0,
 
-    'pyramidMode': 0
+    'pyramidMode': 1
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -191,7 +191,6 @@ class TileLayer extends Layer {
         // console.log('pyramid', tileGrid0.count, 'cascade', tileGrid1.count);
         if (this.options['pyramidMode'] && sr && sr.isPyramid()) {
             return this._getPyramidTiles(z, parentLayer || this);
-            // return tileGrid0;
         } else {
             return this._getCascadeTiles(z, parentLayer || this);
         }
@@ -205,25 +204,10 @@ class TileLayer extends Layer {
         const map = this.getMap();
         const fov = toRadian(map.getFov());
         const aspectRatio = this.map.width / this.map.height;
-        // const fov2 = 2 * Math.atan(Math.tan(0.5 * fov) * aspectRatio);
         const cameraZ = map.cameraPosition[2];
         const heightZ = cameraZ * Math.tan(0.5 * fov);
         const widthZ = heightZ * aspectRatio;
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
-
-        const z = 1;
-        const x = 0;
-        const y = 0;
-        this._z1Extents = {};
-        const extent2d = new PointExtent();
-        for (let i = 0; i < 4; i++) {
-            const dx = (i % 2);
-            const dy = (i >> 1);
-            const childX = (x << 1) + dx;
-            const childY = (y << 1) + dy;
-            this._z1Extents[i] = this._getTileConfig().getTilePrjExtent(childX, childY, map._getResolution(z)).convertTo(c => map._prjToPoint(c, z, TEMP_POINT));
-            extent2d._combine(this._z1Extents[i]);
-        }
 
         this._rootNode = {
             x: 0,
@@ -298,11 +282,7 @@ class TileLayer extends Layer {
             }
             this._splitNode(node, projectionView, queue, tiles, extent, z, offsets[node.z + 1], layer && layer.getRenderer());
         }
-        // tiles = tiles.filter(t => t.z === z);
-        // console.log('tiles', tiles.sort((a, b) => { return a.z - b.z; }));
-        // const tileGrids = super.getTiles(z);
-        // console.log('super.tiles', tileGrids);
-        // console.log('map.extent2d', map._get2DExtent(map.getGLZoom()));
+
         return {
             tileGrids: [
                 {
@@ -405,17 +385,13 @@ class TileLayer extends Layer {
         const geometricError = node.error;
         const map = this.getMap();
         const { xmin, ymin, xmax, ymax } = node.extent2d;
-        // const center = [node.center.x, node.center.y, 0];
-        // const distanceToCenter = vec3.dist(center, map.cameraPosition);
         TILE_MIN[0] = (xmin - offset[0]) * glScale;
         TILE_MIN[1] = (ymin - offset[1]) * glScale;
         TILE_MAX[0] = (xmax - offset[0]) * glScale;
         TILE_MAX[1] = (ymax - offset[1]) * glScale;
         const distanceToCamera = distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition);
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
-        // const error = (geometricError * map.height) / (distance * fovDenominator);
         const r = Math.abs(node.z - currentZ) === 0 ? 1.3 : Math.abs(node.z - currentZ) <= 1 ? 1 : 0.505;
-        // const r = 1;
         const error = geometricError * r / distance;
         return error;
     }
