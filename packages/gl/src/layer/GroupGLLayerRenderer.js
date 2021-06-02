@@ -882,8 +882,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const meshes = [];
         let forceUpdate = context.states.lightDirectionChanged || context.states.viewChanged;
-        this.forEachRenderer(renderer => {
-            if (!renderer.getShadowMeshes) {
+        this.forEachRenderer((renderer, layer) => {
+            if (!renderer.getShadowMeshes || !layer.isVisible()) {
                 return;
             }
             const shadowMeshes = renderer.getShadowMeshes();
