@@ -188,7 +188,10 @@ class TileLayer extends Layer {
         const sr = this.getSpatialReference();
         // const tileGrid0 = this._getPyramidTiles(z, parentLayer || this);
         // const tileGrid1 = this._getCascadeTiles(z, parentLayer || this);
-        // console.log('pyramid', tileGrid0.count, 'cascade', tileGrid1.count);
+        // const tileZoom = this._getTileZoom(this.getMap().getZoom());
+        // const t00 = tileGrid0.tileGrids[0].tiles.filter(t => tileZoom - t.z <= 1).length;
+        // const t10 = tileGrid1.tileGrids[0].tiles.length + (tileGrid1.tileGrids[1] && tileGrid1.tileGrids[1].tiles.length || 0);
+        // console.log('pyramid', tileGrid0.count, t00, 'cascade', tileGrid1.count, t10);
         if (this.options['pyramidMode'] && sr && sr.isPyramid()) {
             return this._getPyramidTiles(z, parentLayer || this);
         } else {
@@ -234,7 +237,6 @@ class TileLayer extends Layer {
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
         }
-
         const maxZoom = Math.min(z, this.getMaxZoom());
         const projectionView = map.projViewMatrix;
 
@@ -280,9 +282,8 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, z, offsets[node.z + 1], layer && layer.getRenderer());
+            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer());
         }
-
         return {
             tileGrids: [
                 {
@@ -297,7 +298,7 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitNode(node, projectionView, queue, tiles, gridExtent, currentZ, offset, renderer) {
+    _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, renderer) {
         const z = node.z + 1;
         const { x, y, extent2d, idx, idy } = node;
         const childScale = 2;
@@ -306,6 +307,7 @@ class TileLayer extends Layer {
         const minx = extent2d.xmin * childScale;
         const maxy = extent2d.ymax * childScale;
 
+        let hasCurrentIn = false;
         const children = [];
         const glScale = this.getMap().getGLScale(z);
         for (let i = 0; i < 4; i++) {
@@ -319,10 +321,13 @@ class TileLayer extends Layer {
             const nwx = minx + dx * width;
             const nwy = maxy - dy * height;
             // extent2d 是 node.z 级别上的 extent
-            const extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
 
             const tileId = this._getTileId(childIdx, childIdy, z);
             const cached = renderer.isTileCachedOrLoading(tileId);
+            let extent;
+            if (!cached) {
+                extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
+            }
             const childNode = cached && cached.info || {
                 x: childX,
                 y: childY,
@@ -337,34 +342,84 @@ class TileLayer extends Layer {
             };
             childNode.offset[0] = offset[0];
             childNode.offset[1] = offset[1];
-            const visible = this._isTileVisible(childNode, projectionView, glScale, currentZ, offset);
-            if (visible === -1) {
+            const visible = this._isTileVisible(childNode, projectionView, glScale, maxZoom, offset);
+            if (visible === 1) {
+                hasCurrentIn = true;
+            } else if (visible === -1) {
                 continue;
-            } else if (visible === 0) {
+            } else if (visible === 0 && z !== maxZoom) {
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
                 return;
             }
             children.push(childNode);
         }
-        queue.push(...children);
+        if (z === maxZoom) {
+            if (hasCurrentIn) {
+                queue.push(...children);
+            } else {
+                tiles.push(node);
+                gridExtent._combine(node.extent2d);
+            }
+        } else {
+            queue.push(...children);
+        }
+
+
     }
 
-    _isTileVisible(node, projectionView, glScale, currentZ, offset) {
+    _isTileVisible(node, projectionView, glScale, maxZoom, offset) {
         if (node.z === 0) {
             return 1;
         }
-        if (!this._isTileInFrustum(node, projectionView, glScale, offset)) {
+        if (!this._isTileInFrustum(node, projectionView, glScale, offset)/* || this._isTileTooSmall(node, projectionView, glScale, maxZoom, offset)*/) {
             return -1;
         }
         let maxError = this.options['maxError'];
         if (isNil(maxError)) {
             maxError = DEFAULT_MAXERROR;
         }
-        const error = this._getScreenSpaceError(node, glScale, currentZ, offset);
+        const error = this._getScreenSpaceError(node, glScale, maxZoom, offset);
 
         return error >= maxError ? 1 : 0;
     }
+
+    // _isTileTooSmall(node, projectionView, glScale, maxZoom, offset) {
+    //     if (Math.abs(node.z - maxZoom) <= 3) {
+    //         return false;
+    //     }
+    //     const { xmin, ymin, xmax, ymax } = node.extent2d;
+    //     TILE_MIN[0] = (xmin - offset[0]) * glScale;
+    //     TILE_MIN[1] = (ymin - offset[1]) * glScale;
+    //     TILE_MAX[0] = (xmax - offset[0]) * glScale;
+    //     TILE_MAX[1] = (ymax - offset[1]) * glScale;
+    //     const ndcMin = applyMatrix(TILE_MIN, TILE_MIN, projectionView);
+    //     const ndcMax = applyMatrix(TILE_MAX, TILE_MAX, projectionView);
+    //     const map = this.getMap();
+    //     const w2 = map.width / 2, h2 = map.height / 2;
+    //     const cp0 = this._toCP(ndcMin, w2, h2);
+    //     const cp1 = this._toCP(ndcMax, w2, h2);
+    //     const vh = map.height - map._getVisualHeight(map.getPitch());
+    //     if (cp0[1] <= vh && cp1[1] <= vh) {
+    //         this._tooSmall++;
+    //         return true;
+    //     }
+    //     const t = [ndcMin[0] - ndcMax[0], ndcMin[1] - ndcMax[1]];
+    //     const w = Math.abs((t[0] * w2) + w2);
+    //     const h = Math.abs(-(t[1] * h2) + h2);
+    //     // const w = map.width / 2 * (ndcMin[0] - ndcMax[0]);
+    //     // const h = map.height / 2 * (ndcMin[1] - ndcMax[1]);
+    //     if (w <= 5 || h <= 5) {
+    //         this._tooSmall++;
+    //     }
+    //     return w <= 5 || h <= 5;
+    // }
+
+    // _toCP(t, w2, h2) {
+    //     const w = (t[0] * w2) + w2;
+    //     const h = -(t[1] * h2) + h2;
+    //     return [w, h];
+    // }
 
     _isTileInFrustum(node, projectionView, glScale, offset) {
         const { xmin, ymin, xmax, ymax } = node.extent2d;
@@ -380,7 +435,7 @@ class TileLayer extends Layer {
      * from Cesium
      * 与cesium不同的是，我们用boundingVolume顶面的四个顶点中的最小值作为distanceToCamera
      */
-    _getScreenSpaceError(node, glScale, currentZ, offset) {
+    _getScreenSpaceError(node, glScale, maxZoom, offset) {
         // const fovDenominator = this._fovDenominator;
         const geometricError = node.error;
         const map = this.getMap();
@@ -391,7 +446,10 @@ class TileLayer extends Layer {
         TILE_MAX[1] = (ymax - offset[1]) * glScale;
         const distanceToCamera = distanceToRect(TILE_MIN, TILE_MAX, map.cameraPosition);
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
-        const r = Math.abs(node.z - currentZ) === 0 ? 1.3 : Math.abs(node.z - currentZ) <= 1 ? 1 : 0.505;
+        // const r = Math.abs(node.z - maxZoom) === 0 ? 1.3 : Math.abs(node.z - maxZoom) <= 1 ? 1 : 0.505;
+        const gap = Math.abs(node.z - maxZoom);
+        const r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.505;
+        // const r = 1;
         const error = geometricError * r / distance;
         return error;
     }
