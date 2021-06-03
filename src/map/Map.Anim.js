@@ -464,7 +464,9 @@ Map.include(/** @lends Map.prototype */{
             //fix blank map when pitch changes to 0
             this.getRenderer().setToRedraw();
         }
-        this._resumePrev(player);
+        if (!options['wheelZoom']) {
+            this._resumePrev(player);
+        }
     },
 
     _startAnim(props, zoomOrigin) {

@@ -193,9 +193,9 @@ class TileLayer extends Layer {
         // const t10 = tileGrid1.tileGrids[0].tiles.length + (tileGrid1.tileGrids[1] && tileGrid1.tileGrids[1].tiles.length || 0);
         // console.log('pyramid', tileGrid0.count, t00, 'cascade', tileGrid1.count, t10);
         if (this.options['pyramidMode'] && sr && sr.isPyramid()) {
-            return this._getPyramidTiles(z, parentLayer || this);
+            return this._getPyramidTiles(z, parentLayer);
         } else {
-            return this._getCascadeTiles(z, parentLayer || this);
+            return this._getCascadeTiles(z, parentLayer);
         }
     }
 
@@ -298,7 +298,7 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, renderer) {
+    _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer) {
         const z = node.z + 1;
         const { x, y, extent2d, idx, idy } = node;
         const childScale = 2;
@@ -306,6 +306,8 @@ class TileLayer extends Layer {
         const height = extent2d.getHeight() / 2 * childScale;
         const minx = extent2d.xmin * childScale;
         const maxy = extent2d.ymax * childScale;
+
+        const renderer = parentRenderer || this.getRenderer();
 
         let hasCurrentIn = false;
         const children = [];
@@ -328,18 +330,24 @@ class TileLayer extends Layer {
             if (!cached) {
                 extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
             }
-            const childNode = cached && cached.info || {
-                x: childX,
-                y: childY,
-                idx: childIdx,
-                idy: childIdy,
-                z,
-                extent2d: extent,
-                error: node.error / 2,
-                id: tileId,
-                url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
-                offset
-            };
+            let childNode = cached && cached.info;
+            if (!childNode) {
+                childNode = {
+                    x: childX,
+                    y: childY,
+                    idx: childIdx,
+                    idy: childIdy,
+                    z,
+                    extent2d: extent,
+                    error: node.error / 2,
+                    id: tileId,
+                    url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
+                    offset
+                };
+                if (parentRenderer) {
+                    childNode['layer'] = this.getId();
+                }
+            }
             childNode.offset[0] = offset[0];
             childNode.offset[1] = offset[1];
             const visible = this._isTileVisible(childNode, projectionView, glScale, maxZoom, offset);
@@ -504,7 +512,7 @@ class TileLayer extends Layer {
                 cascadeLevels = 0;
             }
             const extent1 = new PointExtent(0, map.height - visualHeight1, map.width, cascadeHeight);
-            // cascadeTiles1 = this._getTiles(tileZoom - cascadeLevels, extent1, 1, parentRenderer);
+            cascadeTiles1 = this._getTiles(tileZoom - cascadeLevels, extent1, 1, parentRenderer);
             count += cascadeTiles1 ? cascadeTiles1.tiles.length : 0;
             cascadeHeight = extent1.ymin;
             cascadeLevels += 4 * d;
