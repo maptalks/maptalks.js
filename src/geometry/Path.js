@@ -267,7 +267,7 @@ class Path extends Geometry {
     _shouldSimplify() {
         const layer = this.getLayer(),
             properties = this.getProperties();
-        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
+        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]) && (properties[layer.options['altitudeProperty']] !== 0);
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
