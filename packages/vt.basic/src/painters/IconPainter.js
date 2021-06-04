@@ -651,7 +651,7 @@ class IconPainter extends CollisionPainter {
         });
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            const markerPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
@@ -692,11 +692,11 @@ class IconPainter extends CollisionPainter {
                 },
                 this.pickingFBO
             );
-            this.picking.filter = mesh => {
+            markerPicking.filter = mesh => {
                 return !!mesh.geometry.properties.iconAtlas;
             };
 
-            this._textPicking = new reshader.FBORayPicking(
+            const textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + textPickingVert,
@@ -707,22 +707,12 @@ class IconPainter extends CollisionPainter {
                 },
                 this.pickingFBO
             );
-            this._textPicking.filter = mesh => {
+            textPicking.filter = mesh => {
                 return !!mesh.geometry.properties.glyphAtlas;
             };
-        }
-    }
 
-    pick(x, y, tolerance) {
-        let result = super.pick(x, y, tolerance);
-        if (result) {
-            return result;
+            this.picking = [markerPicking, textPicking];
         }
-        const iconPicking = this.picking;
-        this.picking = this._textPicking;
-        result = super.pick(x, y, tolerance);
-        this.picking = iconPicking;
-        return result;
     }
 
     getUniformValues(map) {

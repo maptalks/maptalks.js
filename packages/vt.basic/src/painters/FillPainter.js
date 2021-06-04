@@ -178,7 +178,7 @@ class FillPainter extends BasicPainter {
         this._createShader(context);
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: pickingVert,
@@ -198,7 +198,7 @@ class FillPainter extends BasicPainter {
                     }
                 },
                 this.pickingFBO
-            );
+            )];
         }
     }
 

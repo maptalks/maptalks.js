@@ -710,7 +710,7 @@ export default class TextPainter extends CollisionPainter {
         });
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            const textPicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
@@ -721,13 +721,13 @@ export default class TextPainter extends CollisionPainter {
                 },
                 this.pickingFBO
             );
-            this.picking.filter = mesh => {
+            textPicking.filter = mesh => {
                 const symbolIndex = mesh.properties.symbolIndex;
                 const symbol = this.getSymbol(symbolIndex);
                 return symbol['textPlacement'] !== 'line';
             };
 
-            this._linePicking = new reshader.FBORayPicking(
+            const linePicking = new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + linePickingVert,
@@ -738,65 +738,13 @@ export default class TextPainter extends CollisionPainter {
                 },
                 this.pickingFBO
             );
-            this._linePicking.filter = mesh => {
+            linePicking.filter = mesh => {
                 const symbolIndex = mesh.properties.symbolIndex;
                 const symbol = this.getSymbol(symbolIndex);
                 return symbol['textPlacement'] === 'line';
             };
+            this.picking = [textPicking, linePicking];
         }
-    }
-
-    pick(x, y, tolerance = 1) {
-        //TODO 需要支持多symbol
-        if (!this._hasLineText) {
-            return super.pick(x, y, tolerance);
-        }
-        if (!this._hasNormalText) {
-            const picking = this.picking;
-            this.picking = this._linePicking;
-            const picked = super.pick(x, y, tolerance);
-            this.picking = picking;
-            return picked;
-        }
-        if (!this.pickingFBO || !this.picking) {
-            return null;
-        }
-        const map = this.getMap();
-        const uniforms = this.getUniformValues(map);
-        this.picking.render(this.scene.getMeshes(), uniforms, true);
-        let picking = this.picking;
-        let picked = {};
-        if (this.picking.getRenderedMeshes().length) {
-            picked = this.picking.pick(x, y, tolerance, uniforms, {
-                viewMatrix: map.viewMatrix,
-                projMatrix: map.projMatrix,
-                returnPoint: true
-            });
-        }
-
-        if (picked.meshId === null) {
-            picking = this._linePicking;
-            this._linePicking.render(this.scene.getMeshes(), uniforms, true);
-            if (this._linePicking.getRenderedMeshes().length) {
-                picked = this._linePicking.pick(x, y, tolerance, uniforms, {
-                    viewMatrix: map.viewMatrix,
-                    projMatrix: map.projMatrix,
-                    returnPoint: true
-                });
-            }
-        }
-
-        const { meshId, pickingId, point } = picked;
-        const mesh = (meshId === 0 || meshId) && picking.getMeshAt(meshId);
-        if (!mesh || !mesh.geometry) {
-            //有可能mesh已经被回收，geometry不再存在
-            return null;
-        }
-        const props = mesh.geometry.properties;
-        return {
-            data: props && props.features && props.features[pickingId],
-            point
-        };
     }
 
     getUniformValues(map) {

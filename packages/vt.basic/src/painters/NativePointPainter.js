@@ -128,7 +128,7 @@ class NativePointPainter extends BasicPainter {
         this.shader.version = 300;
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
@@ -148,7 +148,7 @@ class NativePointPainter extends BasicPainter {
                     }
                 },
                 this.pickingFBO
-            );
+            )];
         }
     }
 

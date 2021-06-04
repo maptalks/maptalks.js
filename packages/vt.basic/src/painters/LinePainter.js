@@ -272,7 +272,7 @@ class LinePainter extends BasicPainter {
         this.createShader(context);
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
@@ -292,7 +292,7 @@ class LinePainter extends BasicPainter {
                     }
                 },
                 this.pickingFBO
-            );
+            )];
         }
     }
 

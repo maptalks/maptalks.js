@@ -237,7 +237,7 @@ class PBRPainter extends Painter {
             }
         }
         pickingConfig.uniforms = [u];
-        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+        this.picking = [new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO)];
 
     }
 

@@ -126,7 +126,7 @@ class NativeLinePainter extends BasicPainter {
         this.shader = new reshader.MeshShader(config);
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
@@ -136,7 +136,7 @@ class NativeLinePainter extends BasicPainter {
                     }
                 },
                 this.pickingFBO
-            );
+            )];
         }
     }
 

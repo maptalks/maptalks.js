@@ -103,7 +103,7 @@ class WaterPainter extends BasicPainter {
         this._createShader(context);
 
         if (this.pickingFBO) {
-            this.picking = new reshader.FBORayPicking(
+            this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
                     vert: pickingVert,
@@ -123,7 +123,7 @@ class WaterPainter extends BasicPainter {
                     }
                 },
                 this.pickingFBO
-            );
+            )];
         }
         this._loadTextures();
     }

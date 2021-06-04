@@ -378,44 +378,48 @@ class Painter {
         }
         const map = this.getMap();
         const uniforms = this.getUniformValues(map);
-        if (this.pickingFBO._renderer !== this.picking) {
-            this.picking.render(this.scene.getMeshes(), uniforms, true);
-            this.pickingFBO = this.picking;
+        for (let i = 0; i < this.picking.length; i++) {
+            const picking = this.picking[i];
+            if (this.pickingFBO._renderer !== picking) {
+                picking.render(this.scene.getMeshes(), uniforms, true);
+                this.pickingFBO._renderer = picking;
+            }
+            let picked = {};
+            if (picking.getRenderedMeshes().length) {
+                picked = picking.pick(x, y, tolerance, uniforms, {
+                    viewMatrix: map.viewMatrix,
+                    projMatrix: map.projMatrix,
+                    returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false
+                });
+            }
+            const { meshId, pickingId, point } = picked;
+            const mesh = (meshId === 0 || meshId) && picking.getMeshAt(meshId);
+            if (!mesh || !mesh.geometry) {
+                //有可能mesh已经被回收，geometry不再存在
+                continue;
+            }
+            let props = mesh.geometry.properties;
+            if (!props.features) {
+                //GLTFPhongPainter中，因为geometry是gltf数据，由全部的tile共享，features是存储在mesh上的
+                props = mesh.properties;
+            }
+            if (point && point.length) {
+                point[0] = Math.round(point[0] * 1E5) / 1E5;
+                point[1] = Math.round(point[1] * 1E5) / 1E5;
+                point[2] = Math.round(point[2] * 1E5) / 1E5;
+            }
+            const result = {
+                data: props && props.features && props.features[pickingId],
+                point,
+                plugin: this.pluginIndex,
+            };
+            const idMap = mesh.geometry.properties.feaPickingIdMap;
+            if (idMap) {
+                result.featureId = idMap[pickingId];
+            }
+            return result;
         }
-        let picked = {};
-        if (this.picking.getRenderedMeshes().length) {
-            picked = this.picking.pick(x, y, tolerance, uniforms, {
-                viewMatrix: map.viewMatrix,
-                projMatrix: map.projMatrix,
-                returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false
-            });
-        }
-        const { meshId, pickingId, point } = picked;
-        const mesh = (meshId === 0 || meshId) && this.picking.getMeshAt(meshId);
-        if (!mesh || !mesh.geometry) {
-            //有可能mesh已经被回收，geometry不再存在
-            return null;
-        }
-        let props = mesh.geometry.properties;
-        if (!props.features) {
-            //GLTFPhongPainter中，因为geometry是gltf数据，由全部的tile共享，features是存储在mesh上的
-            props = mesh.properties;
-        }
-        if (point && point.length) {
-            point[0] = Math.round(point[0] * 1E5) / 1E5;
-            point[1] = Math.round(point[1] * 1E5) / 1E5;
-            point[2] = Math.round(point[2] * 1E5) / 1E5;
-        }
-        const result = {
-            data: props && props.features && props.features[pickingId],
-            point,
-            plugin: this.pluginIndex,
-        };
-        const idMap = mesh.geometry.properties.feaPickingIdMap;
-        if (idMap) {
-            result.featureId = idMap[pickingId];
-        }
-        return result;
+        return null;
     }
 
     updateSceneConfig(/* config */) {
@@ -478,10 +482,16 @@ class Painter {
             this.shader.dispose();
         }
         if (this.picking) {
-            this.picking.dispose();
+            for (let i = 0; i < this.picking.length; i++) {
+                this.picking[i].dispose();
+            }
+            delete this.picking;
         }
-        if (this._outlineShader) {
-            this._outlineShader.dispose();
+        if (this._outlineShaders) {
+            for (let i = 0; i < this._outlineShaders.length; i++) {
+                this._outlineShaders[i].dispose();
+            }
+            delete this._outlineShaders;
         }
         this.logoutTextureCache();
     }
@@ -726,11 +736,11 @@ class Painter {
         if (!this.picking) {
             return;
         }
-        if (!this._outlineShader) {
+        if (!this._outlineShaders) {
             this._outlineScene = new reshader.Scene();
-            this._initOutlineShader();
-            this._outlineShader.filter = this.level0Filter;
-            if (!this._outlineShader) {
+            this._initOutlineShaders();
+            // this._outlineShader.filter = this.level0Filter;
+            if (!this._outlineShaders) {
                 console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
                 return;
             }
@@ -748,7 +758,9 @@ class Painter {
                 if (!isNil(pickingId)) {
                     uniforms.highlightPickingId = pickingId;
                     this._outlineScene.setMeshes(meshes[i]);
-                    this.renderer.render(this._outlineShader, uniforms, this._outlineScene, fbo);
+                    for (let j = 0; j < this._outlineShaders.length; j++) {
+                        this.renderer.render(this._outlineShaders[j], uniforms, this._outlineScene, fbo);
+                    }
                 }
             }
         }
@@ -771,64 +783,71 @@ class Painter {
         if (!this.picking) {
             return;
         }
-        if (!this._outlineShader) {
-            this._initOutlineShader();
-            if (!this._outlineShader) {
+        if (!this._outlineShaders) {
+            this._initOutlineShaders();
+            if (!this._outlineShaders) {
                 console.warn(`Plugin at ${this.pluginIndex} doesn't support outline.`);
                 return;
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
         uniforms.highlightPickingId = -1;
-        this.renderer.render(this._outlineShader, uniforms, this.scene, fbo);
+        for (let j = 0; j < this._outlineShaders.length; j++) {
+            this.renderer.render(this._outlineShaders[j], uniforms, this.scene, fbo);
+        }
     }
 
-    _initOutlineShader() {
+    _initOutlineShaders() {
 
         if (!this.picking) {
             return;
         }
         const canvas = this.layer.getRenderer().canvas;
-        const pickingVert = this.picking.getPickingVert();
-        const defines = {
-            'ENABLE_PICKING': 1,
-            'HAS_PICKING_ID': 1
-        };
-        const uniforms = this.picking.getUniformDeclares().slice(0);
-        if (uniforms['uPickingId'] !== undefined) {
-            defines['HAS_PICKING_ID'] = 2;
-        }
-        this._outlineShader = new reshader.MeshShader({
-            vert: pickingVert,
-            frag: outlineFrag,
-            uniforms,
-            defines,
-            extraCommandProps: {
-                viewport: {
-                    x: 0,
-                    y: 0,
-                    width: () => {
-                        return canvas.width;
-                    },
-                    height: () => {
-                        return canvas.height;
-                    }
-                },
-                depth: {
-                    enable: true,
-                    mask: false,
-                    func: 'always'
-                },
-                blend: {
-                    enable: true,
-                    func: {
-                        src: 'src alpha',
-                        dst: 'one minus src alpha'
-                    },
-                    equation: 'add'
-                }
+        this._outlineShaders = [];
+        for (let i = 0; i < this.picking.length; i++) {
+            const pickingVert = this.picking[i].getPickingVert();
+            const defines = {
+                'ENABLE_PICKING': 1,
+                'HAS_PICKING_ID': 1
+            };
+            const uniforms = this.picking[i].getUniformDeclares().slice(0);
+            if (uniforms['uPickingId'] !== undefined) {
+                defines['HAS_PICKING_ID'] = 2;
             }
-        });
+            this._outlineShaders[i] = new reshader.MeshShader({
+                vert: pickingVert,
+                frag: outlineFrag,
+                uniforms,
+                defines,
+                extraCommandProps: {
+                    viewport: {
+                        x: 0,
+                        y: 0,
+                        width: () => {
+                            return canvas.width;
+                        },
+                        height: () => {
+                            return canvas.height;
+                        }
+                    },
+                    depth: {
+                        enable: true,
+                        mask: false,
+                        func: 'always'
+                    },
+                    blend: {
+                        enable: true,
+                        func: {
+                            src: 'src alpha',
+                            dst: 'one minus src alpha'
+                        },
+                        equation: 'add'
+                    }
+                }
+            });
+            this._outlineShaders[i].filter = this.picking[i].filter;
+        }
+
     }
 
     hasIBL() {

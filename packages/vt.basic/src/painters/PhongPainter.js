@@ -87,7 +87,7 @@ class PhongPainter extends MeshPainter {
                 viewport: this.pickingViewport
             }
         };
-        this.picking = new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO);
+        this.picking = [new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO)];
 
     }
 
