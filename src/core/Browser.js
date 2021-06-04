@@ -22,7 +22,10 @@ if (!IS_NODE) {
         webkit3d = ('WebKitCSSMatrix' in window) && ('m11' in new window.WebKitCSSMatrix()) && !android23,
         gecko3d = 'MozPerspective' in doc.style,
         opera12 = 'OTransition' in doc.style,
-        any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs;
+        any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs,
+        // https://developer.mozilla.org/zh-CN/docs/Web/API/ImageBitmap
+        // this will Improve performance 2-3FPS
+        imageBitMap = typeof window !== 'undefined' && isFunction(window.createImageBitmap);
 
     let chromeVersion = 0;
     if (chrome) {
@@ -53,7 +56,7 @@ if (!IS_NODE) {
         android: ua.indexOf('android') !== -1,
         android23: android23,
         chrome: chrome,
-        chromeVersion : chromeVersion,
+        chromeVersion: chromeVersion,
         safari: !chrome && ua.indexOf('safari') !== -1,
         phantomjs: phantomjs,
 
@@ -80,7 +83,8 @@ if (!IS_NODE) {
         ie9: (ie && document.documentMode === 9),
         ie10: (ie && document.documentMode === 10),
 
-        webgl : webgl
+        webgl: webgl,
+        imageBitMap
     };
 }
 
