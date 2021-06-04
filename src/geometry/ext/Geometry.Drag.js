@@ -19,7 +19,7 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
  * @extends Handler
  * @ignore
  */
-class GeometryDragHandler extends Handler  {
+class GeometryDragHandler extends Handler {
 
     /**
      * @param  {Geometry} target geometry target to drag
@@ -123,8 +123,8 @@ class GeometryDragHandler extends Handler  {
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
             this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
-                enableAltitude : layer.options['enableAltitude'],
-                altitudeProperty : layer.options['altitudeProperty']
+                enableAltitude: layer.options['enableAltitude'],
+                altitudeProperty: layer.options['altitudeProperty']
             });
             map.addLayer(this._dragStageLayer);
         }
@@ -202,16 +202,30 @@ class GeometryDragHandler extends Handler  {
         }
         const geo = this._shadow || target;
         const axis = geo.options['dragOnAxis'],
-            coord = this._correctCoord(e['coordinate']),
+            dragOnScreenAxis = this._shadow.options['dragOnScreenAxis'],
             point = e['containerPoint'];
+        let coord = e['coordinate'];
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
+        // drag direction is ScreenCoordinates,The direction of the drag has nothing to do with the map rotation(bearing)
+        if (dragOnScreenAxis) {
+            if (axis === 'x') {
+                point.y = this._lastPoint.y;
+            } else if (axis === 'y') {
+                point.x = this._lastPoint.x;
+            }
+            coord = map.containerPointToCoord(point);
+        } else {
+            coord = this._correctCoord(coord);
+        }
         const pointOffset = point.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
-        if (axis === 'x') {
-            pointOffset.y = coordOffset.y = 0;
-        } else if (axis === 'y') {
-            pointOffset.x = coordOffset.x = 0;
+        if (!dragOnScreenAxis) {
+            if (axis === 'x') {
+                pointOffset.y = coordOffset.y = 0;
+            } else if (axis === 'y') {
+                pointOffset.x = coordOffset.x = 0;
+            }
         }
         this._lastPoint = point;
         this._lastCoord = coord;
@@ -343,7 +357,8 @@ class GeometryDragHandler extends Handler  {
 Geometry.mergeOptions({
     'draggable': false,
     'dragShadow': true,
-    'dragOnAxis': null
+    'dragOnAxis': null,
+    'dragOnScreenAxis': false
 });
 
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);
