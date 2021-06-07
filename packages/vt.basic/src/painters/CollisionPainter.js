@@ -600,6 +600,7 @@ export default class CollisionPainter extends BasicPainter {
 
     updateCollision(context) {
         super.updateCollision(context);
+        this._startCollision();
         this._prepareZoomEndMeshes();
         if (this._zoomEndMeshes && this._zoomEndMeshes.length) {
             this._updateZoomMeshesLevel();
@@ -613,7 +614,6 @@ export default class CollisionPainter extends BasicPainter {
             this._updateUniquePlacements();
             this._mergeUniquePlacements(this.scene.getMeshes());
         }
-        this._startCollision();
     }
 
     paint(context) {
