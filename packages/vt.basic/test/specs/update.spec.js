@@ -1,6 +1,6 @@
 const path = require('path');
 const assert = require('assert');
-const { readPixel } = require('../common/Util');
+const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
@@ -621,6 +621,39 @@ describe('update style specs', () => {
                 const pixel2 = readPixel(canvas, canvas.width / 2 + 6, canvas.height / 2);
                 assert.deepEqual(pixel2, [0, 0, 0, 0]);
                 done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update symbol textHaloRadis', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point', only2D: true },
+                    sceneConfig: { collision: false, fading: false }
+                },
+                symbol: { textOpacity: 1, textSize: 30, textFill: 'rgba(64,92,143,1)', textName: '大大大', textHaloRadius: 0, textHaloFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                layer.updateSymbol(0, { textHaloRadius: 1 });
+            } else if (count === 2) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'halo0', 'expected.png');
+                compareExpected(canvas, expectedPath, done);
             }
         });
         layer.addTo(map);

@@ -1016,7 +1016,19 @@ export default class CollisionPainter extends BasicPainter {
         return meshBoxes[count];
     }
 
-
+    _isHalo0(mesh) {
+        if (!mesh || !mesh.geometry) {
+            return true;
+        }
+        if (!mesh.geometry.properties.glyphAtlas || !mesh.material.get('isHalo') || mesh.geometry.data.aTextHaloRadius && mesh.geometry.properties.hasHalo) {
+            return false;
+        }
+        if (mesh.geometry.data.aTextHaloRadius && !mesh.geometry.properties.hasHalo) {
+            return true;
+        }
+        const symbol = this.getSymbol(mesh.geometry.properties.symbolIndex);
+        return !symbol.textHaloRadius;
+    }
 }
 
 const UNIQUE_TOLERANCE = 10;

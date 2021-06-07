@@ -119,7 +119,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     meshes.push(mesh);
 
     if (uniforms['isHalo']) {
-        const uniforms = {
+        const uniforms1 = {
             flipY: 0,
             tileResolution: geometry.properties.tileResolution,
             tileRatio: geometry.properties.tileRatio,
@@ -127,8 +127,8 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
             texSize: [glyphAtlas.width, glyphAtlas.height],
             isHalo: 0
         };
-        setMeshUniforms(geometry, uniforms, symbol);
-        const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
+        setMeshUniforms(geometry, uniforms1, symbol);
+        const material = new reshader.Material(uniforms1, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
             // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
             disableVAO: true,
@@ -236,10 +236,13 @@ function prepareGeometry(geometry, enableCollision) {
 }
 
 function setMeshUniforms(geometry, uniforms, symbol) {
+    // if (uniforms['isHalo'] === undefined) {
+    //     setUniformFromSymbol(uniforms, 'isHalo', symbol, 'textHaloRadius', 0, () => {
+    //         return +(!geometry.data['aTextHaloRadius'] || geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo);
+    //     });
+    // }
     if (uniforms['isHalo'] === undefined) {
-        setUniformFromSymbol(uniforms, 'isHalo', symbol, 'textHaloRadius', 0, v => {
-            return +(v > 0 && !geometry.data['aTextHaloRadius'] || geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo);
-        });
+        uniforms['isHalo'] = 1;
     }
     setUniformFromSymbol(uniforms, 'textOpacity', symbol, 'textOpacity', DEFAULT_UNIFORMS['textOpacity']);
     setUniformFromSymbol(uniforms, 'textFill', symbol, 'textFill', DEFAULT_UNIFORMS['textFill'], createColorSetter());

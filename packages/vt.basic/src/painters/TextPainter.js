@@ -18,25 +18,25 @@ import { GLYPH_SIZE } from './Constant';
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
+    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
+    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
 };
 
 //label box 或 icon box 对应的element数量
@@ -321,7 +321,7 @@ export default class TextPainter extends CollisionPainter {
 
     isMeshIterable(mesh) {
         //halo和正文共享的同一个geometry，无需更新
-        return !mesh.properties.isHalo && mesh.isValid() && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
+        return mesh.isValid() && mesh.material && !mesh.material.get('isHalo') && !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
     isMeshUniquePlaced(mesh) {

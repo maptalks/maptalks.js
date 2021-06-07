@@ -1,10 +1,9 @@
 const path = require('path');
 const assert = require('assert');
-const { readPixel } = require('../common/Util');
+const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
-const { match, writeImageData } = require('../integration/util');
 require('../../dist/maptalks.vt.basic');
 
 const DEFAULT_VIEW = {
@@ -229,27 +228,4 @@ function getMaterial(type) {
         };
     }
     return null;
-}
-
-function compareExpected(canvas, expectedPath, done) {
-    match(canvas, expectedPath, (err, result) => {
-        if (err) {
-            if (done) {
-                done(err);
-            }
-            return;
-        }
-        if (result.diffCount > 0) {
-            //保存差异图片
-            const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
-            const diffPath = dir + 'diff.png';
-            writeImageData(diffPath, result.diffImage, result.width, result.height);
-            const actualPath = dir + 'actual.png';
-            writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
-        }
-        assert(result.diffCount === 0);
-        if (done) {
-            done();
-        }
-    });
 }

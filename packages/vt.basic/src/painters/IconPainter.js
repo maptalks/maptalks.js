@@ -20,22 +20,22 @@ const BOX_ELEMENT_COUNT = 6;
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
+    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
 };
 
 const ICON_FILTER_N = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && !!mesh.geometry.properties.iconAtlas && !mesh.geometry.properties.isEmpty;
 };
 
 const TEXT_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
+    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
 };
 
 const TEXT_FILTER_N = function (mesh) {
     const renderer = this.layer.getRenderer();
-    return !renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && !!mesh.geometry.properties.glyphAtlas;
 };
 
 //temparary variables
@@ -271,7 +271,7 @@ class IconPainter extends CollisionPainter {
     isMeshIterable(mesh) {
         //halo和正文共享的同一个geometry，无需更新
         return mesh && mesh.geometry && !mesh.geometry.properties.isEmpty &&
-            !mesh.geometry.properties.isHalo && this.isMeshVisible(mesh) &&
+            mesh.material && !mesh.material.get('isHalo') && this.isMeshVisible(mesh) &&
             !(this.shouldIgnoreBackground() && !this.layer.getRenderer().isForeground(mesh));
     }
 
