@@ -655,10 +655,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
 
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
+        const isFirstRender = this._currentTimestamp !== parentContext.timestamp;
 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
-        if (isFinalRender) {
+        if (isFirstRender) {
             const groundOffset = -this.layer.getPolygonOffset();
             const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
             groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
