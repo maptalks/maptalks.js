@@ -97,22 +97,7 @@ class LineGradientPainter extends LinePainter {
     }
 
     createFnTypeConfig(map, symbolDef) {
-        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        const u16 = new Uint16Array(1);
-        return [
-            {
-                attrName: 'aLineWidth',
-                symbolName: 'lineWidth',
-                type: Uint8Array,
-                size: 1,
-                define: 'HAS_LINE_WIDTH',
-                evaluate: properties => {
-                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
-                    u16[0] = Math.round(lineWidth * 2.0);
-                    return u16[0];
-                }
-            }
-        ];
+        return this._createShapeFnTypeConfigs(map, symbolDef);
     }
 
     createShader(context) {

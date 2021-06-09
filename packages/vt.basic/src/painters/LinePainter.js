@@ -204,6 +204,12 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
+        if (geometry.data.aLineDx) {
+            defines['HAS_LINE_DX'] = 1;
+        }
+        if (geometry.data.aLineDy) {
+            defines['HAS_LINE_DY'] = 1;
+        }
         // if (symbol['lineOffset']) {
         //     defines['USE_LINE_OFFSET'] = 1;
         // }
@@ -222,8 +228,7 @@ class LinePainter extends BasicPainter {
 
     createFnTypeConfig(map, symbolDef) {
         const aColorFn = piecewiseConstant(symbolDef['lineColor']);
-        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
-        const u16 = new Uint16Array(1);
+        const shapeConfigs = this._createShapeFnTypeConfigs(map, symbolDef);
         return [
             {
                 //geometry.data 中的属性数据
@@ -241,7 +246,17 @@ class LinePainter extends BasicPainter {
                     color = toUint8ColorInGlobalVar(color);
                     return color;
                 }
-            },
+            }
+        ].concat(shapeConfigs);
+    }
+
+    _createShapeFnTypeConfigs(map, symbolDef) {
+        const aLineWidthFn = interpolated(symbolDef['lineWidth']);
+        const aLineDxFn = interpolated(symbolDef['lineDx']);
+        const aLineDyFn = interpolated(symbolDef['lineDy']);
+        const u16 = new Uint16Array(1);
+        const i8  = new Int8Array(1);
+        return [
             {
                 attrName: 'aLineWidth',
                 symbolName: 'lineWidth',
@@ -254,7 +269,32 @@ class LinePainter extends BasicPainter {
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
                 }
-            }
+            },
+            {
+                attrName: 'aLineDx',
+                symbolName: 'lineDx',
+                type: Int8Array,
+                width: 1,
+                define: 'HAS_LINE_DX',
+                evaluate: properties => {
+                    const lineDx = aLineDxFn(map.getZoom(), properties);
+                    i8[0] = lineDx;
+                    return i8[0];
+                }
+            },
+            {
+                attrName: 'aLineDy',
+                symbolName: 'lineDy',
+                type: Int8Array,
+                width: 1,
+                define: 'HAS_LINE_DY',
+                evaluate: properties => {
+                    const lineDy = aLineDyFn(map.getZoom(), properties);
+                    i8[0] = lineDy;
+                    return i8[0];
+                }
+            },
+
         ];
     }
 

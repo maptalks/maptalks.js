@@ -55,9 +55,18 @@ uniform mat4 projViewModelMatrix;
 uniform mat4 modelMatrix;
 uniform float tileResolution;
 uniform float resolution;
-uniform float tileRatio; //EXTENT / tileSize
-uniform float lineDx;
-uniform float lineDy;
+//EXTENT / tileSize
+uniform float tileRatio;
+#ifdef HAS_LINE_DX
+    attribute float aLineDx;
+#else
+    uniform float lineDx;
+#endif
+#ifdef HAS_LINE_DY
+    attribute float aLineDy;
+#else
+    uniform float lineDy;
+#endif
 // uniform float lineOffset;
 uniform vec2 canvasSize;
 
@@ -171,9 +180,20 @@ void main() {
         gl_Position = projViewModelMatrix * localVertex;
     }
 
+    #ifdef HAS_LINE_DX
+        float myLineDx = aLineDx;
+    #else
+        float myLineDx = lineDx;
+    #endif
+    #ifdef HAS_LINE_DY
+        float myLineDy = aLineDy;
+    #else
+        float myLineDy = lineDy;
+    #endif
+
     //这里可能有z-fighting问题
     float projDistance = gl_Position.w;
-    gl_Position.xy += vec2(lineDx, lineDy) * 2.0 / canvasSize * projDistance;
+    gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
 
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);

@@ -224,7 +224,7 @@ export const TEXT_SYMBOL = {
 export const LINE_SYMBOL = {
     lineWidth: {
         type: 'identity',
-        default: undefined,
+        default: 2,
         property: '_symbol_lineWidth'
     },
     lineColor: {
@@ -234,12 +234,12 @@ export const LINE_SYMBOL = {
     },
     lineDx: {
         type: 'identity',
-        default: 20,
+        default: 0,
         property: '_symbol_lineDx'
     },
     lineDy: {
         type: 'identity',
-        default: undefined,
+        default: 0,
         property: '_symbol_lineDy'
     },
     linePatternFile: {

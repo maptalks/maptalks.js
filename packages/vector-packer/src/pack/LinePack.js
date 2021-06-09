@@ -87,6 +87,12 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('lineJoinPatternMode', this.symbolDef)) {
             this.joinPatternModeFn = piecewiseConstant(this.symbolDef['lineJoinPatternMode']);
         }
+        if (isFnTypeSymbol('lineDx', this.symbolDef)) {
+            this.lineDxFn = interpolated(this.symbolDef['lineDx']);
+        }
+        if (isFnTypeSymbol('lineDy', this.symbolDef)) {
+            this.lineDyFn = interpolated(this.symbolDef['lineDy']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
@@ -206,6 +212,20 @@ export default class LinePack extends VectorPack {
                 name: 'aJoin'
             });
         }
+        if (this.lineDxFn) {
+            format.push({
+                type: Int8Array,
+                width: 1,
+                name: 'aLineDx'
+            });
+        }
+        if (this.lineDyFn) {
+            format.push({
+                type: Int8Array,
+                width: 1,
+                name: 'aLineDy'
+            });
+        }
         return format;
     }
 
@@ -308,6 +328,20 @@ export default class LinePack extends VectorPack {
             } else {
                 this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
+        }
+        if (this.lineDxFn) {
+            let dx = this.lineDxFn(this.options['zoom'], feature.properties);
+            if (isNil(dx)) {
+                dx = 0;
+            }
+            this.feaLineDx = dx;
+        }
+        if (this.lineDyFn) {
+            let dy = this.lineDyFn(this.options['zoom'], feature.properties);
+            if (isNil(dy)) {
+                dy = 0;
+            }
+            this.feaLineDy = dy;
         }
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
@@ -720,6 +754,12 @@ export default class LinePack extends VectorPack {
             data.push(...this.feaTexInfo);
 
             data.push(this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
+        }
+        if (this.lineDxFn) {
+            data.push(this.feaLineDx);
+        }
+        if (this.lineDyFn) {
+            data.push(this.feaLineDy);
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
