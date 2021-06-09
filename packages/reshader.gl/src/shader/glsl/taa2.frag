@@ -44,7 +44,7 @@ precision mediump float;
 #define BOX_TYPE                BOX_TYPE_AABB_VARIANCE
 #define USE_YCoCg               0
 #define FILTER_INPUT            0
-#define FILTER_HISTORY          1
+#define FILTER_HISTORY          0
 #endif
 
 /* debugging helper */
@@ -270,7 +270,7 @@ void main() {
 #endif
 
     // history clamping
-    history = clipToBox(BOX_CLIPPING, boxmin, boxmax, filtered, history);
+    // history = clipToBox(BOX_CLIPPING, boxmin, boxmax, filtered, history);
 
     float lumaColor   = luma(filtered.rgb);
     float lumaHistory = luma(history.rgb);
