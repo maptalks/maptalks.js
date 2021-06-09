@@ -26,7 +26,12 @@ uniform lowp float lineBlur;
     uniform sampler2D linePatternFile;
     uniform vec2 atlasSize;
     uniform float flipY;
-    uniform float linePatternAnimSpeed;
+    #ifdef HAS_PATTERN_ANIM
+        varying float vLinePatternAnimSpeed;
+    #else
+        uniform float linePatternAnimSpeed;
+    #endif
+
 
     varying vec4 vTexInfo;
     varying float vJoin;
@@ -119,7 +124,12 @@ void main() {
     #ifdef HAS_PATTERN
         if (hasPattern == 1.0) {
             float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
-            linesofar += mod(currentTime * -linePatternAnimSpeed * 0.1, patternWidth);
+            #ifdef HAS_PATTERN_ANIM
+                float myAnimSpeed = vLinePatternAnimSpeed;
+            #else
+                float myAnimSpeed = linePatternAnimSpeed;
+            #endif
+            linesofar += mod(currentTime * -myAnimSpeed * 0.2, patternWidth);
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
             float patternx = mod(linesofar / patternWidth, 1.0);
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);

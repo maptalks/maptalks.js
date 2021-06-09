@@ -4,7 +4,6 @@ import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.gradient.frag';
 import { prepareFnTypeData } from './util/fn_type_util';
-import { interpolated } from '@maptalks/function-type';
 
 const MAX_LINE_COUNT = 128;
 

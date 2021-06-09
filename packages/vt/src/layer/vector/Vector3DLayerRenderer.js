@@ -41,6 +41,7 @@ import Vector3DLayer from './Vector3DLayer';
 // };
 
 let meshUID = 1;
+const prefix = '_symbol_';
 
 class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
@@ -506,11 +507,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         //因为有虚线和没有虚线的line绘制逻辑不同，需要分开创建mesh
         const feas = [];
+        const patternFeas = [];
         const dashFeas = [];
         for (let i = 0; i < features.length; i++) {
             const f = features[i];
-            if (f.properties && f.properties['lineDasharray']) {
+            if (f.properties && f.properties[prefix + 'lineDasharray']) {
                 dashFeas.push(f);
+            } else if (f.properties && f.properties[prefix + 'linePatternFile']) {
+                patternFeas.push(f);
             } else {
                 feas.push(f);
             }
@@ -518,8 +522,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const symbol = extend({}, LINE_SYMBOL);
         const promises = [
-            this.createMesh(this._linePainter, LinePack, symbol, feas, atlas && atlas[0], center),
-            this.createMesh(this._linePainter, LinePack, symbol, dashFeas, atlas && atlas[1], center)
+            this.createMesh(this._linePainter, LinePack, symbol, patternFeas, atlas && atlas[0], center),
+            this.createMesh(this._linePainter, LinePack, symbol, dashFeas, atlas && atlas[1], center),
+            this.createMesh(this._linePainter, LinePack, symbol, feas, null, center)
         ];
 
         Promise.all(promises).then(mm => {
@@ -978,7 +983,6 @@ function isWinIntelGPU(gl) {
 
 export default Vector3DLayerRenderer;
 
-const prefix = '_symbol_';
 function hasMarkerSymbol({ properties }) {
     return properties[prefix + 'markerFile'] || properties[prefix + 'markerType'];
 }

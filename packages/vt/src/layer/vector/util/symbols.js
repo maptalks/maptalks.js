@@ -247,6 +247,16 @@ export const LINE_SYMBOL = {
         default: undefined,
         property: '_symbol_linePatternFile'
     },
+    linePatternAnimSpeed: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_linePatternAnimSpeed'
+    },
+    lineJoinPatternMode: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_lineJoinPatternMode'
+    },
     lineOpacity: {
         type: 'identity',
         default: 1,

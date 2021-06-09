@@ -5,7 +5,7 @@ import { mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
-import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
+import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { piecewiseConstant, interpolated } from '@maptalks/function-type';
@@ -31,14 +31,17 @@ class LinePainter extends BasicPainter {
     }
 
     needToRedraw() {
-        const symbol = this.getSymbols();
+        if (this._hasPatternAnim) {
+            return true;
+        }
+        const symbols = this.getSymbols();
         const animation = this.sceneConfig.trailAnimation;
         const needToRedraw = animation && animation.enable || super.needToRedraw();
         if (needToRedraw) {
             return true;
         }
-        for (let i = 0; i < symbol.length; i++) {
-            if (symbol['linePatternAnimSpeed']) {
+        for (let i = 0; i < symbols.length; i++) {
+            if (symbols[i]['linePatternAnimSpeed']) {
                 return true;
             }
         }
@@ -148,6 +151,7 @@ class LinePainter extends BasicPainter {
     }
 
     addMesh(...args) {
+        delete this._hasPatternAnim;
         const mesh = args[0];
         if (Array.isArray(mesh)) {
             mesh.forEach(m => {
@@ -164,6 +168,9 @@ class LinePainter extends BasicPainter {
         const defines = mesh.defines;
         this._prepareDashDefines(mesh, defines);
         mesh.setDefines(defines);
+        if (mesh.geometry.properties.hasPatternAnim) {
+            this._hasPatternAnim = 1;
+        }
     }
 
     _prepareDashDefines(mesh, defines) {
@@ -216,6 +223,9 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aUp) {
             defines['HAS_UP'] = 1;
         }
+        if (geometry.data.aLinePatternAnimSpeed) {
+            defines['HAS_PATTERN_ANIM'] = 1;
+        }
     }
 
     paint(context) {
@@ -228,7 +238,9 @@ class LinePainter extends BasicPainter {
 
     createFnTypeConfig(map, symbolDef) {
         const aColorFn = piecewiseConstant(symbolDef['lineColor']);
+        const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
         const shapeConfigs = this._createShapeFnTypeConfigs(map, symbolDef);
+        const i8  = new Int8Array(1);
         return [
             {
                 //geometry.data 中的属性数据
@@ -245,6 +257,24 @@ class LinePainter extends BasicPainter {
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;
+                }
+            },
+            {
+                attrName: 'aLinePatternAnimSpeed',
+                symbolName: 'linePatternAnimSpeed',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_PATTERN_ANIM',
+                evaluate: (properties, _, geometry) => {
+                    let speed = aLinePatternAnimSpeedFn(map.getZoom(), properties);
+                    if (isNil(speed)) {
+                        speed = 0;
+                    }
+                    if (speed !== 0) {
+                        geometry.properties.hasPatternAnim = 1;
+                    }
+                    i8[0] = speed / 127;
+                    return i8[0];
                 }
             }
         ].concat(shapeConfigs);

@@ -257,7 +257,7 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
             }
             let feature = features[aPickingId[start]];
             if (feature && feature.feature) {
-                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len);
+                evaluateAndUpdate(arr, feature, evaluate, start, i === l - 1 ? l : i, len, geometry);
                 start = i;
             }
         }
@@ -268,7 +268,7 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
     }
 }
 
-function evaluateAndUpdate(arr, feature, evaluate, start, end, len) {
+function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
     feature = feature.feature;
     const properties = feature.properties || {};
     if (properties['$layer'] === undefined) {
@@ -278,7 +278,7 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len) {
         properties['$layer'] = feature.layer;
         properties['$type'] = feature.type;
     }
-    const value = evaluate(properties, arr[start * len]);
+    const value = evaluate(properties, arr[start * len], geometry);
     if (Array.isArray(value)) {
         let dirty = false;
         for (let ii = 0; ii < len; ii++) {

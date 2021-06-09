@@ -93,6 +93,9 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('lineDy', this.symbolDef)) {
             this.lineDyFn = interpolated(this.symbolDef['lineDy']);
         }
+        if (isFnTypeSymbol('linePatternAnimSpeed', this.symbolDef)) {
+            this.linePatternAnimSpeedFn = piecewiseConstant(this.symbolDef['linePatternAnimSpeed']);
+        }
     }
 
     createStyledVector(feature, symbol, options, iconReqs) {
@@ -226,6 +229,13 @@ export default class LinePack extends VectorPack {
                 name: 'aLineDy'
             });
         }
+        if (this.linePatternAnimSpeedFn) {
+            format.push({
+                type: Int8Array,
+                width: 1,
+                name: 'aLinePatternAnimSpeed'
+            });
+        }
         return format;
     }
 
@@ -342,6 +352,16 @@ export default class LinePack extends VectorPack {
                 dy = 0;
             }
             this.feaLineDy = dy;
+        }
+        if (this.linePatternAnimSpeedFn) {
+            let speed = this.linePatternAnimSpeedFn(this.options['zoom'], feature.properties);
+            if (isNil(speed)) {
+                speed = 0;
+            }
+            if (speed !== 0) {
+                this.properties['hasPatternAnim'] = 1;
+            }
+            this.feaPatternAnimSpeed = speed;
         }
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
@@ -760,6 +780,9 @@ export default class LinePack extends VectorPack {
         }
         if (this.lineDyFn) {
             data.push(this.feaLineDy);
+        }
+        if (this.linePatternAnimSpeedFn) {
+            data.push(this.feaPatternAnimSpeed * 127);
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }

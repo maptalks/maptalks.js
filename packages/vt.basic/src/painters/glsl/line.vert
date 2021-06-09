@@ -87,6 +87,11 @@ varying float vGammaScale;
     uniform float lineWidth;
 #endif
 
+#ifdef HAS_PATTERN_ANIM
+    attribute float aLinePatternAnimSpeed;
+    varying float vLinePatternAnimSpeed;
+#endif
+
 #ifndef PICKING_MODE
     #ifdef HAS_COLOR
         attribute vec4 aColor;
@@ -194,6 +199,10 @@ void main() {
     //这里可能有z-fighting问题
     float projDistance = gl_Position.w;
     gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
+
+    #ifdef HAS_PATTERN_ANIM
+        vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+    #endif
 
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);

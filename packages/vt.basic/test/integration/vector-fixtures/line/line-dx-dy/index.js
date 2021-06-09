@@ -5,7 +5,7 @@ const line = new maptalks.LineString([[0, 0], [1, 0]], {
         lineColor: '#f00',
         lineWidth: 20,
         lineOpacity: 0.4,
-        lineDx: - 20,
+        lineDx: -20,
         lineDy: -10
     }
 });
