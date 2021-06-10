@@ -211,6 +211,9 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
+        if (geometry.data.aLineGapWidth) {
+            defines['HAS_GAP_WIDTH'] = 1;
+        }
         if (geometry.data.aLineDx) {
             defines['HAS_LINE_DX'] = 1;
         }
@@ -282,6 +285,7 @@ class LinePainter extends BasicPainter {
 
     _createShapeFnTypeConfigs(map, symbolDef) {
         const aLineWidthFn = interpolated(symbolDef['lineWidth']);
+        const aLineGapWidthFn = interpolated(symbolDef['lineGapWidth']);
         const aLineDxFn = interpolated(symbolDef['lineDx']);
         const aLineDyFn = interpolated(symbolDef['lineDy']);
         const u16 = new Uint16Array(1);
@@ -297,6 +301,19 @@ class LinePainter extends BasicPainter {
                     const lineWidth = aLineWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
+                    return u16[0];
+                }
+            },
+            {
+                attrName: 'aLineGapWidth',
+                symbolName: 'lineGapWidth',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_GAP_WIDTH',
+                evaluate: properties => {
+                    const lineGapWidth = aLineGapWidthFn(map.getZoom(), properties);
+                    //乘以2是为了解决 #190
+                    u16[0] = Math.round(lineGapWidth * 2.0);
                     return u16[0];
                 }
             },

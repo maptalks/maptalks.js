@@ -50,7 +50,12 @@ attribute vec2 aExtrude;
 #endif
 
 uniform float cameraToCenterDistance;
-uniform float lineGapWidth;
+#if defined(HAS_GAP_WIDTH)
+    attribute float aLineGapWidth;
+#else
+    uniform float lineGapWidth;
+#endif
+
 uniform mat4 projViewModelMatrix;
 uniform mat4 modelMatrix;
 uniform float tileResolution;
@@ -141,7 +146,12 @@ void main() {
     vec4 vertex = projViewModelMatrix * pos4;
     vVertex = (modelMatrix * pos4).xyz;
 
-    float gapwidth = lineGapWidth / 2.0;
+    #ifdef HAS_GAP_WIDTH
+        float gapwidth = aLineGapWidth / 4.0;
+    #else
+        float gapwidth = lineGapWidth / 2.0;
+    #endif
+
     #ifdef HAS_LINE_WIDTH
         //除以2.0是为了解决 #190
         float myLineWidth = aLineWidth / 2.0;

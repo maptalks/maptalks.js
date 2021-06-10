@@ -63,6 +63,9 @@ export default class LinePack extends VectorPack {
         if (isFnTypeSymbol('lineWidth', this.symbolDef)) {
             this.lineWidthFn = interpolated(this.symbolDef['lineWidth']);
         }
+        if (isFnTypeSymbol('lineGapWidth', this.symbolDef)) {
+            this.lineGapWidthFn = interpolated(this.symbolDef['lineGapWidth']);
+        }
         if (isFnTypeSymbol('lineColor', this.symbolDef)) {
             this.colorFn = piecewiseConstant(this.symbolDef['lineColor']);
         }
@@ -153,6 +156,15 @@ export default class LinePack extends VectorPack {
                     type: Uint8Array,
                     width: 1,
                     name: 'aLineWidth'
+                }
+            );
+        }
+        if (this.lineGapWidthFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aLineGapWidth'
                 }
             );
         }
@@ -272,6 +284,21 @@ export default class LinePack extends VectorPack {
             this.feaLineWidth = lineWidth;
         } else {
             this.feaLineWidth = symbol['lineWidth'];
+        }
+        if (this.lineGapWidthFn) {
+            // {
+            //     lineGapWidth: {
+            //         property: 'type',
+            //         stops: [1, { stops: [[2, 3], [3, 4]] }]
+            //     }
+            // }
+            let lineGapWidth = this.lineGapWidthFn(this.options['zoom'], feature.properties);
+            if (isNil(lineGapWidth)) {
+                lineGapWidth = 0;
+            }
+            this.feaLineGapWidth = lineGapWidth;
+        } else {
+            this.feaLineGapWidth = symbol['lineGapWidth'] || 0;
         }
         if (this.colorFn) {
             this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
@@ -740,6 +767,10 @@ export default class LinePack extends VectorPack {
         if (this.lineWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
+        }
+        if (this.lineGapWidthFn) {
+            //乘以2是为了解决 #190
+            data.push(Math.round(this.feaLineGapWidth * 2));
         }
         if (this.colorFn) {
             data.push(...this.feaColor);

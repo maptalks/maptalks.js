@@ -227,6 +227,11 @@ export const LINE_SYMBOL = {
         default: 2,
         property: '_symbol_lineWidth'
     },
+    lineGapWidth: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_lineGapWidth'
+    },
     lineColor: {
         type: 'identity',
         default: 20,
