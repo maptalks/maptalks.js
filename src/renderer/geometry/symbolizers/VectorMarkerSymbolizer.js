@@ -103,7 +103,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         return canvas;
     }
 
-
     _stampSymbol() {
         if (!this._stamp) {
             this._stamp = hashCode([
