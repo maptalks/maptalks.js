@@ -805,6 +805,14 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
+        if (img && Browser.imageBitMap) {
+            if (img.src && isSVG(img.src)) {
+                return;
+            }
+            createImageBitmap(img).then(imageBitmap => {
+                this.resources[url[0]].image = imageBitmap;
+            });
+        }
     }
 
     isResourceLoaded(url, checkSVG) {
