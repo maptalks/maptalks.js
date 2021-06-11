@@ -6,6 +6,7 @@ import PointExtent from '../../../geo/PointExtent';
 import { getImageMarkerFixedExtent, isImageSymbol } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
+import Browser from './../../../core/Browser';
 const TEMP_SIZE = new Size(1, 1);
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
@@ -84,7 +85,13 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getImage(resources) {
-        return getImage(resources, this.style['markerFile']);
+        const img = getImage(resources, this.style['markerFile']);
+        if (img && Browser.imageBitMap && (!(img instanceof ImageBitmap))) {
+            createImageBitmap(img).then(imageBitmap => {
+                resources.addResource([this.style['markerFile']], imageBitmap);
+            });
+        }
+        return img;
     }
 
     getFixedExtent(resources) {

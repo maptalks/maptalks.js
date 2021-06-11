@@ -9,6 +9,7 @@ import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import { getDefaultVAlign, getDefaultHAlign } from '../../../core/util/marker';
+import Browser from './../../../core/Browser';
 
 const MARKER_SIZE = [];
 
@@ -100,8 +101,15 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             point = this._getCacheImageAnchor(size[0], size[1]);
         const context = canvas.getContext('2d');
         this._drawVectorMarker(context, point, resources);
+        if (Browser.imageBitMap) {
+            createImageBitmap(canvas).then(imageBitmap => {
+                const stamp = this._stampSymbol();
+                resources.addResource([stamp, canvas.width, canvas.height], imageBitmap);
+            });
+        }
         return canvas;
     }
+
 
     _stampSymbol() {
         if (!this._stamp) {
