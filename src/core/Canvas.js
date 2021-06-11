@@ -539,6 +539,7 @@ const Canvas = {
             }
             ctx.restore();
         }
+        const fillStyle = ctx.fillStyle;
         for (i = 0, len = points.length; i < len; i++) {
             if (!isArrayHasData(points[i])) {
                 continue;
@@ -567,6 +568,10 @@ const Canvas = {
                 }
             }
             Canvas._stroke(ctx, lineOpacity);
+        }
+        //还原fillStyle
+        if (ctx.fillStyle !== fillStyle) {
+            ctx.fillStyle = fillStyle;
         }
         if (points.length > 1 && !IS_NODE) {
             savedCtx.drawImage(TEMP_CANVAS, 0, 0);
@@ -879,10 +884,9 @@ const Canvas = {
     pixelRect(ctx, point, lineOpacity, fillOpacity) {
         const lineWidth = ctx.lineWidth;
         const alpha = ctx.globalAlpha;
+        let isStroke = false;
         if (lineWidth > 0 && lineOpacity > 0) {
-            if (ctx.fillStyle !== ctx.strokeStyle) {
-                ctx.fillStyle = ctx.strokeStyle;
-            }
+            isStroke = true;
             if (lineOpacity < 1) {
                 ctx.globalAlpha *= lineOpacity;
             }
@@ -894,7 +898,11 @@ const Canvas = {
             return;
         }
         ctx.canvas._drawn = true;
-        ctx.fillRect(point[0], point[1], 1, 1);
+        if (isStroke) {
+            ctx.strokeRect(point[0], point[1], 1, 1);
+        } else {
+            ctx.fillRect(point[0], point[1], 1, 1);
+        }
         if (ctx.globalAlpha !== alpha) {
             ctx.globalAlpha = alpha;
         }
