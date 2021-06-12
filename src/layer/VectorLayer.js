@@ -117,22 +117,41 @@ class VectorLayer extends OverlayLayer {
         const filter = options['filter'],
             tolerance = options['tolerance'],
             hits = [];
+        const map = this.getMap();
+        const renderer = this.getRenderer();
+        const imageData = renderer && renderer.getImageData && renderer.getImageData();
+        if (imageData) {
+            const r = map.getDevicePixelRatio();
+            imageData.r = r;
+            const x = Math.round(cp.x * r),
+                y = Math.round(cp.y * r);
+            const idx = y * imageData.width * 4 + x * 4;
+            //空白的直接返回，避免下面的逻辑,假设有50%的概率不命中(要么命中,要么不命中)，可以节省大量的时间
+            if (imageData.data[idx + 3] === 0) {
+                return hits;
+            }
+        }
+        const TYPES = ['LineString', 'Polygon'];
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
                 continue;
             }
-            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
-                // Except for LineString with arrows or curves
-                let extent = geo.getContainerExtent(TEMP_EXTENT);
-                if (tolerance) {
-                    extent = extent._expand(tolerance);
-                }
-                if (!extent || !extent.contains(cp)) {
-                    continue;
+            const type = geo.getType();
+            //当imagedata=null或者不是LineString和Polygon时，保留原有的pick方式
+            if (!imageData || TYPES.indexOf(type) === -1) {
+                if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+                    // Except for LineString with arrows or curves
+                    let extent = geo.getContainerExtent(TEMP_EXTENT);
+                    if (tolerance) {
+                        extent = extent._expand(tolerance);
+                    }
+                    if (!extent || !extent.contains(cp)) {
+                        continue;
+                    }
                 }
             }
-            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance, imageData) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

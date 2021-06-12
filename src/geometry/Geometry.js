@@ -512,7 +512,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
-    _containsPoint(containerPoint, t) {
+    _containsPoint(containerPoint, t, imageData) {
         const painter = this._getPainter();
         if (!painter) {
             return false;
@@ -520,7 +520,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (isNil(t) && this._hitTestTolerance) {
             t = this._hitTestTolerance();
         }
-        return painter.hitTest(containerPoint, t);
+        return painter.hitTest(containerPoint, t, imageData);
     }
 
     /**
