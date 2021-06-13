@@ -28,7 +28,7 @@ export default function convert(data, options = {}) {
 }
 
 function convertFeature(features, geojson, options, index) {
-    if (!geojson.geometry) return;
+    if (!geojson.geometry || !geojson.geometry.geometry) return;
 
     var coords = geojson.geometry.coordinates;
     var type = geojson.geometry.type;

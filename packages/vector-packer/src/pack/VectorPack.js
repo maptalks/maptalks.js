@@ -45,7 +45,12 @@ export default class VectorPack {
         if (!features.length) {
             return features;
         }
-        const first = features[0];
+        let i = 0;
+        let first = features[i];
+        while (!first.geometry) {
+            i++;
+            first = features[i];
+        }
         let checked;
         if (Array.isArray(first.geometry) && first.properties) {
             let g = first.geometry[0];
@@ -143,8 +148,11 @@ export default class VectorPack {
             //         continue;
             //     }
             // } else {
+            if (!feature.geometry) {
+                continue;
+            }
             const vector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
-            if (!vector) {
+            if (!vector || !vector.feature.geometry) {
                 continue;
             }
             vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
@@ -265,6 +273,9 @@ export default class VectorPack {
         let maxFeaId = 0;
         let hasNegative = false;
         for (let i = 0, l = vectors.length; i < l; i++) {
+            if (!vectors[i].feature.geometry) {
+                continue;
+            }
             const feaId = Array.isArray(vectors[i]) ? vectors[i][0].feature.id : vectors[i].feature.id;
             if (isNumber(feaId)) {
                 if (Math.abs(feaId) > maxFeaId) {

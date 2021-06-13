@@ -7,6 +7,7 @@ import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
 import Color from 'color';
 import { isOut, isNil, wrap } from './util/util';
+import mergeLines from './util/merge_lines';
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
@@ -147,6 +148,9 @@ export default class PointPack extends VectorPack {
         }
         if (iconSymbol) {
             iconSymbol['isIconText'] = true;
+            if (symbol['mergeOnProperty']) {
+                iconSymbol['mergeOnProperty'] = symbol['mergeOnProperty'];
+            }
             results.push(iconSymbol);
         }
         if (textSymbol) {
@@ -155,7 +159,10 @@ export default class PointPack extends VectorPack {
                 textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
                 textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
                 textSymbol['isIconText'] = true;
+            } else if (symbol['mergeOnProperty']) {
+                textSymbol['mergeOnProperty'] = symbol['mergeOnProperty'];
             }
+
             results.push(textSymbol);
         }
         if (symbol['visible'] !== undefined) {
@@ -184,6 +191,18 @@ export default class PointPack extends VectorPack {
     constructor(features, symbol, options) {
         super(features, symbol, options);
         this._initFnTypes();
+    }
+
+    _mergeFeatures(features) {
+        const textName = this.symbolDef['mergeOnProperty'];
+        return mergeLines(features, textName);
+    }
+
+    load(scale = 1) {
+        if (this._isLinePlacement() && this.features) {
+            this.features = this._mergeFeatures(this.features);
+        }
+        return super.load(scale);
     }
 
     _initFnTypes() {
@@ -727,6 +746,11 @@ export default class PointPack extends VectorPack {
         const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing);
         //TODO 还需要mergeLines
         return anchors;
+    }
+
+    _isLinePlacement() {
+        const symbolDef = this.symbolDef;
+        return symbolDef['mergeOnProperty'] && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line');
     }
 
     _getPlacement(symbol, point) {
