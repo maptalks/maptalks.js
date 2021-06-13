@@ -190,18 +190,30 @@ Map.include(/** @lends Map.prototype */ {
 
     _handleDOMEvent(e) {
         const type = e.type;
+        const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
         // prevent default contextmenu
-        if (type === 'contextmenu') {
-            preventDefault(e);
+        if (isMouseDown) {
+            this._domMouseDownTime = now();
         }
-        this._fireDOMEvent(this, e, 'dom:' + e.type);
+        if (type === 'contextmenu') {
+            // prevent context menu, if duration from mousedown > 300ms
+            preventDefault(e);
+            const downTime = this._domMouseDownTime;
+            delete this._domMouseDownTime;
+            const time = now();
+            if (time - downTime <= 300) {
+                this._fireDOMEvent(this, e, 'dom:' + e.type);
+            }
+        } else {
+            this._fireDOMEvent(this, e, 'dom:' + e.type);
+        }
         if (this._ignoreEvent(e)) {
             return;
         }
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
         // happen.js produce event without touches
-        if (type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1))) {
+        if (isMouseDown) {
             this._mouseDownTime = now();
         } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu')) {
             if (!this._mouseDownTime) {
