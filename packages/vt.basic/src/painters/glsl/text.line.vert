@@ -41,6 +41,8 @@ uniform vec2 texSize;
 uniform vec2 canvasSize;
 uniform float tileRatio; //EXTENT / tileSize
 
+uniform float layerScale;
+
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vGammaScale;
@@ -85,9 +87,9 @@ void main() {
         float myTextDy = textDy;
     #endif
     #ifdef HAS_TEXT_SIZE
-        float myTextSize = aTextSize;
+        float myTextSize = aTextSize * layerScale;
     #else
-        float myTextSize = textSize;
+        float myTextSize = textSize * layerScale;
     #endif
     #ifdef HAS_PITCH_ALIGN
         float isPitchWithMap = aPitchAlign;

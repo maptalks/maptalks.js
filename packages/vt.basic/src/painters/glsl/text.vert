@@ -60,6 +60,8 @@ uniform float mapRotation;
 uniform float zoomScale;
 uniform float tileRatio; //EXTENT / tileSize
 
+uniform float layerScale;
+
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vGammaScale;
@@ -94,9 +96,9 @@ void main() {
     vec3 position = aPosition;
 
     #ifdef HAS_TEXT_SIZE
-        float myTextSize = aTextSize;
+        float myTextSize = aTextSize * layerScale;
     #else
-        float myTextSize = textSize;
+        float myTextSize = textSize * layerScale;
     #endif
     #ifdef HAS_TEXT_DX
         float myTextDx = aTextDx;

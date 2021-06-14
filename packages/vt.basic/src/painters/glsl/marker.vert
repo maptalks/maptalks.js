@@ -66,6 +66,8 @@ uniform float zoomScale;
  //EXTENT / tileSize
 uniform float tileRatio;
 
+uniform float layerScale;
+
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vOpacity;
@@ -130,7 +132,7 @@ void main() {
     if (isPitchWithMap == 1.0 && flipY == 0.0) {
         shape *= vec2(1.0, -1.0);
     }
-    shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight);
+    shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) * layerScale;
     shape = shapeMatrix * shape;
 
     if (isPitchWithMap == 0.0) {

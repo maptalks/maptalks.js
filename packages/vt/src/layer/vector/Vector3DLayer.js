@@ -7,6 +7,7 @@ const defaultOptions = {
     collision: false,
     textGamma: 1,
     geometryEvents: true,
+    styleScale: 1,
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,

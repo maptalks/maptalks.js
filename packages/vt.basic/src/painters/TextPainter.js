@@ -771,6 +771,7 @@ export default class TextPainter extends CollisionPainter {
         // ];
 
         return {
+            layerScale: this.layer.options['styleScale'] || 1,
             mapPitch: map.getPitch() * Math.PI / 180,
             mapRotation: map.getBearing() * Math.PI / 180,
             projViewMatrix,

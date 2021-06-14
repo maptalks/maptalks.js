@@ -43,7 +43,8 @@ const defaultOptions = {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true
     },
-    pyramidMode: 1
+    pyramidMode: 1,
+    styleScale: 1
 };
 
 /**

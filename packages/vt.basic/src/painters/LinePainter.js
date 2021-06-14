@@ -477,6 +477,7 @@ class LinePainter extends BasicPainter {
         // console.log(vec2.normalize([], [v[0] - c[0], v[1] - c[1]]));
         const animation = this.sceneConfig.trailAnimation || {};
         const uniforms = {
+            layerScale: this.layer.options['styleScale'] || 1,
             projViewMatrix, viewMatrix, cameraToCenterDistance, resolution, canvasSize,
             trailSpeed: animation.speed || 1,
             trailLength: animation.trailLength || 500,

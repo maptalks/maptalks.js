@@ -75,6 +75,8 @@ uniform float tileRatio;
 // uniform float lineOffset;
 uniform vec2 canvasSize;
 
+uniform float layerScale;
+
 varying vec2 vNormal;
 varying vec2 vWidth;
 varying float vGammaScale;
@@ -154,9 +156,9 @@ void main() {
 
     #ifdef HAS_LINE_WIDTH
         //除以2.0是为了解决 #190
-        float myLineWidth = aLineWidth / 2.0;
+        float myLineWidth = aLineWidth / 2.0 * layerScale;
     #else
-        float myLineWidth = lineWidth;
+        float myLineWidth = lineWidth * layerScale;
     #endif
     float halfwidth = myLineWidth / 2.0;
     // offset = -1.0 * offset;
