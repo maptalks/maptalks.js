@@ -43,6 +43,7 @@ const options = {
     'altitude': 0
 };
 
+const TYPES = ['LineString', 'Polygon', 'MultiLineString', 'MultiPolygon'];
 /**
  * @classdesc
  * A layer for managing and rendering geometries.
@@ -131,7 +132,7 @@ class VectorLayer extends OverlayLayer {
                 return hits;
             }
         }
-        const TYPES = ['LineString', 'Polygon'];
+        const types = TYPES;
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
@@ -139,7 +140,7 @@ class VectorLayer extends OverlayLayer {
             }
             const type = geo.getType();
             //当imagedata=null或者不是LineString和Polygon时，保留原有的pick方式
-            if (!imageData || TYPES.indexOf(type) === -1) {
+            if (!imageData || types.indexOf(type) === -1) {
                 if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
                     // Except for LineString with arrows or curves
                     let extent = geo.getContainerExtent(TEMP_EXTENT);

@@ -211,8 +211,8 @@ class GeometryCollection extends Geometry {
                 symbols.push(g.getSymbol());
             });
             if (is) {
-                s =  {
-                    'children' : symbols
+                s = {
+                    'children': symbols
                 };
             }
         }
@@ -337,13 +337,13 @@ class GeometryCollection extends Geometry {
         return new Coordinate(sumX / counter, sumY / counter);
     }
 
-    _containsPoint(point, t) {
+    _containsPoint(point, t, imageData) {
         if (this.isEmpty()) {
             return false;
         }
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
-            if (geometries[i]._containsPoint(point, t)) {
+            if (geometries[i]._containsPoint(point, t, imageData)) {
                 return true;
             }
         }
