@@ -42,8 +42,8 @@ const options = {
     'roundPoint': false,
     'altitude': 0
 };
-
-const TYPES = ['LineString', 'Polygon', 'MultiLineString', 'MultiPolygon'];
+// Polyline is for custom line geometry
+const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
 /**
  * @classdesc
  * A layer for managing and rendering geometries.
@@ -139,7 +139,8 @@ class VectorLayer extends OverlayLayer {
                 continue;
             }
             const type = geo.getType();
-            //当imagedata=null或者不是LineString和Polygon时，保留原有的pick方式
+            //当imagedata=null或者不是LineString/Polyline,Polygon,MultiLineString,MultiPolygon时，保留原有的pick方式
+            // Marker,Rectangle,Circle,Sector,Ellipse ...等也可以用该方法来优化
             if (!imageData || types.indexOf(type) === -1) {
                 if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
                     // Except for LineString with arrows or curves
@@ -152,7 +153,7 @@ class VectorLayer extends OverlayLayer {
                     }
                 }
             }
-            if (geo._containsPoint(cp, tolerance, imageData) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

@@ -541,36 +541,39 @@ class Painter extends Class {
         return !!this._spriting;
     }
 
-    hitTest(cp, tolerance, imageData) {
+    hitTest(cp, tolerance) {
         if (!tolerance || tolerance < 0.5) {
             tolerance = 0.5;
         }
-        if (imageData) {
-            const size = 2 * tolerance;
-            let r = imageData.r;
-            if (r === undefined) {
-                const map = this.getMap();
-                r = map.getDevicePixelRatio();
-            }
-            let isHit = false;
-            const startX = Math.round(cp.x * r - size),
-                startY = Math.round(cp.y * r - size);
-            for (let i = 0; i < size; i++) {
-                if (isHit) {
-                    break;
+        const layer = this.getLayer();
+        if (layer) {
+            const render = layer.getRenderer();
+            const imageData = render && render.getImageData && render.getImageData();
+            if (imageData) {
+                const size = 2 * tolerance;
+                let r = imageData.r;
+                if (r === undefined) {
+                    const map = this.getMap();
+                    r = map.getDevicePixelRatio();
                 }
-                for (let j = 0; j < size; j++) {
+                let isHit = false;
+                const startX = Math.round(cp.x * r - size),
+                    startY = Math.round(cp.y * r - size);
+                for (let i = 0; i < size; i++) {
                     if (isHit) {
                         break;
                     }
-                    const x = startX + j, y = startY + i;
-                    const idx = y * imageData.width * 4 + x * 4;
-                    if (imageData.data[idx + 3] > 0) {
-                        isHit = true;
+                    for (let j = 0; j < size; j++) {
+                        if (isHit) {
+                            break;
+                        }
+                        const x = startX + j, y = startY + i;
+                        const idx = y * imageData.width * 4 + x * 4;
+                        isHit = imageData.data[idx + 3] > 0;
                     }
                 }
+                return isHit;
             }
-            return isHit;
         }
         if (!testCanvas) {
             const canvasClass = this.getMap() ? this.getMap().CanvasClass : null;
