@@ -338,6 +338,32 @@ export default class Geometry {
         return this;
     }
 
+    updateSubData(name, data, offset) {
+        const buf = this.data[name];
+        if (!buf) {
+            return this;
+        }
+        this._incrVersion();
+        let buffer;
+        if (buf.buffer && buf.buffer.destroy) {
+            buffer = buf;
+        }
+        if (name === this.desc.positionAttribute) {
+            this._updateSubBoundingBox(data);
+        }
+        if (buffer) {
+            buffer.buffer.subdata(data, offset);
+        } else {
+            const arr = this.data[name].data ? this.data[name].data : this.data[name];
+            for (let i = 0; i < data.length; i++) {
+                arr[offset + i] = data[i];
+            }
+        }
+        this._prepareData();
+        delete this._reglData;
+        return this;
+    }
+
     getPrimitive() {
         return this.desc.primitive;
     }
@@ -439,6 +465,27 @@ export default class Geometry {
             bbox.updateVertex();
             bbox.dirty();
         }
+    }
+
+    _updateSubBoundingBox(data) {
+        const bbox = this.boundingBox;
+
+        const min = bbox.min;
+        const max = bbox.max;
+        for (let i = 0; i < data.length;) {
+            const x = data[i++];
+            const y = data[i++];
+            const z = data[i++];
+            if (x < min[0]) { min[0] = x; }
+            if (y < min[1]) { min[1] = y; }
+            if (z < min[2]) { min[2] = z; }
+
+            if (x > max[0]) { max[0] = x; }
+            if (y > max[1]) { max[1] = y; }
+            if (z > max[2]) { max[2] = z; }
+        }
+        bbox.updateVertex();
+        bbox.dirty();
     }
 
     createTangent(name = 'aTangent') {
