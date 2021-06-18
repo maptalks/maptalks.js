@@ -188,6 +188,29 @@ export default class PointPack extends VectorPack {
         return results;
     }
 
+    static isAtlasLoaded(iconGlyph, atlas) {
+        const { icon, glyph } = iconGlyph;
+        const { iconAtlas, glyphAtlas } = atlas;
+        if (icon) {
+            if (!iconAtlas || !iconAtlas.positions[icon]) {
+                return false;
+            }
+        }
+        if (glyph) {
+            if (!glyphAtlas || !glyphAtlas.positions[glyph.font]) {
+                return false;
+            }
+            const fontGlphy = glyphAtlas.positions[glyph.font];
+            const { text } = glyph;
+            for (let i = 0; i < text.length; i++) {
+                if (!fontGlphy[text.charCodeAt(i)]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     constructor(features, symbol, options) {
         super(features, symbol, options);
         this._initFnTypes();

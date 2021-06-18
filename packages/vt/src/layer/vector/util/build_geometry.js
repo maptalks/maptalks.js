@@ -6,7 +6,8 @@ const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
 
 //需要解决精度问题
-export function convertToFeature(geo, kidGen) {
+// currentFeature 是geometry已经存在的feature，则沿用老的kid
+export function convertToFeature(geo, kidGen, currentFeature) {
     const keyName = (KEY_IDX + '').trim();
     const map = geo.getMap();
     const glZoom = map.getGLZoom();
@@ -52,7 +53,7 @@ export function convertToFeature(geo, kidGen) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']();
-    const kid = kidGen.id++;
+    const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0][keyName] : currentFeature[keyName]) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
         const features = [];

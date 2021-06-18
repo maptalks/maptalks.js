@@ -79,6 +79,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             for (let i = 0; i < mm.length; i++) {
                 if (mm[i] && mm[i].mesh) {
                     meshes.push(mm[i].mesh);
+                    mm[i].mesh.geometry.properties.originElements = mm[i].mesh.geometry.properties.elements.slice();
                     if (i === 1) {
                         mm[i].mesh.transparent = true;
                     }

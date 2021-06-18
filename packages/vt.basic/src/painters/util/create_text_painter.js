@@ -200,8 +200,9 @@ function prepareGeometry(geometry, enableCollision) {
         geometry.properties.aAnchor = aPosition;
         geometry.properties.aShape = aShape;
     }
-    if (!geometry.properties.elements) {
+    if (!geometry.properties.visElemts) {
         geometry.properties.elements = geometry.elements;
+        geometry.properties.visElemts = new geometry.elements.constructor(geometry.elements.length);
     }
 
     if (isLinePlacement) {

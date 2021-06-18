@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
-import { IconRequestor, GlyphRequestor, PointPack, LinePack } from '@maptalks/vector-packer';
+import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
@@ -42,6 +42,7 @@ import Vector3DLayer from './Vector3DLayer';
 
 let meshUID = 1;
 const prefix = '_symbol_';
+const keyName = (KEY_IDX + '').trim();
 
 class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
@@ -53,6 +54,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._markerFeatures = {};
         this._textFeatures = {};
         this._lineFeatures = {};
+        this._renderFeatures = {};
         this._dirtyAll = true;
         this._kidGen = { id: 0 };
         this._markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
@@ -96,6 +98,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._buildLineMesh(lineAtlas);
             this._dirtyGeo = false;
             // this._dirtySymbol = false;
+        } else if (this._showHideUpdated) {
+            if (this._markerMeshes) {
+                this._updateVisElements(this._markerMeshes[0], this._markerFeatures);
+                this._updateVisElements(this._markerMeshes[1], this._textFeatures);
+            }
+            if (this._lineMeshes) {
+                for (let i = 0; i < this._lineMeshes.length; i++) {
+                    this._updateVisElements(this._lineMeshes[i], this._lineFeatures);
+                }
+            }
+            if (this.meshes) {
+                for (let i = 0; i < this.meshes.length; i++) {
+                    this._updateVisElements(this.meshes[i], this._allFeatures);
+                }
+            }
+            this._showHideUpdated = false;
         }/* else if (this._dirtySymbol) {
             this.updateSymbol();
             this._dirtySymbol = false;
@@ -193,13 +211,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     // count = count++;
                     for (let i = 0; i < feature.length; i++) {
                         const fea = feature[i];
-                        if (fea.visible) {
-                            this._addCoordsToCenter(fea.geometry, center);
-                            // fea[keyName] = count++;
-                            features.push(fea);
+                        if (!fea.visible) {
+                            this._showHideUpdated = true;
                         }
+                        this._addCoordsToCenter(fea.geometry, center);
+                        // fea[keyName] = count++;
+                        features.push(fea);
                     }
-                } if (feature.visible) {
+                } else {
+                    if (!feature.visible) {
+                        this._showHideUpdated = true;
+                    }
                     this._addCoordsToCenter(feature.geometry, center);
                     // feature[keyName] = count++;
                     features.push(feature);
@@ -426,23 +448,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             return;
         }
-        const markerOptions = {
-            zoom: this.getMap().getZoom(),
-            EXTENT: Infinity,
-            requestor: this._markerRequestor,
-            atlas,
-            center,
-            positionType: Float32Array,
-            altitudeProperty: 'altitude',
-            defaultAltitude: 0
-        };
-        const textOptions = extend({}, markerOptions);
-        markerOptions.allowEmptyPack = 1;
-
-        const symbols = PointPack.splitPointSymbol(this._markerSymbol);
-        const pointPacks = symbols.map((symbol, idx) => new PointPack(idx === 0 ? markerFeatures : textFeatures, symbol, idx === 0 ? markerOptions : textOptions).load());
-        this._markerAtlas = {
-        };
+        this._markerCenter = center;
+        const pointPacks = this._createPointPacks(markerFeatures, textFeatures, atlas, center);
+        this._markerAtlas = {};
         const v0 = [], v1 = [];
         Promise.all(pointPacks).then(packData => {
             if (this._markerMeshes) {
@@ -460,6 +468,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             const iconAtlas = packData[0] && packData[0].data.iconAtlas;
             const glyphAtlas = packData[0] && packData[0].data.glyphAtlas || packData[1] && packData[1].data.glyphAtlas;
+
             if (iconAtlas) {
                 this._markerAtlas.iconAtlas = iconAtlas;
             }
@@ -467,27 +476,118 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this._markerAtlas.glyphAtlas = glyphAtlas;
             }
 
-
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
-            const meshes = this._markerPainter.createMesh(geometries, posMatrix);
-            if (Array.isArray(meshes)) {
-                for (let i = 0; i < meshes.length; i++) {
-                    meshes[i].setUniform('level', 0);
-                    meshes[i].material.set('flipY', 1);
-                    meshes[i].properties.meshKey = meshUID++;
-                }
-            } else {
-                meshes.setUniform('level', 0);
-                meshes.material.set('flipY', 1);
-                meshes.properties.meshKey = meshUID++;
+            let meshes = this._markerPainter.createMesh(geometries, posMatrix);
+            if (meshes && !Array.isArray(meshes)) {
+                meshes = [meshes];
             }
-
+            for (let i = 0; i < meshes.length; i++) {
+                meshes[i].geometry.properties.originElements = meshes[i].geometry.properties.elements.slice();
+                meshes[i].setUniform('level', 0);
+                meshes[i].material.set('flipY', 1);
+                meshes[i].properties.meshKey = meshUID++;
+            }
             this._markerMeshes = meshes;
             this.setToRedraw();
+        });
+    }
+
+    _updateVisElements(mesh, features) {
+        if (!mesh) {
+            return;
+        }
+        const { aPickingId, originElements } = mesh.geometry.properties;
+        const newElements = [];
+        for (let j = 0; j < originElements.length; j++) {
+            const kid = aPickingId[originElements[j]];
+            if (features[kid] && features[kid].feature.visible) {
+                newElements.push(originElements[j]);
+            }
+        }
+        //这里需要替换elements，是因为iconPainter和textPainter中可能会计算collision，需要读取elements
+        const arr = mesh.geometry.properties.elements = new originElements.constructor(newElements);
+        mesh.geometry.setElements(arr);
+    }
+
+    _createPointPacks(markerFeatures, textFeatures, atlas, center) {
+        const markerOptions = {
+            zoom: this.getMap().getZoom(),
+            EXTENT: Infinity,
+            requestor: this._markerRequestor,
+            atlas,
+            center,
+            positionType: Float32Array,
+            altitudeProperty: 'altitude',
+            defaultAltitude: 0
+        };
+        const textOptions = extend({}, markerOptions);
+        markerOptions.allowEmptyPack = 1;
+
+        const symbols = PointPack.splitPointSymbol(this._markerSymbol);
+        return symbols.map((symbol, idx) => {
+            return new PointPack(idx === 0 ? markerFeatures : textFeatures, symbol, idx === 0 ? markerOptions : textOptions).load();
+        });
+    }
+
+    _updateMarkerMesh(marker) {
+        const symbols = marker['_getInternalSymbol']();
+        const options = { zoom: this.getMap().getZoom() };
+        const uid = this._convertGeo(marker);
+        if (!this._markerMeshes) {
+            return;
+        }
+        let feature = this.features[uid];
+        if (!Array.isArray(feature)) {
+            feature = [feature];
+        }
+        const markerFeatures = [];
+        const textFeatures = [];
+        // 检查是否atlas需要重新创建，如果需要，则重新创建整个mesh
+        for (let i = 0; i < feature.length; i++) {
+            const fea = feature[i];
+            if (!fea) {
+                continue;
+            }
+            const symbol = Array.isArray(symbols) ? symbols[i] : symbols;
+            const styledPoint = new StyledPoint(feature, symbol, options);
+            const iconGlyph = styledPoint.getIconAndGlyph();
+            if (!this._markerAtlas || !PointPack.isAtlasLoaded(iconGlyph, this._markerAtlas)) {
+                this._markRebuild();
+                this.setToRedraw();
+                return;
+            }
+        }
+
+        const keyName = (KEY_IDX + '').trim();
+        const kid = feature[0][keyName];
+        if (this._markerFeatures[kid]) {
+            markerFeatures.push(...feature);
+        }
+        if (this._textFeatures[kid]) {
+            textFeatures.push(...feature);
+        }
+
+
+        const pointPacks = this._createPointPacks(markerFeatures, textFeatures, this._markerAtlas, this._markerCenter);
+        Promise.all(pointPacks).then(packData => {
+            for (let i = 0; i < packData.length; i++) {
+                if (!packData[i]) {
+                    continue;
+                }
+                const mesh = Array.isArray(this._markerMeshes) ? this._markerMeshes[i] : this._markerMeshes;
+                const pickingData = mesh.geometry.properties.aPickingId;
+                const startIndex = pickingData.indexOf(kid);
+                const count = packData[i].data.featureIds.length;
+                for (const p in packData[i].data.data) {
+                    const data = packData[i].data.data[p];
+                    mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
+                }
+            }
+
         });
     }
 
@@ -536,6 +636,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             for (let i = 0; i < mm.length; i++) {
                 if (mm[i]) {
                     meshes.push(mm[i].mesh);
+                    mm[i].mesh.geometry.properties.originElements = mm[i].mesh.geometry.properties.elements.slice();
                     atlas[i] = mm[i].atlas;
                 }
             }
@@ -568,19 +669,25 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!hit) {
                 throw new Error(`${geo.getJSONType()} can't be added to ${this.layer.getJSONType()}(id:${layerId}).`);
             }
-            if (!geo[ID_PROP]) {
-                geo[ID_PROP] = this._counter++;
-            }
-            const uid = geo[ID_PROP];
-            if (this.features[uid]) {
-                this._removeFeatures(uid);
-            }
-            this.features[uid] = convertToFeature(geo, this._kidGen);
-            const feas = this.features[uid];
-            this._refreshFeatures(feas);
-            this.features[uid][ID_PROP] = uid;
-            this._geometries[uid] = geo;
+
+            this._convertGeo(geo);
         }
+    }
+
+    _convertGeo(geo) {
+        if (!geo[ID_PROP]) {
+            geo[ID_PROP] = this._counter++;
+        }
+        const uid = geo[ID_PROP];
+        if (this.features[uid]) {
+            this._removeFeatures(uid);
+        }
+        this.features[uid] = convertToFeature(geo, this._kidGen, this.features[uid]);
+        const feas = this.features[uid];
+        this._refreshFeatures(feas);
+        this.features[uid][ID_PROP] = uid;
+        this._geometries[uid] = geo;
+        return uid;
     }
 
     _refreshFeatures(feas) {
@@ -592,31 +699,32 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             for (let j = 0; j < feas.length; j++) {
                 // kid 是painter内部用来
                 const kid = feas[j][keyName];
-                // const feaObj = { feature: feas[j] };
+                // 采用 { feature } 结构，是为了和VT图层中 { feature, symbol } 统一
+                const feaObj = { feature: feas[j] };
                 if (hasMarkerSymbol(feas[j])) {
-                    this._markerFeatures[kid] = 1;
+                    this._markerFeatures[kid] = feaObj;
                     // this._markerFeatures[kid].push(feaObj);
                 }
                 if (hasTextSymbol(feas[j])) {
-                    this._textFeatures[kid] = 1;
+                    this._textFeatures[kid] = feaObj;
                     // this._textFeatures[kid].push(feaObj);
                 }
                 if (hasLineSymbol(feas[j])) {
-                    this._lineFeatures[kid] = 1;
+                    this._lineFeatures[kid] = feaObj;
                     // this._lineFeatures[uid].push(feaObj);
                 }
             }
         } else {
-            const kid = feas[keyName];
             const feaObj = { feature: feas };
+            const kid = feas[keyName];
             if (hasMarkerSymbol(feas)) {
-                this._markerFeatures[kid] = 1;
+                this._markerFeatures[kid] = feaObj;
             }
             if (hasTextSymbol(feas)) {
-                this._textFeatures[kid] = 1;
+                this._textFeatures[kid] = feaObj;
             }
             if (hasLineSymbol(feas)) {
-                this._lineFeatures[kid] = 1;
+                this._lineFeatures[kid] = feaObj;
             }
             this._allFeatures[kid] = feaObj;
         }
@@ -656,6 +764,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         });
         return hits;
+    }
+
+    _getFeaKeyId(geo) {
+        const uid = geo[ID_PROP];
+        const features = this.features[uid];
+        return Array.isArray(features) ? features[0][keyName] : features[keyName];
     }
 
     onGeometryAdd(geometries) {
@@ -749,23 +863,56 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometryPositionChange(e) {
+        // const kid = this._getFeaKeyId(e.target);
+        // if (this._markerFeatures[kid] || this._textFeatures[kid]) {
+        //     this._updateMarkerMesh(e.target);
+        // }
+        // if (this._lineFeatures[kid]) {
+        //     this._updateLineMesh(e.target);
+        // }
         this._convertGeometries([e.target]);
         this._markRebuildGeometry();
         redraw(this);
     }
 
     onGeometryZIndexChange() {
-        // redraw(this);
+        // nothing need to be done
     }
 
-    onGeometryShow() {
-        this._markRebuildGeometry();
-        redraw(this);
+    onGeometryShow(e) {
+        this._onShowHide(e);
     }
 
-    onGeometryHide() {
-        this._markRebuildGeometry();
-        redraw(this);
+    onGeometryHide(e) {
+        this._onShowHide(e);
+    }
+
+    _onShowHide(e) {
+        const geo = e.target;
+        const uid = geo[ID_PROP];
+        const features = this.features[uid];
+        if (features) {
+            const visible = geo.isVisible();
+            if (Array.isArray(features)) {
+                if (visible === features[0].visible) {
+                    return;
+                }
+                for (let i = 0; i < features.length; i++) {
+                    features[i].visible = visible;
+                }
+            } else {
+                if (visible === features.visible) {
+                    return;
+                }
+                features.visible = visible;
+            }
+            this._markShowHide();
+            redraw(this);
+        }
+    }
+
+    _markShowHide() {
+        this._showHideUpdated = true;
     }
 
     onGeometryPropertiesChange(e) {
@@ -925,7 +1072,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!this._outlineFeatures) {
             this._outlineFeatures = [];
         }
-        const keyName = (KEY_IDX + '').trim();
+
         const featureIds = [];
         for (let i = 0; i < geoIds.length; i++) {
             const geo = this.layer.getGeometryById(geoIds[i]);

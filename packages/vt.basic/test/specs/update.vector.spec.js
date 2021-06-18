@@ -1,7 +1,7 @@
 const assert = require('assert');
 const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer, LineStringLayer } = require('@maptalks/vt');
+const { PointLayer, LineStringLayer, PolygonLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
@@ -581,6 +581,160 @@ describe('vector layers update style specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] === 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('marker should can hide and show', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let hided = false;
+        let showed = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !hided) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                marker.hide();
+                hided = true;
+            } else if (hided && !showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] === 0);
+                marker.show();
+                showed = true;
+            } else if (showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] > 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('line should can hide and show', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        const layer = new LineStringLayer('vector', line, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let hided = false;
+        let showed = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !hided) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.hide();
+                hided = true;
+            } else if (hided && !showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] === 0);
+                line.show();
+                showed = true;
+            } else if (showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] > 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+
+    it('polygon should can hide and show', done => {
+        const polygon = new maptalks.Polygon([[[-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]]);
+        const layer = new PolygonLayer('vector', polygon, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        polygonFill: '#f00'
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let hided = false;
+        let showed = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !hided) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                polygon.hide();
+                hided = true;
+            } else if (hided && !showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] === 0);
+                polygon.show();
+                showed = true;
+            } else if (showed) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] > 0);
                 done();
             }
         });

@@ -166,6 +166,12 @@ export default class VectorPack {
             return Promise.resolve(this.pack(scale));
         }
 
+        return this.loadAtlas(iconReqs, glyphReqs).then(() => {
+            return this.pack(scale);
+        });
+    }
+
+    loadAtlas(iconReqs, glyphReqs) {
         return new Promise((resolve, reject) => {
             this.fetchAtlas(iconReqs, glyphReqs, (err, data) => {
                 if (err) {
@@ -197,7 +203,7 @@ export default class VectorPack {
                     }
                 }
 
-                resolve(this.pack(scale));
+                resolve({ glyphAtlas: this.glyphAtlas, iconAtlas: this.iconAtlas });
                 // resolve(this.iconAtlas, this.glyphAtlas);
             });
         });

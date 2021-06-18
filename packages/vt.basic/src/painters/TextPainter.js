@@ -299,8 +299,7 @@ export default class TextPainter extends CollisionPainter {
                 }
             } else if (enableCollision) {
                 this.startMeshCollision(mesh);
-                const { elements, aOpacity } = geometry.properties;
-                const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new elements.constructor(elements.length);
+                const { elements, aOpacity, visElemts } = geometry.properties;
                 visElemts.count = 0;
                 this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex, label) => {
                     fn(visElemts, meshBoxes, mvpMatrix, labelIndex, label);

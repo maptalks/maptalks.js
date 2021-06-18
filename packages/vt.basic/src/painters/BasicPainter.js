@@ -37,7 +37,9 @@ export default class BasicPainter extends Painter {
         const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: this.getPrimitive(), positionSize: glData.positionSize });
         geometry.properties = {
             features,
-            uniquePickingIds: features ? Object.keys(features) : []
+            uniquePickingIds: features ? Object.keys(features) : [],
+            // Vector3DLayer中需要保存elements来实现show hide
+            elements: glData.indices
         };
         if (glData.iconAtlas) {
             geometry.properties.iconAtlas = glData.iconAtlas.image;

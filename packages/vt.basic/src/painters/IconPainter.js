@@ -446,10 +446,6 @@ class IconPainter extends CollisionPainter {
             if (!geometry) {
                 return;
             }
-            const { elements, visElemts } = geometry.properties;
-            if (!visElemts) {
-                geometry.properties.visElemts = new elements.constructor(elements.length);
-            }
             geometry.properties.visElemts.count = 0;
         }
     }
