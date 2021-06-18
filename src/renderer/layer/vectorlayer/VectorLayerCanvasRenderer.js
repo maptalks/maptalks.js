@@ -3,7 +3,7 @@ import VectorLayer from '../../../layer/VectorLayer';
 import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
-
+import { now } from '../../../core/util/common';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
@@ -19,6 +19,24 @@ const PLACEMENT_CENTER = 'center';
  * @param {VectorLayer} layer - layer to render
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
+
+    getImageData() {
+        //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
+        if (!this.layer.options['geometryEvents'] || (!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
+            return null;
+        }
+        if (!this._imageData) {
+            const { width, height } = this.context.canvas;
+            this._imageData = this.context.getImageData(0, 0, width, height);
+        }
+        return this._imageData;
+    }
+
+    clearImageData() {
+        //每次渲染完成清除缓存的imageData
+        delete this._imageData;
+        this._lastRenderTime = now();
+    }
 
     checkResources() {
         const resources = super.checkResources.apply(this, arguments);
@@ -112,6 +130,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             delete this._geosToDraw[i]._cPoint;
             delete this._geosToDraw[i]._inCurrentView;
         }
+        this.clearImageData();
     }
 
     /**
@@ -142,6 +161,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             delete this._geosToDraw[i]._cPoint;
             delete this._geosToDraw[i]._inCurrentView;
         }
+        this.clearImageData();
     }
 
     prepareToDraw() {

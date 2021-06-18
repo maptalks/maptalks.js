@@ -293,6 +293,13 @@ class CanvasRenderer extends Class {
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
         }
+        const imageData = this.getImageData && this.getImageData();
+        if (imageData) {
+            const x = r * point.x, y = r * point.y;
+            const idx = y * imageData.width * 4 + x * 4;
+            //索引下标从0开始需要-1
+            return imageData.data[idx + 3] > 0;
+        }
         try {
             const imgData = this.context.getImageData(r * point.x, r * point.y, 1, 1).data;
             if (imgData[3] > 0) {
