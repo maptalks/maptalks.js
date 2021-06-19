@@ -611,7 +611,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const dashFeas = [];
         for (let i = 0; i < features.length; i++) {
             const f = features[i];
-            if (f.properties && f.properties[prefix + 'lineDasharray']) {
+            const dash = f.properties && f.properties[prefix + 'lineDasharray'];
+            if (dash && dashLength(dash)) {
                 dashFeas.push(f);
             } else if (f.properties && f.properties[prefix + 'linePatternFile']) {
                 patternFeas.push(f);
@@ -1140,4 +1141,15 @@ function hasTextSymbol({ properties }) {
 
 function hasLineSymbol({ properties }) {
     return !!properties[prefix + 'lineWidth'];
+}
+
+function dashLength(dash) {
+    if (!Array.isArray(dash)) {
+        return 0;
+    }
+    let len = 0;
+    for (let i = 0; i < dash.length; i++) {
+        len += dash[i];
+    }
+    return len;
 }
