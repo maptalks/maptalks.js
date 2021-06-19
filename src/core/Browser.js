@@ -36,15 +36,16 @@ if (!IS_NODE) {
     const touch = !phantomjs && (pointer || 'ontouchstart' in window ||
         (window.DocumentTouch && document instanceof window.DocumentTouch));
 
-    let webgl;
-    try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') ||
-            canvas.getContext('experimental-webgl');
-        webgl = gl && gl instanceof WebGLRenderingContext;
-    } catch (err) {
-        webgl = false;
-    }
+    // let webgl;
+    // try {
+    //     const canvas = document.createElement('canvas');
+    //     const gl = canvas.getContext('webgl') ||
+    //         canvas.getContext('experimental-webgl');
+    //     webgl = gl && gl instanceof WebGLRenderingContext;
+    // } catch (err) {
+    //     webgl = false;
+    // }
+    const webgl = typeof window !== 'undefined' && ('WebGLRenderingContext' in window);
 
     const devicePixelRatio = (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
 
