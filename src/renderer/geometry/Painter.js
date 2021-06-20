@@ -464,7 +464,8 @@ class Painter extends Class {
         if (!this.symbolizers) {
             return;
         }
-        const renderer = this.getLayer()._getRenderer();
+        const layer = this.getLayer();
+        const renderer = layer._getRenderer();
         if (!renderer || !renderer.context && !context) {
             return;
         }
@@ -487,12 +488,18 @@ class Painter extends Class {
         const ctx = context || renderer.context;
         const contexts = [ctx, renderer.resources];
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
-            this._prepareShadow(ctx, this.symbolizers[i].symbol);
+            // reduce function call
+            if (ctx.shadowBlur || this.symbolizers[i].symbol['shadowBlur']) {
+                this._prepareShadow(ctx, this.symbolizers[i].symbol);
+            }
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
         }
         this._afterPaint();
         this._painted = true;
-        this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+        // reduce function call
+        if (this.geometry.options['debug'] || layer.options['debug']) {
+            this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
+        }
     }
 
     getSprite(resources, canvasClass) {
