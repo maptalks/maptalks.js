@@ -741,6 +741,57 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('marker should can update textName', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let updated = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !updated) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                marker.setProperties({
+                    content: '■■■'
+                });
+                marker.updateSymbol({
+                    textName: '{content}',
+                    textFill: '#00f',
+                    textSize: 24
+                });
+                updated = true;
+            } else if (updated && count >= 3) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert.deepEqual(pixel, [0, 0, 255, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
 
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {

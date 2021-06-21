@@ -692,6 +692,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _refreshFeatures(feas) {
+        if (!feas) {
+            return;
+        }
         const keyName = (KEY_IDX + '').trim();
         const kid = Array.isArray(feas) ? feas[0][keyName] : feas[keyName];
         this._allFeatures[kid] = feas;
@@ -815,6 +818,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 feaProps['_symbol_' + p] = symbol[p];
             }
         }
+        this._refreshFeatures(this.features[id]);
         // this.features[id] = convertToFeature(marker);
         // TODO 实现geometry的局部更新
         this._markRebuild();
