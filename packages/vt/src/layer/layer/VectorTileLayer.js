@@ -436,7 +436,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (needRefresh) {
             renderer.setStyle();
         } else {
-            renderer.updateSymbol(type, rendererIdx, symbol);
+            needRefresh = renderer.updateSymbol(type, rendererIdx, symbol);
+            if (needRefresh) {
+                renderer.setStyle();
+            }
         }
         if (type === 0) {
             this.fire('updatesymbol', { index: idx, symbol });

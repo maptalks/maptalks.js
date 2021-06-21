@@ -34,7 +34,7 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
-        this.symbolDef = Array.isArray(symbol) ? symbol : [symbol];
+        this.symbolDef = Array.isArray(symbol) ? symbol.map(s => extend({}, s)) : [extend({}, symbol)];
         this._compileSymbols();
         this.pickingViewport = {
             x: 0,
@@ -501,22 +501,32 @@ class Painter {
             symbolDef = [symbolDef];
             all = [all];
         }
+        let needRefresh = false;
         for (let i = 0; i < symbolDef.length; i++) {
             if (symbolDef[i]) {
-                this._updateChildSymbol(i, symbolDef[i], all[i]);
+                const refresh = this._updateChildSymbol(i, symbolDef[i], all[i]);
+                if (refresh) {
+                    needRefresh = refresh;
+                }
             }
         }
 
 
         delete this._fnTypeConfigs;
         this.setToRedraw(this.supportRenderMode('taa'));
+        return needRefresh;
+    }
+
+    _isNeedRefreshStyle(/*oldSymbolDef, newSymbolDef*/) {
+        return false;
     }
 
     _updateChildSymbol(i, symbolDef, all) {
-        this.symbolDef[i] = all;
         if (!this._symbol) {
-            return;
+            return false;
         }
+        const refresh = this._isNeedRefreshStyle(this.symbolDef[i], all);
+        this.symbolDef[i] = extend({}, all);
         const symbol = this._symbol[i];
         for (const p in symbol) {
             delete symbol[p];
@@ -547,6 +557,7 @@ class Painter {
         // } else {
         //     delete this._visibleFn;
         // }
+        return refresh;
     }
 
     getSymbolDef(symbolIndex) {

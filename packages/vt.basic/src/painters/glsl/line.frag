@@ -136,7 +136,7 @@ void main() {
             vec2 uvStart = vTexInfo.xy;
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
             // color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
-            color = texture2D(linePatternFile, mix(computeUV(vec2(patternx, patterny)), uvStart / atlasSize, sign(vJoin)));
+            color = mix(texture2D(linePatternFile, computeUV(vec2(patternx, patterny))), vec4(0.0), sign(vJoin));
         }
     #endif
     color *= alpha;

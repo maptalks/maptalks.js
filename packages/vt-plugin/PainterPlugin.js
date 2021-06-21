@@ -277,7 +277,7 @@ function createPainterPlugin(type, Painter) {
         updateSymbol: function (symbol, all) {
             var painter = this.painter;
             if (!painter) {
-                return;
+                return false;
             }
             if (painter.shouldDeleteMeshOnUpdateSymbol(symbol)) {
                 if (this._meshCache) {
@@ -288,7 +288,7 @@ function createPainterPlugin(type, Painter) {
                 delete this._meshCache;
                 delete this._frameCache;
             }
-            painter.updateSymbol(symbol, all);
+            return painter.updateSymbol(symbol, all);
         },
 
         pick: function (x, y, tolerance) {

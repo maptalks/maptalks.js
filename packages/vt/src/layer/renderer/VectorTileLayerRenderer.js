@@ -97,15 +97,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     updateSymbol(type, idx, symbol) {
         const plugins = type === 0 ? this.plugins : this.featurePlugins;
         if (!plugins || !plugins[idx]) {
-            return;
+            return false;
         }
         const allStyles = this.layer._getComputedStyle();
         const styles = this.layer._getTargetStyle(type, allStyles);
         // const symbol = styles[idx].symbol;
         const plugin = plugins[idx];
         plugin.style = styles[idx];
-        plugin.updateSymbol(symbol, styles[idx].symbol);
+        const needRefresh = plugin.updateSymbol(symbol, styles[idx].symbol);
         this.setToRedraw();
+        return needRefresh;
     }
 
     //always redraw when map is interacting
