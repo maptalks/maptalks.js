@@ -468,6 +468,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     forEachRenderer(fn) {
         const layers = this.layer.getLayers();
         for (const layer of layers) {
+            if (!layer.isVisible()) {
+                continue;
+            }
             const renderer = layer.getRenderer();
             if (renderer) {
                 fn(renderer, layer);
