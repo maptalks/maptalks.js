@@ -435,9 +435,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
                 if (!Array.isArray(color)) {
                     color = colorCache[color] = colorCache[color] || Color(color).array();
                 }
-                if (color.length === 3) {
-                    color.push(255);
-                }
+                color = toUint8ColorInGlobalVar(color);
                 return color;
             }
         },

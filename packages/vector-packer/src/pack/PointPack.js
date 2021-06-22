@@ -536,6 +536,8 @@ export default class PointPack extends VectorPack {
                 textHaloFill = this._textHaloFillFn(null, properties);
                 if (!Array.isArray(textHaloFill)) {
                     textHaloFill = Color(textHaloFill).array();
+                } else {
+                    textHaloFill = textHaloFill.map(c => c * 255);
                 }
                 if (textHaloFill.length === 3) {
                     textHaloFill.push(255);

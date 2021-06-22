@@ -13,7 +13,7 @@ const style = [
             textName: '貔貅',
             textSize: 30,
             textHaloRadius: 1,
-            textHaloFill: '#f00',
+            textHaloFill: [1, 0, 0, 1],
             textHaloOpacity: 0.4
         }
     }
