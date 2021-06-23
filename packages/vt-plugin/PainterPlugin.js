@@ -180,7 +180,7 @@ function createPainterPlugin(type, Painter) {
             }
 
             //更新stencil level值，不同zoom会发生变化
-            var level = getUniformLevel(tileInfo.z, tileZoom);
+            var level = painter.getTileLevelValue(tileInfo, tileZoom);//getUniformLevel(tileInfo.z, tileZoom);
             if (Array.isArray(mesh)) {
                 mesh.forEach(m => {
                     m.properties.tile = tileInfo;
@@ -496,13 +496,4 @@ export function extend(dest) {
         }
     }
     return dest;
-}
-
-//zoom :  z - 2 | z - 1 | z | z + 1 | z + 2
-//level:    4       2     0     1       3
-export function getUniformLevel(z, currentTileZoom) {
-    // return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
-    // return currentTileZoom - (z - 64);
-    //为了解决瓦片模板冲突问题，相差1级的瓦片之间是没有重叠的
-    return z - currentTileZoom >= -2 ? 0 : (currentTileZoom - z);
 }

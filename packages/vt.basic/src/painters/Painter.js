@@ -54,6 +54,11 @@ class Painter {
         return this.layer ? this.layer.getMap() : null;
     }
 
+    getTileLevelValue(tileInfo, currentTileZoom) {
+        const renderer = this.layer.getRenderer();
+        return renderer.getTileLevelValue && renderer.getTileLevelValue(tileInfo, currentTileZoom) || 0;
+    }
+
     isVisible() {
         //TODO visibleFn没有支持多symbol
         // if (this._visibleFn && !this._visibleFn.isFeatureConstant) {
@@ -323,6 +328,7 @@ class Painter {
             //stenciled pixels already rendered in step 1
             this.shader.filter = context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
         }
+        this.scene.getMeshes().sort(sortByLevel);
         this.callRenderer(uniforms, context);
     }
 
@@ -951,4 +957,9 @@ function sortByCommandKey(a, b) {
     const k1 = a && a.getCommandKey(this.regl) || '';
     const k2 = b && b.getCommandKey(this.regl) || '';
     return k1.localeCompare(k2);
+}
+
+
+function sortByLevel(m0, m1) {
+    return m0.properties.level - m1.properties.level;
 }
