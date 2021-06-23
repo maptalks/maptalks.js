@@ -231,6 +231,31 @@ class MeshPainter extends Painter {
         };
     }
 
+    updateSymbol(symbol, all) {
+        const refresh = super.updateSymbol(symbol, all);
+        if (symbol.material) {
+            this._updateMaterial(symbol.material);
+        }
+        return refresh;
+    }
+
+    _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
+        return hasTexture(oldSymbolDef) !== hasTexture(newSymbolDef);
+    }
+
 }
 
 export default MeshPainter;
+
+
+function hasTexture(symbolDef) {
+    if (!symbolDef || !symbolDef.material) {
+        return false;
+    }
+    for (const p in symbolDef.material) {
+        if (p.indexOf('Texture') > 0 && symbolDef.material[p]) {
+            return true;
+        }
+    }
+    return false;
+}

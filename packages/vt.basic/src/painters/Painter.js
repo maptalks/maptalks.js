@@ -1,7 +1,7 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { loadFunctionTypes, isFunctionDefinition, interpolated } from '@maptalks/function-type';
-import { extend, isNil } from '../Util';
+import { extend, copyJSON, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 
@@ -34,7 +34,7 @@ class Painter {
         this.level0Filter = level0Filter;
         this.levelNFilter = levelNFilter;
         this.loginTextureCache();
-        this.symbolDef = Array.isArray(symbol) ? symbol.map(s => extend({}, s)) : [extend({}, symbol)];
+        this.symbolDef = Array.isArray(symbol) ? symbol.map(s => copyJSON(s)) : [copyJSON(symbol)];
         this._compileSymbols();
         this.pickingViewport = {
             x: 0,
@@ -532,7 +532,7 @@ class Painter {
             return false;
         }
         const refresh = this._isNeedRefreshStyle(this.symbolDef[i], all);
-        this.symbolDef[i] = extend({}, all);
+        this.symbolDef[i] = copyJSON(all);
         const symbol = this._symbol[i];
         for (const p in symbol) {
             delete symbol[p];

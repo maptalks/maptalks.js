@@ -59,6 +59,9 @@ export const TYPE_BYTES = {
     'float32': 4
 };
 
+export function copyJSON(json) {
+    return JSON.parse(JSON.stringify(json));
+}
 
 export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, fn) {
     // if (symbol['_' + key]) {

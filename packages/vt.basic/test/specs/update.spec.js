@@ -779,6 +779,74 @@ describe('update style specs', () => {
         layer.addTo(map);
     }).timeout(10000);
 
+    it('should can update textures for line extrusion, maptalks-studio#1923', done => {
+        const plugin = {
+            filter: true,
+            type: 'lit',
+            dataConfig: {
+                type: 'line-extrusion',
+                altitudeScale: 1,
+                defaultAltitude: 10
+            },
+            sceneConfig: {},
+        };
+        const material = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 1,
+            'metalnessFactor': 0,
+            'outputSRGB': 0
+        };
+        const style = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { lineWidth: 24, material }
+            }
+        ];
+        map.setLightConfig({
+            ambient: {
+                color: [0.3, 0.3, 0.3]
+            },
+            directional: {
+                color: [0.5, 0.5, 0.5],
+                direction: [1, 1, 1]
+            }
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: true
+            }
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line,
+            style
+        });
+        const groupLayer = new GroupGLLayer('group', [
+            layer
+        ], { sceneConfig });
+        let painted = false;
+        layer.once('canvasisdirty', () => {
+            groupLayer.on('layerload', () => {
+                const canvas = groupLayer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+                if (pixel[0] > 0) {
+                    if (!painted) {
+                        assert.deepEqual(pixel, [78, 78, 78, 255]);
+
+                        material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
+                        layer.updateSymbol(0, { material });
+                        painted = true;
+                    } else {
+                        assert.deepEqual(pixel, [8, 47, 35, 255]);
+                        done();
+                    }
+                }
+            });
+        });
+        groupLayer.addTo(map);
+    });
+
     it('should can update symbol to lit with AA, maptalks-studio#374', done => {
         //https://github.com/fuzhenn/maptalks-studio/issues/374
         const linePlugin = {

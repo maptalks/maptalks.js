@@ -91,13 +91,6 @@ class PhongPainter extends MeshPainter {
 
     }
 
-    updateSymbol(symbol, all) {
-        super.updateSymbol(symbol, all);
-        if (symbol.material) {
-            this._updateMaterial();
-        }
-    }
-
     _updateLights() {
         this.setToRedraw();
     }

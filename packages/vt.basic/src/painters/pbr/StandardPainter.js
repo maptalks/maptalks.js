@@ -107,12 +107,7 @@ class StandardPainter extends MeshPainter {
         }
     }
 
-    updateSymbol(symbol, all) {
-        super.updateSymbol(symbol, all);
-        if (symbol.material) {
-            this._updateMaterial(symbol.material);
-        }
-    }
+
 
     init(context) {
         this.getMap().on('updatelights', this.onUpdatelights, this);

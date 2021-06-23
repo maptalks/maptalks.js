@@ -99,8 +99,9 @@ export default class TextPainter extends CollisionPainter {
     }
 
     updateSymbol(...args) {
-        super.updateSymbol(...args);
+        const refresh = super.updateSymbol(...args);
         this._genTextNames();
+        return refresh;
     }
 
     shouldDeleteMeshOnUpdateSymbol(symbol) {
