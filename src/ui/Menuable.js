@@ -138,12 +138,9 @@ const Menuable = {
      * @private
      */
     _defaultOpenMenu(param) {
-        if (this.listens('contextmenu') > 1) {
-            return true;
-        } else {
-            this.openMenu(param['coordinate']);
-            return false;
-        }
+        // 如果用户想自定义右键菜单，其不应该setMenu,既然其设置了说明就是想用默认的menu,应该根据是否设置了menu为参考依据而不是 contextmenu监听次数
+        this.openMenu(param['coordinate']);
+        return false;
     }
 };
 
