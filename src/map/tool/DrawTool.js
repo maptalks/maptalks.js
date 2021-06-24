@@ -191,13 +191,14 @@ class DrawTool extends MapTool {
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
+        const map = this.getMap();
         if (this.options['autoPanAtEdge']) {
-            const map = this.getMap();
             this._mapAutoPanAtEdge = map.options['autoPanAtEdge'];
             if (!this._mapAutoPanAtEdge) {
                 map.config({ autoPanAtEdge: true });
             }
         }
+        map._isDrawing = true;
         return this;
     }
 
@@ -213,6 +214,7 @@ class DrawTool extends MapTool {
                 }
             }
         }
+        map._isDrawing = false;
         return this;
     }
 
