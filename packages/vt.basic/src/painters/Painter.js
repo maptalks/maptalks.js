@@ -293,10 +293,6 @@ class Painter {
 
         this.callShader(uniforms, context);
 
-        if (this.pickingFBO && this.pickingFBO._renderer === this.picking) {
-            delete this.pickingFBO._renderer;
-        }
-
         return {
             redraw: this._redraw
         };
@@ -386,10 +382,7 @@ class Painter {
         const uniforms = this.getUniformValues(map);
         for (let i = 0; i < this.picking.length; i++) {
             const picking = this.picking[i];
-            if (this.pickingFBO._renderer !== picking) {
-                picking.render(this.scene.getMeshes(), uniforms, true);
-                this.pickingFBO._renderer = picking;
-            }
+            picking.render(this.scene.getMeshes(), uniforms, true);
             let picked = {};
             if (picking.getRenderedMeshes().length) {
                 picked = picking.pick(x, y, tolerance, uniforms, {
