@@ -10,6 +10,7 @@ class LightManager {
         this._loader = new reshader.ResourceLoader();
 
         this.onHDRLoaded = this._onHDRLoaded.bind(this);
+        this.onHDRError = this._onHDRError.bind(this);
     }
 
     getDirectionalLight() {
@@ -80,6 +81,7 @@ class LightManager {
             this._loader
         );
         this._hdr.once('complete', this.onHDRLoaded);
+        this._hdr.once('error', this.onHDRError);
         return;
     }
 
@@ -94,6 +96,10 @@ class LightManager {
             delete this._hdr;
             this._map.fire('updatelights', { 'ambientUpdate': true });
         }
+    }
+
+    _onHDRError() {
+        this._map.fire('hdrerror');
     }
 
     _createIBLMaps(hdr) {
