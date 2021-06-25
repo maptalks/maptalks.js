@@ -553,37 +553,6 @@ class Painter extends Class {
             tolerance = 0.5;
         }
         this._hitPoint = cp.sub(tolerance, tolerance);
-        const layer = this.getLayer();
-        if (layer) {
-            const render = layer.getRenderer();
-            const imageData = render && render.getImageData && render.getImageData();
-            if (imageData) {
-                const size = 2 * tolerance;
-                let r = imageData.r;
-                if (r === undefined) {
-                    const map = this.getMap();
-                    r = map.getDevicePixelRatio();
-                }
-                let isHit = false;
-                const startX = Math.round(cp.x * r - size),
-                    startY = Math.round(cp.y * r - size);
-                for (let i = 0; i < size; i++) {
-                    if (isHit) {
-                        break;
-                    }
-                    for (let j = 0; j < size; j++) {
-                        if (isHit) {
-                            break;
-                        }
-                        const x = startX + j, y = startY + i;
-                        const idx = y * imageData.width * 4 + x * 4;
-                        isHit = imageData.data[idx + 3] > 0;
-                    }
-                }
-                delete this._hitPoint;
-                return isHit;
-            }
-        }
         if (!testCanvas) {
             const canvasClass = this.getMap() ? this.getMap().CanvasClass : null;
             testCanvas = Canvas.createCanvas(1, 1, canvasClass);

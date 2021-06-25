@@ -43,7 +43,7 @@ const options = {
     'altitude': 0
 };
 // Polyline is for custom line geometry
-const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
+// const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
 /**
  * @classdesc
  * A layer for managing and rendering geometries.
@@ -132,25 +132,19 @@ class VectorLayer extends OverlayLayer {
                 return hits;
             }
         }
-        const types = TYPES;
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
                 continue;
             }
-            const type = geo.getType();
-            //当imagedata=null或者不是LineString/Polyline,Polygon,MultiLineString,MultiPolygon时，保留原有的pick方式
-            // Marker,Rectangle,Circle,Sector,Ellipse ...等也可以用该方法来优化
-            if (!imageData || types.indexOf(type) === -1) {
-                if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
-                    // Except for LineString with arrows or curves
-                    let extent = geo.getContainerExtent(TEMP_EXTENT);
-                    if (tolerance) {
-                        extent = extent._expand(tolerance);
-                    }
-                    if (!extent || !extent.contains(cp)) {
-                        continue;
-                    }
+            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+                // Except for LineString with arrows or curves
+                let extent = geo.getContainerExtent(TEMP_EXTENT);
+                if (tolerance) {
+                    extent = extent._expand(tolerance);
+                }
+                if (!extent || !extent.contains(cp)) {
+                    continue;
                 }
             }
             if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
