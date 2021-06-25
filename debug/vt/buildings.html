@@ -82,6 +82,8 @@
       // baseLayer: osm
     });
 
+    map.on('hdrerror', e => { console.log('hdr error'); });
+
     var mapPostProcessConfig = {
       enable: false,
       filmicGrain: {
