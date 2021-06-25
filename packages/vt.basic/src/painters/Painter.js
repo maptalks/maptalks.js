@@ -746,8 +746,10 @@ class Painter {
         if (!this.picking) {
             return;
         }
-        if (!this._outlineShaders) {
+        if (!this._outlineScene) {
             this._outlineScene = new reshader.Scene();
+        }
+        if (!this._outlineShaders) {
             this._initOutlineShaders();
             // this._outlineShader.filter = this.level0Filter;
             if (!this._outlineShaders) {
