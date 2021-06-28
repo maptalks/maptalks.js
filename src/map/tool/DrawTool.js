@@ -28,7 +28,8 @@ const options = {
     'mode': null,
     'once': false,
     'autoPanAtEdge': false,
-    'ignoreMouseleave': true
+    'ignoreMouseleave': true,
+    'blockGeometryEvents': false
 };
 
 const registeredMode = {};
@@ -198,7 +199,10 @@ class DrawTool extends MapTool {
                 map.config({ autoPanAtEdge: true });
             }
         }
-        map._isDrawing = true;
+        this._geometryEvents = map.options['geometryEvents'];
+        if (this.options['blockGeometryEvents']) {
+            map.config('geometryEvents', false);
+        }
         return this;
     }
 
@@ -214,7 +218,9 @@ class DrawTool extends MapTool {
                 }
             }
         }
-        map._isDrawing = false;
+        if (this.options['blockGeometryEvents']) {
+            map.config('geometryEvents', this._geometryEvents);
+        }
         return this;
     }
 

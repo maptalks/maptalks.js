@@ -76,7 +76,6 @@ const TEMP_COORD = new Coordinate(0, 0);
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
- * @property {Boolean} [options.geometryEventsOnDrawing=true]           - enable/disable firing geometry events when map is drawing
  * @memberOf Map
  * @instance
  */
@@ -122,8 +121,7 @@ const options = {
     'renderer': 'canvas',
 
     'cascadePitches': [10, 60],
-    'renderable': true,
-    'geometryEventsOnDrawing': true
+    'renderable': true
 };
 
 /**
@@ -226,7 +224,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
 
         this._Load();
-        this._isDrawing = false;
     }
 
     /**
@@ -245,16 +242,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.prototype._onLoadHooks.push(onload);
         return this;
     }
-
-
-    /**
-     * Whether the map is drawing or not.
-     * @return {Boolean}
-     */
-    isDrawing() {
-        return !!this._isDrawing;
-    }
-
 
     /**
      * Whether the map is loaded or not.

@@ -166,9 +166,6 @@ class MapGeometryEventsHandler extends Handler {
         if (map.isInteracting() || map._ignoreEvent(domEvent)) {
             return;
         }
-        if (map.isDrawing() && !map.options['geometryEventsOnDrawing']) {
-            return;
-        }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         // ignore click lasted for more than 300ms.
