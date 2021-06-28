@@ -187,7 +187,7 @@ export default class CollisionPainter extends BasicPainter {
                     }
                     collision.collides = collides;
                     this._setCollisionCache(meshKey, boxIndex, collision);
-                } else if (collision.boxes) {
+                } else if (collision.boxes && collision.boxes.length) {
                     //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
                     //但zooming时不检查，有collides的仍继续隐藏
                     const { boxes } = collision;

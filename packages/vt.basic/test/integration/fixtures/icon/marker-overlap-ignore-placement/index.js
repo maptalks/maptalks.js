@@ -25,6 +25,7 @@ const style = [
             markerWidth: 30,
             markerHeight: 30,
             markerOpacity: 1,
+            markerIgnorePlacement: true,
             markerAllowOverlap: true
         }
     }
