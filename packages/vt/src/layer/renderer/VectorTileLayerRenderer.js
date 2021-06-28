@@ -821,12 +821,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         super.onDrawTileStart(context);
         const { tiles, childTiles, parentTiles } = context;
         this._currentTiles = {};
+        this._childTiles = {};
         this._bgTiles = {};
         for (let i = 0; i < tiles.length; i++) {
             this._currentTiles[tiles[i].info.id] = 1;
         }
         for (let i = 0; i < childTiles.length; i++) {
-            this._bgTiles[childTiles[i].info.id] = 1;
+            this._childTiles[childTiles[i].info.id] = 1;
         }
         for (let i = 0; i < parentTiles.length; i++) {
             this._bgTiles[parentTiles[i].info.id] = 1;
