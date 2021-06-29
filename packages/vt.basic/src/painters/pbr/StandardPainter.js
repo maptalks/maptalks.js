@@ -186,10 +186,12 @@ class StandardPainter extends MeshPainter {
                 face: this.sceneConfig.cullFace || 'back'
             },
             stencil: {
-                enable: true,
+                enable: (_, props) => {
+                    return props['hasAlpha'] === undefined || !!props['hasAlpha'];
+                },
                 func: {
                     cmp: '<=',
-                    ref: (context, props) => {
+                    ref: (_, props) => {
                         return props.level;
                     },
                 },
@@ -206,7 +208,9 @@ class StandardPainter extends MeshPainter {
                 func: this.sceneConfig.depthFunc || '<='
             },
             blend: {
-                enable: true,
+                enable: (_, props) => {
+                    return props['hasAlpha'] === undefined || !!props['hasAlpha'];
+                },
                 func: {
                     src: 'src alpha',
                     dst: 'one minus src alpha'

@@ -136,7 +136,7 @@ const GLTFMixin = Base =>
                 });
                 const anchorTranslation = [0, 0, zOffset];
                 const childMeshes = meshInfos.map(info => {
-                    const { geometry, nodeMatrix, materialInfo, skin, morphWeights } = info;
+                    const { geometry, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
                     const MatClazz = this.getMaterialClazz(materialInfo);
                     const material = new MatClazz(materialInfo);
                     const defines = {};
@@ -158,6 +158,8 @@ const GLTFMixin = Base =>
                         defines['HAS_MORPH'] = 1;
                         //TODO 什么时候设置 HAS_MORPHNORMALS
                     }
+                    // StandardPainter 需要hasAlpha决定是否开启stencil和blend
+                    mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
                     setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));

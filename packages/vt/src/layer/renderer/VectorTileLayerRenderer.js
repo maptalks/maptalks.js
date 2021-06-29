@@ -31,7 +31,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return 0;
         } else {
             const z = tileInfo.z;
-            return z - currentTileZoom > 0 ? 2 * (z - currentTileZoom) - 1 : 2 * (currentTileZoom - z);
+            return (z - currentTileZoom >= 0) ? 0 : (currentTileZoom - z);
         }
     }
 
@@ -343,11 +343,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isForeground(mesh) {
-        return !!(this._currentTiles && this._currentTiles[mesh.properties.tile.id]);
+        return !!(this._vtCurrentTiles && this._vtCurrentTiles[mesh.properties.tile.id]);
     }
 
     isBackTile(id) {
-        return !!(this._bgTiles && this._bgTiles[id]);
+        return !!(this._vtBgTiles && this._vtBgTiles[id]);
     }
 
     loadTile(tileInfo) {
@@ -820,16 +820,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     onDrawTileStart(context) {
         super.onDrawTileStart(context);
         const { tiles, childTiles, parentTiles } = context;
-        this._currentTiles = {};
-        this._bgTiles = {};
+        this._vtCurrentTiles = {};
+        this._vtBgTiles = {};
         for (let i = 0; i < tiles.length; i++) {
-            this._currentTiles[tiles[i].info.id] = 1;
+            this._vtCurrentTiles[tiles[i].info.id] = 1;
         }
         for (let i = 0; i < childTiles.length; i++) {
-            this._bgTiles[childTiles[i].info.id] = 1;
+            this._vtBgTiles[childTiles[i].info.id] = 1;
         }
         for (let i = 0; i < parentTiles.length; i++) {
-            this._bgTiles[parentTiles[i].info.id] = 1;
+            this._vtBgTiles[parentTiles[i].info.id] = 1;
         }
         this._stencilTiles = context;
     }

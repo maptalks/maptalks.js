@@ -105,6 +105,8 @@ class IconPainter extends CollisionPainter {
             if (this._isMarkerGeo(geometry)) {
                 if (!geometry.properties.iconAtlas) {
                     geometry.properties.isEmpty = true;
+                } else {
+                    this.drawDebugAtlas(geometry.properties.iconAtlas);
                 }
                 prepareMarkerGeometry(geometry, symbolDef, fnTypeConfig.icon);
             } else if (this._isTextGeo(geometry)) {

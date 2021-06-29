@@ -83,6 +83,15 @@ class MeshPainter extends Painter {
         if (geometry.data.aLineHeight) {
             defines['HAS_LINE_HEIGHT'] = 1;
         }
+        if (geometry.data.aOpacity) {
+            const aOpacity = geometry.data.aOpacity;
+            for (let i = 0; i < aOpacity.length; i++) {
+                if (aOpacity[i] < 255) {
+                    geometry.properties.hasAlpha = true;
+                    break;
+                }
+            }
+        }
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
@@ -92,6 +101,13 @@ class MeshPainter extends Painter {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
+        Object.defineProperty(mesh.uniforms, 'hasAlpha', {
+            enumerable: true,
+            get: () => {
+                const symbol = this.getSymbol(symbolIndex);
+                return geometry.properties.hasAlpha || symbol['polygonOpacity'] < 1;
+            }
+        });
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
@@ -202,9 +218,12 @@ class MeshPainter extends Painter {
                 type: Uint8Array,
                 width: 1,
                 symbolName: opacityName,
-                evaluate: properties => {
+                evaluate: (properties, _, geometry) => {
                     const polygonOpacity = opacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;
+                    if (u8[0] < 255) {
+                        geometry.properties.hasAlpha = true;
+                    }
                     return u8[0];
                 }
             },
