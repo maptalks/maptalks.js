@@ -74,7 +74,7 @@ export function drawVectorMarker(ctx, point, symbol, resources) {
         Canvas.bezierCurveAndFill(ctx, vectorArray, lineOpacity, fillOpacity);
         ctx.lineCap = lineCap;
     } else if (markerType === 'pie') {
-        point = point.add(0, hLineWidth);
+        point = point.add(0, -hLineWidth);
         const angle = Math.atan(width / 2 / height) * 180 / Math.PI;
         const lineCap = ctx.lineCap;
         ctx.lineCap = 'round';
@@ -163,7 +163,7 @@ export function getVectorMarkerPoints(markerType, width, height) {
         v2 = new Point((left + hw), top);
         v3 = new Point((left - hw), top);
         return [v0, v1, v2, v3];
-    } else if (markerType === 'pin') {
+    } else if (markerType === 'pin' || markerType === 'pie') {
         const extWidth = height * Math.atan(hw / hh);
         v0 = new Point(left, top);
         v1 = new Point(left - extWidth, top - height);

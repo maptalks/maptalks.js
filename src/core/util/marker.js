@@ -7,7 +7,7 @@ import Size from '../../geo/Size';
 
 //-------------- methods for fixed extent of markers -------------
 function getVectorPadding(/*symbol*/) {
-    return 0;
+    return 0.5;
 }
 
 const DXDY = new Point(0, 0);
@@ -24,11 +24,11 @@ function getFixedExtent(out, dx, dy, rotation, alignPoint, w, h) {
 
 const SIZE = [];
 export function getVectorMarkerFixedExtent(out, symbol) {
-    const padding = getVectorPadding(symbol) * 2;
-    let size = calVectorMarkerSize(SIZE, symbol);
-    if (padding) {
-        size = size.map(d => d - padding);
-    }
+    // const padding = getVectorPadding(symbol) * 2;
+    const size = calVectorMarkerSize(SIZE, symbol);
+    // if (padding) {
+    //     size = size.map(d => d - padding);
+    // }
     const alignPoint = getVectorMarkerAnchor(symbol, size[0], size[1]);
     return getFixedExtent(out, symbol['markerDx'] || 0, symbol['markerDy'] || 0,
         getMarkerRotation(symbol), alignPoint, size[0], size[1]);
