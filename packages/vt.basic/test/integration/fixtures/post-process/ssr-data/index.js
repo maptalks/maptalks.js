@@ -100,6 +100,8 @@ module.exports = {
     },
     renderingCount: 2,
     callRedraw: true,
+    containerWidth: 512,
+    containerHeight: 512,
     sceneConfig: {
         postProcess: {
             enable: true,

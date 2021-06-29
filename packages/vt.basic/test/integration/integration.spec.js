@@ -41,6 +41,8 @@ describe('vector tile integration specs', () => {
 
     const runner = (p, style) => {
         return done => {
+            container.style.width = (style.containerWidth || 128) + 'px';
+            container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
             if (!options.lights) {
@@ -96,6 +98,8 @@ describe('vector tile integration specs', () => {
     const postProcessRunner = (p, style) => {
         let finished = false;
         return done => {
+            container.style.width = (style.containerWidth || 128) + 'px';
+            container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
             options.centerCross = true;
             if (!options.lights) {
@@ -174,6 +178,15 @@ describe('vector tile integration specs', () => {
         };
     };
 
+    context('post process render specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
+        for (const p in specs) {
+            if (specs.hasOwnProperty(p)) {
+                it(p, postProcessRunner(p, specs[p]));
+            }
+        }
+    });
+
 
     context('icon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
@@ -243,15 +256,6 @@ describe('vector tile integration specs', () => {
         for (const p in specs) {
             if (specs.hasOwnProperty(p)) {
                 it(p, runner(p, specs[p]));
-            }
-        }
-    });
-
-    context('post process render specs', () => {
-        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
-        for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
-                it(p, postProcessRunner(p, specs[p]));
             }
         }
     });

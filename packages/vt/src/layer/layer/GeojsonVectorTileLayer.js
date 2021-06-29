@@ -7,7 +7,8 @@ const options = {
     //for geojson layer, only need to return id of features
     features : 'id',
     tileBuffer : 64,
-    extent : 8192
+    extent : 8192,
+    pyramidMode: 1
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {

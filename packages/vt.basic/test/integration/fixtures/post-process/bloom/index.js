@@ -84,11 +84,13 @@ const style = [
 module.exports = {
     style,
     data: data,
+    containerWidth: 512,
+    containerHeight: 512,
     view: {
         pitch: 70,
         bearing: 60,
         center: [0, 0],
-        zoom: 6.5
+        zoom: 7.5
     },
     sceneConfig: {
         postProcess: {

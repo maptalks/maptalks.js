@@ -101,6 +101,8 @@ module.exports = {
     },
     renderingCount: 2,
     diffCount: 1,
+    containerWidth: 512,
+    containerHeight: 512,
     sceneConfig: {
         ground: {
             enable: true,

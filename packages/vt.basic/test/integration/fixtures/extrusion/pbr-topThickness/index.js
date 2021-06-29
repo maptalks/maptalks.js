@@ -51,10 +51,12 @@ const style = [{
 }];
 module.exports = {
     style,
+    containerWidth: 512,
+    containerHeight: 512,
     data: data,
     view: {
         pitch: 60,
         center: [13.413801423921086, 52.53200476527732],
-        zoom: 16
+        zoom: 17
     }
 };
