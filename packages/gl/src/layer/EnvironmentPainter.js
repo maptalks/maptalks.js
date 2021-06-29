@@ -28,7 +28,7 @@ class EnvironmentPainter {
 
     update() {
         const map = this.getMap();
-        if (!map) {
+        if (!map || !this.isEnable()) {
             return;
         }
         const lightManager = map.getLightManager();
