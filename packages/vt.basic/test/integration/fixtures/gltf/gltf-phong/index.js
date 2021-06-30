@@ -35,6 +35,8 @@ const style = [
 module.exports = {
     style,
     data,
+    containerWidth: 256,
+    containerHeight: 256,
     view: {
         center: [13.411523913043766, 52.53168811873488],
         zoom: 19,

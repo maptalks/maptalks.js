@@ -222,8 +222,8 @@ class PhongPainter extends MeshPainter {
 
     _getLightUniformValues() {
         const lightManager = this.getMap().getLightManager();
-        const ambientLight = lightManager.getAmbientLight() || {};
-        const directionalLight = lightManager.getDirectionalLight() || {};
+        const ambientLight = lightManager && lightManager.getAmbientLight() || {};
+        const directionalLight = lightManager && lightManager.getDirectionalLight() || {};
 
         const uniforms = {
             'ambientColor': ambientLight.color || [0.2, 0.2, 0.2],
