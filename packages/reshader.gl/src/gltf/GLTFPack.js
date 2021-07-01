@@ -88,7 +88,7 @@ export default class GLTFPack {
     updateAnimation(time, loop, speed) {
         const json = this.gltf;
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
-        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * 0.001);
+        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * speed * 0.001);
         if (!this._startTime) {
             this._startTime = time;
         }
@@ -107,6 +107,9 @@ export default class GLTFPack {
     }
 
     isFirstLoop(time, speed) {
+        if (!this._startTime) {
+            return true;
+        }
         const json = this.gltf;
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
         return ((time - this._startTime) * speed * 0.001) / (timespan.max - timespan.min) < 1;
