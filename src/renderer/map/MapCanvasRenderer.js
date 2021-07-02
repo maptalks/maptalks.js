@@ -819,7 +819,9 @@ class MapCanvasRenderer extends MapRenderer {
                     if (!this.map || this.map.isRemoved()) {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
-                        this._checkSize(entries[0].contentRect);
+                        if (this.map._env !== 'positiontest') {
+                            this._checkSize(entries[0].contentRect);
+                        }
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
