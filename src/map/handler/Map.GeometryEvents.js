@@ -201,6 +201,7 @@ class MapGeometryEventsHandler extends Handler {
             return;
         }
         const containerPoint = getEventContainerPoint(actual, map._containerDOM),
+            // eslint-disable-next-line no-unused-vars
             coordinate = map.containerPointToCoordinate(containerPoint);
         if (eventType === 'touchstart') {
             preventDefault(domEvent);
