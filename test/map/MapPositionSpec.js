@@ -31,7 +31,7 @@ describe('Map.Position', function () {
         delete map._env;
         map.remove();
         REMOVE_CONTAINER(container);
-        // document.body.style.cssText = '';
+        document.body.style.cssText = '';
     });
 
 
