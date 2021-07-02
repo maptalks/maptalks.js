@@ -39,6 +39,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return false;
         }
+        this._updateDomPosition(framestamp);
         delete this._isViewChanged;
         const map = this.map;
         map._fireEvent('framestart');
@@ -593,9 +594,6 @@ class MapCanvasRenderer extends MapRenderer {
             this._cancelFrameLoop();
             return;
         }
-        // refresh map's dom position
-        // 原来内部用的 setInterval 定时的计算 dom.__position这个值，现在改用 ResizeObserver 不会主动的取计算 dom.__position这个值，所以导致dom.__position这个值不会变化了，永远是初始化的值
-        computeDomPosition(this.map._containerDOM);
         this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
@@ -785,6 +783,18 @@ class MapCanvasRenderer extends MapRenderer {
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
+    }
+
+    _updateDomPosition(framestamp) {
+        if (this._checkPositionTime === undefined) {
+            this._checkPositionTime = framestamp;
+        }
+        if (framestamp - this._checkPositionTime >= 500) {
+            // refresh map's dom position
+            computeDomPosition(this.map._containerDOM);
+            this._checkPositionTime = framestamp;
+        }
+        return this;
     }
 
     _checkSize() {
