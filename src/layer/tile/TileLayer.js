@@ -201,16 +201,14 @@ class TileLayer extends Layer {
 
 
     _getRootNode() {
+        const map = this.getMap();
         if (this._rootNode) {
+            if (map.width !== this._rootNode.mapWidth || map.height !== this._rootNode.mapHeight) {
+                this._rootNode.error = this._getRootError();
+            }
+
             return this._rootNode;
         }
-        const map = this.getMap();
-        const fov = toRadian(map.getFov());
-        const aspectRatio = this.map.width / this.map.height;
-        const cameraZ = map.cameraPosition[2];
-        const heightZ = cameraZ * Math.tan(0.5 * fov);
-        const widthZ = heightZ * aspectRatio;
-        const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
 
         this._rootNode = {
             x: 0,
@@ -222,13 +220,22 @@ class TileLayer extends Layer {
             id: this._getTileId(0, 0, 0),
             url: this.getTileUrl(0, 0, this.options['zoomOffset']),
             offset: [0, 0],
-            error: this._getRootError() * (diagonalZ / cameraZ)
+            error: this._getRootError(),
+            mapWidth: map.width,
+            mapHeight: map.height
         };
         return this._rootNode;
     }
 
     _getRootError() {
-        return this.getMap()._getFovZ(0);
+        const map = this.getMap();
+        const fov = toRadian(map.getFov());
+        const aspectRatio = this.map.width / this.map.height;
+        const cameraZ = map.cameraPosition[2];
+        const heightZ = cameraZ * Math.tan(0.5 * fov);
+        const widthZ = heightZ * aspectRatio;
+        const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
+        return this.getMap()._getFovZ(0)  * (diagonalZ / cameraZ);
     }
 
 
@@ -348,6 +355,7 @@ class TileLayer extends Layer {
                     childNode['layer'] = this.getId();
                 }
             }
+            childNode.error = node.error / 2;
             childNode.offset[0] = offset[0];
             childNode.offset[1] = offset[1];
             const visible = this._isTileVisible(childNode, projectionView, glScale, maxZoom, offset);
