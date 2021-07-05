@@ -211,8 +211,8 @@ class GeometryCollection extends Geometry {
                 symbols.push(g.getSymbol());
             });
             if (is) {
-                s =  {
-                    'children' : symbols
+                s = {
+                    'children': symbols
                 };
             }
         }

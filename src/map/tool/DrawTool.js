@@ -28,7 +28,8 @@ const options = {
     'mode': null,
     'once': false,
     'autoPanAtEdge': false,
-    'ignoreMouseleave': true
+    'ignoreMouseleave': true,
+    'blockGeometryEvents': false
 };
 
 const registeredMode = {};
@@ -191,12 +192,16 @@ class DrawTool extends MapTool {
         this._drawToolLayer = this._getDrawLayer();
         this._clearStage();
         this._loadResources();
+        const map = this.getMap();
         if (this.options['autoPanAtEdge']) {
-            const map = this.getMap();
             this._mapAutoPanAtEdge = map.options['autoPanAtEdge'];
             if (!this._mapAutoPanAtEdge) {
                 map.config({ autoPanAtEdge: true });
             }
+        }
+        this._geometryEvents = map.options['geometryEvents'];
+        if (this.options['blockGeometryEvents']) {
+            map.config('geometryEvents', false);
         }
         return this;
     }
@@ -212,6 +217,9 @@ class DrawTool extends MapTool {
                     map.config({ autoPanAtEdge: false });
                 }
             }
+        }
+        if (this.options['blockGeometryEvents']) {
+            map.config('geometryEvents', this._geometryEvents);
         }
         return this;
     }

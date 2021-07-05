@@ -243,7 +243,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
-
     /**
      * Whether the map is loaded or not.
      * @return {Boolean}

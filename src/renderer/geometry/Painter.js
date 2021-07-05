@@ -552,6 +552,7 @@ class Painter extends Class {
         if (!tolerance || tolerance < 0.5) {
             tolerance = 0.5;
         }
+        this._hitPoint = cp.sub(tolerance, tolerance);
         if (!testCanvas) {
             const canvasClass = this.getMap() ? this.getMap().CanvasClass : null;
             testCanvas = Canvas.createCanvas(1, 1, canvasClass);
@@ -559,7 +560,6 @@ class Painter extends Class {
         Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = testCanvas.getContext('2d');
-        this._hitPoint = cp.sub(tolerance, tolerance);
         try {
             this.paint(null, ctx, this._hitPoint);
         } catch (e) {
