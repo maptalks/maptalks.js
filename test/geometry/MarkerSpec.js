@@ -136,7 +136,7 @@ describe('Geometry.Marker', function () {
                 } else {
                     expect(layer).to.be.painted(0, -1);
                 }
-                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+                expect(marker.getSize().toArray()).to.be.eql([12, 22]);
                 map.removeLayer(layer);
             }
         });
@@ -249,7 +249,7 @@ describe('Geometry.Marker', function () {
                     done();
                 });
                 layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+                expect(marker.getSize().toArray()).to.be.eql([12, 22]);
             });
 
             it('pin', function (done) {
@@ -268,7 +268,7 @@ describe('Geometry.Marker', function () {
                     done();
                 });
                 layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+                expect(marker.getSize().toArray()).to.be.eql([12, 22]);
             });
 
             it('rectangle', function (done) {
@@ -283,11 +283,11 @@ describe('Geometry.Marker', function () {
                 });
                 layer.once('layerload', function () {
                     expect(layer).to.be.painted(-5, -10);
-                    expect(layer).to.be.painted(5, 9);
+                    expect(layer).not.to.be.painted(5, 9);
                     done();
                 });
                 layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([11, 21]);
+                expect(marker.getSize().toArray()).to.be.eql([12, 22]);
             });
         });
 
