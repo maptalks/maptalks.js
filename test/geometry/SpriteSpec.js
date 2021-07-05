@@ -90,7 +90,8 @@ describe('Marker.Sprite', function () {
             if (!maptalks.Browser.ie) {
                 expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
             }
-            expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2);
+            // the last 1 is the padding
+            expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2 + 1);
             expect(canvas.height).to.be.eql(71);
             done();
         };

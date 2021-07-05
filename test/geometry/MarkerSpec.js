@@ -283,7 +283,7 @@ describe('Geometry.Marker', function () {
                 });
                 layer.once('layerload', function () {
                     expect(layer).to.be.painted(-5, -10);
-                    expect(layer).to.be.painted(5, 9);
+                    expect(layer).to.be.painted(5, 8);
                     done();
                 });
                 layer.addGeometry(marker);
