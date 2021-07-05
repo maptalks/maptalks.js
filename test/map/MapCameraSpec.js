@@ -410,7 +410,7 @@ describe('Map.Camera', function () {
                     'markerHeight':30
                 }
             }).addTo(layer);
-            var s = new maptalks.Point(21, 31);
+            var s = new maptalks.Point(22, 32);
             expect(marker.getSize().toPoint()).to.be.eql(s);
             map.setPitch(60);
             expect(marker.getSize().toPoint()).to.be.eql(s);
