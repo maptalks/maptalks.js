@@ -22,7 +22,6 @@ describe('Map.Position', function () {
             center: center
         };
         map = new maptalks.Map(container, option);
-        map._env = 'positiontest';
         eventContainer = map._panels.canvasContainer;
         // eventContainer = map._containerDOM;
     });

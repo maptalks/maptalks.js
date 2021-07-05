@@ -801,8 +801,6 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return;
         }
-        // refresh map's dom position
-        computeDomPosition(this.map._containerDOM);
         this.map.checkSize();
     }
 
@@ -819,9 +817,7 @@ class MapCanvasRenderer extends MapRenderer {
                     if (!this.map || this.map.isRemoved()) {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
-                        if (this.map._env !== 'positiontest') {
-                            this._checkSize(entries[0].contentRect);
-                        }
+                        this._checkSize(entries[0].contentRect);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
