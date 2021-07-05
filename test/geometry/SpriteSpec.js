@@ -92,7 +92,7 @@ describe('Marker.Sprite', function () {
             }
             // the last 1 is the padding
             expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2 + 1);
-            expect(canvas.height).to.be.eql(71);
+            expect(canvas.height).to.be.eql(72);
             done();
         };
         image.src = url;
