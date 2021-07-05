@@ -39,6 +39,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return false;
         }
+        this._updateDomPosition(framestamp);
         delete this._isViewChanged;
         const map = this.map;
         map._fireEvent('framestart');
@@ -784,12 +785,22 @@ class MapCanvasRenderer extends MapRenderer {
         this.context = this.canvas.getContext('2d');
     }
 
+    _updateDomPosition(framestamp) {
+        if (this._checkPositionTime === undefined) {
+            this._checkPositionTime = framestamp;
+        }
+        if (framestamp - this._checkPositionTime >= 500) {
+            // refresh map's dom position
+            computeDomPosition(this.map._containerDOM);
+            this._checkPositionTime = framestamp;
+        }
+        return this;
+    }
+
     _checkSize() {
         if (!this.map) {
             return;
         }
-        // refresh map's dom position
-        computeDomPosition(this.map._containerDOM);
         this.map.checkSize();
     }
 
