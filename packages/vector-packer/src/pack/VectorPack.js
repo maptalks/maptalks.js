@@ -15,6 +15,11 @@ import StyledVector from './StyledVector';
 
 const interpolatedSymbols = {
     'lineWidth': 1,
+    'lineGapWidth': 1,
+    'lineDx': 1,
+    'lineDy': 1,
+    'lineOpacity': 1,
+    'linePatternAnimSpeed': 1,
     'markerWidth': 1,
     'markerHeight': 1,
     'textWrapWidth': 1,
@@ -57,6 +62,7 @@ export default class VectorPack {
         });
         this.styledVectors = [];
         this.properties = {};
+        this._fnTypes = VectorPack.genFnTypes(this.symbolDef);
         if (isFnTypeSymbol('visible', this.symbolDef)) {
             this._visibleFn = interpolated(this.symbolDef['visible']);
         }
@@ -140,6 +146,7 @@ export default class VectorPack {
     }
 
     load(scale = 1) {
+        const fnTypes = this._fnTypes;
         const vectors = this.styledVectors;
         this.count = 0;
         const features = this.features;
@@ -147,7 +154,6 @@ export default class VectorPack {
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
         const symbol = this.symbolDef;
-        const fnTypes = VectorPack.genFnTypes(this.symbolDef);
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
         if (debugIndex !== undefined) {

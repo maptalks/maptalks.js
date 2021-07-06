@@ -14,6 +14,7 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     getFormat() {
+        const { lineColorFn, lineWidthFn } = this._fnTypes;
         const format = [
             {
                 type: Int16Array,
@@ -41,7 +42,7 @@ export default class LineExtrusionPack extends LinePack {
                 name: 'aExtrude'
             },
         ];
-        if (this.colorFn) {
+        if (lineColorFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -50,7 +51,7 @@ export default class LineExtrusionPack extends LinePack {
                 }
             );
         }
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -189,11 +190,12 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     _fillTop(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
+        const { lineColorFn, lineWidthFn } = this._fnTypes;
         data.push(x, y, ALTITUDE_SCALE, linesofar, +up, extrudedPointX, extrudedPointY, 1, aExtrudeX, aExtrudeY);
-        if (this.colorFn) {
+        if (lineColorFn) {
             data.push(...this.feaColor);
         }
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
         }
@@ -203,11 +205,12 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     _fillBottom(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
+        const { lineColorFn, lineWidthFn } = this._fnTypes;
         data.push(x, y, this.feaMinHeight || 0, linesofar, +up, extrudedPointX, extrudedPointY, 0, aExtrudeX, aExtrudeY);
-        if (this.colorFn) {
+        if (lineColorFn) {
             data.push(...this.feaColor);
         }
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
         }

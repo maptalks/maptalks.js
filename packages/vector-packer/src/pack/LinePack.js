@@ -54,77 +54,31 @@ export default class LinePack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
-        if (isFnTypeSymbol('lineJoin', this.symbolDef)) {
-            this.lineJoinFn = piecewiseConstant(this.symbolDef['lineJoin']);
-        }
-        if (isFnTypeSymbol('lineCap', this.symbolDef)) {
-            this.lineCapFn = piecewiseConstant(this.symbolDef['lineCap']);
-        }
-        if (isFnTypeSymbol('lineWidth', this.symbolDef)) {
-            this.lineWidthFn = interpolated(this.symbolDef['lineWidth']);
-        }
-        if (isFnTypeSymbol('lineGapWidth', this.symbolDef)) {
-            this.lineGapWidthFn = interpolated(this.symbolDef['lineGapWidth']);
-        }
-        if (isFnTypeSymbol('lineColor', this.symbolDef)) {
-            this.colorFn = piecewiseConstant(this.symbolDef['lineColor']);
-        }
-        if (isFnTypeSymbol('linePatternFile', this.symbolDef)) {
-            this.patternFn = piecewiseConstant(this.symbolDef['linePatternFile']);
-        }
-        if (isFnTypeSymbol('lineOpacity', this.symbolDef)) {
-            this.opacityFn = piecewiseConstant(this.symbolDef['lineOpacity']);
-        }
         let hasFeaDash = false;
-        if (isFnTypeSymbol('lineDasharray', this.symbolDef)) {
-            const fn = piecewiseConstant(this.symbolDef['lineDasharray']);
-            hasFeaDash = hasFeatureDash(features, this.options.zoom, fn);
+        const { lineDasharrayFn, lineDashColorFn } = this._fnTypes;
+        if (lineDasharrayFn) {
+            hasFeaDash = hasFeatureDash(features, this.options.zoom, lineDasharrayFn);
             if (hasFeaDash) {
-                this.dasharrayFn = fn;
+                this.dasharrayFn = lineDasharrayFn;
             }
         }
         if ((hasDasharray(this.symbol['lineDasharray']) || hasFeaDash) &&
-            isFnTypeSymbol('lineDashColor', this.symbolDef)) {
-            this.dashColorFn = piecewiseConstant(this.symbolDef['lineDashColor']);
-        }
-        if (isFnTypeSymbol('lineJoinPatternMode', this.symbolDef)) {
-            this.joinPatternModeFn = piecewiseConstant(this.symbolDef['lineJoinPatternMode']);
-        }
-        if (isFnTypeSymbol('lineDx', this.symbolDef)) {
-            this.lineDxFn = interpolated(this.symbolDef['lineDx']);
-        }
-        if (isFnTypeSymbol('lineDy', this.symbolDef)) {
-            this.lineDyFn = interpolated(this.symbolDef['lineDy']);
-        }
-        if (isFnTypeSymbol('linePatternAnimSpeed', this.symbolDef)) {
-            this.linePatternAnimSpeedFn = interpolated(this.symbolDef['linePatternAnimSpeed']);
-        }
-        if (isFnTypeSymbol('linePatternGap', this.symbolDef)) {
-            this.linePatternGapFn = interpolated(this.symbolDef['linePatternGap']);
+            lineDashColorFn) {
+            this.dashColorFn = lineDashColorFn;
         }
     }
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
-        let pattern = symbol['linePatternFile'];
-        if (this.patternFn) {
-            const properties = feature && feature.properties || {};
-            properties['$layer'] = feature.layer;
-            properties['$type'] = feature.type;
-            pattern = this.patternFn(options['zoom'], properties);
-            delete properties['$layer'];
-            delete properties['$type'];
-        }
+        const pattern = vector.getResource();
         if (!this.options['atlas'] && pattern) {
             iconReqs[pattern] = 1;
-        }
-        if (pattern) {
-            vector.setResource(pattern);
         }
         return vector;
     }
 
     getFormat() {
+        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
         const format = [
             {
                 type: Int16Array,
@@ -153,7 +107,7 @@ export default class LinePack extends VectorPack {
                 name: 'aLinesofar'
             }
         );
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -162,7 +116,7 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (this.lineGapWidthFn) {
+        if (lineGapWidthFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -171,7 +125,7 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (this.colorFn) {
+        if (lineColorFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -180,7 +134,7 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (this.opacityFn) {
+        if (lineOpacityFn) {
             format.push(
                 {
                     type: Uint8Array,
@@ -230,21 +184,21 @@ export default class LinePack extends VectorPack {
                 name: 'aJoin'
             });
         }
-        if (this.lineDxFn) {
+        if (lineDxFn) {
             format.push({
                 type: Int8Array,
                 width: 1,
                 name: 'aLineDx'
             });
         }
-        if (this.lineDyFn) {
+        if (lineDyFn) {
             format.push({
                 type: Int8Array,
                 width: 1,
                 name: 'aLineDy'
             });
         }
-        if (this.linePatternAnimSpeedFn) {
+        if (linePatternAnimSpeedFn) {
             format.push({
                 type: Int8Array,
                 width: 1,
@@ -262,6 +216,9 @@ export default class LinePack extends VectorPack {
     }
 
     placeVector(line) {
+        const { lineJoinFn, lineCapFn, lineWidthFn, lineGapWidthFn,
+            lineColorFn, lineOpacityFn, lineJoinPatternModeFn,
+            lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
         const symbol = this.symbol,
             miterLimit = 2,
             roundLimit = 1.05;
@@ -274,20 +231,20 @@ export default class LinePack extends VectorPack {
             this.elements = [];
         }
         let join = symbol['lineJoin'] || 'miter', cap = symbol['lineCap'] || 'butt';
-        if (this.lineJoinFn) {
-            join = this.lineJoinFn(this.options['zoom'], feature.properties) || 'miter'; //bevel, miter, round
+        if (lineJoinFn) {
+            join = lineJoinFn(this.options['zoom'], feature.properties) || 'miter'; //bevel, miter, round
         }
-        if (this.lineCapFn) {
-            cap = this.lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
+        if (lineCapFn) {
+            cap = lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
         }
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             // {
             //     lineWidth: {
             //         property: 'type',
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            let lineWidth = this.lineWidthFn(this.options['zoom'], feature.properties);
+            let lineWidth = lineWidthFn(this.options['zoom'], feature.properties);
             if (isNil(lineWidth)) {
                 lineWidth = 4;
             }
@@ -295,14 +252,14 @@ export default class LinePack extends VectorPack {
         } else {
             this.feaLineWidth = symbol['lineWidth'];
         }
-        if (this.lineGapWidthFn) {
+        if (lineGapWidthFn) {
             // {
             //     lineGapWidth: {
             //         property: 'type',
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            let lineGapWidth = this.lineGapWidthFn(this.options['zoom'], feature.properties);
+            let lineGapWidth = lineGapWidthFn(this.options['zoom'], feature.properties);
             if (isNil(lineGapWidth)) {
                 lineGapWidth = 0;
             }
@@ -310,8 +267,8 @@ export default class LinePack extends VectorPack {
         } else {
             this.feaLineGapWidth = symbol['lineGapWidth'] || 0;
         }
-        if (this.colorFn) {
-            this.feaColor = this.colorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
+        if (lineColorFn) {
+            this.feaColor = lineColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
             if (!Array.isArray(this.feaColor)) {
                 this.feaColor = Color(this.feaColor).array();
             } else {
@@ -321,8 +278,8 @@ export default class LinePack extends VectorPack {
                 this.feaColor.push(255);
             }
         }
-        if (this.opacityFn) {
-            let opacity = this.opacityFn(this.options['zoom'], feature.properties);
+        if (lineOpacityFn) {
+            let opacity = lineOpacityFn(this.options['zoom'], feature.properties);
             if (isNil(opacity)) {
                 opacity = 1;
             }
@@ -370,28 +327,28 @@ export default class LinePack extends VectorPack {
                 this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
             }
             //feaJoinPatternMode为1时，把join部分用uvStart的像素代替
-            if (this.joinPatternModeFn) {
-                this.feaJoinPatternMode = this.joinPatternModeFn(this.options['zoom'], feature.properties) || 0;
+            if (lineJoinPatternModeFn) {
+                this.feaJoinPatternMode = lineJoinPatternModeFn(this.options['zoom'], feature.properties) || 0;
             } else {
                 this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
         }
-        if (this.lineDxFn) {
-            let dx = this.lineDxFn(this.options['zoom'], feature.properties);
+        if (lineDxFn) {
+            let dx = lineDxFn(this.options['zoom'], feature.properties);
             if (isNil(dx)) {
                 dx = 0;
             }
             this.feaLineDx = dx;
         }
-        if (this.lineDyFn) {
-            let dy = this.lineDyFn(this.options['zoom'], feature.properties);
+        if (lineDyFn) {
+            let dy = lineDyFn(this.options['zoom'], feature.properties);
             if (isNil(dy)) {
                 dy = 0;
             }
             this.feaLineDy = dy;
         }
-        if (this.linePatternAnimSpeedFn) {
-            let speed = this.linePatternAnimSpeedFn(this.options['zoom'], feature.properties);
+        if (linePatternAnimSpeedFn) {
+            let speed = linePatternAnimSpeedFn(this.options['zoom'], feature.properties);
             if (isNil(speed)) {
                 speed = 0;
             }
@@ -766,6 +723,7 @@ export default class LinePack extends VectorPack {
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
     fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
+        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
         if (this.options.center) {
             data.push(x, y, 0);
             data.push(round * 2 + up); //aUp
@@ -781,18 +739,18 @@ export default class LinePack extends VectorPack {
             EXTRUDE_SCALE * extrudeY,
             linesofar
         );
-        if (this.lineWidthFn) {
+        if (lineWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
         }
-        if (this.lineGapWidthFn) {
+        if (lineGapWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineGapWidth * 2));
         }
-        if (this.colorFn) {
+        if (lineColorFn) {
             data.push(...this.feaColor);
         }
-        if (this.opacityFn) {
+        if (lineOpacityFn) {
             data.push(this.feaOpacity);
         }
         if (this.dasharrayFn) {
@@ -823,13 +781,13 @@ export default class LinePack extends VectorPack {
 
             data.push(this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
         }
-        if (this.lineDxFn) {
+        if (lineDxFn) {
             data.push(this.feaLineDx);
         }
-        if (this.lineDyFn) {
+        if (lineDyFn) {
             data.push(this.feaLineDy);
         }
-        if (this.linePatternAnimSpeedFn) {
+        if (linePatternAnimSpeedFn) {
             data.push(this.feaPatternAnimSpeed * 127);
         }
         if (this.linePatternGapFn) {
