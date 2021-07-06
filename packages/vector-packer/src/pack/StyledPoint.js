@@ -1,14 +1,14 @@
-import { isNil, isFnTypeSymbol } from '../style/Util';
+import { isNil } from '../style/Util';
 import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../style/Marker';
 import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
-import { loadFunctionTypes, piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { loadFunctionTypes } from '@maptalks/function-type';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
 export default class StyledPoint {
-    constructor(feature, symbol, options) {
+    constructor(feature, symbol, fnTypes, options) {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
         //u_size_scale 当前像素坐标相对世界坐标的大小, u_rotation map的旋转角度(?)
         this.feature = feature;
@@ -18,75 +18,9 @@ export default class StyledPoint {
         });
         this.options = options;
         this._thisReplacer = this._replacer.bind(this);
-        this._initFnTypes();
+        this._fnTypes = fnTypes;
     }
 
-    _initFnTypes() {
-        if (isFnTypeSymbol('textName', this.symbolDef)) {
-            this._textNameFn = piecewiseConstant(this.symbolDef['textName']);
-        }
-        if (isFnTypeSymbol('textFaceName', this.symbolDef)) {
-            this._textFaceNameFn = piecewiseConstant(this.symbolDef['textFaceName']);
-        }
-        if (isFnTypeSymbol('textWeight', this.symbolDef)) {
-            this._textWeightFn = piecewiseConstant(this.symbolDef['textWeight']);
-        }
-        if (isFnTypeSymbol('textStyle', this.symbolDef)) {
-            this._textStyleFn = piecewiseConstant(this.symbolDef['textStyle']);
-        }
-        if (isFnTypeSymbol('textWrapWidth', this.symbolDef)) {
-            this._textWrapWidthFn = piecewiseConstant(this.symbolDef['textWrapWidth']);
-        }
-        if (isFnTypeSymbol('textHorizontalAlignment', this.symbolDef)) {
-            this._textHorizontalAlignmentFn = piecewiseConstant(this.symbolDef['textHorizontalAlignment']);
-        }
-        if (isFnTypeSymbol('textVerticalAlignment', this.symbolDef)) {
-            this._textVerticalAlignmentFn = piecewiseConstant(this.symbolDef['textVerticalAlignment']);
-        }
-        if (isFnTypeSymbol('markerFile', this.symbolDef)) {
-            this._markerFileFn = piecewiseConstant(this.symbolDef['markerFile']);
-        }
-        if (isFnTypeSymbol('markerType', this.symbolDef)) {
-            this._markerTypeFn = piecewiseConstant(this.symbolDef['markerType']);
-        }
-        if (isFnTypeSymbol('markerFill', this.symbolDef)) {
-            this._markerFillFn = piecewiseConstant(this.symbolDef['markerFill']);
-        }
-        if (isFnTypeSymbol('markerFillPatternFile', this.symbolDef)) {
-            this._markerFillPatternFileFn = piecewiseConstant(this.symbolDef['markerFillPatternFile']);
-        }
-        if (isFnTypeSymbol('markerFillOpacity', this.symbolDef)) {
-            this._markerFillOpacityFn = piecewiseConstant(this.symbolDef['markerFillOpacity']);
-        }
-        if (isFnTypeSymbol('markerLineColor', this.symbolDef)) {
-            this._markerLineColorFn = piecewiseConstant(this.symbolDef['markerLineColor']);
-        }
-        if (isFnTypeSymbol('markerLineWidth', this.symbolDef)) {
-            this._markerLineWidthFn = piecewiseConstant(this.symbolDef['markerLineWidth']);
-        }
-        if (isFnTypeSymbol('markerLineOpacity', this.symbolDef)) {
-            this._markerLineOpacityFn = piecewiseConstant(this.symbolDef['markerLineOpacity']);
-        }
-        if (isFnTypeSymbol('markerLineDasharray', this.symbolDef)) {
-            this._markerLineDasharrayFn = piecewiseConstant(this.symbolDef['markerLineDasharray']);
-        }
-        if (isFnTypeSymbol('markerLinePatternFile', this.symbolDef)) {
-            this._markerLinePatternFileFn = piecewiseConstant(this.symbolDef['markerLinePatternFile']);
-        }
-
-        if (isFnTypeSymbol('markerWidth', this.symbolDef)) {
-            this._markerWidthFn = interpolated(this.symbolDef['markerWidth']);
-        }
-        if (isFnTypeSymbol('markerHeight', this.symbolDef)) {
-            this._markerHeightFn = interpolated(this.symbolDef['markerHeight']);
-        }
-        if (isFnTypeSymbol('markerHorizontalAlignment', this.symbolDef)) {
-            this._markerHorizontalAlignmentFn = piecewiseConstant(this.symbolDef['markerHorizontalAlignment']);
-        }
-        if (isFnTypeSymbol('markerVerticalAlignment', this.symbolDef)) {
-            this._markerVerticalAlignmentFn = piecewiseConstant(this.symbolDef['markerVerticalAlignment']);
-        }
-    }
 
     _replacer(str, key) {
         return this.feature.properties[key] || 'default';
@@ -96,6 +30,7 @@ export default class StyledPoint {
         if (this._shape) {
             return this._shape;
         }
+        const { textHorizontalAlignmentFn, textVerticalAlignmentFn, markerHorizontalAlignmentFn, markerVerticalAlignmentFn, textWrapWidthFn } = this._fnTypes;
         let shape;
         const symbol = this.symbol;
         const iconGlyph = this.getIconAndGlyph();
@@ -112,14 +47,14 @@ export default class StyledPoint {
             const keepUpright = symbol['textKeepUpright'],
                 textAlongLine = symbol['textRotationAlignment'] === 'map' && symbol['textPlacement'] === 'line' && !symbol['isIconText'];
             const glyphs = glyphAtlas.glyphMap[font],
-                hAlignment = this._textHorizontalAlignmentFn ? this._textHorizontalAlignmentFn(null, properties) : symbol['textHorizontalAlignment'],
-                vAlignment = this._textVerticalAlignmentFn ? this._textVerticalAlignmentFn(null, properties) : symbol['textVerticalAlignment'],
+                hAlignment = textHorizontalAlignmentFn ? textHorizontalAlignmentFn(null, properties) : symbol['textHorizontalAlignment'],
+                vAlignment = textVerticalAlignmentFn ? textVerticalAlignmentFn(null, properties) : symbol['textVerticalAlignment'],
                 textAnchor = getAnchor(hAlignment, vAlignment),
                 lineHeight = 1.2 * oneEm, //TODO 默认的lineHeight的计算
                 isAllowLetterSpacing = allowsLetterSpacing(text),
                 textLetterSpacing =  isAllowLetterSpacing ? symbol['textLetterSpacing'] / fontScale || 0 : 0,
                 textOffset = [symbol['textDx'] / fontScale || 0, symbol['textDy'] / fontScale || 0],
-                wrapWidth = this._textWrapWidthFn ? this._textWrapWidthFn(null, properties) : symbol['textWrapWidth'],
+                wrapWidth = textWrapWidthFn ? textWrapWidthFn(null, properties) : symbol['textWrapWidth'],
                 textWrapWidth = (wrapWidth || 10 * oneEm) / fontScale;
             shape = {};
             shape.horizontal = shapeText(
@@ -144,8 +79,8 @@ export default class StyledPoint {
                 //图片没有载入成功
                 return null;
             }
-            const hAlignment = this._markerHorizontalAlignmentFn ? this._markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
-            const vAlignment = this._markerVerticalAlignmentFn ? this._markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
+            const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
+            const vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
             const markerAnchor = getAnchor(hAlignment, vAlignment);
             shape = shapeIcon(iconAtlas.positions[iconGlyph.icon], markerAnchor);
             if (!this.size) {
@@ -160,12 +95,15 @@ export default class StyledPoint {
         if (this.iconGlyph) {
             return this.iconGlyph;
         }
+        const { markerFileFn, markerTypeFn, markerWidthFn, markerHeightFn, markerFillFn, markerFillPatternFileFn, markerFillOpacityFn,
+            markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, textNameFn,
+            textFaceNameFn, textStyleFn, textWeightFn } = this._fnTypes;
         const { zoom } = this.options;
         const result = {};
         const symbol = this.symbol;
         const properties = this.feature.properties;
-        const markerFile = this._markerFileFn ? this._markerFileFn(null, properties) : symbol.markerFile;
-        const markerType = this._markerTypeFn ? this._markerTypeFn(null, properties) : symbol.markerType;
+        const markerFile = markerFileFn ? markerFileFn(null, properties) : symbol.markerFile;
+        const markerType = markerTypeFn ? markerTypeFn(null, properties) : symbol.markerType;
         const hasMarker = markerFile || markerType || symbol.markerPath;
         const hasText = !isNil(this.symbolDef.textName);
         let size;
@@ -181,80 +119,80 @@ export default class StyledPoint {
             if (markerType) {
                 const url = {};
                 url['markerType'] = markerType;
-                if (this._markerWidthFn) {
-                    const width =  this._markerWidthFn(null, properties);
+                if (markerWidthFn) {
+                    const width =  markerWidthFn(null, properties);
                     if (!isNil(width)) {
                         url['markerWidth'] = width;
                     }
                 } else if (symbol.markerWidth >= 0) {
                     url['markerWidth'] = symbol.markerWidth;
                 }
-                if (this._markerHeightFn) {
-                    const height = this._markerHeightFn(null, properties);
+                if (markerHeightFn) {
+                    const height = markerHeightFn(null, properties);
                     if (!isNil(height)) {
                         url['markerHeight'] = height;
                     }
                 } else if (symbol.markerHeight >= 0) {
                     url['markerHeight'] = symbol.markerHeight;
                 }
-                if (this._markerFillFn) {
-                    const fill = this._markerFillFn(null, properties);
+                if (markerFillFn) {
+                    const fill = markerFillFn(null, properties);
                     if (!isNil(fill)) {
                         url['markerFill'] = fill;
                     }
                 } else if (symbol.markerFill) {
                     url['markerFill'] = symbol.markerFill;
                 }
-                if (this._markerFillPatternFileFn) {
-                    const fillPattern = this._markerFillPatternFileFn(null, properties);
+                if (markerFillPatternFileFn) {
+                    const fillPattern = markerFillPatternFileFn(null, properties);
                     if (!isNil(fillPattern)) {
                         url['markerFillPatternFile'] = fillPattern;
                     }
                 } else if (symbol.markerFillPatternFile) {
                     url['markerFillPatternFile'] = symbol.markerFillPatternFile;
                 }
-                if (this._markerFillOpacityFn) {
-                    const fillOpacity = this._markerFillOpacityFn(null, properties);
+                if (markerFillOpacityFn) {
+                    const fillOpacity = markerFillOpacityFn(null, properties);
                     if (!isNil(fillOpacity)) {
                         url['markerFillOpacity'] = fillOpacity;
                     }
                 } else if (symbol.markerFillOpacity >= 0) {
                     url['markerFillOpacity'] = symbol.markerFillOpacity;
                 }
-                if (this._markerLineColorFn) {
-                    const lineColor = this._markerLineColorFn(null, properties);
+                if (markerLineColorFn) {
+                    const lineColor = markerLineColorFn(null, properties);
                     if (!isNil(lineColor)) {
                         url['markerLineColor'] = lineColor;
                     }
                 } else if (symbol.markerLineColor) {
                     url['markerLineColor'] = symbol.markerLineColor;
                 }
-                if (this._markerLineWidthFn) {
-                    const lineWidth = this._markerLineWidthFn(null, properties);
+                if (markerLineWidthFn) {
+                    const lineWidth = markerLineWidthFn(null, properties);
                     if (!isNil(lineWidth)) {
                         url['markerLineWidth'] = lineWidth;
                     }
                 } else if (symbol.markerLineWidth >= 0) {
                     url['markerLineWidth'] = symbol.markerLineWidth;
                 }
-                if (this._markerLineOpacityFn) {
-                    const lineOpacity = this._markerLineOpacityFn(null, properties);
+                if (markerLineOpacityFn) {
+                    const lineOpacity = markerLineOpacityFn(null, properties);
                     if (!isNil(lineOpacity)) {
                         url['markerLineOpacity'] = lineOpacity;
                     }
                 } else if (symbol.markerLineOpacity >= 0) {
                     url['markerLineOpacity'] = symbol.markerLineOpacity;
                 }
-                if (this._markerLineDasharrayFn) {
-                    const dasharray = this._markerLineDasharrayFn(null, properties);
+                if (markerLineDasharrayFn) {
+                    const dasharray = markerLineDasharrayFn(null, properties);
                     if (!isNil(dasharray)) {
                         url['markerLineDasharray'] = dasharray;
                     }
                 } else if (symbol.markerLineDasharray) {
                     url['markerLineDasharray'] = symbol.markerLineDasharray;
                 }
-                if (this._markerLinePatternFileFn) {
-                    const linePattern = this._markerLinePatternFileFn(null, properties);
+                if (markerLinePatternFileFn) {
+                    const linePattern = markerLinePatternFileFn(null, properties);
                     if (!isNil(linePattern)) {
                         url['markerLinePatternFile'] = linePattern;
                     }
@@ -270,11 +208,11 @@ export default class StyledPoint {
         }
 
         if (hasText) {
-            const textName = this._textNameFn ? this._textNameFn(null, properties) : symbol['textName'];
+            const textName = textNameFn ? textNameFn(null, properties) : symbol['textName'];
             if (textName || textName === 0) {
-                const textFaceName = this._textFaceNameFn ? this._textFaceNameFn(null, properties) : symbol['textFaceName'];
-                const textStyle = this._textStyleFn ? this._textStyleFn(null, properties) : symbol['textStyle'];
-                const textWeight = this._textWeightFn ? this._textWeightFn(null, properties) : symbol['textWeight'];
+                const textFaceName = textFaceNameFn ? textFaceNameFn(null, properties) : symbol['textFaceName'];
+                const textStyle = textStyleFn ? textStyleFn(null, properties) : symbol['textStyle'];
+                const textWeight = textWeightFn ? textWeightFn(null, properties) : symbol['textWeight'];
                 const font = getSDFFont(textFaceName, textStyle, textWeight);
                 const text = resolveText(textName, properties);
                 //(改为在前端计算)在TextPainter中能通过feature.properties['$label']直接取得标签内容

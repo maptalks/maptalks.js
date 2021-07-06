@@ -104,8 +104,8 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    createStyledVector(feature, symbol, options, iconReqs) {
-        const vector = new StyledVector(feature, symbol, options);
+    createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
+        const vector = new StyledVector(feature, symbol, fnTypes, options);
         let pattern = symbol['linePatternFile'];
         if (this.patternFn) {
             const properties = feature && feature.properties || {};

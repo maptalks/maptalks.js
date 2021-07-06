@@ -1,5 +1,4 @@
 import VectorPack from './VectorPack';
-import StyledVector from './StyledVector';
 import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import classifyRings from './util/classify_rings';
@@ -13,11 +12,6 @@ const DEFAULT_SPACING = 250;
  * Native点类型数据
  */
 export default class NativePointPack extends VectorPack {
-
-    createStyledVector(feature, symbol, options) {
-        return new StyledVector(feature, symbol, options);
-    }
-
     getFormat() {
         return [
             {

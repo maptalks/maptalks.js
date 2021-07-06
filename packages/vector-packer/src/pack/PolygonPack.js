@@ -12,6 +12,29 @@ const EARCUT_MAX_RINGS = 500;
 
 export default class PolygonPack extends VectorPack {
 
+    // static isAtlasLoaded(res, atlas) {
+    //     const { icon, glyph } = iconGlyph;
+    //     const { iconAtlas, glyphAtlas } = atlas;
+    //     if (icon) {
+    //         if (!iconAtlas || !iconAtlas.positions[icon]) {
+    //             return false;
+    //         }
+    //     }
+    //     if (glyph) {
+    //         if (!glyphAtlas || !glyphAtlas.positions[glyph.font]) {
+    //             return false;
+    //         }
+    //         const fontGlphy = glyphAtlas.positions[glyph.font];
+    //         const { text } = glyph;
+    //         for (let i = 0; i < text.length; i++) {
+    //             if (!fontGlphy[text.charCodeAt(i)]) {
+    //                 return false;
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
+
     constructor(...args) {
         super(...args);
         this.lineElements = [];
@@ -26,7 +49,7 @@ export default class PolygonPack extends VectorPack {
         }
     }
 
-    createStyledVector(feature, symbol, options, iconReqs) {
+    createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
         if (!this.options['atlas'] && symbol['polygonPatternFile']) {
             let pattern = symbol['polygonPatternFile'];
             if (this._patternFn) {
@@ -41,7 +64,7 @@ export default class PolygonPack extends VectorPack {
                 iconReqs[pattern] = 1;
             }
         }
-        return new StyledVector(feature, symbol, options);
+        return new StyledVector(feature, symbol, fnTypes, options);
     }
 
     getFormat() {

@@ -1,5 +1,4 @@
 import VectorPack from './VectorPack';
-import StyledVector from './StyledVector';
 import { getPointAnchors } from './util/get_point_anchors';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol } from '../style/Util';
@@ -27,11 +26,6 @@ export default class CirclePack extends VectorPack {
         if (isFnTypeSymbol('markerPlacement', this.symbolDef)) {
             this._markerPlacementFn = piecewiseConstant(this.symbolDef['markerPlacement']);
         }
-    }
-
-    createStyledVector(feature, symbol, options) {
-        //每个point的icon和text
-        return new StyledVector(feature, symbol, options);
     }
 
     getFormat() {

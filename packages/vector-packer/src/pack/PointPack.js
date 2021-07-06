@@ -305,9 +305,9 @@ export default class PointPack extends VectorPack {
         }
     }
 
-    createStyledVector(feature, symbol, options, iconReqs, glyphReqs) {
+    createStyledVector(feature, symbol, fnTypes, options, iconReqs, glyphReqs) {
         //每个point的icon和text
-        const point = new StyledPoint(feature, symbol, options);
+        const point = new StyledPoint(feature, symbol, fnTypes, options);
         const iconGlyph = point.getIconAndGlyph();
         if (iconGlyph.icon && !this.options['atlas']) {
             if (!iconReqs[iconGlyph.icon]) {

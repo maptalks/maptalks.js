@@ -269,7 +269,7 @@ describe('vector layers update style specs', () => {
             count++;
             if (count === 1) {
                 marker.setCoordinates([1, 0]);
-            } else if (count === 3) {
+            } else if (count === 2) {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 50, y / 2);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);

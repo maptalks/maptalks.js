@@ -7,10 +7,20 @@ import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType, get
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
-import { loadFunctionTypes, interpolated } from '@maptalks/function-type';
+import { loadFunctionTypes, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { createFilter } from '@maptalks/feature-filter';
 import { isFnTypeSymbol, isNumber } from '../style/Util';
 import { getHeightValue } from './util/util';
+import StyledVector from './StyledVector';
+
+const interpolatedSymbols = {
+    'lineWidth': 1,
+    'markerWidth': 1,
+    'markerHeight': 1,
+    'textWrapWidth': 1,
+    'textSpacing': 1,
+    'textSize': 1
+};
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -19,6 +29,21 @@ export const KEY_IDX = '__fea_idx';
  * abstract class for all vector packs
  */
 export default class VectorPack {
+
+    static genFnTypes(symbolDef) {
+        const fnTypes = {};
+        for (const p in symbolDef) {
+            if (isFnTypeSymbol(p, symbolDef)) {
+                if (interpolatedSymbols[p]) {
+                    fnTypes[p + 'Fn'] = interpolated(symbolDef[p]);
+                } else {
+                    fnTypes[p + 'Fn'] = piecewiseConstant(symbolDef[p]);
+                }
+            }
+        }
+        return fnTypes;
+    }
+
     constructor(features, symbol, options) {
         //TODO 预先把altitude传到pack里来？
         this.options = options;
@@ -122,6 +147,7 @@ export default class VectorPack {
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
         const symbol = this.symbolDef;
+        const fnTypes = VectorPack.genFnTypes(this.symbolDef);
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
         if (debugIndex !== undefined) {
@@ -151,7 +177,7 @@ export default class VectorPack {
             if (!feature.geometry) {
                 continue;
             }
-            const vector = this.createStyledVector(feature, symbol, options, iconReqs, glyphReqs);
+            const vector = this.createStyledVector(feature, symbol, fnTypes, options, iconReqs, glyphReqs);
             if (!vector || !vector.feature.geometry) {
                 continue;
             }
@@ -259,6 +285,10 @@ export default class VectorPack {
         return vectorPack;
     }
 
+    createStyledVector(feature, symbol, fnTypes, options) {
+        return new StyledVector(feature, symbol, fnTypes, options);
+    }
+
     createDataPack(vectors, scale) {
         if (!vectors || !vectors.length) {
             return null;
@@ -315,7 +345,7 @@ export default class VectorPack {
         const ArrType = getIndexArrayType(maxFeaIndex);
         featureIndexes = new ArrType(featureIndexes);
 
-        if (this.maxPos > 0 && this.options.positionType) {
+        if (this.options.positionType) {
             format[0].type = this.options.positionType;
         } else {
             //update aPosition's type

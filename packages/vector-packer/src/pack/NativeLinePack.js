@@ -1,5 +1,3 @@
-// import VectorPack from './VectorPack';
-import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import { isClippedEdge } from './util/util';
 
@@ -23,10 +21,6 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE
  * 3. 遍历 StyledLine, 生成
  */
 export default class NativeLinePack extends VectorPack {
-
-    createStyledVector(feature, symbol, options) {
-        return new StyledVector(feature, symbol, options);
-    }
 
     getFormat() {
         return [
