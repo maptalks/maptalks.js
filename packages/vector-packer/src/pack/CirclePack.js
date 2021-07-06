@@ -1,7 +1,5 @@
 import VectorPack from './VectorPack';
 import { getPointAnchors } from './util/get_point_anchors';
-import { interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { isFnTypeSymbol } from '../style/Util';
 
 const DEFAULT_SPACING = 250;
 
@@ -14,20 +12,6 @@ const format = [
 ];
 
 export default class CirclePack extends VectorPack {
-    constructor(features, symbol, options) {
-        super(features, symbol, options);
-        this._initFnTypes();
-    }
-
-    _initFnTypes() {
-        if (isFnTypeSymbol('markerSpacing', this.symbolDef)) {
-            this._markerSpacingFn = interpolated(this.symbolDef['markerSpacing']);
-        }
-        if (isFnTypeSymbol('markerPlacement', this.symbolDef)) {
-            this._markerPlacementFn = piecewiseConstant(this.symbolDef['markerPlacement']);
-        }
-    }
-
     getFormat() {
         return format;
     }
@@ -59,17 +43,23 @@ export default class CirclePack extends VectorPack {
     }
 
     _getAnchors(point, scale) {
-        const { symbol } = point;
+        const { feature, symbol } = point;
         const placement = this._getPlacement(symbol, point);
-        const spacing = (symbol['markerSpacing'] || DEFAULT_SPACING) * scale;
+        const properties = feature.properties;
+        const { markerSpacingFn } = this._fnTypes;
+        const spacing = (
+            (markerSpacingFn ? markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
+            DEFAULT_SPACING
+        ) * scale;
         const EXTENT = this.options.EXTENT;
         const anchors = getPointAnchors(point, null, null, scale, EXTENT, placement, spacing);
         return anchors;
     }
 
     _getPlacement(symbol, point) {
-        if (this._markerPlacementFn) {
-            return this._markerPlacementFn(null, point.feature && point.feature.properties);
+        const { markerPlacementFn } = this._fnTypes;
+        if (markerPlacementFn) {
+            return markerPlacementFn(null, point.feature && point.feature.properties);
         }
         return symbol.markerPlacement;
     }

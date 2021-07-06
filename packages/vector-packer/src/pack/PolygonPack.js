@@ -3,68 +3,36 @@ import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
 import { getIndexArrayType } from './util/array';
-import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
-import { isFnTypeSymbol, isNil } from '../style/Util';
+import { isNil } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
 
 const EARCUT_MAX_RINGS = 500;
 
 export default class PolygonPack extends VectorPack {
 
-    // static isAtlasLoaded(res, atlas) {
-    //     const { icon, glyph } = iconGlyph;
-    //     const { iconAtlas, glyphAtlas } = atlas;
-    //     if (icon) {
-    //         if (!iconAtlas || !iconAtlas.positions[icon]) {
-    //             return false;
-    //         }
-    //     }
-    //     if (glyph) {
-    //         if (!glyphAtlas || !glyphAtlas.positions[glyph.font]) {
-    //             return false;
-    //         }
-    //         const fontGlphy = glyphAtlas.positions[glyph.font];
-    //         const { text } = glyph;
-    //         for (let i = 0; i < text.length; i++) {
-    //             if (!fontGlphy[text.charCodeAt(i)]) {
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //     return true;
-    // }
+    static isAtlasLoaded(res, atlas = {}) {
+        const { iconAtlas } = atlas;
+        if (res) {
+            if (!iconAtlas || !iconAtlas.positions[res]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     constructor(...args) {
         super(...args);
         this.lineElements = [];
-        if (isFnTypeSymbol('polygonFill', this.symbolDef)) {
-            this._polygonFillFn = piecewiseConstant(this.symbolDef['polygonFill']);
-        }
-        if (isFnTypeSymbol('polygonOpacity', this.symbolDef)) {
-            this._polygonOpacityFn = interpolated(this.symbolDef['polygonOpacity']);
-        }
-        if (isFnTypeSymbol('polygonPatternFile', this.symbolDef)) {
-            this._patternFn = piecewiseConstant(this.symbolDef['polygonPatternFile']);
-        }
     }
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
-        if (!this.options['atlas'] && symbol['polygonPatternFile']) {
-            let pattern = symbol['polygonPatternFile'];
-            if (this._patternFn) {
-                const properties = feature && feature.properties || {};
-                properties['$layer'] = feature.layer;
-                properties['$type'] = feature.type;
-                pattern = this._patternFn(options['zoom'], properties);
-                delete properties['$layer'];
-                delete properties['$type'];
-            }
-            if (pattern) {
-                iconReqs[pattern] = 1;
-            }
+        const vector = new StyledVector(feature, symbol, fnTypes, options);
+        const pattern = vector.getResource();
+        if (!this.options['atlas'] && pattern) {
+            iconReqs[pattern] = 1;
         }
-        return new StyledVector(feature, symbol, fnTypes, options);
+        return vector;
     }
 
     getFormat() {
@@ -75,6 +43,7 @@ export default class PolygonPack extends VectorPack {
                 name: 'aPosition'
             }
         ];
+        const { polygonFillFn, polygonOpacityFn } = this._fnTypes;
         if (this.iconAtlas) {
             const max = this.getIconAtlasMaxValue();
             format.push({
@@ -83,14 +52,14 @@ export default class PolygonPack extends VectorPack {
                 name: 'aTexInfo'
             });
         }
-        if (this._polygonFillFn) {
+        if (polygonFillFn) {
             format.push({
                 type: Uint8Array,
                 width: 4,
                 name: 'aColor'
             });
         }
-        if (this._polygonOpacityFn) {
+        if (polygonOpacityFn) {
             format.push({
                 type: Uint8Array,
                 width: 1,
@@ -126,8 +95,9 @@ export default class PolygonPack extends VectorPack {
 
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity;
-        if (this._polygonFillFn) {
-            dynFill = this._polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
+        const { polygonFillFn, polygonOpacityFn } = this._fnTypes;
+        if (polygonFillFn) {
+            dynFill = polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
             if (!Array.isArray(dynFill)) {
                 dynFill = Color(dynFill).array();
             } else {
@@ -137,8 +107,8 @@ export default class PolygonPack extends VectorPack {
                 dynFill.push(255);
             }
         }
-        if (this._polygonOpacityFn) {
-            dynOpacity = this._polygonOpacityFn(this.options['zoom'], feature.properties);
+        if (polygonOpacityFn) {
+            dynOpacity = polygonOpacityFn(this.options['zoom'], feature.properties);
             if (isNil(dynOpacity)) {
                 dynOpacity = 1;
             }
@@ -151,7 +121,8 @@ export default class PolygonPack extends VectorPack {
         const uvStart = [0, 0];
         const uvSize = [0, 0];
         if (hasUV) {
-            const patternFile = this._patternFn ? this._patternFn(null, feature.properties) : this.symbol['polygonPatternFile'];
+            const { polygonPatternFileFn } = this._fnTypes;
+            const patternFile = polygonPatternFileFn ? polygonPatternFileFn(null, feature.properties) : this.symbol['polygonPatternFile'];
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
                 const rect = this.iconAtlas.positions[patternFile].paddedRect;

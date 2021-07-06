@@ -1,9 +1,8 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
-import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import Color from 'color';
-import { isNil, isFnTypeSymbol } from '../style/Util';
+import { isNil } from '../style/Util';
 import clipLine from './util/clip_line';
 
 // NOTE ON EXTRUDE SCALE:

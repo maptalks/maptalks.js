@@ -22,9 +22,21 @@ const interpolatedSymbols = {
     'linePatternAnimSpeed': 1,
     'markerWidth': 1,
     'markerHeight': 1,
+    'markerDx': 1,
+    'markerDy': 1,
+    'markerSpacing': 1,
+    'markerOpacity': 1,
+    'markerRotation': 1,
     'textWrapWidth': 1,
     'textSpacing': 1,
-    'textSize': 1
+    'textSize': 1,
+    'textHaloRadius': 1,
+    'textHaloOpacity': 1,
+    'textDx': 1,
+    'textDy': 1,
+    'textOpacity': 1,
+    'textRotation': 1,
+    'polygonOpacity': 1
 };
 
 //feature index defined in BaseLayerWorker
