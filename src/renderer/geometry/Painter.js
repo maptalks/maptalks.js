@@ -660,6 +660,7 @@ class Painter extends Class {
     _computeFixedExtent(resources, extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
+            symbolizer._index = i;
             if (symbolizer.getFixedExtent) {
                 extent._combine(symbolizer.getFixedExtent(resources));
             }
