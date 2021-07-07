@@ -87,6 +87,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             textDesc = textDesc[this._index];
         }
         this._fixedExtent = this._fixedExtent || new PointExtent();
+        if (!textDesc) {
+            return this._fixedExtent;
+        }
         return getTextMarkerFixedExtent(this._fixedExtent, this.style, textDesc);
     }
 
