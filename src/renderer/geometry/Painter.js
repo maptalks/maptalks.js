@@ -93,6 +93,9 @@ class Painter extends Class {
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
+        for (let i = 0, len = symbolizers.length; i < len; i++) {
+            symbolizers._index = i;
+        }
         return symbolizers;
     }
 
@@ -660,7 +663,6 @@ class Painter extends Class {
     _computeFixedExtent(resources, extent) {
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];
-            symbolizer._index = i;
             if (symbolizer.getFixedExtent) {
                 extent._combine(symbolizer.getFixedExtent(resources));
             }
