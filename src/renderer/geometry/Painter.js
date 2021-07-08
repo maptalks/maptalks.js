@@ -78,6 +78,7 @@ class Painter extends Class {
             for (let i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
+                    symbolizer._index = ii;
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPoint = true;
@@ -93,9 +94,6 @@ class Painter extends Class {
             // throw new Error('no symbolizers can be created to draw, check the validity of the symbol.');
         }
         this._debugSymbolizer = new Symbolizers.DebugSymbolizer(geoSymbol, this.geometry, this);
-        for (let i = 0, len = symbolizers.length; i < len; i++) {
-            symbolizers._index = i;
-        }
         return symbolizers;
     }
 
