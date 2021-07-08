@@ -261,8 +261,8 @@ export default class PointPack extends VectorPack {
         } else {
             format.push(...this._getMarkerFnTypeFormats());
         }
-        const { markerOpacityFn, textOpacityFn, markerPitchAlignFn, textPitchAlignFn,
-            markerRotateAlignFn, textRotateAlignFn, markerRotationFn, textRotationFn,
+        const { markerOpacityFn, textOpacityFn, markerPitchAlignmentFn, textPitchAlignmentFn,
+            markerRotationAlignmentFn, textRotationAlignmentFn, markerRotationFn, textRotationFn,
             markerAllowOverlapFn, textAllowOverlapFn, markerIgnorePlacementFn, textIgnorePlacementFn } = this._fnTypes;
         if (markerOpacityFn || textOpacityFn) {
             format.push({
@@ -271,14 +271,14 @@ export default class PointPack extends VectorPack {
                 name: 'aColorOpacity'
             });
         }
-        if (markerPitchAlignFn || textPitchAlignFn) {
+        if (markerPitchAlignmentFn || textPitchAlignmentFn) {
             format.push({
                 type: Uint8Array,
                 width: 1,
                 name: 'aPitchAlign'
             });
         }
-        if (markerRotateAlignFn || textRotateAlignFn) {
+        if (markerRotationAlignmentFn || textRotationAlignmentFn) {
             format.push({
                 type: Uint8Array,
                 width: 1,
@@ -431,11 +431,11 @@ export default class PointPack extends VectorPack {
         const isText = symbol['textName'] !== undefined;
         const isVertical = isText && alongLine && allowsVerticalWritingMode(point.getIconAndGlyph().glyph.text) ? 1 : 0;
         const { textFillFn, textSizeFn, textHaloFillFn, textHaloRadiusFn, textHaloOpacityFn, textDxFn, textDyFn,
-            textPitchAlignFn, textRotateAlignFn, textRotationFn,
+            textPitchAlignmentFn, textRotationAlignmentFn, textRotationFn,
             textAllowOverlapFn, textIgnorePlacementFn,
             textOpacityFn,
             markerWidthFn, markerHeightFn, markerDxFn, markerDyFn,
-            markerPitchAlignFn, markerRotateAlignFn, markerRotationFn,
+            markerPitchAlignmentFn, markerRotationAlignmentFn, markerRotationFn,
             markerAllowOverlapFn, markerIgnorePlacementFn,
             markerOpacityFn
         } = this._fnTypes;
@@ -489,11 +489,11 @@ export default class PointPack extends VectorPack {
             if (textDyFn) {
                 textDy = textDyFn(null, properties) || 0;
             }
-            if (textPitchAlignFn) {
-                pitchAlign = +(textPitchAlignFn(null, properties) === 'map');
+            if (textPitchAlignmentFn) {
+                pitchAlign = +(textPitchAlignmentFn(null, properties) === 'map');
             }
-            if (textRotateAlignFn) {
-                rotateAlign = +(textRotateAlignFn(null, properties) === 'map');
+            if (textRotationAlignmentFn) {
+                rotateAlign = +(textRotationAlignmentFn(null, properties) === 'map');
             }
             if (textRotationFn) {
                 rotation = wrap(textRotationFn(null, properties), 0, 360) * Math.PI / 180;
@@ -513,11 +513,11 @@ export default class PointPack extends VectorPack {
             if (markerDyFn) {
                 markerDy = markerDyFn(null, properties);
             }
-            if (markerPitchAlignFn) {
-                pitchAlign = +(markerPitchAlignFn(null, properties) === 'map');
+            if (markerPitchAlignmentFn) {
+                pitchAlign = +(markerPitchAlignmentFn(null, properties) === 'map');
             }
-            if (markerRotateAlignFn) {
-                rotateAlign = +(markerRotateAlignFn(null, properties) === 'map');
+            if (markerRotationAlignmentFn) {
+                rotateAlign = +(markerRotationAlignmentFn(null, properties) === 'map');
             }
             if (markerRotationFn) {
                 rotation = wrap(markerRotationFn(null, properties), 0, 360) * Math.PI / 180;
@@ -640,11 +640,11 @@ export default class PointPack extends VectorPack {
         pitchAlign, rotateAlign, rotation,
         allowOverlap, ignorePlacement) {
         const { textFillFn, textSizeFn, textHaloFillFn, textHaloRadiusFn, textHaloOpacityFn, textDxFn, textDyFn,
-            textPitchAlignFn, textRotateAlignFn, textRotationFn,
+            textPitchAlignmentFn, textRotationAlignmentFn, textRotationFn,
             textAllowOverlapFn, textIgnorePlacementFn,
             textOpacityFn,
             markerWidthFn, markerHeightFn, markerDxFn, markerDyFn,
-            markerPitchAlignFn, markerRotateAlignFn, markerRotationFn,
+            markerPitchAlignmentFn, markerRotationAlignmentFn, markerRotationFn,
             markerAllowOverlapFn, markerIgnorePlacementFn,
             markerOpacityFn } = this._fnTypes;
         if (textFillFn) {
@@ -684,10 +684,10 @@ export default class PointPack extends VectorPack {
         if (opacityFn) {
             data.push(opacity);
         }
-        if (textPitchAlignFn || markerPitchAlignFn) {
+        if (textPitchAlignmentFn || markerPitchAlignmentFn) {
             data.push(pitchAlign);
         }
-        if (markerRotateAlignFn ||  textRotateAlignFn) {
+        if (markerRotationAlignmentFn ||  textRotationAlignmentFn) {
             data.push(rotateAlign);
         }
         if (markerRotationFn || textRotationFn) {

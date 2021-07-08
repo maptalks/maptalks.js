@@ -115,6 +115,11 @@ export const  MARKER_SYMBOL = {
         default: null,
         property: '_symbol_markerTextFit'
     },
+    markerSpacing: {
+        type: 'identity',
+        default: 250,
+        property: '_symbol_markerSpacing'
+    },
     markerTextFitPadding: {
         type: 'identity',
         default: null,
@@ -223,6 +228,11 @@ export const TEXT_SYMBOL = {
         type: 'identity',
         default: 0,
         property: '_symbol_textIgnorePlacement'
+    },
+    textSpacing: {
+        type: 'identity',
+        default: 250,
+        property: '_symbol_textSpacing'
     }
 };
 
