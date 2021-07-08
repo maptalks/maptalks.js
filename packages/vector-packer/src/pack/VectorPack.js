@@ -47,6 +47,16 @@ export const KEY_IDX = '__fea_idx';
  */
 export default class VectorPack {
 
+    static isAtlasLoaded(res, atlas = {}) {
+        const { iconAtlas } = atlas;
+        if (res) {
+            if (!iconAtlas || !iconAtlas.positions[res]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static genFnTypes(symbolDef) {
         const fnTypes = {};
         for (const p in symbolDef) {

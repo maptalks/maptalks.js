@@ -52,23 +52,15 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             return;
         }
 
-        //因为有虚线和没有虚线的line绘制逻辑不同，需要分开创建mesh
-        const feas = [];
-        const alphaFeas = [];
-        for (let i = 0; i < features.length; i++) {
-            const f = features[i];
-            if (f.properties && f.properties['_symbol_polygonOpacity'] < 1) {
-                alphaFeas.push(f);
-            } else {
-                feas.push(f);
-            }
-        }
+        this._meshCenter = center;
+
+        //因为有透明度和没有透明度的多边形绘制逻辑不同，需要分开
+        const featureGroups = this._groupPolygonFeatures(features);
 
         const symbol = extend({}, SYMBOL);
-        const promises = [
-            this.createMesh(this.painter, PolygonPack, symbol, feas, atlas && atlas[0], center),
-            this.createMesh(this.painter, PolygonPack, symbol, alphaFeas, atlas && atlas[1], center)
-        ];
+        const promises = featureGroups.map((feas, i) =>
+            this.createMesh(this.painter, PolygonPack, symbol, feas, atlas && atlas[i], center)
+        );
 
         Promise.all(promises).then(mm => {
             if (this.meshes) {
@@ -79,6 +71,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             for (let i = 0; i < mm.length; i++) {
                 if (mm[i] && mm[i].mesh) {
                     meshes.push(mm[i].mesh);
+                    mm[i].mesh.feaGroupIndex = i;
                     mm[i].mesh.geometry.properties.originElements = mm[i].mesh.geometry.properties.elements.slice();
                     if (i === 1) {
                         mm[i].mesh.transparent = true;
@@ -92,12 +85,36 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
         });
     }
 
+
+    _groupPolygonFeatures(features) {
+        const feas = [];
+        const alphaFeas = [];
+        for (let i = 0; i < features.length; i++) {
+            const f = features[i];
+            if (f.properties && f.properties['_symbol_polygonOpacity'] < 1) {
+                alphaFeas.push(f);
+            } else {
+                feas.push(f);
+            }
+        }
+        return [feas, alphaFeas];
+    }
+
     createPainter() {
         const FillPainter = Vector3DLayer.get3DPainterClass('fill');
         this.painterSymbol = extend({}, SYMBOL);
         const painter = new FillPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
         return painter;
     }
+
+    updateMesh(polygon) {
+        if (!this.meshes) {
+            return;
+        }
+        this._updateMesh(polygon, this.meshes, this.atlas, this._meshCenter, this.painter, PolygonPack, SYMBOL, this._groupPolygonFeatures);
+    }
+
+
 }
 
 PolygonLayer.registerRenderer('gl', PolygonLayerRenderer);

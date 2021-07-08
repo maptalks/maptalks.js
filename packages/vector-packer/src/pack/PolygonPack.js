@@ -11,16 +11,6 @@ const EARCUT_MAX_RINGS = 500;
 
 export default class PolygonPack extends VectorPack {
 
-    static isAtlasLoaded(res, atlas = {}) {
-        const { iconAtlas } = atlas;
-        if (res) {
-            if (!iconAtlas || !iconAtlas.positions[res]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     constructor(...args) {
         super(...args);
         this.lineElements = [];
