@@ -352,8 +352,8 @@ class GroundPainter {
 
         const offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
         const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
-        const texWidth = TEX_SIZE_W * scale[0];
-        const texHeight = TEX_SIZE_H * scale[1];
+        const texWidth = TEX_SIZE_W / scale[0];
+        const texHeight = TEX_SIZE_H / scale[1];
         const uvStartX = (xmin / texWidth) % 1;
         const uvStartY = (ymax / texHeight) % 1;
         const w = extent.getWidth() / texWidth * 2;
