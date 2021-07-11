@@ -3,12 +3,17 @@ import { reshader } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
-import { clamp } from '../Util';
+import { clamp, isNil } from '../Util';
 import CollisionGroup from './CollisionGroup';
 // import { getLabelContent } from './util/get_label_content';
 
+
+// 设置说明:
+// layer.options.collision 用来决定是否生成collision计算所需要的数据结构
+// sceneConfig.collision 决定是否开启和关闭collision
+
 const DEFAULT_SCENE_CONFIG = {
-    collision: true,
+    collision: false,
     fading: true,
     fadingDuration: 16 * 14,
     fadeInDelay: 600,
@@ -21,10 +26,6 @@ const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 
 export default class CollisionPainter extends BasicPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
-        this.sceneConfig = maptalks.Util.extend({}, DEFAULT_SCENE_CONFIG, this.sceneConfig);
-    }
 
     startMeshCollision(mesh) {
         const { meshKey } = mesh.properties;
@@ -89,6 +90,12 @@ export default class CollisionPainter extends BasicPainter {
             collisionTags: this._collisionContext.tags,
             isEnableUniquePlacement: this.isEnableUniquePlacement()
         };
+    }
+
+    _endCollision() {
+        // 用来判断这一帧中是否需要计算collision
+        // 如果这一帧和上一帧的collision都是关闭的，则可以略过collision的计算，提升性能
+        this._enableCollisionInPreFrame = this.sceneConfig.collision;
     }
 
     _getCachedCollision(meshKey, boxIndex) {
@@ -253,7 +260,9 @@ export default class CollisionPainter extends BasicPainter {
                 if (visible) {
                     const fadeOutStart = mesh._fadeOutStartTime;
                     if (fadeOutStart && fadingOpacity === 1 && stamps[boxIndex] > 0) {
-                        const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+                        let { fadeOutDelay, fadingDuration } = this.sceneConfig;
+                        if (isNil(fadingDuration)) { fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration; }
+                        if (isNil(fadeOutDelay)) { fadeOutDelay = DEFAULT_SCENE_CONFIG.fadeOutDelay; }
                         const timestamp = renderer.getFrameTimestamp();
                         const zoomEndFading = clamp(1 - (timestamp - fadeOutStart - fadeOutDelay) / fadingDuration, 0, 1);
                         fadingOpacity *= zoomEndFading;
@@ -326,8 +335,11 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     isBoxFading(mesh, boxIndex) {
-        const { frameTimestamp } = this._cachedInstances,
-            fadingDuration = this.sceneConfig.fadingDuration;
+        const { frameTimestamp } = this._cachedInstances;
+        let fadingDuration = this.sceneConfig.fadingDuration;
+        if (isNil(fadingDuration)) {
+            fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration;
+        }
         const boxTimestamp = Math.abs(this._getBoxTimestamps(mesh)[boxIndex]);
         return frameTimestamp - boxTimestamp < fadingDuration;
     }
@@ -337,7 +349,7 @@ export default class CollisionPainter extends BasicPainter {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
         const isIgnorePlacement = this._isIgnorePlacement(symbol, mesh, elements[start]);
         const isAllowOverlap = this._isAllowOverlap(symbol, mesh, elements[start]);
-        if (isIgnorePlacement && isAllowOverlap) {
+        if (!this.sceneConfig.collision || isIgnorePlacement && isAllowOverlap) {
             return NO_COLLISION;
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
@@ -348,6 +360,9 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _isIgnorePlacement(symbol, mesh, index) {
+        if (!this.sceneConfig.collision) {
+            return true;
+        }
         const aOverlap = mesh.geometry.properties['aOverlap'];
         if (!aOverlap) {
             return +symbol[this.propIgnorePlacement] === 1;
@@ -364,6 +379,9 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _isAllowOverlap(symbol, mesh, index) {
+        if (!this.sceneConfig.collision) {
+            return true;
+        }
         const aOverlap = mesh.geometry.properties['aOverlap'];
         if (!aOverlap) {
             return +symbol[this.propAllowOverlap] === 1;
@@ -390,7 +408,10 @@ export default class CollisionPainter extends BasicPainter {
 
     _getBoxFading(isForeground, visible, stamps, index) {
         //level大于0，不fading
-        const { fadingDuration, fadeInDelay, fadeOutDelay } = this.sceneConfig;
+        let { fadingDuration, fadeInDelay, fadeOutDelay } = this.sceneConfig;
+        if (isNil(fadingDuration)) { fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration; }
+        if (isNil(fadeInDelay)) { fadeInDelay = DEFAULT_SCENE_CONFIG.fadeInDelay; }
+        if (isNil(fadeOutDelay)) { fadeOutDelay = DEFAULT_SCENE_CONFIG.fadeOutDelay; }
         const { frameTimestamp: timestamp } = this._cachedInstances;
         let boxTimestamp = stamps[index];
         let fadingOpacity = visible ? 1 : 0;
@@ -489,7 +510,8 @@ export default class CollisionPainter extends BasicPainter {
             return;
         }
         const { frameTimestamp } = this._cachedInstances;
-        const { fadingDuration } = this.sceneConfig;
+        let { fadingDuration } = this.sceneConfig;
+        if (isNil(fadingDuration)) { fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration; }
         stamps[index] = -(frameTimestamp - fadingDuration - 1);
     }
 
@@ -598,6 +620,10 @@ export default class CollisionPainter extends BasicPainter {
         );
     }
 
+    _needUpdateCollision() {
+        return this.sceneConfig.collision || this._enableCollisionInPreFrame;
+    }
+
     updateCollision(context) {
         super.updateCollision(context);
         this._startCollision();
@@ -668,7 +694,9 @@ export default class CollisionPainter extends BasicPainter {
             }
             this._zoomingOut = this._preRes && map.getResolution() > this._preRes;
         } else if (this._zooming && !this._clearTimeout) {
-            const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+            let { fadeOutDelay, fadingDuration } = this.sceneConfig;
+            if (isNil(fadeOutDelay)) { fadeOutDelay = DEFAULT_SCENE_CONFIG.fadeOutDelay; }
+            if (isNil(fadingDuration)) { fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration; }
             this._clearTimeout = setTimeout(() => {
                 delete this._zoomingOut;
                 delete this._clearTimeout;
@@ -759,7 +787,9 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _updateZoomMeshesLevel() {
-        const { fadeOutDelay, fadingDuration } = this.sceneConfig;
+        let { fadeOutDelay, fadingDuration } = this.sceneConfig;
+        if (isNil(fadeOutDelay)) { fadeOutDelay = DEFAULT_SCENE_CONFIG.fadeOutDelay; }
+        if (isNil(fadingDuration)) { fadingDuration = DEFAULT_SCENE_CONFIG.fadingDuration; }
         const renderer = this.layer.getRenderer();
         const tileZoom = renderer.getCurrentTileZoom();
         const timestamp = renderer.getFrameTimestamp();
@@ -791,11 +821,11 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     isEnableCollision() {
-        return this.layer.options['collision'] && this.sceneConfig['collision'] !== false;
+        return this.layer.options['collision'] && this.sceneConfig['collision'];
     }
 
     isEnableUniquePlacement() {
-        return this.isEnableCollision() && this.sceneConfig['uniquePlacement'] !== false;
+        return this.isEnableCollision() && this.sceneConfig['uniquePlacement'];
     }
 
     isMeshUniquePlaced(mesh) {

@@ -29,7 +29,9 @@ const DEFAULT_UNIFORMS = {
 
 export { DEFAULT_UNIFORMS, GAMMA_SCALE };
 
-export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
+// enableCollision 决定是否生成collision数据结构
+// visibleCollision决定当前mesh是否显示，例如 layer.options.collision = false 但sceneConfig.collision = false 时，则生成collision数据结构但mesh设为可见
+export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
     const meshes = [];
 
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -48,7 +50,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
 
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
-        prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement);
+        prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement, visibleInCollision);
         const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = geometry.data;
         if (aTextSize) {
             //for collision
@@ -187,7 +189,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     return meshes;
 }
 
-function prepareGeometry(geometry, enableCollision) {
+function prepareGeometry(geometry, enableCollision, visibleInCollision) {
     const symbol = this.getSymbol(geometry.properties.symbolIndex);
     const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
     const { aPosition, aShape } = geometry.data;
@@ -228,6 +230,10 @@ function prepareGeometry(geometry, enableCollision) {
             data: new Uint8Array(vertexCount)
         };
         geometry.properties.aOpacity = new Uint8Array(vertexCount);
+        if (visibleInCollision) {
+            geometry.properties.aOpacity.fill(255, 0);
+            geometry.data.aOpacity.data.fill(255, 0);
+        }
 
         const { aTextHaloRadius } = geometry.data;
         if (aTextHaloRadius && !geometry.properties.aTextHaloRadius) {

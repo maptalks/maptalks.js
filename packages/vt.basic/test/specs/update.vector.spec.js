@@ -1,5 +1,6 @@
+const path = require('path');
 const assert = require('assert');
-const { readPixel } = require('../common/Util');
+const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
 const { PointLayer, LineStringLayer, PolygonLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
@@ -791,6 +792,35 @@ describe('vector layers update style specs', () => {
             }
         });
         group.addTo(map);
+    });
+
+    it('should can turn on/off sceneConfig.collision', done => {
+        const symbol = { markerType: 'ellipse', markerWidth: 10, markerHeight: 10 };
+        const marker0 = new maptalks.Marker([0, 0], { symbol });
+        const marker1 = new maptalks.Marker([0.15, 0], { symbol });
+        const layer = new PointLayer('point', [marker0, marker1], { collision: true });
+        let count = 0;
+        const canvas = map.getRenderer().canvas;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'no-collision.png');
+                compareExpected(canvas, expectedPath);
+                layer.options.sceneConfig.collision = true;
+                layer.getRenderer().setToRedraw();
+            } else if (count === 2) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'collision.png');
+                compareExpected(canvas, expectedPath);
+                layer.options.sceneConfig.collision = false;
+                layer.getRenderer().setToRedraw();
+            } else if (count === 3) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'no-collision.png');
+                compareExpected(canvas, expectedPath, done);
+            }
+        });
+        layer.addTo(map);
     });
 
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {

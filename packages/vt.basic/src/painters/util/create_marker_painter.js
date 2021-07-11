@@ -10,8 +10,7 @@ const BOX_ELEMENT_COUNT = 6;
 const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
 
-export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, enableUniquePlacement) {
-    // const enableCollision = this.isEnableCollision();
+export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
         return null;
     }
@@ -34,14 +33,17 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
         //initialize opacity array
         //aOpacity用于fading透明度的调整
         const aOpacity = new Uint8Array(vertexCount);
-        for (let i = 0; i < aOpacity.length; i++) {
-            aOpacity[i] = 0;
+        if (visibleInCollision) {
+            aOpacity.fill(255, 0);
         }
         geometry.data.aOpacity = {
             usage: 'dynamic',
             data: aOpacity
         };
         geometry.properties.aOpacity = new Uint8Array(vertexCount);
+        if (visibleInCollision) {
+            geometry.properties.aOpacity.fill(255, 0);
+        }
 
         geometry.properties.aAnchor = aPosition;
         geometry.properties.aShape = aShape;

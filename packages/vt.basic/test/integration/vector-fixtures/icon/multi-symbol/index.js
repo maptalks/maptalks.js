@@ -23,6 +23,7 @@ module.exports = {
         collision: true,
         debugCollision: true,
         sceneConfig: {
+            collision: true,
             fading: false
         }
     },

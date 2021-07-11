@@ -125,7 +125,7 @@ class IconPainter extends CollisionPainter {
     }
 
     _prepareCollideIndex(geo) {
-        if (!this.isEnableCollision()) {
+        if (!this.layer.options['collision']) {
             return;
         }
         const { aPickingId, elements, aCount } = geo.properties;
@@ -164,6 +164,8 @@ class IconPainter extends CollisionPainter {
     }
 
     createMesh(geometries, transform) {
+        const enableCollision = this.isEnableCollision();
+        const layer = this.layer;
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
             const geo = geometries[i];
@@ -176,10 +178,10 @@ class IconPainter extends CollisionPainter {
             const symbol = this.getSymbol(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             if (this._isMarkerGeo(geometry)) {
-                const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig.icon, this.isEnableCollision(), this.isEnableUniquePlacement());
+                const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig.icon, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
                 if (mesh) meshes.push(mesh);
             } else if (this._isTextGeo(geometry)) {
-                const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.text, this.isEnableCollision(), this.isEnableUniquePlacement());
+                const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.text, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
                 if (mesh.length) meshes.push(...mesh);
             }
             this._prepareCollideIndex(geometry);
@@ -188,7 +190,7 @@ class IconPainter extends CollisionPainter {
     }
 
     addMesh(meshes) {
-        const isEnableCollision = this.isEnableCollision();
+        const isEnableCollision = this._needUpdateCollision();
         if (isEnableCollision) {
             if (Array.isArray(meshes)) {
                 const l = meshes.length;
@@ -244,14 +246,19 @@ class IconPainter extends CollisionPainter {
     }
 
     updateCollision(context) {
+        if (!this._needUpdateCollision()) {
+            return;
+        }
         super.updateCollision(context);
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
+            this._endCollision();
             return;
         }
 
         this._updateIconCollision(context.timestamp);
         this._meshesToCheck = [];
+        this._endCollision();
     }
 
     callCurrentTileShader(uniforms, context) {
@@ -283,7 +290,7 @@ class IconPainter extends CollisionPainter {
      * @param {Number} timestamp
      */
     _updateIconCollision(/* timestamp */) {
-        if (!this.isEnableCollision()) {
+        if (!this._needUpdateCollision()) {
             return;
         }
         let meshes = this._meshesToCheck;
@@ -627,8 +634,12 @@ class IconPainter extends CollisionPainter {
                 },
                 depth: {
                     enable: true,
-                    range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || 'always',
+                    range: () => {
+                        return this.sceneConfig.depthRange || [0, 1];
+                    },
+                    func: () => {
+                        return this.sceneConfig.depthFunc || 'always';
+                    },
                     mask: false
                 },
                 polygonOffset: {

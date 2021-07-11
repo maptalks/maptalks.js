@@ -173,7 +173,7 @@ export default class TextPainter extends CollisionPainter {
             const symbol = this.getSymbol(symbolIndex);
             const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, enableUniquePlacement);
+            const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, this.layer.options['collision'], !enableCollision, enableUniquePlacement);
             if (mesh.length) {
                 const isLinePlacement = symbol['textPlacement'] === 'line';
                 //tags for picking
@@ -193,11 +193,13 @@ export default class TextPainter extends CollisionPainter {
         super.updateCollision(context);
         const meshes = this.scene.getMeshes();
         if (!meshes || !meshes.length) {
+            this._endCollision();
             return;
         }
 
         this._projectedLinesCache = {};
         this._updateLabels(context.timestamp);
+        this._endCollision();
     }
 
     callCurrentTileShader(uniforms, context) {
@@ -252,7 +254,7 @@ export default class TextPainter extends CollisionPainter {
                 visElemts.count = count;
             }
         };
-        const enableCollision = this.isEnableCollision();
+        const enableCollision = this._needUpdateCollision();
         const renderer = this.layer.getRenderer();
 
         // console.log('meshes数量', meshes.length, '字符数量', meshes.reduce((v, mesh) => {
@@ -374,7 +376,7 @@ export default class TextPainter extends CollisionPainter {
             const out = new Array(line.length);
             line = this._projectLine(out, line, matrix, map.width, map.height);
         }
-        const enableCollision = this.isEnableCollision();
+        const enableCollision = this._needUpdateCollision();
         const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
         if (enableCollision) {
             visElemts.count = 0;
@@ -466,7 +468,7 @@ export default class TextPainter extends CollisionPainter {
 
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix/*, labelIndex*/) {
-        const enableCollision = this.isEnableCollision();
+        const enableCollision = this._needUpdateCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;

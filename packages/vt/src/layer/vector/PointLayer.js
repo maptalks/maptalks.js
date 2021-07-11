@@ -12,20 +12,18 @@ const defaultOptions = {
     },
     collision: false,
     collisionFrameLimit: 1,
+    sceneConfig: {
+        collision: false,
+        fading: false,
+        fadingDuration: 16 * 14,
+        fadeInDelay: 600,
+        fadeOutDelay: 100,
+        uniquePlacement: false,
+        depthFunc: 'always'
+    }
 };
 
 class PointLayer extends Vector3DLayer {
-    constructor(...args) {
-        super(...args);
-        if (!this.options.sceneConfig) {
-            this.options.sceneConfig = {};
-        }
-        const sceneConfig = this.options.sceneConfig;
-        //disable unique placement
-        sceneConfig['uniquePlacement'] = false;
-        sceneConfig.depthFunc = sceneConfig.depthFunc || 'always';
-    }
-
     /**
      * Reproduce a PointLayer from layer's JSON.
      * @param  {Object} layerJSON - layer's JSON
