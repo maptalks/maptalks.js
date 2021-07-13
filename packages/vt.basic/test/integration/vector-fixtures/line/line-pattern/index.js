@@ -4,6 +4,7 @@ const maptalks = require('maptalks');
 const line0 = new maptalks.LineString([[0, 0], [1, 0]], {
     symbol: {
         linePatternFile: 'file://' + path.resolve(__dirname, '../../../resources/1.png'),
+        linePatternGap: 1.5,
         lineWidth: 20
     }
 });

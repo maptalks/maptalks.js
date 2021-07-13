@@ -94,9 +94,16 @@ varying float vGammaScale;
     uniform float lineWidth;
 #endif
 
-#ifdef HAS_PATTERN_ANIM
-    attribute float aLinePatternAnimSpeed;
-    varying float vLinePatternAnimSpeed;
+#ifdef HAS_PATTERN
+    #ifdef HAS_PATTERN_ANIM
+        attribute float aLinePatternAnimSpeed;
+        varying float vLinePatternAnimSpeed;
+    #endif
+
+    #ifdef HAS_PATTERN_GAP
+        attribute float aLinePatternGap;
+        varying float vLinePatternGap;
+    #endif
 #endif
 
 #ifndef PICKING_MODE
@@ -212,8 +219,14 @@ void main() {
     float projDistance = gl_Position.w;
     gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
 
-    #ifdef HAS_PATTERN_ANIM
-        vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+    #ifdef HAS_PATTERN
+        #ifdef HAS_PATTERN_ANIM
+            vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+        #endif
+
+        #ifdef HAS_PATTERN_GAP
+            vLinePatternGap = aLinePatternGap / 10.0;
+        #endif
     #endif
 
     #ifndef PICKING_MODE

@@ -201,6 +201,7 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
         setUniformFromSymbol(uniforms, 'lineDy', symbol, 'lineDy', 0);
         setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
+        setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
         // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
     }
 
@@ -229,6 +230,9 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLinePatternAnimSpeed) {
             defines['HAS_PATTERN_ANIM'] = 1;
         }
+        if (geometry.data.aLinePatternGap) {
+            defines['HAS_PATTERN_GAP'] = 1;
+        }
     }
 
     paint(context) {
@@ -242,6 +246,7 @@ class LinePainter extends BasicPainter {
     createFnTypeConfig(map, symbolDef) {
         const aColorFn = piecewiseConstant(symbolDef['lineColor']);
         const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
+        const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
         const shapeConfigs = this._createShapeFnTypeConfigs(map, symbolDef);
         const i8  = new Int8Array(1);
         return [
@@ -265,7 +270,7 @@ class LinePainter extends BasicPainter {
             {
                 attrName: 'aLinePatternAnimSpeed',
                 symbolName: 'linePatternAnimSpeed',
-                type: Uint8Array,
+                type: Int8Array,
                 width: 1,
                 define: 'HAS_PATTERN_ANIM',
                 evaluate: (properties, _, geometry) => {
@@ -277,6 +282,22 @@ class LinePainter extends BasicPainter {
                         geometry.properties.hasPatternAnim = 1;
                     }
                     i8[0] = speed / 127;
+                    return i8[0];
+                }
+            },
+            {
+                attrName: 'aLinePatternGap',
+                symbolName: 'linePatternGap',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_PATTERN_GAP',
+                evaluate: (properties) => {
+                    let gap = aLinePatternGapFn(map.getZoom(), properties);
+                    if (isNil(gap)) {
+                        gap = 0;
+                    }
+                    // 0 - 25.5
+                    i8[0] = gap * 10;
                     return i8[0];
                 }
             }

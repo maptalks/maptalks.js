@@ -257,6 +257,11 @@ export const LINE_SYMBOL = {
         default: 0,
         property: '_symbol_linePatternAnimSpeed'
     },
+    linePatternGap: {
+        type: 'identity',
+        default: 0,
+        property: '_symbol_linePatternGap'
+    },
     lineJoinPatternMode: {
         type: 'identity',
         default: 0,

@@ -31,6 +31,11 @@ uniform lowp float lineBlur;
     #else
         uniform float linePatternAnimSpeed;
     #endif
+    #ifdef HAS_PATTERN_GAP
+        varying float vLinePatternGap;
+    #else
+        uniform float linePatternGap;
+    #endif
 
 
     varying vec4 vTexInfo;
@@ -123,20 +128,28 @@ void main() {
 
     #ifdef HAS_PATTERN
         if (hasPattern == 1.0) {
-            float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
+            #ifdef HAS_PATTERN_GAP
+                float myGap = vLinePatternGap;
+            #else
+                float myGap = linePatternGap;
+            #endif
             #ifdef HAS_PATTERN_ANIM
                 float myAnimSpeed = vLinePatternAnimSpeed;
             #else
                 float myAnimSpeed = linePatternAnimSpeed;
             #endif
-            linesofar += mod(currentTime * -myAnimSpeed * 0.2, patternWidth);
+            float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
+            float plusGapWidth = patternWidth * (1.0 + myGap);
+            linesofar += mod(currentTime * -myAnimSpeed * 0.2, plusGapWidth);
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
-            float patternx = mod(linesofar / patternWidth, 1.0);
+            float patternx = mod(linesofar / plusGapWidth, 1.0);
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
             vec2 uvStart = vTexInfo.xy;
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
             // color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
-            color = mix(texture2D(linePatternFile, computeUV(vec2(patternx, patterny))), vec4(0.0), sign(vJoin));
+            color = mix(texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny))), vec4(0.0), sign(vJoin));
+            float inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
+            color *= inGap;
         }
     #endif
     color *= alpha;
