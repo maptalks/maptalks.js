@@ -13,6 +13,7 @@ import MapTool from './MapTool';
  * @property {Object} [options.symbol=null] - symbol of the geometries drawn
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
  * @property {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
+ * @property {Boolean} [options.blockGeometryEvents=false]  - Whether Disable geometryEvents when drawing.
  * @memberOf DrawTool
  * @instance
  */
