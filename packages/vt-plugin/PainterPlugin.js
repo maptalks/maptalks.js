@@ -24,6 +24,10 @@ function createPainterPlugin(type, Painter) {
             this._meshCache = {};
         },
 
+        isVisible() {
+            return this.painter && this.painter.isVisible();
+        },
+
         supportRenderMode: function (mode) {
             return this.painter.supportRenderMode(mode);
         },

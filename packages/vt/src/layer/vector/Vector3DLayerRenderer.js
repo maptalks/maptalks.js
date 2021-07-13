@@ -149,7 +149,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._markerPainter.startFrame(context);
             this._markerPainter.addMesh(this._markerMeshes);
             this._markerPainter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset++;
             if (layer.options.collision) {
                 this._markerPainter.updateCollision(context);
             }

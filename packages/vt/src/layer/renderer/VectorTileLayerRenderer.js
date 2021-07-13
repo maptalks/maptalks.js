@@ -289,7 +289,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const groundConfig = this.layer.getGroundConfig();
         let polygonOffsetIndex = +(!!groundConfig.enable);
         plugins.forEach((plugin, idx) => {
-            if (!hasMesh(plugin)) {
+            if (!plugin.isVisible() || !hasMesh(plugin)) {
                 return;
             }
             this._pluginOffsets[idx] = polygonOffsetIndex;
@@ -691,7 +691,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this._drawTileStencil(targetFBO);
             }
 
-            const polygonOffsetIndex = this._pluginOffsets[idx];
+            const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
             const context = this._getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp);
             const status = plugin.endFrame(context);
             if (status && status.redraw) {
