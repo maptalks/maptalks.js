@@ -82,8 +82,14 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     getFixedExtent() {
-        const textDesc = this.geometry.getTextDesc();
+        let textDesc = this.geometry.getTextDesc();
+        if (Array.isArray(textDesc)) {
+            textDesc = textDesc[this._index];
+        }
         this._fixedExtent = this._fixedExtent || new PointExtent();
+        if (!textDesc) {
+            return this._fixedExtent;
+        }
         return getTextMarkerFixedExtent(this._fixedExtent, this.style, textDesc);
     }
 
@@ -114,10 +120,10 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             'textVerticalAlignment': getValueOrDefault(s['textVerticalAlignment'], 'middle'), // top | middle | bottom | auto
             'textAlign': getValueOrDefault(s['textAlign'], 'center'), //left | right | center | auto
 
-            'textRotation' : getValueOrDefault(s['textRotation'], 0),
+            'textRotation': getValueOrDefault(s['textRotation'], 0),
 
-            'textMaxWidth' : getValueOrDefault(s['textMaxWidth'], 0),
-            'textMaxHeight' : getValueOrDefault(s['textMaxHeight'], 0)
+            'textMaxWidth': getValueOrDefault(s['textMaxWidth'], 0),
+            'textMaxHeight': getValueOrDefault(s['textMaxHeight'], 0)
         };
 
         if (result['textMaxWidth'] > 0 && (!result['textWrapWidth'] || result['textWrapWidth'] > result['textMaxWidth'])) {

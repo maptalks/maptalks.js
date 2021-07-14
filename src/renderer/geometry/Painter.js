@@ -78,6 +78,7 @@ class Painter extends Class {
             for (let i = regSymbolizers.length - 1; i >= 0; i--) {
                 if (regSymbolizers[i].test(symbol, this.geometry)) {
                     const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
+                    symbolizer._index = ii;
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPoint = true;
