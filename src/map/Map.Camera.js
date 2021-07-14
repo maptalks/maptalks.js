@@ -242,10 +242,16 @@ Map.include(/** @lends Map.prototype */{
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 const pts = [];
                 for (let i = 0, len = points.length; i < len; i++) {
-                    const point = points[i].copy()._multi(res);
-                    point.x = (point.x - xmin) * dxPerPixel;
-                    point.y = height - (point.y - ymin) * dyPerPixel;
-                    pts.push(point);
+                    if (!points[i]._pt) {
+                        points[i]._pt = new Point(0, 0);
+                    }
+                    const pt = points[i]._pt;
+                    pt.x = points[i].x;
+                    pt.y = points[i].y;
+                    pt._multi(res);
+                    pt.x = (pt.x - xmin) * dxPerPixel;
+                    pt.y = height - (pt.y - ymin) * dyPerPixel;
+                    pts.push(pt);
                 }
                 return pts;
             }
@@ -256,10 +262,16 @@ Map.include(/** @lends Map.prototype */{
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         const pts = [];
         for (let i = 0, len = points.length; i < len; i++) {
-            const point = points[i].copy()._multi(res);
+            if (!points[i]._pt) {
+                points[i]._pt = new Point(0, 0);
+            }
+            const pt = points[i]._pt;
+            pt.x = points[i].x;
+            pt.y = points[i].y;
+            pt._multi(res);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-            this._toContainerPoint(point, isTransforming, res, altitude, centerPoint);
-            pts.push(point);
+            this._toContainerPoint(pt, isTransforming, res, altitude, centerPoint);
+            pts.push(pt);
         }
         return pts;
     },
