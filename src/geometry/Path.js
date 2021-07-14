@@ -386,6 +386,10 @@ class Path extends Geometry {
     }
 
     _coords2Extent(coords, proj) {
+        // linestring,  polygon
+        if (!coords || coords.length === 0 || (Array.isArray(coords[0]) && coords[0].length === 0)) {
+            return null;
+        }
         const result = new Extent(proj);
         for (let i = 0, l = coords.length; i < l; i++) {
             for (let j = 0, ll = coords[i].length; j < ll; j++) {
