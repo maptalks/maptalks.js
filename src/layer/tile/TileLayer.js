@@ -68,6 +68,7 @@ class TileHashset {
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
+ * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
  * @memberOf TileLayer
  * @instance
  */
@@ -80,42 +81,42 @@ const options = {
 
     'repeatWorld': true,
 
-    'background' : true,
-    'backgroundZoomDiff' : 6,
+    'background': true,
+    'backgroundZoomDiff': 6,
 
-    'loadingLimitOnInteracting' : 3,
+    'loadingLimitOnInteracting': 3,
 
-    'tileRetryCount' : 0,
+    'tileRetryCount': 0,
 
-    'placeholder' : false,
+    'placeholder': false,
 
     'crossOrigin': null,
 
     'tileSize': [256, 256],
 
-    'offset' : [0, 0],
+    'offset': [0, 0],
 
     'tileSystem': null,
 
-    'fadeAnimation' : !IS_NODE,
+    'fadeAnimation': !IS_NODE,
 
     'debug': false,
 
-    'spatialReference' : null,
+    'spatialReference': null,
 
-    'maxCacheSize' : 256,
+    'maxCacheSize': 256,
 
-    'renderer' : (() => {
+    'renderer': (() => {
         return Browser.webgl ? 'gl' : 'canvas';
     })(),
 
-    'clipByPitch' : true,
+    'clipByPitch': true,
 
-    'maxAvailableZoom' : null,
+    'maxAvailableZoom': null,
 
-    'cascadeTiles' : true,
+    'cascadeTiles': true,
 
-    'zoomOffset' : 0,
+    'zoomOffset': 0,
 
     'pyramidMode': 1
 };
@@ -235,7 +236,7 @@ class TileLayer extends Layer {
         const heightZ = cameraZ * Math.tan(0.5 * fov);
         const widthZ = heightZ * aspectRatio;
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
-        return this.getMap()._getFovZ(0)  * (diagonalZ / cameraZ);
+        return this.getMap()._getFovZ(0) * (diagonalZ / cameraZ);
     }
 
 
@@ -575,6 +576,9 @@ class TileLayer extends Layer {
             'z': z,
             's': domain
         };
+        if (this.options.token) {
+            data.token = this.options.token;
+        }
         return urlTemplate.replace(URL_PATTERN, function (str, key) {
             let value = data[key];
 
@@ -629,7 +633,7 @@ class TileLayer extends Layer {
      */
     getSpatialReference() {
         const map = this.getMap();
-        if  (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
+        if (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
             return map.getSpatialReference();
         }
         this._sr = this._sr || new SpatialReference(this.options['spatialReference']);
@@ -677,16 +681,16 @@ class TileLayer extends Layer {
             if (cascadeLevel === 0) {
                 z -= 1;
             }
-            frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ?  map.cascadeFrustumMatrix1 : map.projViewMatrix;
+            frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ? map.cascadeFrustumMatrix1 : map.projViewMatrix;
         }
         const zoom = z + this.options['zoomOffset'];
         const offset = this._getTileOffset(zoom),
             hasOffset = offset[0] || offset[1];
         const emptyGrid = {
-            'zoom' : z,
-            'extent' : null,
-            'offset' : offset,
-            'tiles' : []
+            'zoom': z,
+            'extent': null,
+            'offset': offset,
+            'tiles': []
         };
         if (zoom < 0) {
             return emptyGrid;
@@ -881,7 +885,7 @@ class TileLayer extends Layer {
         }
         return {
             'offset': offset,
-            'zoom' : tileZoom,
+            'zoom': tileZoom,
             'extent': extent,
             'tiles': tiles
         };
@@ -949,7 +953,7 @@ class TileLayer extends Layer {
                 'z': z,
                 'x': x + i,
                 'y': y + j,
-                'extent2d' : childExtent,
+                'extent2d': childExtent,
                 'id': tileId,
                 'offset': offset,
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
@@ -1080,7 +1084,7 @@ class TileLayer extends Layer {
 
     getEvents() {
         return {
-            'spatialreferencechange' : this._onSpatialReferenceChange
+            'spatialreferencechange': this._onSpatialReferenceChange
         };
     }
 
