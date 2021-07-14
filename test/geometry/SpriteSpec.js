@@ -197,6 +197,6 @@ describe('Marker.Sprite', function () {
         // on different OS, the size of the texts are different
         expect(sprite.width).to.be.above(0);
         expect(sprite.height).to.be.above(0);
-        expect(sprite.getContext('2d').getImageData(10, 12, 1, 1).data[3]).to.be.above(0);
+        expect(sprite.getContext('2d').getImageData(42, 12, 1, 1).data[3]).to.be.above(0);
     });
 });
