@@ -68,7 +68,7 @@ class TileHashset {
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
- * @property {String}              [options.token=null]       - token
+ * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
  * @memberOf TileLayer
  * @instance
  */
