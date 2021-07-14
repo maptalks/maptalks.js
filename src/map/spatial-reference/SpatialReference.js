@@ -165,7 +165,7 @@ export default class SpatialReference {
             }
         }
         this._resolutions = resolutions;
-        this._pyramid = projection['code'].toLowerCase() !== 'baidu';
+        this._pyramid = projection['code'] && projection['code'].toLowerCase() !== 'baidu';
         if (this._pyramid) {
             for (let i = 0; i < resolutions.length; i++) {
                 if (resolutions[i] && resolutions[i - 1]) {
