@@ -233,6 +233,23 @@ Map.include(/** @lends Map.prototype */{
      *Batch conversion for better performance
      */
     _pointsToContainerPoints: function (points, zoom, altitudes = []) {
+        const pitch = this.getPitch(), bearing = this.getBearing();
+        if (pitch === 0 && bearing === 0) {
+            const { xmin, ymin, xmax, ymax } = this._get2DExtent();
+            if (xmax > xmin && ymax > ymin) {
+                const res = this._getResolution(zoom) / this._getResolution();
+                const { width, height } = this.getSize();
+                const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
+                const pts = [];
+                for (let i = 0, len = points.length; i < len; i++) {
+                    const point = points[i].copy()._multi(res);
+                    point.x = (point.x - xmin) * dxPerPixel;
+                    point.y = height - (point.y - ymin) * dyPerPixel;
+                    pts.push(point);
+                }
+                return pts;
+            }
+        }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
         const res = this._getResolution(zoom) / this._getResolution();
@@ -515,7 +532,7 @@ Map.include(/** @lends Map.prototype */{
             const cx = center2D.x - dist * Math.sin(bearing);
             const cy = center2D.y - dist * Math.cos(bearing);
             this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz);
-            this.cameraToCenterDistance  = distance(this.cameraPosition, this.cameraLookAt);
+            this.cameraToCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
             // when map rotates, camera's up axis is pointing to bearing from south direction of map
             // default [0,1,0] is the Y axis while the angle of inclination always equal 0
             // if you want to rotate the map after up an incline,please rotateZ like this:
