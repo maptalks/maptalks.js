@@ -262,16 +262,10 @@ Map.include(/** @lends Map.prototype */{
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         const pts = [];
         for (let i = 0, len = points.length; i < len; i++) {
-            if (!points[i]._pt) {
-                points[i]._pt = new Point(0, 0);
-            }
-            const pt = points[i]._pt;
-            pt.x = points[i].x;
-            pt.y = points[i].y;
-            pt._multi(res);
+            const point = points[i].copy()._multi(res);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-            this._toContainerPoint(pt, isTransforming, res, altitude, centerPoint);
-            pts.push(pt);
+            this._toContainerPoint(point, isTransforming, res, altitude, centerPoint);
+            pts.push(point);
         }
         return pts;
     },
