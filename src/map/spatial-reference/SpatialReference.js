@@ -165,12 +165,14 @@ export default class SpatialReference {
             }
         }
         this._resolutions = resolutions;
-        this._pyramid = true;
-        for (let i = 0; i < resolutions.length; i++) {
-            if (resolutions[i] && resolutions[i - 1]) {
-                if (resolutions[i] / resolutions[i - 1] === 2) {
-                    this._pyramid = false;
-                    break;
+        this._pyramid = projection['code'].toLowerCase() !== 'baidu';
+        if (this._pyramid) {
+            for (let i = 0; i < resolutions.length; i++) {
+                if (resolutions[i] && resolutions[i - 1]) {
+                    if (resolutions[i] / resolutions[i - 1] === 2) {
+                        this._pyramid = false;
+                        break;
+                    }
                 }
             }
         }
