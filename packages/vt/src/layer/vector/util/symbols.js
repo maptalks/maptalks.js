@@ -114,6 +114,11 @@ export const  MARKER_SYMBOL = {
         type: 'identity',
         default: null,
         property: '_symbol_markerTextFit'
+    },
+    markerTextFitPadding: {
+        type: 'identity',
+        default: null,
+        property: '_symbol_markerTextFitPadding'
     }
 };
 

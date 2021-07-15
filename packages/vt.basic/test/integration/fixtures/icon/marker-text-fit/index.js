@@ -22,7 +22,7 @@ const style = [
                     [1, 'both']
                 ]
             },
-            markerTextFitPadding: [5, 5, 5, 5],
+            markerTextFitPadding: [0, 0, 20, 20],
             textName: 'hello',
             textFill: '#fff',
             textSize: {

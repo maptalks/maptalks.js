@@ -232,7 +232,7 @@ class IconPainter extends CollisionPainter {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
 
             updateOneGeometryFnTypeAttrib(this.regl, symbolDef, symbolIndex.type === 0 ? fnTypeConfig.icon : fnTypeConfig.text, meshes[i], z);
-            const { aMarkerWidth, aMarkerHeight } = geometry.properties;
+            const { aMarkerWidth, aMarkerHeight, aPadOffsetX, aPadOffsetY } = geometry.properties;
             if (aMarkerWidth && aMarkerWidth.dirty) {
                 geometry.updateData('aMarkerWidth', aMarkerWidth);
                 aMarkerWidth.dirty = false;
@@ -240,6 +240,14 @@ class IconPainter extends CollisionPainter {
             if (aMarkerHeight && aMarkerHeight.dirty) {
                 geometry.updateData('aMarkerHeight', aMarkerHeight);
                 aMarkerHeight.dirty = false;
+            }
+            if (aPadOffsetX && aPadOffsetX.dirty) {
+                geometry.updateData('aPadOffsetX', aPadOffsetX);
+                aPadOffsetX.dirty = false;
+            }
+            if (aPadOffsetY && aPadOffsetY.dirty) {
+                geometry.updateData('aPadOffsetY', aPadOffsetY);
+                aPadOffsetY.dirty = false;
             }
         }
         super.addMesh(meshModel);

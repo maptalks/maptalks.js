@@ -52,6 +52,12 @@ uniform float flipY;
     uniform float markerRotation;
 #endif
 
+
+#ifdef HAS_PAD_OFFSET
+attribute float aPadOffsetX;
+attribute float aPadOffsetY;
+#endif
+
 uniform float cameraToCenterDistance;
 uniform mat4 projViewModelMatrix;
 uniform float markerPerspectiveRatio;
@@ -132,7 +138,11 @@ void main() {
     if (isPitchWithMap == 1.0 && flipY == 0.0) {
         shape *= vec2(1.0, -1.0);
     }
-    shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) * layerScale;
+    #ifdef HAS_PAD_OFFSET
+        shape = (shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) + vec2(aPadOffsetX, aPadOffsetY)) * layerScale;
+    #else
+        shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) * layerScale;
+    #endif
     shape = shapeMatrix * shape;
 
     if (isPitchWithMap == 0.0) {

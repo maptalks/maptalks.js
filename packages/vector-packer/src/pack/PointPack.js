@@ -348,6 +348,7 @@ export default class PointPack extends VectorPack {
                 name: 'aColorOpacity'
             });
         }
+        //TODO pitchAlign和rotationAlign可以合并为一个
         if (this._markerPitchAlignFn || this._textPitchAlignFn) {
             format.push({
                 type: Uint8Array,

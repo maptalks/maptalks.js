@@ -9,6 +9,7 @@ import { prepareFnTypeData, PREFIX } from './fn_type_util';
 const BOX_ELEMENT_COUNT = 6;
 const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
+const I8 = new Int8Array(1);
 
 export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
@@ -102,6 +103,9 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
     }
     if (geometry.data.aRotation) {
         defines['HAS_ROTATION'] = 1;
+    }
+    if (geometry.data.aPadOffsetX) {
+        defines['HAS_PAD_OFFSET'] = 1;
     }
     mesh.setDefines(defines);
     mesh.setLocalTransform(transform);
@@ -570,8 +574,9 @@ function fillTextFitData(map, iconGeometry) {
 
     const textSymbolDef = this.getSymbolDef(iconGeometry.properties.textGeo.properties.symbolIndex);
     const textFitFn = interpolated(textSymbolDef['textSize']);
+
+    updateMarkerFitSize.call(this, map, iconGeometry);
     if (!isFunctionDefinition(textSymbolDef['textSize']) || textFitFn.isZoomConstant && textFitFn.isFeatureConstant) {
-        updateMarkerFitSize.call(this, map, iconGeometry);
         props.isFitConstant = true;
         return;
     }
@@ -601,7 +606,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSizeFn = textProps._textSizeFn;
         }
     }
-    const padding = markerSymbol['markerTextFitPadding'] || [0, 0];
+    const padding = markerSymbol['markerTextFitPadding'] || [0, 0, 0, 0];
     let paddingFn;
     if (isFunctionDefinition(padding)) {
         if (!props._paddingFn) {
@@ -614,6 +619,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
     //textSize是fn-type，实时更新aMarkerHeight或者aMarkerWidth
     const { fitIcons, fitWidthIcons, fitHeightIcons } = props;
     const { aMarkerWidth, aMarkerHeight, labelShape } = props;
+
     const elements = props.elements || iconGeometry.elements;
     const { features, aPickingId } = props;
     const fn = (idx, iconIndex, hasWidth, hasHeight) => {
@@ -640,26 +646,52 @@ export function updateMarkerFitSize(map, iconGeometry) {
             const fn = properties.fitPaddingFn = properties.fitPaddingFn || piecewiseConstant(fitPadding);
             fitPadding = fn(zoom, properties);
         }
+        let aPadOffsetX, aPadOffsetY;
+        if (fitPadding[0] !== fitPadding[2] || fitPadding[1] !== fitPadding[3]) {
+            aPadOffsetX = props.aPadOffsetX;
+            aPadOffsetY = props.aPadOffsetY;
+            if (!aPadOffsetX) {
+                aPadOffsetX = props.aPadOffsetX = new Int8Array(aMarkerWidth.length);
+                aPadOffsetY = props.aPadOffsetY = new Int8Array(aMarkerWidth.length);
+            }
+        }
         delete properties['$layer'];
         delete properties['$type'];
         if (aMarkerWidth && hasWidth) {
             //除以10是因为为了增加精度，shader中的aShape乘以了10
-            const width = Math.abs((maxx - minx) / 10 * textSize) + (fitPadding[0] || 0) * 2;
+            const width = Math.abs((maxx - minx) / 10 * textSize) + ((fitPadding[1] + fitPadding[3]) || 0);
             U8[0] = width;
             if (aMarkerWidth[idx] !== U8[0]) {
                 fillArray(aMarkerWidth, U8[0], idx, idx + BOX_VERTEX_COUNT);
                 aMarkerWidth.dirty = true;
             }
+            if (aPadOffsetX) {
+                const offset = (fitPadding[1] + fitPadding[3]) / 2 - fitPadding[3];
+                I8[0] = offset;
+                if (aPadOffsetX[idx] != I8[0]) {
+                    fillArray(aPadOffsetX, offset, idx, idx + BOX_VERTEX_COUNT);
+                    aPadOffsetX.dirty = true;
+                }
+            }
         }
         if (aMarkerHeight && hasHeight) {
-            const height = Math.abs((maxy - miny) / 10 * textSize) + (fitPadding[1] || 0) * 2;
+            const height = Math.abs((maxy - miny) / 10 * textSize) + ((fitPadding[0] + fitPadding[2]) || 0);
             U8[0] = height;
             if (aMarkerHeight[idx] !== U8[0]) {
                 fillArray(aMarkerHeight, U8[0], idx, idx + BOX_VERTEX_COUNT);
                 aMarkerHeight.dirty = true;
             }
+            if (aPadOffsetY) {
+                const offset = fitPadding[0] - (fitPadding[0] + fitPadding[2]) / 2;
+                I8[0] = offset;
+                if (aPadOffsetY[idx] !== I8[0]) {
+                    fillArray(aPadOffsetY, offset, idx, idx + BOX_VERTEX_COUNT);
+                    aPadOffsetY.dirty = true;
+                }
+            }
         }
     };
+
     if (!fitIcons && !fitWidthIcons && !fitHeightIcons) {
         // markerTextFit 不是 fn-type，遍历所有的icon
         for (let i = 0; i < elements.length; i += BOX_ELEMENT_COUNT) {
@@ -690,5 +722,10 @@ export function updateMarkerFitSize(map, iconGeometry) {
                 fn(idx, iconIndex, false, true);
             }
         }
+    }
+    const { aPadOffsetX, aPadOffsetY } = props;
+    if (aPadOffsetX) {
+        iconGeometry.data.aPadOffsetX = aPadOffsetX;
+        iconGeometry.data.aPadOffsetY = aPadOffsetY;
     }
 }

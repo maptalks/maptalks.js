@@ -8,7 +8,7 @@ const marker = new maptalks.Marker([0, 0], {
         markerLineWidth: 0,
         markerVerticalAlignment: 'middle',
         markerTextFit: 'both',
-        markerTextFitPadding: [5, 5, 5, 5],
+        markerTextFitPadding: [0, 0, 15, 20],
 
         textName: '{name}',
         textSize: 30,
