@@ -668,7 +668,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
             if (aPadOffsetX) {
                 const offset = (fitPadding[1] + fitPadding[3]) / 2 - fitPadding[3];
                 I8[0] = offset;
-                if (aPadOffsetX[idx] != I8[0]) {
+                if (aPadOffsetX[idx] !== I8[0]) {
                     fillArray(aPadOffsetX, offset, idx, idx + BOX_VERTEX_COUNT);
                     aPadOffsetX.dirty = true;
                 }
