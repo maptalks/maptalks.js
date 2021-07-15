@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gl",
-  "version": "0.44.8",
+  "version": "0.44.9",
   "description": "WebGL infrastrcture for maptalks",
   "main": "dist/maptalksgl.js",
   "browser": "dist/maptalksgl.js",
