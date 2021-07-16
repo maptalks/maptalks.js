@@ -84,7 +84,7 @@ describe('Geometry.InfoWindow', function () {
         var w = marker.getInfoWindow();
         var position = w.getPosition();
         if (maptalks.Browser.ie) {
-            expect(position.round().toArray()).to.be.eql([433, -85]);
+            expect(position.round().toArray()).to.be.eql([433, -86]);
         } else {
             expect(position.round().toArray()).to.be.eql([433, -109]);
         }
