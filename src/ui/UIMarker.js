@@ -14,6 +14,8 @@ import UIComponent from './UIComponent';
  * @property {Number}  [options.single=false]     - if the marker is a global single one.
  * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
  * @property {Number}  [options.altitude=0] - altitude.
+ * @property {Number}  [options.minZoom=0] - the minimum zoom to display .
+ * @property {Number}  [options.maxZoom=null] - the maximum zoom to display.
  * @memberOf ui.UIMarker
  * @instance
  */
