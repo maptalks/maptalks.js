@@ -29,6 +29,9 @@ export default class GLTFPack {
     }
 
     getMeshesInfo() {
+        if (!this.gltf) {
+            return null;
+        }
         if (this.geometries.length) {
             return this.geometries;
         }
@@ -50,6 +53,7 @@ export default class GLTFPack {
             const skin = skins[i];
             skin.joints = skin.joints.map(j => this.gltf.nodes[j]);
             this._skinMap[i] = new Skin(this.regl, skin.joints, skin.inverseBindMatrices.array);
+            delete skin.inverseBindMatrices;
         }
     }
 
@@ -60,9 +64,13 @@ export default class GLTFPack {
         this._textureMap = {};
         for (let i = 0; i < textures.length; i++) {
             const texture = textures[i];
-            this._textureMap[i] = this._toTexture(texture);
+            //避免重复创建纹理对象
+            if (!this._textureMap[i]) {
+                this._textureMap[i] = this._toTexture(texture);
+                //图像数据可能占有较大内存，在创建texture完成后可删除
+                delete texture.image;
+            }
         }
-
     }
 
     dispose() {
@@ -77,16 +85,33 @@ export default class GLTFPack {
                 }
             }
         });
+        for (const index in this._textureMap) {
+            const tex = this._textureMap[index];
+            if (tex.destroy && !tex[KEY_DISPOSED]) {
+                tex.destroy();
+            }
+        }
+
+        for (const index in this._skinMap) {
+            const skin = this._skinMap[index];
+            if (skin.jointTexture && !skin.jointTexture[KEY_DISPOSED]) {
+                skin.jointTexture.destroy();
+            }
+        }
         for (const index in this.gltf.nodes) {
             const node = this.gltf.nodes[index];
             if (node.skin && node.skin.jointTexture && !node.skin.jointTexture[KEY_DISPOSED]) {
                 node.skin.jointTexture.destroy();
             }
         }
+        delete this.gltf;
     }
 
     updateAnimation(time, loop, speed) {
         const json = this.gltf;
+        if (!json) {
+            return;
+        }
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
         const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * speed * 0.001);
         if (!this._startTime) {
@@ -107,10 +132,10 @@ export default class GLTFPack {
     }
 
     isFirstLoop(time, speed) {
-        if (!this._startTime) {
+        const json = this.gltf;
+        if (!this._startTime || !json) {
             return true;
         }
-        const json = this.gltf;
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
         return ((time - this._startTime) * speed * 0.001) / (timespan.max - timespan.min) < 1;
     }
@@ -315,14 +340,15 @@ export default class GLTFPack {
         const sampler = texture.sampler || {};
         const width = texture.image.width;
         const height = texture.image.height;
+        const widthHeightIsPowerOf2 = isPowerOf2(width) && isPowerOf2(width);
         return this.regl.texture({
             width,
             height,
             data,
             mag: TEXTURE_SAMPLER[sampler.magFilter] || TEXTURE_SAMPLER['9729'],
-            min: TEXTURE_SAMPLER[sampler.minFilter] || TEXTURE_SAMPLER['9729'],
-            wrapS: TEXTURE_SAMPLER[sampler.wrapS] || TEXTURE_SAMPLER['10497'],
-            wrapT: TEXTURE_SAMPLER[sampler.wrapT] || TEXTURE_SAMPLER['10497']
+            min: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.minFilter] || TEXTURE_SAMPLER['9729'] : TEXTURE_SAMPLER['9729'],
+            wrapS: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.wrapS] || TEXTURE_SAMPLER['10497'] : TEXTURE_SAMPLER['33071'],
+            wrapT: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.wrapT] || TEXTURE_SAMPLER['10497'] : TEXTURE_SAMPLER['33071']
         });
     }
 
@@ -386,4 +412,8 @@ function createGeometry(primitive) {
         modelGeometry.createNormal('NORMAL');
     }
     return modelGeometry;
+}
+
+function isPowerOf2(value) {
+    return (value > 0) && (value & (value - 1)) === 0;
 }

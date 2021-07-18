@@ -35,12 +35,12 @@ export default class GLTFManager {
                         if (resources[i].material) {
                             resources[i].material.dispose();
                         }
-                        if (resources[i].gltfPack) {
-                            resources[i].gltfPack.dispose();
-                        }
                     }
-                    delete this.resourceMap[url];
                 }
+                if (this.resourceMap[url].gltfPack) {
+                    this.resourceMap[url].gltfPack.dispose();
+                }
+                delete this.resourceMap[url];
             }
         }
     }
