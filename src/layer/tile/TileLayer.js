@@ -501,6 +501,7 @@ class TileLayer extends Layer {
                 }
 
                 let p;
+
                 if (tileInfo) {
                     const { extent2d } = tileInfo;
                     tilePoint.set(extent2d.xmin, extent2d.ymax);
