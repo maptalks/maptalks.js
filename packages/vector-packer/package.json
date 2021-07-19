@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vector-packer",
-  "version": "0.45.1",
+  "version": "0.46.0",
   "description": "Packer to pack simple vector graphics for gl",
   "module": "src/index.js",
   "jsnext:main": "src/index.js",
