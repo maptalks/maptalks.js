@@ -210,14 +210,14 @@ class TileLayer extends Layer {
 
             return this._rootNode;
         }
-
+        const sr = this.getSpatialReference();
         this._rootNode = {
             x: 0,
             y: 0,
             z: 0,
             idx: 0,
             idy: 0,
-            extent2d: this._getTileConfig().getTilePrjExtent(0, 0, map._getResolution(0)).convertTo(c => map._prjToPoint(c, 0, TEMP_POINT)),
+            extent2d: this._getTileConfig().getTilePrjExtent(0, 0, sr.getResolution(0)).convertTo(c => map._prjToPoint(c, 0, TEMP_POINT)),
             id: this._getTileId(0, 0, 0),
             url: this.getTileUrl(0, 0, this.options['zoomOffset']),
             offset: [0, 0],
@@ -245,6 +245,7 @@ class TileLayer extends Layer {
         if (isNaN(+z)) {
             z = this._getTileZoom(map.getZoom());
         }
+        const sr = this.getSpatialReference();
         const maxZoom = Math.min(z, this.getMaxZoom());
         const projectionView = map.projViewMatrix;
 
@@ -257,7 +258,7 @@ class TileLayer extends Layer {
         if (this.options['repeatWorld']) {
             const mapContainerExtent = map.getContainerExtent();
             const mapExtent2D = this._convertToExtent2d(mapContainerExtent);
-            const scale = map.getResolution(0) / map.getResolution();
+            const scale = sr.getResolution(0) / map.getResolution();
             if (!mapExtent2D.within(root.extent2d.copy()._scale(scale))) {
                 const pitch = map.getPitch();
                 const cascadePitch1 = map.options['cascadePitches'][1];
@@ -308,6 +309,8 @@ class TileLayer extends Layer {
 
     _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer) {
         const z = node.z + 1;
+        const sr = this.getSpatialReference();
+        const map = this.getMap();
         const { x, y, extent2d, idx, idy } = node;
         const childScale = 2;
         const width = extent2d.getWidth() / 2 * childScale;
@@ -319,7 +322,7 @@ class TileLayer extends Layer {
 
         let hasCurrentIn = false;
         const children = [];
-        const glScale = this.getMap().getGLScale(z);
+        const glScale = sr.getResolution(z) / map.getResolution(map.getGLZoom());
         for (let i = 0; i < 4; i++) {
             const dx = (i % 2);
             const dy = (i >> 1);
@@ -661,13 +664,18 @@ class TileLayer extends Layer {
     }
 
     _getTileZoom(zoom) {
-        if (!isInteger(zoom)) {
-            zoom = Math.round(zoom);
-        }
+        const res0 = this.getMap().getResolution(zoom);
+        const res1 = this.getSpatialReference().getResolution(zoom);
+        const dz = Math.log(res1 / res0) * Math.LOG2E; // polyfill of Math.log2
+        zoom += dz;
         const maxZoom = this.options['maxAvailableZoom'];
         if (!isNil(maxZoom) && zoom > maxZoom) {
             zoom = maxZoom;
         }
+        if (!isInteger(zoom)) {
+            zoom = Math.round(zoom);
+        }
+        zoom = Math.max(0, zoom);
         return zoom;
     }
 
@@ -1028,7 +1036,7 @@ class TileLayer extends Layer {
         //     const base = map.getBaseLayer()._getTileConfig();
         //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
         // }
-        this._hasOwnSR = sr !== map.getSpatialReference();
+        this._hasOwnSR = sr.toJSON().projection !== map.getSpatialReference().toJSON().projection;
         delete this._rootNode;
     }
 
@@ -1092,6 +1100,7 @@ class TileLayer extends Layer {
         delete this._tileConfig;
         delete this._defaultTileConfig;
         delete this._sr;
+        delete this._srMinZoom;
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.clear();
