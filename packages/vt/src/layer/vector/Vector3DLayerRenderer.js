@@ -901,6 +901,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
+    _convertAndRebuild(geo) {
+        this._convertGeo(geo);
+        this._markRebuild();
+        redraw(this);
+    }
+
     onGeometryAdd(geometries) {
         if (!geometries || !geometries.length) {
             return;
@@ -931,61 +937,33 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         // const { properties } = e;
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
-        const marker = e.target;
-        const id = marker[ID_PROP];
-        if (this.features[id]) {
-            const symbol = marker['_getInternalSymbol']();
-            const feaProps = this.features[id].properties;
-            for (const p in feaProps) {
-                if (p.indexOf('_symbol_') === 0) {
-                    delete feaProps[p];
+        const geo = e.target['_getParent']() || e.target;
+        const id = geo[ID_PROP];
+        const symbol = geo['_getInternalSymbol']();
+        const feas = this.features[id];
+        this._convertGeo(geo);
+        if (feas) {
+            if (!compareSymbolCount(symbol, feas)) {
+                this._convertAndRebuild(geo);
+                return;
+            }
+            if (Array.isArray(symbol)) {
+                for (let i = 0; i < symbol.length; i++) {
+                    const s = symbol[i];
+                    if (!compareSymbolProp(s, feas[i])) {
+                        this._convertAndRebuild(geo);
+                        return;
+                    }
                 }
+            } else if (!compareSymbolProp(symbol, feas)) {
+                this._convertAndRebuild(geo);
+                return;
             }
-            for (const p in symbol) {
-                feaProps['_symbol_' + p] = symbol[p];
-            }
+        } else {
+            this._convertAndRebuild(geo);
+            return;
         }
-        this._refreshFeatures(this.features[id]);
-        // this.features[id] = convertToFeature(marker);
-        // TODO 实现geometry的局部更新
-        this._markRebuild();
-        redraw(this);
-
-        // if (this._dirtyAll) {
-        //     redraw(this);
-        //     return;
-        // }
-
-
-        // let rebuild = false;
-        // for (const p in properties) {
-        //     if (properties[p] !== undefined && !SYMBOL_SIMPLE_PROPS[p]) {
-        //         rebuild = true;
-        //         break;
-        //     }
-        // }
-        // if (!rebuild) {
-        //     if (this.painterSymbol) {
-        //         if (!this._dirtyGeo || !this._dirtySymbol) {
-        //             for (const p in properties) {
-        //                 const old = this.painterSymbol[p];
-        //                 //new symbol property to force painter refresh geometry's attribute
-        //                 this.painterSymbol[p] = {
-        //                     type: old.type,
-        //                     default: old.default,
-        //                     property: old.property
-        //                 };
-
-        //             }
-        //             this._markUpdateSymbol();
-        //         }
-        //     }
-
-        // } else {
-        //     this._markRebuild();
-        // }
-        // this._markRebuild();
-        // redraw(this);
+        this.onGeometryPositionChange(e);
     }
 
     onGeometryShapeChange(e) {
@@ -1007,6 +985,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onGeometryPositionChange(e) {
         const target = e.target['_getParent']() || e.target;
         const uid = target[ID_PROP];
+        // 为应对同一个数据的频繁修改，发生变化的数据留到下一帧再统一修改
         this._dirtyTargetsInCurrentFrame[uid] = target;
         redraw(this);
     }
@@ -1303,4 +1282,22 @@ function compareCoordSize(coords0, coords1) {
         return false;
     }
     return true;
+}
+
+function compareSymbolCount(symbol, feas) {
+    if (Array.isArray(symbol)) {
+        if (!Array.isArray(feas)) {
+            return false;
+        } else {
+            return symbol.length === feas.length;
+        }
+    } else {
+        return !Array.isArray(feas);
+    }
+}
+
+function compareSymbolProp(symbol, feature) {
+    const props = Object.keys(symbol).sort().join();
+    const feaProps = Object.keys(feature.properties || {}).filter(p => p.indexOf(prefix) === 0).map(p => p.substring(prefix.length)).sort().join();
+    return props === feaProps;
 }
