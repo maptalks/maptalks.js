@@ -77,7 +77,7 @@ export default class LinePack extends VectorPack {
     }
 
     getFormat() {
-        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
+        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const format = [
             {
                 type: Int16Array,
@@ -204,7 +204,7 @@ export default class LinePack extends VectorPack {
                 name: 'aLinePatternAnimSpeed'
             });
         }
-        if (this.linePatternGapFn) {
+        if (linePatternGapFn) {
             format.push({
                 type: Uint8Array,
                 width: 1,
@@ -217,7 +217,7 @@ export default class LinePack extends VectorPack {
     placeVector(line) {
         const { lineJoinFn, lineCapFn, lineWidthFn, lineGapWidthFn,
             lineColorFn, lineOpacityFn, lineJoinPatternModeFn,
-            lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
+            lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const symbol = this.symbol,
             miterLimit = 2,
             roundLimit = 1.05;
@@ -356,8 +356,8 @@ export default class LinePack extends VectorPack {
             }
             this.feaPatternAnimSpeed = speed;
         }
-        if (this.linePatternGapFn) {
-            let gap = this.linePatternGapFn(this.options['zoom'], feature.properties);
+        if (linePatternGapFn) {
+            let gap = linePatternGapFn(this.options['zoom'], feature.properties);
             if (isNil(gap)) {
                 gap = 0;
             }
@@ -722,7 +722,7 @@ export default class LinePack extends VectorPack {
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
     fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
-        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn } = this._fnTypes;
+        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         if (this.options.center) {
             data.push(x, y, 0);
             data.push(round * 2 + up); //aUp
@@ -789,7 +789,7 @@ export default class LinePack extends VectorPack {
         if (linePatternAnimSpeedFn) {
             data.push(this.feaPatternAnimSpeed * 127);
         }
-        if (this.linePatternGapFn) {
+        if (linePatternGapFn) {
             // 0 - 25.5
             data.push(this.feaLinePatternGap * 10);
         }
