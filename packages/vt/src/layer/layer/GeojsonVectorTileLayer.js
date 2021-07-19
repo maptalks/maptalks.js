@@ -14,6 +14,8 @@ const options = {
 class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     constructor(id, options = {}) {
+        // use map's spatial reference
+        options.spatialReference = null;
         super(id, options);
         this.setData(options['data']);
     }

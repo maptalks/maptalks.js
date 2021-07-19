@@ -253,7 +253,8 @@ function createPainterPlugin(type, Painter) {
         _fillCommonProps: function (geometry, context) {
             var { layer, tileInfo } = context;
             var map = layer.getMap(),
-                tileResolution = map.getResolution(tileInfo.z),
+                sr = layer.getSpatialReference ? layer.getSpatialReference() : map.getSpatialReference(),
+                tileResolution = sr.getResolution(tileInfo.z),
                 tileRatio = context.tileExtent / layer.getTileSize().width;
             geometry.properties.tileResolution = tileResolution;
             geometry.properties.tileRatio = tileRatio;

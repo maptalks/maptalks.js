@@ -304,7 +304,7 @@ const GLTFMixin = Base =>
 
             const count = aPosition.length / positionSize;
             const tileSize = this.layer.getTileSize();
-            const tileScale = tileSize.width / tileExtent * this.layer.getMap().getGLScale(tileZoom);
+            const tileScale = tileSize.width / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
             const zScale = this.layer.getRenderer().getZScale();
             const position = [];
             const mat = [];

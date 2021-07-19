@@ -246,7 +246,7 @@ export default class BaseLayerWorker {
                         tileData.data.layer = tileFeatures[0].layer;
                     } else if (Array.isArray(tileData)) {
                         for (let i = 0; i < tileData.length; i++) {
-                            if (tileData[i].data) tileData[i].data.layer = tileFeatures[0].layer;
+                            if (tileData[i] && tileData[i].data) tileData[i].data.layer = tileFeatures[0].layer;
                         }
                     }
                     return tileData;

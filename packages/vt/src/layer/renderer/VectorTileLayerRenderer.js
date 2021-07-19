@@ -354,8 +354,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
         if (!cached) {
-            const map = this.getMap();
-            const glScale = map.getGLScale(tileInfo.z);
+            const glScale = this.getTileGLScale(tileInfo.z);
             this._requestingMVT[url] = {
                 keys: {},
                 tiles: [tileInfo]
@@ -367,6 +366,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             cached.keys[tileInfo.id] = 1;
         }
         return {};
+    }
+
+    getTileGLScale(z) {
+        const map = this.getMap();
+        const sr = this.layer.getSpatialReference();
+        return sr.getResolution(z) / map.getResolution(map.getGLZoom());
     }
 
     _onReceiveMVTData(url, err, data) {
@@ -1296,8 +1301,7 @@ VectorTileLayerRenderer.include({
         const v2 = new Array(3);
         return function (point, z) {
             const EXTENT = this._EXTENT;
-            const map = this.getMap();
-            const glScale = map.getGLScale(z);
+            const glScale = this.getTileGLScale(z);
             const tilePos = point;
             const tileSize = this.layer.getTileSize();
             const posMatrix = mat4.identity([]);
@@ -1313,8 +1317,7 @@ VectorTileLayerRenderer.include({
     calculateTileTranslationMatrix: function () {
         const v0 = new Array(3);
         return function (point, z) {
-            const map = this.getMap();
-            const glScale = map.getGLScale(z);
+            const glScale = this.getTileGLScale(z);
             const tilePos = point;
             const posMatrix = mat4.identity([]);
             mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
