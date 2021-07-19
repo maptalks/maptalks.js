@@ -1,4 +1,4 @@
-import { extend, isNil, isObject, hasOwn, sign } from '../../core/util';
+import { extend, isNil, isObject, hasOwn, sign, isString } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
@@ -102,6 +102,9 @@ export default class SpatialReference {
     }
 
     static equals(sp1, sp2) {
+        if (isString(sp1) || isString(sp2)) {
+            return sp1 === sp2;
+        }
         if (!sp1 && !sp2) {
             return true;
         } else if (!sp1 || !sp2) {
