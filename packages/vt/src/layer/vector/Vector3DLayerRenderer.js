@@ -547,7 +547,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const options = { zoom: this.getMap().getZoom() };
         const uid = this._convertGeo(marker);
         if (!this._markerMeshes) {
-            return;
+            return false;
         }
         let feature = this.features[uid];
         if (!Array.isArray(feature)) {
@@ -568,7 +568,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!this._markerAtlas || !PointPack.isAtlasLoaded(iconGlyph, this._markerAtlas)) {
                 this._markRebuild();
                 this.setToRedraw();
-                return;
+                return false;
             }
         }
 
@@ -599,20 +599,21 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.setToRedraw();
 
         });
+        return true;
     }
 
     _updateLineMesh(target) {
         if (!this._lineMeshes) {
-            return;
+            return false;
         }
-        this._updateMesh(target, this._lineMeshes, this._lineAtlas, this._lineCenter, this._linePainter, LinePack, LINE_SYMBOL, this._groupLineFeas);
+        return this._updateMesh(target, this._lineMeshes, this._lineAtlas, this._lineCenter, this._linePainter, LinePack, LINE_SYMBOL, this._groupLineFeas);
     }
 
     _updateMesh(target, meshes, atlas, center, painter, PackClass, globalSymbol, groupFeaturesFn) {
         if (!atlas) {
             this._markRebuild();
             this.setToRedraw();
-            return;
+            return false;
         }
         const symbols = target['_getInternalSymbol']();
         const options = { zoom: this.getMap().getZoom() };
@@ -635,7 +636,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!VectorPack.isAtlasLoaded(res, atlas[i])) {
                 this._markRebuild();
                 this.setToRedraw();
-                return;
+                return false;
             }
             features.push(fea);
         }
@@ -684,10 +685,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
                     }
                 }
+                this.setToRedraw();
 
             }
 
         });
+        return true;
     }
 
     _buildLineMesh(atlas) {
@@ -887,17 +890,20 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const kid = this._getFeaKeyId(target);
 
             if (this._markerFeatures[kid] || this._textFeatures[kid]) {
-                this._updateMarkerMesh(target);
+                const partial = this._updateMarkerMesh(target);
+                updated = updated || partial;
             }
             if (this._lineFeatures[kid]) {
-                this._updateLineMesh(target);
+                const partial = this._updateLineMesh(target);
+                updated = updated || partial;
             }
-            this.updateMesh(target);
-            updated = true;
+            const partial = this.updateMesh(target);
+            updated = updated || partial;
         }
         this._dirtyTargetsInCurrentFrame = {};
         if (updated) {
             redraw(this);
+            this.layer.fire('partialupdate');
         }
     }
 
@@ -1253,8 +1259,8 @@ function hasTextSymbol({ properties }) {
     return properties[prefix + 'textName'];
 }
 
-function hasLineSymbol({ properties }) {
-    return !!properties[prefix + 'lineWidth'];
+function hasLineSymbol(fea) {
+    return fea.type === 2 || (fea.type === 3 && !!fea.properties[prefix + 'lineWidth']);
 }
 
 function dashLength(dash) {

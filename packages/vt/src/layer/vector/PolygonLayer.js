@@ -109,9 +109,9 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
 
     updateMesh(polygon) {
         if (!this.meshes) {
-            return;
+            return false;
         }
-        this._updateMesh(polygon, this.meshes, this.atlas, this._meshCenter, this.painter, PolygonPack, SYMBOL, this._groupPolygonFeatures);
+        return this._updateMesh(polygon, this.meshes, this.atlas, this._meshCenter, this.painter, PolygonPack, SYMBOL, this._groupPolygonFeatures);
     }
 
 
