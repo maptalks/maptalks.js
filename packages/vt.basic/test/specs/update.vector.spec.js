@@ -30,13 +30,6 @@ describe('vector layers update style specs', () => {
         container.style.width = '128px';
         container.style.height = '128px';
         document.body.appendChild(container);
-        // const canvas = document.createElement('canvas');
-        // canvas.id = 'debug';
-        // canvas.width = 128;
-        // canvas.height = 128;
-        // canvas.style.width = '128px';
-        // canvas.style.height = '128px';
-        // document.body.appendChild(canvas);
     });
 
     beforeEach(() => {
@@ -65,6 +58,7 @@ describe('vector layers update style specs', () => {
                 markerFill: '#0f0',
                 markerOpacity: 0.5
             });
+            return 4;
         });
     });
 
@@ -86,6 +80,7 @@ describe('vector layers update style specs', () => {
                 markerFill: '#0f0',
                 markerOpacity: 0.5
             });
+            return 4;
         });
     });
 
@@ -391,6 +386,10 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
@@ -400,6 +399,7 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(!partialUpdate);
                 done();
             }
         });
@@ -422,6 +422,10 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
@@ -431,6 +435,7 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(partialUpdate);
                 done();
             }
         });
@@ -494,15 +499,20 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
-                polygon.setCoordinates([[[-1, 2], [1, 2], [1, 0], [-1, 0], [-1, 0]]]);
+                polygon.setCoordinates([[[-1, 2], [1, 2], [1, 0], [-1, 0], [-1, 2]]]);
             } else if (count === 3) {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 50);
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(partialUpdate);
                 done();
             }
         });
@@ -524,6 +534,10 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
@@ -533,6 +547,7 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 + 20);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(partialUpdate);
                 done();
             }
         });
@@ -557,6 +572,10 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
@@ -569,6 +588,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 3) {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(partialUpdate);
                 done();
             }
         });
@@ -593,6 +613,10 @@ describe('vector layers update style specs', () => {
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
@@ -602,6 +626,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 3) {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
+                assert(partialUpdate);
                 done();
             }
         });
