@@ -25,7 +25,7 @@ let testCanvas;
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_PAINT_EXTENT = new PointExtent();
 const TEMP_FIXED_EXTENT = new PointExtent();
-// const TEMP_CLIP_EXTENT0 = new PointExtent();
+const TEMP_CLIP_EXTENT0 = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
@@ -390,16 +390,25 @@ class Painter extends Class {
             };
         }
         const glExtent2D = glExtent._expand(lineWidth * map._glScale);
+        const { xmin, ymin, xmax, ymax } = glExtent2D;
+        const dx = Math.abs(xmax - xmin), dy = Math.abs(ymax - ymin);
+        const maxEdge = Math.max(dx, dy);
+        const r = maxEdge / 2;
+        TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin - r;
+        TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax + r;
+        TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin - r;
+        TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + r;
+
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
         if (geometry.getShell && this.geometry.getHoles && !smoothness) {
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipPolygon(points, glExtent2D);
+                clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    const part = clipPolygon(points[i], glExtent2D);
+                    const part = clipPolygon(points[i], TEMP_CLIP_EXTENT0);
                     if (part.length) {
                         clipPoints.push(part);
                     }
@@ -408,11 +417,11 @@ class Painter extends Class {
         } else if (geometry.getJSONType() === 'LineString' && !smoothness) {
             // clip the line string to draw less and improve performance
             if (!Array.isArray(points[0])) {
-                clipPoints = clipLine(points, glExtent2D, false, !!smoothness);
+                clipPoints = clipLine(points, TEMP_CLIP_EXTENT0, false, !!smoothness);
             } else {
                 clipPoints = [];
                 for (let i = 0; i < points.length; i++) {
-                    pushIn(clipPoints, clipLine(points[i], glExtent2D, false, !!smoothness));
+                    pushIn(clipPoints, clipLine(points[i], TEMP_CLIP_EXTENT0, false, !!smoothness));
                 }
             }
             //interpolate line's segment's altitude if altitude is an array
