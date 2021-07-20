@@ -329,6 +329,28 @@ class Painter extends Class {
     }
 
     _clip(points, altitude) {
+        // linestring polygon clip
+        if (isNumber(altitude) && altitude !== 0) {
+            return {
+                points,
+                altitude
+            };
+        }
+        if (Array.isArray(altitude)) {
+            let hasAltitude = false;
+            for (let i = 0, len = altitude.length; i < len; i++) {
+                if (altitude[i] !== 0) {
+                    hasAltitude = true;
+                    break;
+                }
+            }
+            if (hasAltitude) {
+                return {
+                    points,
+                    altitude
+                };
+            }
+        }
         const map = this.getMap(),
             geometry = this.geometry;
         let lineWidth = this.getSymbol()['lineWidth'];
