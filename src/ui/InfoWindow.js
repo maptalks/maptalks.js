@@ -15,7 +15,7 @@ import UIComponent from './UIComponent';
  * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
  * @property {String}  [options.title=null]    - title of the infowindow.
  * @property {String|HTMLElement}  options.content - content of the infowindow.
- * @property {Boolean}  [options.enableTemplate=false]  - Open template . such as content:`homepage:{url},company name:{name}`.
+ * @property {Boolean}  [options.enableTemplate=false]  - whether open template . such as content:`homepage:{url},company name:{name}`.
  * @memberOf ui.InfoWindow
  * @instance
  */
