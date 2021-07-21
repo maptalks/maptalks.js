@@ -8,7 +8,7 @@ import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
-import { piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 
 class LinePainter extends BasicPainter {
 
@@ -258,8 +258,11 @@ class LinePainter extends BasicPainter {
                 type: Uint8Array,
                 width: 4,
                 define: 'HAS_COLOR',
-                evaluate: properties => {
+                evaluate: (properties, _, geometry) => {
                     let color = aColorFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(color)) {
+                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                    }
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
@@ -306,6 +309,7 @@ class LinePainter extends BasicPainter {
 
     _createShapeFnTypeConfigs(map, symbolDef) {
         const aLineWidthFn = interpolated(symbolDef['lineWidth']);
+        const aLineOpacityFn = interpolated(symbolDef['lineOpacity']);
         const aLineGapWidthFn = interpolated(symbolDef['lineGapWidth']);
         const aLineDxFn = interpolated(symbolDef['lineDx']);
         const aLineDyFn = interpolated(symbolDef['lineDy']);
@@ -318,8 +322,11 @@ class LinePainter extends BasicPainter {
                 type: Uint8Array,
                 width: 1,
                 define: 'HAS_LINE_WIDTH',
-                evaluate: properties => {
-                    const lineWidth = aLineWidthFn(map.getZoom(), properties);
+                evaluate: (properties, _, geometry) => {
+                    let lineWidth = aLineWidthFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(lineWidth)) {
+                        lineWidth = this.evaluateInFnTypeConfig(lineWidth, geometry, map, properties);
+                    }
                     //乘以2是为了解决 #190
                     u16[0] = Math.round(lineWidth * 2.0);
                     return u16[0];
@@ -362,7 +369,21 @@ class LinePainter extends BasicPainter {
                     return i8[0];
                 }
             },
-
+            {
+                attrName: 'aOpacity',
+                symbolName: 'lineOpacity',
+                type: Uint8Array,
+                width: 1,
+                define: 'HAS_OPACITY',
+                evaluate: (properties, _, geometry) => {
+                    let opacity = aLineOpacityFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(opacity)) {
+                        opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                    }
+                    u16[0] = opacity * 255;
+                    return u16[0];
+                }
+            },
         ];
     }
 

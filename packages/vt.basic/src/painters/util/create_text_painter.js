@@ -402,8 +402,11 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 4,
             //
-            evaluate: properties => {
+            evaluate: (properties, _, geometry) => {
                 let color = textFillFn(map.getZoom(), properties);
+                if (isFunctionDefinition(color)) {
+                    color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                }
                 if (!Array.isArray(color)) {
                     color = colorCache[color] = colorCache[color] || Color(color).unitArray();
                 }
@@ -417,11 +420,10 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_TEXT_SIZE',
             type: Uint8Array,
             width: 1,
-            evaluate: properties => {
+            evaluate: (properties, _, geometry) => {
                 let size = textSizeFn(map.getZoom(), properties) || DEFAULT_UNIFORMS['textSize'];
                 if (isFunctionDefinition(size)) {
-                    const fn = properties['_textSizeFn'] = properties['_textSizeFn'] || interpolated(size);
-                    size = fn(map.getZoom(), properties);
+                    size = this.evaluateInFnTypeConfig(size, geometry, map, properties);
                 }
                 u8[0] = size;
                 return u8[0];
@@ -499,9 +501,12 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_OPACITY',
             type: Uint8Array,
             width: 1,
-            evaluate: properties => {
-                const y = textOpacityFn(map.getZoom(), properties);
-                u8[0] = y * 255;
+            evaluate: (properties, _, geometry) => {
+                let opacity = textOpacityFn(map.getZoom(), properties);
+                if (isFunctionDefinition(opacity)) {
+                    opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                }
+                u8[0] = opacity * 255;
                 return u8[0];
             }
         },

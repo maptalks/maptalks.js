@@ -6,6 +6,7 @@ import { allowsVerticalWritingMode } from './util/script_detection';
 import Color from 'color';
 import { isOut, isNil, wrap } from './util/util';
 import mergeLines from './util/merge_lines';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
@@ -451,13 +452,18 @@ export default class PointPack extends VectorPack {
             //function type data
             if (textFillFn) {
                 textFill = textFillFn(null, properties);
-                if (!Array.isArray(textFill)) {
-                    textFill = Color(textFill).array();
+                if (isFunctionDefinition(textFill)) {
+                    // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                    textFill = [0, 0, 0, 0];
                 } else {
-                    textFill = textFill.map(c => c * 255);
-                }
-                if (textFill.length === 3) {
-                    textFill.push(255);
+                    if (!Array.isArray(textFill)) {
+                        textFill = Color(textFill).array();
+                    } else {
+                        textFill = textFill.map(c => c * 255);
+                    }
+                    if (textFill.length === 3) {
+                        textFill.push(255);
+                    }
                 }
             }
             if (textSizeFn) {

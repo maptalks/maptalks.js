@@ -1,6 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import { loadFunctionTypes, isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
@@ -944,6 +944,21 @@ class Painter {
         }
         this.setToRedraw(true);
     }
+
+    // 在createFnTypeConfig方法中，有时fnTypeConfig中计算的值仍然是fn-type，(例如Vector3DLayer的数据symbol属性是fn type时)
+    // 缓存生成的函数对象，并计算出真正的值并返回
+    evaluateInFnTypeConfig(v, geometry, map, properties, isPiecewiseConstant) {
+        let fnCaches = this._fnCaches;
+        if (!fnCaches) {
+            fnCaches = this._fnCaches = {};
+        }
+        const key = hashCode(JSON.stringify(v));
+        let fn = fnCaches[key];
+        if (!fn) {
+            fn = fnCaches[key] = isPiecewiseConstant ? piecewiseConstant(v) : interpolated(v);
+        }
+        return fn(map.getZoom(), properties);
+    }
 }
 
 export default Painter;
@@ -957,4 +972,19 @@ function sortByCommandKey(a, b) {
 
 function sortByLevel(m0, m1) {
     return m0.properties.level - m1.properties.level;
+}
+
+function hashCode(s) {
+    let hash = 0;
+    const strlen = s && s.length || 0;
+    if (!strlen) {
+        return hash;
+    }
+    let c;
+    for (let i = 0; i < strlen; i++) {
+        c = s.charCodeAt(i);
+        hash = ((hash << 5) - hash) + c;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }

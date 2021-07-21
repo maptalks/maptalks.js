@@ -4,6 +4,7 @@ import VectorPack from './VectorPack';
 import Color from 'color';
 import { isNil } from '../style/Util';
 import clipLine from './util/clip_line';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -268,13 +269,18 @@ export default class LinePack extends VectorPack {
         }
         if (lineColorFn) {
             this.feaColor = lineColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
-            if (!Array.isArray(this.feaColor)) {
-                this.feaColor = Color(this.feaColor).array();
+            if (isFunctionDefinition(this.feaColor)) {
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                this.feaColor = [0, 0, 0, 0];
             } else {
-                this.feaColor = this.feaColor.map(c => c * 255);
-            }
-            if (this.feaColor.length === 3) {
-                this.feaColor.push(255);
+                if (!Array.isArray(this.feaColor)) {
+                    this.feaColor = Color(this.feaColor).array();
+                } else {
+                    this.feaColor = this.feaColor.map(c => c * 255);
+                }
+                if (this.feaColor.length === 3) {
+                    this.feaColor.push(255);
+                }
             }
         }
         if (lineOpacityFn) {

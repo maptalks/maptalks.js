@@ -64,8 +64,8 @@ class IconPainter extends CollisionPainter {
     }
 
     createFnTypeConfig(map, symbolDef) {
-        const icon = getMarkerFnTypeConfig(map, symbolDef);
-        const text = getTextFnTypeConfig(map, symbolDef);
+        const icon = getMarkerFnTypeConfig.call(this, map, symbolDef);
+        const text = getTextFnTypeConfig.call(this, map, symbolDef);
         return {
             icon,
             text

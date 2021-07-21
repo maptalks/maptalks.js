@@ -6,7 +6,7 @@ import pickingVert from './glsl/fill.picking.vert';
 import { isNumber, isNil, setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
-import { piecewiseConstant, interpolated } from '@maptalks/function-type';
+import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
 const DEFAULT_UNIFORMS = {
@@ -136,8 +136,11 @@ class FillPainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 //
-                evaluate: properties => {
+                evaluate: (properties, _, geometry) => {
                     let color = polygonFillFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(color)) {
+                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                    }
                     if (!Array.isArray(color)) {
                         color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
                     }
@@ -151,9 +154,12 @@ class FillPainter extends BasicPainter {
                 type: Uint8Array,
                 width: 1,
                 define: 'HAS_OPACITY',
-                evaluate: properties => {
-                    const polygonOpacity = polygonOpacityFn(map.getZoom(), properties);
-                    u8[0] = polygonOpacity * 255;
+                evaluate: (properties, _, geometry) => {
+                    let opacity = polygonOpacityFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(opacity)) {
+                        opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
+                    }
+                    u8[0] = opacity * 255;
                     return u8[0];
                 }
             }

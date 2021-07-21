@@ -2,33 +2,42 @@ import { fillArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 export const PREFIX = '_fn_type_';
-export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = ['textSize', 'markerWidth', 'markerHeight'];
+export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
+    'textFill': 1,
+    'textSize': 1,
+    'textOpacity': 1,
+    'markerWidth': 1,
+    'markerHeight': 1,
+    'markerOpacity': 1,
+    'lineWidth': 1,
+    'lineColor': 1,
+    'lineOpacity': 1,
+    'polygonFill': 1,
+    'polygonOpacity': 1
+};
+
 const SAVED_FN_TYPE = '__current_fn_types';
 /**
  * 如果 symbolDef 有 function-type 类型，则准备需要的数据
  * @param {*} geometry
  * @param {*} features
  * @param {*} symbolDef
- * @param {*} config
+ * @param {*} configs
  */
-export function prepareFnTypeData(geometry, symbolDef, config) {
-    for (let i = 0; i < config.length; i++) {
-        const { symbolName } = config[i];
+export function prepareFnTypeData(geometry, symbolDef, configs) {
+    for (let i = 0; i < configs.length; i++) {
+        const { symbolName } = configs[i];
         const savedTypes = geometry[SAVED_FN_TYPE] = geometry[SAVED_FN_TYPE] || {};
         savedTypes[symbolName] = symbolDef[symbolName];
-        prepareAttr(geometry, symbolDef, config[i]);
+        prepareAttr(geometry, symbolDef, configs[i]);
     }
 }
 
 function prepareAttr(geometry, symbolDef, config) {
     const geoProps = geometry.properties;
-    const features = geoProps.features;
     let aPickingId = geoProps.aPickingId;
     if (!aPickingId) {
         aPickingId = geoProps.aPickingId = new geometry.data.aPickingId.constructor(geometry.data.aPickingId);
-    }
-    if (!geoProps.features) {
-        geometry.features = features;
     }
 
     const { attrName, symbolName, evaluate } = config;
@@ -39,7 +48,7 @@ function prepareAttr(geometry, symbolDef, config) {
         } else {
             //symbol是fn-type，但arr不存在，则创建
             arr = geometry.data[attrName] = new config.type(config.width * aPickingId.length);
-            createZoomFnTypes(geometry, symbolDef, config);
+            createZoomFnTypeIndexData(geometry, symbolDef, config);
             const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
             updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
             return arr;
@@ -53,18 +62,23 @@ function prepareAttr(geometry, symbolDef, config) {
         removeFnTypePropArrs(geometry, attrName);
         return null;
     }
-    createZoomFnTypes(geometry, symbolDef, config);
+    createZoomFnTypeIndexData(geometry, symbolDef, config);
     return arr;
 }
 
-function createZoomFnTypes(geometry, symbolDef, config) {
+/**
+ * 检查config中属性，fntype的stops中是否存在与zoom有关的fn-type 或者 identity fn-type
+ * 如果有，则创建受影响的feature索引，方便地图zoom时更新属性
+ *
+ * */
+function createZoomFnTypeIndexData(geometry, symbolDef, config) {
     const { attrName, symbolName } = config;
     const stopValues = getFnTypePropertyStopValues(symbolDef[symbolName].stops);
     const isIdentityFn = symbolDef[symbolName].type === 'identity';
     // symbol是identity类型，且属性支持 fn type 值
     // TODO 这里应该遍历features，检查是否有 fn type 的值
-    const hasFnTypeInIdentity = isIdentityFn && SYMBOLS_SUPPORT_IDENTITY_FN_TYPE.indexOf(symbolName) >= 0;
-    if (!hasFnTypeInIdentity && !stopValues.length) {
+    const hasZoomIdentity = isIdentityFn && checkIfIdentityZoomDependent(config, symbolDef[symbolName], geometry);
+    if (!hasZoomIdentity && !stopValues.length) {
         //说明stops中没有function-type类型
         removeFnTypePropArrs(geometry, attrName);
         return;
@@ -72,7 +86,7 @@ function createZoomFnTypes(geometry, symbolDef, config) {
 
     const geoProps = geometry.properties;
     const { features, aPickingId } = geoProps;
-    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, hasFnTypeInIdentity);
+    const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, hasZoomIdentity);
     if (!aIndex.length) {
         //说明瓦片中没有 function-type 中涉及的 feature
         removeFnTypePropArrs(geometry, attrName);
@@ -242,7 +256,7 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
             if (!feature || !feature.feature) {
                 continue;
             }
-            evaluateAndUpdate(arr, feature, evaluate, start, end, len);
+            evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry);
         }
     } else {
         //存在fn-type，但symbol更新过，要重新计算arr里的值
@@ -301,4 +315,33 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
 
 export function isFnTypeSymbol(symbolProp) {
     return symbolProp && isFunctionDefinition(symbolProp) && symbolProp.property;
+}
+
+function checkIfIdentityZoomDependent(config, fnDef, geometry) {
+    let { features } = geometry.properties;
+    if (!Array.isArray(features)) {
+        features = Object.values(features);
+    }
+    if (!features || !features.length) {
+        return false;
+    }
+    const { symbolName } = config;
+    if (!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName]) {
+        return false;
+    }
+    const prop = fnDef.property;
+    for (let i = 0; i < features.length; i++) {
+        const fea = features[i] && features[i].feature;
+        if (!fea) {
+            continue;
+        }
+        const v = fea.properties && fea.properties[prop];
+        if (!v) {
+            continue;
+        }
+        if (isFunctionDefinition(v) && !interpolated(v).isZoomConstant) {
+            return true;
+        }
+    }
+    return false;
 }

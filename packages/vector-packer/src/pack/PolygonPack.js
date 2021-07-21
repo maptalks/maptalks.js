@@ -6,6 +6,7 @@ import { getIndexArrayType } from './util/array';
 import Color from 'color';
 import { isNil } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 const EARCUT_MAX_RINGS = 500;
 
@@ -88,14 +89,20 @@ export default class PolygonPack extends VectorPack {
         const { polygonFillFn, polygonOpacityFn } = this._fnTypes;
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
-            if (!Array.isArray(dynFill)) {
-                dynFill = Color(dynFill).array();
+            if (isFunctionDefinition(dynFill)) {
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                dynFill = [0, 0, 0, 0];
             } else {
-                dynFill = dynFill.map(c => c * 255);
+                if (!Array.isArray(dynFill)) {
+                    dynFill = Color(dynFill).array();
+                } else {
+                    dynFill = dynFill.map(c => c * 255);
+                }
+                if (dynFill.length === 3) {
+                    dynFill.push(255);
+                }
             }
-            if (dynFill.length === 3) {
-                dynFill.push(255);
-            }
+
         }
         if (polygonOpacityFn) {
             dynOpacity = polygonOpacityFn(this.options['zoom'], feature.properties);
