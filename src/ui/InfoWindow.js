@@ -3,7 +3,7 @@ import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Point from '../geo/Point';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
 import UIComponent from './UIComponent';
-
+const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 
 /**
  * @property {Object} options
@@ -181,11 +181,10 @@ class InfoWindow extends UIComponent {
         if (this.options['enableTemplate'] && this._owner && this._owner.getProperties && dom && dom.innerHTML) {
             const properties = this._owner.getProperties() || {};
             if (isObject(properties)) {
-                let html = dom.innerHTML;
-                for (const key in properties) {
-                    html = html.replace(`{${key}}`, properties[key]);
-                }
-                dom.innerHTML = html;
+                const html = dom.innerHTML;
+                dom.innerHTML = html.replace(PROPERTY_PATTERN, function (str, key) {
+                    return properties[key];
+                });
             }
         }
         return this;
