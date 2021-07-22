@@ -7,6 +7,7 @@ import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Promise from '../../common/Promise';
 import Vector3DLayer from './Vector3DLayer';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 // const SYMBOL_SIMPLE_PROPS = {
 //     textFill: 1,
@@ -1305,5 +1306,16 @@ function compareSymbolCount(symbol, feas) {
 function compareSymbolProp(symbol, feature) {
     const props = Object.keys(symbol).sort().join();
     const feaProps = Object.keys(feature.properties || {}).filter(p => p.indexOf(prefix) === 0).map(p => p.substring(prefix.length)).sort().join();
-    return props === feaProps;
+    if (props !== feaProps) {
+        return false;
+    }
+    for (const p in symbol) {
+        if (symbol.hasOwnProperty(p)) {
+            // 如果有fn-type的属性被更新，则重新rebuild all
+            if (isFunctionDefinition(symbol[p]) !== isFunctionDefinition(feature.properties[prefix + p])) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

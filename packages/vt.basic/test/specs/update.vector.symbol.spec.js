@@ -936,4 +936,58 @@ describe('vector layers symbol update specs', () => {
         });
         group.addTo(map);
     });
+
+    it('fn-type symbol is updated', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('vector', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
+        let partialUpdate = false;
+        layer.on('partialupdate', () => {
+            partialUpdate = true;
+        });
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let updated = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !updated) {
+                const pixel = readPixel(layer.getRenderer().canvas, x + 20, y);
+                //开始中心点往外40，读不到像素
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                marker.updateSymbol({
+                    markerWidth: { stops: [[1, 140], [20, 1]] },
+                    markerHeight: { stops: [[1, 140], [20, 1]] }
+                });
+                updated = true;
+            } else if (updated && count >= 3) {
+                const pixel = readPixel(renderer.canvas, x + 20, y);
+                //中心点往外40，能读到像素了
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                assert(!partialUpdate);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
 });
