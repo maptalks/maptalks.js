@@ -19,7 +19,7 @@ export default class PolygonPack extends VectorPack {
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
-        const pattern = vector.getResource();
+        const pattern = vector.getPolygonResource();
         if (!this.options['atlas'] && pattern) {
             iconReqs[pattern] = 1;
         }
@@ -34,7 +34,7 @@ export default class PolygonPack extends VectorPack {
                 name: 'aPosition'
             }
         ];
-        const { polygonFillFn, polygonOpacityFn } = this._fnTypes;
+        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
         if (this.iconAtlas) {
             const max = this.getIconAtlasMaxValue();
             format.push({
@@ -55,6 +55,20 @@ export default class PolygonPack extends VectorPack {
                 type: Uint8Array,
                 width: 1,
                 name: 'aOpacity'
+            });
+        }
+        if (uvScaleFn) {
+            format.push({
+                type: Uint16Array,
+                width: 2,
+                name: 'aUVScale'
+            });
+        }
+        if (uvOffsetFn) {
+            format.push({
+                type: Uint8Array,
+                width: 2,
+                name: 'aUVOffset'
             });
         }
         return format;
@@ -85,8 +99,8 @@ export default class PolygonPack extends VectorPack {
     }
 
     _addPolygon(geometry, feature) {
-        let dynFill, dynOpacity;
-        const { polygonFillFn, polygonOpacityFn } = this._fnTypes;
+        let dynFill, dynOpacity, dynUVScale, dynUVOffset;
+        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
             if (isFunctionDefinition(dynFill)) {
@@ -110,6 +124,20 @@ export default class PolygonPack extends VectorPack {
                 dynOpacity = 1;
             }
             dynOpacity *= 255;
+        }
+        if (uvScaleFn) {
+            dynUVScale = uvScaleFn(this.options['zoom'], feature.properties);
+            if (isNil(dynUVScale)) {
+                dynUVScale = [1, 1];
+            }
+            dynUVScale = [dynUVScale[0] * 255, dynUVScale[1] * 255];
+        }
+        if (uvOffsetFn) {
+            dynUVOffset = uvOffsetFn(this.options['zoom'], feature.properties);
+            if (isNil(dynUVOffset)) {
+                dynUVOffset = [0, 0];
+            }
+            dynUVOffset = [dynUVOffset[0] * 255, dynUVOffset[1] * 255];
         }
         const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
@@ -165,6 +193,12 @@ export default class PolygonPack extends VectorPack {
                 if (dynOpacity !== undefined) {
                     this.data.push(dynOpacity);
                 }
+                if (dynUVScale !== undefined) {
+                    this.data.push(...dynUVScale);
+                }
+                if (dynUVOffset !== undefined) {
+                    this.data.push(...dynUVOffset);
+                }
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
                 this.addLineElements(lineIndex + ring.length - 1, lineIndex);
 
@@ -183,6 +217,12 @@ export default class PolygonPack extends VectorPack {
                     }
                     if (dynOpacity !== undefined) {
                         this.data.push(dynOpacity);
+                    }
+                    if (dynUVScale !== undefined) {
+                        this.data.push(...dynUVScale);
+                    }
+                    if (dynUVOffset !== undefined) {
+                        this.data.push(...dynUVOffset);
                     }
                     this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);

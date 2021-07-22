@@ -34,8 +34,18 @@ const SYMBOL = {
     },
     polygonOpacity: {
         type: 'identity',
-        default: undefined,
+        default: 1,
         property: '_symbol_polygonOpacity'
+    },
+    uvScale: {
+        type: 'identity',
+        default: [1, 1],
+        property: '_symbol_uvScale'
+    },
+    uvOffset: {
+        type: 'identity',
+        default: [0, 0],
+        property: '_symbol_uvOffset'
     }
 };
 

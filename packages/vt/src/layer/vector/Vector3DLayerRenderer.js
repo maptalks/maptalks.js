@@ -633,7 +633,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const symbol = Array.isArray(symbols) ? symbols[i] : symbols;
             const fnTypes = VectorPack.genFnTypes(symbol);
             const styledVector = new StyledVector(feature, symbol, fnTypes, options);
-            const res = styledVector.getResource();
+            const res = PackClass === LinePack ? styledVector.getLineResource() : styledVector.getPolygonResource();
             if (!VectorPack.isAtlasLoaded(res, atlas[i])) {
                 this._markRebuild();
                 this.setToRedraw();
@@ -681,15 +681,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * 3 * Float32Array.BYTES_PER_ELEMENT);
                 } else {
                     const count = packData[i].data.featureIds.length;
-                    for (const p in packData[i].data.data) {
-                        const data = packData[i].data.data[p];
-                        mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
+                    const datas = packData[i].data.data;
+                    for (const p in datas) {
+                        if (datas.hasOwnProperty(p)) {
+                            const data = datas[p];
+                            mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
+                            // mesh.geometry.updateData(p, data);
+                        }
                     }
                 }
                 this.setToRedraw();
-
             }
-
         });
         return true;
     }

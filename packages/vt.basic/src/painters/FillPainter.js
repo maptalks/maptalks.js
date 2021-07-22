@@ -11,7 +11,9 @@ import Color from 'color';
 
 const DEFAULT_UNIFORMS = {
     'polygonFill': [1, 1, 1, 1],
-    'polygonOpacity': 1
+    'polygonOpacity': 1,
+    'uvScale': [1, 1],
+    'uvOffset': [0, 0]
 };
 
 class FillPainter extends BasicPainter {
@@ -63,6 +65,8 @@ class FillPainter extends BasicPainter {
 
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
+        setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', DEFAULT_UNIFORMS['uvScale']);
+        setUniformFromSymbol(uniforms, 'uvOffset', symbol, 'uvOffset', DEFAULT_UNIFORMS['uvOffset']);
 
         if (ref === undefined) {
             const symbolDef = this.getSymbolDef(symbolIndex);
@@ -98,6 +102,7 @@ class FillPainter extends BasicPainter {
 
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
+            disableVAO: true,
             castShadow: false,
             picking: true
         });
@@ -110,6 +115,12 @@ class FillPainter extends BasicPainter {
         }
         if (geometry.data.aOpacity) {
             defines['HAS_OPACITY'] = 1;
+        }
+        if (geometry.data.aUVScale) {
+            defines['HAS_UV_SCALE'] = 1;
+        }
+        if (geometry.data.aUVOffset) {
+            defines['HAS_UV_OFFSET'] = 1;
         }
 
         if (isVectorTile) {
@@ -125,7 +136,10 @@ class FillPainter extends BasicPainter {
     createFnTypeConfig(map, symbolDef) {
         const polygonFillFn = piecewiseConstant(symbolDef['polygonFill']);
         const polygonOpacityFn = interpolated(symbolDef['polygonOpacity']);
+        const uvScaleFn = interpolated(symbolDef['uvScale']);
+        const uvOffsetFn = interpolated(symbolDef['uvOffset']);
         const u8 = new Uint8Array(1);
+        const u16 = new Uint16Array(1);
         return [
             {
                 //geometry.data 中的属性数据
@@ -160,6 +174,31 @@ class FillPainter extends BasicPainter {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
                     }
                     u8[0] = opacity * 255;
+                    return u8[0];
+                }
+            },
+            {
+                attrName: 'aUVScale',
+                symbolName: 'uvScale',
+                // 0.01 - 20
+                type: Uint16Array,
+                width: 2,
+                define: 'HAS_UV_SCALE',
+                evaluate: properties => {
+                    let scale = uvScaleFn(map.getZoom(), properties);
+                    u16[0] = scale * 10;
+                    return u16[0];
+                }
+            },
+            {
+                attrName: 'aUVOffset',
+                symbolName: 'uvOffset',
+                type: Uint8Array,
+                width: 2,
+                define: 'HAS_UV_OFFSET',
+                evaluate: properties => {
+                    let offset = uvOffsetFn(map.getZoom(), properties);
+                    u8[0] = offset * 255;
                     return u8[0];
                 }
             }

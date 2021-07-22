@@ -70,7 +70,7 @@ export default class LinePack extends VectorPack {
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
-        const pattern = vector.getResource();
+        const pattern = vector.getLineResource();
         if (!this.options['atlas'] && pattern) {
             iconReqs[pattern] = 1;
         }
@@ -318,7 +318,7 @@ export default class LinePack extends VectorPack {
         }
 
         if (this.iconAtlas) {
-            const res = line.getResource();
+            const res = line.getLineResource();
             const image = this.iconAtlas.glyphMap[res];
             this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
             if (image) {

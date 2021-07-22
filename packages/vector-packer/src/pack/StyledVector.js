@@ -7,10 +7,20 @@ export default class StyledVector {
         this.options = options;//minZoom maxZoom
     }
 
-    getResource() {
-        let pattern = this.symbol['linePatternFile'] || this.symbol['polygonPatternFile'];
-        const { linePatternFileFn, polygonPatternFileFn } = this.fnTypes;
-        const patternFn = linePatternFileFn || polygonPatternFileFn;
+    getPolygonResource() {
+        let pattern = this.symbol['polygonPatternFile'];
+        const { polygonPatternFileFn } = this.fnTypes;
+        const patternFn = polygonPatternFileFn;
+        return this._getResource(pattern, patternFn);
+    }
+
+    getLineResource() {
+        let pattern = this.symbol['linePatternFile'];
+        const { linePatternFileFn } = this.fnTypes;
+        const patternFn = linePatternFileFn;
+        return this._getResource(pattern, patternFn);
+    }
+    _getResource(pattern, patternFn) {
         if (patternFn) {
             const feature = this.feature;
             const properties = feature && feature.properties || {};

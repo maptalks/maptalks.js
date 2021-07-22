@@ -27,6 +27,16 @@ uniform mat4 projViewModelMatrix;
         uniform float glScale;
     #endif
 
+    #ifdef HAS_UV_SCALE
+        attribute vec2 aUVScale;
+        varying vec2 vUVScale;
+    #endif
+
+    #ifdef HAS_UV_OFFSET
+        attribute vec2 aUVOffset;
+        varying vec2 vUVOffset;
+    #endif
+
     varying vec2 vTexCoord;
     varying vec4 vTexInfo;
 
@@ -73,7 +83,12 @@ void main() {
             vTexCoord = computeUV(position.xy, patternSize);
         #endif
 
-
+        #ifdef HAS_UV_SCALE
+            vUVScale = aUVScale / 255.0;
+        #endif
+        #ifdef HAS_UV_OFFSET
+            vUVOffset = aUVOffset / 255.0;
+        #endif
     #endif
 
     #ifdef HAS_COLOR

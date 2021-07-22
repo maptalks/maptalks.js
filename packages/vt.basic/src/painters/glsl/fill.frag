@@ -7,13 +7,37 @@ precision mediump float;
 #endif
 
 #ifdef HAS_PATTERN
+    #ifdef HAS_UV_SCALE
+        varying vec2 vUVScale;
+    #else
+        uniform vec2 uvScale;
+    #endif
+
+    #ifdef HAS_UV_OFFSET
+        varying vec2 vUVOffset;
+    #else
+        uniform vec2 uvOffset;
+    #endif
+#endif
+
+#ifdef HAS_PATTERN
     uniform sampler2D polygonPatternFile;
     uniform vec2 atlasSize;
     varying vec2 vTexCoord;
     varying vec4 vTexInfo;
 
     vec2 computeUV() {
-        vec2 uv = mod(vTexCoord, 1.0);
+        #ifdef HAS_UV_SCALE
+            vec2 myUVScale = vUVScale;
+        #else
+            vec2 myUVScale = uvScale;
+        #endif
+        #ifdef HAS_UV_OFFSET
+            vec2 myUVOffset = vUVOffset;
+        #else
+            vec2 myUVOffset = uvOffset;
+        #endif
+        vec2 uv = mod(vTexCoord * myUVScale + myUVOffset, 1.0);
         vec2 uvStart = vTexInfo.xy;
         vec2 uvSize = vTexInfo.zw;
         return (uvStart + uv * uvSize) / atlasSize;
@@ -77,5 +101,5 @@ void main() {
     if (blendSrcIsOne == 1.0) {
         gl_FragColor *= gl_FragColor.a;
     }
-    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // gl_FragColor = vec4(vUVScale, 0.0, 1.0);
 }
