@@ -23,9 +23,9 @@ function getFixedExtent(out, dx, dy, rotation, alignPoint, w, h) {
 }
 
 const SIZE = [];
-export function getVectorMarkerFixedExtent(out, symbol) {
+export function getVectorMarkerFixedExtent(out, symbol, size) {
     // const padding = getVectorPadding(symbol) * 2;
-    const size = calVectorMarkerSize(SIZE, symbol);
+    size = size || calVectorMarkerSize(SIZE, symbol);
     // if (padding) {
     //     size = size.map(d => d - padding);
     // }
