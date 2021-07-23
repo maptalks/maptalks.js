@@ -816,8 +816,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [options.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @returns {Object|null}
      */
-    _getPaddingSize(options) {
-        if ('paddingLeft' in options || 'paddingTop' in options || 'paddingRight' in options || 'paddingBottom' in options) {
+    _getPaddingSize(options = {}) {
+        if (options['paddingLeft'] || options['paddingTop'] || options['paddingRight'] || options['paddingBottom']) {
             return {
                 width: (options['paddingLeft'] || 0) + (options['paddingRight'] || 0),
                 height: (options['paddingTop'] || 0) + (options['paddingBottom'] || 0)
