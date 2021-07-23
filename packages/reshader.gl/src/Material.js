@@ -74,7 +74,7 @@ class Material {
         if (uniforms['jointTexture']) {
             defines['HAS_SKIN'] = 1;
         }
-        if (uniforms['morphWeights']) {
+        if (uniforms['morphWeights1']) {
             defines['HAS_MORPH'] = 1;
         }
         return defines;

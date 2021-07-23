@@ -125,9 +125,6 @@ export default class GLTFPack {
             if (node.skin) {
                 node.skin.update(node.nodeMatrix);
             }
-            if (node.weights) {
-                this._fillMorphWeights(node.morphWeights);
-            }
         }
     }
 
@@ -148,6 +145,9 @@ export default class GLTFPack {
         const trs = node.trs;
         if (trs) {
             const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time);
+            if (animation.weights) {
+                this._updateMorph(node, animation.weights);
+            }
             node.trs.update(animation);
         }
         if (parentNodeMatrix) {
@@ -162,11 +162,60 @@ export default class GLTFPack {
             });
         }
         this._updateSkinTexture(node);
-        if (node.weights) {
-            for (let i = 0; i < node.weights.length; i++) {
-                node.morphWeights[i] = node.weights[i];
+    }
+
+    //更新morph的基本思路是，计算node下每一帧的weights，然后对weights排序，最后根据
+    //primitives[i].attributes.POSITION +
+    //weights[0] * primitives[i].targets[0].POSITION +
+    //weights[1] * primitives[i].targets[1].POSITION +
+    //weights[2] * primitives[i].targets[2].POSITION + ...
+    //方式去更新POSITION
+    //如果morphTargets数量超过8个，例如36个，由于shader中对attributes的数量有限制，每次丢到shader中的morphTargets按照gltf规范，数量为8
+    //需要实时计算这8个morphTarget的索引，来决定哪几个丢到shader中。
+    _updateMorph(node, weights) {
+        const length = weights.length;
+        if (!node.influencesList) {
+            node.influencesList = [];
+            for (let i = 0; i < length; i++) {
+                node.influencesList[i] = [i, 0];
             }
         }
+        const influences = node.influencesList;
+        for (let i =  0; i < influences.length; i++) {
+            const influence = influences[i];
+            influence[0] = i;
+            influence[1] = weights[i];
+        }
+        influences.sort(absNumericalSort);
+        const workInfluences = [];
+        for (let i = 0; i < 8; i++) {
+            workInfluences[i] = [i, 0];
+        }
+        for (let i = 0; i < 8; i++) {
+            if (i < length && influences[i][1]) {
+                workInfluences[i][0] = influences[i][0];
+                workInfluences[i][1] = influences[i][1];
+            } else {
+                workInfluences[i][0] = Number.MAX_SAFE_INTEGER;
+                workInfluences[i][1] = 0;
+            }
+        }
+        workInfluences.sort(numericalSort);
+        const geometries = node.geometries;
+        geometries.forEach(geometry => {
+            const morphTargets = geometry.properties.morphTargets;
+            for (let ii = 0; ii < 8; ii++) {
+                const influence = workInfluences[ii];
+                const index = influence[0];
+                const value = influence[1];
+                if (index !== Number.MAX_SAFE_INTEGER && value) {
+                    geometry.updateData('POSITION' + ii, morphTargets['POSITION_' + index].array);
+                    geometry.properties.morphWeights[ii] = value;
+                } else {
+                    geometry.properties.morphWeights[ii] = 0;
+                }
+            }
+        });
     }
 
     _updateSkinTexture(node) {
@@ -223,22 +272,25 @@ export default class GLTFPack {
             node.skin = this._skinMap[skin];
         }
 
-        if (node.weights) {
-            node.morphWeights = [0, 0, 0, 0];
-        }
-
         if (defined(node.mesh)) {
             const meshIndex = node.mesh;
             node.mesh = this.gltf.meshes[meshIndex];
             node.mesh.node = node;
+            node.geometries = node.geometries || [];
             node.mesh.primitives.forEach(primitive => {
                 const geometry = createGeometry(primitive);
+                geometry.properties.morphTargets = primitive.morphTargets;
+                //一个node下可能有多个geometry, node附带的weights会影响其下辖的所有geometry的morph变形结果，这里保存
+                //geometries，方便后面morph的运算
+                node.geometries.push(geometry);
+                const materialInfo = this._createMaterialInfo(primitive.material);
                 const info = {
                     geometry,
                     nodeMatrix,
-                    materialInfo : this._createMaterialInfo(primitive.material, node),
+                    materialInfo,
                     extraInfo: this._createExtralInfo(primitive.material),
-                    animationMatrix : node.trs.getMatrix()
+                    animationMatrix : node.trs.getMatrix(),
+                    morphWeights: node.weights
                 };
                 if (node.skin) {
                     info.skin = {
@@ -246,9 +298,6 @@ export default class GLTFPack {
                         numJoints: node.skin.joints.length,
                         jointTexture: node.skin.jointTexture
                     };
-                }
-                if (node.morphWeights) {
-                    info.morphWeights = node.morphWeights;
                 }
                 geometries.push(info);
             });
@@ -351,17 +400,6 @@ export default class GLTFPack {
             wrapT: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.wrapT] || TEXTURE_SAMPLER['10497'] : TEXTURE_SAMPLER['33071']
         });
     }
-
-    _fillMorphWeights(weights) {
-        if (weights.length < 4) {
-            for (let i = 0; i < 4; i++) {
-                if (!defined(weights[i])) {
-                    weights[i] = 0;
-                }
-            }
-        }
-        return weights;
-    }
 }
 
 function createGeometry(primitive) {
@@ -372,11 +410,16 @@ function createGeometry(primitive) {
             attributes[attr] = attributes[attr].array;
         }
     }
-    // for morph
-    if (attributes['POSITION_0']) {
+    //如果有morph，需要预先填充morph空数据，动画开启后，会不断向这些空数据中填充morphTargets数据
+    if (primitive.morphTargets) {
+        for (let i = 0; i < 8; i++) {
+            if (!attributes[`POSITION${i}`]) {
+                attributes[`POSITION${i}`] = new Float32Array(attributes['POSITION'].length).fill(0);
+            }
+        }
         for (let i = 0; i < 4; i++) {
-            if (!attributes[`POSITION_${i}`]) {
-                attributes[`POSITION_${i}`] = new Array(attributes['POSITION'].length).fill(0);
+            if (!attributes[`NORMAL${i}`]) {
+                attributes[`NORMAL${i}`] = new Float32Array(attributes['NORMAL'].length).fill(0);
             }
         }
     }
@@ -408,6 +451,9 @@ function createGeometry(primitive) {
             color0Attribute: 'COLOR_0'
         }
     );
+    if (primitive.morphTargets) {
+        modelGeometry.properties.morphWeights = [];
+    }
     if (primitive.mode > 3 && !modelGeometry.data['NORMAL']) {
         modelGeometry.createNormal('NORMAL');
     }
@@ -416,4 +462,12 @@ function createGeometry(primitive) {
 
 function isPowerOf2(value) {
     return (value > 0) && (value & (value - 1)) === 0;
+}
+
+function numericalSort(a, b) {
+    return a[ 0 ] - b[ 0 ];
+}
+
+function absNumericalSort(a, b) {
+    return Math.abs(b[1]) - Math.abs(a[1]);
 }

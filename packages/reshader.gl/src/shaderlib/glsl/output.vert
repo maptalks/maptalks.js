@@ -12,17 +12,23 @@
 #endif
 
 #ifdef HAS_MORPH
-    attribute vec3 POSITION_0;
-    attribute vec3 POSITION_1;
-    attribute vec3 POSITION_2;
-    attribute vec3 POSITION_3;
+    attribute vec3 POSITION0;
+    attribute vec3 POSITION1;
+    attribute vec3 POSITION2;
+    attribute vec3 POSITION3;
+
+    attribute vec3 POSITION4;
+    attribute vec3 POSITION5;
+    attribute vec3 POSITION6;
+    attribute vec3 POSITION7;
     #ifdef HAS_MORPHNORMALS
-        attribute vec3 NORMAL_0;
-        attribute vec3 NORMAL_1;
-        attribute vec3 NORMAL_2;
-        attribute vec3 NORMAL_3;
+        attribute vec3 NORMAL0;
+        attribute vec3 NORMAL1;
+        attribute vec3 NORMAL2;
+        attribute vec3 NORMAL3;
     #endif
-    uniform vec4 morphWeights;
+    uniform vec4 morphWeights1;
+    uniform vec4 morphWeights2;
 #endif
 
 mat4 getPositionMatrix() {
@@ -57,8 +63,10 @@ mat4 getPositionMatrix() {
 
 vec4 getPosition(vec3 position) {
     #ifdef HAS_MORPH
-        vec4 POSITION = vec4(position + morphWeights.x * POSITION_0 + morphWeights.y * POSITION_1 + morphWeights.z * POSITION_2 + morphWeights.w * POSITION_3, 1.0);
-   #else
+        vec4 POSITION = vec4(position + morphWeights1[0] * POSITION0 + morphWeights1[1] * POSITION1 + morphWeights1[2] * POSITION2 + morphWeights1[3] * POSITION3
+        + morphWeights2[0] * POSITION4 + morphWeights2[1] * POSITION5 + morphWeights2[2] * POSITION6 + morphWeights2[3] * POSITION7
+        , 1.0);
+    #else
         vec4 POSITION = vec4(position, 1.0);
     #endif
     return POSITION;
@@ -72,7 +80,7 @@ mat4 getNormalMatrix(mat4 worldMatrix) {
 
 vec4 getNormal(vec3 NORMAL) {
     #ifdef HAS_MORPHNORMALS
-        vec4 normal = vec4(NORMAL + morphWeights.x * NORMAL_0 + morphWeights.y * NORMAL_1 + morphWeights.z * NORMAL_2 + morphWeights.w * NORMAL_3, 1.0);
+        vec4 normal = vec4(NORMAL + morphWeights1[0] * NORMAL0 + morphWeights1[1] * NORMAL1 + morphWeights1[2] * NORMAL2 + morphWeights1[3] * NORMAL3, 1.0);
     #else
         vec4 normal = vec4(NORMAL, 1.0);
     #endif
