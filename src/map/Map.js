@@ -2150,9 +2150,9 @@ Map.include(/** @lends Map.prototype */{
      * Convert a geographical coordinate to the container point. <br>
      * Batch conversion for better performance <br>
      *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Array[Coordinate]}                - coordinates
+     * @param  {Coordinate[]} Coordinate - coordinates
      * @param  {Number} [zoom=undefined]  - zoom level
-     * @return {Array[Point]}
+     * @return {Point[]}
      * @function
      */
     coordinatesToContainerPoints: function () {
