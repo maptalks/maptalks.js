@@ -317,3 +317,19 @@ export function isStringInSupportedScript(chars, canRenderRTL) {
     }
     return true;
 }
+
+export function stringContainsRTLText(chars) {
+    for (const char of chars) {
+        if (charInRTLScript(char.charCodeAt(0))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function charInRTLScript(char) {
+    // Main blocks for Hebrew, Arabic, Thaana and other RTL scripts
+    return (char >= 0x0590 && char <= 0x08FF) ||
+        isChar['Arabic Presentation Forms-A'](char) ||
+        isChar['Arabic Presentation Forms-B'](char);
+}

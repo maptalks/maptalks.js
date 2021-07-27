@@ -94,8 +94,17 @@ export default class BasicPainter extends Painter {
             debug.height = iconAtlas.height;
             debug.style.width = iconAtlas.width + 'px';
             debug.style.height = iconAtlas.height + 'px';
+            let data;
+            if (iconAtlas.format === 'alpha') {
+                data = new Uint8ClampedArray(iconAtlas.data.length * 4);
+                for (let i = 0; i < iconAtlas.data.length; i++) {
+                    data[i * 4 + 3] = iconAtlas.data[i];
+                }
+            } else {
+                data = new Uint8ClampedArray(iconAtlas.data);
+            }
             debug.getContext('2d').putImageData(
-                new ImageData(new Uint8ClampedArray(iconAtlas.data), iconAtlas.width, iconAtlas.height),
+                new ImageData(data, iconAtlas.width, iconAtlas.height),
                 0,
                 0
             );

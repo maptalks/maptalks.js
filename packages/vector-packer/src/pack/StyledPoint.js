@@ -4,6 +4,7 @@ import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
 import { loadFunctionTypes } from '@maptalks/function-type';
+import { convertRTLText } from './util/convert_rtl_text';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
@@ -214,10 +215,12 @@ export default class StyledPoint {
                 const textStyle = textStyleFn ? textStyleFn(null, properties) : symbol['textStyle'];
                 const textWeight = textWeightFn ? textWeightFn(null, properties) : symbol['textWeight'];
                 const font = getSDFFont(textFaceName, textStyle, textWeight);
-                const text = resolveText(textName, properties);
+                let text = resolveText(textName, properties);
                 //(改为在前端计算)在TextPainter中能通过feature.properties['$label']直接取得标签内容
                 // this.feature.properties['$label'] = text;
+                // 识别文字中的RTL，并重新排序
                 if (text && text.length) {
+                    text = convertRTLText(text);
                     result.glyph = {
                         font, text
                     };

@@ -147,6 +147,9 @@ export default class TextPainter extends CollisionPainter {
                     geometries.push(geo);
                 }
                 const { geometry } = geo;
+                if (geometry.properties.glyphAtlas) {
+                    this.drawDebugAtlas(geometry.properties.glyphAtlas);
+                }
                 if (geometry && pack.lineVertex) {
                     geometry.properties.line = pack.lineVertex;
                     //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
