@@ -231,10 +231,11 @@ class TileLayer extends Layer {
     _getRootError() {
         const map = this.getMap();
         const fov = toRadian(map.getFov());
-        const aspectRatio = this.map.width / this.map.height;
+        const aspectRatio = map.width / map.height;
         const cameraZ = map.cameraPosition[2];
         const heightZ = cameraZ * Math.tan(0.5 * fov);
         const widthZ = heightZ * aspectRatio;
+        // 相机到容器右上角，斜对角线的距离
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
         return this.getMap()._getFovZ(0) * (diagonalZ / cameraZ);
     }
@@ -468,7 +469,14 @@ class TileLayer extends Layer {
         const distance = Math.max(Math.abs(distanceToCamera), 1E-7);
         // const r = Math.abs(node.z - maxZoom) === 0 ? 1.3 : Math.abs(node.z - maxZoom) <= 1 ? 1 : 0.505;
         const gap = Math.abs(node.z - maxZoom);
-        const r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.505;
+        let r;
+        // 地图容器高度小于1000时，因为影响到camera高度，原有的error乘数会让低级别瓦片优先级太高，造成瓦片缺失
+        // 所以在高度<1000像素时，乘数重置为1
+        if (map.height < 1000) {
+            r = 1;
+        } else {
+            r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.505;
+        }
         // const r = 1;
         const error = geometricError * r / distance;
         return error;
