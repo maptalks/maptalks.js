@@ -1975,7 +1975,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _prjToPoint(pCoord, zoom, out) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        return this._spatialReference.getTransformation().transform(pCoord, this._getResolution(zoom), out);
+        const res = this._getResolution(zoom);
+        return this._prjToPointAtRes(pCoord, res, out);
+    }
+
+    _prjToPointAtRes(pCoord, res, out) {
+        return this._spatialReference.getTransformation().transform(pCoord, res, out);
     }
 
     /**
