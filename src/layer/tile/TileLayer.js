@@ -211,13 +211,14 @@ class TileLayer extends Layer {
             return this._rootNode;
         }
         const sr = this.getSpatialReference();
+        const res = sr.getResolution(0);
         this._rootNode = {
             x: 0,
             y: 0,
             z: 0,
             idx: 0,
             idy: 0,
-            extent2d: this._getTileConfig().getTilePrjExtent(0, 0, sr.getResolution(0)).convertTo(c => map._prjToPoint(c, 0, TEMP_POINT)),
+            extent2d: this._getTileConfig().getTilePrjExtent(0, 0, sr.getResolution(0)).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT)),
             id: this._getTileId(0, 0, 0),
             url: this.getTileUrl(0, 0, this.options['zoomOffset']),
             offset: [0, 0],
@@ -266,7 +267,7 @@ class TileLayer extends Layer {
                 const visualHeight1 = Math.floor(map._getVisualHeight(cascadePitch1));
                 const visualContainerExtent = pitch <= cascadePitch1 ? mapContainerExtent : new PointExtent(0, map.height - visualHeight1, map.width, map.height);
                 this._visitedTiles = new TileHashset();
-                const tileGrid = this._getTiles(0, visualContainerExtent, 2, layer && layer.getRenderer());
+                const tileGrid = this._getTiles(0, visualContainerExtent, 2, layer && layer.getRenderer(), true);
                 tileGrid.tiles.forEach(t => {
                     t.error = root.error;
                 });
@@ -277,6 +278,7 @@ class TileLayer extends Layer {
         } else {
             queue = [root];
         }
+        const glRes = map.getResolution(map.getGLZoom());
         const offsets = {
             0: offset0
         };
@@ -292,7 +294,7 @@ class TileLayer extends Layer {
             if (!offsets[node.z + 1]) {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
-            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer());
+            this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
         }
         return {
             tileGrids: [
@@ -308,10 +310,9 @@ class TileLayer extends Layer {
         };
     }
 
-    _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer) {
+    _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer, glRes) {
         const z = node.z + 1;
         const sr = this.getSpatialReference();
-        const map = this.getMap();
         const { x, y, extent2d, idx, idy } = node;
         const childScale = 2;
         const width = extent2d.getWidth() / 2 * childScale;
@@ -323,7 +324,7 @@ class TileLayer extends Layer {
 
         let hasCurrentIn = false;
         const children = [];
-        const glScale = sr.getResolution(z) / map.getResolution(map.getGLZoom());
+        const glScale = sr.getResolution(z) / glRes;
         for (let i = 0; i < 4; i++) {
             const dx = (i % 2);
             const dy = (i >> 1);
@@ -688,7 +689,7 @@ class TileLayer extends Layer {
     }
 
 
-    _getTiles(tileZoom, containerExtent, cascadeLevel, parentRenderer) {
+    _getTiles(tileZoom, containerExtent, cascadeLevel, parentRenderer, ignoreMinZoom) {
         // rendWhenReady = false;
         const map = this.getMap();
         let z = tileZoom;
@@ -711,14 +712,16 @@ class TileLayer extends Layer {
         if (zoom < 0) {
             return emptyGrid;
         }
-        const minZoom = this.getMinZoom(),
-            maxZoom = this.getMaxZoom();
         if (!map || !this.isVisible() || !map.width || !map.height) {
             return emptyGrid;
         }
-        if (!isNil(minZoom) && z < minZoom ||
-            !isNil(maxZoom) && z > maxZoom) {
-            return emptyGrid;
+        if (!ignoreMinZoom) {
+            const minZoom = this.getMinZoom(),
+                maxZoom = this.getMaxZoom();
+            if (!isNil(minZoom) && z < minZoom ||
+                !isNil(maxZoom) && z > maxZoom) {
+                return emptyGrid;
+            }
         }
         const tileConfig = this._getTileConfig();
         if (!tileConfig) {
@@ -729,10 +732,9 @@ class TileLayer extends Layer {
             zoom: offset
         };
         const sr = this.getSpatialReference();
-        const mapSR = map.getSpatialReference();
         const res = sr.getResolution(zoom);
-        const glScale = map.getGLScale(z);
-        const repeatWorld = sr === mapSR && this.options['repeatWorld'];
+        const glScale = res / map.getResolution(map.getGLZoom());
+        const repeatWorld = !this._hasOwnSR && this.options['repeatWorld'];
 
         const extent2d = this._convertToExtent2d(containerExtent);
         // const innerExtent2D = this._getInnerExtent(z, containerExtent, extent2d)._add(offset);
@@ -817,7 +819,7 @@ class TileLayer extends Layer {
                 }
 
                 let width, height;
-                if (sr === mapSR) {
+                if (!this._hasOwnSR) {
                     width = tileSize.width;
                     height = tileSize.height;
                 } else {
