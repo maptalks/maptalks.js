@@ -466,7 +466,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this._extent2d;
         }
         const extent = this._getPrjExtent();
-        if (!extent.isValid()) {
+        if (!extent || !extent.isValid()) {
             return null;
         }
         const min = extent.getMin();
