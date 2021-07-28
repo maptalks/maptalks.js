@@ -303,6 +303,7 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  *     const encodedData = Util.btoa(stringToEncode);
  */
 /* istanbul ignore next */
+/* eslint-disable no-sequences */
 export function btoa(input) {
     if ((typeof window !== 'undefined') && window.btoa) {
         return window.btoa(input);
@@ -327,7 +328,7 @@ export function btoa(input) {
     }
     return output;
 }
-
+/* eslint-enable no-sequences */
 export function b64toBlob(b64Data, contentType) {
     const byteCharacters = atob(b64Data);
     const arraybuffer = new ArrayBuffer(byteCharacters.length);
