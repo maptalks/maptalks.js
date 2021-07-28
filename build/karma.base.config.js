@@ -7,6 +7,7 @@ module.exports = {
         }
     },
     files: [
+        { pattern: 'dist/maptalks.css', type: 'css' },
         'dist/maptalks.js',
         // js for UA
         'test/resources/ua-parser.min.js',
