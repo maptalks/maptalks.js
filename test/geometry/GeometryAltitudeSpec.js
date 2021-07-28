@@ -6,13 +6,13 @@ describe('Geometry.Altitude', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 800,
-            height : 600
+            width: 800,
+            height: 600
         });
         container = setups.container;
         map = setups.map;
         map.config('centerCross', true);
-        layer = new maptalks.VectorLayer('id', { 'enableAltitude' : true });
+        layer = new maptalks.VectorLayer('id', { 'enableAltitude': true });
     });
 
     afterEach(function () {
@@ -23,9 +23,9 @@ describe('Geometry.Altitude', function () {
     describe('render geometry with altitude', function () {
         it('circle', function (done) {
             var circle = new maptalks.Circle(map.getCenter(), 2, {
-                properties : { altitude : 200 },
-                symbol : {
-                    'polygonFill' : '#f00'
+                properties: { altitude: 200 },
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.addGeometry(circle);
@@ -40,11 +40,11 @@ describe('Geometry.Altitude', function () {
 
         it('marker', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                properties : { altitude : 100 },
-                symbol : {
-                    'markerType' : 'ellipse',
-                    'markeraltitude' : 6,
-                    'markerWidth' : 6
+                properties: { altitude: 100 },
+                symbol: {
+                    'markerType': 'ellipse',
+                    'markeraltitude': 6,
+                    'markerWidth': 6
                 }
             });
             layer.addGeometry(marker);
@@ -63,14 +63,14 @@ describe('Geometry.Altitude', function () {
             map.setPitch(60);
             var center = map.getCenter();
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000',
-                polygonFill : '#000'
+                lineWidth: 5,
+                lineColor: '#000',
+                polygonFill: '#000'
             });
             var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0)], {
-                properties : { altitude : 20 },
-                symbol : {
-                    'polygonFill' : '#f00'
+                properties: { altitude: 20 },
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.addGeometry(line);
@@ -87,14 +87,14 @@ describe('Geometry.Altitude', function () {
             map.setBearing(60);
             var center = map.getCenter();
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000',
-                polygonFill : '#000'
+                lineWidth: 5,
+                lineColor: '#000',
+                polygonFill: '#000'
             });
             var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0)], {
-                properties : { altitude : [40, 20] },
-                symbol : {
-                    'polygonFill' : '#f00'
+                properties: { altitude: [40, 20] },
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.addGeometry(line);
@@ -110,17 +110,17 @@ describe('Geometry.Altitude', function () {
         it('draw linestring with altitude array in large zoom', function (done) {
             map.setPitch(60);
             map.setBearing(60);
-            map.setZoom(19, { animation : false });
+            map.setZoom(19, { animation: false });
             var center = map.getCenter();
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000',
-                polygonFill : '#000'
+                lineWidth: 5,
+                lineColor: '#000',
+                polygonFill: '#000'
             });
             var line = new maptalks.LineString([center.sub(0.001, 0), center.add(0.001, 0), center.add(0.001, -0.001)], {
-                properties : { altitude : [200, 100, 300] },
-                symbol : {
-                    'polygonFill' : '#f00'
+                properties: { altitude: [200, 100, 300] },
+                symbol: {
+                    'polygonFill': '#f00'
                 }
             });
             layer.addGeometry(line);
@@ -139,17 +139,17 @@ describe('Geometry.Altitude', function () {
             map.config('centerCross', true);
             var center = map.getCenter();
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000',
-                polygonFill : '#000'
+                lineWidth: 5,
+                lineColor: '#000',
+                polygonFill: '#000'
             });
             var line = new maptalks.LineString([center, center.add(0.001, 0)], {
-                properties : { altitude : [0, 40] },
-                symbol : {
-                    'polygonFill' : '#f00',
-                    'textName' : '■■■■■■■■■',
-                    'textFill'  : '#f00',
-                    'textPlacement' : 'vertex'
+                properties: { altitude: [0, 40] },
+                symbol: {
+                    'polygonFill': '#f00',
+                    'textName': '■■■■■■■■■',
+                    'textFill': '#f00',
+                    'textPlacement': 'vertex'
                 }
             });
             layer.addGeometry(line);
@@ -167,12 +167,12 @@ describe('Geometry.Altitude', function () {
                 map.config('centerCross', true);
                 var center = map.getCenter();
                 var line = new maptalks.LineString([center, center.add(0.001, 0)], {
-                    properties : { altitude : [0, 40] },
-                    symbol : {
-                        'polygonFill' : '#f00',
-                        'textName' : '■■■■■■■■■',
-                        'textPlacement' : 'vertex-first',
-                        'textFill'  : '#f00'
+                    properties: { altitude: [0, 40] },
+                    symbol: {
+                        'polygonFill': '#f00',
+                        'textName': '■■■■■■■■■',
+                        'textPlacement': 'vertex-first',
+                        'textFill': '#f00'
                     }
                 });
                 layer.addGeometry(line);
@@ -188,12 +188,12 @@ describe('Geometry.Altitude', function () {
                 map.config('centerCross', true);
                 var center = map.getCenter();
                 var line = new maptalks.LineString([center, center.add(0.001, 0)], {
-                    properties : { altitude : [0, 40] },
-                    symbol : {
-                        'polygonFill' : '#f00',
-                        'textName' : '■■■■■■■■■',
-                        'textPlacement' : 'line',
-                        'textFill'  : '#f00'
+                    properties: { altitude: [0, 40] },
+                    symbol: {
+                        'polygonFill': '#f00',
+                        'textName': '■■■■■■■■■',
+                        'textPlacement': 'line',
+                        'textFill': '#f00'
                     }
                 });
                 layer.addGeometry(line);
@@ -209,12 +209,12 @@ describe('Geometry.Altitude', function () {
                 map.config('centerCross', true);
                 var center = map.getCenter();
                 var line = new maptalks.LineString([center, center.add(0.001, 0)], {
-                    properties : { altitude : [0, 40] },
-                    symbol : {
-                        'polygonFill' : '#f00',
-                        'textName' : '■■■■■■■■■',
-                        'textPlacement' : 'vertex-last',
-                        'textFill'  : '#f00'
+                    properties: { altitude: [0, 40] },
+                    symbol: {
+                        'polygonFill': '#f00',
+                        'textName': '■■■■■■■■■',
+                        'textPlacement': 'vertex-last',
+                        'textFill': '#f00'
                     }
                 });
                 layer.addGeometry(line);
@@ -229,16 +229,16 @@ describe('Geometry.Altitude', function () {
 
         it('draw altitude of marker', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                properties : { altitude : 100 },
-                symbol : {
-                    'markerType' : 'ellipse',
-                    'markeraltitude' : 6,
-                    'markerWidth' : 6
+                properties: { altitude: 100 },
+                symbol: {
+                    'markerType': 'ellipse',
+                    'markeraltitude': 6,
+                    'markerWidth': 6
                 }
             });
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000'
+                lineWidth: 5,
+                lineColor: '#000'
             });
             layer.addGeometry(marker);
             map.setPitch(60);
@@ -253,21 +253,39 @@ describe('Geometry.Altitude', function () {
         it('draw altitude of marker without altitude prop', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
                 // properties : { altitude : 100 },
-                symbol : {
-                    'markerType' : 'ellipse',
-                    'markeraltitude' : 6,
-                    'markerWidth' : 6
+                symbol: {
+                    'markerType': 'ellipse',
+                    'markeraltitude': 6,
+                    'markerWidth': 6
                 }
             });
             layer.config('drawAltitude', {
-                lineWidth : 5,
-                lineColor : '#000'
+                lineWidth: 5,
+                lineColor: '#000'
             });
             layer.addGeometry(marker);
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 0, [0, 0, 255]);
                 expect(layer).not.to.be.painted(0, -10);
+                done();
+            });
+            map.addLayer(layer);
+        });
+    });
+
+    describe('geometry has altitude clip', function () {
+        it('circle', function (done) {
+            var circle = new maptalks.Circle(map.getCenter().add(0, -0.005), 300, {
+                properties: { altitude: 200 },
+                symbol: {
+                    'polygonFill': '#f00'
+                }
+            });
+            layer.addGeometry(circle);
+            map.setPitch(60);
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, map.getSize().height / 2 - 1);
                 done();
             });
             map.addLayer(layer);

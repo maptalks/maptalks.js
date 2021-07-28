@@ -144,15 +144,6 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    needToRedraw() {
-        const map = this.getMap();
-        // don't redraw when map is zooming without pitch and layer doesn't have any point symbolizer.
-        if (map.isZooming() && !map.getPitch()) {
-            return false;
-        }
-        return super.needToRedraw();
-    }
-
     draw() {
         if (!this.isDrawable()) {
             return;

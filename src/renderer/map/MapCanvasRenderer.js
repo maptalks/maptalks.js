@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, now } from '../../core/util';
 import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
@@ -39,6 +39,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map) {
             return false;
         }
+        this._updateDomPosition(framestamp);
         delete this._isViewChanged;
         const map = this.map;
         map._fireEvent('framestart');
@@ -793,12 +794,22 @@ class MapCanvasRenderer extends MapRenderer {
         this.context = this.canvas.getContext('2d');
     }
 
+    _updateDomPosition(framestamp) {
+        if (this._checkPositionTime === undefined) {
+            this._checkPositionTime = framestamp;
+        }
+        if (framestamp - this._checkPositionTime >= 500) {
+            // refresh map's dom position
+            computeDomPosition(this.map._containerDOM);
+            this._checkPositionTime = framestamp;
+        }
+        return this;
+    }
+
     _checkSize() {
         if (!this.map) {
             return;
         }
-        // refresh map's dom position
-        computeDomPosition(this.map._containerDOM);
         this.map.checkSize();
     }
 
@@ -816,6 +827,9 @@ class MapCanvasRenderer extends MapRenderer {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
                         this._checkSize(entries[0].contentRect);
+
+                        //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
+                        this.renderFrame(now());
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
