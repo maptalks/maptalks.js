@@ -1,3 +1,5 @@
+import '../assets/css/maptalks-ui.css';
+import '../assets/css/maptalks-control.css';
 import { version } from '../package.json';
 export * from './core/Constants';
 export { default as Browser } from './core/Browser';
