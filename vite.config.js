@@ -3,12 +3,13 @@ import fs from 'fs-extra';
 import path from 'path';
 import checker from 'vite-plugin-checker';
 import { visualizer } from 'rollup-plugin-visualizer';
+import babel from '@rollup/plugin-babel';
 import viteCompression from 'vite-plugin-compression';
 import istanbul from 'vite-plugin-istanbul';
 
 const buildEnv = process.env.BUILD_ENV;
 const env = process.argv[process.argv.length - 1];
-const pkg = fs.readJsonSync(path.resolve(__dirname, 'package.json'))
+const pkg = fs.readJsonSync(path.resolve(__dirname, 'package.json'));
 const year = new Date().getFullYear();
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log && console.log('${pkg.name} v${pkg.version}');`;
@@ -24,6 +25,8 @@ const plugins = [
     },
   }),
 ];
+
+const rollupPlugins = [];
 
 if (buildEnv === 'test' && env === 'test') {
   plugins.push(istanbul({
@@ -41,6 +44,12 @@ if (buildEnv === 'test' && env === 'test') {
   }));
 }
 
+if (buildEnv === 'production') {
+  rollupPlugins.push(babel({
+    babelHelpers: 'bundled'
+  }));
+}
+
 if (buildEnv === 'production' && env === 'minify') {
   plugins.push(viteCompression({
     verbose: true,
@@ -50,7 +59,7 @@ if (buildEnv === 'production' && env === 'minify') {
 }
 
 if (env === 'analyze') {
-  plugins.push(visualizer({
+  rollupPlugins.push(visualizer({
     filename: './node_modules/.cache/visualizer/stats.html',
     open: true,
     gzipSize: true,
@@ -85,7 +94,7 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      plugins: [],
+      plugins: rollupPlugins,
       output: {
         // assetFileNames: '[name].[ext]',
         assetFileNames: 'maptalks.[ext]', // hack for css file
