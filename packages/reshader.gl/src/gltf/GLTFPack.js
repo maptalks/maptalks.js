@@ -113,6 +113,10 @@ export default class GLTFPack {
             return;
         }
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
+        //模型切换过快，会导致上一个模型有动画执行，当前模型没有动画数据，就出现timespan为null的情况
+        if (!timespan) {
+            return;
+        }
         const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * speed * 0.001);
         if (!this._startTime) {
             this._startTime = time;
