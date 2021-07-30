@@ -1,5 +1,5 @@
-import { isNumber, isNil, getValueOrDefault } from './common';
-import { sign } from './util';
+import { isNumber, isNil } from './common';
+import { sign, getValueOrDefault } from './util';
 import { getAlignPoint } from './strings';
 import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
