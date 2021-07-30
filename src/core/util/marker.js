@@ -1,9 +1,15 @@
 import { isNumber, isNil } from './common';
-import { sign } from './util';
+import { sign, getValueOrDefault } from './util';
 import { getAlignPoint } from './strings';
 import Point from '../../geo/Point';
 import PointExtent from '../../geo/PointExtent';
 import Size from '../../geo/Size';
+
+export const DEFAULT_MARKER_SYMBOLS = {
+    markerWidth: 10,
+    markerHeight: 10,
+    markerLineWidth: 1
+};
 
 //-------------- methods for fixed extent of markers -------------
 function getVectorPadding(/*symbol*/) {
@@ -73,10 +79,12 @@ export function getVectorMarkerAnchor(symbol, w, h) {
 
 export function calVectorMarkerSize(out, symbol) {
     const padding = getVectorPadding(symbol);
-    const lineWidth = symbol['markerLineWidth'] || 1,
+    const width = getValueOrDefault(symbol['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth);
+    const height = getValueOrDefault(symbol['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight);
+    const lineWidth = getValueOrDefault(symbol['markerLineWidth'], DEFAULT_MARKER_SYMBOLS.markerLineWidth),
         shadow = 2 * (symbol['shadowBlur'] || 0), // add some tolerance for shadowOffsetX/Y
-        w = Math.round(symbol['markerWidth'] + lineWidth + 2 * shadow + padding * 2),
-        h = Math.round(symbol['markerHeight'] + lineWidth + 2 * shadow + padding * 2);
+        w = Math.round(width + lineWidth + 2 * shadow + padding * 2),
+        h = Math.round(height + lineWidth + 2 * shadow + padding * 2);
     out[0] = w;
     out[1] = h;
     return out;

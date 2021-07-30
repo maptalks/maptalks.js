@@ -141,6 +141,20 @@ describe('Geometry.Marker', function () {
             }
         });
 
+        it('can be vector with undefined size', function (done) {
+                var marker = new maptalks.Marker(center, {
+                    symbol: {
+                        markerType: 'ellipse'
+                    }
+                });
+                layer.once('layerload', function () {
+                    expect(layer).to.be.painted(0, 0);
+                    done();
+                });
+                layer.addGeometry(marker);
+                expect(marker.getSize().toArray()).to.be.eql([12, 12]);
+            });
+
         context('image marker with alignment', function () {
             it('bottom-right', function (done) {
                 var marker = new maptalks.Marker(center, {

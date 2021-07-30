@@ -8,7 +8,7 @@ import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
-import { getDefaultVAlign, getDefaultHAlign } from '../../../core/util/marker';
+import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../../../core/util/marker';
 
 const MARKER_SIZE = [];
 
@@ -175,7 +175,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerFillOpacity': getValueOrDefault(s['markerFillOpacity'], 1),
             'markerFillPatternFile': getValueOrDefault(s['markerFillPatternFile'], null),
             'markerLineColor': getValueOrDefault(s['markerLineColor'], '#000'), //black
-            'markerLineWidth': getValueOrDefault(s['markerLineWidth'], 1),
+            'markerLineWidth': getValueOrDefault(s['markerLineWidth'], DEFAULT_MARKER_SYMBOLS.markerLineWidth),
             'markerLineOpacity': getValueOrDefault(s['markerLineOpacity'], 1),
             'markerLineDasharray': getValueOrDefault(s['markerLineDasharray'], []),
             'markerLinePatternFile': getValueOrDefault(s['markerLinePatternFile'], null),
@@ -183,8 +183,8 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerDx': getValueOrDefault(s['markerDx'], 0),
             'markerDy': getValueOrDefault(s['markerDy'], 0),
 
-            'markerWidth': getValueOrDefault(s['markerWidth'], 10),
-            'markerHeight': getValueOrDefault(s['markerHeight'], 10),
+            'markerWidth': getValueOrDefault(s['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth),
+            'markerHeight': getValueOrDefault(s['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight),
 
             'markerRotation': getValueOrDefault(s['markerRotation'], 0)
         };
