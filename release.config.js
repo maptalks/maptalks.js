@@ -7,11 +7,15 @@ const pkg = fs.readJsonSync(path.resolve(__dirname, 'package.json'));
 
 const files = ['LICENSE', 'ACKNOWLEDGEMENT', 'docs'];
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 const copyFiles = async () => {
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      await fs.copySync(file, `dist/${file}`);
+      await fs.copy(file, `dist/${file}`);
     }
     console.log(chalk.green(`[copyFiles] success.`));
   } catch (e) {
@@ -23,7 +27,7 @@ const removeFiles = async () => {
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      await fs.removeSync(`dist/${file}`);
+      await fs.remove(`dist/${file}`);
     }
     console.log(chalk.green(`[removeFiles] success.`));
   } catch (e) {
