@@ -42,9 +42,15 @@ describe('vector 3d integration specs', () => {
             if (!options.lights) {
                 options.lights = DEFAULT_VIEW.lights;
             }
+            const count = style.renderingCount || 1;
             map = new maptalks.Map(container, options);
             const layer = new Layer('vector', style.data, style.options);
-            layer.once('canvasisdirty', () => {
+            let counter = 0;
+            layer.on('canvasisdirty', () => {
+                counter++;
+                if (counter < count || counter > count) {
+                    return;
+                }
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = style.expected;
                 //比对测试

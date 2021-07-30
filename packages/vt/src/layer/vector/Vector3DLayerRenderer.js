@@ -100,21 +100,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._buildLineMesh(lineAtlas);
             this._dirtyGeo = false;
             // this._dirtySymbol = false;
-        } else if (this._showHideUpdated) {
-            if (this._markerMeshes) {
-                this._updateVisElements(this._markerMeshes[0], this._markerFeatures);
-                this._updateVisElements(this._markerMeshes[1], this._textFeatures);
-            }
-            if (this._lineMeshes) {
-                for (let i = 0; i < this._lineMeshes.length; i++) {
-                    this._updateVisElements(this._lineMeshes[i], this._lineFeatures);
-                }
-            }
-            if (this.meshes) {
-                for (let i = 0; i < this.meshes.length; i++) {
-                    this._updateVisElements(this.meshes[i], this._allFeatures);
-                }
-            }
+        }
+        if (this._showHideUpdated) {
+            this._updateMeshVisible();
             this._showHideUpdated = false;
         }/* else if (this._dirtySymbol) {
             this.updateSymbol();
@@ -456,6 +444,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             return;
         }
+        const showHideUpdated = this._showHideUpdated;
         this._markerCenter = center;
         const pointPacks = this._createPointPacks(markerFeatures, textFeatures, atlas, center);
         this._markerAtlas = {};
@@ -500,8 +489,28 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 meshes[i].properties.meshKey = meshUID++;
             }
             this._markerMeshes = meshes;
+            if (showHideUpdated) {
+                this._showHideUpdated = true;
+            }
             this.setToRedraw();
         });
+    }
+
+    _updateMeshVisible() {
+        if (this._markerMeshes) {
+            this._updateVisElements(this._markerMeshes[0], this._markerFeatures);
+            this._updateVisElements(this._markerMeshes[1], this._textFeatures);
+        }
+        if (this._lineMeshes) {
+            for (let i = 0; i < this._lineMeshes.length; i++) {
+                this._updateVisElements(this._lineMeshes[i], this._lineFeatures);
+            }
+        }
+        if (this.meshes) {
+            for (let i = 0; i < this.meshes.length; i++) {
+                this._updateVisElements(this.meshes[i], this._allFeatures);
+            }
+        }
     }
 
     _updateVisElements(mesh, features) {
@@ -709,7 +718,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!features.length) {
             return;
         }
-
+        const showHideUpdated = this._showHideUpdated;
         this._lineCenter = center;
 
         const featureGroups = this._groupLineFeas(features);
@@ -735,6 +744,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             this._lineMeshes = meshes;
             this._lineAtlas = atlas;
+            if (showHideUpdated) {
+                this._showHideUpdated = showHideUpdated;
+            }
             this.setToRedraw();
         });
     }
