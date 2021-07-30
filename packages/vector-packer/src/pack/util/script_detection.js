@@ -333,3 +333,34 @@ export function charInRTLScript(char) {
         isChar['Arabic Presentation Forms-A'](char) ||
         isChar['Arabic Presentation Forms-B'](char);
 }
+
+/**
+ * Range of Unicode code points considered as white space.
+ * https://en.wikipedia.org/wiki/Whitespace_character
+ */
+export const whiteSpaceRanges = [
+    [0x0009, 0x0009],
+    [0x0020, 0x0020],
+    [0x1680, 0x1680],
+    [0x2000, 0x2006],
+    [0x2008, 0x200a],
+    [0x205f, 0x3000],
+    [0x180e, 0x180e],
+    [0x200b, 0x200d]
+];
+
+/**
+ * Checks if a character should be considered as a white space.
+ *
+ * @param codePoint - Character's Unicode code point.
+ *
+ * @returns Result of the test.
+ */
+export function isWhiteSpace(codePoint) {
+    for (const range of whiteSpaceRanges) {
+        if (codePoint >= range[0] && codePoint <= range[1]) {
+            return true;
+        }
+    }
+    return false;
+}
