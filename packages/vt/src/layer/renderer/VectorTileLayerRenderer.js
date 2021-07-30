@@ -730,7 +730,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 const renderTarget = parentContext && parentContext.renderTarget;
                 if (transform && extent) this._debugPainter.draw(
                     this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
-                    this.layer.options['tileSize'][0], extent,
+                    this.layer.getTileSize().width, extent,
                     renderTarget && renderTarget.fbo
                 );
             }

@@ -8,7 +8,7 @@ import Color from 'color';
 const MAX_ZOOM = 25;
 
 const DEFAULT_REFS = {
-    'preset-3857': {
+    'preset-vt-3857': {
         projection: 'EPSG:3857',
         resolutions: (function () {
             const resolutions = [];
@@ -26,7 +26,7 @@ const DEFAULT_REFS = {
         }
     },
 
-    'preset-4326': {
+    'preset-vt-4326': {
         projection: 'EPSG:4326',
         fullExtent: {
             'top': 90,
@@ -84,7 +84,7 @@ const defaultOptions = {
     },
     pyramidMode: 1,
     styleScale: 1,
-    spatialReference: null, //'preset-3857', preset-4326'
+    spatialReference: null, //'preset-vt-3857', preset-vt-4326'
 };
 
 /**
@@ -102,7 +102,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     constructor(id, options) {
         super(id, options);
         if (options.spatialReference === undefined) {
-            throw new Error(`options.spatialReference must be set for VectorTileLayer(${id}), possible values: preset-3857, preset-4326`);
+            throw new Error(`options.spatialReference must be set for VectorTileLayer(${id}), possible values: preset-vt-3857, preset-vt-4326`);
         }
         this.VERSION = VectorTileLayer.VERSION;
         const style = options && options.style;
@@ -113,7 +113,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!this['_sr'] && maptalks.Util.isString(this.options['spatialReference'])) {
             const config = DEFAULT_REFS[this.options['spatialReference']];
             if (!config) {
-                throw new Error(`Unsupported spatial reference: ${this.options['spatialReference']}, possible values: preset-3857, preset-4326`);
+                throw new Error(`Unsupported spatial reference: ${this.options['spatialReference']}, possible values: preset-vt-3857, preset-vt-4326`);
             }
             this['_sr'] = this['_sr'] || new maptalks.SpatialReference(config);
         }
