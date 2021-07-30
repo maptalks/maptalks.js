@@ -152,7 +152,7 @@ describe('Geometry.Marker', function () {
                     done();
                 });
                 layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([11, 11]);
+                expect(marker.getSize().toArray()).to.be.eql([12, 12]);
             });
 
         context('image marker with alignment', function () {
