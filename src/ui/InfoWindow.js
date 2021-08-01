@@ -1,6 +1,7 @@
 import { isString } from '../core/util';
 import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Point from '../geo/Point';
+import Size from '../geo/Size';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
 import UIComponent from './UIComponent';
 
@@ -29,6 +30,8 @@ const options = {
     'title': null,
     'content': null
 };
+
+const EMPTY_SIZE = new Size(0, 0);
 
 /**
  * @classdesc
@@ -201,6 +204,9 @@ class InfoWindow extends UIComponent {
                 }
                 painter = children[0]._getPainter();
                 markerSize = children[0].getSize();
+            }
+            if (!markerSize) {
+                markerSize = EMPTY_SIZE;
             }
             if (painter) {
                 const fixExtent = painter.getFixedExtent();
