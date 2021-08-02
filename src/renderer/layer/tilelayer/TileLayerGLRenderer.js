@@ -36,7 +36,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
 
         const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
-        const size = this.layer.getTileSize();
+        const size = this.layer.getTileSize(tileInfo.layer);
         const w = size.width;
         const h = size.height;
         if (tileInfo.cache !== false) {

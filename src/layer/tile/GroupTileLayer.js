@@ -88,6 +88,11 @@ class GroupTileLayer extends TileLayer {
         return profile;
     }
 
+    getTileSize(id) {
+        const layer = this.getLayer(id);
+        return layer.getTileSize();
+    }
+
     /**
      * Get tiles at zoom (or current zoom)
      * @param {Number} z
@@ -137,6 +142,10 @@ class GroupTileLayer extends TileLayer {
         this.layerMap = {};
         this._groupChildren = [];
         super.onRemove();
+    }
+
+    getLayer(id) {
+        return this.getChildLayer(id);
     }
 
     getChildLayer(id) {
