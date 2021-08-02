@@ -1,10 +1,14 @@
 import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
+import Size from '../../geo/Size';
 
 const options = {
     'maxCacheSize': 1024
 };
+
+
+const DEFAULT_TILESIZE = new SIZE(256, 256);
 
 /**
  * @classdesc
@@ -90,6 +94,9 @@ class GroupTileLayer extends TileLayer {
 
     getTileSize(id) {
         const layer = this.getLayer(id);
+        if (!layer) {
+            return DEFAULT_TILESIZE;
+        }
         return layer.getTileSize();
     }
 
