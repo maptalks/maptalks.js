@@ -18,8 +18,6 @@ const year = new Date().getFullYear();
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${year} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log && console.log('${pkg.name} v${pkg.version}');`;
 
-console.log(env, buildEnv);
-
 const plugins = [
   checker({
     enableBuild: false,
