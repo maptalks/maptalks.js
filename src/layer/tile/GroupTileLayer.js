@@ -8,7 +8,7 @@ const options = {
 };
 
 
-const DEFAULT_TILESIZE = new SIZE(256, 256);
+const DEFAULT_TILESIZE = new Size(256, 256);
 
 /**
  * @classdesc
