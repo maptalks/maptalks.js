@@ -1,10 +1,14 @@
 import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
+import Size from '../../geo/Size';
 
 const options = {
     'maxCacheSize': 1024
 };
+
+
+const DEFAULT_TILESIZE = new Size(256, 256);
 
 /**
  * @classdesc
@@ -88,6 +92,14 @@ class GroupTileLayer extends TileLayer {
         return profile;
     }
 
+    getTileSize(id) {
+        const layer = this.getLayer(id);
+        if (!layer) {
+            return DEFAULT_TILESIZE;
+        }
+        return layer.getTileSize();
+    }
+
     /**
      * Get tiles at zoom (or current zoom)
      * @param {Number} z
@@ -137,6 +149,10 @@ class GroupTileLayer extends TileLayer {
         this.layerMap = {};
         this._groupChildren = [];
         super.onRemove();
+    }
+
+    getLayer(id) {
+        return this.getChildLayer(id);
     }
 
     getChildLayer(id) {
