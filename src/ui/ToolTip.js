@@ -1,6 +1,7 @@
 import { createEl } from '../core/util/dom';
 import UIComponent from './UIComponent';
 
+const HIDEDOMEVENTS = 'remove hide shapechange positionchange symbolchange dragend animatestart';
 
 /**
  * @property {Object} options
@@ -51,6 +52,7 @@ class ToolTip extends UIComponent {
         if (ToolTip.isSupport(owner)) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
+            owner.on(HIDEDOMEVENTS, this.hideDom, this);
             return super.addTo(owner);
         } else {
             throw new Error('Invalid geometry or UIMarker the tooltip is added to.');
@@ -132,7 +134,18 @@ class ToolTip extends UIComponent {
         if (this._owner) {
             this._owner.off('mouseover', this.onMouseOver, this);
             this._owner.off('mouseout', this.onMouseOut, this);
+            this._owner.off(HIDEDOMEVENTS, this.hideDom, this);
         }
+    }
+
+    hideDom() {
+        return this.hide();
+    }
+
+    onEvent() {
+        super.onEvent();
+        this.hideDom();
+        return this;
     }
 
     /**

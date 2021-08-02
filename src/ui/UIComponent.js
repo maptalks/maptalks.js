@@ -243,7 +243,7 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#hide
      */
     hide() {
-        if (!this.getDOM() || !this.getMap()) {
+        if (!this.getDOM()) {
             return this;
         }
         this.options['visible'] = false;
