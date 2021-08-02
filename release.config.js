@@ -9,10 +9,6 @@ const pkg = fs.readJsonSync(path.resolve(__dirname, 'package.json'));
 
 const files = ['LICENSE', 'ACKNOWLEDGEMENT', 'docs/api'];
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 const copyFiles = async () => {
   try {
     for (let i = 0; i < files.length; i++) {

@@ -4,7 +4,7 @@ branches:
     - "dev"
 language: node_js
 node_js:
-  - "10"
+  - "12"
 services:
   - xvfb
 addons:
@@ -12,4 +12,4 @@ addons:
 before_script:
   - "export DISPLAY=:99.0"
 script:
-  gulp test --browsers Firefox
+  node karma.config.js --browsers Firefox
