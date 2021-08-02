@@ -1,4 +1,5 @@
 import { IS_NODE } from './env';
+import { _defaults as def } from '../polyfill/setPrototypeOf';
 import { isString, isNil } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
@@ -441,14 +442,4 @@ export function flash(interval, count, cb, context) {
     return this;
 }
 
-export function _defaults(obj, defaults) {
-    const keys = Object.getOwnPropertyNames(defaults);
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const value = Object.getOwnPropertyDescriptor(defaults, key);
-        if (value && value.configurable && obj[key] === undefined) {
-            Object.defineProperty(obj, key, value);
-        }
-    }
-    return obj;
-}
+export const _defaults = def;
