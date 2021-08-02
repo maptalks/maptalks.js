@@ -30,6 +30,15 @@ const plugins = [
 
 const rollupPlugins = [];
 
+if (buildEnv === 'production' || buildEnv === 'test') {
+  rollupPlugins.push(babel({
+    babelHelpers: 'bundled'
+  }));
+  plugins.push(clear({
+    paths: ['css'],
+  }));
+}
+
 if (buildEnv === 'test' && env === 'test') {
   plugins.push(istanbul({
     include: 'src/*',
@@ -43,15 +52,6 @@ if (buildEnv === 'test' && env === 'test') {
     ],
     extension: ['.js',],
     requireEnv: true,
-  }));
-}
-
-if (buildEnv === 'production') {
-  rollupPlugins.push(babel({
-    babelHelpers: 'bundled'
-  }));
-  plugins.push(clear({
-    paths: ['css'],
   }));
 }
 
