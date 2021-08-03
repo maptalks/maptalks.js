@@ -26,7 +26,10 @@ if (!IS_NODE) {
         any3d = (ie3d || webkit3d || gecko3d) && !opera12 && !phantomjs,
         // https://developer.mozilla.org/zh-CN/docs/Web/API/ImageBitmap
         // this will Improve performance 2-3FPS
-        imageBitMap = typeof window !== 'undefined' && isFunction(window.createImageBitmap);
+        imageBitMap = typeof window !== 'undefined' && isFunction(window.createImageBitmap),
+        resizeObserver = typeof window !== 'undefined' && isFunction(window.ResizeObserver),
+        btoa = typeof window !== 'undefined' && isFunction(window.btoa);
+
 
     let chromeVersion = 0;
     if (chrome) {
@@ -86,7 +89,9 @@ if (!IS_NODE) {
         ie10: (ie && document.documentMode === 10),
 
         webgl: webgl,
-        imageBitMap
+        imageBitMap,
+        resizeObserver,
+        btoa
     };
 }
 

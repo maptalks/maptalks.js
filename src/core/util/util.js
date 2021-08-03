@@ -1,4 +1,5 @@
 import { IS_NODE } from './env';
+import Browser from  '../Browser';
 import { isString, isNil } from './common';
 
 // RequestAnimationFrame, inspired by Leaflet
@@ -305,7 +306,7 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
 /* istanbul ignore next */
 /* eslint-disable no-sequences */
 export function btoa(input) {
-    if ((typeof window !== 'undefined') && window.btoa) {
+    if (Browser.btoa) {
         return window.btoa(input);
     }
     const str = String(input);
