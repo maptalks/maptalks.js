@@ -3,11 +3,11 @@ import fs from 'fs-extra';
 import path from 'path';
 import checker from 'vite-plugin-checker';
 import { visualizer } from 'rollup-plugin-visualizer';
-import babel from '@rollup/plugin-babel';
 import viteCompression from 'vite-plugin-compression';
 import istanbul from 'vite-plugin-istanbul';
 import clear from './build/vite-plugin/clear-plugin';
 import jsdoc from './build/vite-plugin/jsdoc-plugin';
+import transform from './build/vite-plugin/transform-plugin';
 import sources from './build/api-files.js';
 
 const buildEnv = process.env.BUILD_ENV;
@@ -23,17 +23,24 @@ const plugins = [
     enableBuild: false,
     eslint: {
       files: ['./src'],
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.json'],
     },
   }),
+  // use babel plugin remove [__proto__, Symbol.toStringTag] and buble transform code
+  transform({
+    bubleOptions: {
+      transforms: {
+        dangerousForOf: true,
+        moduleExport: false
+      },
+    },
+    includeFormat: ['es', 'umd'],
+  })
 ];
 
 const rollupPlugins = [];
 
 if (buildEnv === 'production' || buildEnv === 'test') {
-  rollupPlugins.push(babel({
-    babelHelpers: 'bundled'
-  }));
   plugins.push(clear({
     paths: ['css'],
   }));
@@ -78,11 +85,12 @@ export default defineConfig(() => {
     return {
       base: './',
       publicDir: 'assets',
+      esbuild: env === 'watch' || docWatch,
       build: {
         outDir: 'dist',
         assetsDir: 'images',
         assetsInlineLimit: 0, // @link https://cn.vitejs.dev/config/#build-assetsinlinelimit
-        target: env === 'doc' ? 'esnext' : 'esnext',
+        target: env === 'doc' ? 'es2015' : 'es2015',
         minify: env === 'minify' ? 'terser' : false,
         sourcemap: env !== 'minify',
         brotliSize: true, // @link https://cn.vitejs.dev/config/#build-brotlisize
@@ -111,7 +119,6 @@ export default defineConfig(() => {
           },
         },
       },
-      // assetsInclude: ['png', 'svg', 'jpe?g', 'webp'],
       plugins,
       css: {
         preprocessorOptions: {
