@@ -45,8 +45,8 @@ const options = {
  * @memberOf control
  * @example
  * var overview = new Overview({
- *     position : {'bottom': '0', 'right': '0'},
- *     size : {'width' : 300,'height' : 200}
+ *     position: {'bottom': '0', 'right': '0'},
+ *     size: [300, 200]
  * }).addTo(map);
  */
 class Overview extends Control {
