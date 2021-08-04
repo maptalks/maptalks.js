@@ -1,4 +1,3 @@
-import buble from 'buble';
 import { debug as Debug } from 'debug';
 
 const debug = Debug('vite-plugin-transform-mtk');
@@ -40,7 +39,7 @@ export default (options = {}) => {
       const { code, map } = loadBabel().transform(raw, {
         babelrc: false,
         configFile: false,
-        compact: true,
+        compact: false,
         sourceMaps,
         inputSourceMap: sourceMaps,
         presets: [
@@ -60,24 +59,6 @@ export default (options = {}) => {
       })
 
       return { code, map }
-    },
-
-    generateBundle(opt, bundle) {
-      for (const key in bundle) {
-        const chunk = bundle[key];
-        if (includeFormat.includes(opt.format) && chunk.type === 'chunk' && chunk.facadeModuleId) {
-          const input = bundle[key].code;
-          if (input) {
-            const output = buble.transform(input, bubleOptions || {});
-            if (output.code) {
-              bundle[key].code = output.code;
-            }
-            if (output.map && bundle[key].map) {
-              // bundle[key].map = output.map;
-            }
-          }
-        }
-      }
     },
   }
 }

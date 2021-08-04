@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import fs from 'fs-extra';
 import path from 'path';
 import checker from 'vite-plugin-checker';
+import babel from '@rollup/plugin-babel';
 import { visualizer } from 'rollup-plugin-visualizer';
 import viteCompression from 'vite-plugin-compression';
 import istanbul from 'vite-plugin-istanbul';
@@ -26,21 +27,18 @@ const plugins = [
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.json'],
     },
   }),
-  // use babel plugin remove [__proto__, Symbol.toStringTag] and buble transform code
-  transform({
-    bubleOptions: {
-      transforms: {
-        dangerousForOf: true,
-        moduleExport: false
-      },
-    },
-    includeFormat: ['es', 'umd'],
-  })
 ];
 
 const rollupPlugins = [];
 
 if (buildEnv === 'production' || buildEnv === 'test') {
+  // use babel plugin remove [__proto__, Symbol.toStringTag]
+  plugins.push(transform({
+  }));
+  plugins.push(babel({
+    babelHelpers: 'bundled',
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.json'],
+  }));
   plugins.push(clear({
     paths: ['css'],
   }));
@@ -85,12 +83,13 @@ export default defineConfig(() => {
     return {
       base: './',
       publicDir: 'assets',
+      // @tip: esbuild 的禁用 target 必须为 false ???
       esbuild: env === 'watch' || docWatch,
       build: {
         outDir: 'dist',
         assetsDir: 'images',
         assetsInlineLimit: 0, // @link https://cn.vitejs.dev/config/#build-assetsinlinelimit
-        target: env === 'doc' ? 'es2015' : 'es2015',
+        target: env === 'doc' ? 'modules' : false,
         minify: env === 'minify' ? 'terser' : false,
         sourcemap: env !== 'minify',
         brotliSize: true, // @link https://cn.vitejs.dev/config/#build-brotlisize
@@ -112,7 +111,6 @@ export default defineConfig(() => {
         rollupOptions: {
           plugins: rollupPlugins,
           output: {
-            // assetFileNames: '[name].[ext]',
             assetFileNames: 'maptalks.[ext]', // hack for css file
             banner,
             outro,
