@@ -53,7 +53,7 @@ module.exports = declare((api) => {
         const { node } = path;
         const { opts } = state;
         if (types.isSpreadElement(node)) return;
-        const includeKV = opts?.includeKV;
+        const includeKV = opts.includeKV;
         const keys = includeKV.map((item) => item[0]);
         const values = includeKV.map((item) => item[1]);
 
