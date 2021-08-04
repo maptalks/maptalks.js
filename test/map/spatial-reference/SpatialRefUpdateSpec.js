@@ -44,15 +44,15 @@ describe('SpatialReference.Update', function () {
             });
             var tiles = tileLayer.getTiles().tileGrids[0].tiles;
             var tile = tiles[tiles.length - 1];
-            expect(tile.extent2d.xmin).to.be.eql(0);
+            expect(tile.extent2d.xmin).to.be.eql(-256);
             expect(tile.extent2d.ymax).to.be.eql(0);
             done();
         });
         map.setBaseLayer(tileLayer);
         var tiles = tileLayer.getTiles().tileGrids[0].tiles;
         var tile = tiles[tiles.length - 1];
-        expect(tile.extent2d.xmin).to.be.eql(0);
-        expect(tile.extent2d.ymax).to.be.eql(0);
+        expect(tile.extent2d.xmin).to.be.eql(-256);
+        expect(tile.extent2d.ymax).to.be.eql(256);
     });
 
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
