@@ -36,6 +36,10 @@ const Menuable = {
         return this;
     },
 
+    getMenu() {
+        return this._menu;
+    },
+
     /**
      * Open the context menu, default on the center of the geometry or map.
      * @param {Coordinate} [coordinate=null] - coordinate to open the context menu
@@ -55,6 +59,9 @@ const Menuable = {
         } else {
             this._menu.show(coordinate);
         }
+        this.fire('openmenu', {
+            coordinate
+        });
         return this;
     },
 
@@ -99,6 +106,7 @@ const Menuable = {
         if (this._menu) {
             this._menu.hide();
         }
+        this.fire('closemenu', {});
         return this;
     },
 
@@ -111,6 +119,7 @@ const Menuable = {
         this.off('contextmenu', this._defaultOpenMenu, this);
         this._unbindMenu();
         delete this._menuOptions;
+        this.fire('removemenu', {});
         return this;
     },
 
