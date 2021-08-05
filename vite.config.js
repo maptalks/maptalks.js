@@ -5,13 +5,12 @@ import checker from 'vite-plugin-checker';
 import babel from '@rollup/plugin-babel';
 import { visualizer } from 'rollup-plugin-visualizer';
 import viteCompression from 'vite-plugin-compression';
-import istanbul from 'vite-plugin-istanbul';
 import clear from './build/vite-plugin/clear-plugin';
 import jsdoc from './build/vite-plugin/jsdoc-plugin';
 import transform from './build/vite-plugin/transform-plugin';
 import sources from './build/api-files.js';
 
-const buildEnv = process.env.BUILD_ENV;
+const nodeEnv = process.env.NODE_ENV;
 const docWatch = process.env.DOC_ENV_WATCH === 'true';
 const env = process.argv[process.argv.length - 1];
 const pkg = fs.readJsonSync(path.resolve(__dirname, 'package.json'));
@@ -31,7 +30,7 @@ const plugins = [
 
 const rollupPlugins = [];
 
-if (buildEnv === 'production' || buildEnv === 'test') {
+if (nodeEnv === 'production' || nodeEnv === 'test') {
   // use babel plugin remove [__proto__, Symbol.toStringTag]
   plugins.push(transform({
   }));
@@ -44,23 +43,7 @@ if (buildEnv === 'production' || buildEnv === 'test') {
   }));
 }
 
-if (buildEnv === 'test' && env === 'test') {
-  plugins.push(istanbul({
-    include: 'src/*',
-    exclude: [
-      'node_modules',
-      'test/',
-      'src/core/mapbox/',
-      'src/util/dom.js',
-      'src/renderer/layer/tilelayer/TileLayerGLRenderer.js',
-      'src/renderer/layer/ImageGLRenderable.js',
-    ],
-    extension: ['.js',],
-    requireEnv: true,
-  }));
-}
-
-if (buildEnv === 'production' && env === 'minify') {
+if (nodeEnv === 'production' && env === 'minify') {
   plugins.push(viteCompression({
     verbose: true,
     filter: /\.(js|css)$/i,
