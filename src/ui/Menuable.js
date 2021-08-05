@@ -37,6 +37,15 @@ const Menuable = {
     },
 
     /**
+    * get a context menu
+    * @return {*} ui.Menu
+    * @function ui.Menuable.getMenu
+    */
+    getMenu() {
+        return this._menu;
+    },
+
+    /**
      * Open the context menu, default on the center of the geometry or map.
      * @param {Coordinate} [coordinate=null] - coordinate to open the context menu
      * @return {*} this
@@ -55,6 +64,26 @@ const Menuable = {
         } else {
             this._menu.show(coordinate);
         }
+        /**
+           * openmenu event
+           *
+           * @event Geometry#openmenu
+           * @type {Object}
+           * @property {String} type - openmenu
+           * @property {Geometry} target - the geometry fires the event
+           */
+
+        /**
+         * openmenu event
+         *
+         * @event Map#openmenu
+         * @type {Object}
+         * @property {String} type - openmenu
+         * @property {Map} target - the Map fires the event
+         */
+        this.fire('openmenu', {
+            coordinate
+        });
         return this;
     },
 
@@ -99,6 +128,24 @@ const Menuable = {
         if (this._menu) {
             this._menu.hide();
         }
+        /**
+       * closemenu event
+       *
+       * @event Geometry#closemenu
+       * @type {Object}
+       * @property {String} type - closemenu
+       * @property {Geometry} target - the geometry fires the event
+       */
+
+        /**
+         * closemenu event
+         *
+         * @event Map#closemenu
+         * @type {Object}
+         * @property {String} type - closemenu
+         * @property {Map} target - the Map fires the event
+         */
+        this.fire('closemenu', {});
         return this;
     },
 
@@ -111,6 +158,24 @@ const Menuable = {
         this.off('contextmenu', this._defaultOpenMenu, this);
         this._unbindMenu();
         delete this._menuOptions;
+        /**
+        * removemenu event
+        *
+        * @event Geometry#removemenu
+        * @type {Object}
+        * @property {String} type - removemenu
+        * @property {Geometry} target - the geometry fires the event
+        */
+
+        /**
+         * removemenu event
+         *
+         * @event Map#removemenu
+         * @type {Object}
+         * @property {String} type - removemenu
+         * @property {Map} target - the Map fires the event
+         */
+        this.fire('removemenu', {});
         return this;
     },
 
