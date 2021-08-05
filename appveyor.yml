@@ -2,7 +2,7 @@
 environment:
   # https://github.com/appveyor/ci/issues/2921
   # https://github.com/nodejs/node/issues/33266
-  nodejs_version: "14.16.0"
+  nodejs_version: "14"
   matrix:
     # first group
     - MAPTALKS_BROWSERS: IE
@@ -12,12 +12,13 @@ environment:
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Install-Product node $env:nodejs_version x64
   # install modules
   - npm install
 
 # Post-install test scripts.
 test_script:
+  - set NODE_OPTIONS=--max_old_space_size=4096
   # Output useful info for debugging.
   - node --version
   - npm --version

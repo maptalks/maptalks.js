@@ -29,6 +29,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
+      - run: export NODE_OPTIONS=--max_old_space_size=4096
       - run: npm install
 
       - save_cache:

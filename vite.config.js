@@ -74,7 +74,8 @@ export default defineConfig(() => {
         assetsInlineLimit: 0, // @link https://cn.vitejs.dev/config/#build-assetsinlinelimit
         target: env === 'doc' ? 'modules' : false,
         minify: env === 'minify' ? 'terser' : false,
-        sourcemap: env !== 'minify',
+        // https://stackoverflow.com/questions/53557532/circleci-angular-ng-build-allocation-failure-memory-issue
+        sourcemap: env !== 'minify' && env !== 'test',
         brotliSize: true, // @link https://cn.vitejs.dev/config/#build-brotlisize
         watch: env === 'watch' || docWatch ? {} : null,
         // @link https://github.com/vitejs/vite/blob/main/packages/vite/src/node/plugins/css.ts#L483
