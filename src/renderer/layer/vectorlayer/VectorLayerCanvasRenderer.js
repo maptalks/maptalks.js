@@ -113,9 +113,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
             this._batchConversionMarkers(this.mapStateCache.glZoom);
-            if (!this._onlyHasPoint) {
-                this.forEachGeo(this.checkGeo, this);
-            }
+            this.forEachGeo(this.checkGeo, this);
             this._drawnRes = res;
         }
         this._sortByDistanceToCamera(map.cameraPosition);
@@ -158,9 +156,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._updateDisplayExtent();
         this.prepareToDraw();
         this._batchConversionMarkers(this.mapStateCache.glZoom);
-        if (!this._onlyHasPoint) {
-            this.forEachGeo(this.checkGeo, this);
-        }
+        this.forEachGeo(this.checkGeo, this);
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
@@ -346,12 +342,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             if (geo._inCurrentView) {
                 if (!geo.isVisible() || !isCanvasRender) {
                     geo._inCurrentView = false;
-                }
-                //如果当前图层上只有点，整个checkGeo都不用执行了,这里已经把所有的点都判断了
-                if (this._onlyHasPoint && geo._inCurrentView) {
-                    this._hasPoint = true;
-                    geo._isCheck = true;
-                    this._geosToDraw.push(geo);
                 }
             }
         }
