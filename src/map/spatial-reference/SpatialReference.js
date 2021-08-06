@@ -8,6 +8,7 @@ const MAX_ZOOM = 23;
 
 const DefaultSpatialReference = {
     'EPSG:3857': {
+        'projection': 'EPSG:3857',
         'resolutions': (function () {
             const resolutions = [];
             const d = 2 * 6378137 * Math.PI;
@@ -24,6 +25,7 @@ const DefaultSpatialReference = {
         }
     },
     'EPSG:4326': {
+        'projection': 'EPSG:4326',
         'fullExtent': {
             'top': 90,
             'left': -180,
@@ -39,6 +41,7 @@ const DefaultSpatialReference = {
         })()
     },
     'BAIDU': {
+        'projection': 'baidu',
         'resolutions': (function () {
             let res = Math.pow(2, 18);
             const resolutions = [];
@@ -56,6 +59,7 @@ const DefaultSpatialReference = {
         }
     },
     'IDENTITY': {
+        'projection': 'identity',
         'resolutions': (function () {
             let res = Math.pow(2, 8);
             const resolutions = [];
@@ -71,6 +75,25 @@ const DefaultSpatialReference = {
             'bottom': -200000,
             'right': 200000
         }
+    },
+
+    // TileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI]
+    'PRESET-VT-3857': {
+        'projection': 'EPSG:3857',
+        'resolutions': (function () {
+            const resolutions = [];
+            const d = 6378137 * Math.PI;
+            for (let i = 0; i < MAX_ZOOM; i++) {
+                resolutions[i] = d / (256 * Math.pow(2, i));
+            }
+            return resolutions;
+        })(),
+        'fullExtent': {
+            'top': 6378137 * Math.PI,
+            'left': -6378137 * Math.PI,
+            'bottom': -6378137 * Math.PI,
+            'right': 6378137 * Math.PI
+        }
     }
 };
 
@@ -80,6 +103,14 @@ export default class SpatialReference {
     constructor(options = {}) {
         this.options = options;
         this._initSpatialRef();
+    }
+
+    static getPreset(preset) {
+        return DefaultSpatialReference[preset.toUpperCase()];
+    }
+
+    static getAllPresets() {
+        return Object.keys(DefaultSpatialReference);
     }
 
     static getProjectionInstance(prjName) {
@@ -157,7 +188,7 @@ export default class SpatialReference {
             resolutions = this.options['resolutions'];
         if (!resolutions) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialReference[projection['code']];
+                defaultSpatialRef = DefaultSpatialReference[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     resolutions = defaultSpatialRef['resolutions'];
                     this.isEPSG = projection['code'] !== 'IDENTITY';
@@ -182,7 +213,7 @@ export default class SpatialReference {
         let fullExtent = this.options['fullExtent'];
         if (!fullExtent) {
             if (projection['code']) {
-                defaultSpatialRef = DefaultSpatialReference[projection['code']];
+                defaultSpatialRef = DefaultSpatialReference[projection['code'].toUpperCase()];
                 if (defaultSpatialRef) {
                     fullExtent = defaultSpatialRef['fullExtent'];
                 }
