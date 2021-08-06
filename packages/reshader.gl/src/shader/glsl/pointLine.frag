@@ -11,7 +11,12 @@ precision mediump float;
 #include <fog_render_frag>
 uniform vec4 baseColorFactor;
 #if defined(HAS_MAP)
-    uniform sampler2D baseColorTexture;
+   #if defined(HAS_ALBEDO_MAP)
+        uniform sampler2D baseColorTexture;
+    #endif
+    #if defined(HAS_DIFFUSE_MAP)
+        uniform sampler2D diffuseTexture;
+    #endif
     varying vec2 vTexCoord;
 #endif
 void main() {
@@ -21,7 +26,12 @@ void main() {
         glFragColor = vec4(1.0) * baseColorFactor;
     #endif
     #ifdef HAS_MAP
-        glFragColor *= texture2D(baseColorTexture, vTexCoord);
+        #ifdef HAS_ALBEDO_MAP
+            glFragColor *= texture2D(baseColorTexture, vTexCoord);
+        #endif
+        #ifdef HAS_DIFFUSE_MAP
+            glFragColor *= texture2D(diffuseTexture, vTexCoord);
+        #endif
     #endif
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
