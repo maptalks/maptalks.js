@@ -193,7 +193,7 @@ class TileLayer extends Layer {
         // const t00 = tileGrid0.tileGrids[0].tiles.filter(t => tileZoom - t.z <= 1).length;
         // const t10 = tileGrid1.tileGrids[0].tiles.length + (tileGrid1.tileGrids[1] && tileGrid1.tileGrids[1].tiles.length || 0);
         // console.log('pyramid', tileGrid0.count, t00, 'cascade', tileGrid1.count, t10);
-        if (this.options['pyramidMode'] && sr && sr.isPyramid()) {
+        if (!this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid()) {
             return this._getPyramidTiles(z, parentLayer);
         } else {
             return this._getCascadeTiles(z, parentLayer);
@@ -703,6 +703,9 @@ class TileLayer extends Layer {
         if (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
             return map.getSpatialReference();
         }
+        if (this._sr) {
+            return this._sr;
+        }
         let config = this.options['spatialReference'];
         if (isString(config)) {
             config = SpatialReference.getPreset(config);
@@ -710,11 +713,9 @@ class TileLayer extends Layer {
                 throw new Error(`Unsupported spatial reference: ${this.options['spatialReference']}, possible values: ${SpatialReference.getAllPresets().join()}`);
             }
         }
-        this._sr = this._sr || new SpatialReference(config);
-        if (this._srMinZoom === undefined) {
-            this._srMinZoom = this._sr.getMinZoom();
-            this._srMaxZoom = this._sr.getMaxZoom();
-        }
+        this._sr = new SpatialReference(config);
+        this._srMinZoom = this._sr.getMinZoom();
+        this._srMaxZoom = this._sr.getMaxZoom();
         return this._sr;
     }
 
