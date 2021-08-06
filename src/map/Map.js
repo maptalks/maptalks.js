@@ -312,6 +312,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _updateSpatialReference(ref, oldRef) {
+        if (isString(ref)) {
+            ref = SpatialReference.getPreset(ref);
+        }
         ref = extend({}, ref);
         this._center = this.getCenter();
         this.options['spatialReference'] = ref;

@@ -1,4 +1,4 @@
-import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger, toRadian } from '../../core/util';
+import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger, toRadian, isString } from '../../core/util';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -703,7 +703,14 @@ class TileLayer extends Layer {
         if (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
             return map.getSpatialReference();
         }
-        this._sr = this._sr || new SpatialReference(this.options['spatialReference']);
+        let config = this.options['spatialReference'];
+        if (isString(config)) {
+            config = SpatialReference.getPreset(config);
+            if (!config) {
+                throw new Error(`Unsupported spatial reference: ${this.options['spatialReference']}, possible values: ${SpatialReference.getAllPresets().join()}`);
+            }
+        }
+        this._sr = this._sr || new SpatialReference(config);
         if (this._srMinZoom === undefined) {
             this._srMinZoom = this._sr.getMinZoom();
             this._srMaxZoom = this._sr.getMaxZoom();
