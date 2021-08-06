@@ -1088,7 +1088,7 @@ class TileLayer extends Layer {
         const projection = sr.getProjection(),
             fullExtent = sr.getFullExtent();
         this._defaultTileConfig = new TileConfig(map, TileSystem.getDefault(projection), fullExtent, tileSize);
-        if (this.options['tileSystem']) {
+        if (this.options.hasOwnProperty('tileSystem')) {
             this._tileConfig = new TileConfig(map, this.options['tileSystem'], fullExtent, tileSize);
         }
         //inherit baselayer's tileconfig
