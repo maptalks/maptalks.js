@@ -5,45 +5,6 @@ import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
 
-const MAX_ZOOM = 25;
-
-const DEFAULT_REFS = {
-    'preset-vt-3857': {
-        projection: 'EPSG:3857',
-        resolutions: (function () {
-            const resolutions = [];
-            const d = 6378137 * Math.PI;
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = d / (256 * Math.pow(2, i));
-            }
-            return resolutions;
-        })(),
-        fullExtent: {
-            'top': 6378137 * Math.PI,
-            'left': -6378137 * Math.PI,
-            'bottom': -6378137 * Math.PI,
-            'right': 6378137 * Math.PI
-        }
-    },
-
-    'preset-vt-4326': {
-        projection: 'EPSG:4326',
-        fullExtent: {
-            'top': 90,
-            'left': -180,
-            'bottom': -90,
-            'right': 180
-        },
-        resolutions: (function () {
-            const resolutions = [];
-            for (let i = 0; i < MAX_ZOOM; i++) {
-                resolutions[i] = 180 / 2 / (Math.pow(2, i) * 128);
-            }
-            return resolutions;
-        })()
-    }
-};
-
 const defaultOptions = {
     renderer: 'gl',
     fadeAnimation: false,
@@ -101,23 +62,12 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     constructor(id, options) {
         super(id, options);
-        if (options.spatialReference === undefined) {
-            throw new Error(`options.spatialReference must be set for VectorTileLayer(${id}), possible values: preset-vt-3857, preset-vt-4326`);
-        }
+        // if (options.spatialReference === undefined) {
+        //     throw new Error(`options.spatialReference must be set for VectorTileLayer(${id}), possible values: null(using map's), preset-vt-3857, or a customized one.`);
+        // }
         this.VERSION = VectorTileLayer.VERSION;
         const style = options && options.style;
         this.setStyle(style);
-    }
-
-    getSpatialReference() {
-        if (!this['_sr'] && maptalks.Util.isString(this.options['spatialReference'])) {
-            const config = DEFAULT_REFS[this.options['spatialReference']];
-            if (!config) {
-                throw new Error(`Unsupported spatial reference: ${this.options['spatialReference']}, possible values: preset-vt-3857, preset-vt-4326`);
-            }
-            this['_sr'] = this['_sr'] || new maptalks.SpatialReference(config);
-        }
-        return super.getSpatialReference();
     }
 
     onAdd() {
@@ -125,7 +75,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         const sr = this.getSpatialReference();
         const code = sr.toJSON().projection;
         const mapCode = map.getSpatialReference().toJSON().projection;
-        if (code !== mapCode) {
+        if ((code && code.toLowerCase()) !== (mapCode && mapCode.toLowerCase())) {
             throw new Error(`VectorTileLayer's projection(${code}) must be the same with map(${mapCode}).`);
         }
     }

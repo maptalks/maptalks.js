@@ -17,6 +17,7 @@ const polygon = new maptalks.Polygon([
 
 module.exports = {
     data: [polygon],
+    renderingCount: 2,
     view: {
         center: [0, 0],
         zoom: 6
