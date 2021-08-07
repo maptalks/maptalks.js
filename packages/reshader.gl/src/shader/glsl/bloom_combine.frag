@@ -41,7 +41,7 @@ vec4 bloomCombine() {
     vec4 color = texture2D(TextureInput, gTexCoord);
     color.rgb = mix(vec3(0.0), color.rgb, sign(color.a));
 
-    float srcAlpha = mix(sqrt((bloom.r + bloom.g + bloom.b) / 3.0), color.a, sign(color.a));
+    float srcAlpha = mix(sqrt((bloom.r + bloom.g + bloom.b) / 3.0), 1.0, sign(color.a));
 
     float dstAlpha = 1.0 - srcAlpha;
 
