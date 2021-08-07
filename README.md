@@ -73,7 +73,7 @@ It's easy and joyful to write plugins for maptalks, please check out [the tutori
 We warmly welcome any kind of contributions including issue reportings, pull requests, documentation corrections, feature requests and any other helps.
 
 ### Contributing Guide
-Please read our [contributing guide](CONTRIBUTING.md) to learn about our development process, how to propose fixes and improvements, and how to test your changes to maptalks.
+Please read our [contributing guide](.github/CONTRIBUTING.md) to learn about our development process, how to propose fixes and improvements, and how to test your changes to maptalks.
 
 ## Acknowledgments
 
