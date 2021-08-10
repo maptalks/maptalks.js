@@ -217,6 +217,43 @@ describe('TileSpatialRefSpec', function () {
 
     });
 
+    it('tilelayer with custom spatialRef with fullExtent and no repeatWorld', function () {
+        var firstRes = 0.009507170090264933;
+        var res = [];
+        for (var i = 0; i <= 5; i++) {
+          res.push(firstRes / Math.pow(2, i));
+        }
+        var crs = {
+          projection: "EPSG:4326",
+          resolutions: res,
+          fullExtent: {
+            top: 42.31,
+            left: 114.59,
+            bottom: 37.44232891378454,
+            right:  119.45767108621599
+          }
+        };
+        createMap([114.59, 42.31], 0, crs);
+        var tileLayer = new maptalks.TileLayer("base", {
+          urlTemplate: '#',
+          repeatWorld: false,
+          spatialReference: crs,
+          tileSystem: [1, -1, 114.59, 42.31]
+        }).addTo(map);
+        var tileGrid = tileLayer.getTiles().tileGrids[0];
+        var tiles = tileGrid.tiles;
+        var extent = tileGrid.extent;
+        expect(extent.toJSON()).to.be.eql({ xmin: 12053.008299213752, ymin: 3938.3253437449507, xmax: 12565.008299213754, ymax: 4450.32534374495 });
+        var expected =  '0,0,0,{"xmin":12053.008299213752,"ymin":4194.32534374495,"xmax":12309.008299213752,"ymax":4450.32534374495}|0,1,0,{"xmin":12053.008299213752,"ymin":3938.3253437449507,"xmax":12309.008299213752,"ymax":4194.32534374495}|1,0,0,{"xmin":12309.008299213752,"ymin":4194.32534374495,"xmax":12565.008299213754,"ymax":4450.32534374495}|1,1,0,{"xmin":12309.008299213752,"ymin":3938.3253437449507,"xmax":12565.008299213754,"ymax":4194.32534374495}';
+        var actual = tiles.map(function (t) {
+            return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON())].join();
+        }).sort().join('|');
+        if (!maptalks.Browser.ie) {
+            expect(actual).to.be.eql(expected);
+        }
+
+    });
+
     it('tilelayer with custom spatialRef with fullExtent in getCascadedTiles', function () {
         var firstRes = 0.009507170090264933;
         var res = [];
