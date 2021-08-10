@@ -242,14 +242,15 @@ class TileLayer extends Layer {
         const extent000 = tileConfig.getTilePrjExtent(0, 0, res);
         const w = extent000.getWidth();
         const h = extent000.getHeight();
+        const delta = 1E-5;
         let left = Math.abs((origin.x - fullExtent.left) / w);
-        left = Math.round(left);
+        left = Math.ceil(left - delta);
         let right = Math.abs((fullExtent.right - origin.x) / w);
-        right = Math.round(right);
+        right = Math.ceil(right - delta);
         let top = Math.ceil(Math.abs(fullExtent.top - origin.y) / h);
-        top = Math.round(top);
+        top = Math.ceil(top - delta);
         let bottom = Math.ceil(Math.abs(fullExtent.bottom - origin.y) / h);
-        bottom = Math.round(bottom);
+        bottom = Math.ceil(bottom - delta);
         if ((right + left) * (bottom + top) > MAX_ROOT_NODES) {
             return {
                 status: 0,
