@@ -1,4 +1,4 @@
-import { isNumber } from '../../../core/util';
+import { isArrayHasData, isNumber } from '../../../core/util';
 import { loadGeoSymbol, isFunctionDefinition, interpolated } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
@@ -36,6 +36,9 @@ class CanvasSymbolizer extends Symbolizer {
     }
 
     prepareCanvas(ctx, style, resources) {
+        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
+            ctx.setLineDash(style['lineDasharray']);
+        }
         const { geometry } = this;
         const isHitTesting = this.getPainter().isHitTesting();
         // 确保symbolizers只有一个，如果是混合的（strokeAndFill and Text等）会导致绘制错乱,，
