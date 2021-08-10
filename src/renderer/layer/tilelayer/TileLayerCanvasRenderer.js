@@ -345,7 +345,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     loadTile(tile) {
-        const tileSize = this.layer.getTileSize();
+        const tileSize = this.layer.getTileSize(tile.layer);
         const tileImage = new Image();
 
         tileImage.width = tileSize['width'];
@@ -446,7 +446,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
-            tileSize = this.layer.getTileSize(),
+            tileSize = this.layer.getTileSize(tileInfo.layer),
             zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
