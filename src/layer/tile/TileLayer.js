@@ -13,6 +13,8 @@ import * as vec3 from '../../core/util/vec3';
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
 
+const MAX_ROOT_NODES = 32;
+
 const isSetAvailable = typeof Set !== 'undefined';
 class TileHashset {
     constructor() {
@@ -193,7 +195,7 @@ class TileLayer extends Layer {
         // const t00 = tileGrid0.tileGrids[0].tiles.filter(t => tileZoom - t.z <= 1).length;
         // const t10 = tileGrid1.tileGrids[0].tiles.length + (tileGrid1.tileGrids[1] && tileGrid1.tileGrids[1].tiles.length || 0);
         // console.log('pyramid', tileGrid0.count, t00, 'cascade', tileGrid1.count, t10);
-        if (!this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid()) {
+        if (!this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid()) {
             return this._getPyramidTiles(z, parentLayer);
         } else {
             return this._getCascadeTiles(z, parentLayer);
@@ -236,20 +238,31 @@ class TileLayer extends Layer {
         const tileConfig = this._getTileConfig();
         const fullExtent = sr.getFullExtent();
 
-        const { origin, scale } = tileConfig.tileSystem;
+        const { origin } = tileConfig.tileSystem;
         const extent000 = tileConfig.getTilePrjExtent(0, 0, res);
         const w = extent000.getWidth();
         const h = extent000.getHeight();
-        const left = Math.ceil((origin.x - fullExtent.left) / w);
-        const right = Math.ceil((fullExtent.right - origin.x) / w);
-        const top = Math.ceil(Math.abs(fullExtent.top - origin.y) / h);
-        const bottom = Math.ceil(Math.abs(fullExtent.bottom - origin.y) / h);
+        const delta = 1E-5;
+        let left = Math.abs((origin.x - fullExtent.left) / w);
+        left = Math.ceil(left - delta);
+        let right = Math.abs((fullExtent.right - origin.x) / w);
+        right = Math.ceil(right - delta);
+        let top = Math.ceil(Math.abs(fullExtent.top - origin.y) / h);
+        top = Math.ceil(top - delta);
+        let bottom = Math.ceil(Math.abs(fullExtent.bottom - origin.y) / h);
+        bottom = Math.ceil(bottom - delta);
+        if ((right + left) * (bottom + top) > MAX_ROOT_NODES) {
+            return {
+                status: 0,
+                error: 'Too many root nodes'
+            };
+        }
         const error = this._getRootError();
         const tiles = [];
         const z = 0;
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
-                const y = j * scale.y;
+                const y = j;
                 tiles.push({
                     x: i,
                     y,
@@ -266,6 +279,7 @@ class TileLayer extends Layer {
         }
 
         this._rootNodes = {
+            status: 1,
             tiles,
             mapWidth: map.width,
             mapHeight: map.height
@@ -318,10 +332,20 @@ class TileLayer extends Layer {
                 queue = tileGrid.tiles;
             } else {
                 const rootNodes = this._getRootNodes(offset0);
+                if (rootNodes.status !== 1) {
+                    console.warn(rootNodes.error);
+                    this._disablePyramid = true;
+                    return this.getTiles(z, layer);
+                }
                 queue = [...rootNodes.tiles];
             }
         } else {
             const rootNodes = this._getRootNodes(offset0);
+            if (rootNodes.status !== 1) {
+                console.warn(rootNodes.error);
+                this._disablePyramid = true;
+                return this.getTiles(z, layer);
+            }
             queue = [...rootNodes.tiles];
         }
         const glRes = map.getResolution(map.getGLZoom());
@@ -1112,6 +1136,7 @@ class TileLayer extends Layer {
         this._hasOwnSR = sr.toJSON().projection !== map.getSpatialReference().toJSON().projection;
         delete this._rootNodes;
         delete this._tileFullExtent;
+        delete this._disablePyramid;
     }
 
     _getTileConfig() {
