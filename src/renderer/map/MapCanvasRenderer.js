@@ -796,12 +796,13 @@ class MapCanvasRenderer extends MapRenderer {
 
     _updateDomPosition(framestamp) {
         if (this._checkPositionTime === undefined) {
-            this._checkPositionTime = framestamp;
+            this._checkPositionTime = -Infinity;
         }
-        if (framestamp - this._checkPositionTime >= 500) {
+        const dTime = Math.abs(framestamp - this._checkPositionTime);
+        if (dTime >= 500) {
             // refresh map's dom position
             computeDomPosition(this.map._containerDOM);
-            this._checkPositionTime = framestamp;
+            this._checkPositionTime = Math.min(framestamp, this._checkPositionTime);
         }
         return this;
     }
