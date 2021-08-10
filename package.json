@@ -80,7 +80,7 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-safari-launcher": "^1.0.0",
     "karma-sinon": "^1.0.5",
-    "maptalks-jsdoc": "^0.2.4",
+    "maptalks-jsdoc": "^0.2.5",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
     "rollup": "^0.64.1",
