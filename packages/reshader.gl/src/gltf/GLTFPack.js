@@ -117,7 +117,7 @@ export default class GLTFPack {
         if (!timespan) {
             return;
         }
-        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) : time * speed * 0.001);
+        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) + timespan.min : time * speed * 0.001 + timespan.min);
         if (!this._startTime) {
             this._startTime = time;
         }
