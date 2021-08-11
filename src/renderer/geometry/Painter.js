@@ -27,6 +27,7 @@ const TEMP_PAINT_EXTENT = new PointExtent();
 const TEMP_FIXED_EXTENT = new PointExtent();
 const TEMP_CLIP_EXTENT0 = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
+const TEMP_CLIP_EXTENT2 = new PointExtent();
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
 const TEMP_BBOX = {
@@ -213,16 +214,31 @@ class Painter extends Class {
         const mapStateCache = renderer.mapStateCache;
 
         const map = this.getMap(),
+            geometry = this.geometry,
             containerOffset = this.containerOffset;
-        let glZoom;
+        let glZoom, containerExtent;
         if (mapStateCache) {
             glZoom = mapStateCache.glZoom;
+            containerExtent = mapStateCache.containerExtent;
         } else {
             glZoom = map.getGLZoom();
+            containerExtent = map.getContainerExtent();
         }
         let cPoints;
         const roundPoint = this.getLayer().options['roundPoint'];
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+        const symbolizers = this.symbolizers || [];
+        const symbolizersLen = symbolizers.length;
+        const geometryWithView = this._geometryWithView;
+        function isDashLine() {
+            for (let i = 0; i < symbolizersLen; i++) {
+                const symbolizer = symbolizers[i];
+                if (symbolizer.style && symbolizer.style['lineDasharray'] && symbolizer.style['lineDasharray'].length) {
+                    return true;
+                }
+            }
+            return false;
+        }
         function pointsContainerPoints(viewPoints = [], alts = []) {
             const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
             for (let i = 0, len = pts.length; i < len; i++) {
@@ -240,6 +256,15 @@ class Painter extends Class {
                 miny = Math.min(p.y, miny);
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
+            }
+            if (geometryWithView === false && isDashLine()) {
+                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - 20;
+                TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - 20;
+                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + 20;
+                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + 20;
+                if (geometry.getShell && geometry.getHoles) {
+                    return clipPolygon(pts, TEMP_CLIP_EXTENT2);
+                }
             }
             return pts;
         }
@@ -329,6 +354,7 @@ class Painter extends Class {
     }
 
     _clip(points, altitude) {
+        this._geometryWithView = false;
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
             return {
@@ -380,6 +406,7 @@ class Painter extends Class {
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);
         let clipPoints = points;
         if (e.within(extent2D)) {
+            this._geometryWithView = true;
             // if (this.geometry.getJSONType() === 'LineString') {
             //     // clip line with altitude
             //     return this._clipLineByAlt(clipPoints, altitude);
