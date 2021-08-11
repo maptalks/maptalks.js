@@ -449,6 +449,8 @@ class CanvasRenderer extends Class {
             canvas.style.width = size.width + 'px';
             canvas.style.height = size.height + 'px';
         }
+        //flag canvas resize
+        canvas._isReSize = true;
     }
 
     /**

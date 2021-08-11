@@ -45,13 +45,14 @@ class CanvasSymbolizer extends Symbolizer {
         // 比如 PolygonFill和TextFill不同，就会导致问题出现，文字的绘制颜色会使用PolygonFill
         // 只有一个比如 StrokeAndFillSymbolizer ，TextMarkerSymbolizer，VectorMarkerSymbolizer
         if (geometry._symbolHash && geometry._painter && geometry._painter.symbolizers.length === 1) {
-            if (tempCtx === ctx && geometry._symbolHash === tempSymbolHash && geometry._layer === tempLayer) {
+            if (!ctx.canvas._isReSize && tempCtx === ctx && geometry._symbolHash === tempSymbolHash && geometry._layer === tempLayer) {
                 return;
             }
         }
         tempLayer = geometry._layer;
         tempSymbolHash = geometry._symbolHash;
         tempCtx = ctx;
+        ctx.canvas._isReSize = false;
         Canvas.prepareCanvas(ctx, style, resources, isHitTesting);
     }
 
