@@ -23,8 +23,14 @@ class StandardPainter extends MeshPainter {
     }
 
     createGeometry(glData) {
+        if (!glData) {
+            return null;
+        }
         if (Array.isArray(glData)) {
             return glData.map(data => this.createGeometry(data));
+        }
+        if (!glData.data || !glData.data.aPosition || !glData.data.aPosition.length) {
+            return null;
         }
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
             uv0Attribute: 'aTexCoord0'

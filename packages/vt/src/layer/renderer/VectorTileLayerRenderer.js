@@ -948,6 +948,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     });
                 });
             }
+            tile.image.cache = {};
         }
         //ask plugin to clear caches
         super.deleteTile(tile);
