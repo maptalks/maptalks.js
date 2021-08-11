@@ -265,6 +265,7 @@ class Painter extends Class {
                 if (geometry.getShell && geometry.getHoles) {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
+                // todo linestring
             }
             return pts;
         }
