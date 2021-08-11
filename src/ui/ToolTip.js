@@ -1,7 +1,7 @@
 import { createEl } from '../core/util/dom';
 import UIComponent from './UIComponent';
 
-const HIDEDOMEVENTS = 'remove hide shapechange positionchange symbolchange dragend animatestart';
+const HIDEDOMEVENTS = 'remove hide shapechange positionchange dragend animatestart';
 
 /**
  * @property {Object} options
