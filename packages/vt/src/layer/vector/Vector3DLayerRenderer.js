@@ -1,5 +1,6 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
+import { SYMBOLS_NEED_SETSTYLE } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
 import { extend, isNumber } from '../../common/Util';
@@ -959,6 +960,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
         const geo = e.target['_getParent']() || e.target;
+        const props = e.properties;
+        for (const p in props) {
+            if (props.hasOwnProperty(p)) {
+                if (SYMBOLS_NEED_SETSTYLE[p]) {
+                    this._convertAndRebuild(geo);
+                    return;
+                }
+            }
+        }
         const id = geo[ID_PROP];
         const symbol = geo['_getInternalSymbol']();
         const feas = this.features[id];

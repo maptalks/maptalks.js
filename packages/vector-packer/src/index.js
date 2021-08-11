@@ -15,3 +15,9 @@ import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
 //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
 export const PACK_TEX_SIZE = 128 / 256;
+export const SYMBOLS_NEED_SETSTYLE = {
+    'textName': 1,
+    'polygonPatternFile': 1,
+    'linePatternFile': 1,
+    'markerFile': 1
+};

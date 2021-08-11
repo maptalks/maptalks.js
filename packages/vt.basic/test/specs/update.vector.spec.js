@@ -148,6 +148,20 @@ describe('vector layers update style specs', () => {
         });
     });
 
+    it('should can update textName', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: '_'
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 0, 0, 255], [0, 0], () => {
+            marker.updateSymbol({
+                textName: '■■■',
+            });
+        }, false, [0, 0, 0, 0]);
+    });
 
     it('should can update properties based text', done => {
         const marker = new maptalks.Marker([0, 0], {
@@ -157,13 +171,12 @@ describe('vector layers update style specs', () => {
         });
 
         const layer = new PointLayer('point', marker);
-        assertChangeStyle(done, layer, [255, 0, 0, 255], [0, 0], () => {
+        assertChangeStyle(done, layer, [0, 0, 0, 255], [0, 0], () => {
             marker.setProperties({
                 content: '■■■'
             });
             marker.updateSymbol({
-                textName: '{content}',
-                textFill: '#f00',
+                textName: '{content}'
             });
         }, false, [0, 0, 0, 0]);
     });

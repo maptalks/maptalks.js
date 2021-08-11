@@ -8,7 +8,7 @@ import PointLayer from './vector/PointLayer';
 import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
 import initialize from './initialize';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil, SYMBOLS_NEED_SETSTYLE } from '@maptalks/vector-packer';
 
 VectorTileLayer.VERSION = version;
 Vector3DLayer.VERSION = version;
@@ -24,5 +24,6 @@ export {
     PointLayer,
     LineStringLayer,
     PolygonLayer,
-    PackUtil
+    PackUtil,
+    SYMBOLS_NEED_SETSTYLE
 };
