@@ -258,14 +258,22 @@ class Painter extends Class {
                 maxy = Math.max(p.y, maxy);
             }
             if (geometryWithView === false && isDashLine()) {
-                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - 20;
-                TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - 20;
-                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + 20;
-                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + 20;
+                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - 10;
+                TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - 10;
+                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + 10;
+                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + 10;
                 if (geometry.getShell && geometry.getHoles) {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
-                // todo linestring
+                let clipPts = clipLine(pts, TEMP_CLIP_EXTENT2, false);
+                if (clipPts.length) {
+                    clipPts = clipPts[0];
+                    const points = [];
+                    for (let i = 0, len = clipPts.length; i < len; i++) {
+                        points.push(clipPts[i].point);
+                    }
+                    return points;
+                }
             }
             return pts;
         }
@@ -420,12 +428,12 @@ class Painter extends Class {
         const glExtent2D = glExtent._expand(lineWidth * map._glScale);
         const { xmin, ymin, xmax, ymax } = glExtent2D;
         const dx = Math.abs(xmax - xmin), dy = Math.abs(ymax - ymin);
-        const maxEdge = Math.max(dx, dy);
-        const r = maxEdge / 2;
-        TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin - r;
-        TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax + r;
-        TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin - r;
-        TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + r;
+        const r = Math.sqrt(dx * dx + dy * dy);
+        const rx = (r - dx) / 2, ry = (r - dy) / 2;
+        TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin - rx;
+        TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax + rx;
+        TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin - ry;
+        TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + ry;
 
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
