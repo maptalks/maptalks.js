@@ -273,7 +273,7 @@ class TileLayer extends Layer {
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
                     offset: [0, 0],
-                    error
+                    error: error * res / map.getResolution(0)
                 });
             }
         }
