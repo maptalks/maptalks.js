@@ -230,6 +230,7 @@ class Painter extends Class {
         const symbolizers = this.symbolizers || [];
         const symbolizersLen = symbolizers.length;
         const geometryWithView = this._geometryWithView;
+        const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         function isDashLine() {
             for (let i = 0; i < symbolizersLen; i++) {
                 const symbolizer = symbolizers[i];
@@ -258,14 +259,13 @@ class Painter extends Class {
                 maxy = Math.max(p.y, maxy);
             }
             if (geometryWithView === false && isDashLine()) {
-                const bufferSize = 10;
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
-                if (TEMP_CLIP_EXTENT2.ymin < bufferSize) {
-                    TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - bufferSize;
+                if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
+                    TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
                 }
-                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - bufferSize;
-                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + bufferSize;
-                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + bufferSize;
+                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - clipBBoxBufferSize;
+                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + clipBBoxBufferSize;
+                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + clipBBoxBufferSize;
                 if (geometry.getShell && geometry.getHoles) {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
