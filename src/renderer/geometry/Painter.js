@@ -269,13 +269,14 @@ class Painter extends Class {
                 if (geometry.getShell && geometry.getHoles) {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
-                let clipPts = clipLine(pts, TEMP_CLIP_EXTENT2, false);
+                const clipPts = clipLine(pts, TEMP_CLIP_EXTENT2, false);
                 if (clipPts.length) {
-                    clipPts = clipPts[0];
                     const points = [];
-                    for (let i = 0, len = clipPts.length; i < len; i++) {
-                        points.push(clipPts[i].point);
-                    }
+                    clipPts.forEach(clipPt => {
+                        for (let i = 0, len = clipPt.length; i < len; i++) {
+                            points.push(clipPt[i].point);
+                        }
+                    });
                     return points;
                 }
             }
