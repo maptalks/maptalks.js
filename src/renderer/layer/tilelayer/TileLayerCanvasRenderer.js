@@ -62,7 +62,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.completeRender();
             return;
         }
-        const count = tileGrids.reduce((acc, curr) => acc + curr.count, 0);
+        const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
         if (count >= (this.tileCache.max / 2)) {
             this.tileCache.setMaxSize(count * 2 + 1);
         }
