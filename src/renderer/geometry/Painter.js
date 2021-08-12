@@ -258,10 +258,14 @@ class Painter extends Class {
                 maxy = Math.max(p.y, maxy);
             }
             if (geometryWithView === false && isDashLine()) {
-                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - 10;
-                TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - 10;
-                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + 10;
-                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + 10;
+                const bufferSize = 10;
+                TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
+                if (TEMP_CLIP_EXTENT2.ymin < bufferSize) {
+                    TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - bufferSize;
+                }
+                TEMP_CLIP_EXTENT2.xmin = containerExtent.xmin - bufferSize;
+                TEMP_CLIP_EXTENT2.xmax = containerExtent.xmax + bufferSize;
+                TEMP_CLIP_EXTENT2.ymax = containerExtent.ymax + bufferSize;
                 if (geometry.getShell && geometry.getHoles) {
                     return clipPolygon(pts, TEMP_CLIP_EXTENT2);
                 }
@@ -426,18 +430,24 @@ class Painter extends Class {
             };
         }
         const glExtent2D = glExtent._expand(lineWidth * map._glScale);
-        const { xmin, ymin, xmax, ymax } = glExtent2D;
-        const dx = Math.abs(xmax - xmin), dy = Math.abs(ymax - ymin);
-        const r = Math.sqrt(dx * dx + dy * dy);
-        const rx = (r - dx) / 2, ry = (r - dy) / 2;
-        TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin - rx;
-        TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax + rx;
-        TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin - ry;
-        TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + ry;
+
+        TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin;
+        TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax;
+        TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin;
+        TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax;
 
         const smoothness = geometry.options['smoothness'];
         // if (this.geometry instanceof Polygon) {
         if (geometry.getShell && this.geometry.getHoles && !smoothness) {
+            //polygon buffer clip bbox
+            const { xmin, ymin, xmax, ymax } = glExtent2D;
+            const dx = Math.abs(xmax - xmin), dy = Math.abs(ymax - ymin);
+            const r = Math.sqrt(dx * dx + dy * dy);
+            const rx = (r - dx) / 2, ry = (r - dy) / 2;
+            TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin - rx;
+            TEMP_CLIP_EXTENT0.xmax = glExtent2D.xmax + rx;
+            TEMP_CLIP_EXTENT0.ymin = glExtent2D.ymin - ry;
+            TEMP_CLIP_EXTENT0.ymax = glExtent2D.ymax + ry;
             // clip the polygon to draw less and improve performance
             if (!Array.isArray(points[0])) {
                 clipPoints = clipPolygon(points, TEMP_CLIP_EXTENT0);
