@@ -229,7 +229,7 @@ class Painter extends Class {
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         const symbolizers = this.symbolizers || [];
         const symbolizersLen = symbolizers.length;
-        const geometryWithView = this._geometryWithView;
+        let inView = false;
         const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         function isDashLine() {
             for (let i = 0; i < symbolizersLen; i++) {
@@ -258,7 +258,7 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (geometryWithView === false && isDashLine()) {
+            if (!inView && isDashLine()) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
@@ -291,6 +291,9 @@ class Painter extends Class {
             let clipped;
             if (!disableClip && geometry.options['enableClip']) {
                 clipped = this._clip(points, altitude);
+                if (clipped.inView) {
+                    inView = true;
+                }
             } else {
                 clipped = {
                     points: points,
@@ -368,7 +371,6 @@ class Painter extends Class {
     }
 
     _clip(points, altitude) {
-        this._geometryWithView = false;
         // linestring polygon clip
         if (isNumber(altitude) && altitude !== 0) {
             return {
@@ -420,14 +422,14 @@ class Painter extends Class {
         const e = this.get2DExtent(null, TEMP_CLIP_EXTENT1);
         let clipPoints = points;
         if (e.within(extent2D)) {
-            this._geometryWithView = true;
             // if (this.geometry.getJSONType() === 'LineString') {
             //     // clip line with altitude
             //     return this._clipLineByAlt(clipPoints, altitude);
             // }
             return {
                 points: clipPoints,
-                altitude: altitude
+                altitude: altitude,
+                inView: true
             };
         }
         const glExtent2D = glExtent._expand(lineWidth * map._glScale);
