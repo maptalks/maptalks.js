@@ -2017,7 +2017,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     _pointToPrj(point, zoom, out) {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        return this._spatialReference.getTransformation().untransform(point, this._getResolution(zoom), out);
+        const res = this._getResolution(zoom);
+        return this._pointToPrjAtRes(point, res, out);
+    }
+
+    _pointToPrjAtRes(point, res, out) {
+        return this._spatialReference.getTransformation().untransform(point, res, out);
     }
 
     /**
