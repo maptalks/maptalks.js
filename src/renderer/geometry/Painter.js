@@ -229,7 +229,7 @@ class Painter extends Class {
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         const symbolizers = this.symbolizers || [];
         const symbolizersLen = symbolizers.length;
-        let inView = false;
+        let needClip = true;
         const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         function isDashLine() {
             for (let i = 0; i < symbolizersLen; i++) {
@@ -258,7 +258,7 @@ class Painter extends Class {
                 maxx = Math.max(p.x, maxx);
                 maxy = Math.max(p.y, maxy);
             }
-            if (!inView && isDashLine()) {
+            if (needClip && isDashLine()) {
                 TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin;
                 if (TEMP_CLIP_EXTENT2.ymin < clipBBoxBufferSize) {
                     TEMP_CLIP_EXTENT2.ymin = containerExtent.ymin - clipBBoxBufferSize;
@@ -292,7 +292,7 @@ class Painter extends Class {
             if (!disableClip && geometry.options['enableClip']) {
                 clipped = this._clip(points, altitude);
                 if (clipped.inView) {
-                    inView = true;
+                    needClip = false;
                 }
             } else {
                 clipped = {
