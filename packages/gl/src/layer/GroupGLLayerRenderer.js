@@ -85,9 +85,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
     _renderChildLayers(methodName, args) {
         this._renderMode = 'default';
         const drawContext = this._getDrawContext(args);
-        if (!this._envPainter) {
-            this._envPainter = new EnvironmentPainter(this.regl, this.layer);
-        }
         this._envPainter.paint(drawContext);
         //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
         this.drawGround(true);
@@ -372,6 +369,18 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         });
         this.gl.regl = this.regl;
         this._jitter = [0, 0];
+
+
+        this._groundPainter = new GroundPainter(this.regl, this.layer);
+        this._envPainter = new EnvironmentPainter(this.regl, this.layer);
+
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.postProcess;
+        const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
+        this._jitGetter = new reshader.Jitter(ratio);
+        this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
+
+        this._shadowPass = new ShadowPass(this.regl, sceneConfig, this.layer);
     }
 
     _initGL() {
@@ -574,7 +583,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     drawGround(forceRender) {
         if (!this._groundPainter) {
-            this._groundPainter = new GroundPainter(this.regl, this.layer);
+            return false;
         }
         const context = this.getFrameContext();
         const jitter = context.jitter;
@@ -746,16 +755,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         };
 
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
-        let jitGetter = this._jitGetter;
-        if (!jitGetter) {
-            jitGetter = this._jitGetter = new reshader.Jitter(ratio);
-        } else {
-            jitGetter.setRatio(ratio);
-        }
-
-        if (!this._postProcessor) {
-            this._postProcessor = new PostProcess(this.regl, this.layer, this._jitGetter);
-        }
+        const jitGetter = this._jitGetter;
+        jitGetter.setRatio(ratio);
 
         const ssrMode = this.isSSROn();
         let renderTarget;
@@ -867,9 +868,6 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 delete this._shadowPass;
             }
             return null;
-        }
-        if (!this._shadowPass) {
-            this._shadowPass = new ShadowPass(this.regl, sceneConfig, this.layer);
         }
         const shadow = {
             config: sceneConfig.shadow,

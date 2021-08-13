@@ -469,7 +469,10 @@ class GroundPainter {
     _updateLights(param) {
         if (param.ambientUpdate) {
             this._disposeIblTextures();
-            this._iblTexes = createIBLTextures(this._regl, this.getMap());
+            const map = this.getMap();
+            if (map) {
+                this._iblTexes = createIBLTextures(this._regl, map);
+            }
         }
         this.setToRedraw();
     }
