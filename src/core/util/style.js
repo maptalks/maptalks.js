@@ -1,4 +1,4 @@
-import { extend, isNil, isString, isObject } from './common';
+import { extend, isNil, isString, isObject, isNumber } from './common';
 import { hashCode } from './strings';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
@@ -205,4 +205,28 @@ function parseStops(value, replacer) {
         }
     }
     return value;
+}
+
+/**
+ * geometry symbol has lineDasharray
+ * @param {*} symbolizers
+ * @returns
+ */
+export function isDashLine(symbolizers = []) {
+    if (!Array.isArray(symbolizers)) {
+        symbolizers = [symbolizers];
+    }
+    const len = symbolizers.length;
+    for (let i = 0; i < len; i++) {
+        const symbolizer = symbolizers[i];
+        if (!symbolizer.style) {
+            continue;
+        }
+        const { lineDasharray, lineWidth } = symbolizer.style;
+        if (lineWidth && isNumber(lineWidth) && lineWidth > 0 && lineDasharray && Array.isArray(lineDasharray) && lineDasharray.length) {
+            return true;
+        }
+    }
+    return false;
+
 }

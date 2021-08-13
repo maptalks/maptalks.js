@@ -40,7 +40,8 @@ const options = {
     'drawAltitude': false,
     'sortByDistanceToCamera': false,
     'roundPoint': false,
-    'altitude': 0
+    'altitude': 0,
+    'clipBBoxBufferSize': 3
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
