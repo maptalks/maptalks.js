@@ -36,9 +36,8 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         }
 
         const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
-        const size = this.layer.getTileSize(tileInfo.layer);
-        const w = size.width;
-        const h = size.height;
+        const w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
+        const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
@@ -172,5 +171,4 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 TileLayer.registerRenderer('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;
-
 
