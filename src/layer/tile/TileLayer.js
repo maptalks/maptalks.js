@@ -740,6 +740,7 @@ class TileLayer extends Layer {
         this._sr = new SpatialReference(config);
         this._srMinZoom = this._sr.getMinZoom();
         this._srMaxZoom = this._sr.getMaxZoom();
+        this._hasOwnSR = this._sr.toJSON().projection !== map.getSpatialReference().toJSON().projection;
         return this._sr;
     }
 
@@ -760,10 +761,12 @@ class TileLayer extends Layer {
     }
 
     _getTileZoom(zoom) {
-        const res0 = this.getMap().getResolution(zoom);
-        const res1 = this.getSpatialReference().getResolution(zoom);
-        const dz = Math.log(res1 / res0) * Math.LOG2E; // polyfill of Math.log2
-        zoom += dz;
+        if (!this._hasOwnSR) {
+            const res0 = this.getMap().getResolution(zoom);
+            const res1 = this.getSpatialReference().getResolution(zoom);
+            const dz = Math.log(res1 / res0) * Math.LOG2E; // polyfill of Math.log2
+            zoom += dz;
+        }
         const maxZoom = this.options['maxAvailableZoom'];
         if (!isNil(maxZoom) && zoom > maxZoom) {
             zoom = maxZoom;
@@ -820,7 +823,9 @@ class TileLayer extends Layer {
         };
         const sr = this.getSpatialReference();
         const res = sr.getResolution(zoom);
-        const glScale = res / map.getResolution(map.getGLZoom());
+        const glScale = map.getGLScale(z);
+
+        // const glScale = res / map.getResolution(map.getGLZoom());
         const repeatWorld = !this._hasOwnSR && this.options['repeatWorld'];
 
         const extent2d = this._convertToExtent2d(containerExtent);
@@ -1133,7 +1138,6 @@ class TileLayer extends Layer {
         //     const base = map.getBaseLayer()._getTileConfig();
         //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
         // }
-        this._hasOwnSR = sr.toJSON().projection !== map.getSpatialReference().toJSON().projection;
         delete this._rootNodes;
         delete this._tileFullExtent;
         delete this._disablePyramid;
@@ -1155,6 +1159,7 @@ class TileLayer extends Layer {
                 });
             }
         }
+        this._onSpatialReferenceChange();
         return super._bindMap.apply(this, arguments);
     }
 
@@ -1200,6 +1205,7 @@ class TileLayer extends Layer {
         delete this._defaultTileConfig;
         delete this._sr;
         delete this._srMinZoom;
+        delete this._hasOwnSR;
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.clear();
