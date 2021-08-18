@@ -450,7 +450,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
-            tileSize = this.layer.getTileSize(tileInfo.layer),
             zoom = map.getZoom(),
             ctx = this.context,
             cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
@@ -467,7 +466,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         let x = cp.x,
             y = cp.y;
-        let w = tileSize.width, h = tileSize.height;
+        let w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
+        let h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
         if (transformed) {
             ctx.save();
             ctx.translate(x, y);
