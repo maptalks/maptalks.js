@@ -43,6 +43,8 @@
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "electron": "^4.2.12",
+    "electron-mocha": "^6.0.4",
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
     "maptalks": "^1.0.0-alpha.22",
