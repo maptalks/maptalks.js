@@ -14,7 +14,7 @@ export const onmessage = function (message, postResponse) {
             this.dispatcher.receive(message);
         }
     } else {
-        this.dispatcher[data.command]({ actorId : message.actorId, mapId: data.mapId, layerId : data.layerId, params : data.params }, (err, data, buffers) => {
+        this.dispatcher[data.command]({ actorId: message.actorId, mapId: data.mapId, layerId: data.layerId, params: data.params }, (err, data, buffers) => {
             postResponse(err, data, buffers);
         });
     }

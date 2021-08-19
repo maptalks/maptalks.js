@@ -101,8 +101,8 @@ export function buildWireframe(
 
     const data = {
         aPosition: new posArrayType(vertices),  // vertexes
-        indices : tIndices,    // indices for drawElements
-        aPickingId : new feaCtor(featIndexes)     // vertex index of each feature
+        indices: tIndices,    // indices for drawElements
+        aPickingId: new feaCtor(featIndexes)     // vertex index of each feature
     };
     return data;
 }

@@ -58,9 +58,9 @@ export function buildShadowVolume(allVerts, allVertIds, allIndices, allNormals, 
         features[i] = shadowIndices.length;
     }
     return {
-        vertices : new Int16Array(shadowVerts),
-        indices : exportIndices(shadowIndices),
-        indexes : features
+        vertices: new Int16Array(shadowVerts),
+        indices: exportIndices(shadowIndices),
+        indexes: features
     };
 }
 
@@ -81,19 +81,19 @@ function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
         v2 = verticeIds[i + 2];
 
         faceEdges[0] = {
-            edgeId : v0 < v1 ? v0 + ':' + v1 : v1 + ':' + v0,
-            v0 : indices[i],
-            v1 : indices[i + 1]
+            edgeId: v0 < v1 ? v0 + ':' + v1 : v1 + ':' + v0,
+            v0: indices[i],
+            v1: indices[i + 1]
         };
         faceEdges[1] = {
-            edgeId : v2 < v1 ? v2 + ':' + v1 : v1 + ':' + v2,
-            v0 : indices[i + 1],
-            v1 : indices[i + 2]
+            edgeId: v2 < v1 ? v2 + ':' + v1 : v1 + ':' + v2,
+            v0: indices[i + 1],
+            v1: indices[i + 2]
         };
         faceEdges[2] = {
-            edgeId : v0 < v2 ? v0 + ':' + v2 : v2 + ':' + v0,
-            v0 : indices[i + 2],
-            v1 : indices[i]
+            edgeId: v0 < v2 ? v0 + ':' + v2 : v2 + ':' + v0,
+            v0: indices[i + 2],
+            v1: indices[i]
         };
 
         const idx = indices[i] * 3;
@@ -129,8 +129,8 @@ function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
     }
     if (!front.length) {
         return {
-            vertices : [],
-            indices : []
+            vertices: [],
+            indices: []
         };
     }
 
@@ -181,8 +181,8 @@ function buildFeatureShadow(vertices, verticeIds, indices, normals, shadowDir) {
     }
 
     return {
-        vertices : shadowVerts,
-        indices : shadowIndices
+        vertices: shadowVerts,
+        indices: shadowIndices
     };
 }
 

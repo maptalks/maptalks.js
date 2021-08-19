@@ -1,5 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend } from '../../Util';
+import { extend, hasOwn } from '../../Util';
 import MeshPainter from '../MeshPainter';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
@@ -261,7 +261,7 @@ class StandardPainter extends MeshPainter {
         const material = {};
         let hasTexture = false;
         for (const p in materialConfig) {
-            if (materialConfig.hasOwnProperty(p)) {
+            if (hasOwn(materialConfig, p)) {
                 if (p.indexOf('Texture') > 0) {
                     //纹理图片
                     let texConf = materialConfig[p];

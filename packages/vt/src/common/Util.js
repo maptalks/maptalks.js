@@ -198,3 +198,7 @@ export function compileStyle(styles) {
 export function isFnTypeSymbol(name, symbolDef) {
     return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
 }
+
+export function hasOwn(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}

@@ -114,7 +114,7 @@ const Ajax = {
                                 data,
                                 cacheControl: response.headers.get('Cache-Control'),
                                 expires: response.headers.get('Expires'),
-                                contentType : response.headers.get('Content-Type')
+                                contentType: response.headers.get('Content-Type')
                             });
                         } else {
                             cb(null, data);
@@ -167,7 +167,7 @@ const Ajax = {
                                 data: client.response,
                                 cacheControl: client.getResponseHeader('Cache-Control'),
                                 expires: client.getResponseHeader('Expires'),
-                                contentType : client.getResponseHeader('Content-Type')
+                                contentType: client.getResponseHeader('Content-Type')
                             });
                         }
                     } else {

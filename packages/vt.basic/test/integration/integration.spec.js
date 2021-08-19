@@ -3,7 +3,7 @@ const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
-const { match, readSpecs, writeImageData } = require('./util');
+const { match, readSpecs, writeImageData, hasOwn } = require('./util');
 const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
@@ -181,7 +181,7 @@ describe('vector tile integration specs', () => {
     context('post process render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'post-process'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, postProcessRunner(p, specs[p]));
             }
         }
@@ -191,7 +191,7 @@ describe('vector tile integration specs', () => {
     context('icon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'icon'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -200,7 +200,7 @@ describe('vector tile integration specs', () => {
     context('text specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'text'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -209,7 +209,7 @@ describe('vector tile integration specs', () => {
     context('line specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'line'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -218,7 +218,7 @@ describe('vector tile integration specs', () => {
     context('polygon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'polygon'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -227,7 +227,7 @@ describe('vector tile integration specs', () => {
     context('native point specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'native-point'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -236,7 +236,7 @@ describe('vector tile integration specs', () => {
     context('native line specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'native-line'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -245,7 +245,7 @@ describe('vector tile integration specs', () => {
     context('default render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'default'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -254,7 +254,7 @@ describe('vector tile integration specs', () => {
     context('extrusion render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'extrusion'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -263,7 +263,7 @@ describe('vector tile integration specs', () => {
     context('gltf render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'gltf'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
@@ -272,9 +272,11 @@ describe('vector tile integration specs', () => {
     context('feature render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'feature-style'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it(p, runner(p, specs[p]));
             }
         }
     });
 });
+
+

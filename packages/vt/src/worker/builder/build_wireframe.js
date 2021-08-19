@@ -6,7 +6,7 @@ export default function (features, dataConfig, extent) {
     const indices = frames.indices;
     delete frames.indices;
     return {
-        data : {
+        data: {
             data: frames,
             indices
         },

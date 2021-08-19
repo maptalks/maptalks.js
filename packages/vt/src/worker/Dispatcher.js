@@ -142,12 +142,12 @@ export default class Dispatcher {
         const id = callback ? `${actorId}-${callbackId++}` : null;
         if (callback) this._callbacks[id] = callback;
         postMessage({
-            type : '<request>',
-            workerId : this.workerId,
+            type: '<request>',
+            workerId: this.workerId,
             actorId,
             command,
             params,
-            callback : String(id)
+            callback: String(id)
         }, buffers || []);
     }
 

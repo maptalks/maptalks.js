@@ -5,9 +5,9 @@ import { isString } from '../../common/Util';
 const options = {
     //feature data to return from worker
     //for geojson layer, only need to return id of features
-    features : 'id',
-    tileBuffer : 64,
-    extent : 8192,
+    features: 'id',
+    tileBuffer: 64,
+    extent: 8192,
     pyramidMode: 1
 };
 

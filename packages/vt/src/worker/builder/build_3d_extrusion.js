@@ -34,10 +34,10 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         features, extent,
         {
             altitudeScale, altitudeProperty,
-            defaultAltitude : defaultAltitude || 0,
+            defaultAltitude: defaultAltitude || 0,
             heightProperty,
             minHeightProperty,
-            defaultHeight : defaultHeight || 0
+            defaultHeight: defaultHeight || 0
         },
         {
             top, side,
@@ -98,7 +98,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
 
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
     const data =  {
-        data : {
+        data: {
             data: {
                 aPosition: faces.vertices,
                 aNormal: faces.normals,

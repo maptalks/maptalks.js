@@ -2,7 +2,7 @@ const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
-const { match, readSpecs } = require('./util');
+const { match, readSpecs, hasOwn } = require('./util');
 const { PointLayer, LineStringLayer, PolygonLayer } = require('@maptalks/vt');
 require('../../dist/maptalks.vt.basic');
 
@@ -79,7 +79,7 @@ describe('vector 3d integration specs', () => {
     context('icon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'icon'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it('icon-' + p, runner(p, PointLayer, specs[p]));
             }
         }
@@ -88,7 +88,7 @@ describe('vector 3d integration specs', () => {
     context('line specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'line'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it('line-' + p, runner(p, LineStringLayer, specs[p]));
             }
         }
@@ -97,7 +97,7 @@ describe('vector 3d integration specs', () => {
     context('polygon specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'polygon'));
         for (const p in specs) {
-            if (specs.hasOwnProperty(p)) {
+            if (hasOwn(specs, p)) {
                 it('polygon-' + p, runner(p, PolygonLayer, specs[p]));
             }
         }

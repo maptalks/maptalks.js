@@ -1,4 +1,4 @@
-import { extend } from '../../../common/Util';
+import { extend, hasOwn } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
 
@@ -61,7 +61,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         for (let i = 0; i < len; i++) {
             const props = i === len - 1 ? properties : extend({}, properties);
             for (const p in symbol[i]) {
-                if (symbol[i].hasOwnProperty(p)) {
+                if (hasOwn(symbol[i], p)) {
                     props['_symbol_' + p] = symbol[i][p];
                 }
             }
@@ -79,7 +79,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         return features;
     } else {
         for (const p in symbol) {
-            if (symbol.hasOwnProperty(p)) {
+            if (hasOwn(symbol, p)) {
                 properties['_symbol_' + p] = symbol[p];
             }
         }

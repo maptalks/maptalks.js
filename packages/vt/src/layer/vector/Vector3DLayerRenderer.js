@@ -3,7 +3,7 @@ import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { SYMBOLS_NEED_SETSTYLE } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
-import { extend, isNumber } from '../../common/Util';
+import { extend, isNumber, hasOwn } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Promise from '../../common/Promise';
@@ -198,7 +198,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         // const KEY_IDX_NAME = (KEY_IDX + '').trim();
         // let count = 0;
         for (const p in this.features) {
-            if (this.features.hasOwnProperty(p)) {
+            if (hasOwn(this.features, p)) {
                 const feature = this.features[p];
                 if (Array.isArray(feature)) {
                     // count = count++;
@@ -693,7 +693,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     const count = packData[i].data.featureIds.length;
                     const datas = packData[i].data.data;
                     for (const p in datas) {
-                        if (datas.hasOwnProperty(p)) {
+                        if (hasOwn(datas, p)) {
                             const data = datas[p];
                             mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
                             // mesh.geometry.updateData(p, data);
@@ -962,7 +962,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const geo = e.target['_getParent']() || e.target;
         const props = e.properties;
         for (const p in props) {
-            if (props.hasOwnProperty(p)) {
+            if (hasOwn(props, p)) {
                 if (SYMBOLS_NEED_SETSTYLE[p]) {
                     this._convertAndRebuild(geo);
                     return;
@@ -1334,7 +1334,7 @@ function compareSymbolProp(symbol, feature) {
         return false;
     }
     for (const p in symbol) {
-        if (symbol.hasOwnProperty(p)) {
+        if (hasOwn(symbol, p)) {
             // 如果有fn-type的属性被更新，则重新rebuild all
             if (isFunctionDefinition(symbol[p]) !== isFunctionDefinition(feature.properties[prefix + p])) {
                 return false;

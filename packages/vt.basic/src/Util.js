@@ -142,3 +142,7 @@ export function isNumber(val) {
 export function isIconText(symbolDef) {
     return symbolDef && (symbolDef.markerFile || symbolDef.markerType) && symbolDef.textName !== undefined;
 }
+
+export function hasOwn(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}

@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, compileStyle, isNil, isString } from '../../common/Util';
+import { extend, compileStyle, isNil, isString, hasOwn } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
@@ -401,7 +401,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         const target = style.symbol;
         function update() {
             for (const p in symbol) {
-                if (symbol.hasOwnProperty(p)) {
+                if (hasOwn(symbol, p)) {
                     if (maptalks.Util.isObject(symbol[p]) && !Array.isArray(symbol[p]) && !symbol[p].stops) {
                         //对象类型的属性则extend
                         if (!target[p]) {

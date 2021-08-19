@@ -19,5 +19,8 @@ export const SYMBOLS_NEED_SETSTYLE = {
     'textName': 1,
     'polygonPatternFile': 1,
     'linePatternFile': 1,
-    'markerFile': 1
+    'markerFile': 1,
+    'textStyle': 1,
+    'textFaceName': 1,
+    'textWeight': 1
 };

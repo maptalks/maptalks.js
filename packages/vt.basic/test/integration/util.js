@@ -7,6 +7,10 @@ const image0 = new Image();
 
 const canvas = document.createElement('canvas');
 module.exports = {
+    hasOwn(obj, prop) {
+        return Object.prototype.hasOwnProperty.call(obj, prop);
+    },
+
     match(canvas, expectedPath, cb) {
         image0.onload = () => {
             const width = expectedCanvas.width = image0.width;

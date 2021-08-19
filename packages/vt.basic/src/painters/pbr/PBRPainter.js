@@ -1,6 +1,6 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { extend } from '../../Util';
+import { extend, hasOwn } from '../../Util';
 import Painter from '../Painter';
 import ShadowMapPass from './ShadowMapPass.js';
 import StencilShadowPass from './StencilShadowPass.js';
@@ -273,7 +273,7 @@ class PBRPainter extends Painter {
         const materialConfig = this.sceneConfig.material;
         const material = {};
         for (const p in materialConfig) {
-            if (materialConfig.hasOwnProperty(p)) {
+            if (hasOwn(materialConfig, p)) {
                 if (p.indexOf('Map') > 0) {
                     //a texture image
                     material[p] = new reshader.Texture2D({

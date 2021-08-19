@@ -2,6 +2,7 @@ import LayerWorker from './BaseLayerWorker';
 import Pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
+import { hasOwn } from '../../common/Util';
 
 export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, cache, loadings, callback) {
@@ -31,7 +32,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
             const layers = {};
             let feature;
             for (const layer in tile.layers) {
-                if (tile.layers.hasOwnProperty(layer)) {
+                if (hasOwn(tile.layers, layer)) {
                     layers[layer] = {
                         types: {}
                     };
@@ -43,11 +44,11 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         // feature.properties['$layer'] = layer;
                         // feature.properties['$type'] = feature.type;
                         features.push({
-                            type : feature.type,
-                            layer : layer,
-                            geometry : feature.loadGeometry(),
-                            properties : feature.properties,
-                            extent : feature.extent
+                            type: feature.type,
+                            layer: layer,
+                            geometry: feature.loadGeometry(),
+                            properties: feature.properties,
+                            extent: feature.extent
                         });
                     }
                 }

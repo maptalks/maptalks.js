@@ -2,7 +2,7 @@ import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
 import { SYMBOLS_NEED_SETSTYLE } from '@maptalks/vt';
 import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { extend, copyJSON, isNil } from '../Util';
+import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 
@@ -519,7 +519,7 @@ class Painter {
 
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
         for (const p in newSymbolDef) {
-            if (newSymbolDef.hasOwnProperty(p)) {
+            if (hasOwn(newSymbolDef, p)) {
                 if (SYMBOLS_NEED_SETSTYLE[p]) {
                     return true;
                 }
@@ -627,7 +627,7 @@ class Painter {
         const myTextures = this._myTextures;
         if (myTextures) {
             for (const url in myTextures) {
-                if (myTextures.hasOwnProperty(url)) {
+                if (hasOwn(myTextures, url)) {
                     if (map[TEX_CACHE_KEY][url]) {
                         map[TEX_CACHE_KEY][url].count--;
                         if (map[TEX_CACHE_KEY][url].count <= 0) {

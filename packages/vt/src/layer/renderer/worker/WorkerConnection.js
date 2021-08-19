@@ -32,12 +32,12 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const options = layer.getWorkerOptions() || {};
         const layerId = this._workerLayerId, type = layer.getJSONType();
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'addLayer',
-            params : {
-                type : type,
-                options : options
+            command: 'addLayer',
+            params: {
+                type: type,
+                options: options
             }
         };
         if (this._isDedicated) {
@@ -53,10 +53,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     abortTile(url, cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'abortTile',
-            params : {
+            command: 'abortTile',
+            params: {
                 url
             }
         };
@@ -73,9 +73,9 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     removeLayer(cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'removeLayer'
+            command: 'removeLayer'
         };
         if (this._isDedicated) {
             if (this._dedicatedVTWorkers[layerId] !== undefined) {
@@ -90,10 +90,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     updateStyle(style, cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'updateStyle',
-            params : style
+            command: 'updateStyle',
+            params: style
         };
         if (this._isDedicated) {
             if (this._dedicatedVTWorkers[layerId] !== undefined) {
@@ -107,10 +107,10 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     updateOptions(options, cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'updateOptions',
-            params : options
+            command: 'updateOptions',
+            params: options
         };
         if (this._isDedicated) {
             if (this._dedicatedVTWorkers[layerId] !== undefined) {
@@ -125,13 +125,13 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     loadTile(context, cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
-            command : 'loadTile',
-            params : {
-                tileInfo : toJSON(context.tileInfo),
-                glScale : context.glScale,
-                zScale : context.zScale
+            command: 'loadTile',
+            params: {
+                tileInfo: toJSON(context.tileInfo),
+                glScale: context.glScale,
+                zScale: context.zScale
             }
         };
         const { x, y } = context.tileInfo;
@@ -170,7 +170,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
     setData(geojson, cb) {
         const layerId = this._workerLayerId;
         const data = {
-            mapId : this._mapId,
+            mapId: this._mapId,
             layerId,
             command: 'setData',
             params: {

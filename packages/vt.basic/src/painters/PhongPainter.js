@@ -1,6 +1,6 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
-import { extend } from '../Util';
+import { extend, hasOwn } from '../Util';
 import MeshPainter from './MeshPainter';
 
 class PhongPainter extends MeshPainter {
@@ -162,7 +162,7 @@ class PhongPainter extends MeshPainter {
         const materialConfig = this.getSymbols()[0].material;
         const material = {};
         for (const p in materialConfig) {
-            if (materialConfig.hasOwnProperty(p)) {
+            if (hasOwn(materialConfig, p)) {
                 material[p] = materialConfig[p];
             }
         }
