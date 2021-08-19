@@ -257,7 +257,7 @@ export default class BaseLayerWorker {
 
         return Promise.all(promises).then(([styleCount, ...tileDatas]) => {
             function handleTileData(tileData, i) {
-                if (tileData.ref !== undefined) {
+                if (tileData.data.ref !== undefined) {
                     return;
                 }
                 tileData.data.type = pluginConfigs[pluginIndexes[i].idx].renderPlugin.dataConfig.type;
@@ -285,6 +285,9 @@ export default class BaseLayerWorker {
                             continue;
                         }
                         handleTileData(tileData[ii], i);
+                        if (tileData[ii].data.ref !== undefined && !tileData[tileData[ii].data.ref]) {
+                            continue;
+                        }
                         datas.push(tileData[ii].data);
                     }
                     if (datas.length) {
@@ -708,7 +711,7 @@ function parseSymbolAndGenPromises(features, symbol, options, clazz, scale) {
             if (i === first) {
                 promises.push(new clazz(features, symbols[i], options).load(scale));
             } else {
-                promises.push({ data: { ref: first, symbolIndex: { index: i }}});
+                promises.push({ data: { ref: first, symbolIndex: { index: i } } });
             }
         } else {
             promises.push(new clazz(features, symbols[i], options).load(scale));

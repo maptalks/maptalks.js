@@ -1177,6 +1177,70 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('can load null tile ref data', done => {
+        // 多symbol style，第二个symbol因为geometry和第一个symbol相同，会用ref引用第一个geometry，这个测试是为了测试第一个geometry为null时的空指针异常
+        const lines = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    type: "Feature",
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [
+                            [13.41706531630723, 52.529564627058534],
+                            [13.417135053741617, 52.52956625878565],
+                            [13.417226248848124, 52.52954504632825],
+                            [13.417290621864481, 52.52956625878565],
+                            [13.417635229170008, 52.529564137540376]
+                        ]
+                    },
+                    properties: {
+                      gradients: [0, 'red', 0.7, 'yellow', 1, 'green'],
+                      type: 2,
+                      height: 50
+                    }
+                }
+            ]
+        };
+        const renderPlugin = {
+            type: 'line',
+            dataConfig: {
+              type: 'line'
+            },
+            sceneConfig: {
+            }
+          };
+
+        const style = [
+          {
+            filter: true,
+            renderPlugin,
+
+            symbol: [
+              {
+                lineWidth: 12,
+                lineColor: '#f00',
+                lineOpacity: 0.5
+              },
+              {
+                lineWidth: 6,
+                lineColor: '#000',
+                lineOpacity: 0.5
+              }
+            ]
+          }
+        ];
+        map.setCenterAndZoom([13.417383158075495,52.529497236675155], 17.5);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: lines,
+            style
+        });
+        layer.once('canvasisdirty', () => {
+            done();
+        });
+        layer.addTo(map);
+    });
+
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style) {
         style = style || [

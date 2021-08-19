@@ -163,6 +163,52 @@ describe('vector layers update style specs', () => {
         }, false, [0, 0, 0, 0]);
     });
 
+    it('should can update textStyle', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: '■■■',
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 0, 0, 255], [0, 0], () => {
+            marker.updateSymbol({
+                textStyle: 'italic',
+            });
+        }, false, [0, 0, 0, 255]);
+    });
+
+    it('should can update textWeight', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: '■■■',
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 0, 0, 255], [0, 0], () => {
+            marker.updateSymbol({
+                textWeight: 'bold',
+            });
+        }, false, [0, 0, 0, 255]);
+    });
+
+    it('should can update textFaceName', done => {
+        const marker = new maptalks.Marker([0, 0], {
+            symbol: {
+                textName: '■■■',
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [0, 0, 0, 255], [0, 0], () => {
+            marker.updateSymbol({
+                textFaceName: 'monospace',
+            });
+        }, false, [0, 0, 0, 255]);
+    });
+
+
     it('should can update properties based text', done => {
         const marker = new maptalks.Marker([0, 0], {
             symbol: {
