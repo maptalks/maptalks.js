@@ -186,7 +186,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             'markerWidth': getValueOrDefault(s['markerWidth'], DEFAULT_MARKER_SYMBOLS.markerWidth),
             'markerHeight': getValueOrDefault(s['markerHeight'], DEFAULT_MARKER_SYMBOLS.markerHeight),
 
-            'markerRotation': getValueOrDefault(s['markerRotation'], 0)
+            'markerRotation': getValueOrDefault(s['markerRotation'], 0),
+            'shadowBlur': getValueOrDefault(s['shadowBlur'], 0),
+            'shadowOffsetX': getValueOrDefault(s['shadowOffsetX'], 0),
+            'shadowOffsetY': getValueOrDefault(s['shadowOffsetY'], 0),
         };
         const markerType = result['markerType'];
         const ha = getDefaultHAlign(markerType);

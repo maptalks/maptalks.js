@@ -436,6 +436,27 @@ describe('Geometry.Marker', function () {
         map.addLayer(layer);
     });
 
+    it('vector marker size with shadowBlur', function () {
+        var marker = new maptalks.Marker(map.getCenter(), {
+            symbol : {
+                markerType : 'ellipse',
+                markerWidth : 40,
+                markerHeight : 40,
+                shadowBlur: 20
+            }
+        });
+        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+        layer.addGeometry([marker]);
+        var size = marker.getSize();
+        expect(size.width).to.be.above(60);
+        expect(size.height).to.be.above(60);
+
+
+        var fixedExtent = marker._getPainter().getFixedExtent();
+        expect(fixedExtent.getWidth()).to.be.above(60);
+        expect(fixedExtent.getHeight()).to.be.above(60);
+    });
+
     describe('function type symbols', function () {
         it('vector marker\'s size changes with zoom', function (done) {
             map.config('zoomAnimation', false);
