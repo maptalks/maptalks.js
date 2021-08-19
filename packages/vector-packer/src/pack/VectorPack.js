@@ -98,6 +98,7 @@ export default class VectorPack {
         if (!features.length) {
             return features;
         }
+        const keyName = (KEY_IDX + '').trim();
         let i = 0;
         let first = features[i];
         while (!first.geometry) {
@@ -129,7 +130,7 @@ export default class VectorPack {
                     const feas = convert(feature);
                     for (let ii = 0; ii < feas.length; ii++) {
                         const fea = feas[ii];
-                        fea[KEY_IDX] = feature[KEY_IDX];
+                        fea[keyName] = feature[keyName];
                         checked.push(fea);
                     }
                 }
@@ -168,6 +169,8 @@ export default class VectorPack {
     }
 
     load(scale = 1) {
+        // fix terser's bug
+        const keyName = (KEY_IDX + '').trim();
         const fnTypes = this._fnTypes;
         const vectors = this.styledVectors;
         this.count = 0;
@@ -209,7 +212,7 @@ export default class VectorPack {
             if (!vector || !vector.feature.geometry) {
                 continue;
             }
-            vector.featureIdx = feature[KEY_IDX] === undefined ? i : feature[KEY_IDX];
+            vector.featureIdx = feature[keyName] === undefined ? i : feature[keyName];
 
             // }
             this.count++;
