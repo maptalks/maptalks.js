@@ -1,15 +1,14 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
-const json = require('rollup-plugin-json');
-const uglify = require('rollup-plugin-uglify').uglify;
-const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const json = require('@rollup/plugin-json');
+const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
 
 const production = process.env.BUILD === 'production';
 const outputFile = 'dist/maptalks.vt.basic.js';//production ? 'dist/maptalks.vt.basic.js' : 'dist/maptalks.vt.basic-dev.js';
 const plugins = production ? [
-    uglify({
+    terser({
         mangle: {
             properties: {
                 'regex': /^_/,
@@ -17,7 +16,7 @@ const plugins = production ? [
             }
         },
         output: {
-            beautify: true,
+            // beautify: true,
             comments: '/^!/'
         }
     })] : [];
@@ -52,14 +51,10 @@ module.exports = {
         production ? glslMinify({
             commons: []
         }) : glsl(),
-        resolve({
+        nodeResolve({
             mainFields: ['module', 'main'],
         }),
-        commonjs(),
-        babel({
-            exclude: 'node_modules/**',
-            compact: false
-        })
+        commonjs()
     ].concat(plugins),
     external: ['@maptalks/vt', '@maptalks/gl', 'maptalks'],
     output: [

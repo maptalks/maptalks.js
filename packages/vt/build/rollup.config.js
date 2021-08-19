@@ -1,19 +1,19 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
-const json = require('rollup-plugin-json');
-const uglify = require('rollup-plugin-uglify').uglify;
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const json = require('@rollup/plugin-json');
+const terser = require('rollup-plugin-terser').terser;
 const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
 const outputFile = 'dist/maptalks.vt.js';//(production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
 const plugins = production ? [
-    uglify({
+    terser({
+        module: true,
         mangle: {
             properties: {
                 'regex': /^_/,
                 'keep_quoted': true,
-                'reserved': ['on', 'once', 'off']
+                'reserved': ['on', 'once', 'off'],
             }
         },
         output: {
@@ -43,13 +43,10 @@ module.exports = [{
     input: 'src/worker/index.js',
     plugins: [
         json(),
-        resolve({
+        nodeResolve({
             mainFields: ['module', 'main'],
         }),
-        commonjs(),
-        babel({
-            compact: false
-        }),
+        commonjs()
     ],
     external: ['maptalks'],
     output: {
@@ -70,7 +67,7 @@ module.exports = [{
     external: ['maptalks', '@maptalks/gl'],
     plugins: [
         json(),
-        resolve({
+        nodeResolve({
             mainFields: ['module', 'main'],
         }),
         commonjs()
@@ -115,7 +112,7 @@ if (IS_NODE) {
 var workerLoaded;
 function define(_, chunk) {
 if (!workerLoaded) {
-    maptalks.registerWorkerAdapter('${pkg.name}', chunk);
+    maptalks['registerWorkerAdapter']('${pkg.name}', chunk);
     workerLoaded = true;
 } else {
     var exports = IS_NODE ? module.exports : maptalks;
@@ -124,9 +121,6 @@ if (!workerLoaded) {
 }`
     },
     plugins: [
-        babel({
-            compact: false
-        }),
         removeGlobal()
     ].concat(plugins),
     watch: {

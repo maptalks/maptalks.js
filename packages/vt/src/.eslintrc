@@ -1,15 +1,5 @@
 {
-  "root": true,
-  "env": {
-    "es6": true
-  },
-  "extends": [
-    "maptalks"
-  ],
-  "parser": "babel-eslint",
-  "parserOptions": {
-    "sourceType": "module"
-  },
+
   "globals": {
     "importScripts" : true
   },

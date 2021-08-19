@@ -30,21 +30,5 @@
     "quickselect": "^1.0.0",
     "tinyqueue": "^1.1.0",
     "zousan": "^2.3.3"
-  },
-  "devDependencies": {
-    "babel-eslint": "^9.0.0",
-    "eslint": "^4.19.1",
-    "eslint-config-maptalks": "^0.3.0",
-    "eslint-plugin-mocha": "^5.0.0",
-    "expect.js": "^0.3.1",
-    "karma": "^2.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-expect": "^1.1.3",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.5",
-    "mocha": "^5.2.0",
-    "rollup": "^1.0.1",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-node-resolve": "^4.0.0"
   }
 }
