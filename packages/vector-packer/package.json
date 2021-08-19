@@ -30,5 +30,11 @@
     "quickselect": "^1.0.0",
     "tinyqueue": "^1.1.0",
     "zousan": "^2.3.3"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.15.0",
+    "@babel/eslint-parser": "^7.15.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-mocha": "^9.0.0"
   }
 }
