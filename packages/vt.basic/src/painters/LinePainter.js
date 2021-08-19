@@ -101,8 +101,8 @@ class LinePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this._colorCache));
 
         const iconAtlas = geometry.properties.iconAtlas;
+        const isVectorTile = geometry.data.aPosition instanceof Int16Array;
         if (iconAtlas) {
-            const isVectorTile = geometry.data.aPosition instanceof Int16Array;
             uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false);
             uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
             uniforms.flipY = isVectorTile ? -1 : 1;
@@ -125,7 +125,9 @@ class LinePainter extends BasicPainter {
         //     const ndc = [glPos[0] / glPos[3], glPos[1] / glPos[3], glPos[2] / glPos[3]];
         //     console.log(vector, tilePos, glPos, ndc);
         // }
+
         if (ref === undefined) {
+            geometry.properties.hasUp = !isVectorTile;
             geometry.generateBuffers(this.regl);
         }
 
@@ -146,6 +148,11 @@ class LinePainter extends BasicPainter {
             defines['HAS_COLOR'] = 1;
         }
         this.setMeshDefines(defines, geometry);
+        if (geometry.properties.hasUp) {
+            // vector tile 里， round和up是存在position里的
+            // 非vector tile，round和up是存在aExtrude的第三位的
+            defines['HAS_UP'] = 1;
+        }
         mesh.setDefines(defines);
         return mesh;
     }
@@ -224,9 +231,6 @@ class LinePainter extends BasicPainter {
         // if (symbol['lineOffset']) {
         //     defines['USE_LINE_OFFSET'] = 1;
         // }
-        if (geometry.data.aUp) {
-            defines['HAS_UP'] = 1;
-        }
         if (geometry.data.aLinePatternAnimSpeed) {
             defines['HAS_PATTERN_ANIM'] = 1;
         }
@@ -476,7 +480,7 @@ class LinePainter extends BasicPainter {
         return {
             viewport,
             stencil: {
-                enable: true,
+                enable: false,
                 func: {
                     cmp: () => {
                         return stencil ? '=' : '<=';

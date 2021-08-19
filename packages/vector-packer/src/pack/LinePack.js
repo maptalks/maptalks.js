@@ -86,20 +86,23 @@ export default class LinePack extends VectorPack {
                 name: 'aPosition'
             }
         ];
-        if (this.options.center) {
+        if (this.options.center || this.iconAtlas) {
+            //为了减少attribute，round，up和join标志数据整合在了extrude的第三位中
+            //第三位是当前点距离aPos的凸起方向 aUp 和 pattern 的 aJoin 数据
+            //第一位： up, 第二位: round，第三位: join，具体逻辑在fillData方法中
             format.push({
-                type: Uint8Array,
-                width: 1,
-                name: 'aUp'
+                type: Int8Array,
+                width: 3,
+                name: 'aExtrude'
             });
-        }
-        format.push(
-            //当前点距离aPos的凸起方向
-            {
+        } else {
+            format.push({
                 type: Int8Array,
                 width: 2,
                 name: 'aExtrude'
-            },
+            });
+        }
+        format.push(
             //当前点距离起点的距离
             {
                 type: Uint16Array,
@@ -176,12 +179,6 @@ export default class LinePack extends VectorPack {
                 type: max > 255 ? Uint16Array : Uint8Array,
                 width: 4,
                 name: 'aTexInfo'
-            });
-
-            format.push({
-                type: Uint8Array,
-                width: 1,
-                name: 'aJoin'
             });
         }
         if (lineDxFn) {
@@ -731,7 +728,6 @@ export default class LinePack extends VectorPack {
         const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         if (this.options.center) {
             data.push(x, y, 0);
-            data.push(round * 2 + up); //aUp
         } else {
             x = (x << 1) + (round ? 1 : 0);
             y = (y << 1) + (up ? 1 : 0);
@@ -741,9 +737,19 @@ export default class LinePack extends VectorPack {
         data.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrudeX,
-            EXTRUDE_SCALE * extrudeY,
-            linesofar
+            EXTRUDE_SCALE * extrudeY
         );
+        if (this.options.center || this.iconAtlas) {
+            let v = 0;
+            if (this.options.center) {
+                v += round * 2 + up;
+            }
+            if (this.iconAtlas) {
+                v += 4 * (this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
+            }
+            data.push(v); //aUp
+        }
+        data.push(linesofar);
         if (lineWidthFn) {
             //乘以2是为了解决 #190
             data.push(Math.round(this.feaLineWidth * 2));
@@ -783,8 +789,6 @@ export default class LinePack extends VectorPack {
         // }
         if (this.iconAtlas) {
             data.push(...this.feaTexInfo);
-
-            data.push(this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
         }
         if (lineDxFn) {
             data.push(this.feaLineDx);

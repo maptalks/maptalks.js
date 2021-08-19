@@ -20,9 +20,10 @@
 #define MAX_LINE_DISTANCE 65535.0
 
 attribute vec3 aPosition;
-attribute vec2 aExtrude;
-#if defined(HAS_UP)
-    attribute float aUp;
+#if defined(HAS_UP) || defined(HAS_PATTERN)
+    attribute vec3 aExtrude;
+#else
+    attribute vec2 aExtrude;
 #endif
 #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT) || defined(HAS_TRAIL)
     attribute float aLinesofar;
@@ -33,7 +34,6 @@ attribute vec2 aExtrude;
     attribute vec4 aTexInfo;
     varying vec4 vTexInfo;
 
-    attribute float aJoin;
     varying float vJoin;
 #endif
 
@@ -139,6 +139,7 @@ varying vec3 vVertex;
 void main() {
     vec3 position = aPosition;
     #ifdef HAS_UP
+        float aUp = mod(aExtrude.z, 4.0);
         // aUp = round * 2 + up;
         float round = floor(aUp * 0.5);
         float up = aUp - round * 2.0;
@@ -176,10 +177,10 @@ void main() {
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
     #ifdef USE_LINE_OFFSET
-        vec2 offset = lineOffset * (vNormal.y * (aExtrude - aExtrudeOffset) + aExtrudeOffset);
-        vec2 dist = (outset * aExtrude + offset) / EXTRUDE_SCALE;
+        vec2 offset = lineOffset * (vNormal.y * (aExtrude.xy - aExtrudeOffset) + aExtrudeOffset);
+        vec2 dist = (outset * aExtrude.xy + offset) / EXTRUDE_SCALE;
     #else
-        vec2 extrude = aExtrude / EXTRUDE_SCALE;
+        vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
         vec2 dist = outset * extrude;
     #endif
 
@@ -273,7 +274,7 @@ void main() {
 
         #ifdef HAS_PATTERN
             vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
-            vJoin = aJoin;
+            vJoin = floor(aExtrude.z / 4.0);
         #endif
     #else
         fbo_picking_setData(projDistance, true);
