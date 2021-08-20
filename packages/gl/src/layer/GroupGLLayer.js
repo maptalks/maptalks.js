@@ -133,6 +133,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         layer._doRemove();
         layer.off('show hide', this._onLayerShowHide, this);
+        layer.off('idchange', this._onLayerIDChange, this);
         delete this._layerMap[layer.getId()];
         this.layers.splice(idx, 1);
         const renderer = this.getRenderer();
@@ -218,6 +219,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.layers.forEach(layer => {
             layer['_doRemove']();
             layer.off('show hide', this._onLayerShowHide, this);
+            layer.off('idchange', this._onLayerIDChange, this);
         });
         delete this._layerMap;
         super.onRemove();
@@ -234,6 +236,7 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     _bindChildListeners(layer) {
         layer.on('show hide', this._onLayerShowHide, this);
+        layer.on('idchange', this._onLayerIDChange, this);
     }
 
     _onLayerShowHide() {
@@ -241,6 +244,14 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (renderer) {
             renderer.setToRedraw();
         }
+    }
+
+    _onLayerIDChange(e) {
+        const newId = e.new;
+        const oldId = e.old;
+        const layer = this.getLayer(oldId);
+        delete this._layerMap[oldId];
+        this._layerMap[newId] = layer;
     }
 
     _onChildRendererCreate(e) {
