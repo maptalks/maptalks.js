@@ -33,6 +33,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         startFrame: function (context) {
+            var keyName = (THROTTLE_KEY + '').trim();
             var layer = context.layer,
                 regl = context.regl,
                 sceneConfig = context.sceneConfig,
@@ -55,8 +56,8 @@ function createPainterPlugin(type, Painter) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
                 this._excludes = excludes;
             }
-            if (layer.options['meshCreationLimitOnInteracting'] && layer.getMap()[THROTTLE_KEY]) {
-                layer.getMap()[THROTTLE_KEY].length = 0;
+            if (layer.options['meshCreationLimitOnInteracting'] && layer.getMap()[keyName]) {
+                layer.getMap()[keyName].length = 0;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.startFrame(context);
@@ -449,6 +450,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         _throttle(layer, key) {
+            var keyName = (THROTTLE_KEY + '').trim();
             var limit = layer.options['tileMeshCreationLimitPerFrame'] || 0;
             if (!limit) {
                 return false;
@@ -457,9 +459,9 @@ function createPainterPlugin(type, Painter) {
             if (!map.isInteracting()) {
                 return false;
             }
-            var keys = map[THROTTLE_KEY];
+            var keys = map[keyName];
             if (!keys) {
-                keys = map[THROTTLE_KEY] = [];
+                keys = map[keyName] = [];
             }
             if (keys.indexOf(key) >= 0) {
                 return false;

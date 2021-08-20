@@ -459,6 +459,7 @@ export default class BaseLayerWorker {
      * @param {*} features
      */
     _filterFeatures(styleType, filter, features, tags) {
+        const keyName = (KEY_IDX + '').trim();
         const indexes = [];
         const filtered = [];
         const l = features.length;
@@ -472,7 +473,7 @@ export default class BaseLayerWorker {
                 (filter.def === true || Array.isArray(filter.def) && filter(features[i]))) {
                 tags[i] = 1;
                 const fea = extend({}, features[i]);
-                fea[KEY_IDX] = i;
+                fea[keyName] = i;
                 filtered.push(fea);
                 indexes.push(i);
                 if (styleType === 1) {

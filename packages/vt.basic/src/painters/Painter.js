@@ -613,46 +613,50 @@ class Painter {
     }
 
     loginTextureCache() {
+        const keyName = (TEX_CACHE_KEY + '').trim();
         const map = this.getMap();
-        if (!map[TEX_CACHE_KEY]) {
-            map[TEX_CACHE_KEY] = {
+        if (!map[keyName]) {
+            map[keyName] = {
                 count: 0
             };
         }
-        map[TEX_CACHE_KEY].count++;
+        map[keyName].count++;
     }
 
     logoutTextureCache() {
+        const keyName = (TEX_CACHE_KEY + '').trim();
         const map = this.getMap();
         const myTextures = this._myTextures;
         if (myTextures) {
             for (const url in myTextures) {
                 if (hasOwn(myTextures, url)) {
-                    if (map[TEX_CACHE_KEY][url]) {
-                        map[TEX_CACHE_KEY][url].count--;
-                        if (map[TEX_CACHE_KEY][url].count <= 0) {
-                            delete map[TEX_CACHE_KEY][url];
+                    if (map[keyName][url]) {
+                        map[keyName][url].count--;
+                        if (map[keyName][url].count <= 0) {
+                            delete map[keyName][url];
                         }
                     }
                 }
             }
         }
-        map[TEX_CACHE_KEY].count--;
-        if (map[TEX_CACHE_KEY].count <= 0) {
-            map[TEX_CACHE_KEY] = {};
+        map[keyName].count--;
+        if (map[keyName].count <= 0) {
+            map[keyName] = {};
         }
     }
 
     getCachedTexture(url) {
-        const cached = this.getMap()[TEX_CACHE_KEY][url];
+        const keyName = (TEX_CACHE_KEY + '').trim();
+        const cached = this.getMap()[keyName][url];
         return cached ? cached.data : null;
     }
 
     addCachedTexture(url, data) {
+        const keyName = (TEX_CACHE_KEY + '').trim();
         const map = this.getMap();
-        let cached = map[TEX_CACHE_KEY][url];
+        let cached = map[keyName][url];
         if (!cached) {
-            cached = map[TEX_CACHE_KEY][url] = {
+            cached = map[keyName][url] = {
                 data,
                 count: 0
             };
@@ -679,14 +683,15 @@ class Painter {
         if (!this._myTextures || !this._myTextures[url]) {
             return;
         }
+        const keyName = (TEX_CACHE_KEY + '').trim();
         //删除texture时，同时回收cache上的纹理，尽量保证不出现内存泄漏
         //最常见场景： 更新material时，回收原有的texture
         delete this._myTextures[url];
         const map = this.getMap();
-        if (map[TEX_CACHE_KEY][url]) {
-            map[TEX_CACHE_KEY][url].count--;
-            if (map[TEX_CACHE_KEY][url].count <= 0) {
-                delete map[TEX_CACHE_KEY][url];
+        if (map[keyName][url]) {
+            map[keyName][url].count--;
+            if (map[keyName][url].count <= 0) {
+                delete map[keyName][url];
             }
         }
     }

@@ -158,8 +158,9 @@ export function buildExtrudeFaces(
         }
 
         const count = vertices.length - verticeCount;
+        const keyName = (KEY_IDX + '').trim();
         for (let i = 0; i < count / 3; i++) {
-            pickingIds.push(feature[KEY_IDX] === undefined ? r : feature[KEY_IDX]);
+            pickingIds.push(feature[keyName] === undefined ? r : feature[keyName]);
             featIndexes.push(r);
             if (isNumber(feaId)) {
                 featIds.push(feaId);
