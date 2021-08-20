@@ -119,11 +119,12 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _getMeshAnchor(meshKey) {
+        const keyName = (MESH_ANCHOR_KEY + '').trim();
         const meshContext = this._collisionContext.tags[meshKey];
         if (meshContext && meshContext.anchor0) {
             const { anchor0, anchor1 } = meshContext;
-            const key0 = anchor0[MESH_ANCHOR_KEY] = anchor0[MESH_ANCHOR_KEY] || anchor0.x + ',' + anchor0.y;
-            const key1 = anchor1[MESH_ANCHOR_KEY] = anchor1[MESH_ANCHOR_KEY] || anchor1.x + ',' + anchor1.y;
+            const key0 = anchor0[keyName] = anchor0[keyName] || anchor0.x + ',' + anchor0.y;
+            const key1 = anchor1[keyName] = anchor1[keyName] || anchor1.x + ',' + anchor1.y;
             let cp0 = this._coordCache[key0];
             let cp1 = this._coordCache[key1];
             if (!cp0 || !cp1) {

@@ -63,6 +63,7 @@ export function buildWireframe(
 
     let offset = 0;
     let maxAltitude = 0;
+    const keyName = (KEY_IDX + '').trim();
 
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
@@ -86,7 +87,7 @@ export function buildWireframe(
         }
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
-            featIndexes.push(feature[KEY_IDX]);
+            featIndexes.push(feature[keyName]);
         }
     }
     const maxIndex = indices.reduce((a, b) => {
