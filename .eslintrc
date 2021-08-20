@@ -1,12 +1,11 @@
 {
   "root": true,
   "env": {
+    "browser": true,
     "es6": true
   },
-  "extends": [
-    "maptalks"
-  ],
-  "parser": "babel-eslint",
+  "extends": "eslint:recommended",
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "sourceType": "module"
   },
