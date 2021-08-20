@@ -39,7 +39,7 @@ class MeshShader extends Shader {
 
             const v = meshes[i].getREGLProps(regl, command.activeAttributes);
             this._ensureContextDefines(v);
-            v._shaderContext = this.context;
+            v.shaderContext = this.context;
             this.appendDescUniforms(v);
             props.push(v);
 
@@ -56,10 +56,10 @@ class MeshShader extends Shader {
         if (!this.context) {
             return;
         }
-        if (!v._contextKeys) {
-            v._contextKeys = {};
+        if (!v.contextKeys) {
+            v.contextKeys = {};
         }
-        if (v._contextKeys[this.uid] === this._contextKeys) {
+        if (v.contextKeys[this.uid] === this.contextKeys) {
             return;
         }
         for (const p in this.context) {
@@ -68,12 +68,12 @@ class MeshShader extends Shader {
                     configurable: false,
                     enumerable: true,
                     get: function () {
-                        return this._shaderContext && this._shaderContext[p];
+                        return this.shaderContext && this.shaderContext[p];
                     }
                 });
             }
         }
-        v._contextKeys[this.uid] = this._contextKeys;
+        v.contextKeys[this.uid] = this.contextKeys;
     }
 
     // filter() {
@@ -100,7 +100,7 @@ class MeshShader extends Shader {
         if (!this._cmdKeys) {
             this._cmdKeys = {};
         }
-        const key = this._dkey || 'default';
+        const key = this.dkey || 'default';
         let storedKeys = this._cmdKeys[key];
         if (!storedKeys) {
             storedKeys = this._cmdKeys[key] = {};
@@ -110,7 +110,7 @@ class MeshShader extends Shader {
             storedKeys[meshKey] = key + '_' + mesh.getCommandKey(regl);
         }
         const dKey = storedKeys[meshKey];
-        // const key = this._dkey || '';
+        // const key = this.dkey || '';
         // const dKey = key + '_' + mesh.getCommandKey(regl);
         let command = this.commands[dKey];
         if (!command) {

@@ -22,7 +22,7 @@ class FxaaShader extends QuadShader {
     }
 
     getMeshCommand(regl, mesh) {
-        const key = this._dkey || '';
+        const key = this.dkey || '';
         if (!this.commands[key + '_fxaa']) {
             this.commands[key + '_fxaa'] = this.createREGLCommand(
                 regl,

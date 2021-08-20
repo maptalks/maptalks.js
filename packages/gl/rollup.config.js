@@ -1,7 +1,5 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
-const uglify = require('rollup-plugin-uglify').uglify;
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
@@ -25,13 +23,25 @@ function glsl() {
 
 const production = process.env.BUILD === 'production';
 const outputFile = production ? pkg.main : 'dist/maptalksgl-dev.js';
-const plugins = production ? [uglify({ output : { comments : '/^!/', beautify: true }})] : [];
+const plugins = production ? [terser({
+    mangle: {
+        properties: {
+            'regex' : /^_/,
+            'keep_quoted' : true
+        }
+    },
+    output : {
+        keep_quoted_props: true,
+        beautify: true,
+        comments : '/^!/'
+    }
+})] : [];
 
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
     glsl(),
-    resolve({
+    nodeResolve({
         // mainFields: ''
         // module : true,
         // jsnext : true,
@@ -43,7 +53,22 @@ const configPlugins = [
 module.exports = [
     {
         input: 'src/index.js',
-        plugins: configPlugins.concat([babel(), ...plugins]),
+        plugins: configPlugins.concat(plugins),
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        output: {
+            'sourcemap': production ? false : 'inline',
+            'format': 'es',
+            'globals' : {
+                'maptalks' : 'maptalks'
+            },
+            banner,
+            outro,
+            'file': 'build/gl.es.js'
+        }
+    },
+    {
+        input: 'build/index.js',
+        plugins: configPlugins,
         external : ['maptalks'],
         output: {
             'sourcemap': production ? false : 'inline',
@@ -58,9 +83,9 @@ module.exports = [
         }
     },
     {
-        input: 'src/index.js',
-        plugins: configPlugins.concat(production ? [terser({ output : { comments : '/^!/', beautify: true }})] : []),
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', 'regl', 'gl-matrix'],
+        input: 'build/index.js',
+        plugins: configPlugins,
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': production ? false : 'inline',
             'format': 'es',

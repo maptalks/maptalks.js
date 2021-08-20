@@ -57,7 +57,7 @@ class Shader {
 
     set shaderDefines(defines) {
         this._shaderDefines = defines;
-        this._dkey = Object.keys(this._shaderDefines).join();
+        this.dkey = Object.keys(this._shaderDefines).join();
     }
 
     get shaderDefines() {
@@ -127,7 +127,7 @@ class Shader {
         if (uniforms['modelMatrix'] || uniforms['positionMatrix']) {
             throw new Error('modelMatrix or positionMatrix is reserved uniform name for Mesh, please change to another name');
         }
-        this._contextKeys = uniforms ? Object.keys(uniforms).join() : null;
+        this.contextKeys = uniforms ? Object.keys(uniforms).join() : null;
         this.context = uniforms;
         return this;
     }
@@ -146,7 +146,7 @@ class Shader {
     }
 
     getActiveVars(regl, vert, frag) {
-        const gl = regl._gl;
+        const gl = regl['_gl'];
         const program = gl.createProgram();
 
         const vertShader = gl.createShader(35633);

@@ -81,7 +81,7 @@ class ShadowProcess {
             //只渲染pitch < SHADOW_MAX_PITCH的范围内的mesh，提高shadowmap精度
             let visualHeight = map.height;
             if (map.getPitch() > SHADOW_MAX_PITCH) {
-                visualHeight = map._getVisualHeight(SHADOW_MAX_PITCH);
+                visualHeight = map['_getVisualHeight'](SHADOW_MAX_PITCH);
             }
             const containerExtent = VISUAL_EXTENT.set(0, map.height - visualHeight, map.width, map.height);
             const extent = containerExtent.convertTo(c => map['_containerPointToPoint'](c, map.getGLZoom()));

@@ -713,7 +713,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const cp = map.coordToContainerPoint(this._renderedView.center);
         const viewMoveThreshold = this.layer.options['viewMoveThreshold'];
         // const viewPitchThreshold = this.layer.options['viewPitchThreshold'];
-        const viewChanged = (cp._sub(map.width / 2, map.height / 2).mag() > viewMoveThreshold) || scale < 0.95 || scale > 1.05;
+        const viewChanged = (cp['_sub'](map.width / 2, map.height / 2).mag() > viewMoveThreshold) || scale < 0.95 || scale > 1.05;
         // Math.abs(renderedView.bearing - map.getBearing()) > 30 ||
         // (renderedView.pitch < maxPitch || pitch < maxPitch) && Math.abs(renderedView.pitch - pitch) > viewPitchThreshold;
         let lightDirectionChanged = false;

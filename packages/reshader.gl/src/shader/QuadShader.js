@@ -49,7 +49,7 @@ class QuadShader extends MeshShader {
     }
 
     getMeshCommand(regl) {
-        const keys = this._dkey || '';
+        const keys = this.dkey || '';
         if (!this.commands[keys + '_quad']) {
             this.commands[keys + '_quad'] = this.createREGLCommand(
                 regl,

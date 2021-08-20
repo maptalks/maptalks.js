@@ -216,7 +216,7 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     onRemove() {
         this.layers.forEach(layer => {
-            layer._doRemove();
+            layer['_doRemove']();
             layer.off('show hide', this._onLayerShowHide, this);
         });
         delete this._layerMap;

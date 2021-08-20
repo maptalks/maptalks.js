@@ -1,5 +1,5 @@
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
@@ -33,7 +33,7 @@ const plugins = [
             './src/shaderlib/glsl'
         ]
     }) : glsl(),
-    resolve({
+    nodeResolve({
         // module : true,
         // jsnext : true,
         // main : true
@@ -43,13 +43,14 @@ const plugins = [
 
 if (production) {
     plugins.push(terser({
-        // mangle: {
-        //     properties: {
-        //         'regex' : /^_/,
-        //         'keep_quoted' : true
-        //     }
-        // },
+        mangle: {
+            properties: {
+                'regex' : /^_/,
+                'keep_quoted' : true
+            }
+        },
         output : {
+            keep_quoted_props: true,
             beautify: true,
             comments : '/^!/'
         }
@@ -57,19 +58,6 @@ if (production) {
 }
 
 module.exports = [
-    {
-        input: 'src/index.js',
-        plugins,
-        output: [
-            {
-                'sourcemap': true,
-                'format': 'umd',
-                'name': 'reshader',
-                'banner': banner,
-                'file': 'dist/reshadergl.js'
-            }
-        ]
-    },
     {
         input: 'src/index.js',
         external : ['gl-matrix'],
