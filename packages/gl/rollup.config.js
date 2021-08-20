@@ -80,6 +80,9 @@ module.exports = [
             banner,
             outro,
             'file': outputFile
+        },
+        watch: {
+            include: ['build/**/*.js', '../reshader.gl/dist/*.js']
         }
     },
     {
