@@ -81,7 +81,7 @@ class LinePainter extends BasicPainter {
         };
         this.setLineUniforms(symbol, uniforms);
 
-        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;
             if (dasharray && dasharray.length) {
@@ -98,7 +98,7 @@ class LinePainter extends BasicPainter {
             }
             return lineDasharray || [0, 0, 0, 0];
         }, [0, 0, 0, 0]);
-        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'lineDashColor', symbol, 'lineDashColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
 
         const iconAtlas = geometry.properties.iconAtlas;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
@@ -251,7 +251,7 @@ class LinePainter extends BasicPainter {
         const aColorFn = piecewiseConstant(symbolDef['lineColor']);
         const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
         const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
-        const shapeConfigs = this._createShapeFnTypeConfigs(map, symbolDef);
+        const shapeConfigs = this.createShapeFnTypeConfigs(map, symbolDef);
         const i8  = new Int8Array(1);
         return [
             {
@@ -268,7 +268,7 @@ class LinePainter extends BasicPainter {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
                     if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
+                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;
@@ -311,7 +311,7 @@ class LinePainter extends BasicPainter {
         ].concat(shapeConfigs);
     }
 
-    _createShapeFnTypeConfigs(map, symbolDef) {
+    createShapeFnTypeConfigs(map, symbolDef) {
         const aLineWidthFn = interpolated(symbolDef['lineWidth']);
         const aLineOpacityFn = interpolated(symbolDef['lineOpacity']);
         const aLineGapWidthFn = interpolated(symbolDef['lineGapWidth']);

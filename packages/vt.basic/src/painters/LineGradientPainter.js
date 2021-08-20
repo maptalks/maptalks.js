@@ -96,7 +96,7 @@ class LineGradientPainter extends LinePainter {
     }
 
     createFnTypeConfig(map, symbolDef) {
-        return this._createShapeFnTypeConfigs(map, symbolDef);
+        return this.createShapeFnTypeConfigs(map, symbolDef);
     }
 
     createShader(context) {

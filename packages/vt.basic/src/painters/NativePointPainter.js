@@ -34,7 +34,7 @@ class NativePointPainter extends BasicPainter {
         const uniforms = {};
         setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
         setUniformFromSymbol(uniforms, 'markerSize', symbol, 'markerSize', 10);
-        setUniformFromSymbol(uniforms, 'markerFill', symbol, 'markerFill', '#000', createColorSetter(this._colorCache, 3));
+        setUniformFromSymbol(uniforms, 'markerFill', symbol, 'markerFill', '#000', createColorSetter(this.colorCache, 3));
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         material.createDefines = () => {
             if (symbol.markerType !== 'square') {

@@ -63,7 +63,7 @@ class FillPainter extends BasicPainter {
 
         const symbol = this.getSymbol(symbolIndex);
 
-        setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this._colorCache));
+        setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
         setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', DEFAULT_UNIFORMS['uvScale']);
         setUniformFromSymbol(uniforms, 'uvOffset', symbol, 'uvOffset', DEFAULT_UNIFORMS['uvOffset']);
@@ -156,7 +156,7 @@ class FillPainter extends BasicPainter {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
                     }
                     if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
+                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;

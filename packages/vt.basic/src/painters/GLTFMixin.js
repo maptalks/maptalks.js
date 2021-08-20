@@ -160,7 +160,7 @@ const GLTFMixin = Base =>
                     }
                     // StandardPainter 需要hasAlpha决定是否开启stencil和blend
                     mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
-                    setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
+                    setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
                     const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);

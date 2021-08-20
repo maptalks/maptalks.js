@@ -72,7 +72,7 @@ class MeshPainter extends Painter {
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', 4);
             setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this._colorCache));
+            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
             Object.defineProperty(mesh.uniforms, 'lineHeight', {
                 enumerable: true,
                 get: () => {
@@ -81,7 +81,7 @@ class MeshPainter extends Painter {
                 }
             });
         } else {
-            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this._colorCache));
+            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
             setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
         }
         if (geometry.data.aColor) {
@@ -217,7 +217,7 @@ class MeshPainter extends Painter {
                 evaluate: properties => {
                     let color = fillFn(map.getZoom(), properties);
                     if (!Array.isArray(color)) {
-                        color = this._colorCache[color] = this._colorCache[color] || Color(color).unitArray();
+                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
                     }
                     color = toUint8ColorInGlobalVar(color);
                     return color;

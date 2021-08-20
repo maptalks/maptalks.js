@@ -48,7 +48,7 @@ class Painter {
             }
         };
         this.sortByCommandKey = sortByCommandKey.bind(this);
-        this._colorCache = {};
+        this.colorCache = {};
     }
 
     getMap() {

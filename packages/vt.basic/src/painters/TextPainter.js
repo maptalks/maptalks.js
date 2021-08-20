@@ -79,7 +79,7 @@ export default class TextPainter extends CollisionPainter {
         //     e.preventDefault();
 
         // }, false);
-        this._colorCache = {};
+        this.colorCache = {};
         this._filter0 = shaderFilter0.bind(this);
         this._filter1 = shaderFilterN.bind(this);
         this._lineFilter0 = shaderLineFilter0.bind(this);
