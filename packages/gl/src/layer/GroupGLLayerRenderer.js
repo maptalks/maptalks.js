@@ -374,7 +374,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._groundPainter = new GroundPainter(this.regl, this.layer);
         this._envPainter = new EnvironmentPainter(this.regl, this.layer);
 
-        const sceneConfig =  this.layer._getSceneConfig();
+        const sceneConfig =  this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
         this._jitGetter = new reshader.Jitter(ratio);

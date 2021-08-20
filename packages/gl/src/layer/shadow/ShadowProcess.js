@@ -40,7 +40,7 @@ class ShadowProcess {
     }
 
     _init() {
-        const shadowConfig = this.sceneConfig.shadow;
+        const shadowConfig = this.sceneConfig.shadow || {};
         let shadowRes = 512;
         const quality = shadowConfig.quality;
         if (quality === 'high') {
