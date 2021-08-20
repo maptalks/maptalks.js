@@ -43,14 +43,19 @@ const plugins = [
 
 if (production) {
     plugins.push(terser({
-        mangle: {
-            properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true
-            }
+        // mangle: {
+        //     properties: {
+        //         'regex' : /^_/,
+        //         'keep_quoted' : true,
+        //         'reserved': ['on', 'once', 'off'],
+        //     }
+        // },
+        compress: {
+            pure_getters: true
         },
         output : {
-            keep_quoted_props: true,
+            ecma: 2017,
+            // keep_quoted_props: true,
             beautify: true,
             comments : '/^!/'
         }

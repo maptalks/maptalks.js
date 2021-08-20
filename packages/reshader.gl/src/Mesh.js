@@ -121,7 +121,7 @@ class Mesh {
         return this;
     }
 
-    setParent() {
+    setParent(parent) {
         this.parent = parent;
         return this;
     }
@@ -327,6 +327,7 @@ class Mesh {
 Mesh.prototype.getWorldTransform = function () {
     const worldTransform = [];
     return function () {
+        const parent = this.parent;
         if (parent) {
             return mat4.multiply(worldTransform, parent.getWorldTransform(), this._localTransform);
         }
