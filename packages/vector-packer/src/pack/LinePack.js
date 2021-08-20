@@ -2,7 +2,7 @@
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import Color from 'color';
-import { isNil } from '../style/Util';
+import { isNil, hasOwn } from '../style/Util';
 import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
@@ -404,8 +404,8 @@ export default class LinePack extends VectorPack {
         this.totalDistance = 0;
 
         if (!!this.symbol['lineGradientProperty'] && !!feature.properties &&
-            feature.properties.hasOwnProperty('mapbox_clip_start') &&
-            feature.properties.hasOwnProperty('mapbox_clip_end')) {
+            hasOwn(feature.properties, 'mapbox_clip_start') &&
+            hasOwn(feature.properties, 'mapbox_clip_end')) {
 
             this.clipStart = +feature.properties['mapbox_clip_start'];
             this.clipEnd = +feature.properties['mapbox_clip_end'];

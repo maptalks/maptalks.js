@@ -1,4 +1,4 @@
-import { extend, isNil, isString, isNumber, isFunction } from './Util';
+import { extend, isNil, isString, isNumber, isFunction, hasOwn } from './Util';
 
 /**
  * Get SVG Base64 String from a marker symbol with (markerType : path)
@@ -22,14 +22,14 @@ export function getMarkerPathBase64(symbol, width, height) {
     const svgStyles = {};
     if (styles) {
         for (const p in styles['stroke']) {
-            if (styles['stroke'].hasOwnProperty(p)) {
+            if (hasOwn(styles['stroke'], p)) {
                 if (!isNil(styles['stroke'][p])) {
                     svgStyles[p] = styles['stroke'][p];
                 }
             }
         }
         for (const p in styles['fill']) {
-            if (styles['fill'].hasOwnProperty(p)) {
+            if (hasOwn(styles['fill'], p)) {
                 if (!isNil(styles['fill'][p])) {
                     svgStyles[p] = styles['fill'][p];
                 }
@@ -71,7 +71,7 @@ export function getMarkerPathBase64(symbol, width, height) {
     for (let i = 0; i < pathesToRender.length; i++) {
         let strPath = '<path ';
         for (const p in pathesToRender[i]) {
-            if (pathesToRender[i].hasOwnProperty(p)) {
+            if (hasOwn(pathesToRender[i], p)) {
                 strPath += ' ' + p + '="' + pathesToRender[i][p] + '"';
             }
         }

@@ -8,7 +8,7 @@ import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
 import { loadFunctionTypes, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { createFilter } from '@maptalks/feature-filter';
-import { isFnTypeSymbol, isNumber } from '../style/Util';
+import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
 
@@ -468,7 +468,7 @@ export default class VectorPack {
         const positions = this.iconAtlas.positions;
         let max = 0;
         for (const p in positions) {
-            if (positions.hasOwnProperty(p)) {
+            if (hasOwn(positions, p)) {
                 const { tl, displaySize } = positions[p];
                 //w/h - 1 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
                 const m = Math.max(tl[0], tl[1], displaySize[0] - 1, displaySize[1] - 1);
