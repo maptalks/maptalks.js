@@ -92,6 +92,52 @@ describe('update style specs', () => {
         map.remove();
     });
 
+    it('should update childLayer id and remove it', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 3) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.setId('newId');
+                group.removeLayer('newId');
+            } else if (count === 4) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[0] === 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
     it('should can setStyle', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.setStyle([
