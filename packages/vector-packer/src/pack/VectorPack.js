@@ -2,7 +2,6 @@ import Point from '@mapbox/point-geometry';
 import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
-import Promise from './util/Promise';
 import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType, getUnsignedArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';

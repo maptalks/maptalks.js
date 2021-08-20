@@ -6,7 +6,6 @@ import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, Vector
 import { extend, isNumber, hasOwn } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
-import Promise from '../../common/Promise';
 import Vector3DLayer from './Vector3DLayer';
 import { isFunctionDefinition } from '@maptalks/function-type';
 

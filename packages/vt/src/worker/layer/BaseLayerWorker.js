@@ -2,7 +2,6 @@ import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, 
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack/*, CirclePack*/ } from '@maptalks/vector-packer';
 // import { GlyphRequestor } from '@maptalks/vector-packer';
-import Promise from '../../common/Promise';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 // import Browser from '../util/Browser';
