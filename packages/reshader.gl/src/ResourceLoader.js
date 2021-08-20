@@ -1,6 +1,5 @@
 import Eventable from './common/Eventable.js';
 import Ajax from './common/Ajax.js';
-import Promise from './common/Promise.js';
 
 class ResourceLoader {
     constructor(DEFAULT_TEXTURE) {

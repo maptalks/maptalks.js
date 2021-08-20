@@ -1,4 +1,4 @@
-import { extend, isString, isFunction, isNumber, isSupportVAO } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
 
@@ -283,7 +283,7 @@ class Shader {
     _insertDefines(source, defines) {
         const defineHeaders = [];
         for (const p in defines) {
-            if (defines.hasOwnProperty(p) && !isFunction(defines[p])) {
+            if (hasOwn(defines, p) && !isFunction(defines[p])) {
                 defineHeaders.push(`#define ${p} ${defines[p]}\n`);
             }
         }

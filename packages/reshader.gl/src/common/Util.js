@@ -179,3 +179,7 @@ export function isSupportVAO(regl) {
     // return false;
     return regl && regl.hasExtension('oes_vertex_array_object');
 }
+
+export function hasOwn(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}

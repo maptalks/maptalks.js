@@ -3,7 +3,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform } from './util/util.js';
+import { extend, getGroundTransform, hasOwn } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE_W = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
@@ -404,7 +404,7 @@ class GroundPainter {
         const material = {};
         let hasTexture = false;
         for (const p in materialConfig) {
-            if (materialConfig.hasOwnProperty(p)) {
+            if (hasOwn(materialConfig, p)) {
                 if (p.indexOf('Texture') > 0) {
                     //纹理图片
                     let texConf = materialConfig[p];

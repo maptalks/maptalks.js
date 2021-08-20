@@ -41,3 +41,7 @@ export function getGroundTransform(out, map) {
 }
 
 export const EMPTY_COLOR = [0, 0, 0, 0];
+
+export function hasOwn(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}

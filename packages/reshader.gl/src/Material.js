@@ -1,5 +1,5 @@
 import Eventable from './common/Eventable.js';
-import { isNil, extend1 } from './common/Util.js';
+import { isNil, extend1, hasOwn } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -174,7 +174,7 @@ class Material {
     _genUniformKeys() {
         const keys = [];
         for (const p in this.uniforms) {
-            if (this.uniforms.hasOwnProperty(p) && !isNil(this.uniforms[p])) {
+            if (hasOwn(this.uniforms, p) && !isNil(this.uniforms[p])) {
                 keys.push(p);
             }
         }

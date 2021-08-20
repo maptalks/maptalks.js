@@ -1,4 +1,4 @@
-import { extend, isNil, isNumber, isFunction, isSupportVAO } from './common/Util.js';
+import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
 import { mat4, vec2, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 
@@ -212,7 +212,7 @@ class Mesh {
             if (this._material) {
                 const materialUniforms = this._material.getUniforms(regl);
                 for (const p in materialUniforms) {
-                    if (materialUniforms.hasOwnProperty(p)) {
+                    if (hasOwn(materialUniforms, p)) {
                         Object.defineProperty(this._realUniforms, p, {
                             enumerable: true,
                             configurable: true,
@@ -225,7 +225,7 @@ class Mesh {
             }
             const uniforms = this.uniforms;
             for (const p in this.uniforms) {
-                if (this.uniforms.hasOwnProperty(p)) {
+                if (hasOwn(this.uniforms, p)) {
                     Object.defineProperty(this._realUniforms, p, {
                         enumerable: true,
                         configurable: true,

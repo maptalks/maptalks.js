@@ -1,4 +1,4 @@
-import { isFunction } from './common/Util.js';
+import { isFunction, hasOwn } from './common/Util.js';
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -16,7 +16,7 @@ class AbstractTexture {
             this._texture = config;
             config = this.config = {};
             for (const p in this._texture) {
-                if (this._texture.hasOwnProperty(p)) {
+                if (hasOwn(this._texture, p)) {
                     //parse texture config values from regl texture
                     if (!isFunction(this._texture[p])) {
                         config[p] = this._texture[p];
