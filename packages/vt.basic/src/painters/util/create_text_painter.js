@@ -138,6 +138,13 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
             castShadow: false,
             picking: true
         });
+        // isLabelCollides 中，计算碰撞盒时需要
+        Object.defineProperty(mesh.properties, 'textSize',  {
+            enumerable: true,
+            get: function () {
+                return uniforms1['textSize'];
+            }
+        });
         if (enableCollision) {
             mesh.setDefines({
                 'ENABLE_COLLISION': 1
@@ -248,6 +255,7 @@ function setMeshUniforms(geometry, uniforms, symbol) {
     //         return +(!geometry.data['aTextHaloRadius'] || geometry.data['aTextHaloRadius'] && geometry.properties.hasHalo);
     //     });
     // }
+    // 为了解决 fuzhenn/maptalks-designer#467，需要永远创建一个halo mesh
     if (uniforms['isHalo'] === undefined) {
         uniforms['isHalo'] = 1;
     }

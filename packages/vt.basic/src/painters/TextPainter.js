@@ -276,7 +276,7 @@ export default class TextPainter extends CollisionPainter {
             }
             const geometry = mesh.geometry;
             const symbol = this.getSymbol(mesh.properties.symbolIndex);
-            mesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
+            // mesh.properties.textSize = !isNil(symbol['textSize']) ? symbol['textSize'] : DEFAULT_UNIFORMS['textSize'];
             mesh.properties.textHaloRadius = !isNil(symbol['textHaloRadius']) ? symbol['textHaloRadius'] : DEFAULT_UNIFORMS['textHaloRadius'];
 
             // const idx = geometry.properties.aPickingId[0];
