@@ -706,6 +706,10 @@ function parseSymbolAndGenPromises(features, symbol, options, clazz, scale) {
     }
     const promises = [];
     for (let i = 0; i < symbols.length; i++) {
+        if (!symbols[i]) {
+            promises.push({ data: { symbolIndex: { index: i } } });
+            continue;
+        }
         symbols[i].index = { index: i };
         if (!parsed[i]) {
             if (i === first) {

@@ -393,13 +393,26 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!style) {
             throw new Error(`No style defined at ${idx}`);
         }
-        if (this._replacer) {
-            symbol = JSON.parse(JSON.stringify(symbol));
-            maptalks.Util.parseSymbolPath(symbol, this._replacer);
-        }
+
         const self = this;
-        const target = style.symbol;
-        function update() {
+        const replacer = this._replacer;
+        function update(symbol, target, index) {
+            if (!symbol) {
+                return false;
+            }
+            if (replacer) {
+                symbol = JSON.parse(JSON.stringify(symbol));
+                maptalks.Util.parseSymbolPath(symbol, replacer);
+            }
+            const props = Object.keys(symbol);
+            let needRefresh = false;
+            for (let i = 0; i < props.length; i++) {
+                const key = props[i];
+                if (isPropFunction(target[key]) || isPropFunction(symbol[key])) {
+                    needRefresh = true;
+                    break;
+                }
+            }
             for (const p in symbol) {
                 if (hasOwn(symbol, p)) {
                     if (maptalks.Util.isObject(symbol[p]) && !Array.isArray(symbol[p]) && !symbol[p].stops) {
@@ -420,11 +433,22 @@ class VectorTileLayer extends maptalks.TileLayer {
             const copy = JSON.parse(JSON.stringify(target));
             if (feaStyleIdx !== undefined) {
                 checkFeaStyleExist(styles, idx, feaStyleIdx);
-                styles[idx].style[feaStyleIdx].symbol = copy;
+                if (index === undefined) {
+                    styles[idx].style[feaStyleIdx].symbol = copy;
+                } else {
+                    styles[idx].style[feaStyleIdx].symbol[index] = copy;
+                }
+
             } else {
                 checkStyleExist(styles, idx);
-                styles[idx].symbol = copy;
+                if (index === undefined) {
+                    styles[idx].symbol = copy;
+                } else {
+                    styles[idx].symbol[index] = copy;
+                }
             }
+
+            return needRefresh;
         }
 
         const renderer = this.getRenderer();
@@ -434,17 +458,19 @@ class VectorTileLayer extends maptalks.TileLayer {
             this._compileStyle();
             return this;
         }
-        const props = Object.keys(symbol);
-        let needRefresh = false;
-        for (let i = 0; i < props.length; i++) {
-            const key = props[i];
-            if (isPropFunction(target[key]) || isPropFunction(symbol[key])) {
-                needRefresh = true;
-                break;
-            }
-        }
 
-        update();
+        let needRefresh = false;
+        const target = style.symbol;
+        if (Array.isArray(symbol)) {
+            for (let i = 0; i < symbol.length; i++) {
+                const refresh = update(symbol[i], target[i], i);
+                if (refresh) {
+                    needRefresh = refresh;
+                }
+            }
+        } else {
+            update(symbol, target);
+        }
 
         this._compileStyle();
         if (needRefresh) {

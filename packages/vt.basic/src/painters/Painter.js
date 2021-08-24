@@ -589,7 +589,7 @@ class Painter {
         this._visibleFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
             this._symbol[i] = loadFunctionTypes(extend({}, this.symbolDef[i]), fn);
-            if (isFunctionDefinition(this.symbolDef[i].visible)) {
+            if (this.symbolDef[i] && isFunctionDefinition(this.symbolDef[i].visible)) {
                 this._visibleFn[i] = interpolated(this.symbolDef[i].visible);
             }
         }

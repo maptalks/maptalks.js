@@ -26,6 +26,12 @@ export default class BasicPainter extends Painter {
             }
             return geometries;
         }
+        if (!glData.data) {
+            return {
+                geometry: null,
+                symbolIndex: glData.symbolIndex
+            };
+        }
         if (glData.iconAtlas && glData.iconAtlas.image) {
             glData.iconAtlas.image.dataType = glData.type;
             glData.iconAtlas.image.type = 'icon';

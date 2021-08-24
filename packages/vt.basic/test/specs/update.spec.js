@@ -271,7 +271,7 @@ describe('update style specs', () => {
                 visible: 0
             }]);
             assert(layer.options.style[0].symbol[1].visible === 0);
-        }, false, style);
+        }, true, style);
     });
 
     it('should hide by setting visible to false', done => {

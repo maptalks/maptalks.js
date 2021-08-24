@@ -61,11 +61,16 @@ class LinePainter extends BasicPainter {
         if (Array.isArray(geo)) {
             const meshes = [];
             for (let i = 0; i < geo.length; i++) {
-                meshes.push(this.createMesh(geo[i], transform));
+                const mesh = this.createMesh(geo[i], transform);
+                if (mesh) {
+                    meshes.push(mesh);
+                }
             }
             return meshes;
         }
-
+        if (!geo.geometry) {
+            return null;
+        }
         const { geometry, symbolIndex, ref } = geo;
         if (ref === undefined) {
             const symbolDef = this.getSymbolDef(symbolIndex);
