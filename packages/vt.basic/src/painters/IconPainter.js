@@ -411,6 +411,9 @@ class IconPainter extends CollisionPainter {
                 updated = true;
                 const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
                 const boxInfo = collideBoxIndex[pickingIndex];
+                if (!boxInfo) {
+                    continue;
+                }
                 const [start, end, boxCount] = boxInfo;
                 let charCount = 1;
                 if (aCount) {
