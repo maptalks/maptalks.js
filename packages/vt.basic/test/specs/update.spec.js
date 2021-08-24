@@ -210,6 +210,41 @@ describe('update style specs', () => {
         }, false, style);
     });
 
+    it('should can update line visible', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: {
+                   lineColor: '#f00', lineWidth: 8, lineOpacity: 1
+                }
+            },
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' },
+                },
+                symbol: {
+                   lineColor: '#00f', lineWidth: 8, lineOpacity: 1, visible: false
+                }
+            }
+        ];
+        assertChangeStyle(done, [0, 0, 255, 255], layer => {
+            layer.updateSymbol(1, { visible: true });
+            assert(layer.options.style[1].symbol.visible === true);
+        }, true, style);
+    });
+
     it('should can set visible of multiple symbol', done => {
         const style = [
             {

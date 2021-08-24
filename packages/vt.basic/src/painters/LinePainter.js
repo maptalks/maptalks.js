@@ -392,7 +392,7 @@ class LinePainter extends BasicPainter {
     }
 
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
-        return oldSymbolDef['lineJoinPatternMode'] !== newSymbolDef['lineJoinPatternMode'];
+        return super._isNeedRefreshStyle(oldSymbolDef, newSymbolDef) || oldSymbolDef['lineJoinPatternMode'] !== newSymbolDef['lineJoinPatternMode'];
     }
 
     updateSceneConfig(config) {

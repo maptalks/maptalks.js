@@ -22,5 +22,6 @@ export const SYMBOLS_NEED_SETSTYLE = {
     'markerFile': 1,
     'textStyle': 1,
     'textFaceName': 1,
-    'textWeight': 1
+    'textWeight': 1,
+    'visible': 1
 };
