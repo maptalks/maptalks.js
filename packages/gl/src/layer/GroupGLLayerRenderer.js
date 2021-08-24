@@ -94,6 +94,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._renderInMode('default', null, methodName, args, true);
             return;
         }
+        const fGL = this.glCtx;
 
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
@@ -102,7 +103,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableTAA = this.isEnableTAA();
         const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
+        fGL.resetDrawCalls();
         this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
+        this._fxaaDrawCount = fGL.getDrawCalls();
 
         // 重用上一帧的深度纹理，先绘制ssr图形
         // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
@@ -112,7 +115,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
 
-        const fGL = this.glCtx;
+
         if (enableTAA) {
             const map = this.getMap();
             const needRefresh = this._postProcessor.isTaaNeedRedraw() || this._needRetireFrames || map.getRenderer().isViewChanged();
@@ -1089,7 +1092,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex = postFBO.color[0];
         }
 
-        if (enableSSAO) {
+        if (enableSSAO && (this._fxaaAfterTaaDrawCount || this._taaDrawCount || this._fxaaDrawCount)) {
             //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
             //generate ssao texture for the next frame
             tex = this._postProcessor.ssao(tex, this._depthTex, {
