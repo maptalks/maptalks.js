@@ -14,6 +14,16 @@ const REGL_TYPES = {
     5126: 'float'
 };
 
+const REGL_TYPE_WIDTH = {
+    5120: 1,
+    5122: 2,
+    5124: 4,
+    5121: 1,
+    5123: 2,
+    5125: 4,
+    5126: 4
+};
+
 const DEFAULT_DESC = {
     'positionSize': 3,
     'primitive': 'triangles',
@@ -352,7 +362,12 @@ export default class Geometry {
             this._updateSubBoundingBox(data);
         }
         if (buffer) {
-            buffer.buffer.subdata(data, offset);
+            const byteWidth = REGL_TYPE_WIDTH[buffer.buffer['_buffer'].dtype];
+            if (data.BYTES_PER_ELEMENT !== byteWidth) {
+                const ctor = getTypeCtor(data, byteWidth);
+                data = new ctor(data);
+            }
+            buffer.buffer.subdata(data, offset * byteWidth);
         } else {
             const arr = this.data[name].data ? this.data[name].data : this.data[name];
             for (let i = 0; i < data.length; i++) {
@@ -660,6 +675,18 @@ function getElementLength(elements) {
         return elements.data.length;
     }
     throw new Error('invalid elements length');
+}
+
+function getTypeCtor(arr, byteWidth) {
+    if (arr instanceof Uint8Array || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Uint8ClampedArray) {
+        return byteWidth === 1 ? Uint8Array : byteWidth === 2 ? Uint16Array : Uint32Array;
+    }
+    if (arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array) {
+        return byteWidth === 1 ? Int8Array : byteWidth === 2 ? Int16Array : Int32Array;
+    }
+    if (arr instanceof Float32Array || arr instanceof Float64Array) {
+        return byteWidth === 4 ? Float32Array : Float64Array;
+    }
 }
 
 // function buildTangents2(vertices, normals, uvs, indices) {
