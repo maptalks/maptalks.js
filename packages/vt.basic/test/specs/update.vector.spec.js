@@ -1114,6 +1114,67 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('marker should can update textFill with 2 markers, fuzhenn/maptalks-studio#2375', done => {
+        const marker0 = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#0f0',
+                markerVerticalAlignment: 'middle',
+                // 设成145后，aMarkerWidth 的类型会变成 Uint16rray
+                markerWidth: 145,
+                markerHeight: 145
+            }
+        });
+
+        const marker1 = new maptalks.Marker(map.getCenter(), {
+            id: 1,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#00f',
+                markerVerticalAlignment: 'middle',
+                markerWidth: 77,
+                markerHeight: 77,
+                textName: '■■■',
+                textFill: [1, 0, 0, 1]
+            }
+        });
+
+        const layer = new PointLayer('point', [marker0, marker1]);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let updated = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !updated) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                marker1.updateSymbol({
+                    textFill: [1, 1, 0, 1],
+                });
+                updated = true;
+            } else if (updated && count >= 3) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                const pixel1 = readPixel(renderer.canvas, x / 2, y / 2 + 10);
+                assert.deepEqual(pixel, [255, 255, 0, 255]);
+                assert.deepEqual(pixel1, [0, 0, 255, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

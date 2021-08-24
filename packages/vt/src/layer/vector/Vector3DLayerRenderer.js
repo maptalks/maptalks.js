@@ -592,18 +592,25 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
 
         const pointPacks = this._createPointPacks(markerFeatures, textFeatures, this._markerAtlas, this._markerCenter);
+        const markerMeshes = this._markerMeshes;
         Promise.all(pointPacks).then(packData => {
             for (let i = 0; i < packData.length; i++) {
                 if (!packData[i]) {
                     continue;
                 }
-                const mesh = Array.isArray(this._markerMeshes) ? this._markerMeshes[i] : this._markerMeshes;
+                const mesh = markerMeshes[i];
                 const pickingData = mesh.geometry.properties.aPickingId;
                 const startIndex = pickingData.indexOf(kid);
+                if (startIndex < 0) {
+                    continue;
+                }
                 const count = packData[i].data.featureIds.length;
                 for (const p in packData[i].data.data) {
+                    if (p === 'aPickingId') {
+                        continue;
+                    }
                     const data = packData[i].data.data[p];
-                    mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
+                    mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
                 }
             }
             this.setToRedraw();
