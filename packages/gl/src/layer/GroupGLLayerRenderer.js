@@ -47,13 +47,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
         this.forEachRenderer((renderer) => {
-            if (renderer._replacedDrawFn) {
+            if (renderer['_replacedDrawFn']) {
                 return;
             }
             renderer.draw = this._buildDrawFn(renderer.draw);
             renderer.drawOnInteracting = this._buildDrawOnInteractingFn(renderer.drawOnInteracting);
             renderer.setToRedraw = this._buildSetToRedrawFn(renderer.setToRedraw);
-            renderer._replacedDrawFn = true;
+            renderer['_replacedDrawFn'] = true;
         });
         this.prepareRender();
         this.prepareCanvas();
