@@ -228,11 +228,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 delete this.meshes;
             }
             if (this._markerMeshes) {
-                this._markerPainter.deleteMesh(this.meshes);
+                this._markerPainter.deleteMesh(this._markerMeshes);
                 delete this._markerMeshes;
             }
             if (this._lineMeshes) {
-                this._linePainter.deleteMesh(this.meshes);
+                this._linePainter.deleteMesh(this._lineMeshes);
                 delete this._lineMeshes;
             }
         }

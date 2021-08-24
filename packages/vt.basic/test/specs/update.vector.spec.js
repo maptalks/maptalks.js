@@ -737,6 +737,51 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('layer should can outlineAll after remove', done => {
+        const center = map.getCenter();
+        const ring = [[center.x, center.y - 0.5], [center.x, center.y + 0.5], [center.x + 0.5, center.y + 0.5], [center.x + 0.5, center.y - 0.5], [center.x, center.y - 0.5]];
+        const polygon = new maptalks.Polygon([ring], {
+            symbol: {
+                lineWidth: 6,
+                polygonFill: '#f00'
+            }
+        });
+        const layer = new PolygonLayer('polygon', polygon);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+        });
+        let outlined = false;
+        let removed = false;
+        group.on('layerload', () => {
+            if (count >= 1 && !removed) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [0, 0, 20, 255]);
+                polygon.remove();
+                removed = true;
+            } else if (outlined) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[3] === 0);
+                done();
+            } else if (removed) {
+                layer.outlineAll();
+                outlined = true;
+            }
+        });
+        group.addTo(map);
+    });
+
     it('vector should can outline features', done => {
         const marker = new maptalks.Marker(map.getCenter(), {
             id: 0,
