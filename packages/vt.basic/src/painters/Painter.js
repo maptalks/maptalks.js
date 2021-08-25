@@ -5,6 +5,7 @@ import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstan
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
+import deepEuqal from 'fast-deep-equal';
 
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
@@ -520,7 +521,7 @@ class Painter {
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
         for (const p in newSymbolDef) {
             if (hasOwn(newSymbolDef, p)) {
-                if (SYMBOLS_NEED_SETSTYLE[p]) {
+                if (SYMBOLS_NEED_SETSTYLE[p] && !deepEuqal(newSymbolDef[p], oldSymbolDef[p])) {
                     return true;
                 }
             }
@@ -532,7 +533,7 @@ class Painter {
         if (!this._symbol) {
             return false;
         }
-        const refresh = this._isNeedRefreshStyle(this.symbolDef[i], all);
+        const refresh = this._isNeedRefreshStyle(this.symbolDef[i] || {}, all);
         this.symbolDef[i] = copyJSON(all);
         const symbol = this._symbol[i];
         for (const p in symbol) {
