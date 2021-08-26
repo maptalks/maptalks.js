@@ -232,7 +232,7 @@ Map.include(/** @lends Map.prototype */{
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = []) {
+    _pointsToContainerPoints: function (points, zoom, altitudes = [], ptkey = '_pt') {
         const pitch = this.getPitch(), bearing = this.getBearing();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
@@ -270,10 +270,17 @@ Map.include(/** @lends Map.prototype */{
                 pts.push(null);
                 continue;
             }
-            const point = points[i].copy()._multi(res);
+            if (!points[i][ptkey]) {
+                points[i][ptkey] = new Point(0, 0);
+            }
+            const pt = points[i][ptkey];
+            pt.x = points[i].x;
+            pt.y = points[i].y;
+            pt._multi(res);
+            // const pt = points[i].copy()._multi(res);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-            this._toContainerPoint(point, isTransforming, res, altitude, centerPoint);
-            pts.push(point);
+            this._toContainerPoint(pt, isTransforming, res, altitude, centerPoint);
+            pts.push(pt);
         }
         return pts;
     },
