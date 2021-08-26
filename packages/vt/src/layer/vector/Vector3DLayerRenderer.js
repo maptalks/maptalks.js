@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
-import { SYMBOLS_NEED_SETSTYLE, SYMBOLS_NEED_SETSTYLE_IN_VECTOR } from '@maptalks/vector-packer';
+import { SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/build_geometry';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
 import { extend, isNumber, hasOwn } from '../../common/Util';
@@ -969,7 +969,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const props = e.properties;
         for (const p in props) {
             if (hasOwn(props, p)) {
-                if (SYMBOLS_NEED_SETSTYLE[p] || SYMBOLS_NEED_SETSTYLE_IN_VECTOR[p]) {
+                if (SYMBOLS_NEED_REBUILD_IN_VECTOR[p]) {
                     this._convertAndRebuild(geo);
                     return;
                 }

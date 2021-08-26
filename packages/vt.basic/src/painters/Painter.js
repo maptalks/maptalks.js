@@ -1,6 +1,6 @@
 import { reshader, mat4 } from '@maptalks/gl';
 import { StencilHelper } from '@maptalks/vt-plugin';
-import { SYMBOLS_NEED_SETSTYLE } from '@maptalks/vt';
+import { SYMBOLS_NEED_REBUILD_IN_VT } from '@maptalks/vt';
 import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
@@ -521,7 +521,7 @@ class Painter {
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
         for (const p in newSymbolDef) {
             if (hasOwn(newSymbolDef, p)) {
-                if (SYMBOLS_NEED_SETSTYLE[p] && !deepEuqal(newSymbolDef[p], oldSymbolDef[p])) {
+                if (SYMBOLS_NEED_REBUILD_IN_VT[p] && !deepEuqal(newSymbolDef[p], oldSymbolDef[p])) {
                     return true;
                 }
             }
