@@ -15,6 +15,7 @@ import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
 //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
 export const PACK_TEX_SIZE = 128 / 256;
+// vt和vector图层，共同需要重建mesh的symbol属性
 export const SYMBOLS_NEED_SETSTYLE = {
     'textName': 1,
     'polygonPatternFile': 1,
@@ -23,5 +24,12 @@ export const SYMBOLS_NEED_SETSTYLE = {
     'textStyle': 1,
     'textFaceName': 1,
     'textWeight': 1,
-    'visible': 1
+    'visible': 1,
+    'lineJoin': 1,
+    'lineCap': 1
+};
+
+// 只有vector图层，需要重建mesh的symbol属性
+export const SYMBOLS_NEED_SETSTYLE_IN_VECTOR = {
+    'lineDasharray': 1
 };

@@ -541,6 +541,119 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update LineString dasharray', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]], {
+            symbol: {
+                lineColor: '#f00',
+                lineWidth: 20,
+                lineDasharray: [0, 0, 0, 0]
+            }
+        });
+        const layer = new LineStringLayer('vector', line,);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.updateSymbol({
+                    lineDasharray: [24, 24, 0, 0]
+                });
+            } else if (count === 3) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                pixel = readPixel(layer.getRenderer().canvas, x / 2 + 20, y / 2);
+                assert.deepEqual(pixel, [0, 0, 0, 0]);
+                line.updateSymbol({
+                    lineDasharray: [0, 0, 0, 0]
+                });
+            } else if (count === 5) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                pixel = readPixel(layer.getRenderer().canvas, x / 2 + 20, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update lineString lineJoin', done => {
+        const line = new maptalks.LineString([[-1, 0], [0, 0], [0, 1]], {
+            symbol: {
+                lineColor: '#f00',
+                lineWidth: 20,
+                lineJoin: 'round',
+                lineDasharray: [0, 0, 0, 0]
+            }
+        });
+        const layer = new LineStringLayer('vector', line,);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.updateSymbol({
+                    lineJoin: 'bevel'
+                });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.updateSymbol({
+                    lineJoin: 'miter'
+                });
+
+            } else if (count === 5) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can update lineString lineCap', done => {
+        const line = new maptalks.LineString([[-1, 0], [0, 0]], {
+            symbol: {
+                lineColor: '#f00',
+                lineWidth: 20,
+                lineCap: 'butt',
+                lineDasharray: [0, 0, 0, 0]
+            }
+        });
+        const layer = new LineStringLayer('vector', line,);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 - 5, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.updateSymbol({
+                    lineCap: 'square'
+                });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                line.updateSymbol({
+                    lineCap: 'round'
+                });
+
+            } else if (count === 5) {
+                let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
 
     //更新坐标
     it('should can update Polygon coordinates', done => {
