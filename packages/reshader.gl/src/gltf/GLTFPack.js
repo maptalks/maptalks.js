@@ -107,12 +107,12 @@ export default class GLTFPack {
         delete this.gltf;
     }
 
-    updateAnimation(time, loop, speed) {
+    updateAnimation(time, loop, speed, animationName) {
         const json = this.gltf;
         if (!json) {
             return;
         }
-        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
+        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json, animationName) : null;
         //模型切换过快，会导致上一个模型有动画执行，当前模型没有动画数据，就出现timespan为null的情况
         if (!timespan) {
             return;
@@ -122,7 +122,7 @@ export default class GLTFPack {
             this._startTime = time;
         }
         json.scenes[0].nodes.forEach(node => {
-            this._updateNodeMatrix(animTime, node);
+            this._updateNodeMatrix(animationName, animTime, node);
         });
         for (const index in this.gltf.nodes) {
             const node = this.gltf.nodes[index];
@@ -132,12 +132,12 @@ export default class GLTFPack {
         }
     }
 
-    isFirstLoop(time, speed) {
+    isFirstLoop(time, speed, animationName) {
         const json = this.gltf;
         if (!this._startTime || !json) {
             return true;
         }
-        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json) : null;
+        timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json, animationName) : null;
         return ((time - this._startTime) * speed * 0.001) / (timespan.max - timespan.min) < 1;
     }
 
@@ -145,10 +145,10 @@ export default class GLTFPack {
         return !!this._isAnimation;
     }
 
-    _updateNodeMatrix(time, node, parentNodeMatrix) {
+    _updateNodeMatrix(animationName, time, node, parentNodeMatrix) {
         const trs = node.trs;
         if (trs) {
-            const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time);
+            const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time, animationName);
             if (animation.weights) {
                 this._updateMorph(node, animation.weights);
             }
@@ -162,7 +162,7 @@ export default class GLTFPack {
         const nodeMatrix = node.nodeMatrix;
         if (node.children) {
             node.children.forEach(child => {
-                this._updateNodeMatrix(time, child, nodeMatrix);
+                this._updateNodeMatrix(animationName, time, child, nodeMatrix);
             });
         }
         this._updateSkinTexture(node);
