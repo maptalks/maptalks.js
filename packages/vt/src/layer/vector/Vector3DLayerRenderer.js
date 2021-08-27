@@ -658,14 +658,34 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             features.push(fea);
         }
 
+        const kid = feature[0][KEY_IDX_NAME];
         const featureGroups = groupFeaturesFn.call(this, features);
+        // 判断 feature 所属的featureGroup是否发生变化，如果发生变化，则需要重新生成mesh, fuzhenn/maptalks-studio#2413
+        for (let i = 0; i < featureGroups.length; i++) {
+            if (featureGroups[i].length) {
+                const mesh = meshes.filter(m => m.feaGroupIndex === i);
+                if (!mesh.length) {
+                    this._markRebuild();
+                    this.setToRedraw();
+                    return false;
+                } else {
+                    const pickingData = mesh[0].geometry.properties.aPickingId;
+                    const startIndex = pickingData.indexOf(kid);
+                    if (startIndex < 0) {
+                        this._markRebuild();
+                        this.setToRedraw();
+                        return false;
+                    }
+                }
+            }
+        }
 
         const symbol = extend({}, globalSymbol);
         const packs = featureGroups.map(feas =>
             this.createVectorPacks(painter, PackClass, symbol, feas, atlas[0], center)
         );
 
-        const kid = feature[0][KEY_IDX_NAME];
+
         Promise.all(packs).then(packData => {
             for (let i = 0; i < packData.length; i++) {
                 let mesh;

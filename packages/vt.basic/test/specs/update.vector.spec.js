@@ -726,6 +726,32 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update Polygon opacity from 0.5 to 1, fuzhenn/maptalks-studio#2413', done => {
+        const polygon = new maptalks.Polygon([[[-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]], {
+            symbol: {
+                polygonFill: '#f00',
+                polygonOpacity: 0.5
+            }
+        });
+        const layer = new PolygonLayer('vector', polygon);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                polygon.updateSymbol({
+                    polygonOpacity: 1
+                });
+            } else if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     it('should can update MultiPolygon coordinates', done => {
         const polygon = new maptalks.MultiPolygon([
             [[[-1, 1], [-0.5, 1], [-0.5, -1], [-1, -1], [-1, 1]]],
