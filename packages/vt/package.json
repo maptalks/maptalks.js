@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vt",
-  "version": "0.49.5",
+  "version": "0.49.6",
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "browser": "dist/maptalks.vt.js",
