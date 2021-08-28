@@ -273,7 +273,7 @@ class TileLayer extends Layer {
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
                     offset: [0, 0],
-                    error: error * res / map.getResolution(0)
+                    error: error
                 });
             }
         }
@@ -296,7 +296,13 @@ class TileLayer extends Layer {
         const widthZ = heightZ * aspectRatio;
         // 相机到容器右上角，斜对角线的距离
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
-        return this.getMap()._getFovZ(0) * (diagonalZ / cameraZ);
+        const fov0 = map._getFovZ(0);
+        const error = fov0 * (diagonalZ / cameraZ);
+
+        const sr = this.getSpatialReference();
+        const res = sr.getResolution(0);
+
+        return error * res / map.getResolution(0);
     }
 
 
@@ -555,7 +561,7 @@ class TileLayer extends Layer {
         if (map.height < 1000) {
             r = 1;
         } else {
-            r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.505;
+            r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.605;
         }
         // const r = 1;
         const error = geometricError * r / distance;
