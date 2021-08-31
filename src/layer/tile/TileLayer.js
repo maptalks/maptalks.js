@@ -238,7 +238,7 @@ class TileLayer extends Layer {
         const tileConfig = this._getTileConfig();
         const fullExtent = sr.getFullExtent();
 
-        const { origin } = tileConfig.tileSystem;
+        const { origin, scale } = tileConfig.tileSystem;
         const extent000 = tileConfig.getTilePrjExtent(0, 0, res);
         const w = extent000.getWidth();
         const h = extent000.getHeight();
@@ -262,7 +262,7 @@ class TileLayer extends Layer {
         const z = 0;
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
-                const y = j;
+                const y = scale.y < 0 ? j : -(j + 1);
                 tiles.push({
                     x: i,
                     y,
