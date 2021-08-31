@@ -370,9 +370,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     getTextDesc() {
         if (!this._textDesc) {
             const textContent = this.getTextContent();
-            if (!textContent) {
-                return null;
-            }
+            // if textName='',this is error
+            // if (!textContent) {
+            //     return null;
+            // }
             const symbol = this._sizeSymbol;
             if (Array.isArray(symbol)) {
                 this._textDesc = symbol.map((s, i) => describeText(textContent[i], s));
