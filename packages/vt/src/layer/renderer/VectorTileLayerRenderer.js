@@ -357,6 +357,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const glScale = this.getTileGLScale(tileInfo.z);
             this._requestingMVT[url] = {
                 keys: {},
+                // 一个url可能对应了好几个tile，例如 repeatWorld 时
                 tiles: [tileInfo]
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;

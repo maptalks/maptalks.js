@@ -54,15 +54,12 @@ const GLTFMixin = Base =>
         }
 
         createGeometry(glData, features) {
-            if (!glData) {
-                return null;
-            }
             this._initGLTF();
             if (!this._ready) {
                 return null;
             }
             // 无论多少个symbol，gltf插件的数据只会来源于glData中的第一条数据
-            const { data, positionSize } = glData[0];
+            const { data, positionSize } = glData;
             const geometry = {
                 geometry: {
                     properties: extend({}, glData.properties),

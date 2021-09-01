@@ -9,6 +9,22 @@ parentProto.getType = function () {
     return Object.getPrototypeOf(this).constructor.type;
 };
 
+parentProto.isVisible = function () {
+    throw new Error('to be implemented.');
+}
+
+parentProto.prepareRender = function () {
+    throw new Error('to be implemented.');
+}
+
+parentProto.updateCollision = function () {
+    throw new Error('to be implemented.');
+}
+
+parentProto.supportRenderMode = function () {
+    throw new Error('to be implemented.');
+}
+
 parentProto.startFrame = function () {
     throw new Error('to be implemented.');
 };
@@ -18,6 +34,23 @@ parentProto.endFrame = function () {
 };
 
 parentProto.paintTile = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.getShadowMeshes = function () {
+    throw new Error('to be implemented.');
+};
+
+
+parentProto.updateSceneConfig = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.updateDataConfig = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.updateSymbol = function () {
     throw new Error('to be implemented.');
 };
 
@@ -38,10 +71,29 @@ parentProto.remove = function () {
 };
 
 parentProto.needToRedraw = function () {
-    return false;
+    throw new Error('to be implemented.');
 };
 
+parentProto.needToRetireFrames = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.outline = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.outlineAll = function () {
+    throw new Error('to be implemented.');
+};
+
+parentProto.needPolygonOffset = function () {
+    throw new Error('to be implemented.');
+};
+
+
 parentProto.constructor = VectorTilePlugin;
+
+const hasOwn = Object.prototype.hasOwnProperty;
 
 VectorTilePlugin.extend = function (type, props) {
     const clazz = function () {
@@ -55,7 +107,7 @@ VectorTilePlugin.extend = function (type, props) {
 
     clazz.type = type;
     for (const p in props) {
-        if (props.hasOwnProperty(p)) {
+        if (hasOwn.call(props, p)) {
             clazz.prototype[p] = props[p];
         }
     }

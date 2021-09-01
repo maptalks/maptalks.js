@@ -129,67 +129,48 @@ export default class TextPainter extends CollisionPainter {
         return !!symbol['textBloom'];
     }
 
-    createGeometry(glData) {
-        if (!glData || !glData.length) {
+    createGeometry(glData, features, index) {
+        const pack = glData;
+        if (!pack.glyphAtlas) {
             return null;
         }
-        //pointpack因为可能有splitSymbol，所以返回的glData是个数组，有多个pack
-        const geometries = [];
-
-        for (let i = 0; i < glData.length; i++) {
-            const pack = glData[i];
-            if (pack.glyphAtlas) {
-                const geo = super.createGeometry(pack);
-                if (!geo || !geo.geometry) {
-                    continue;
-                }
-                if (geo) {
-                    geometries.push(geo);
-                }
-                const { geometry } = geo;
-                if (geometry.properties.glyphAtlas) {
-                    this.drawDebugAtlas(geometry.properties.glyphAtlas);
-                }
-                if (geometry && pack.lineVertex) {
-                    geometry.properties.line = pack.lineVertex;
-                    //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
-                    //现在geometry只会有一个，所以统一为0
-                    geometry.properties.line.id = i;
-                }
-            }
+        const geo = super.createGeometry(pack);
+        if (!geo || !geo.geometry) {
+            return null;
         }
-
-        return geometries;
+        const { geometry } = geo;
+        if (geometry.properties.glyphAtlas) {
+            this.drawDebugAtlas(geometry.properties.glyphAtlas);
+        }
+        if (geometry && pack.lineVertex) {
+            geometry.properties.line = pack.lineVertex;
+            //原先createGeometry返回的geometry有多个，line.id用来区分是第几个geometry
+            //现在geometry只会有一个，所以统一为0
+            geometry.properties.line.id = index;
+        }
+        return geo;
     }
 
-    createMesh(geometries, transform) {
+    createMesh(geo, transform) {
         const enableCollision = this.isEnableCollision();
         const enableUniquePlacement = this.isEnableUniquePlacement();
-        const meshes = [];
-        for (let i = 0; i < geometries.length; i++) {
-            const geo = geometries[i];
-            if (!geo || !geo.geometry) {
-                continue;
-            }
-            const { geometry, symbolIndex } = geo;
-            geometry.properties.symbolIndex = symbolIndex;
-            const symbol = this.getSymbol(symbolIndex);
-            const symbolDef = this.getSymbolDef(symbolIndex);
-            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
-            const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, this.layer.options['collision'], !enableCollision, enableUniquePlacement);
-            if (mesh.length) {
-                const isLinePlacement = symbol['textPlacement'] === 'line';
-                //tags for picking
-                if (isLinePlacement) {
-                    this._hasLineText = true;
-                } else {
-                    this._hasNormalText = true;
-                }
-                meshes.push(...mesh);
+        const { geometry, symbolIndex } = geo;
+        geometry.properties.symbolIndex = symbolIndex;
+        const symbol = this.getSymbol(symbolIndex);
+        const symbolDef = this.getSymbolDef(symbolIndex);
+        const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+        const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, this.layer.options['collision'], !enableCollision, enableUniquePlacement);
+        if (mesh.length) {
+            const isLinePlacement = symbol['textPlacement'] === 'line';
+            //tags for picking
+            if (isLinePlacement) {
+                this._hasLineText = true;
+            } else {
+                this._hasNormalText = true;
             }
         }
 
-        return meshes;
+        return mesh;
     }
 
     updateCollision(context) {

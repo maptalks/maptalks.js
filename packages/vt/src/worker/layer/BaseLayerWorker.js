@@ -356,9 +356,9 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex));
+            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex))]);
         } else if (type === '3d-wireframe') {
-            return Promise.resolve(buildWireframe(features, dataConfig, extent));
+            return Promise.all([Promise.resolve(buildWireframe(features, dataConfig, extent))]);
         } else if (type === 'point') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
@@ -433,13 +433,9 @@ export default class BaseLayerWorker {
                     options.top = false;
                     packs.push(new LineExtrusionPack(features, symbol, options));
                 }
-                if (packs.length === 1) {
-                    return packs[0].load();
-                } else {
-                    return Promise.all(packs.map(pack => pack.load()));
-                }
+                return Promise.all(packs.map(pack => pack.load()));
             } else {
-                return new LineExtrusionPack(features, symbol, options).load();
+                return Promise.all([new LineExtrusionPack(features, symbol, options).load()]);
             }
         }/* else if (type === 'circle') {
             const options = extend({}, dataConfig, {
@@ -450,7 +446,7 @@ export default class BaseLayerWorker {
             const pack = new CirclePack(features, symbol, options);
             return pack.load();
         }*/
-        return Promise.resolve(null);
+        return Promise.resolve([]);
     }
 
     /**
@@ -707,9 +703,10 @@ function parseSymbolAndGenPromises(features, symbol, options, clazz, scale) {
     const promises = [];
     for (let i = 0; i < symbols.length; i++) {
         if (!symbols[i]) {
-            promises.push({ data: { symbolIndex: { index: i } } });
+            // promises.push({ data: { symbolIndex: { index: i } } });
             continue;
         }
+        // 用来在 VectorPack 中生成 symbolIndex
         symbols[i].index = { index: i };
         if (!parsed[i]) {
             if (i === first) {

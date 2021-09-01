@@ -46,13 +46,6 @@ class FillPainter extends BasicPainter {
     }
 
     createMesh(geo, transform, params) {
-        if (Array.isArray(geo)) {
-            const meshes = [];
-            for (let i = 0; i < geo.length; i++) {
-                meshes.push(this.createMesh(geo[i], transform, params));
-            }
-            return meshes;
-        }
         const { tilePoint } = params;
         const { geometry, symbolIndex, ref } = geo;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;

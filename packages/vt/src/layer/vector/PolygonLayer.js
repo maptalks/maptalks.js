@@ -79,12 +79,15 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             const meshes = [];
             const atlas = [];
             for (let i = 0; i < mm.length; i++) {
-                if (mm[i] && mm[i].mesh) {
-                    meshes.push(mm[i].mesh);
-                    mm[i].mesh.feaGroupIndex = i;
-                    mm[i].mesh.geometry.properties.originElements = mm[i].mesh.geometry.properties.elements.slice();
-                    if (i === 1) {
-                        mm[i].mesh.transparent = true;
+                const childMeshes = mm[i] && mm[i].meshes;
+                if (childMeshes) {
+                    meshes.push(...childMeshes);
+                    for (let j = 0; j < childMeshes.length; j++) {
+                        childMeshes[j].feaGroupIndex = i;
+                        childMeshes[j].geometry.properties.originElements = childMeshes[j].geometry.properties.elements.slice();
+                        if (i === 1) {
+                            childMeshes[j].transparent = true;
+                        }
                     }
                     atlas[i] = mm[i].atlas;
                 }

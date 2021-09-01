@@ -9,39 +9,28 @@ const MAX_LINE_COUNT = 128;
 
 class LineGradientPainter extends LinePainter {
 
-    createGeometry(glData, features) {
-        const geometries = super.createGeometry(glData, features);
-        for (let i = 0; i < geometries.length; i++) {
-            const { symbolIndex, geometry } = geometries[i];
-            const symbol = this.getSymbol(symbolIndex);
-            const gradProp = symbol['lineGradientProperty'];
-            const featureIndexes = geometry.data.aPickingId;
-            const aGradIndex = new Uint8Array(featureIndexes.length);
-            const grads = [];
-            let current = featureIndexes[0];
-            grads.push(features[current].feature.properties[gradProp]);
-            for (let i = 1; i < featureIndexes.length; i++) {
-                if (featureIndexes[i] !== current) {
-                    current = featureIndexes[i];
-                    grads.push(features[current].feature.properties[gradProp]);
-                }
-                aGradIndex[i] = grads.length - 1;
+    postCreateGeometry(lineGeometry) {
+        const { symbolIndex, geometry } = lineGeometry;
+        const { features } = geometry.properties;
+        const symbol = this.getSymbol(symbolIndex);
+        const gradProp = symbol['lineGradientProperty'];
+        const featureIndexes = geometry.data.aPickingId;
+        const aGradIndex = new Uint8Array(featureIndexes.length);
+        const grads = [];
+        let current = featureIndexes[0];
+        grads.push(features[current].feature.properties[gradProp]);
+        for (let i = 1; i < featureIndexes.length; i++) {
+            if (featureIndexes[i] !== current) {
+                current = featureIndexes[i];
+                grads.push(features[current].feature.properties[gradProp]);
             }
-            geometry.data.aGradIndex = aGradIndex;
-            geometry.properties.gradients = grads;
+            aGradIndex[i] = grads.length - 1;
         }
-
-        return geometries;
+        geometry.data.aGradIndex = aGradIndex;
+        geometry.properties.gradients = grads;
     }
 
     createMesh(geo, transform) {
-        if (Array.isArray(geo)) {
-            const meshes = [];
-            for (let i = 0; i < geo.length; i++) {
-                meshes.push(this.createMesh(geo[i], transform));
-            }
-            return meshes;
-        }
         const { geometry, symbolIndex, ref } = geo;
         if (ref === undefined) {
             const symbolDef = this.getSymbolDef(symbolIndex);

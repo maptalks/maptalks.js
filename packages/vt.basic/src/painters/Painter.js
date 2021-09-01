@@ -13,6 +13,8 @@ const TEX_CACHE_KEY = '__gl_textures';
 
 const MAT = [];
 
+const EMPTY_ARRAY = [];
+
 const level0Filter = mesh => {
     return mesh.getUniform('level') === 0;
 };
@@ -141,31 +143,41 @@ class Painter {
         }
     }
 
-    prepareGeometry(glData, features) {
-        const geometry = this.createGeometry(glData, features);
-        if (Array.isArray(geometry)) {
-            for (let i = 0; i < geometry.length; i++) {
-                const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
-                if (geometry[i] && geometry[i].geometry) {
-                    const props = geometry[i].geometry.properties;
+    createGeometries(glData, features) {
+        if (!glData.length) {
+            return EMPTY_ARRAY;
+        }
+        const geometries = [];
+        for (let i = 0; i < glData.length; i++) {
+            if (!glData[i]) {
+                continue;
+            }
+            if (glData[i].ref !== undefined) {
+                geometries.push({
+                    geometry: geometries[glData[i].ref].geometry,
+                    symbolIndex: glData[i].symbolIndex,
+                    ref: glData[i].ref
+                });
+            } else {
+                const geo = this.createGeometry(glData[i], features, i);
+                if (geo && geo.geometry) {
+                    const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                    const props = geo.geometry.properties;
+                    props.symbolIndex = geo.symbolIndex;
                     props.features = features;
                     if (hasFeaIds) {
                         props.feaIdPickingMap = pickingIdMap;
                         props.feaPickingIdMap = idPickingMap;
                     }
                 }
-            }
-        } else if (geometry && geometry.geometry) {
-            const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData);
-            const props = geometry.geometry.properties;
-            props.features = features;
-            if (hasFeaIds) {
-                props.feaIdPickingMap = pickingIdMap;
-                props.feaPickingIdMap = idPickingMap;
+                this.postCreateGeometry(geo, geometries);
+                geometries.push(geo);
             }
         }
-        return geometry;
+        return geometries;
     }
+
+    postCreateGeometry() {}
 
     _getIdMap(glData) {
         if (!glData) {
@@ -177,10 +189,10 @@ class Painter {
                 return {};
             }
         }
-        var feaIds = glData.featureIds;
-        var idPickingMap = {};
-        var pickingIdMap = {};
-        var hasFeaIds = feaIds && feaIds.length;
+        const feaIds = glData.featureIds;
+        const idPickingMap = {};
+        const pickingIdMap = {};
+        const hasFeaIds = feaIds && feaIds.length;
         if (hasFeaIds) {
             for (let i = 0; i < feaIds.length; i++) {
                 idPickingMap[glData.data.aPickingId[i]] = feaIds[i];
@@ -192,6 +204,20 @@ class Painter {
 
     createGeometry(/* glData, features */) {
         throw new Error('not implemented');
+    }
+
+    createMeshes(geometries, transform, params) {
+        const meshes = [];
+        for (let i = 0; i < geometries.length; i++) {
+            const mesh = this.createMesh(geometries[i], transform, params);
+            if (Array.isArray(mesh)) {
+                meshes.push(...mesh);
+            } else {
+                meshes.push(mesh);
+            }
+
+        }
+        return meshes;
     }
 
     createMesh(/* geometries, transform */) {

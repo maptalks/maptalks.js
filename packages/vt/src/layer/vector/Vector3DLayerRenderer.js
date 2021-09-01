@@ -293,8 +293,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!packData) {
                 return null;
             }
-            const geometry = painter.prepareGeometry(packData.data, features.map(feature => { return { feature }; }));
-            this._fillCommonProps(geometry.geometry);
+            const geometries = painter.createGeometries([packData.data], features.map(feature => { return { feature }; }));
+            for (let i = 0; i < geometries.length; i++) {
+                this._fillCommonProps(geometries[i].geometry);
+            }
+
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
@@ -303,15 +306,19 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             // const transform = mat4.translate([], mat4.identity([]), center);
 
             // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const mesh = painter.createMesh(geometry, posMatrix, { tilePoint: [center[0], center[1]] });
-            mesh.setUniform('level', 0);
-            const defines = mesh.defines;
-            //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
-            defines['ENABLE_TILE_STENCIL'] = 1;
-            mesh.setDefines(defines);
-            mesh.properties.meshKey = this.layer.getId();
+            const meshes = painter.createMeshes(geometries, posMatrix, { tilePoint: [center[0], center[1]] });
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                mesh.setUniform('level', 0);
+                const defines = mesh.defines;
+                //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
+                defines['ENABLE_TILE_STENCIL'] = 1;
+                mesh.setDefines(defines);
+                mesh.properties.meshKey = this.layer.getId();
+            }
+
             return {
-                mesh,
+                meshes,
                 atlas: {
                     iconAtlas: packData.data.iconAtlas
                 }
@@ -458,7 +465,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this.setToRedraw();
                 return;
             }
-            const geometries = this._markerPainter.prepareGeometry(packData.map(d => d && d.data), this._allFeatures);
+            const geometries = this._markerPainter.createGeometries(packData.map(d => d && d.data), this._allFeatures);
 
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i].geometry, packData[i] && packData[i].data);
@@ -478,10 +485,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale))
-            let meshes = this._markerPainter.createMesh(geometries, posMatrix);
-            if (meshes && !Array.isArray(meshes)) {
-                meshes = [meshes];
-            }
+            const meshes = this._markerPainter.createMeshes(geometries, posMatrix);
             for (let i = 0; i < meshes.length; i++) {
                 meshes[i].geometry.properties.originElements = meshes[i].geometry.properties.elements.slice();
                 meshes[i].setUniform('level', 0);
@@ -762,10 +766,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const meshes = [];
             const atlas = [];
             for (let i = 0; i < mm.length; i++) {
-                if (mm[i]) {
-                    mm[i].mesh.feaGroupIndex = i;
-                    meshes.push(mm[i].mesh);
-                    mm[i].mesh.geometry.properties.originElements = mm[i].mesh.geometry.properties.elements.slice();
+                const childMeshes = mm[i] && mm[i].meshes;
+                if (childMeshes) {
+                    for (let j = 0; j < childMeshes.length; j++) {
+                        const mesh = childMeshes[j];
+                        mesh.feaGroupIndex = i;
+                        meshes.push(mesh);
+                        mesh.geometry.properties.originElements = mesh.geometry.properties.elements.slice();
+                    }
                     atlas[i] = mm[i].atlas;
                 }
             }

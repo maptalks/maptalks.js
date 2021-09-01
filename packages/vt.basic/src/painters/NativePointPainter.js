@@ -18,13 +18,6 @@ class NativePointPainter extends BasicPainter {
     }
 
     createMesh(geo, transform) {
-        if (Array.isArray(geo)) {
-            const meshes = [];
-            for (let i = 0; i < geo.length; i++) {
-                meshes.push(this.createMesh(geo[i], transform));
-            }
-            return meshes;
-        }
         const { geometry, symbolIndex, ref } = geo;
         const symbol = this.getSymbol(symbolIndex);
         if (ref === undefined) {

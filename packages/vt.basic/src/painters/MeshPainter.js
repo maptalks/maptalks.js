@@ -31,20 +31,6 @@ class MeshPainter extends Painter {
             this.setToRedraw();
             return null;
         }
-
-        if (Array.isArray(geo)) {
-            const meshes = [];
-            for (let i = 0; i < geo.length; i++) {
-                const m = this.createMesh(geo[i], transform);
-                if (m) {
-                    meshes.push(m);
-                }
-            }
-            return meshes;
-        }
-        if (!geo) {
-            return null;
-        }
         const { geometry, symbolIndex } = geo;
         const mesh = new reshader.Mesh(geometry, this.material);
         if (this.sceneConfig.animation) {

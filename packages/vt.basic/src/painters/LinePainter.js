@@ -58,16 +58,6 @@ class LinePainter extends BasicPainter {
     }
 
     createMesh(geo, transform) {
-        if (Array.isArray(geo)) {
-            const meshes = [];
-            for (let i = 0; i < geo.length; i++) {
-                const mesh = this.createMesh(geo[i], transform);
-                if (mesh) {
-                    meshes.push(mesh);
-                }
-            }
-            return meshes;
-        }
         if (!geo.geometry) {
             return null;
         }

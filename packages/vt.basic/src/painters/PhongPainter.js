@@ -6,9 +6,6 @@ import MeshPainter from './MeshPainter';
 class PhongPainter extends MeshPainter {
 
     createGeometry(glData) {
-        if (Array.isArray(glData)) {
-            return glData.map(data => this.createGeometry(data));
-        }
         const data = glData.data;
         const symbol = this.getSymbols()[0];
         const extrusionOpacity = symbol.material && symbol.material.extrusionOpacity;

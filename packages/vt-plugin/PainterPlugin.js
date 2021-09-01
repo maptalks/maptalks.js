@@ -3,22 +3,22 @@ import { createFilter } from '@maptalks/feature-filter';
 import VectorTilePlugin from './VectorTilePlugin';
 import Color from 'color';
 
-var DEFAULT_ANIMATION_DURATION = 800;
+const DEFAULT_ANIMATION_DURATION = 800;
 
-var NO_REDRAW = {
+const NO_REDRAW = {
     redraw: false,
     retire: false
 };
 
-var EMPTY_ARRAY = [];
+const EMPTY_ARRAY = [];
 
-var THROTTLE_KEY = '__vt_plugin_mesh_throttle';
-var meshUID = 1;
+const THROTTLE_KEY = '__vt_plugin_mesh_throttle';
+let meshUID = 1;
 /**
  * Create a VT Plugin with a given painter
  */
 function createPainterPlugin(type, Painter) {
-    var PainterPlugin = VectorTilePlugin.extend(type, {
+    const PainterPlugin = VectorTilePlugin.extend(type, {
 
         init: function () {
             this._meshCache = {};
@@ -33,21 +33,21 @@ function createPainterPlugin(type, Painter) {
         },
 
         startFrame: function (context) {
-            var keyName = (THROTTLE_KEY + '').trim();
-            var layer = context.layer,
+            const keyName = (THROTTLE_KEY + '').trim();
+            const layer = context.layer,
                 regl = context.regl,
                 sceneConfig = context.sceneConfig,
                 dataConfig = context.dataConfig,
                 symbol = context.symbol;
-            var painter = this.painter;
+            let painter = this.painter;
             if (!painter) {
-                var pluginIndex = context.pluginIndex;
+                const pluginIndex = context.pluginIndex;
                 painter = this.painter = new Painter(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             }
             if (!this._meshCache) {
                 this._meshCache = {};
             }
-            var excludes = sceneConfig.excludes;
+            const excludes = sceneConfig.excludes;
             if (!this._excludes) {
                 if (excludes) {
                     this._excludes = excludes;
@@ -65,7 +65,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         updateCollision: function (context) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter && painter.isVisible()) {
                 return painter.updateCollision(context);
             }
@@ -73,7 +73,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         prepareRender: function (context) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter && painter.isVisible()) {
                 return painter.prepareRender(context);
             }
@@ -81,7 +81,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         endFrame: function (context) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter && painter.isVisible()) {
                 return painter.render(context);
             }
@@ -89,7 +89,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         getShadowMeshes() {
-            var painter = this.painter;
+            const painter = this.painter;
             if (!painter || !painter.getShadowMeshes) {
                 return EMPTY_ARRAY;
             }
@@ -97,7 +97,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         paintTile: function (context) {
-            var {
+            const {
                 layer,
                 tileCache,
                 tileData,
@@ -109,104 +109,86 @@ function createPainterPlugin(type, Painter) {
                 sceneConfig,
                 bloom
             } = context;
-            var painter = this.painter;
+            const painter = this.painter;
             if (!painter) {
                 return NO_REDRAW;
             }
-            var retire = false;
-            var key = this._getMeshKey(context);
-            let geometry = tileCache.geometry;
-            if (!geometry) {
+            let retire = false;
+            const key = this._getMeshKey(context);
+            let geometries = tileCache.geometry;
+            if (!geometries) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
-                var features = tileData.features;
-                var glData = tileData.data;
-                if (!glData || !Array.isArray(glData) && (!glData.data || glData.data && !glData.data.aPosition)) {
+                const features = tileData.features;
+                const glData = tileData.data;
+                if (!glData || !glData.length) {
                     return NO_REDRAW;
                 }
-                var data = glData;
-                if (this.painter.colorSymbol && !Array.isArray(glData)) {
-                    var colors = this._generateColorArray(features, glData.data.aPickingId, glData.indices, glData.data.aPosition, glData.positionSize);
-                    data.data.aColor = colors;
-                }
-                geometry = tileCache.geometry = painter.prepareGeometry(data, features);
-                if (geometry) {
-                    if (Array.isArray(geometry)) {
-                        for (let i = 0; i < geometry.length; i++) {
-                            if (geometry[i] && geometry[i].geometry) {
-                                geometry[i].geometry.properties.features = features;
-                                this._fillCommonProps(geometry[i].geometry, context);
-                            }
-                        }
-                    } if (geometry.geometry) {
-                        const geo = geometry.geometry;
-                        if (geo.properties) {
-                            geo.properties.features = features;
-                            this._fillCommonProps(geo, context);
-                        }
-                        if (tileCache.excludes !== this._excludes) {
-                            this._filterElements(geo, tileData.data);
-                            tileCache.excludes = this._excludes;
-                        }
+                const data = glData;
+                if (this.painter.colorSymbol) {
+                    for (let i = 0; i < glData.length; i++) {
+                        const colors = this._generateColorArray(features, glData[i].data.aPickingId, glData[i].indices, glData[i].data.aPosition, glData[i].positionSize);
+                        glData[i].data.aColor = colors;
                     }
-                    retire = true;
+                }
+                geometries = tileCache.geometry = painter.createGeometries(data, features);
+                for (let i = 0; i < geometries.length; i++) {
+                    if (geometries[i] && geometries[i].geometry) {
+                        retire = true;
+                        geometries[i].geometry.properties.features = features;
+                        this._fillCommonProps(geometries[i].geometry, context);
+                    }
                 }
             }
-            if (!geometry) {
+            if (!geometries) {
                 return NO_REDRAW;
             }
 
-            var mesh = this._getMesh(key);
-            if (!mesh) {
+            let meshes = this._getMesh(key);
+            if (!meshes) {
                 if (this._throttle(layer, key)) {
                     return NO_REDRAW;
                 }
                 const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
-                mesh = painter.createMesh(geometry, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
-                if (mesh) {
-                    var enableTileStencil = layer.getRenderer().isEnableTileStencil();
-                    if (Array.isArray(mesh)) {
-                        for (let i = 0; i < mesh.length; i++) {
-                            this._fillMeshProps(mesh[i], tileTransform, context.timestamp, meshUID++, enableTileStencil);
+                meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+                if (meshes.length) {
+                    const enableTileStencil = layer.getRenderer().isEnableTileStencil();
+                    for (let i = 0; i < meshes.length; i++) {
+                        if (meshes[i]) {
+                            retire = true;
+                            this._fillMeshProps(meshes[i], tileTransform, context.timestamp, meshUID++, enableTileStencil);
                         }
-                    } else {
-                        this._fillMeshProps(mesh, tileTransform, context.timestamp, key, enableTileStencil);
                     }
                     if (sceneConfig.animation) {
-                        mesh._animationTime = context.timestamp;
+                        meshes._animationTime = context.timestamp;
                     }
-                    this._meshCache[key] = mesh;
-                    retire = true;
+                    this._meshCache[key] = meshes;
+
                 }
             }
-            if (!mesh || Array.isArray(mesh) && !mesh.length) {
+            if (!meshes.length) {
                 return NO_REDRAW;
             }
 
             //更新stencil level值，不同zoom会发生变化
-            var level = painter.getTileLevelValue(tileInfo, tileZoom);//getUniformLevel(tileInfo.z, tileZoom);
-            if (Array.isArray(mesh)) {
-                mesh.forEach(m => {
-                    m.properties.tile = tileInfo;
-                    m.properties.level = level;
-                    m.setUniform('level', level);
-                });
-            } else {
-                mesh.properties.tile = tileInfo;
-                mesh.properties.level = level;
-                mesh.setUniform('level', level);
-            }
+            const level = painter.getTileLevelValue(tileInfo, tileZoom);//getUniformLevel(tileInfo.z, tileZoom);
+            meshes.forEach(m => {
+                // 保留一些有用的信息
+                m.properties.tile = tileInfo;
+                m.properties.level = level;
+                m.setUniform('level', level);
+            });
 
-            var redraw = false;
+            let redraw = false;
             if (!this._frameCache[key]) {
-                var progress = null;
-                var animation = sceneConfig.animation;
+                let progress = null;
+                let animation = sceneConfig.animation;
                 if (animation) {
-                    var duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
-                    var t = (context.timestamp - mesh._animationTime) / duration;
-                    var createTime = Array.isArray(mesh) ? mesh[0].properties.createTime : mesh.properties.createTime;
-                    if (mesh._animationTime - createTime < duration && t < 1) {
+                    const duration = context.sceneConfig.animationDuration || DEFAULT_ANIMATION_DURATION;
+                    const t = (context.timestamp - meshes._animationTime) / duration;
+                    const createTime = meshes[0].properties.createTime;
+                    if (meshes._animationTime - createTime < duration && t < 1) {
                         if (animation === true || animation === 1) {
                             animation = 'linear';
                         }
@@ -214,17 +196,12 @@ function createPainterPlugin(type, Painter) {
                         redraw = true;
                     }
                 }
-                if (Array.isArray(mesh)) {
-                    mesh.forEach(m => {
-                        const bloomValue = +(!!bloom && painter.isBloom(m));
-                        m.bloom = bloomValue;
-                    });
-                } else {
-                    const bloomValue = +(!!bloom && painter.isBloom(mesh));
-                    mesh.bloom = bloomValue;
-                }
+                meshes.forEach(m => {
+                    const bloomValue = +(!!bloom && painter.isBloom(m));
+                    m.bloom = bloomValue;
+                });
 
-                painter.addMesh(mesh, progress);
+                painter.addMesh(meshes, progress);
                 this._frameCache[key] = 1;
             }
 
@@ -252,8 +229,8 @@ function createPainterPlugin(type, Painter) {
         },
 
         _fillCommonProps: function (geometry, context) {
-            var { layer, tileInfo } = context;
-            var map = layer.getMap(),
+            const { layer, tileInfo } = context;
+            const map = layer.getMap(),
                 sr = layer.getSpatialReference ? layer.getSpatialReference() : map.getSpatialReference(),
                 tileResolution = sr.getResolution(tileInfo.z),
                 tileRatio = context.tileExtent / layer.getTileSize().width;
@@ -264,7 +241,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         updateSceneConfig: function (context) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter) {
                 painter.updateSceneConfig(context.sceneConfig);
             }
@@ -273,7 +250,7 @@ function createPainterPlugin(type, Painter) {
         // 返回true，则重刷图层，重新构造瓦片mesh
         // 返回false，则只是请求重绘
         updateDataConfig: function (dataConfig, old) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter) {
                 return painter.updateDataConfig(dataConfig, old);
             }
@@ -281,13 +258,13 @@ function createPainterPlugin(type, Painter) {
         },
 
         updateSymbol: function (symbol, all) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (!painter) {
                 return false;
             }
             if (painter.shouldDeleteMeshOnUpdateSymbol(symbol)) {
                 if (this._meshCache) {
-                    for (var key in this._meshCache) {
+                    for (const key in this._meshCache) {
                         painter.deleteMesh(this._meshCache[key], true);
                     }
                 }
@@ -308,8 +285,8 @@ function createPainterPlugin(type, Painter) {
             if (!this._meshCache) {
                 return;
             }
-            var key = this._getMeshKey(context);
-            var mesh = this._meshCache[key];
+            const key = this._getMeshKey(context);
+            const mesh = this._meshCache[key];
             if (mesh && this.painter) {
                 this.painter.deleteMesh(mesh);
             }
@@ -320,9 +297,9 @@ function createPainterPlugin(type, Painter) {
         },
 
         remove: function () {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter && this._meshCache) {
-                for (var key in this._meshCache) {
+                for (const key in this._meshCache) {
                     painter.deleteMesh(this._meshCache[key]);
                 }
                 painter.delete();
@@ -333,7 +310,7 @@ function createPainterPlugin(type, Painter) {
         },
 
         resize: function (width, height) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter) {
                 painter.resize(width, height);
             }
@@ -357,21 +334,21 @@ function createPainterPlugin(type, Painter) {
             if (!vertices || !features || !featureIndexes.length) {
                 return null;
             }
-            // var myColors = ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'];
-            var colors = new Uint8Array(vertices.length / positionSize * 4);
-            var symbol, rgb;
+            // const myColors = ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'];
+            const colors = new Uint8Array(vertices.length / positionSize * 4);
+            let symbol, rgb;
             const colorSymbol = this.painter.colorSymbol;
-            var visitedColors = {};
-            var pos;
-            for (var i = 0, l = featureIndexes.length; i < l; i++) {
-                var idx = featureIndexes[i];
+            const visitedColors = {};
+            let pos;
+            for (let i = 0, l = featureIndexes.length; i < l; i++) {
+                const idx = featureIndexes[i];
                 symbol = features[idx].symbol;
                 rgb = visitedColors[idx];
                 if (!rgb) {
-                    // var color = Color(myColors[features[idx].feature.id % myColors.length]);
+                    // const color = Color(myColors[features[idx].feature.id % myColors.length]);
                     // rgb = visitedColors[idx] = color.array();
                     // if (symbol[this.painter.colorSymbol]) {
-                    //     var color = Color(symbol[this.painter.colorSymbol]);
+                    //     const color = Color(symbol[this.painter.colorSymbol]);
                     //     rgb = visitedColors[idx] = color.array();
                     // } else {
                     //     rgb = visitedColors[idx] = [255, 255, 255];
@@ -400,9 +377,9 @@ function createPainterPlugin(type, Painter) {
         },
 
         _getMeshKey: function (context) {
-            var tileInfo = context.tileInfo;
-            // var pluginIndex = context.pluginIndex;
-            var meshKey = tileInfo.meshKey;
+            const tileInfo = context.tileInfo;
+            // const pluginIndex = context.pluginIndex;
+            const meshKey = tileInfo.meshKey;
             if (!meshKey) {
                 tileInfo.meshKey = meshUID++;
             }
@@ -426,15 +403,15 @@ function createPainterPlugin(type, Painter) {
         },
 
         _filterGeoElements(geometry, glData, features) {
-            var featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
+            const featureIndexes = glData.featureIndexes || glData.data.featureIndexes;
             if (!featureIndexes) return;
             if (this._excludesFunc) {
-                var indices = glData.indices;
-                var pre = null,
+                const indices = glData.indices;
+                let pre = null,
                     excluded = false;
-                var elements = [];
-                for (var i = 0; i < indices.length; i++) {
-                    var feature = features[featureIndexes[indices[i]]];
+                const elements = [];
+                for (let i = 0; i < indices.length; i++) {
+                    const feature = features[featureIndexes[indices[i]]];
                     if (pre === null || pre !== indices[i]) {
                         excluded = this._excludesFunc(feature.feature);
                         pre = indices[i];
@@ -450,16 +427,16 @@ function createPainterPlugin(type, Painter) {
         },
 
         _throttle(layer, key) {
-            var keyName = (THROTTLE_KEY + '').trim();
-            var limit = layer.options['tileMeshCreationLimitPerFrame'] || 0;
+            const keyName = (THROTTLE_KEY + '').trim();
+            const limit = layer.options['tileMeshCreationLimitPerFrame'] || 0;
             if (!limit) {
                 return false;
             }
-            var map = layer.getMap();
+            const map = layer.getMap();
             if (!map.isInteracting()) {
                 return false;
             }
-            var keys = map[keyName];
+            let keys = map[keyName];
             if (!keys) {
                 keys = map[keyName] = [];
             }
@@ -471,21 +448,21 @@ function createPainterPlugin(type, Painter) {
         },
 
         outline(fbo, featureIds) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter) {
                 painter.outline(fbo, featureIds);
             }
         },
 
         outlineAll(fbo) {
-            var painter = this.painter;
+            const painter = this.painter;
             if (painter) {
                 painter.outlineAll(fbo);
             }
         },
 
         needPolygonOffset() {
-            var painter = this.painter;
+            const painter = this.painter;
             return painter && painter.needPolygonOffset();
         }
     });
@@ -496,9 +473,9 @@ function createPainterPlugin(type, Painter) {
 export default createPainterPlugin;
 
 export function extend(dest) {
-    for (var i = 1; i < arguments.length; i++) {
-        var src = arguments[i];
-        for (var k in src) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        for (const k in src) {
             dest[k] = src[k];
         }
     }

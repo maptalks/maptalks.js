@@ -72,22 +72,29 @@ class WireframePainter extends Painter {
             transform = mat;
         }
         mesh.setLocalTransform(transform);
+        mesh.properties.symbolIndex = { index: 0 };
         // mat4.fromScaling(mesh.positionMatrix, [1.1, 1.1, 1.1]);
         return mesh;
     }
 
     addMesh(mesh, progress) {
+        if (!mesh.length) {
+            return this;
+        }
+        let mat;
         if (progress !== null) {
-            const mat = mesh.localTransform;
             if (progress === 0) {
                 progress = 0.01;
             }
+            mat = mesh[0].localTransform;
             SCALE[2] = progress;
             mat4.fromScaling(mat, SCALE);
-            mat4.multiply(mat, mesh.properties.tileTransform, mat);
-            mesh.setLocalTransform(mat);
+            mat4.multiply(mat, mesh[0].properties.tileTransform, mat);
         } else {
-            mesh.setLocalTransform(mesh.properties.tileTransform);
+            mat = mesh[0].properties.tileTransform;
+        }
+        for (let i = 0; i < mesh.length; i++) {
+            mesh[i].setLocalTransform(mat);
         }
         this.scene.addMesh(mesh);
         return this;

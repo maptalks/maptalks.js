@@ -7,25 +7,8 @@ export default class BasicPainter extends Painter {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
     }
 
+
     createGeometry(glData, features) {
-        if (!glData) {
-            return null;
-        }
-        if (Array.isArray(glData)) {
-            const geometries = [];
-            for (let i = 0; i < glData.length; i++) {
-                if (glData[i].ref !== undefined) {
-                    geometries.push({
-                        geometry: geometries[glData[i].ref].geometry,
-                        symbolIndex: glData[i].symbolIndex,
-                        ref: glData[i].ref
-                    });
-                } else {
-                    geometries.push(this.createGeometry(glData[i], features));
-                }
-            }
-            return geometries;
-        }
         if (!glData.data) {
             return {
                 geometry: null,
