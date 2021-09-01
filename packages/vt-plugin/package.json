@@ -4,7 +4,10 @@
     "description": "The base plugin for maptalks vectortile layer",
     "module": "index.js",
     "jsnext:main": "index.js",
-    "scripts": {},
+    "scripts": {
+      "lint": "eslint *.js",
+      "prepare": "npm run lint"
+    },
     "files": [
         "index.js"
     ],
@@ -17,5 +20,10 @@
     "dependencies": {
         "animation-easings": "^0.1.0",
         "color": "^3.0.0"
+    },
+    "devDependencies": {
+      "@babel/eslint-parser": "^7.15.0",
+      "@babel/preset-env": "^7.15.0",
+      "eslint": "^7.32.0"
     }
 }
