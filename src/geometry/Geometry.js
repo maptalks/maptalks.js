@@ -369,7 +369,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     getTextDesc() {
         if (!this._textDesc) {
-            const textContent = this.getTextContent();
+            let textContent = this.getTextContent();
+            // number to string
+            if (isNumber(textContent)) {
+                textContent += '';
+            }
             // if textName='',this is error
             // if (!textContent) {
             //     return null;
