@@ -42,6 +42,18 @@ describe('SymbolTextSpec', function () {
     it('text symbol TextDesc when textName is null ', function () {
         var geometry = new maptalks.Marker(center, {
             symbol: {
+                textName: null,
+                textSize: textSize
+            }
+        });
+        var v = new maptalks.VectorLayer('v', { 'drawImmediate': true }).addTo(map);
+        v.addGeometry(geometry);
+        expect(geometry.getTextDesc().size.width).to.be.eql(0);
+        expect(geometry.getTextDesc().size.height).to.be.eql(textSize);
+    });
+    it('text symbol TextDesc when textName is "" ', function () {
+        var geometry = new maptalks.Marker(center, {
+            symbol: {
                 textName: '',
                 textSize: textSize
             }
@@ -49,6 +61,30 @@ describe('SymbolTextSpec', function () {
         var v = new maptalks.VectorLayer('v', { 'drawImmediate': true }).addTo(map);
         v.addGeometry(geometry);
         expect(geometry.getTextDesc().size.width).to.be.eql(0);
+        expect(geometry.getTextDesc().size.height).to.be.eql(textSize);
+    });
+    it('text symbol TextDesc when textName is 0 ', function () {
+        var geometry = new maptalks.Marker(center, {
+            symbol: {
+                textName: 0,
+                textSize: textSize
+            }
+        });
+        var v = new maptalks.VectorLayer('v', { 'drawImmediate': true }).addTo(map);
+        v.addGeometry(geometry);
+        // expect(geometry.getTextDesc().size.width).to.be.eql(0);
+        expect(geometry.getTextDesc().size.height).to.be.eql(textSize);
+    });
+    it('text symbol TextDesc when textName is number ', function () {
+        var geometry = new maptalks.Marker(center, {
+            symbol: {
+                textName: 1,
+                textSize: textSize
+            }
+        });
+        var v = new maptalks.VectorLayer('v', { 'drawImmediate': true }).addTo(map);
+        v.addGeometry(geometry);
+        // expect(geometry.getTextDesc().size.width).to.be.eql(0);
         expect(geometry.getTextDesc().size.height).to.be.eql(textSize);
     });
 });

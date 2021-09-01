@@ -379,8 +379,20 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             //     return null;
             // }
             const symbol = this._sizeSymbol;
+            const isArray = Array.isArray(textContent);
             if (Array.isArray(symbol)) {
-                this._textDesc = symbol.map((s, i) => describeText(textContent && Array.isArray(textContent) ? textContent[i] || '' : '', s));
+                this._textDesc = symbol.map((s, i) => {
+                    let text = '';
+                    if (isArray) {
+                        text = textContent[i];
+                        if (isNumber(text)) {
+                            text += '';
+                        } else if (!text) {
+                            text = '';
+                        }
+                    }
+                    return describeText(text, s);
+                });
             } else {
                 this._textDesc = describeText(textContent || '', symbol);
             }
