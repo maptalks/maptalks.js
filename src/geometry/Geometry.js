@@ -381,7 +381,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                     return describeText(isArray ? textContent[i] : '', s);
                 });
             } else {
-                this._textDesc = describeText(textContent || '', symbol);
+                this._textDesc = describeText(textContent, symbol);
             }
         }
         return this._textDesc;
