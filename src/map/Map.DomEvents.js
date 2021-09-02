@@ -191,12 +191,10 @@ Map.include(/** @lends Map.prototype */ {
     _handleDOMEvent(e) {
         const type = e.type;
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
-        const view = this.getView();
         // prevent default contextmenu
         if (isMouseDown) {
             this._domMouseDownTime = now();
-            this.__pitch = view.pitch;
-            this.__bearing = view.bearing;
+            this._mouseDownView = this.getView();
         }
         if (type === 'contextmenu') {
             // prevent context menu, if duration from mousedown > 300ms
@@ -371,14 +369,16 @@ Map.include(/** @lends Map.prototype */ {
 Map.addOnLoadHook('_registerDomEvents');
 
 function isDrag(map) {
-    const viewHistory = map._viewHistory || [];
-    const len = viewHistory.length;
-    if (map.__pitch === undefined && len) {
-        map.__pitch = viewHistory[len - 1].pitch;
+    if (!map._mouseDownView) {
+        const viewHistory = map._viewHistory || [];
+        const len = viewHistory.length;
+        if (len) {
+            map._mouseDownView = viewHistory[len - 1];
+        }
     }
-    if (map.__bearing === undefined && len) {
-        map.__bearing = viewHistory[len - 1].bearing;
+    if (!map._mouseDownView) {
+        return true;
     }
-    const view = map.getView();
-    return (view.bearing !== map.__bearing || view.pitch !== map.__pitch);
+    const view = map.getView(), mouseDownView = map._mouseDownView;
+    return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
 }
