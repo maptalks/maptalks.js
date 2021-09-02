@@ -1045,7 +1045,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableSSR = config.ssr && config.ssr.enable;
         const enableBloom = config.bloom && config.bloom.enable;
         const enableAntialias = +!!(config.antialias && config.antialias.enable);
-        const hasPost = enableSSAO || enableBloom;
+        const hasPost = enableSSAO || enableBloom || enableSSR;
 
         let postFBO = this._postFBO;
         if (hasPost) {
