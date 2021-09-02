@@ -14,11 +14,11 @@ class LightManager {
     }
 
     getDirectionalLight() {
-        return this._config && this._config.directional;
+        return this._config && this._config.directional || {};
     }
 
     getAmbientLight() {
-        return this._config && this._config.ambient;
+        return this._config && this._config.ambient || {};
     }
 
     getAmbientResource() {

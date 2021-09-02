@@ -1,5 +1,6 @@
 import * as reshader from '@maptalks/reshader.gl';
 import { mat3, vec3 } from 'gl-matrix';
+import { isNumber } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
 
@@ -108,7 +109,7 @@ class EnvironmentPainter {
             'cubeMap': iblTexes.prefilterMap,
             'bias': level,
             'size': cubeSize / Math.pow(2, Math.max(0, level - 1)),
-            'environmentExposure': iblTexes.exposure,
+            'environmentExposure': isNumber(ambient.exposure) ? ambient.exposure : 1,
             'diffuseSPH': iblTexes.sh,
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,

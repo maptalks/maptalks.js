@@ -24,8 +24,8 @@ varying vec3 vWorldPos;
     uniform samplerCube cubeMap;
     uniform float bias;
     uniform float size;
-    uniform float environmentExposure;
 #endif
+uniform float environmentExposure;
 
 #if defined(INPUT_RGBM) || defined(ENC_RGBM)
     uniform float rgbmRange;
@@ -97,8 +97,8 @@ void main()
         #endif
     #else
         envColor = textureCubeFixed(cubeMap, normalize(vWorldPos), size, bias);
-        envColor.rgb *= environmentExposure;
     #endif
+    envColor.rgb *= environmentExposure;
     #ifdef ENC_RGBM
         #if !defined(USE_AMBIENT) && defined(INPUT_RGBM)
             if (length(hsv) > 0.0) {

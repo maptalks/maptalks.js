@@ -64,7 +64,6 @@ export function createIBLTextures(regl, map) {
     if (!resource) {
         return null;
     }
-    const exposure = lightManager.getAmbientLight().exposure;
     return {
         'prefilterMap': regl.cube({
             width: resource.prefilterMap.width,
@@ -75,7 +74,6 @@ export function createIBLTextures(regl, map) {
             format: 'rgba',
             // mipmap: true
         }),
-        'exposure': isNumber(exposure) ? exposure : 1,
         'sh': resource.sh,
         'rgbmRange': resource.rgbmRange
     };
