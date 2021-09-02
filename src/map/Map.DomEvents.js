@@ -194,7 +194,7 @@ Map.include(/** @lends Map.prototype */ {
         // prevent default contextmenu
         if (isMouseDown) {
             this._domMouseDownTime = now();
-            this._mouseDownView = this.getView();
+            this._domMouseDownView = this.getView();
         }
         if (type === 'contextmenu') {
             // prevent context menu, if duration from mousedown > 300ms
@@ -369,16 +369,16 @@ Map.include(/** @lends Map.prototype */ {
 Map.addOnLoadHook('_registerDomEvents');
 
 function isDrag(map) {
-    if (!map._mouseDownView) {
+    if (!map._domMouseDownView) {
         const viewHistory = map._viewHistory || [];
         const len = viewHistory.length;
         if (len) {
-            map._mouseDownView = viewHistory[len - 1];
+            map._domMouseDownView = viewHistory[len - 1];
         }
     }
-    if (!map._mouseDownView) {
+    if (!map._domMouseDownView) {
         return true;
     }
-    const view = map.getView(), mouseDownView = map._mouseDownView;
+    const view = map.getView(), mouseDownView = map._domMouseDownView;
     return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
 }
