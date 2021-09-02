@@ -191,18 +191,23 @@ Map.include(/** @lends Map.prototype */ {
     _handleDOMEvent(e) {
         const type = e.type;
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
+        const view = this.getView();
         // prevent default contextmenu
         if (isMouseDown) {
             this._domMouseDownTime = now();
+            this.__pitch = view.pitch;
+            this.__bearing = view.bearing;
         }
         if (type === 'contextmenu') {
             // prevent context menu, if duration from mousedown > 300ms
             preventDefault(e);
             const downTime = this._domMouseDownTime;
-            delete this._domMouseDownTime;
+            // delete this._domMouseDownTime;
             const time = now();
             if (time - downTime <= 300) {
-                this._fireDOMEvent(this, e, 'dom:' + e.type);
+                if (!isDrag(this)) {
+                    this._fireDOMEvent(this, e, 'dom:' + e.type);
+                }
             }
         } else {
             this._fireDOMEvent(this, e, 'dom:' + e.type);
@@ -248,7 +253,20 @@ Map.include(/** @lends Map.prototype */ {
         if (this._ignoreEvent(e)) {
             return;
         }
-        this._fireDOMEvent(this, e, type);
+        if (type === 'contextmenu') {
+            // prevent context menu, if duration from mousedown > 300ms
+            preventDefault(e);
+            const downTime = this._domMouseDownTime;
+            // delete this._domMouseDownTime;
+            const time = now();
+            if (time - downTime <= 300) {
+                if (!isDrag(this)) {
+                    this._fireDOMEvent(this, e, type);
+                }
+            }
+        } else {
+            this._fireDOMEvent(this, e, type);
+        }
         if (mimicEvent) {
             this._fireDOMEvent(this, e, mimicEvent);
         }
@@ -267,7 +285,7 @@ Map.include(/** @lends Map.prototype */ {
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
+                    (target.className.indexOf('maptalks-control') >= 0 || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
                     return true;
                 }
                 preTarget = target;
@@ -301,15 +319,15 @@ Map.include(/** @lends Map.prototype */ {
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam = extend(eventParam, {
-                    'containerPoint' : containerPoint,
-                    'viewPoint' : this.containerPointToViewPoint(containerPoint)
+                    'containerPoint': containerPoint,
+                    'viewPoint': this.containerPointToViewPoint(containerPoint)
                 });
                 const maxVisualPitch = this.options['maxVisualPitch'];
                 // ignore coorindate out of visual extent
                 if (this.getPitch() <= maxVisualPitch || containerPoint.y >= (this.height - this._getVisualHeight(maxVisualPitch))) {
                     eventParam = extend(eventParam, {
-                        'coordinate' : this.containerPointToCoord(containerPoint),
-                        'point2d' : this._containerPointToPoint(containerPoint)
+                        'coordinate': this.containerPointToCoord(containerPoint),
+                        'point2d': this._containerPointToPoint(containerPoint)
                     });
                 }
             }
@@ -321,10 +339,10 @@ Map.include(/** @lends Map.prototype */ {
         const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
         const e = {
-            'coordinate' : coord,
-            'containerPoint' : containerPoint,
-            'viewPoint' : viewPoint,
-            'point2d' : this.coordToPoint(coord)
+            'coordinate': coord,
+            'containerPoint': containerPoint,
+            'viewPoint': viewPoint,
+            'point2d': this.coordToPoint(coord)
         };
         return e;
     },
@@ -351,3 +369,16 @@ Map.include(/** @lends Map.prototype */ {
 });
 
 Map.addOnLoadHook('_registerDomEvents');
+
+function isDrag(map) {
+    const viewHistory = map._viewHistory || [];
+    const len = viewHistory.length;
+    if (map.__pitch === undefined && len) {
+        map.__pitch = viewHistory[len - 1].pitch;
+    }
+    if (map.__bearing === undefined && len) {
+        map.__bearing = viewHistory[len - 1].bearing;
+    }
+    const view = map.getView();
+    return (view.bearing !== map.__bearing || view.pitch !== map.__pitch);
+}
