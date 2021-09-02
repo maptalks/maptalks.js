@@ -524,6 +524,8 @@ class Painter {
     }
 
     updateSymbol(symbolDef, all) {
+        // maptalks-studio#2442, needRetire要提前计算，否则symbol更新后，可能出现错误
+        const needRetire = this.supportRenderMode('taa');
         if (!Array.isArray(symbolDef)) {
             symbolDef = [symbolDef];
             all = [all];
@@ -540,7 +542,7 @@ class Painter {
 
 
         delete this._fnTypeConfigs;
-        this.setToRedraw(this.supportRenderMode('taa'));
+        this.setToRedraw(needRetire);
         return needRefresh;
     }
 

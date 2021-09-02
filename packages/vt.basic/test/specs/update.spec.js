@@ -811,6 +811,153 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can turn on ssr, fuzhenn/maptalks-studio#2442', done => {
+        const polygon = {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-1., 1.0],
+                                [1., 1.0],
+                                [1., -1.0],
+                                [-1., -1],
+                                [-1., 1]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        type: 'building',
+                        levels: 3000
+                    }
+                },
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [-6., 6.0],
+                                [6., 6.0],
+                                [6., -6.0],
+                                [-6., -6],
+                                [-6., 6]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        levels: 0,
+                        type: 'ground'
+                    }
+                }
+            ]
+        };
+        const plugin = {
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                altitudeProperty: 'levels',
+                altitudeScale: 20,
+                defaultAltitude: 0
+            },
+            sceneConfig: {},
+        };
+        const material = {
+            'baseColorFactor': [1, 0, 0, 1],
+            'roughnessFactor': 1,
+            'metalnessFactor': 0
+        };
+
+        const materialGround = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 0,
+            'metalnessFactor': 1
+        };
+        const style = [
+            {
+                filter: ['==', 'type', 'building'],
+                renderPlugin: plugin,
+                symbol: { material }
+            },
+            {
+                filter: ['==', 'type', 'ground'],
+                renderPlugin: plugin,
+                symbol: { material: materialGround, ssr: 0 }
+            }
+        ];
+        const layerRed = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: {
+                    enable: true,
+                    taa: true
+                },
+                ssr: {
+                    enable: true,
+                    factor: 4
+                },
+                bloom: {
+                    // gl 0.48.2 之前，如果没有打开bloom，ssr的textureRefracted是不完整的
+                    // 所以这里关闭bloom，增加一个测试
+                    enable: false
+                }
+            }
+        };
+        map.setLightConfig({
+          "directional": {
+            "direction": [
+              1,
+              0,
+              -1
+            ],
+            "color": [
+              0.1,
+              0.1,
+              0.1
+            ]
+          },
+          "ambient": {
+            "resource": null,
+            "exposure": 1,
+            "hsv": [
+              0,
+              0,
+              0
+            ],
+            "orientation": 0
+          }
+        });
+        map.setPitch(80);
+        const layer = new GroupGLLayer('group', [layerRed], { sceneConfig });
+        let count = 0;
+        const startCount = 2;
+        layerRed.once('canvasisdirty', () => {
+            layer.on('layerload', () => {
+                count++;
+                if (count === startCount) {
+                    const canvas = layer.getRenderer().canvas;
+                    const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
+                    assert.deepEqual(pixel, [159, 159, 159, 255]);
+                    layerRed.updateSymbol(1, { ssr: true });
+                } else if (count === startCount + 4) {
+                    const canvas = layer.getRenderer().canvas;
+                    const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
+                    assert.deepEqual(pixel, [134, 113, 113, 255]);
+                    done();
+                }
+            });
+
+        });
+        layer.addTo(map);
+    });
+
     it('should can update texture to none', done => {
         const plugin = {
             type: 'lit',
