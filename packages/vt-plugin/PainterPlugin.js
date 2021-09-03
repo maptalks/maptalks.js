@@ -201,7 +201,7 @@ function createPainterPlugin(type, Painter) {
                     m.bloom = bloomValue;
                 });
 
-                painter.addMesh(meshes, progress);
+                painter.addMesh(meshes, progress, context);
                 this._frameCache[key] = 1;
             }
 

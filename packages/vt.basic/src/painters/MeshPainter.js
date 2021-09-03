@@ -121,7 +121,7 @@ class MeshPainter extends Painter {
         mesh.forEach(m => {
             this._prepareMesh(m, progress);
         });
-        super.addMesh(mesh, progress);
+        super.addMesh(...arguments);
     }
 
     _prepareMesh(mesh, progress) {

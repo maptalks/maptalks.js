@@ -228,7 +228,7 @@ class Painter {
         return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
     }
 
-    addMesh(meshes) {
+    addMesh(meshes, progress, context) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
         // if (meshes[0].properties.tile.id === 'data_vt__85960__140839__19') {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
@@ -236,8 +236,9 @@ class Painter {
         // }
         meshes = meshes.filter(m => this.isMeshVisible(m));
 
+        const isEnableBloom = !!context.bloom;
         meshes.forEach(mesh => {
-            const bloom = this.isBloom(mesh);
+            const bloom = this.isBloom(mesh) && isEnableBloom;
             const defines = mesh.defines || {};
             if (!!defines['HAS_BLOOM'] !== bloom) {
                 if (bloom) {

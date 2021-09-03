@@ -55,7 +55,7 @@ class WaterPainter extends BasicPainter {
 
     addMesh(mesh, progress) {
         this._prepareMesh(mesh, progress);
-        super.addMesh(mesh, progress);
+        super.addMesh(...arguments);
     }
 
     _prepareMesh(mesh) {

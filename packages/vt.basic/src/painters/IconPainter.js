@@ -226,7 +226,7 @@ class IconPainter extends CollisionPainter {
                 aPadOffsetY.dirty = false;
             }
         }
-        super.addMesh(meshModel);
+        super.addMesh(...arguments);
     }
 
     updateCollision(context) {
