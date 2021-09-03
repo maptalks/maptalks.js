@@ -176,6 +176,7 @@ const events =
      * @property {Event} domEvent                 - dom event
      */
     'touchend ';
+const TIMEDELAY = 300;
 
 Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
@@ -202,7 +203,7 @@ Map.include(/** @lends Map.prototype */ {
             const downTime = this._domMouseDownTime;
             // delete this._domMouseDownTime;
             const time = now();
-            if (time - downTime <= 300) {
+            if (time - downTime <= TIMEDELAY) {
                 if (!isDrag(this)) {
                     this._fireDOMEvent(this, e, 'dom:' + e.type);
                 }
@@ -227,7 +228,7 @@ Map.include(/** @lends Map.prototype */ {
                 const downTime = this._mouseDownTime;
                 delete this._mouseDownTime;
                 const time = now();
-                if (time - downTime > 300) {
+                if (time - downTime > TIMEDELAY) {
                     if (type === 'click' || type === 'contextmenu') {
                         return;
                     }
@@ -238,7 +239,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         let mimicEvent;
         if (mimicClick) {
-            if (this._clickTime && (now() - this._clickTime <= 300)) {
+            if (this._clickTime && (now() - this._clickTime <= TIMEDELAY)) {
                 delete this._clickTime;
                 mimicEvent = 'dblclick';
                 this._fireDOMEvent(this, e, 'dom:dblclick');
@@ -257,7 +258,7 @@ Map.include(/** @lends Map.prototype */ {
             const downTime = this._domMouseDownTime;
             // delete this._domMouseDownTime;
             const time = now();
-            if (time - downTime <= 300) {
+            if (time - downTime <= TIMEDELAY) {
                 if (!isDrag(this)) {
                     this._fireDOMEvent(this, e, type);
                 }
