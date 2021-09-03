@@ -118,17 +118,13 @@ class MeshPainter extends Painter {
     }
 
     addMesh(mesh, progress) {
-        this._prepareMesh(mesh, progress);
+        mesh.forEach(m => {
+            this._prepareMesh(m, progress);
+        });
         super.addMesh(mesh, progress);
     }
 
     _prepareMesh(mesh, progress) {
-        if (Array.isArray(mesh)) {
-            mesh.forEach(m => {
-                this._prepareMesh(m, progress);
-            });
-            return;
-        }
         if (progress !== null) {
             const mat = mesh.localTransform;
             if (progress === 0) {

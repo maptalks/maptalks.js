@@ -177,25 +177,15 @@ class IconPainter extends CollisionPainter {
 
     addMesh(meshes) {
         const isEnableCollision = this._needUpdateCollision();
-        if (isEnableCollision) {
-            if (Array.isArray(meshes)) {
-                const l = meshes.length;
-                if (l) {
-                    const group = new CollisionGroup(meshes);
-                    group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
-                    group.properties.meshKey = meshes[0].properties.meshKey;
-                    group.properties.level = meshes[0].properties.level;
-                    this._meshesToCheck.push(group);
-                }
-            } else {
-                this._meshesToCheck.push(meshes);
-            }
+        if (isEnableCollision && meshes.length > 0) {
+            const group = new CollisionGroup(meshes);
+            group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
+            group.properties.meshKey = meshes[0].properties.meshKey;
+            group.properties.level = meshes[0].properties.level;
+            this._meshesToCheck.push(group);
         }
 
         const meshModel = meshes;
-        if (!Array.isArray(meshes)) {
-            meshes = [meshes];
-        }
         for (let i = 0; i < meshes.length; i++) {
             if (!this.isMeshIterable(meshes[i])) {
                 continue;
@@ -309,17 +299,24 @@ class IconPainter extends CollisionPainter {
         meshes = meshes.sort(sortByLevel);
         for (let m = 0; m < meshes.length; m++) {
             const mesh = meshes[m];
-            if (!mesh) {
+            if (!mesh || !mesh.meshes.length) {
                 continue;
             }
-            if (mesh instanceof CollisionGroup) {
-                if (!mesh.meshes.length) {
-                    continue;
+            let isIterable = false;
+            if (mesh.meshes.length === 1) {
+                isIterable = this.isMeshIterable(mesh.meshes[0]);
+            } else {
+                for (let i = 0; i < mesh.meshes.length; i++) {
+                    if (this.isMeshIterable(mesh.meshes[i])) {
+                        isIterable = true;
+                        break;
+                    }
                 }
-            } else if (!this.isMeshIterable(mesh)) {
+            }
+            if (!isIterable) {
                 continue;
             }
-            const isForeground = renderer.isForeground(mesh instanceof CollisionGroup ? mesh.meshes[0] : mesh);
+            const isForeground = renderer.isForeground(mesh.meshes[0]);
             if (this.shouldIgnoreBackground() && !isForeground) {
                 continue;
             }
@@ -330,12 +327,8 @@ class IconPainter extends CollisionPainter {
             this._endCheckMesh(mesh);
             this.endMeshCollision(meshKey);
 
-            if (mesh instanceof CollisionGroup) {
-                for (let i = 0; i < mesh.meshes.length; i++) {
-                    this._updateOpacity(mesh.meshes[i]);
-                }
-            } else {
-                this._updateOpacity(mesh);
+            for (let i = 0; i < mesh.meshes.length; i++) {
+                this._updateOpacity(mesh.meshes[i]);
             }
         }
     }
@@ -348,87 +341,65 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    forEachBox(mesh, fn) {
-        const isGroup = mesh instanceof CollisionGroup;
-
-        if (!isGroup && (!mesh || !mesh.geometry || mesh.geometry.properties.isEmpty || mesh.properties.isHalo)) {
-            return;
-        }
-        const uniquePickingIds = isGroup ? mesh.properties.uniquePickingIds : mesh.geometry.properties.uniquePickingIds;
+    forEachBox(meshGroup, fn) {
+        const uniquePickingIds = meshGroup.properties.uniquePickingIds;
         const context = { boxIndex: 0 };
         const count = uniquePickingIds.length;
         for (let i = 0; i < count; i++) {
-            this._iterateMeshBox(mesh, uniquePickingIds[i], fn, context);
+            this._iterateMeshBox(meshGroup, uniquePickingIds[i], fn, context);
         }
     }
 
     _iterateMeshBox(mesh, pickingIndex, fn, contextIndex) {
         const map = this.getMap();
         // TODO  meshes[0]可能是不合法的数据
-        const { collideBoxIndex } = (mesh.meshes ? mesh.meshes[0] : mesh).geometry.properties;
+        const { collideBoxIndex } = mesh.meshes[0].geometry.properties;
         const boxInfo = collideBoxIndex[pickingIndex];
         if (!boxInfo) {
             return false;
         }
-        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, (mesh.meshes ? mesh.meshes[0] : mesh).localTransform);
+        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.meshes[0].localTransform);
         // IconPainter中，一个数据，只会有一个box，所以不需要循环
-        const isGroup = mesh instanceof CollisionGroup;
-
         let meshBoxes;
         let updated = false;
-        if (isGroup) {
-            const meshes = mesh.meshes;
-            let count = 0;
-            for (let j = 0; j < meshes.length; j++) {
-                if (!this.isMeshIterable(meshes[j])) {
-                    continue;
-                }
-                count++;
+        const meshes = mesh.meshes;
+        let count = 0;
+        for (let j = 0; j < meshes.length; j++) {
+            if (!this.isMeshIterable(meshes[j])) {
+                continue;
             }
-            if (!count) {
-                return false;
+            count++;
+        }
+        if (!count) {
+            return false;
+        }
+        meshBoxes = this._getMeshBoxes(count);
+        let index = 0;
+        for (let j = 0; j < meshes.length; j++) {
+            const mesh = meshes[j];
+            if (!this.isMeshIterable(mesh)) {
+                continue;
             }
-            meshBoxes = this._getMeshBoxes(count);
-            let index = 0;
-            for (let j = 0; j < meshes.length; j++) {
-                if (!this.isMeshIterable(meshes[j])) {
-                    continue;
-                }
-                updated = true;
-                const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
-                const boxInfo = collideBoxIndex[pickingIndex];
-                if (!boxInfo) {
-                    continue;
-                }
-                const [start, end, boxCount] = boxInfo;
-                let charCount = 1;
-                if (aCount) {
-                    charCount = aCount[elements[start]];
-                }
-                const startIndex = start + 0 * charCount * BOX_ELEMENT_COUNT;
-                meshBoxes[index].mesh = meshes[j];
-                meshBoxes[index].start = startIndex;
-                meshBoxes[index].end = end;//startIndex + charCount * BOX_ELEMENT_COUNT;
-                meshBoxes[index].boxCount = boxCount;
-                meshBoxes[index].allElements = elements;
-                index++;
-            }
-        } else {
-            meshBoxes = this._getMeshBoxes(1);
             updated = true;
-            const { elements, aCount, collideBoxIndex } = mesh.geometry.properties;
-            const [start, end, boxCount] = collideBoxIndex[pickingIndex];
+            const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
+            const boxInfo = collideBoxIndex[pickingIndex];
+            if (!boxInfo) {
+                continue;
+            }
+            const [start, end, boxCount] = boxInfo;
             let charCount = 1;
             if (aCount) {
                 charCount = aCount[elements[start]];
             }
             const startIndex = start + 0 * charCount * BOX_ELEMENT_COUNT;
-            meshBoxes[0].mesh = mesh;
-            meshBoxes[0].start = startIndex;
-            meshBoxes[0].end = end; //startIndex + charCount * BOX_ELEMENT_COUNT;
-            meshBoxes[0].boxCount = boxCount;
-            meshBoxes[0].allElements = elements;
+            meshBoxes[index].mesh = meshes[j];
+            meshBoxes[index].start = startIndex;
+            meshBoxes[index].end = end;//startIndex + charCount * BOX_ELEMENT_COUNT;
+            meshBoxes[index].boxCount = boxCount;
+            meshBoxes[index].allElements = elements;
+            index++;
         }
+
         if (!updated) {
             return false;
         }
@@ -441,40 +412,32 @@ class IconPainter extends CollisionPainter {
     }
 
     _startCheckMesh(mesh) {
-        if (mesh instanceof CollisionGroup) {
-            const meshes = mesh.meshes;
-            for (let i = 0; i < meshes.length; i++) {
-                const mesh = meshes[i];
-                this._startCheckMesh(mesh);
-            }
-        } else {
+        const meshes = mesh.meshes;
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
             const geometry = mesh && mesh.geometry;
             if (!geometry) {
-                return;
+                continue;
             }
             geometry.properties.visElemts.count = 0;
         }
     }
 
     _markerVisible(mesh, pickingId) {
-        if (mesh instanceof CollisionGroup) {
-            const meshes = mesh.meshes;
-            for (let i = 0; i < meshes.length; i++) {
-                const mesh = meshes[i];
-                this._markerVisible(mesh, pickingId);
-            }
-        } else {
+        const meshes = mesh.meshes;
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
             if (mesh.properties.isHalo) {
-                return;
+                continue;
             }
             const geometry = mesh && mesh.geometry;
             if (!geometry || geometry.properties.isEmpty) {
-                return;
+                continue;
             }
             const { collideBoxIndex, elements, visElemts } = geometry.properties;
             const boxInfo = collideBoxIndex[pickingId];
             if (!boxInfo) {
-                return;
+                continue;
             }
             const [start, end] = boxInfo;
             let count = visElemts.count;
@@ -486,16 +449,12 @@ class IconPainter extends CollisionPainter {
     }
 
     _endCheckMesh(mesh) {
-        if (mesh instanceof CollisionGroup) {
-            const meshes = mesh.meshes;
-            for (let i = 0; i < meshes.length; i++) {
-                const mesh = meshes[i];
-                this._endCheckMesh(mesh);
-            }
-        } else {
+        const meshes = mesh.meshes;
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
             const geometry = mesh && mesh.geometry;
             if (!geometry) {
-                return;
+                continue;
             }
             const { visElemts } = geometry.properties;
             geometry.setElements(visElemts, visElemts.count);

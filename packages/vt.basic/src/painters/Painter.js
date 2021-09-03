@@ -234,37 +234,20 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
-        if (Array.isArray(meshes)) {
-            meshes = meshes.filter(m => this.isMeshVisible(m));
-        } else if (!this.isMeshVisible(meshes)) {
-            return;
-        }
+        meshes = meshes.filter(m => this.isMeshVisible(m));
 
-        if (Array.isArray(meshes)) {
-            meshes.forEach(mesh => {
-                const bloom = this.isBloom(mesh);
-                const defines = mesh.defines || {};
-                if (!!defines['HAS_BLOOM'] !== bloom) {
-                    if (bloom) {
-                        defines['HAS_BLOOM'] = 1;
-                    } else {
-                        delete defines['HAS_BLOOM'];
-                    }
-                    mesh.setDefines(defines);
-                }
-            });
-        } else {
-            const bloom = this.isBloom(meshes);
-            const defines = meshes.defines || {};
-            if (!!defines['HAS_BLOOM'] !== !!bloom) {
+        meshes.forEach(mesh => {
+            const bloom = this.isBloom(mesh);
+            const defines = mesh.defines || {};
+            if (!!defines['HAS_BLOOM'] !== bloom) {
                 if (bloom) {
                     defines['HAS_BLOOM'] = 1;
                 } else {
                     delete defines['HAS_BLOOM'];
                 }
-                meshes.setDefines(defines);
+                mesh.setDefines(defines);
             }
-        }
+        });
 
         this.scene.addMesh(meshes);
         return;

@@ -60,10 +60,13 @@ class WaterPainter extends BasicPainter {
 
     _prepareMesh(mesh) {
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
-        if (this.getSymbol().ssr) {
-            mesh.ssr = 1;
-        } else {
-            mesh.ssr = 0;
+        const hasSSR = this.getSymbol().ssr;
+        for (let i = 0; i < mesh.length; i++) {
+            if (hasSSR) {
+                mesh[i].ssr = 1;
+            } else {
+                mesh[i].ssr = 0;
+            }
         }
     }
 
