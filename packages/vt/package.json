@@ -47,7 +47,7 @@
     "electron-mocha": "^6.0.4",
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
-    "maptalks": "^1.0.0-alpha.22",
+    "maptalks": "^1.0.0-alpha.26",
     "mocha": "^9.0.3",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1"
