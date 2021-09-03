@@ -130,6 +130,9 @@ export default class PointPack extends VectorPack {
         if (Array.isArray(symbol)) {
             const symbols = symbol;
             for (let i = 0; i < symbols.length; i++) {
+                if (!symbols[i]) {
+                    continue;
+                }
                 results.push(...PointPack.splitPointSymbol(symbols[i], i));
             }
             return results;

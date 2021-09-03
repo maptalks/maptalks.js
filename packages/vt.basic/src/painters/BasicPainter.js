@@ -36,6 +36,8 @@ export default class BasicPainter extends Painter {
         if (glData.glyphAtlas) {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;
         }
+        // 用于碰撞检测
+        geometry.properties.aFeaIds = glData.featureIds;
         extend(geometry.properties, glData.properties);
         return {
             geometry,

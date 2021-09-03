@@ -53,11 +53,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._geometries = {};
         this._counter = 1;
         this._allFeatures = {};
+        this._featureMapping = {};
         this._markerFeatures = {};
         this._textFeatures = {};
         this._lineFeatures = {};
         this._dirtyAll = true;
-        this._kidGen = { id: 0 };
+        this._kidGen = { id: 0, pickingId: 0 };
         this._markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         this._dirtyTargetsInCurrentFrame = {};
     }
@@ -124,7 +125,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         let polygonOffset = 0;
         if (this.painter && this.meshes) {
             this.painter.startFrame(context);
-            this.painter.addMesh(this.meshes);
+            this.painter.addMesh(this.meshes, null, { bloom: 1 });
             this.painter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
             this.painter.render(context);
@@ -132,7 +133,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         if (this._lineMeshes) {
             this._linePainter.startFrame(context);
-            this._linePainter.addMesh(this._lineMeshes);
+            this._linePainter.addMesh(this._lineMeshes, null, { bloom: 1 });
             this._linePainter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
             this._linePainter.render(context);
@@ -140,7 +141,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         if (this._markerMeshes) {
             this._markerPainter.startFrame(context);
-            this._markerPainter.addMesh(this._markerMeshes);
+            this._markerPainter.addMesh(this._markerMeshes, null, { bloom: 1 });
             this._markerPainter.prepareRender(context);
             if (layer.options.collision) {
                 this._markerPainter.updateCollision(context);
@@ -586,15 +587,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
 
-        const kid = feature[0][KEY_IDX_NAME];
-        if (this._markerFeatures[kid]) {
-            markerFeatures.push(...feature);
-        }
-        if (this._textFeatures[kid]) {
-            textFeatures.push(...feature);
+
+        for (let i = 0; i < feature.length; i++) {
+            const kid = feature[i][KEY_IDX_NAME];
+            if (this._markerFeatures[kid]) {
+                markerFeatures.push(feature[i]);
+            }
+            if (this._textFeatures[kid]) {
+                textFeatures.push(feature[i]);
+            }
         }
 
-
+        const feaId = feature[0].id;
         const pointPacks = this._createPointPacks(markerFeatures, textFeatures, this._markerAtlas, this._markerCenter);
         const markerMeshes = this._markerMeshes;
         Promise.all(pointPacks).then(packData => {
@@ -603,8 +607,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     continue;
                 }
                 const mesh = markerMeshes[i];
-                const pickingData = mesh.geometry.properties.aPickingId;
-                const startIndex = pickingData.indexOf(kid);
+                const aFeaIds = mesh.geometry.properties.aFeaIds;
+                const startIndex = aFeaIds.indexOf(feaId);
                 if (startIndex < 0) {
                     continue;
                 }
@@ -662,7 +666,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             features.push(fea);
         }
 
-        const kid = feature[0][KEY_IDX_NAME];
+        const feaId = feature[0].id
         const featureGroups = groupFeaturesFn.call(this, features);
         // 判断 feature 所属的featureGroup是否发生变化，如果发生变化，则需要重新生成mesh, fuzhenn/maptalks-studio#2413
         for (let i = 0; i < featureGroups.length; i++) {
@@ -673,8 +677,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     this.setToRedraw();
                     return false;
                 } else {
-                    const pickingData = mesh[0].geometry.properties.aPickingId;
-                    const startIndex = pickingData.indexOf(kid);
+                    const aFeaIds = mesh[0].geometry.properties.aFeaIds;
+                    const startIndex = aFeaIds.indexOf(feaId);
                     if (startIndex < 0) {
                         this._markRebuild();
                         this.setToRedraw();
@@ -706,13 +710,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 if (!mesh) {
                     continue;
                 }
-                const pickingData = mesh.geometry.properties.aPickingId;
-                const startIndex = pickingData.indexOf(kid);
-                let walker = startIndex + 1;
-                while (pickingData[walker] === kid) {
-                    walker++;
+                const aFeaIds = mesh.geometry.properties.aFeaIds;
+                const startIndex = aFeaIds.indexOf(feaId);
+                if (startIndex < 0) {
+                    continue;
                 }
                 if (!packData[i]) {
+                    let walker = startIndex + 1;
+                    while (aFeaIds[walker] === feaId) {
+                        walker++;
+                    }
                     const length = walker - startIndex;
                     if (EMPTY_POSITION.length !== length * 3) {
                         EMPTY_POSITION = new Float32Array(length * 3);
@@ -853,14 +860,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!feas) {
             return;
         }
-
-        const kid = Array.isArray(feas) ? feas[0][KEY_IDX_NAME] : feas[KEY_IDX_NAME];
-        this._allFeatures[kid] = feas;
+        const feaId = Array.isArray(feas) ? feas[0].id : feas.id;
+        this._featureMapping[feaId] = feas;
         if (Array.isArray(feas)) {
             // 但geometry多symbol时，markerFeatures中只会保存最后一个feature的属性
             for (let j = 0; j < feas.length; j++) {
                 // kid 是painter内部用来
                 const kid = feas[j][KEY_IDX_NAME];
+                this._allFeatures[kid] = { feature: feas[j] };
                 // 采用 { feature } 结构，是为了和VT图层中 { feature, symbol } 统一
                 const feaObj = { feature: feas[j] };
                 if (hasMarkerSymbol(feas[j])) {
@@ -897,6 +904,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (Array.isArray(features)) {
             for (let i = 0; i < features.length; i++) {
                 const id = features[i][KEY_IDX_NAME];
+                const feaId = features[i].id;
+                delete this._featureMapping[feaId];
                 delete this._allFeatures[id];
                 delete this._markerFeatures[id];
                 delete this._textFeatures[id];
@@ -904,6 +913,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         } else {
             const id = features[KEY_IDX_NAME];
+            const feaId = features.id;
+            delete this._featureMapping[feaId];
             delete this._allFeatures[id];
             delete this._markerFeatures[id];
             delete this._textFeatures[id];
@@ -1260,10 +1271,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 const features = this.features[geo[ID_PROP]];
                 if (Array.isArray(features)) {
                     for (let j = 0; j < features.length; j++) {
-                        featureIds.push(features[j][KEY_IDX_NAME]);
+                        featureIds.push(features[j].id);
                     }
                 } else {
-                    featureIds.push(features[KEY_IDX_NAME]);
+                    featureIds.push(features.id);
                 }
             }
         }

@@ -196,7 +196,10 @@ class Painter {
         if (hasFeaIds) {
             for (let i = 0; i < feaIds.length; i++) {
                 idPickingMap[glData.data.aPickingId[i]] = feaIds[i];
-                pickingIdMap[feaIds[i]] = glData.data.aPickingId[i];
+                if (!pickingIdMap[feaIds[i]]) {
+                    pickingIdMap[feaIds[i]] = [];
+                }
+                pickingIdMap[feaIds[i]].push(glData.data.aPickingId[i]);
             }
         }
         return { hasFeaIds, idPickingMap, pickingIdMap };
@@ -792,13 +795,22 @@ class Painter {
         for (let i = 0; i < meshes.length; i++) {
             const pickingMap = meshes[i].geometry.properties.feaIdPickingMap;
             if (pickingMap) {
-                const pickingId = pickingMap[featureId];
-                if (!isNil(pickingId)) {
-                    uniforms.highlightPickingId = pickingId;
+                const pickingIds = pickingMap[featureId];
+                if (pickingIds) {
+                    const painted = {};
                     this._outlineScene.setMeshes(meshes[i]);
-                    for (let j = 0; j < this._outlineShaders.length; j++) {
-                        this.renderer.render(this._outlineShaders[j], uniforms, this._outlineScene, fbo);
+                    for (let ii = 0; ii < pickingIds.length; ii++) {
+                        const pickingId = pickingIds[ii];
+                        if (painted[pickingId]) {
+                            continue;
+                        }
+                        painted[pickingId] = 1;
+                        uniforms.highlightPickingId = pickingId;
+                        for (let j = 0; j < this._outlineShaders.length; j++) {
+                            this.renderer.render(this._outlineShaders[j], uniforms, this._outlineScene, fbo);
+                        }
                     }
+
                 }
             }
         }

@@ -120,7 +120,7 @@ class IconPainter extends CollisionPainter {
         if (!this.layer.options['collision']) {
             return;
         }
-        const { aPickingId, elements, aCount } = geo.properties;
+        const { aFeaIds, elements, aCount } = geo.properties;
         const collideBoxIndex = {};
         if (!elements) {
             // an empty icon
@@ -130,7 +130,7 @@ class IconPainter extends CollisionPainter {
 
         let index = 0;
         let idx = elements[0];
-        let start = 0, current = aPickingId[idx];
+        let start = 0, current = aFeaIds[idx];
         let charCount = 1;
         if (aCount) {
             charCount = aCount[elements[start]];
@@ -138,14 +138,14 @@ class IconPainter extends CollisionPainter {
         for (let ii = 0; ii <= elements.length; ii += BOX_ELEMENT_COUNT) {
             idx = elements[ii];
             //pickingId发生变化，新的feature出现
-            if (aPickingId[idx] !== current || ii === elements.length) {
+            if (aFeaIds[idx] !== current || ii === elements.length) {
                 collideBoxIndex[current] = [
                     start,
                     ii,
                     (ii - start) / (charCount * BOX_ELEMENT_COUNT),
                     index++
                 ];
-                current = aPickingId[idx];
+                current = aFeaIds[idx];
                 start = ii;
                 if (aCount) {
                     charCount = aCount[elements[start]];
@@ -185,7 +185,6 @@ class IconPainter extends CollisionPainter {
             this._meshesToCheck.push(group);
         }
 
-        const meshModel = meshes;
         for (let i = 0; i < meshes.length; i++) {
             if (!this.isMeshIterable(meshes[i])) {
                 continue;

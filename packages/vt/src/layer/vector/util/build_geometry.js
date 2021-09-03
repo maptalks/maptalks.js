@@ -65,6 +65,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                     props['_symbol_' + p] = symbol[i][p];
                 }
             }
+            const pickingId = (currentFeature && currentFeature[i]) ? currentFeature[i].id : kidGen.pickingId++;
             const fea = {
                 type,
                 id: kid,
@@ -73,7 +74,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 geometry,
                 extent: Infinity
             };
-            fea[keyName] = kid;
+            fea[keyName] = pickingId;
             features.push(fea);
         }
         return features;
@@ -84,6 +85,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             }
         }
     }
+    const pickingId = currentFeature ? currentFeature.id : kidGen.pickingId++;
     const feature = {
         type,
         id: kid,
@@ -92,6 +94,6 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         geometry,
         extent: Infinity
     };
-    feature[keyName] = kid;
+    feature[keyName] = pickingId;
     return feature;
 }
