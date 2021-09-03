@@ -447,6 +447,50 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can ignore HAS_BLOOM when bloom is turned off, fuzhenn/maptalks-studio#2386', done => {
+        const plugin = {
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                // altitudeProperty: 'levels',
+                altitudeScale: 5,
+                defaultAltitude: 0
+            },
+            sceneConfig: {},
+        };
+        const material = {
+            'baseColorFactor': [1, 1, 1, 1],
+            'roughnessFactor': 1,
+            'metalnessFactor': 0
+        };
+        const style = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material, bloom: true }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: false }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        layer.once('canvasisdirty', () => {
+           const renderer = layer.getRenderer();
+           const meshes = renderer.getShadowMeshes();
+           assert(meshes.length > 0);
+           assert(meshes[0].defines['HAS_BLOOM'] === undefined);
+           done();
+        });
+        group.addTo(map);
+    });
+
     it('should can outline batch', done => {
         const style = [
             {
