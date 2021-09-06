@@ -153,11 +153,15 @@ class Painter {
                 continue;
             }
             if (glData[i].ref !== undefined) {
-                geometries.push({
-                    geometry: geometries[glData[i].ref].geometry,
-                    symbolIndex: glData[i].symbolIndex,
-                    ref: glData[i].ref
-                });
+                if (!geometries[glData[i].ref]) {
+                    geometries.push(null);
+                } else {
+                    geometries.push({
+                        geometry: geometries[glData[i].ref].geometry,
+                        symbolIndex: glData[i].symbolIndex,
+                        ref: glData[i].ref
+                    });
+                }
             } else {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
@@ -171,6 +175,7 @@ class Painter {
                     }
                 }
                 this.postCreateGeometry(geo, geometries);
+                // null 也需要push，保证ref指向的顺序是正确的
                 geometries.push(geo);
             }
         }
@@ -212,6 +217,9 @@ class Painter {
     createMeshes(geometries, transform, params) {
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
+            if (!geometries[i] || ) {
+                continue;
+            }
             const mesh = this.createMesh(geometries[i], transform, params);
             if (Array.isArray(mesh)) {
                 meshes.push(...mesh);
