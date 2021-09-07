@@ -22,6 +22,23 @@ class StandardPainter extends MeshPainter {
         }
     }
 
+    isAnimating() {
+        const symbol = this.getSymbols()[0];
+        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+            return true;
+        }
+    }
+
+    needToRedraw() {
+        const symbol = this.getSymbols()[0];
+        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+            return true;
+        }
+        return super.needToRedraw();
+    }
+
     createGeometry(glData) {
         if (!glData.data || !glData.data.aPosition || !glData.data.aPosition.length) {
             return null;
@@ -66,6 +83,21 @@ class StandardPainter extends MeshPainter {
             shader.shaderDefines = shaderDefines;
         }
         delete this.shadowCount;
+
+        const symbol = this.getSymbols()[0];
+        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+            const uvOffset = symbol.material.uvOffset;
+            const timeStamp = this.layer.getRenderer().getFrameTimestamp();
+            const offset = [uvOffset[0], uvOffset[1]];
+            if (uvOffsetAnim[0]) {
+                offset[0] = (timeStamp * uvOffsetAnim[0] % 1000) / 1000;
+            }
+            if (uvOffsetAnim[1]) {
+                offset[1] = (timeStamp * uvOffsetAnim[1] % 1000) / 1000;
+            }
+            this.material.set('uvOffset', offset);
+        }
     }
 
     getShadowMeshes() {

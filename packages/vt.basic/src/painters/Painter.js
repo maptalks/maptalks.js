@@ -217,7 +217,7 @@ class Painter {
     createMeshes(geometries, transform, params) {
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
-            if (!geometries[i] || ) {
+            if (!geometries[i]) {
                 continue;
             }
             const mesh = this.createMesh(geometries[i], transform, params);
