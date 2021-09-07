@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import Ajax from '../../worker/util/Ajax';
 import { isString } from '../../common/Util';
@@ -51,13 +52,28 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             renderer.clear();
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
-                workerConn.setData(this.features, () => {
-                    this.fire('dataload');
+                workerConn.setData(this.features, (err, params) => {
+                    this.onWorkerReady(params);
                     renderer.setToRedraw();
                 });
             }
         }
         return this;
+    }
+
+    getExtent() {
+        return this._dataExtent;
+    }
+
+    onWorkerReady(params) {
+        if (params && params.extent) {
+            this._setExtent(params.extent);
+        }
+        this.fire('dataload');
+    }
+
+    _setExtent(extent) {
+        this._dataExtent = new maptalks.Extent(...extent);
     }
 
     _fetchData(data, cb) {

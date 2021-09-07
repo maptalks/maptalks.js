@@ -80,6 +80,8 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
     }
 
+    onWorkerReady() {}
+
     onConfig(conf) {
         const renderer = this.getRenderer();
         if (renderer) {

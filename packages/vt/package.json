@@ -30,6 +30,7 @@
     "color": "^3.0.0",
     "earcut": "^2.2.1",
     "fast-deep-equal": "^2.0.1",
+    "geojson-bbox": "^0.0.0",
     "geojson-vt": "^3.2.0",
     "gl-matrix": "^2.6.1",
     "pbf": "^3.0.5",

@@ -2,6 +2,7 @@ import Ajax from '../util/Ajax';
 import { log2 } from '../../common/Util';
 import geojsonvt from 'geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
+import bbox from 'geojson-bbox';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -45,7 +46,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             Ajax.getJSON(data, this.options, (err, resp) => {
                 if (err) cb(err);
                 this.index = geojsonvt(resp, this.options.geojsonvt);
-                cb();
+                const extent = bbox(resp);
+                cb(null, { extent });
             });
         } else {
             if (typeof data === 'string') {
@@ -62,7 +64,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 indexMaxZoom: 5,       // max zoom in the initial tile index
                 indexMaxPoints: 100000 // max number of points per tile in the index
             });
-            cb();
+            const extent = bbox(data);
+            cb(null, { extent });
         }
     }
 

@@ -40,6 +40,47 @@ describe('GeoJSONVectorTileLayer', () => {
         assert.ok(points.features[0].id === undefined);
     });
 
+    it('should can getExtent when dataload fired', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: points
+        });
+        layer.on('dataload', () => {
+            const extent = layer.getExtent().toJSON();
+            assert.deepEqual(extent, {
+                "xmax": 114.25814,
+                "xmin": 114.25814,
+                "ymax": 30.58595,
+                "ymin": 30.58595
+            });
+            done();
+        });
+        layer.addTo(map);
+    });
+
+    it('should can getExtent when setData', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+        });
+        layer.on('dataload', () => {
+            let extent = layer.getExtent();
+            if (extent) {
+                extent = extent.toJSON();
+                assert.deepEqual(extent, {
+                    "xmax": 114.25814,
+                    "xmin": 114.25814,
+                    "ymax": 30.58595,
+                    "ymin": 30.58595
+                });
+                done();
+            }
+
+        });
+        layer.once('workerready', () => {
+            layer.setData(points);
+        });
+        layer.addTo(map);
+
+    });
+
     it('should can setData', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
         }).addTo(map);
