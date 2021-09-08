@@ -86,9 +86,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.buildMesh();
             this._buildMarkerMesh();
             this._buildLineMesh();
-            this._dirtyAll = false;
+            this._dirtyTargetsInCurrentFrame = {};
             this._dirtyGeo = false;
-            // this._dirtySymbol = false;
+            this._dirtyAll = false;
+            this._dirtyLine = false;
         } else if (this._dirtyGeo) {
             const atlas = this.atlas;
             const markerAtlas = this._markerAtlas;
@@ -100,18 +101,21 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._buildMarkerMesh(markerAtlas);
             this._buildLineMesh(lineAtlas);
             this._dirtyGeo = false;
-            // this._dirtySymbol = false;
+            this._dirtyLine = false;
+        } else if (this._dirtyLine) {
+            const lineAtlas = this._lineAtlas;
+            delete this._lineAtlas;
+            this._buildLineMesh(lineAtlas);
+            this._dirtyLine = false;
         }
-        if (this._showHideUpdated) {
-            this._updateMeshVisible();
-            this._showHideUpdated = false;
-        }/* else if (this._dirtySymbol) {
-            this.updateSymbol();
-            this._dirtySymbol = false;
-        }*/
         if (!this.meshes && !this._markerMeshes && !this._lineMeshes) {
             this.completeRender();
             return;
+        }
+
+        if (this._showHideUpdated) {
+            this._updateMeshVisible();
+            this._showHideUpdated = false;
         }
 
         this._updateDirtyTargets();
@@ -457,6 +461,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const pointPacks = this._createPointPacks(markerFeatures, textFeatures, atlas, center);
         this._markerAtlas = {};
         const v0 = [], v1 = [];
+        this._isCreatingMarkerMesh = true;
         Promise.all(pointPacks).then(packData => {
             if (this._markerMeshes) {
                 this._markerPainter.deleteMesh(this._markerMeshes);
@@ -497,6 +502,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (showHideUpdated) {
                 this._showHideUpdated = true;
             }
+            this._isCreatingMarkerMesh = false;
             this.setToRedraw();
         });
     }
@@ -628,13 +634,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _updateLineMesh(target) {
-        if (!this._lineMeshes) {
-            return false;
-        }
         return this._updateMesh(target, this._lineMeshes, this._lineAtlas, this._lineCenter, this._linePainter, LinePack, LINE_SYMBOL, this._groupLineFeas);
     }
 
     _updateMesh(target, meshes, atlas, center, painter, PackClass, globalSymbol, groupFeaturesFn) {
+        if (!meshes) {
+            return false;
+        }
         if (!atlas) {
             this._markRebuild();
             this.setToRedraw();
@@ -725,15 +731,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         EMPTY_POSITION = new Float32Array(length * 3);
                         EMPTY_POSITION.fill(-Infinity, 0);
                     }
-                    mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * 3 * Float32Array.BYTES_PER_ELEMENT);
+                    mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * 3);
                 } else {
                     const count = packData[i].data.featureIds.length;
                     const datas = packData[i].data.data;
                     for (const p in datas) {
                         if (hasOwn(datas, p)) {
                             const data = datas[p];
-                            mesh.geometry.updateSubData(p, data, startIndex * data.length / count * data.BYTES_PER_ELEMENT);
-                            // mesh.geometry.updateData(p, data);
+                            mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
                         }
                     }
                 }
@@ -766,6 +771,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.createMesh(this._linePainter, LinePack, symbol, feas, atlas && atlas[i], center)
         );
 
+        this._isCreatingLineMesh = true;
         Promise.all(promises).then(mm => {
             if (this._lineMeshes) {
                 this._linePainter.deleteMesh(this._lineMeshes);
@@ -789,6 +795,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (showHideUpdated) {
                 this._showHideUpdated = showHideUpdated;
             }
+            this._isCreatingLineMesh = false;
             this.setToRedraw();
         });
     }
@@ -950,16 +957,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const target = this._dirtyTargetsInCurrentFrame[p];
             const kid = this._getFeaKeyId(target);
 
-            if (this._markerFeatures[kid] || this._textFeatures[kid]) {
+            if (!this._isCreatingMarkerMesh && (this._markerFeatures[kid] || this._textFeatures[kid])) {
                 const partial = this._updateMarkerMesh(target);
                 updated = updated || partial;
             }
-            if (this._lineFeatures[kid]) {
+            if (!this._isCreatingLineMesh && this._lineFeatures[kid]) {
                 const partial = this._updateLineMesh(target);
                 updated = updated || partial;
             }
-            const partial = this.updateMesh(target);
-            updated = updated || partial;
+            if (!this._isCreatingMesh) {
+                const partial = this.updateMesh(target);
+                updated = updated || partial;
+            }
         }
         this._dirtyTargetsInCurrentFrame = {};
         if (updated) {
@@ -1049,11 +1058,16 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const uid = target[ID_PROP];
         const features = this.features[uid];
         const currentFea =  Array.isArray(features) ? features[0] : features;
+        this._convertGeometries([target]);
         if (compareCoordSize(coordJSON, currentFea.geometry)) {
+            // 当数据的端点数量不变时，可以进行局部更新
+            // 但不适用lineMesh，因lineMesh因为会因为lineJoin角度变化，生成的实际端点数量会变化，无法局部更新
+            if (this._lineMeshes) {
+                this._dirtyLine = true;
+            }
             this.onGeometryPositionChange(e);
             return;
         }
-        this._convertGeometries([target]);
         this._markRebuildGeometry();
         redraw(this);
     }

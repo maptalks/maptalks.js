@@ -72,6 +72,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             this.createMesh(this.painter, PolygonPack, symbol, feas, atlas && atlas[i], center)
         );
 
+        this._isCreatingMesh = true;
         Promise.all(promises).then(mm => {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
@@ -97,6 +98,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
             if (showHideUpdated) {
                 this._showHideUpdated = showHideUpdated;
             }
+            this._isCreatingMesh = false;
             this.setToRedraw();
         });
     }
@@ -124,9 +126,6 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
     }
 
     updateMesh(polygon) {
-        if (!this.meshes) {
-            return false;
-        }
         return this._updateMesh(polygon, this.meshes, this.atlas, this._meshCenter, this.painter, PolygonPack, SYMBOL, this._groupPolygonFeatures);
     }
 

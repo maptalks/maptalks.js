@@ -166,10 +166,18 @@ class IconPainter extends CollisionPainter {
         const meshes = [];
         if (this._isMarkerGeo(geometry)) {
             const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig.icon, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
-            if (mesh) meshes.push(mesh);
+            if (mesh) {
+                delete mesh.geometry.properties.glyphAtlas;
+                meshes.push(mesh);
+            }
         } else if (this._isTextGeo(geometry)) {
             const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.text, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
-            if (mesh.length) meshes.push(...mesh);
+            if (mesh.length) {
+                mesh.forEach(m => {
+                    delete m.geometry.properties.iconAtlas;
+                });
+                meshes.push(...mesh);
+            }
         }
         this._prepareCollideIndex(geometry);
         return meshes;
