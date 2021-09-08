@@ -1199,6 +1199,42 @@ describe('update style specs', () => {
         groupLayer.addTo(map);
     });
 
+    it('should can turn on and off shadow, fuzhenn/maptalks-studio#2496', done => {
+       const sceneConfig = {
+            "shadow": {
+                "type": "esm",
+                "enable": true,
+                "quality": "high",
+                "opacity": 0.5,
+                "color": [
+                  0,
+                  0,
+                  0
+                ],
+                "blurOffset": 1
+            }
+        };
+        const groupLayer = new GroupGLLayer('group', [], { sceneConfig });
+        let count = 0;
+        groupLayer.on('layerload', () => {
+            count++;
+            if (count === 1) {
+                sceneConfig.shadow.enable = false;
+                groupLayer.setSceneConfig(sceneConfig);
+            } else if (count === 2) {
+                groupLayer.getRenderer().setToRedraw();
+
+            } else if (count === 3) {
+                sceneConfig.shadow.enable = true;
+                groupLayer.setSceneConfig(sceneConfig);
+
+            } else if (count === 4) {
+                done();
+            }
+        });
+        groupLayer.addTo(map);
+    })
+
     it('should can update symbol to turn off bloom, maptalks-studio#418', done => {
         //https://github.com/fuzhenn/maptalks-studio/issues/418
         const linePlugin = {
