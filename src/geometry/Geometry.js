@@ -284,6 +284,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         this._symbolHash = getSymbolHash(symbol);
+        delete this._compiledSymbol;
         return this;
     }
 
@@ -344,6 +345,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         this._eventSymbolProperties = props;
+        delete this._compiledSymbol;
         return this.setSymbol(s);
     }
 
@@ -1265,6 +1267,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             symbolSize = { lineWidth: symbol['lineWidth'] };
         }
         return symbolSize;
+    }
+
+    _getCompiledSymbol() {
+        if (this._compiledSymbol) {
+            return this._compiledSymbol;
+        }
+        this._compiledSymbol = loadGeoSymbol(this._getInternalSymbol(), this);
+        return this._compiledSymbol;
     }
 
     onConfig(conf) {
