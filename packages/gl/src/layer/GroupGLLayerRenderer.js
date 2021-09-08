@@ -872,6 +872,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             return null;
         }
+        if (!this._shadowPass) {
+            this._shadowPass = new ShadowPass(this.regl, this.layer._getSceneConfig() || {}, this.layer);
+        }
         const shadow = {
             config: sceneConfig.shadow,
             defines: this._shadowPass.getDefines(),
