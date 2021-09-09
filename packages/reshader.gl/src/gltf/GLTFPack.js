@@ -5,6 +5,7 @@ import TRS from './TRS';
 import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
+import GLTFResource from './GLTFResource';
 
 let timespan = 0;
 const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
@@ -303,7 +304,8 @@ export default class GLTFPack {
                         jointTexture: node.skin.jointTexture
                     };
                 }
-                geometries.push(info);
+                const resource = new GLTFResource(info);
+                geometries.push(resource);
             });
         }
         node.isParsed = true;
