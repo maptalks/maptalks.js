@@ -51,7 +51,8 @@ vec4 readFXAATexture(vec2 uv) {
     #else
       vec4 fxaa = vec4(0.0);
     #endif
-    return vec4(fxaa.rgb * fxaa.a, fxaa.a) + (vec4(taa.rgb * taa.a, taa.a) + source * (1.0 - taa.a)) * (1.0 - fxaa.a);
+    vec4 taaBlended = taa + source * (1.0 - taa.a);
+    return fxaa + taaBlended * (1.0 - fxaa.a);
   #else
     return texture2D(textureSource, uv);
   #endif
