@@ -1050,7 +1050,7 @@ class GeometryEditor extends Eventable(Class) {
                     }
                     const refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1 / 2);
                     const containerPoint = map.coordToContainerPoint(refreshVertex);
-                    handle.setContainerPoint(containerPoint);
+                    handle.setContainerPoint(containerPoint._add(getDxDy()));
                 }
             });
             handle[propertyOfVertexIndex] = index;
