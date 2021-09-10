@@ -1,4 +1,3 @@
-import { isNil } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 
 /**
