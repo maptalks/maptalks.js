@@ -735,7 +735,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getGLRes() {
-        return this._getResolution(this.getMaxNativeZoom() / 2);
+        return 1;
     }
 
     /**
