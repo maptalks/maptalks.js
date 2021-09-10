@@ -735,7 +735,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getGLRes() {
-        return 1;
+        return 16;
     }
 
     /**
