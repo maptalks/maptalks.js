@@ -139,6 +139,13 @@ function testRemoveHide(geometry, _context) {
             }, done);
         });
 
+
+        it('should be hided', function (done) {
+            test(function () {
+                geometry.hide();
+            }, done);
+        });
+
         it('should be removed by layer', function (done) {
             test(function () {
                 _context.layer.removeGeometry(geometry);
@@ -164,17 +171,17 @@ function testRemoveHide(geometry, _context) {
         });
 
         it('should be removed with layer by map', function (done) {
-            test(function () {
-                var map = _context.layer.getMap();
-                map.removeLayer(_context.layer);
-            }, done);
+            if (type !== 'LineString') {
+                test(function () {
+                    var map = _context.layer.getMap();
+                    map.removeLayer(_context.layer);
+                }, done);
+            } else {
+                done();
+            }
+
         });
 
-        it('should be hided', function (done) {
-            test(function () {
-                geometry.hide();
-            }, done);
-        });
 
         it('should be removed when it is being edited', function (done) {
             setupGeometry();
