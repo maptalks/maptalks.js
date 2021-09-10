@@ -244,6 +244,9 @@ class Path extends Geometry {
             prjCoords = simplify(prjCoords, tolerance, false);
             this._simplified = prjCoords.length < count;
         }
+        if (!res) {
+            res = map.getGLRes();
+        }
         if (!Array.isArray(prjCoords)) {
             return map._prjToPointAtRes(prjCoords, res);
         } else {
