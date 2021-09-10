@@ -270,8 +270,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             pitch,
             bearing,
             glScale,
-            //TODO 这里是临时的，应该删掉
-            glZoom: map.getGLZoom(),
             glRes,
             _2DExtent,
             glExtent,

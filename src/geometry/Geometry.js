@@ -427,19 +427,19 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const map = this.getMap();
         const center = this.getCenter();
-        const zoom = map.getGLZoom();
+        const glRes = map.getGLRes();
         const minAltitude = this.getMinAltitude();
-        const altitude = map.distanceToPoint(minAltitude, 0, zoom, center).x * sign(minAltitude);
-        const extent = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, altitude, TEMP_POINT0), out);
+        const altitude = map.distanceToPointAtRes(minAltitude, 0, glRes, center).x * sign(minAltitude);
+        const extent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, altitude, TEMP_POINT0), out);
         let maxAltitude = this.getMaxAltitude();
         if (maxAltitude !== minAltitude) {
-            maxAltitude = map.distanceToPoint(maxAltitude, 0, zoom, center).x * sign(maxAltitude);
-            const extent2 = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
+            maxAltitude = map.distanceToPointAtRes(maxAltitude, 0, glRes, center).x * sign(maxAltitude);
+            const extent2 = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(extent2);
         }
         const layer = this.getLayer();
         if (layer && this.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
-            const groundExtent = extent2d.convertTo(c => map._pointToContainerPoint(c, zoom, 0, TEMP_POINT0), TEMP_EXTENT);
+            const groundExtent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, 0, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(groundExtent);
         }
         if (extent) {
@@ -477,10 +477,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const min = extent.getMin();
         const max = extent.getMax();
-        const z = map.getGLZoom();
+        const glRes = map.getGLRes();
 
-        map._prjToPoint(min, z, min);
-        map._prjToPoint(max, z, max);
+        map._prjToPointAtRes(min, glRes, min);
+        map._prjToPointAtRes(max, glRes, max);
         this._extent2d = new PointExtent(min, max);
         this._extent2d.z = map.getZoom();
         return this._extent2d;

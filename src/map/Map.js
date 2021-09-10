@@ -731,15 +731,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Zoom for world point in WebGL context
+     * Resolution for world point in WebGL context
      * @returns {Number}
      */
-    getGLZoom() {
-        return this.getMaxNativeZoom() / 2;
-    }
-
     getGLRes() {
-        return this._getResolution(this.getGLZoom());
+        return this._getResolution(this.getMaxNativeZoom() / 2);
     }
 
     /**
@@ -755,7 +751,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
-        return this._getResolution(zoom) / this._getResolution(this.getGLZoom());
+        return this._getResolution(zoom) / this.getGLRes();
     }
 
     /**

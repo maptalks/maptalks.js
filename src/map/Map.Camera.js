@@ -534,9 +534,9 @@ Map.include(/** @lends Map.prototype */{
     _getCameraWorldMatrix: function () {
         const q = {};
         return function () {
-            const targetZ = this.getGLZoom();
+            const glRes = this.getGLRes();
 
-            const center2D = this._prjToPoint(this._prjCenter, targetZ);
+            const center2D = this._prjToPointAtRes(this._prjCenter, glRes);
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
 
             const pitch = this.getPitch() * RADIAN;
