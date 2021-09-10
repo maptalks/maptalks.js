@@ -1,4 +1,4 @@
-import { isNumber, sign, pushIn, isDashLine } from '../../core/util';
+import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
 import { clipPolygon, clipLine } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
@@ -232,7 +232,8 @@ class Painter extends Class {
         const symbolizers = this.symbolizers;
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
-            const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts, ptkey);
+            let pts = getPointsResultPts(viewPoints, ptkey);
+            pts = map._pointsToContainerPoints(viewPoints, glZoom, alts, pts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
                 p._sub(containerOffset);

@@ -232,7 +232,7 @@ Map.include(/** @lends Map.prototype */{
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = [], ptkey = '_pt') {
+    _pointsToContainerPoints: function (points, zoom, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
@@ -240,49 +240,38 @@ Map.include(/** @lends Map.prototype */{
                 const res = this._getResolution(zoom) / this._getResolution();
                 const { width, height } = this.getSize();
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
-                const pts = [];
                 for (let i = 0, len = points.length; i < len; i++) {
                     if (!points[i]) {
-                        pts.push(null);
+                        resultPoints[i] = null;
                         continue;
                     }
-                    if (!points[i]._pt) {
-                        points[i]._pt = new Point(0, 0);
-                    }
-                    const pt = points[i]._pt;
+                    const pt = resultPoints[i];
                     pt.x = points[i].x;
                     pt.y = points[i].y;
                     pt._multi(res);
                     pt.x = (pt.x - xmin) * dxPerPixel;
                     pt.y = height - (pt.y - ymin) * dyPerPixel;
-                    pts.push(pt);
                 }
-                return pts;
+                return resultPoints;
             }
         }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
         const res = this._getResolution(zoom) / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-        const pts = [];
         for (let i = 0, len = points.length; i < len; i++) {
             if (!points[i]) {
-                pts.push(null);
+                resultPoints[i] = null;
                 continue;
             }
-            if (!points[i][ptkey]) {
-                points[i][ptkey] = new Point(0, 0);
-            }
-            const pt = points[i][ptkey];
+            const pt = resultPoints[i];
             pt.x = points[i].x;
             pt.y = points[i].y;
             pt._multi(res);
-            // const pt = points[i].copy()._multi(res);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
             this._toContainerPoint(pt, isTransforming, res, altitude, centerPoint);
-            pts.push(pt);
         }
-        return pts;
+        return resultPoints;
     },
 
     _toContainerPoint: function () {

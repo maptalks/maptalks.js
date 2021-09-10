@@ -4,6 +4,7 @@ import OverlayLayerCanvasRenderer from './OverlayLayerCanvasRenderer';
 import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
+import { getPointsResultPts } from '../../../core/util';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
@@ -323,7 +324,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return [];
         }
         const map = this.getMap();
-        const pts = map._pointsToContainerPoints(cPoints, glZoom, altitudes);
+        let pts = getPointsResultPts(cPoints, '_pt');
+        pts = map._pointsToContainerPoints(cPoints, glZoom, altitudes, pts);
         const containerExtent = map.getContainerExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
         const extentCache = {};
