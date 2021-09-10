@@ -738,6 +738,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this.getMaxNativeZoom() / 2;
     }
 
+    getGLRes() {
+        return this._getResolution(this.getGLZoom());
+    }
+
     /**
      * Caculate scale from gl zoom to given zoom (default by current zoom)
      * @param {Number} [zoom=undefined] target zoom, current zoom by default
