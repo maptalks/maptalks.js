@@ -735,7 +735,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getGLRes() {
-        return 16;
+        const fullExtent = this._getSpatialReference().getFullExtent();
+        return (fullExtent.right - fullExtent.left) / (256 * Math.pow(2, 10));
     }
 
     /**
