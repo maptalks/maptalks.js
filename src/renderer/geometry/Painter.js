@@ -52,7 +52,7 @@ class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-        this._altAtGLZoom = this._getGeometryAltitude();
+        this._altAtGL = this._getGeometryAltitude();
     }
 
     getMap() {
@@ -796,7 +796,7 @@ class Painter extends Class {
     }
 
     repaint() {
-        this._altAtGLZoom = this._getGeometryAltitude();
+        this._altAtGL = this._getGeometryAltitude();
         this.removeCache();
         const layer = this.getLayer();
         if (!layer) {
@@ -847,12 +847,12 @@ class Painter extends Class {
     getAltitude() {
         const propAlt = this.geometry.getAltitude();
         if (propAlt !== this._propAlt) {
-            this._altAtGLZoom = this._getGeometryAltitude();
+            this._altAtGL = this._getGeometryAltitude();
         }
-        if (!this._altAtGLZoom) {
+        if (!this._altAtGL) {
             return 0;
         }
-        return this._altAtGLZoom;
+        return this._altAtGL;
     }
 
     getMinAltitude() {
@@ -905,8 +905,8 @@ class Painter extends Class {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        const z = map.getGLZoom();
-        return map.distanceToPoint(altitude, 0, z, center).x * sign(altitude);
+        const glRes = map.getGLRes();
+        return map.distanceToPointAtRes(altitude, 0, glRes, center).x * sign(altitude);
     }
 
     _verifyProjection() {
