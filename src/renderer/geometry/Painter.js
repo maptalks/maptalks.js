@@ -400,7 +400,7 @@ class Painter extends Class {
             pitch = mapStateCache.pitch;
         } else {
             _2DExtent = map._get2DExtent();
-            glExtent = map._get2DExtent(map.getGLZoom());
+            glExtent = map._get2DExtentAtRes(map.getGLRes());
             pitch = map.getPitch();
         }
         let extent2D = _2DExtent._expand(lineWidth);

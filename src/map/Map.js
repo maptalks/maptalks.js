@@ -2001,15 +2001,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Converts the projected coordinate to a 2D point in the specific zoom
+     * Converts the projected coordinate to a 2D point in the specific resolution
      * @param  {Coordinate} pCoord - projected Coordinate
-     * @param  {Number} zoom   - point's zoom level
+     * @param  {Number} res   - point's resolution
      * @return {Point} 2D point
      * @private
      */
-    _prjsToPoints(pCoords, zoom) {
-        zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        const res = this._getResolution(zoom);
+    _prjsToPointsAtRes(pCoords, res) {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
