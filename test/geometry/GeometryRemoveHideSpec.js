@@ -132,6 +132,7 @@ function testRemoveHide(geometry, _context) {
     }
 
     var type = geometry.getType();
+    console.log('Type of ' + type + ' geometry');
     // context('Type of ' + type + ' geometry', function () {
     it('should be removed', function (done) {
         test(function () {
