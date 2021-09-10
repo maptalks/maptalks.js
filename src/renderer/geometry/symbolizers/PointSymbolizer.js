@@ -30,12 +30,12 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
-        const glZoom = map.getGLZoom();
+        const glRes = map.getGLRes();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
             if (renderPoints[i]) {
-                extent._combine(map._pointToPoint(renderPoints[i], glZoom));
+                extent._combine(map._pointAtResToPoint(renderPoints[i], glRes));
             }
         }
         return extent;
@@ -127,9 +127,9 @@ class PointSymbolizer extends CanvasSymbolizer {
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
         if (map.isTransforming()) {
-            const maxZoom = map.getGLZoom();
-            p0 = map._pointToContainerPoint(rotations[i][0], maxZoom, 0, TEMP_POINT0);
-            p1 = map._pointToContainerPoint(rotations[i][1], maxZoom, 0, TEMP_POINT1);
+            const glRes = map.getGLRes();
+            p0 = map._pointAtResToContainerPoint(rotations[i][0], glRes, 0, TEMP_POINT0);
+            p1 = map._pointAtResToContainerPoint(rotations[i][1], glRes, 0, TEMP_POINT1);
             return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
         } else {
             //point的y轴方向与containerPoint是相反的，所以角度取负值

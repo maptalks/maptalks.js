@@ -1970,8 +1970,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     _getResolution(zoom) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
-        } else if (zoom === this.getGLZoom() && this._mapGlRes !== undefined) {
-            return this._mapGlRes;
         }
         if (isNil(zoom)) {
             zoom = this._zoomLevel;
@@ -2420,8 +2418,6 @@ Map.include(/** @lends Map.prototype */{
         let cached;
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
             cached = this._mapExtent2D;
-        } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
-            cached = this._mapGlExtent2D;
         }
         if (cached) {
             if (out) {
@@ -2437,6 +2433,9 @@ Map.include(/** @lends Map.prototype */{
     _get2DExtentAtRes: function () {
         const POINT = new Point(0, 0);
         return function (res, out) {
+            if (res === this._mapGlRes && this._mapGlExtent2D) {
+                return this._mapGlExtent2D;
+            }
             const cExtent = this.getContainerExtent();
             return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
         };

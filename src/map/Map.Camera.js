@@ -374,7 +374,7 @@ Map.include(/** @lends Map.prototype */{
 
     /**
      * GL Matrices in maptalks (based on THREE):
-     * //based on point at map's gl world zoom, by map.coordToPoint(coord, map.getGLZoom())
+     * //based on point at map's gl world space, by map.coordToPointAtRes(coord, map.getGLRes()))
      * map.cameraPosition
      * map.cameraLookAt
      * map.cameraUp       //camera's up vector
@@ -426,9 +426,9 @@ Map.include(/** @lends Map.prototype */{
             this._frustumAltitude = this._calcFrustumAltitude();
             //缓存常用的值
             this._mapRes = this._getResolution();
-            this._mapGlRes = this._getResolution(this.getGLZoom());
+            this._mapGlRes = this.getGLRes();
             this._mapExtent2D = this._get2DExtent();
-            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
+            this._mapGlExtent2D = this._get2DExtentAtRes(this._mapGlRes);
         };
     }(),
 
