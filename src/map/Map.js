@@ -2044,9 +2044,19 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             out = point.copy();
         }
         if (!isNil(zoom)) {
-            return out._multi(this._getResolution(zoom) / this._getResolution());
+            return this._pointToPointAtRes(point, this._getResolution(zoom), out);
         }
         return out;
+    }
+
+    _pointToPointAtRes(point, res, out) {
+        if (out) {
+            out.x = point.x;
+            out.y = point.y;
+        } else {
+            out = point.copy();
+        }
+        return out._multi(res / this._getResolution());
     }
 
     /**
