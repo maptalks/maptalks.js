@@ -923,7 +923,7 @@ class GeometryEditor extends Eventable(Class) {
 
         function moveVertexHandle(handleConatainerPoint, index, ringIndex = 0) {
             const vertice = getVertexPrjCoordinates(ringIndex);
-            const nVertex = map._containerPointToPrj(handleConatainerPoint);
+            const nVertex = map._containerPointToPrj(handleConatainerPoint.sub(getDxDy()));
             const pVertex = vertice[index];
             pVertex.x = nVertex.x;
             pVertex.y = nVertex.y;
@@ -945,9 +945,17 @@ class GeometryEditor extends Eventable(Class) {
             }
         }
 
+        const hanldeDxdy = new Point(0, 0);
+        function getDxDy() {
+            const compiledSymbol = geoToEdit._getCompiledSymbol();
+            hanldeDxdy.x = compiledSymbol.lineDx || 0;
+            hanldeDxdy.y = compiledSymbol.lineDy || 0;
+            return hanldeDxdy;
+        }
+
         function createVertexHandle(index, ringIndex = 0) {
             let vertex = getVertexCoordinates(ringIndex)[index];
-            const handle = me.createHandle(map.coordToContainerPoint(vertex), {
+            const handle = me.createHandle(map.coordToContainerPoint(vertex)._add(getDxDy()), {
                 'symbol': me.options['vertexHandleSymbol'],
                 'cursor': 'pointer',
                 'axis': null,
@@ -957,7 +965,7 @@ class GeometryEditor extends Eventable(Class) {
                 onRefresh: function () {
                     vertex = getVertexCoordinates(ringIndex)[handle[propertyOfVertexIndex]];
                     const containerPoint = map.coordToContainerPoint(vertex);
-                    handle.setContainerPoint(containerPoint);
+                    handle.setContainerPoint(containerPoint._add(getDxDy()));
                 },
                 onUp: function () {
                     me._updateCoordFromShadow();
@@ -1042,7 +1050,7 @@ class GeometryEditor extends Eventable(Class) {
                     }
                     const refreshVertex = vertexCoordinates[vertexIndex].add(vertexCoordinates[nextIndex]).multi(1 / 2);
                     const containerPoint = map.coordToContainerPoint(refreshVertex);
-                    handle.setContainerPoint(containerPoint);
+                    handle.setContainerPoint(containerPoint._add(getDxDy()));
                 }
             });
             handle[propertyOfVertexIndex] = index;

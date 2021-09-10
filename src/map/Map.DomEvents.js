@@ -176,6 +176,8 @@ const events =
      * @property {Event} domEvent                 - dom event
      */
     'touchend ';
+const CLICK_TIME_THRESHOLD = 300;
+
 
 Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
@@ -194,14 +196,15 @@ Map.include(/** @lends Map.prototype */ {
         // prevent default contextmenu
         if (isMouseDown) {
             this._domMouseDownTime = now();
+            this._domMouseDownView = this.getView();
         }
+        const isRotating = type === 'contextmenu' && isRotatingMap(this);
         if (type === 'contextmenu') {
             // prevent context menu, if duration from mousedown > 300ms
             preventDefault(e);
             const downTime = this._domMouseDownTime;
-            delete this._domMouseDownTime;
             const time = now();
-            if (time - downTime <= 300) {
+            if (time - downTime <= CLICK_TIME_THRESHOLD && !isRotating) {
                 this._fireDOMEvent(this, e, 'dom:' + e.type);
             }
         } else {
@@ -224,8 +227,12 @@ Map.include(/** @lends Map.prototype */ {
                 const downTime = this._mouseDownTime;
                 delete this._mouseDownTime;
                 const time = now();
-                if (time - downTime > 300) {
+                if (time - downTime > CLICK_TIME_THRESHOLD) {
                     if (type === 'click' || type === 'contextmenu') {
+                        return;
+                    }
+                } else if (type === 'contextmenu') {
+                    if (isRotating) {
                         return;
                     }
                 } else if (type === 'touchend') {
@@ -235,7 +242,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         let mimicEvent;
         if (mimicClick) {
-            if (this._clickTime && (now() - this._clickTime <= 300)) {
+            if (this._clickTime && (now() - this._clickTime <= CLICK_TIME_THRESHOLD)) {
                 delete this._clickTime;
                 mimicEvent = 'dblclick';
                 this._fireDOMEvent(this, e, 'dom:dblclick');
@@ -267,7 +274,7 @@ Map.include(/** @lends Map.prototype */ {
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
+                    (target.className.indexOf('maptalks-control') >= 0 || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
                     return true;
                 }
                 preTarget = target;
@@ -301,15 +308,15 @@ Map.include(/** @lends Map.prototype */ {
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam = extend(eventParam, {
-                    'containerPoint' : containerPoint,
-                    'viewPoint' : this.containerPointToViewPoint(containerPoint)
+                    'containerPoint': containerPoint,
+                    'viewPoint': this.containerPointToViewPoint(containerPoint)
                 });
                 const maxVisualPitch = this.options['maxVisualPitch'];
                 // ignore coorindate out of visual extent
                 if (this.getPitch() <= maxVisualPitch || containerPoint.y >= (this.height - this._getVisualHeight(maxVisualPitch))) {
                     eventParam = extend(eventParam, {
-                        'coordinate' : this.containerPointToCoord(containerPoint),
-                        'point2d' : this._containerPointToPoint(containerPoint)
+                        'coordinate': this.containerPointToCoord(containerPoint),
+                        'point2d': this._containerPointToPoint(containerPoint)
                     });
                 }
             }
@@ -321,10 +328,10 @@ Map.include(/** @lends Map.prototype */ {
         const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
         const e = {
-            'coordinate' : coord,
-            'containerPoint' : containerPoint,
-            'viewPoint' : viewPoint,
-            'point2d' : this.coordToPoint(coord)
+            'coordinate': coord,
+            'containerPoint': containerPoint,
+            'viewPoint': viewPoint,
+            'point2d': this.coordToPoint(coord)
         };
         return e;
     },
@@ -351,3 +358,11 @@ Map.include(/** @lends Map.prototype */ {
 });
 
 Map.addOnLoadHook('_registerDomEvents');
+
+function isRotatingMap(map) {
+    if (!map._domMouseDownView) {
+        return true;
+    }
+    const view = map.getView(), mouseDownView = map._domMouseDownView;
+    return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
+}

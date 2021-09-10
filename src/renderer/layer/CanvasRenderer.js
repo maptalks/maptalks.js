@@ -45,6 +45,7 @@ class CanvasRenderer extends Class {
     }
 
     checkAndDraw(drawFn, ...args) {
+        this._toRedraw = false;
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {

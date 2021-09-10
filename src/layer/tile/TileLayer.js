@@ -238,7 +238,7 @@ class TileLayer extends Layer {
         const tileConfig = this._getTileConfig();
         const fullExtent = sr.getFullExtent();
 
-        const { origin } = tileConfig.tileSystem;
+        const { origin, scale } = tileConfig.tileSystem;
         const extent000 = tileConfig.getTilePrjExtent(0, 0, res);
         const w = extent000.getWidth();
         const h = extent000.getHeight();
@@ -262,7 +262,7 @@ class TileLayer extends Layer {
         const z = 0;
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
-                const y = j;
+                const y = scale.y < 0 ? j : -(j + 1);
                 tiles.push({
                     x: i,
                     y,
@@ -273,7 +273,7 @@ class TileLayer extends Layer {
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
                     offset: [0, 0],
-                    error: error * res / map.getResolution(0)
+                    error: error
                 });
             }
         }
@@ -296,7 +296,13 @@ class TileLayer extends Layer {
         const widthZ = heightZ * aspectRatio;
         // 相机到容器右上角，斜对角线的距离
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
-        return this.getMap()._getFovZ(0) * (diagonalZ / cameraZ);
+        const fov0 = map._getFovZ(0);
+        const error = fov0 * (diagonalZ / cameraZ);
+
+        const sr = this.getSpatialReference();
+        const res = sr.getResolution(0);
+
+        return error * res / map.getResolution(0);
     }
 
 
@@ -555,7 +561,7 @@ class TileLayer extends Layer {
         if (map.height < 1000) {
             r = 1;
         } else {
-            r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.505;
+            r = gap <= 1 ? 1 : gap <= 2 ? 0.7 : 0.605;
         }
         // const r = 1;
         const error = geometricError * r / distance;

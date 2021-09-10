@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, now } from '../../core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
 import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
@@ -597,6 +597,7 @@ class MapCanvasRenderer extends MapRenderer {
             this._cancelFrameLoop();
             return;
         }
+        this._frameTimestamp = framestamp;
         if (this.map.options['renderable']) {
             this.renderFrame(framestamp);
         }
@@ -830,7 +831,7 @@ class MapCanvasRenderer extends MapRenderer {
                         this._checkSize(entries[0].contentRect);
 
                         //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
-                        this.renderFrame(now());
+                        this.renderFrame(this._frameTimestamp || 0);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
