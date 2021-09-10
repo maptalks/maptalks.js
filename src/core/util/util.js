@@ -1,6 +1,7 @@
 import { IS_NODE } from './env';
-import Browser from  '../Browser';
+import Browser from '../Browser';
 import { isString, isNil } from './common';
+import Point from '../../geo/Point';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
@@ -453,4 +454,19 @@ export function _defaults(obj, defaults) {
         }
     }
     return obj;
+}
+
+export function getPointsResultPts(points = [], ptKey = '_pt') {
+    const resultPoints = [];
+    for (let i = 0, len = points.length; i < len; i++) {
+        const point = points[i];
+        if (!point[ptKey]) {
+            point[ptKey] = new Point(0, 0);
+        }
+        const pt = point[ptKey];
+        pt.x = 0;
+        pt.y = 0;
+        resultPoints.push(pt);
+    }
+    return resultPoints;
 }

@@ -1,4 +1,4 @@
-import { isNumber, sign, pushIn, isDashLine } from '../../core/util';
+import { isNumber, sign, pushIn, isDashLine, getPointsResultPts } from '../../core/util';
 import { clipPolygon, clipLine } from '../../core/util/path';
 import Class from '../../core/Class';
 import Size from '../../geo/Size';
@@ -123,7 +123,7 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getPaintParams(dx, dy, ignoreAltitude) {
+    getPaintParams(dx, dy, ignoreAltitude, ptkey = '_pt') {
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
@@ -187,7 +187,7 @@ class Painter extends Class {
             points = params[0];
 
         const mapExtent = containerExtent;
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, this._hitPoint && !mapExtent.contains(this._hitPoint));
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey);
         if (!cPoints) {
             return null;
         }
@@ -206,7 +206,7 @@ class Painter extends Class {
         return tr;
     }
 
-    _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement) {
+    _pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip, pointPlacement, ptkey = '_pt') {
         if (this._aboveCamera()) {
             return null;
         }
@@ -232,7 +232,8 @@ class Painter extends Class {
         const symbolizers = this.symbolizers;
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
-            const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
+            let pts = getPointsResultPts(viewPoints, ptkey);
+            pts = map._pointsToContainerPoints(viewPoints, glZoom, alts, pts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
                 p._sub(containerOffset);
