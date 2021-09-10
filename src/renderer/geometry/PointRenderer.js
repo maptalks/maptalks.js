@@ -9,7 +9,7 @@ import Polygon from '../../geometry/Polygon';
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
     _getRenderPoints() {
-        return [[this._getCenter2DPoint()], null];
+        return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
 };
 

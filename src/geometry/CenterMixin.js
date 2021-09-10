@@ -41,14 +41,16 @@ export default function (Base) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint() {
+        _getCenter2DPoint(res) {
             const map = this.getMap();
             if (!map) {
                 return null;
             }
             const pcenter = this._getPrjCoordinates();
             if (!pcenter) { return null; }
-            const res = map.getGLRes();
+            if (!res) {
+                res = map._getResolution();
+            }
             return map._prjToPointAtRes(pcenter, res);
         }
 
