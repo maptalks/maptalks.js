@@ -231,6 +231,12 @@ class Path extends Geometry {
      * @private
      */
     _getPath2DPoints(prjCoords, disableSimplify, zoom) {
+        const res = this.getMap()._getResolution(zoom);
+        return this._getPath2DPointsAtRes(prjCoords, disableSimplify, res);
+        // return forEachCoord(prjCoords, c => map._prjToPoint(c, zoom));
+    }
+
+    _getPath2DPointsAtRes(prjCoords, disableSimplify, res) {
         if (!isArrayHasData(prjCoords)) {
             return [];
         }
@@ -244,19 +250,16 @@ class Path extends Geometry {
             prjCoords = simplify(prjCoords, tolerance, false);
             this._simplified = prjCoords.length < count;
         }
-        if (isNil(zoom)) {
-            zoom = map.getZoom();
-        }
         if (!Array.isArray(prjCoords)) {
-            return map._prjToPoint(prjCoords, zoom);
+            return map._prjToPointAtRes(prjCoords, res);
         } else {
             if (!Array.isArray(prjCoords[0])) {
-                return map._prjsToPoints(prjCoords, zoom);
+                return map._prjsToPointsAtRes(prjCoords, res);
             }
             const pts = [];
             for (let i = 0, len = prjCoords.length; i < len; i++) {
                 const prjCoord = prjCoords[i];
-                const pt = map._prjsToPoints(prjCoord, zoom);
+                const pt = map._prjsToPointsAtRes(prjCoord, res);
                 pts.push(pt);
             }
             return pts;

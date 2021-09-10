@@ -52,7 +52,7 @@ class Painter extends Class {
         super();
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
-        this._altAtGLZoom = this._getGeometryAltitude();
+        this._altAtGL = this._getGeometryAltitude();
     }
 
     getMap() {
@@ -216,12 +216,12 @@ class Painter extends Class {
         const map = this.getMap(),
             geometry = this.geometry,
             containerOffset = this.containerOffset;
-        let glZoom, containerExtent;
+        let glRes, containerExtent;
         if (mapStateCache) {
-            glZoom = mapStateCache.glZoom;
+            glRes = mapStateCache.glRes;
             containerExtent = mapStateCache.containerExtent;
         } else {
-            glZoom = map.getGLZoom();
+            glRes = map.getGLRes();
             containerExtent = map.getContainerExtent();
         }
         let cPoints;
@@ -232,7 +232,7 @@ class Painter extends Class {
         const symbolizers = this.symbolizers;
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
-            const pts = map._pointsToContainerPoints(viewPoints, glZoom, alts);
+            const pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
                 p._sub(containerOffset);
@@ -795,7 +795,7 @@ class Painter extends Class {
     }
 
     repaint() {
-        this._altAtGLZoom = this._getGeometryAltitude();
+        this._altAtGL = this._getGeometryAltitude();
         this.removeCache();
         const layer = this.getLayer();
         if (!layer) {
@@ -846,12 +846,12 @@ class Painter extends Class {
     getAltitude() {
         const propAlt = this.geometry.getAltitude();
         if (propAlt !== this._propAlt) {
-            this._altAtGLZoom = this._getGeometryAltitude();
+            this._altAtGL = this._getGeometryAltitude();
         }
-        if (!this._altAtGLZoom) {
+        if (!this._altAtGL) {
             return 0;
         }
-        return this._altAtGLZoom;
+        return this._altAtGL;
     }
 
     getMinAltitude() {
@@ -904,8 +904,8 @@ class Painter extends Class {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        const z = map.getGLZoom();
-        return map.distanceToPoint(altitude, 0, z, center).x * sign(altitude);
+        const res = map.getGLRes();
+        return map._distanceToPointAtRes(altitude, 0, res, center).x * sign(altitude);
     }
 
     _verifyProjection() {

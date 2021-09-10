@@ -232,12 +232,12 @@ Map.include(/** @lends Map.prototype */{
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = []) {
+    _pointsAtResToContainerPoints: function (points, targetRes, altitudes = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
             if (xmax > xmin && ymax > ymin) {
-                const res = this._getResolution(zoom) / this._getResolution();
+                const res = targetRes / this._getResolution();
                 const { width, height } = this.getSize();
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 const pts = [];
@@ -262,7 +262,7 @@ Map.include(/** @lends Map.prototype */{
         }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
+        const res = targetRes / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         const pts = [];
         for (let i = 0, len = points.length; i < len; i++) {
