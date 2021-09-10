@@ -319,11 +319,16 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _containerPointToPoint: function () {
+    _containerPointToPoint: function (p, zoom, out) {
+        const res = this._getResolution(zoom);
+        return this._containerPointToPointAtRes(p, res, out);
+    },
+
+    _containerPointToPointAtRes: function () {
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (p, zoom, out) {
+        return function (p, res, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
@@ -351,10 +356,10 @@ Map.include(/** @lends Map.prototype */{
                     out = new Point(x, y);
                 }
                 out._multi(1 / this._glScale);
-                return ((zoom === undefined || this.getZoom() === zoom) ? out : this._pointToPointAtZoom(out, zoom, out));
+                return ((this._getResolution() === res) ? out : this._pointToPointAtRes(out, res, out));
             }
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom, out),
-                scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+            const centerPoint = this._prjToPointAtRes(this._getPrjCenter(), res, out),
+                scale = this._getResolution() / res;
             const x = scale * (p.x - this.width / 2),
                 y = scale * (p.y - this.height / 2);
             return centerPoint._add(x, -y);

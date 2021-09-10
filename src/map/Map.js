@@ -738,6 +738,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this.getMaxNativeZoom() / 2;
     }
 
+    getGLRes() {
+        return this._getResolution(this.getGLZoom());
+    }
+
     /**
      * Caculate scale from gl zoom to given zoom (default by current zoom)
      * @param {Number} [zoom=undefined] target zoom, current zoom by default
@@ -2052,17 +2056,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at current zoom
      * @private
      */
-    _pointToPointAtZoom(point, zoom, out) {
+    _pointToPointAtRes(point, res, out) {
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
             out = point.copy();
         }
-        if (!isNil(zoom)) {
-            return out._multi(this._getResolution() / this._getResolution(zoom));
-        }
-        return out;
+        return out._multi(this._getResolution() / res);
     }
 
     /**
@@ -2369,24 +2370,29 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _get2DExtent: function () {
+    _get2DExtent(zoom, out) {
+        let cached;
+        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
+            cached = this._mapExtent2D;
+        } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
+            cached = this._mapGlExtent2D;
+        }
+        if (cached) {
+            if (out) {
+                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
+                return out;
+            }
+            return cached.copy();
+        }
+        const res = this._getResolution(zoom);
+        return this._get2DExtentAtRes(res, out);
+    },
+
+    _get2DExtentAtRes: function () {
         const POINT = new Point(0, 0);
-        return function (zoom, out) {
-            let cached;
-            if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
-                cached = this._mapExtent2D;
-            } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
-                cached = this._mapGlExtent2D;
-            }
-            if (cached) {
-                if (out) {
-                    out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
-                    return out;
-                }
-                return cached.copy();
-            }
+        return function (res, out) {
             const cExtent = this.getContainerExtent();
-            return cExtent.convertTo(c => this._containerPointToPoint(c, zoom, POINT), out);
+            return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
         };
     }(),
 

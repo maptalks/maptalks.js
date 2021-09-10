@@ -261,16 +261,18 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const pitch = map.getPitch();
         const bearing = map.getBearing();
         const glScale = map.getGLScale();
-        const glZoom = map.getGLZoom();
+        const glRes = map.getGLRes();
         const containerExtent = map.getContainerExtent();
         const _2DExtent = map._get2DExtent();
-        const glExtent = map._get2DExtent(glZoom);
+        const glExtent = map._get2DExtentAtRes(glRes);
         this.mapStateCache = {
             resolution,
             pitch,
             bearing,
             glScale,
-            glZoom,
+            //TODO 这里是临时的，应该删掉
+            glZoom: map.getGLZoom(),
+            glRes,
             _2DExtent,
             glExtent,
             containerExtent,
