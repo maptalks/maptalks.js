@@ -215,29 +215,35 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     _pointToContainerPoint: function (point, zoom, altitude = 0, out) {
+        const res = this._getResolution(zoom);
+        return this._pointAtResToContainerPoint(point, res, altitude, out);
+    },
+
+    _pointAtResToContainerPoint: function (point, res, altitude = 0, out) {
         if (!out) {
             out = new Point(0, 0);
         }
-        point = this._pointToPoint(point, zoom, out);
+        point = this._pointAtResToPoint(point, res, out);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
+        const scale = res / this._getResolution();
         let centerPoint;
         if (!isTransforming && !altitude) {
             centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         }
-        this._toContainerPoint(out, isTransforming, res, altitude, centerPoint);
+        this._toContainerPoint(out, isTransforming, scale, altitude, centerPoint);
         return out;
     },
+
 
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = [], resultPoints = []) {
+    _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
             if (xmax > xmin && ymax > ymin) {
-                const res = this._getResolution(zoom) / this._getResolution();
+                const res = targetRes / this._getResolution();
                 const { width, height } = this.getSize();
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 for (let i = 0, len = points.length; i < len; i++) {
@@ -257,7 +263,7 @@ Map.include(/** @lends Map.prototype */{
         }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
+        const res = targetRes / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         for (let i = 0, len = points.length; i < len; i++) {
             if (!points[i]) {

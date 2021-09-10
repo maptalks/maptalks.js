@@ -2037,16 +2037,26 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      */
     _pointToPoint(point, zoom, out) {
+        if (!isNil(zoom)) {
+            return this._pointAtResToPoint(point, this._getResolution(zoom), out);
+        }
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
             out = point.copy();
         }
-        if (!isNil(zoom)) {
-            return out._multi(this._getResolution(zoom) / this._getResolution());
-        }
         return out;
+    }
+
+    _pointAtResToPoint(point, res, out) {
+        if (out) {
+            out.x = point.x;
+            out.y = point.y;
+        } else {
+            out = point.copy();
+        }
+        return out._multi(res / this._getResolution());
     }
 
     /**

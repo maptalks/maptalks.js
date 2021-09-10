@@ -216,12 +216,12 @@ class Painter extends Class {
         const map = this.getMap(),
             geometry = this.geometry,
             containerOffset = this.containerOffset;
-        let glZoom, containerExtent;
+        let glRes, containerExtent;
         if (mapStateCache) {
-            glZoom = mapStateCache.glZoom;
+            glRes = mapStateCache.glRes;
             containerExtent = mapStateCache.containerExtent;
         } else {
-            glZoom = map.getGLZoom();
+            glRes = map.getGLRes();
             containerExtent = map.getContainerExtent();
         }
         let cPoints;
@@ -233,7 +233,7 @@ class Painter extends Class {
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let pts = getPointsResultPts(viewPoints, ptkey);
-            pts = map._pointsToContainerPoints(viewPoints, glZoom, alts, pts);
+            pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts, pts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
                 p._sub(containerOffset);
@@ -348,7 +348,7 @@ class Painter extends Class {
             if (ignoreAltitude) {
                 altitude = 0;
             }
-            cPoints = map._pointToContainerPoint(points, glZoom, altitude)._sub(containerOffset);
+            cPoints = map._pointAtResToContainerPoint(points, glRes, altitude)._sub(containerOffset);
             if (dx || dy) {
                 cPoints._add(dx, dy);
             }

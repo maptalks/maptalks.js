@@ -113,7 +113,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
-            this._batchConversionMarkers(this.mapStateCache.glZoom);
+            this._batchConversionMarkers(this.mapStateCache.glRes);
             if (!this._onlyHasPoint) {
                 this.forEachGeo(this.checkGeo, this);
             }
@@ -158,7 +158,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._drawnRes = this.mapStateCache.resolution;
         this._updateDisplayExtent();
         this.prepareToDraw();
-        this._batchConversionMarkers(this.mapStateCache.glZoom);
+        this._batchConversionMarkers(this.mapStateCache.glRes);
         if (!this._onlyHasPoint) {
             this.forEachGeo(this.checkGeo, this);
         }
@@ -284,7 +284,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     // Better performance of batch coordinate conversion
     // 优化前 11fps
     // 优化后 15fps
-    _batchConversionMarkers(glZoom) {
+    _batchConversionMarkers(glRes) {
         this._onlyHasPoint = undefined;
         if (!this._constructorIsThis()) {
             return [];
@@ -327,7 +327,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         const map = this.getMap();
         let pts = getPointsResultPts(cPoints, '_pt');
-        pts = map._pointsToContainerPoints(cPoints, glZoom, altitudes, pts);
+        pts = map._pointsAtResToContainerPoints(cPoints, glRes, altitudes, pts);
         const containerExtent = map.getContainerExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
         const extentCache = {};
