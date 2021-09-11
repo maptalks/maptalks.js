@@ -350,9 +350,9 @@ class UIComponent extends Eventable(Class) {
         if (!this.getMap()) {
             return null;
         }
-        const p = this._getViewPoint()._round();
+        const p = this._getViewPoint();
         if (this.getOffset) {
-            const o = this.getOffset()._round();
+            const o = this.getOffset();
             if (o) {
                 p._add(o);
             }
