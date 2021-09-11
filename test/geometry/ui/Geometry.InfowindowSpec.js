@@ -260,9 +260,9 @@ describe('Geometry.InfoWindow', function () {
             var c = map.coordinateToViewPoint(map.getCenter()).round();
 
             var dom = infoWindow.getDOM();
-            var offset = infoWindow.getOffset().round();
+            var offset = infoWindow.getOffset();
             expect(!offset._isNaN()).to.be.ok();
-            var p = infoWindow.getPosition();
+            var p = infoWindow.getPosition().round();
             expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);
             var t;
             if (maptalks.Browser.any3d) {
@@ -411,7 +411,7 @@ describe('Geometry.InfoWindow', function () {
             infoWindow.addTo(geo);
             infoWindow.show();
 
-            var p = infoWindow.getPosition();
+            var p = infoWindow.getPosition().round();
             // expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
             // expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
 

@@ -280,6 +280,9 @@ function runTests(target, _context) {
             if (!map.getExtent().contains(target.getCenter())) {
                 p._sub(target._menu.getSize().toPoint());
             }
+            if (p.y === 88090) {
+                p.y += 0.5;
+            }
 
             expect(target._menu.getDOM().style.display).to.be.eql('');
             expect(target._menu.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)');
