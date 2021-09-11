@@ -248,7 +248,8 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation : null,
+                roundPoint:true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -402,7 +403,8 @@ describe('Geometry.InfoWindow', function () {
                 animation : 'fade,scale',
                 animationOnHide : true,
                 animationDuration : 50,
-                autoPan : false
+                autoPan : false,
+                roundPoint:true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());

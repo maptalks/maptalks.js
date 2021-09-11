@@ -44,7 +44,8 @@ const options = {
     'animationDuration': 500,
     'pitchWithMap': false,
     'rotateWithMap': false,
-    'visible': true
+    'visible': true,
+    'roundPoint': false
 };
 
 /**
@@ -346,13 +347,20 @@ class UIComponent extends Eventable(Class) {
         return this.__uiDOM;
     }
 
+    _roundPoint(point) {
+        if (this.options.roundPoint) {
+            point = point._round();
+        }
+        return point;
+    }
+
     getPosition() {
         if (!this.getMap()) {
             return null;
         }
-        const p = this._getViewPoint()._round();
+        const p = this._roundPoint(this._getViewPoint());
         if (this.getOffset) {
-            const o = this.getOffset()._round();
+            const o = this._roundPoint(this.getOffset());
             if (o) {
                 p._add(o);
             }

@@ -271,7 +271,8 @@ function runTests(target, _context) {
                 animation : 'scale',
                 animationDuration : 20,
                 animationOnHide   : true,
-                width: 250
+                width: 250,
+                roundPoint:true
             });
             var p = target.getMap().coordinateToViewPoint(target.getCenter())._round();
 
