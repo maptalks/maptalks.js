@@ -84,7 +84,7 @@ describe('Layer.ImageLayer', function () {
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(1, 1, [0, 0, 0, 128]);
             } else {
-                expect(layer).to.be.painted(1, 1, [0, 0, 0, alpha]);
+                expect(imageData.data).to.be.eql([0, 0, 0, alpha]);
             }
             done();
         });
