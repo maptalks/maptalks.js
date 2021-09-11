@@ -111,17 +111,17 @@ function test(geometry, context, fn, done) {
         if (layer.isEmpty()) {
             return;
         }
-        expect(isDrawn(testPoints, _context.container)).to.be.ok();
+        expect(isDrawn(testPoints, context.container)).to.be.ok();
         layer.once('layerload', function () {
-            expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
+            expect(isDrawn(testPoints, context.container)).not.to.be.ok();
             done();
         });
         layer.once('remove', function () {
-            expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
+            expect(isDrawn(testPoints, context.container)).not.to.be.ok();
             done();
         });
         layer.once('hide', function () {
-            expect(isDrawn(testPoints, _context.container)).not.to.be.ok();
+            expect(isDrawn(testPoints, context.container)).not.to.be.ok();
             done();
         });
         fn();
