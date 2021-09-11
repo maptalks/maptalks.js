@@ -737,7 +737,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     getGLRes() {
         // const fullExtent = this.getSpatialReference().getFullExtent();
         // return (fullExtent.right - fullExtent.left) / (256 * Math.pow(2, 12));
-        return this._getResolution(14);
+        // return this._getResolution(14);
+        return this._getResolution(this.getMaxNativeZoom() / 2);
     }
 
     /**
