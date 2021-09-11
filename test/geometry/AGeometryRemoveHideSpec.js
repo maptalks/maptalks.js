@@ -164,12 +164,12 @@ function testRemoveHide(geometry, _context) {
             }, done);
         });
 
-        it('should be removed with layer by map', function (done) {
-            test(function () {
-                var map = _context.layer.getMap();
-                map.removeLayer(_context.layer);
-            }, done);
-        });
+        // it('should be removed with layer by map', function (done) {
+        //     test(function () {
+        //         var map = _context.layer.getMap();
+        //         map.removeLayer(_context.layer);
+        //     }, done);
+        // });
 
         it('should be hided', function (done) {
             test(function () {
