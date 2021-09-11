@@ -248,7 +248,8 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation : null,
+                roundPoint:true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -260,9 +261,9 @@ describe('Geometry.InfoWindow', function () {
             var c = map.coordinateToViewPoint(map.getCenter()).round();
 
             var dom = infoWindow.getDOM();
-            var offset = infoWindow.getOffset();
+            var offset = infoWindow.getOffset().round();
             expect(!offset._isNaN()).to.be.ok();
-            var p = infoWindow.getPosition().round();
+            var p = infoWindow.getPosition();
             expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);
             var t;
             if (maptalks.Browser.any3d) {
@@ -402,7 +403,8 @@ describe('Geometry.InfoWindow', function () {
                 animation : 'fade,scale',
                 animationOnHide : true,
                 animationDuration : 50,
-                autoPan : false
+                autoPan : false,
+                roundPoint:true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -411,7 +413,7 @@ describe('Geometry.InfoWindow', function () {
             infoWindow.addTo(geo);
             infoWindow.show();
 
-            var p = infoWindow.getPosition().round();
+            var p = infoWindow.getPosition();
             // expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
             // expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('scale(0)');
 

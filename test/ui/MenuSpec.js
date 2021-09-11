@@ -271,7 +271,8 @@ function runTests(target, _context) {
                 animation : 'scale',
                 animationDuration : 20,
                 animationOnHide   : true,
-                width: 250
+                width: 250,
+                roundPoint:true
             });
             var p = target.getMap().coordinateToViewPoint(target.getCenter())._round();
 
@@ -279,9 +280,6 @@ function runTests(target, _context) {
             // menu's offset is moved when it is outside map
             if (!map.getExtent().contains(target.getCenter())) {
                 p._sub(target._menu.getSize().toPoint());
-            }
-            if (p.y === 88090) {
-                p.y += 0.5;
             }
 
             expect(target._menu.getDOM().style.display).to.be.eql('');
