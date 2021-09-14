@@ -713,6 +713,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this;
         }
         const coordinates = this.getCoordinates();
+        this._silence = true;
         if (coordinates) {
             if (Array.isArray(coordinates)) {
                 const translated = forEachCoord(coordinates, function (coord) {
@@ -723,6 +724,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 this.setCoordinates(coordinates.add(offset));
             }
         }
+        this._silence = false;
+        this._fireEvent('positionchange');
         return this;
     }
 
@@ -1317,6 +1320,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _fireEvent(eventName, param) {
+        if (this._silence) {
+            return;
+        }
         if (this.getLayer() && this.getLayer()._onGeometryEvent) {
             if (!param) {
                 param = {};
