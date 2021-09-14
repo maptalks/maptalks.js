@@ -1,12 +1,12 @@
 {
     "name": "@maptalks/vt-plugin",
-    "version": "0.49.1",
+    "version": "0.50.0",
     "description": "The base plugin for maptalks vectortile layer",
     "module": "index.js",
     "jsnext:main": "index.js",
     "scripts": {
-      "lint": "eslint *.js",
-      "prepare": "npm run lint"
+        "lint": "eslint *.js",
+        "prepare": "npm run lint"
     },
     "files": [
         "index.js"
@@ -22,8 +22,8 @@
         "color": "^3.0.0"
     },
     "devDependencies": {
-      "@babel/eslint-parser": "^7.15.0",
-      "@babel/preset-env": "^7.15.0",
-      "eslint": "^7.32.0"
+        "@babel/eslint-parser": "^7.15.0",
+        "@babel/preset-env": "^7.15.0",
+        "eslint": "^7.32.0"
     }
 }
