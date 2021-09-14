@@ -64,6 +64,17 @@ describe('Geometry.main', function () {
         registerGeometryCommonTest.call(this, geometries[i], context);
     }
 
+    it('translate LineString', function (done)  {
+        var line = new maptalks.LineString([
+            { x: 121.111, y: 30.111 },
+            { x: 121.222, y: 30.222 }
+        ]);
+        line.on('positionchange', function () {
+            done();
+        });
+        line.translate(-1, -1);
+    });
+
 });
 //测试Geometry的公共方法
 function registerGeometryCommonTest(geometry, _context) {
