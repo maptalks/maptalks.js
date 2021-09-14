@@ -215,29 +215,35 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     _pointToContainerPoint: function (point, zoom, altitude = 0, out) {
+        const res = this._getResolution(zoom);
+        return this._pointAtResToContainerPoint(point, res, altitude, out);
+    },
+
+    _pointAtResToContainerPoint: function (point, res, altitude = 0, out) {
         if (!out) {
             out = new Point(0, 0);
         }
-        point = this._pointToPoint(point, zoom, out);
+        point = this._pointAtResToPoint(point, res, out);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
+        const scale = res / this._getResolution();
         let centerPoint;
         if (!isTransforming && !altitude) {
             centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         }
-        this._toContainerPoint(out, isTransforming, res, altitude, centerPoint);
+        this._toContainerPoint(out, isTransforming, scale, altitude, centerPoint);
         return out;
     },
+
 
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = [], resultPoints = []) {
+    _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
             if (xmax > xmin && ymax > ymin) {
-                const res = this._getResolution(zoom) / this._getResolution();
+                const res = targetRes / this._getResolution();
                 const { width, height } = this.getSize();
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 for (let i = 0, len = points.length; i < len; i++) {
@@ -257,7 +263,7 @@ Map.include(/** @lends Map.prototype */{
         }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
+        const res = targetRes / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         for (let i = 0, len = points.length; i < len; i++) {
             if (!points[i]) {
@@ -319,11 +325,16 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _containerPointToPoint: function () {
+    _containerPointToPoint: function (p, zoom, out) {
+        const res = this._getResolution(zoom);
+        return this._containerPointToPointAtRes(p, res, out);
+    },
+
+    _containerPointToPointAtRes: function () {
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (p, zoom, out) {
+        return function (p, res, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
@@ -351,10 +362,10 @@ Map.include(/** @lends Map.prototype */{
                     out = new Point(x, y);
                 }
                 out._multi(1 / this._glScale);
-                return ((zoom === undefined || this.getZoom() === zoom) ? out : this._pointToPointAtZoom(out, zoom, out));
+                return ((this._getResolution() === res) ? out : this._pointToPointAtRes(out, res, out));
             }
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom, out),
-                scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+            const centerPoint = this._prjToPointAtRes(this._getPrjCenter(), res, out),
+                scale = this._getResolution() / res;
             const x = scale * (p.x - this.width / 2),
                 y = scale * (p.y - this.height / 2);
             return centerPoint._add(x, -y);
@@ -363,7 +374,7 @@ Map.include(/** @lends Map.prototype */{
 
     /**
      * GL Matrices in maptalks (based on THREE):
-     * //based on point at map's gl world zoom, by map.coordToPoint(coord, map.getGLZoom())
+     * //based on point at map's gl world space, by map.coordToPointAtRes(coord, map.getGLRes()))
      * map.cameraPosition
      * map.cameraLookAt
      * map.cameraUp       //camera's up vector
@@ -415,9 +426,9 @@ Map.include(/** @lends Map.prototype */{
             this._frustumAltitude = this._calcFrustumAltitude();
             //缓存常用的值
             this._mapRes = this._getResolution();
-            this._mapGlRes = this._getResolution(this.getGLZoom());
+            this._mapGlRes = this.getGLRes();
             this._mapExtent2D = this._get2DExtent();
-            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
+            this._mapGlExtent2D = this._get2DExtentAtRes(this._mapGlRes);
         };
     }(),
 
@@ -523,9 +534,9 @@ Map.include(/** @lends Map.prototype */{
     _getCameraWorldMatrix: function () {
         const q = {};
         return function () {
-            const targetZ = this.getGLZoom();
+            const glRes = this.getGLRes();
 
-            const center2D = this._prjToPoint(this._prjCenter, targetZ);
+            const center2D = this._prjToPointAtRes(this._prjCenter, glRes);
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
 
             const pitch = this.getPitch() * RADIAN;

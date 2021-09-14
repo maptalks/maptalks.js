@@ -59,7 +59,7 @@ const el = {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const pcenter = this._getPrjCoordinates();
-        const pt = map._prjToPoint(pcenter, map.getGLZoom());
+        const pt = map._prjToPointAtRes(pcenter, map.getGLRes());
         const size = this._getRenderSize(pt);
         return [pt, ...size];
     },
@@ -74,10 +74,10 @@ const el = {
 
     _getRenderSize(pt) {
         const map = this.getMap(),
-            z = map.getGLZoom();
+            glRes = map.getGLRes();
         const prjExtent = this._getPrjExtent();
-        const pmin = map._prjToPoint(prjExtent.getMin(), z),
-            pmax = map._prjToPoint(prjExtent.getMax(), z);
+        const pmin = map._prjToPointAtRes(prjExtent.getMin(), glRes),
+            pmax = map._prjToPointAtRes(prjExtent.getMax(), glRes);
         return [Math.abs(pmax.x - pmin.x) / 2, Math.abs(pmax.y - pt.y), Math.abs(pt.y - pmin.y)];
     }
 };
@@ -89,9 +89,8 @@ Circle.include(el);
 Rectangle.include({
     _getPaintParams() {
         const map = this.getMap();
-        const pointZoom = map.getGLZoom();
         const shell = this._getPrjShell();
-        const points = this._getPath2DPoints(shell, false, pointZoom);
+        const points = this._getPath2DPoints(shell, false, map.getGLRes());
         return [points];
     },
 
@@ -106,7 +105,7 @@ Sector.include(el, {
             return Polygon.prototype._getPaintParams.call(this, true);
         }
         const map = this.getMap();
-        const pt = map._prjToPoint(this._getPrjCoordinates(), map.getGLZoom());
+        const pt = map._prjToPointAtRes(this._getPrjCoordinates(), map.getGLRes());
         const size = this._getRenderSize(pt);
         return [pt, size[0],
             [this.getStartAngle(), this.getEndAngle()]
@@ -174,7 +173,7 @@ LineString.include({
 
     _getPaintParams() {
         const prjVertexes = this._getPrjCoordinates();
-        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getGLZoom());
+        const points = this._getPath2DPoints(prjVertexes, false, this.getMap().getGLRes());
         return [points];
     },
 
@@ -264,9 +263,9 @@ LineString.include({
 
 Polygon.include({
     _getPaintParams(disableSimplify) {
-        const maxZoom = this.getMap().getGLZoom();
+        const glRes = this.getMap().getGLRes();
         const prjVertexes = this._getPrjShell();
-        let points = this._getPath2DPoints(prjVertexes, disableSimplify, maxZoom);
+        let points = this._getPath2DPoints(prjVertexes, disableSimplify, glRes);
         //splitted by anti-meridian
         const isSplitted = points.length > 0 && Array.isArray(points[0]);
         if (isSplitted) {
@@ -281,7 +280,7 @@ Polygon.include({
             //outer ring  simplify result;
             const simplified = this._simplified;
             for (let i = 0; i < prjHoles.length; i++) {
-                const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, maxZoom);
+                const hole = this._getPath2DPoints(prjHoles[i], disableSimplify, glRes);
                 if (Array.isArray(hole) && isSplitted) {
                     if (Array.isArray(hole[0])) {
                         points[0].push(hole[0]);

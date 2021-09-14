@@ -731,11 +731,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Zoom for world point in WebGL context
+     * Resolution for world point in WebGL context
      * @returns {Number}
      */
-    getGLZoom() {
-        return this.getMaxNativeZoom() / 2;
+    getGLRes() {
+        const fullExtent = this.getSpatialReference().getFullExtent();
+        return (fullExtent.right - fullExtent.left) / (256 * Math.pow(2, 10));
+        // return this._getResolution(14);
+        // return this._getResolution(this.getMaxNativeZoom() / 2);
     }
 
     /**
@@ -751,7 +754,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
-        return this._getResolution(zoom) / this._getResolution(this.getGLZoom());
+        return this._getResolution(zoom) / this.getGLRes();
     }
 
     /**
@@ -1260,6 +1263,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      */
     coordToPoint(coordinate, zoom, out) {
         return this.coordinateToPoint(coordinate, zoom, out);
+    }
+
+    /**
+     * shorter alias for coordinateToPointAtRes
+     */
+    coordToPointAtRes(coordinate, res, out) {
+        return this.coordinateToPointAtRes(coordinate, res, out);
     }
 
     /**
@@ -1959,8 +1969,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     _getResolution(zoom) {
         if ((zoom === undefined || zoom === this._zoomLevel) && this._mapRes !== undefined) {
             return this._mapRes;
-        } else if (zoom === this.getGLZoom() && this._mapGlRes !== undefined) {
-            return this._mapGlRes;
         }
         if (isNil(zoom)) {
             zoom = this._zoomLevel;
@@ -1990,15 +1998,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Converts the projected coordinate to a 2D point in the specific zoom
+     * Converts the projected coordinate to a 2D point in the specific resolution
      * @param  {Coordinate} pCoord - projected Coordinate
-     * @param  {Number} zoom   - point's zoom level
+     * @param  {Number} res   - point's resolution
      * @return {Point} 2D point
      * @private
      */
-    _prjsToPoints(pCoords, zoom) {
-        zoom = (isNil(zoom) ? this.getZoom() : zoom);
-        const res = this._getResolution(zoom);
+    _prjsToPointsAtRes(pCoords, res) {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
@@ -2033,16 +2039,26 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @private
      */
     _pointToPoint(point, zoom, out) {
+        if (!isNil(zoom)) {
+            return this._pointAtResToPoint(point, this._getResolution(zoom), out);
+        }
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
             out = point.copy();
         }
-        if (!isNil(zoom)) {
-            return out._multi(this._getResolution(zoom) / this._getResolution());
-        }
         return out;
+    }
+
+    _pointAtResToPoint(point, res, out) {
+        if (out) {
+            out.x = point.x;
+            out.y = point.y;
+        } else {
+            out = point.copy();
+        }
+        return out._multi(res / this._getResolution());
     }
 
     /**
@@ -2052,17 +2068,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} point at current zoom
      * @private
      */
-    _pointToPointAtZoom(point, zoom, out) {
+    _pointToPointAtRes(point, res, out) {
         if (out) {
             out.x = point.x;
             out.y = point.y;
         } else {
             out = point.copy();
         }
-        if (!isNil(zoom)) {
-            return out._multi(this._getResolution() / this._getResolution(zoom));
-        }
-        return out;
+        return out._multi(this._getResolution() / res);
     }
 
     /**
@@ -2103,11 +2116,28 @@ Map.include(/** @lends Map.prototype */{
      * @example
      * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
      */
-    coordinateToPoint: function () {
+    coordinateToPoint(coordinate, zoom, out) {
+        const res = this._getResolution(zoom);
+        return this.coordinateToPointAtRes(coordinate, res, out);
+    },
+
+    /**
+     * Converts a coordinate to the 2D point at specified resolution. <br>
+     * The 2D point's coordinate system's origin is the same with map's origin.
+     * Usually used in plugin development.
+     * @param  {Coordinate} coordinate - coordinate
+     * @param  {Number} [res=undefined]  - target resolution
+     * @param  {Point} [out=undefined]    - optional point to receive result
+     * @return {Point}  2D point
+     * @function
+     * @example
+     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
+     */
+    coordinateToPointAtRes: function () {
         const COORD = new Coordinate(0, 0);
-        return function (coordinate, zoom, out) {
+        return function (coordinate, res, out) {
             const prjCoord = this.getProjection().project(coordinate, COORD);
-            return this._prjToPoint(prjCoord, zoom, out);
+            return this._prjToPointAtRes(prjCoord, res, out);
         };
     }(),
 
@@ -2280,17 +2310,31 @@ Map.include(/** @lends Map.prototype */{
      * @return {Point}
      * @function
      */
-    distanceToPoint: function () {
+    distanceToPoint(xDist, yDist, zoom, paramCenter) {
+        const res = this._getResolution(zoom);
+        return this.distanceToPointAtRes(xDist, yDist, res, paramCenter);
+    },
+
+    /**
+     * Converts geographical distances to the 2d point length at specified resolution.
+     *
+     * @param  {Number} xDist - distance on X axis.
+     * @param  {Number} yDist - distance on Y axis.
+     * @param  {Number} res - target resolution
+     * @return {Point}
+     * @function
+     */
+    distanceToPointAtRes: function () {
         const POINT = new Point(0, 0);
-        return function (xDist, yDist, zoom, paramCenter) {
+        return function (xDist, yDist, res, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
             const center = paramCenter || this.getCenter(),
                 target = projection.locate(center, xDist, yDist);
-            const p0 = this.coordToPoint(center, zoom, POINT),
-                p1 = this.coordToPoint(target, zoom);
+            const p0 = this.coordToPointAtRes(center, res, POINT),
+                p1 = this.coordToPointAtRes(target, res);
             p1._sub(p0)._abs();
             return p1;
         };
@@ -2369,24 +2413,30 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _get2DExtent: function () {
-        const POINT = new Point(0, 0);
-        return function (zoom, out) {
-            let cached;
-            if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
-                cached = this._mapExtent2D;
-            } else if (zoom === this.getGLZoom() && this._mapGlExtent2D) {
-                cached = this._mapGlExtent2D;
+    _get2DExtent(zoom, out) {
+        let cached;
+        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
+            cached = this._mapExtent2D;
+        }
+        if (cached) {
+            if (out) {
+                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
+                return out;
             }
-            if (cached) {
-                if (out) {
-                    out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
-                    return out;
-                }
-                return cached.copy();
+            return cached.copy();
+        }
+        const res = this._getResolution(zoom);
+        return this._get2DExtentAtRes(res, out);
+    },
+
+    _get2DExtentAtRes: function () {
+        const POINT = new Point(0, 0);
+        return function (res, out) {
+            if (res === this._mapGlRes && this._mapGlExtent2D) {
+                return this._mapGlExtent2D;
             }
             const cExtent = this.getContainerExtent();
-            return cExtent.convertTo(c => this._containerPointToPoint(c, zoom, POINT), out);
+            return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
         };
     }(),
 

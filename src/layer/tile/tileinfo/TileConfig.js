@@ -25,8 +25,9 @@ class TileConfig {
         this.prepareTileInfo(tileSystem, fullExtent);
         this._xScale = fullExtent['right'] >= fullExtent['left'] ? 1 : -1;
         this._yScale = fullExtent['top'] >= fullExtent['bottom'] ? 1 : -1;
-        this._pointOrigin = map._prjToPoint(new Point(this.tileSystem['origin']), map.getGLZoom());
-        this._glRes = map.getResolution(map.getGLZoom());
+        const glRes = map.getGLRes();
+        this._pointOrigin = map._prjToPointAtRes(new Point(this.tileSystem['origin']), glRes);
+        this._glRes = glRes;
     }
 
     prepareTileInfo(tileSystem, fullExtent) {

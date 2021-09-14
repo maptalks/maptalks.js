@@ -354,7 +354,7 @@ class TileLayer extends Layer {
             }
             queue = [...rootNodes.tiles];
         }
-        const glRes = map.getResolution(map.getGLZoom());
+        const glRes = map.getGLRes();
         const offsets = {
             0: offset0
         };
@@ -831,7 +831,6 @@ class TileLayer extends Layer {
         const res = sr.getResolution(zoom);
         const glScale = map.getGLScale(z);
 
-        // const glScale = res / map.getResolution(map.getGLZoom());
         const repeatWorld = !this._hasOwnSR && this.options['repeatWorld'];
 
         const extent2d = this._convertToExtent2d(containerExtent);

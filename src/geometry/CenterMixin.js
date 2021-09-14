@@ -1,4 +1,3 @@
-import { isNil } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 
 /**
@@ -42,16 +41,17 @@ export default function (Base) {
         }
 
         //Gets view point of the geometry's center
-        _getCenter2DPoint(zoom) {
+        _getCenter2DPoint(res) {
             const map = this.getMap();
             if (!map) {
                 return null;
             }
-            const z = isNil(zoom) ? map.getZoom() : map.getGLZoom();
             const pcenter = this._getPrjCoordinates();
             if (!pcenter) { return null; }
-
-            return map._prjToPoint(pcenter, z);
+            if (!res) {
+                res = map._getResolution();
+            }
+            return map._prjToPointAtRes(pcenter, res);
         }
 
         _getPrjCoordinates() {
