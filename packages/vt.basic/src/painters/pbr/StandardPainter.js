@@ -23,20 +23,23 @@ class StandardPainter extends MeshPainter {
     }
 
     isAnimating() {
-        const symbol = this.getSymbols()[0];
-        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        const uvOffsetAnim = this._getUVOffsetAnim();
         if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
             return true;
         }
     }
 
     needToRedraw() {
-        const symbol = this.getSymbols()[0];
-        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        const uvOffsetAnim = this._getUVOffsetAnim();
         if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
             return true;
         }
         return super.needToRedraw();
+    }
+
+    _getUVOffsetAnim() {
+        const symbol = this.getSymbols()[0];
+        return symbol.material && symbol.material.uvOffsetAnim;
     }
 
     createGeometry(glData) {
@@ -84,9 +87,9 @@ class StandardPainter extends MeshPainter {
         }
         delete this.shadowCount;
 
-        const symbol = this.getSymbols()[0];
-        const uvOffsetAnim = symbol.material.uvOffsetAnim;
+        const uvOffsetAnim = this._getUVOffsetAnim();
         if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+            const symbol = this.getSymbols()[0];
             const uvOffset = symbol.material.uvOffset;
             const timeStamp = this.layer.getRenderer().getFrameTimestamp();
             const offset = [uvOffset[0], uvOffset[1]];
