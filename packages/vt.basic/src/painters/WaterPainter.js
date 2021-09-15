@@ -12,6 +12,7 @@ const DEFAULT_DIR_LIGHT = {
 };
 
 const TIME_NOISE_TEXTURE_REPEAT = 0.3737;
+const SYMBOL_INDEX = { index: 0 };
 
 const frag = `
     #define SHADER_NAME WATER_STENCIL
@@ -31,17 +32,19 @@ class WaterPainter extends BasicPainter {
     }
 
     needToRedraw() {
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbol(SYMBOL_INDEX);
         return symbol.animation;
     }
 
-    createMesh(geometry, transform) {
+    createMesh(geo, transform) {
+        const { geometry } = geo;
         geometry.generateBuffers(this.regl);
         // const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, null, {
             castShadow: false,
             picking: true
         });
+        mesh.properties.symbolIndex = SYMBOL_INDEX;
         mesh.setLocalTransform(transform);
         return mesh;
     }
@@ -60,7 +63,7 @@ class WaterPainter extends BasicPainter {
 
     _prepareMesh(mesh) {
         //在这里更新ssr，以免symbol中ssr发生变化时，uniform值却没有发生变化, fuzhenn/maptalks-studio#462
-        const hasSSR = this.getSymbol().ssr;
+        const hasSSR = this.getSymbol(SYMBOL_INDEX).ssr;
         for (let i = 0; i < mesh.length; i++) {
             if (hasSSR) {
                 mesh[i].ssr = 1;
@@ -76,7 +79,7 @@ class WaterPainter extends BasicPainter {
             this._waterShader.dispose();
             this._createShader(context);
         }
-        const isSsr = !!context.ssr && this.getSymbol().ssr;
+        const isSsr = !!context.ssr && this.getSymbol(SYMBOL_INDEX).ssr;
         const shader = this._waterShader;
         const shaderDefines = shader.shaderDefines;
         if (isSsr) {
@@ -136,7 +139,7 @@ class WaterPainter extends BasicPainter {
         this._emptyTex = regl.texture(2);
         this._uvSize = [2, 2];
 
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbol({ index: 0 });
         const normalUrl = symbol['texWaveNormal'];
         const cachedNormalData = this.getCachedTexture(normalUrl);
         const self = this;
@@ -354,7 +357,7 @@ class WaterPainter extends BasicPainter {
         const lightManager = map.getLightManager();
         let directionalLight = lightManager && lightManager.getDirectionalLight() || {};
         const ambientLight = lightManager && lightManager.getAmbientLight() || {};
-        const symbol = this.getSymbol();
+        const symbol = this.getSymbol(SYMBOL_INDEX);
         const waterDir = this._waterDir = this._waterDir || [];
         const uniforms = {
             hdrHsv: ambientLight.hsv || [0, 0, 0],
