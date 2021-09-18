@@ -426,6 +426,8 @@ export default class VectorPack {
             const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
             result.featureIds = new feaCtor(featIds);
             buffers.push(result.featureIds.buffer);
+        } else {
+            result.featureIds = [];
         }
 
         return result;

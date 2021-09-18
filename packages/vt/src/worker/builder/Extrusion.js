@@ -180,6 +180,8 @@ export function buildExtrudeFaces(
     if (featIds.length) {
         const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
         data.featureIds = new feaCtor(featIds);
+    } else {
+        data.featureIds = [];
     }
     if (uvs) {
         //因为vertices中最后一位不在indices中引用，uvs为保持位数与vertices一致，需补充2位

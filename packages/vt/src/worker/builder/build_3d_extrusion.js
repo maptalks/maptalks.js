@@ -113,9 +113,11 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         },
         buffers
     };
-    if (faces.featureIds) {
+    if (faces.featureIds.length) {
         data.data.featureIds = faces.featureIds;
         buffers.push(data.data.featureIds.buffer);
+    } else {
+        data.data.featureIds = [];
     }
     if (fnTypes.aColor) {
         data.data.data.aColor = fnTypes.aColor;
