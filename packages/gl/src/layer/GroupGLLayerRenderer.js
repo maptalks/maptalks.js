@@ -604,6 +604,9 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             delete context.sceneFilter;
         }
         const drawn = this._groundPainter.paint(context);
+        if (this._groundPainter.needToRedraw()){
+            this.setToRedraw();
+        }
         if (sceneFilter) {
             context.sceneFilter = sceneFilter;
         }

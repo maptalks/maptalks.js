@@ -25,6 +25,11 @@ class GroundPainter {
         this._init();
     }
 
+    needToRedraw() {
+        const uvOffsetAnim = this._getUVOffsetAnim();
+        return uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
+    }
+
     getMap() {
         return this._layer && this._layer.getMap();
     }
@@ -350,7 +355,19 @@ class GroundPainter {
         const xmin = center[0] - width;
         const ymax = center[1] + height;
 
-        const offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
+        let offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
+        const uvOffsetAnim = this._getUVOffsetAnim();
+        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+            offset = [offset[0], offset[1]];
+            const timeStamp = performance.now();
+            if (uvOffsetAnim[0]) {
+                offset[0] = (timeStamp * uvOffsetAnim[0] % 1000) / 1000;
+            }
+            if (uvOffsetAnim[1]) {
+                offset[1] = (timeStamp * uvOffsetAnim[1] % 1000) / 1000;
+            }
+
+        }
         const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
         const texWidth = TEX_SIZE_W / scale[0];
         const texHeight = TEX_SIZE_H / scale[1];
@@ -485,6 +502,10 @@ class GroundPainter {
             return c;
         }
         return c;
+    }
+
+    _getUVOffsetAnim() {
+        return this.material && this.material.get('uvOffset');
     }
 }
 
