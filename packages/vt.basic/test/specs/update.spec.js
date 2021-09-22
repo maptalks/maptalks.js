@@ -2,7 +2,7 @@ const path = require('path');
 const assert = require('assert');
 const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
-const { GeoJSONVectorTileLayer } = require('@maptalks/vt');
+const { GeoJSONVectorTileLayer, PolygonLayer } = require('@maptalks/vt');
 const { GroupGLLayer } = require('@maptalks/gl');
 require('../../dist/maptalks.vt.basic');
 
@@ -138,6 +138,32 @@ describe('update style specs', () => {
         });
         group.addTo(map);
     });
+
+    it('should can be added after removed', done => {
+        const geo = maptalks.GeoJSON.toGeometry(polygon);
+        geo[0].setSymbol({
+            polygonFill: '#f00'
+        });
+        const layer = new PolygonLayer('geo', geo);
+        const group = new GroupGLLayer('group', [layer]);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        map.addLayer(group);
+        map.removeLayer(group);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        map.addLayer(group);
+
+    });
+
     it('should can setStyle', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.setStyle([
