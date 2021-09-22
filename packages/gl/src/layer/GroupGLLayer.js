@@ -221,7 +221,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer.off('show hide', this._onLayerShowHide, this);
             layer.off('idchange', this._onLayerIDChange, this);
         });
-        delete this._layerMap;
+        this._layerMap = {};
         super.onRemove();
     }
 
