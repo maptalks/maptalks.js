@@ -505,7 +505,7 @@ class GroundPainter {
     }
 
     _getUVOffsetAnim() {
-        return this.material && this.material.get('uvOffset');
+        return this.material && this.material.get('uvOffsetAnim');
     }
 }
 
