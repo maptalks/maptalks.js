@@ -84,12 +84,15 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
     _renderChildLayers(methodName, args) {
         this._renderMode = 'default';
+        const hasRenderTarget = this.hasRenderTarget();
         const drawContext = this._getDrawContext(args);
+        if (hasRenderTarget) {
+            // reset renderTarget before drawing ground and child layers
+            this._drawContext.renderTarget = this._getFramebufferTarget();
+        }
         this._envPainter.paint(drawContext);
         //如果放到图层后画，会出现透明图层下的ground消失的问题，#145
         this.drawGround(true);
-
-        const hasRenderTarget = this.hasRenderTarget();
         if (!hasRenderTarget) {
             this._renderInMode('default', null, methodName, args, true);
             return;
