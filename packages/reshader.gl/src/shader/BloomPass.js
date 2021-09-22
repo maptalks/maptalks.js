@@ -11,19 +11,19 @@ class BloomPass {
         this._renderer = new Renderer(regl);
     }
 
-    render(sourceTex, bloomTex, bloomThreshold, bloomFactor, bloomRadius, paintToScreen) {
+    render(sourceTex, bloomTex, bloomThreshold, bloomFactor, bloomRadius, noAaSource, enableAA, paintToScreen) {
         this._initShaders();
         this._createTextures(sourceTex);
 
         //blur
         const blurTexes = this._blurPass.render(bloomTex, bloomThreshold);
         //combine
-        const output = this._combine(sourceTex, blurTexes, bloomTex, bloomFactor, bloomRadius, paintToScreen);
+        const output = this._combine(sourceTex, blurTexes, bloomTex, bloomFactor, bloomRadius, noAaSource, enableAA, paintToScreen);
 
         return output;
     }
 
-    _combine(sourceTex, blurTexes, inputTex, bloomFactor, bloomRadius, paintToScreen) {
+    _combine(sourceTex, blurTexes, inputTex, bloomFactor, bloomRadius, noAaSource, enableAA, paintToScreen) {
         if (!paintToScreen) {
             if (this._combineTex.width !== sourceTex.width || this._combineTex.height !== sourceTex.height) {
                 this._combineFBO.resize(sourceTex.width, sourceTex.height);
@@ -48,12 +48,21 @@ class BloomPass {
                 'outputSize': [0, 0],
             };
         }
+        uniforms['noAaTextureSource'] = noAaSource;
+        uniforms['enableAA'] = enableAA;
         uniforms['bloomFactor'] = bloomFactor;
         uniforms['bloomRadius'] = bloomRadius;
         uniforms['TextureInput'] = inputTex;
         uniforms['TextureSource'] = sourceTex;
         vec2.set(uniforms['outputSize'], sourceTex.width, sourceTex.height);
 
+        const shaderDefines = {};
+        if (noAaSource) {
+            shaderDefines['HAS_NOAA_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_NOAA_TEX'];
+        }
+        this._combineShader.setDefines(shaderDefines);
         this._renderer.render(this._combineShader, uniforms, null, paintToScreen ? null : this._combineFBO);
         return paintToScreen ? null : this._combineTex;
     }

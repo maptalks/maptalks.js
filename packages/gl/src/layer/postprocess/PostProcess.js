@@ -31,12 +31,12 @@ export default class PostProcess {
         // }
     }
 
-    bloom(curTex, threshold, bloomFactor, bloomRadius) {
+    bloom(curTex, noAaTex, threshold, bloomFactor, bloomRadius, enableAA) {
         if (!this._bloomPass) {
             this._bloomPass = new reshader.BloomPass(this._regl);
         }
         const bloomTex = this._bloomFBO.color[0];
-        return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius);
+        return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius, noAaTex, enableAA);
     }
 
     drawBloom(depthTex) {
@@ -247,7 +247,7 @@ export default class PostProcess {
         }, null, fbo);
     }
 
-    renderFBOToScreen(fbo, enableSharpen, sharpFactor, pixelRatio, enableAA) {
+    renderFBOToScreen(fbo, enableSharpen, sharpFactor, pixelRatio) {
         if (!this._copyFBOSize) {
             this._copyFBOSize = [];
         }
@@ -258,8 +258,7 @@ export default class PostProcess {
             size: this._copyFBOSize,
             enableSharpen: +(!!enableSharpen),
             sharpFactor,
-            pixelRatio,
-            enableAA
+            pixelRatio
         });
     }
 

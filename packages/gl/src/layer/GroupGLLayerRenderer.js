@@ -1053,6 +1053,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const enableSSAO = this.isEnableSSAO();
         const enableSSR = config.ssr && config.ssr.enable;
         const enableBloom = config.bloom && config.bloom.enable;
+        const bloomPainted = enableBloom && this._bloomPainted;
         const enableAntialias = +!!(config.antialias && config.antialias.enable);
         const hasPost = enableSSAO || enableBloom || enableSSR;
 
@@ -1075,15 +1076,17 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         let tex = this._targetFBO.color[0];
+        const noAaTex = this._noaaDrawCount && this._noAaFBO.color[0];
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
             postFBO,
             tex,
-            this._noaaDrawCount && this._noAaFBO.color[0],
+            // 如果hasPost为true，则fxaa阶段不输入noAaTex，否则会在renderFBOToScreen阶段给文字和图标应用抗锯齿，造成绘制问题
+            !bloomPainted && noAaTex,
             taaTex,
             this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
-            +(!hasPost && enableAntialias),
+            enableAntialias,//+(!hasPost && enableAntialias),
             // +!!enableFXAA,
             // 1,
             +!!(config.toneMapping && config.toneMapping.enable),
@@ -1119,7 +1122,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const threshold = +bloomConfig.threshold || 0;
             const factor = getValueOrDefault(bloomConfig, 'factor', 1);
             const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, threshold, factor, radius);
+            tex = this._postProcessor.bloom(tex, noAaTex, threshold, factor, radius, enableAntialias);
         }
 
         if (enableSSR) {
@@ -1133,7 +1136,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (hasPost) {
-            this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio(), enableAntialias);
+            this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
         this.layer.fire('postprocessend');
     }
