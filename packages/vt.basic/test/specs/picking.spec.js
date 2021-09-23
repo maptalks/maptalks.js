@@ -91,7 +91,7 @@ describe('picking specs', () => {
                         'layer': 0
                     },
                 },
-                'point': [736, 736, 0],
+                'point': [368, 368, 0],
                 'type': 'icon',
                 'plugin': 0,
                 'featureId': 0
@@ -137,7 +137,7 @@ describe('picking specs', () => {
                         'layer': 0
                     },
                 },
-                'point': [736, 736, 0],
+                'point': [368, 368, 0],
                 'type': 'icon',
                 'plugin': 0,
                 'featureId': 0

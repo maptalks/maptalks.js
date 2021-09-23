@@ -10,7 +10,7 @@ export const ID_PROP = '_vector3dlayer_id';
 export function convertToFeature(geo, kidGen, currentFeature) {
     const keyName = (KEY_IDX + '').trim();
     const map = geo.getMap();
-    const glZoom = map.getGLZoom();
+    const glRes = map.getGLRes();
     let coordinates = geo.getCoordinates();
     const geometry = [];
     let type = 1;
@@ -19,7 +19,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             coordinates = [coordinates];
         }
         for (let i = 0; i < coordinates.length; i++) {
-            map.coordToPoint(coordinates[i], glZoom, POINT);
+            map.coordToPointAtRes(coordinates[i], glRes, POINT);
             geometry.push([POINT.x, POINT.y]);
         }
     } else if (geo instanceof maptalks.LineString || geo instanceof maptalks.MultiLineString) {
@@ -30,7 +30,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         for (let i = 0; i < coordinates.length; i++) {
             geometry[i] = [];
             for (let ii = 0; ii < coordinates[i].length; ii++) {
-                map.coordToPoint(coordinates[i][ii], glZoom, POINT);
+                map.coordToPointAtRes(coordinates[i][ii], glRes, POINT);
                 geometry[i].push([POINT.x, POINT.y]);
             }
         }
@@ -44,7 +44,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             for (let ii = 0; ii < coordinates[i].length; ii++) {
                 geometry[ringCount] = [];
                 for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
-                    map.coordToPoint(coordinates[i][ii][iii], glZoom, POINT);
+                    map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
                     geometry[ringCount].push([POINT.x, POINT.y]);
                 }
                 ringCount++;

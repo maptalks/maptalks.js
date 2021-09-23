@@ -262,7 +262,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             layer.clearBackgroundCollisionIndex();
         }
         this._frameTime = timestamp;
-        this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
+        this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
         super.draw(timestamp);
@@ -373,7 +373,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     getTileGLScale(z) {
         const map = this.getMap();
         const sr = this.layer.getSpatialReference();
-        return sr.getResolution(z) / map.getResolution(map.getGLZoom());
+        return sr.getResolution(z) / map.getGLRes();
     }
 
     _onReceiveMVTData(url, err, data) {
@@ -1090,9 +1090,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         /* eslint-enable no-empty */
     }
 
-    _getCentiMeterScale(z) {
+    _getCentiMeterScale(res) {
         const map = this.getMap();
-        const p = map.distanceToPoint(1000, 0, z).x;
+        const p = map.distanceToPointAtRes(1000, 0, res).x;
         return p / 1000 / 10;
     }
 

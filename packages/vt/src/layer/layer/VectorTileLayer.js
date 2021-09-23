@@ -96,7 +96,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             debugTile: this.options['debugTile'],
             altitudeProperty: this.options['altitudeProperty'],
             tileSize: this.options['tileSize'],
-            baseRes: map.getResolution(map.getGLZoom()),
+            baseRes: map.getGLRes(),
             //default render时，this._vtStyle有可能被default render设值
             style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
             features: this.options.features,

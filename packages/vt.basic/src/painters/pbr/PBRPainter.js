@@ -145,7 +145,7 @@ class PBRPainter extends Painter {
         const layer = this.layer;
         const map = layer.getMap();
         // console.log(layer.getRenderer()._getMeterScale());
-        const extent = map['_get2DExtent'](map.getGLZoom());
+        const extent = map['_get2DExtentAtRes'](map.getGLRes());
         const scaleX = extent.getWidth() * 2, scaleY = extent.getHeight() * 2;
         const localTransform = this._ground.localTransform;
         mat4.identity(localTransform);

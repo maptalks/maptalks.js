@@ -81,7 +81,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     draw(timestamp, parentContext) {
         const layer = this.layer;
         this.prepareCanvas();
-        this._zScale = this._getCentiMeterScale(this.getMap().getGLZoom()); // scale to convert meter to gl point
+        this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
         if (this._dirtyAll) {
             this.buildMesh();
             this._buildMarkerMesh();
@@ -361,11 +361,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         Object.defineProperty(props, 'tileResolution', {
             enumerable: true,
             get: function () {
-                return map.getResolution(map.getGLZoom());
+                return map.getGLRes();
             }
         });
         props.tileRatio = 1;
-        props.z = map.getGLZoom();
+        props.z = 1;
         props.tileExtent = 1;
     }
 

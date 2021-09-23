@@ -66,7 +66,7 @@ class VSMShadowPass {
             const map = layer.getMap();
             const cameraProjViewMatrix = mat4.multiply([], uniforms.projMatrix, uniforms.viewMatrix);
             const lightDir = vec3.normalize([], uniforms['lightDirection']);
-            const extent = map['_get2DExtent'](map.getGLZoom());
+            const extent = map['_get2DExtentAtRes'](map.getGLRes());
             const arr = extent.toArray();
             const { lightProjViewMatrix, shadowMap, /* depthFBO, */ blurFBO } = this.shadowPass.render(
                 scene,
