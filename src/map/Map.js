@@ -1284,6 +1284,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
+     * shorter alias for pointAtResToCoordinate
+     */
+    pointAtResToCoord(point, zoom, out) {
+        return this.pointAtResToCoordinate(point, zoom, out);
+    }
+
+
+    /**
      * shorter alias for coordinateToViewPoint
      */
     coordToViewPoint(coordinate, out, altitude) {
@@ -2161,6 +2169,25 @@ Map.include(/** @lends Map.prototype */{
         const COORD = new Coordinate(0, 0);
         return function (point, zoom, out) {
             const prjCoord = this._pointToPrj(point, zoom, COORD);
+            return this.getProjection().unproject(prjCoord, out);
+        };
+    }(),
+
+    /**
+     * Converts a 2D point at specific resolution to a coordinate.
+     * Usually used in plugin development.
+     * @param  {Point} point - 2D point
+     * @param  {Number} res  - point's resolution
+     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
+     * @return {Coordinate} coordinate
+     * @function
+     * @example
+     * var coord = map.pointAtResToCoordinate(new Point(4E6, 3E4), map.getResolution());
+     */
+    pointAtResToCoordinate: function () {
+        const COORD = new Coordinate(0, 0);
+        return function (point, res, out) {
+            const prjCoord = this._pointToPrjAtRes(point, res, COORD);
             return this.getProjection().unproject(prjCoord, out);
         };
     }(),
