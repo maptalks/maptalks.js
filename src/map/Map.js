@@ -735,8 +735,12 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Number}
      */
     getGLRes() {
+        if (this._glRes) {
+            return this._glRes;
+        }
         const fullExtent = this.getSpatialReference().getFullExtent();
-        return (fullExtent.right - fullExtent.left) / (256 * Math.pow(2, 10));
+        this._glRes = (fullExtent.right - fullExtent.left) / (256 * Math.pow(2, 10));
+        return this._glRes;
         // return this._getResolution(14);
         // return this._getResolution(this.getMaxNativeZoom() / 2);
     }
@@ -1725,6 +1729,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             this.setBearing(this.options['bearing']);
             delete this.options['bearing'];
         }
+        delete this._glRes;
         this._loadAllLayers();
         this._getRenderer().onLoad();
         this._loaded = true;
@@ -2062,10 +2067,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Convert point at current zoom to point at target zoom
+     * Convert point at current zoom to point at target res
      * @param  {Point} point point
-     * @param  {Number} zoom target zoom
-     * @return {Point} point at current zoom
+     * @param  {Number} res target res
+     * @return {Point} point at target res
      * @private
      */
     _pointToPointAtRes(point, res, out) {
