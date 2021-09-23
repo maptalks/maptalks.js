@@ -348,7 +348,7 @@ class GroundPainter {
         const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
 
-        const extent = map['_get2DExtent'](map.getGLZoom());
+        const extent = map['_get2DExtentAtRes'](map.getGLRes());
         const width = extent.getWidth();
         const height = extent.getHeight();
         const center = map.cameraLookAt;

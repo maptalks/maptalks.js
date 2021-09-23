@@ -31,7 +31,7 @@ export function isNumber(val) {
 
 const SCALE = [];
 export function getGroundTransform(out, map) {
-    const extent = map['_get2DExtent'](map.getGLZoom());
+    const extent = map['_get2DExtentAtRes'](map.getGLRes());
     const scaleX = extent.getWidth(), scaleY = extent.getHeight();
     const localTransform = out;
     mat4.identity(localTransform);

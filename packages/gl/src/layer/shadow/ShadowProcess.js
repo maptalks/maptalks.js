@@ -84,7 +84,7 @@ class ShadowProcess {
                 visualHeight = map['_getVisualHeight'](SHADOW_MAX_PITCH);
             }
             const containerExtent = VISUAL_EXTENT.set(0, map.height - visualHeight, map.width, map.height);
-            const extent = containerExtent.convertTo(c => map['_containerPointToPoint'](c, map.getGLZoom()));
+            const extent = containerExtent.convertTo(c => map['_containerPointToPointAtRes'](c, map.getGLRes()));
 
             const arr = extent.toArray();
             if (displayShadow) {

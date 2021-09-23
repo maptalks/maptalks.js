@@ -83,6 +83,6 @@ function coordinateToWorld(map, coordinate) {
     if (!map) {
         return null;
     }
-    const p = map.coordinateToPoint(new maptalks.Coordinate(coordinate[0], coordinate[1]), map.getGLZoom());
+    const p = map.coordinateToPointAtRes(new maptalks.Coordinate(coordinate[0], coordinate[1]), map.getGLRes());
     return [p.x, p.y, coordinate[2]];
 }
