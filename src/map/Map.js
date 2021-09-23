@@ -2406,17 +2406,31 @@ Map.include(/** @lends Map.prototype */{
      * @return {Number} distance
      * @function
      */
-    pointToDistance: function () {
+    pointToDistance(dx, dy, zoom) {
+        const res = this.getResolution(zoom);
+        return this.pointAtResToDistance(dx, dy, res);
+    },
+
+    /**
+     * Converts 2d point distances to geographic length.<br>
+     *
+     * @param  {Number} dx - distance on X axis.
+     * @param  {Number} dy - distance on Y axis.
+     * @param  {Number} res - point's resolution
+     * @return {Number} distance
+     * @function
+     */
+    pointAtResToDistance: function () {
         const POINT = new Point(0, 0);
         const COORD = new Coordinate(0, 0);
-        return function (dx, dy, zoom) {
+        return function (dx, dy, res) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
-            const c = this._prjToPoint(this._getPrjCenter(), zoom, POINT);
+            const c = this._prjToPointAtRes(this._getPrjCenter(), res, POINT);
             c._add(dx, dy);
-            const target = this.pointToCoord(c, zoom, COORD);
+            const target = this.pointAtResToCoord(c, res, COORD);
             return projection.measureLength(this.getCenter(), target);
         };
     }(),
