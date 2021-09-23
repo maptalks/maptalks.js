@@ -36,7 +36,7 @@ class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean} return false to cease frame loop
      */
     renderFrame(framestamp) {
-        if (!this.map) {
+        if (!this.map || !this.map.options['renderable']) {
             return false;
         }
         this._updateDomPosition(framestamp);
@@ -598,9 +598,7 @@ class MapCanvasRenderer extends MapRenderer {
             return;
         }
         this._frameTimestamp = framestamp;
-        if (this.map.options['renderable']) {
-            this.renderFrame(framestamp);
-        }
+        this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
     }
