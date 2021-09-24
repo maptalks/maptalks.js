@@ -352,15 +352,17 @@ class MapCanvasRenderer extends MapRenderer {
             }
         }
 
+        const targetWidth = this.canvas.width;
+        const targetHeight = this.canvas.height;
         if (baseLayerImage) {
-            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1]);
+            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1], targetWidth, targetHeight);
             this._drawFog();
         }
 
         len = images.length;
         const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
         for (let i = start; i < len; i++) {
-            this._drawLayerCanvasImage(images[i][0], images[i][1]);
+            this._drawLayerCanvasImage(images[i][0], images[i][1], targetWidth, targetHeight);
         }
 
         /**
@@ -609,7 +611,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    _drawLayerCanvasImage(layer, layerImage) {
+    _drawLayerCanvasImage(layer, layerImage, targetWidth, targetHeight) {
         const ctx = this.context;
         const point = layerImage['point'].round();
         const dpr = this.map.getDevicePixelRatio();
@@ -668,7 +670,7 @@ class MapCanvasRenderer extends MapRenderer {
                 point.x + 18, point.y + 18);
         }*/
 
-        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, width, height);
+        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, targetWidth, targetHeight);
         if (matrix) {
             ctx.restore();
         }
