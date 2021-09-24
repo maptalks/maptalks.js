@@ -172,6 +172,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     /**
+     * Whether to be added to the layer
+     * @returns {boolean} -
+     */
+    isAdd() {
+        return !!this.getMap();
+    }
+
+    /**
      * Gets geometry's id. Id is set by setId or constructor options.
      * @returns {String|Number} geometry的id
      */

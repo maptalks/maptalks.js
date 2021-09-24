@@ -225,6 +225,14 @@ class UIMarker extends Handlerable(UIComponent) {
     }
 
     /**
+     * Whether to be added to the map
+     * @returns {boolean} -
+     */
+    isAdd() {
+        return !!this.getMap();
+    }
+
+    /**
      * Sets the coordinates
      * @param {Coordinate} coordinates - UIMarker's coordinate
      * @returns {UIMarker} this
