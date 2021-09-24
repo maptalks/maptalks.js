@@ -15,7 +15,7 @@ import GeoJSON from '../geometry/GeoJSON';
  * @instance
  */
 const options = {
-    'drawImmediate' : false
+    'drawImmediate': false
 };
 
 
@@ -368,8 +368,12 @@ class OverlayLayer extends Layer {
         this._geoMap = {};
         const old = this._geoList;
         this._geoList = [];
-        if (this._getRenderer()) {
-            this._getRenderer().onGeometryRemove(old);
+        const renderer = this._getRenderer();
+        if (renderer) {
+            renderer.onGeometryRemove(old);
+            if (renderer.clearImageData) {
+                renderer.clearImageData();
+            }
         }
         this._clearing = false;
         /**

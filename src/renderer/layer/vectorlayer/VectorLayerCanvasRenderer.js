@@ -35,6 +35,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     clearImageData() {
         //每次渲染完成清除缓存的imageData
+        this._imageData = null;
         delete this._imageData;
         this._lastRenderTime = now();
     }
