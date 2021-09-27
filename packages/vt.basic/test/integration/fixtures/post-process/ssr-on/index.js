@@ -99,8 +99,8 @@ module.exports = {
         'pitch': 80,
         'bearing': 30.00000000000011
     },
-    renderingCount: 2,
-    diffCount: 1,
+    renderingCount: 1,
+    diffCount: 6,
     containerWidth: 512,
     containerHeight: 512,
     sceneConfig: {
