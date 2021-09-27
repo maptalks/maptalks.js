@@ -16,6 +16,15 @@ precision highp sampler2D;
     uniform vec3 ambientColor;
 #endif
 
+struct PBRShadingWater {
+    float NdotL;   // cos angle between normal and light direction
+    float NdotV;   // cos angle between normal and view direction
+    float NdotH;   // cos angle between normal and half vector
+    float VdotH;   // cos angle between view direction and half vector
+    float LdotH;   // cos angle between light direction and half vector
+    float VdotN;   // cos angle between view direction and normal vector
+};
+
 vec3 decodeRGBM(const in vec4 color, const in float range) {
     if(range <= 0.0) return color.rgb;
     return range * color.rgb * color.a;
@@ -156,7 +165,20 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         return vec4(rayOriginUV + rayDirUV * hitDepth, 1.0 - hitDepth);
     }
 
-    vec4 fetchColorContribution(
+    // vec4 fetchColorContribution(
+    // in vec4 resRay, const in float maskSsr, const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness) {
+    //     vec4 AB = mix(outputFovInfo[0], outputFovInfo[1], resRay.x);
+    //     resRay.xyz = vec3(mix(AB.xy, AB.zw, resRay.y), 1.0) * -1.0 / resRay.z;
+    //     resRay.xyz = (reprojViewProjMatrix * vec4(resRay.xyz, 1.0)).xyw;
+    //     resRay.xy /= resRay.z;
+
+    //     float maskEdge = clamp(6.0 - 6.0 * max(abs(resRay.x), abs(resRay.y)), 0.0, 1.0);
+    //     resRay.xy = 0.5 + 0.5 * resRay.xy;
+    //     vec3 fetchColor = specularColor * fetchColorLod(roughness * (1.0 - resRay.w), resRay.xy);
+    //     return vec4(mix(specularEnvironment, fetchColor, maskSsr * maskEdge), 1.0);
+    // }
+
+    vec3 fetchColorContribution(
     in vec4 resRay, const in float maskSsr, const in vec3 specularEnvironment, const in vec3 specularColor, const in float roughness) {
         vec4 AB = mix(outputFovInfo[0], outputFovInfo[1], resRay.x);
         resRay.xyz = vec3(mix(AB.xy, AB.zw, resRay.y), 1.0) * -1.0 / resRay.z;
@@ -165,9 +187,11 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
 
         float maskEdge = clamp(6.0 - 6.0 * max(abs(resRay.x), abs(resRay.y)), 0.0, 1.0);
         resRay.xy = 0.5 + 0.5 * resRay.xy;
-        vec3 fetchColor = specularColor * fetchColorLod(roughness * (1.0 - resRay.w), resRay.xy);
-        return vec4(mix(specularEnvironment, fetchColor, maskSsr * maskEdge), 1.0);
+        // vec3 fetchColor = specularColor * fetchColorLod(roughness * (1.0 - resRay.w), resRay.xy);
+        // return vec4(mix(specularEnvironment, fetchColor, maskSsr * maskEdge), 1.0);
+        return vec3(resRay.xy, 1.0);
     }
+
 
     /**
      * @param specularEnvironment 环境光中的specular部分
@@ -192,20 +216,21 @@ vec3 decodeRGBM(const in vec4 color, const in float range) {
         vec4 resRay;
         if (dot(rayDirView, normal) > 0.001 && maskSsr > 0.0) {
             resRay = rayTraceUnrealSimple(rayOriginUV, rayLen, depthTolerance, rayDirView, roughness, uFrameModTaaSS);
-            if (resRay.w > 0.0) result += fetchColorContribution(resRay, maskSsr, specularEnvironment, specularColor, roughness);
+            if (resRay.w > 0.0) return fetchColorContribution(resRay, maskSsr, specularEnvironment, specularColor, roughness);
         }
-        return result.w > 0.0 ? result.rgb / result.w : specularEnvironment;
+        return vec3(0.0);
     }
 #endif
 
 const vec3 NORMAL = vec3(0., 0., 1.);
 
+uniform mat4 viewMatrix;
 uniform sampler2D normalTexture;
 uniform sampler2D heightTexture;
 // uniform vec3 octaveTextureRepeat;
 // waveParams是一个长度为4的数组，分别代表[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
-// uniform vec4 waveParams;
-const vec4 waveParams = vec4(0.09, 12, 0.03, -0.5);
+uniform vec4 waveParams;
+// const vec4 waveParams = vec4(0.09, 12, 0.03, -0.5);
 uniform vec2 waterDir;
 uniform vec4 waterBaseColor;
 uniform vec3 lightDirection;
@@ -217,6 +242,10 @@ varying vec2 vNoiseUv;
 varying vec3 vPos;
 varying mat3 vTbnMatrix;
 
+float normals2FoamIntensity(vec3 n, float waveStrength) {
+    float normalizationFactor = max(0.015, waveStrength);
+    return max((n.x + n.y)*0.3303545/normalizationFactor + 0.3303545, 0.0);
+}
 const vec2  FLOW_JUMP = vec2(6.0/25.0, 5.0/24.0);
 vec2 textureDenormalized2D(sampler2D _tex, vec2 uv) {
     return 2.0 * texture2D(_tex, uv).rg - 1.0;
@@ -246,30 +275,29 @@ vec3 computeUVPerturbedWeigth(sampler2D texFlow, vec2 uv, float time, float phas
     result += (time - progress) * FLOW_JUMP;
     return vec3(result, weight);
 }
+
+// const float TIME_NOISE_TEXTURE_REPEAT = 0.3737;
 const float TIME_NOISE_STRENGTH = 7.77;
-vec3 getWaveLayer(sampler2D texNormal, sampler2D dudv, vec2 uv, vec2 _waveDir, float time) {
+
+vec3 getWaveLayer(sampler2D _texNormal, sampler2D _dudv, vec2 _uv, vec2 _waveDir, float time) {
     float waveStrength = waveParams[0];
-
-    // 用于计算uv方向的整体偏移量
-    //为确保波速的单位长度方向不至于过快，需要对波速做了一个硬编码的操作
     vec2 waveMovement = time * -_waveDir;
-    float timeNoise = sampleNoiseTexture(uv) * TIME_NOISE_STRENGTH;
-
-    //通过采样发现贴图和扰动贴图，实时计算当前帧点的位置
-    vec3 uv_A = computeUVPerturbedWeigth(dudv, uv + waveMovement, time + timeNoise, 0.0);
-    vec3 uv_B = computeUVPerturbedWeigth(dudv, uv + waveMovement, time + timeNoise, 0.5);
-    vec3 normal_A = textureDenormalized3D(texNormal, uv_A.xy) * uv_A.z;
-    vec3 normal_B = textureDenormalized3D(texNormal, uv_B.xy) * uv_B.z;
-
-    //展平波形，缩放法线的xy分量，然后调整z（向上）分量
+    // float timeNoise = sampleNoiseTexture(_uv * TIME_NOISE_TEXTURE_REPEAT) * TIME_NOISE_STRENGTH;
+    float timeNoise = sampleNoiseTexture(vNoiseUv) * TIME_NOISE_STRENGTH;
+    vec3 uv_A = computeUVPerturbedWeigth(_dudv, _uv + waveMovement, time + timeNoise, 0.0);
+    vec3 uv_B = computeUVPerturbedWeigth(_dudv, _uv + waveMovement, time + timeNoise, 0.5);
+    vec3 normal_A = textureDenormalized3D(_texNormal, uv_A.xy) * uv_A.z;
+    vec3 normal_B = textureDenormalized3D(_texNormal, uv_B.xy) * uv_B.z;
     vec3 mixNormal = normalize(normal_A + normal_B);
     mixNormal.xy *= waveStrength;
     mixNormal.z = sqrt(1.0 - dot(mixNormal.xy, mixNormal.xy));
     return mixNormal;
 }
-vec3 getWaterNormal(vec2 uv, float time) {
+vec4 getSurfaceNormalAndFoam(vec2 _uv, float _time) {
     float waveTextureRepeat = waveParams[1];
-    return getWaveLayer(normalTexture, heightTexture, uv * waveTextureRepeat, waterDir, time);
+    vec3 normal = getWaveLayer(normalTexture, heightTexture, _uv * waveTextureRepeat, waterDir, _time);
+    float foam = normals2FoamIntensity(normal, waveParams[0]);
+    return vec4(normal, foam);
 }
 
 
@@ -277,6 +305,7 @@ const float PI = 3.141592653589793;
 const float LIGHT_NORMALIZATION = 1.0 / PI;
 const float INV_PI = 0.3183098861837907;
 const float HALF_PI = 1.570796326794897;
+const float correctionViewingPowerFactor = 0.4;
 
 float dtrExponent = 2.2;
 vec3 fresnelReflection(float angle, vec3 f0, float f90) {
@@ -290,12 +319,6 @@ float normalDistributionWater(float NdotH, float roughness) {
 }
 float geometricOcclusionKelemen(float LoH) {
     return 0.25 / (LoH * LoH);
-}
-vec3 brdfWater(in float VdotH, in float NdotH, in float LdotH, float roughness, vec3 F0, float F0Max) {
-    vec3  F = fresnelReflection(VdotH, F0, F0Max);
-    float D = normalDistributionWater(NdotH, roughness);
-    float V = geometricOcclusionKelemen(LdotH);
-    return (D * V) * F;
 }
 vec3 tonemapACES(const vec3 x) {
     return (x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14);
@@ -316,8 +339,14 @@ const vec3 fresnelSky = vec3(0.02, 1.0, 5.0);
 const vec2 fresnelMaterial = vec2(0.02, 0.1);
 
 const float roughness = 0.06;
+const float foamIntensityExternal = 1.7;
 const vec3 skyZenitColor = vec3(0, 0.6, 0.9);
 const vec3 skyColor = vec3(0.72, 0.92, 1.0);
+const float ssrIntensity = 0.65;
+const float ssrHeightFadeStart = 300000.0;
+const float ssrHeightFadeEnd = 500000.0;
+const float waterDiffusion = 0.775;
+const float waterSeeColorMod = 0.8;
 
 vec3 getSpecularColor(in vec3 n, in vec3 v) {
     #ifdef HAS_IBL_LIGHTING
@@ -328,74 +357,92 @@ vec3 getSpecularColor(in vec3 n, in vec3 v) {
     #endif
 }
 
+PBRShadingWater shadingInfo;
+
+vec3 brdfSpecularWater(in PBRShadingWater props, float roughness, vec3 F0, float F0Max) {
+    vec3  F = fresnelReflection(props.VdotH, F0, F0Max);
+    float dSun = normalDistributionWater(props.NdotH, roughness);
+    float V = geometricOcclusionKelemen(props.LdotH);
+    float diffusionSunHaze = mix(roughness + 0.045, roughness + 0.385, 1.0 - props.VdotH);
+    float strengthSunHaze = 1.2;
+    float dSunHaze = normalDistributionWater(props.NdotH, diffusionSunHaze) * strengthSunHaze;
+    return ((dSun + dSunHaze) * V) * F;
+}
+vec3 foamIntensity2FoamColor(float foamIntensityExternal, float foamPixelIntensity, vec3 skyZenitColor, float dayMod) {
+    return foamIntensityExternal * (0.075 * skyZenitColor * pow(foamPixelIntensity, 4.) +  50.* pow(foamPixelIntensity, 23.0)) * dayMod;
+}
 //计算菲涅尔折射
 vec3 getSkyGradientColor(in float cosTheta, in vec3 horizon, in vec3 zenit) {
     float exponent = pow((1.0 - cosTheta), fresnelSky[2]);
     return mix(zenit, horizon, exponent);
 }
 
-vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightIntensity, in vec3 localUp, in float shadow) {
-    vec3 seawaterBaseColor = linearizeGamma(color);
-
+vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightIntensity, in vec3 localUp, in float shadow, float foamIntensity, vec3 positionView) {
+    float reflectionHit = 0.;
+    vec3 seaWaterColor = linearizeGamma(color);
     vec3 h = normalize(l + v);
-    float NdotL = clamp(dot(n, l), 0.0, 1.0);
-    float NdotV = clamp(dot(n, v), 0.001, 1.0);
-    float VdotN = clamp(dot(v, n), 0.001, 1.0);
-    float NdotH = clamp(dot(n, h), 0.0, 1.0);
-    float VdotH = clamp(dot(v, h), 0.0, 1.0);
-    float LdotH = clamp(dot(l, h), 0.0, 1.0);
-
+    shadingInfo.NdotL = clamp(dot(n, l), 0.0, 1.0);
+    shadingInfo.NdotV = clamp(dot(n, v), 0.001, 1.0);
+    shadingInfo.VdotN = clamp(dot(v, n), 0.001, 1.0);
+    shadingInfo.NdotH = clamp(dot(n, h), 0.0, 1.0);
+    shadingInfo.VdotH = clamp(dot(v, h), 0.0, 1.0);
+    shadingInfo.LdotH = clamp(dot(l, h), 0.0, 1.0);
     float upDotV = max(dot(localUp, v), 0.0);
-
-    vec3 ambienSpecular = getSpecularColor(n, v);
-
-    //反射的天空颜色：反射的天空颜色由两种主要颜色组成，即地平线上的反射颜色和zenit的反射颜色。
-    //然后，反射的天空颜色是基于菲涅耳方程的近似值计算。
     vec3 skyHorizon = linearizeGamma(skyColor);
     vec3 skyZenit = linearizeGamma(skyZenitColor);
     vec3 skyColor = getSkyGradientColor(upDotV, skyHorizon, skyZenit );
-
-    //对水的反射光进行平滑
     float upDotL = max(dot(localUp, l), 0.0);
-
-    skyColor *= 0.1 + upDotL * 0.9;
-
-    //如果水面处于阴影中，需要稍微调暗，然后用clamp方法简单计算水波的偏移量
+    float daytimeMod = 0.1 + upDotL * 0.9;
+    skyColor *= daytimeMod;
     float shadowModifier = clamp(shadow, 0.8, 1.0);
-
-    //反射的天空颜色由菲涅耳反射乘以近似的天空颜色组成
-    vec3 fresnel = fresnelReflection(VdotN, vec3(fresnelSky[0]), fresnelSky[1]);
-    vec3 reflSky = fresnel * skyColor * shadowModifier * (ambienSpecular * fresnel.y);
-    vec3 seaColor = seawaterBaseColor * mix(skyColor, upDotL * lightIntensity * LIGHT_NORMALIZATION, 2.0 / 3.0);
-    //计算水的颜色.
-    vec3 reflSea = seaColor * shadowModifier;
+    vec3 fresnelModifier = fresnelReflection(shadingInfo.VdotN, vec3(fresnelSky[0]), fresnelSky[1]);
+    vec3 reflSky = fresnelModifier * skyColor * shadowModifier;
+    vec3 reflSea = seaWaterColor * mix(skyColor, upDotL * lightIntensity * LIGHT_NORMALIZATION, 2.0 / 3.0) * shadowModifier;
     vec3 specular = vec3(0.0);
     if(upDotV > 0.0 && upDotL > 0.0) {
-        // 计算 BRDF 并简化环境光遮罩
-        vec3 specularSun = brdfWater(VdotH, NdotH, LdotH, roughness, vec3(fresnelMaterial[0]), fresnelMaterial[1]);
-
+        vec3 specularSun = brdfSpecularWater(shadingInfo, roughness, vec3(fresnelMaterial[0]), fresnelMaterial[1]);
         vec3 incidentLight = lightIntensity * LIGHT_NORMALIZATION * shadow;
-        specular = NdotL * incidentLight * specularSun;
+        specular = shadingInfo.NdotL * incidentLight * specularSun;
     }
-
+    vec3 foam = vec3(0.0);
+    if(upDotV > 0.0) {
+        foam = foamIntensity2FoamColor(foamIntensityExternal, foamIntensity, skyZenitColor, daytimeMod);
+    }
+    vec3 reflectedColor = vec3(0.0);
     #ifdef HAS_SSR
-        vec3 viewNormal = modelViewNormalMatrix * n;
-        vec3 ssr = ssr(seaColor, vec3(1.0), roughness, viewNormal, -normalize(vViewVertex.xyz));
-        return tonemapACES(reflSky + reflSea + linearizeGamma(ssr * fresnel.y) + specular);
-    #else
-        return tonemapACES(reflSky + reflSea + specular);
+        float heightMod = smoothstep(ssrHeightFadeEnd, ssrHeightFadeStart, -positionView.z);
+        mat4 ssrViewMat = viewMatrix;
+        vec4 viewPosition = vec4(positionView.xyz, 1.0);
+        vec3 viewDir = normalize(viewPosition.xyz);
+        vec4 viewNormalVectorCoordinate = ssrViewMat *vec4(n, 0.0);
+        vec3 viewNormal = normalize(viewNormalVectorCoordinate.xyz);
+        vec4 viewUp = ssrViewMat *vec4(localUp, 0.0);
+        float correctionViewingFactor = pow(max(dot(-viewDir, viewUp.xyz), 0.0), correctionViewingPowerFactor);
+        vec3 viewNormalCorrected = mix(viewUp.xyz, viewNormal, correctionViewingFactor);
+
+        vec3 ssrCoord = ssr(vec3(0.0), vec3(1.0), roughness, normalize(viewNormalCorrected), -normalize(vViewVertex.xyz));
+        if (ssrCoord.z > 0.0) {
+            vec2 dCoords = smoothstep(0.3, 0.6, abs(vec2(0.5, 0.5) - ssrCoord.xy));
+            reflectionHit = waterDiffusion * clamp(1.0 - (1.3*dCoords.y), 0.0, 1.0) * heightMod;
+            vec3 ssrFetched = fetchColorLod(0.0, ssrCoord.xy);
+            reflectedColor = linearizeGamma(ssrFetched) * reflectionHit * fresnelModifier.y * ssrIntensity;
+        }
+
     #endif
-    //对天空色，水色和高光色进行混合
+    float seeColorMod = mix(waterSeeColorMod, waterSeeColorMod*0.5, reflectionHit);
+    return tonemapACES((1. - reflectionHit) * reflSky + reflectedColor + reflSea * seeColorMod + specular + foam);
+
+
 
 }
 
 void main() {
     vec3 localUp = NORMAL;
     //切线空间
-    vec3 tangentNormal = getWaterNormal(vUv, timeElapsed / 1000.0);
+    vec4 tangentNormalFoam = getSurfaceNormalAndFoam(vUv, timeElapsed);
 
     //在切线空间中旋转法线
-    vec3 n = normalize(vTbnMatrix * tangentNormal);
+    vec3 n = normalize(vTbnMatrix * tangentNormalFoam.xyz);
     vec3 v = -normalize(vPos - camPos);
     vec3 l = normalize(-lightDirection);
 
@@ -404,6 +451,7 @@ void main() {
     #else
         float shadow = 1.0;
     #endif
-    vec4 final = vec4(renderPixel(n, v, l, waterBaseColor.rgb, lightColor, localUp, shadow), waterBaseColor.a);
+    vec4 vPosView = viewMatrix * vec4(vPos, 1.0);
+    vec4 final = vec4(renderPixel(n, v, l, waterBaseColor.rgb, lightColor, localUp, shadow, tangentNormalFoam.w, vPosView.xyz), waterBaseColor.a);
     gl_FragColor = delinearizeGamma(final);
 }
