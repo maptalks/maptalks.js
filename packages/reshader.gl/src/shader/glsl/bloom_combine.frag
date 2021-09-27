@@ -107,6 +107,7 @@ vec4 bloomCombine() {
 
     float bloomAlpha = sqrt((bloom.r + bloom.g + bloom.b) / 3.0);
     color = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha) + color;
+    color.a = clamp(color.a, 0.0, 1.0);
 
     return color * color.a + srcColor * (1.0 - color.a);
 }
