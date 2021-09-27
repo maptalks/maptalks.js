@@ -106,10 +106,9 @@ vec4 bloomCombine() {
     #endif
 
     float bloomAlpha = sqrt((bloom.r + bloom.g + bloom.b) / 3.0);
-    color = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha) + color;
-    color.a = clamp(color.a, 0.0, 1.0);
+    vec4 bloomColor = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha);
 
-    return color * color.a + srcColor * (1.0 - color.a);
+    return color * color.a + srcColor * (1.0 - color.a) + bloomColor;
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / outputSize.xy;
