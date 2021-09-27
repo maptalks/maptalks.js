@@ -99,17 +99,16 @@ vec4 bloomCombine() {
     }
     color.rgb = mix(vec3(0.0), color.rgb, sign(color.a));
 
-    float srcAlpha = mix(sqrt((bloom.r + bloom.g + bloom.b) / 3.0), 1.0, sign(color.a));
-
-    float dstAlpha = 1.0 - srcAlpha;
-
     vec4 srcColor = texture2D(TextureSource, gTexCoord);
     #ifdef HAS_NOAA_TEX
       vec4 noAaColor = texture2D(noAaTextureSource, gTexCoord);
       srcColor = noAaColor + srcColor * (1.0 - noAaColor.a);
     #endif
 
-    return vec4(srcColor.rgb * dstAlpha + color.rgb + linearTosRGB(bloom.rgb * bloomFactor), srcAlpha + srcColor.a * dstAlpha);
+    float bloomAlpha = sqrt((bloom.r + bloom.g + bloom.b) / 3.0);
+    color = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha) + color;
+
+    return color * color.a + srcColor * (1.0 - color.a);
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / outputSize.xy;
