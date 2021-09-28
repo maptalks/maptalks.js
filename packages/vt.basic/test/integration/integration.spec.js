@@ -76,7 +76,7 @@ describe('vector tile integration specs', () => {
                             done(err);
                             return;
                         }
-                        if (result.diffCount > 0) {
+                        if (result.diffCount > (style.diffCount || 0)) {
                             //保存差异图片
                             const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
                             const diffPath = dir + 'diff.png';

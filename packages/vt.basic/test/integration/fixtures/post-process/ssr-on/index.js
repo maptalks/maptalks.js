@@ -100,7 +100,7 @@ module.exports = {
         'bearing': 30.00000000000011
     },
     renderingCount: 1,
-    diffCount: 6,
+    diffCount: 10,
     containerWidth: 512,
     containerHeight: 512,
     sceneConfig: {

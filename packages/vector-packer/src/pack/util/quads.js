@@ -34,7 +34,7 @@ export function getIconQuads(
     bl = new Point(left, bottom);
 
     // Icon quad is padded, so texture coordinates also need to be padded.
-    return [{ tl, tr, bl, br, tex: image.paddedRect, writingMode: undefined, glyphOffset: [0, 0] }];
+    return [{ tl, tr, bl, br, tex: { x: image.tl[0], y: image.tl[1], w: image.displaySize[0], h: image.displaySize[1] }, writingMode: undefined, glyphOffset: [0, 0] }];
 }
 
 const GLYPH_PBF_BORDER = 3;

@@ -35,5 +35,6 @@ const style = [
 
 module.exports = {
     style,
+    diffCount: 1,
     data: data
 };

@@ -150,12 +150,12 @@ export default class PolygonPack extends VectorPack {
             const patternFile = polygonPatternFileFn ? polygonPatternFileFn(null, feature.properties) : this.symbol['polygonPatternFile'];
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
-                const rect = this.iconAtlas.positions[patternFile].paddedRect;
-                uvStart[0] = rect.x;
-                uvStart[1] = rect.y;
+                const image = this.iconAtlas.positions[patternFile];
+                uvStart[0] = image.tl[0];
+                uvStart[1] = image.tl[1];
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-                uvSize[0] = rect.w - 1;
-                uvSize[1] = rect.h - 1;
+                uvSize[0] = image.displaySize[0] - 1;
+                uvSize[1] = image.displaySize[1] - 1;
             }
         }
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];

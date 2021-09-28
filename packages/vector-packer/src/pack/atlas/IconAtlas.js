@@ -58,7 +58,7 @@ export default class IconAtlas {
         const positions = {};
         const pack = new ShelfPack(0, 0, { autoResize: true });
         const bins = [];
-        const padding = Object.keys(images).length > 1 ? PADDING : 0;
+        const padding = PADDING;
         for (const id in images) {
             const src = images[id];
             const bin = {
