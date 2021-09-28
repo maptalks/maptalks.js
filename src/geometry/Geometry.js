@@ -281,10 +281,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#symbolchange
      */
     setSymbol(symbol) {
+        this._symbolUpdated = symbol;
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
-        this._symbolHash = getSymbolHash(symbol);
         delete this._compiledSymbol;
+        delete this._symbolHash;
         return this;
     }
 
@@ -293,6 +294,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {String}
      */
     getSymbolHash() {
+        if (!this._symbolHash) {
+            this._symbolHash = getSymbolHash(this._symbolUpdated);
+        }
         return this._symbolHash;
     }
 

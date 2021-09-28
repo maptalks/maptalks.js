@@ -44,14 +44,15 @@ class CanvasSymbolizer extends Symbolizer {
         // 确保symbolizers只有一个，如果是混合的（strokeAndFill and Text等）会导致绘制错乱,，
         // 比如 PolygonFill和TextFill不同，就会导致问题出现，文字的绘制颜色会使用PolygonFill
         // 只有一个比如 StrokeAndFillSymbolizer ，TextMarkerSymbolizer，VectorMarkerSymbolizer
-        if (geometry._symbolHash && geometry._painter && geometry._painter.symbolizers.length === 1) {
+        const symbolHash = geometry.getSymbolHash();
+        if (symbolHash && geometry._painter && geometry._painter.symbolizers.length === 1) {
             if (tempCtx === ctx && this._layerWidth === ctx.canvas.width && this._layerHeight === ctx.canvas.height &&
-                geometry._symbolHash === tempSymbolHash && geometry._layer === tempLayer) {
+                symbolHash === tempSymbolHash && geometry._layer === tempLayer) {
                 return;
             }
         }
         tempLayer = geometry._layer;
-        tempSymbolHash = geometry._symbolHash;
+        tempSymbolHash = symbolHash;
         tempCtx = ctx;
         this._layerWidth = ctx.canvas.width;
         this._layerHeight = ctx.canvas.height;
