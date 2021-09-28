@@ -16,7 +16,7 @@ class MapRenderer extends Class {
     constructor(map) {
         super();
         this.map = map;
-        this._handlerQueue = {};
+        this._handlerQueue = [];
     }
 
     callInNextFrame(fn) {
