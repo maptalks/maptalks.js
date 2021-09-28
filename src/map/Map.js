@@ -2233,11 +2233,16 @@ Map.include(/** @lends Map.prototype */{
      * @return {Point}
      * @function
      */
-    coordinateToContainerPoint: function () {
+    coordinateToContainerPoint(coordinate, zoom, out) {
+        const res = this._getResolution(zoom);
+        return this.coordinateToContainerPointAtRes(coordinate, res, out);
+    },
+
+    coordinateToContainerPointAtRes: function () {
         const COORD = new Coordinate(0, 0);
-        return function (coordinate, zoom, out) {
+        return function (coordinate, res, out) {
             const pCoordinate = this.getProjection().project(coordinate, COORD);
-            return this._prjToContainerPoint(pCoordinate, zoom, out);
+            return this._prjToContainerPointAtRes(pCoordinate, res, out);
         };
     }(),
 
@@ -2250,12 +2255,24 @@ Map.include(/** @lends Map.prototype */{
      * @return {Array[Point]}
      * @function
      */
-    coordinatesToContainerPoints: function () {
-        return function (coordinates, zoom) {
-            zoom = (isNil(zoom) ? this.getZoom() : zoom);
+    coordinatesToContainerPoints(coordinates, zoom) {
+        const res = this._getResolution(zoom);
+        return this.coordinatesToContainerPointsAtRes(coordinates, res);
+    },
+
+    /**
+     * Convert a geographical coordinate to the container point. <br>
+     * Batch conversion for better performance <br>
+     *  A container point is a point relative to map container's top-left corner. <br>
+     * @param {Array[Coordinate]}                - coordinates
+     * @param  {Number} [resolution=undefined]  - container points' resolution
+     * @return {Array[Point]}
+     * @function
+     */
+    coordinatesToContainerPointsAtRes: function () {
+        return function (coordinates, resolution) {
             const pts = [];
             const transformation = this._spatialReference.getTransformation();
-            const resolution = this._getResolution(zoom);
             const res = resolution / this._getResolution();
             const projection = this.getProjection();
             const prjOut = new Coordinate(0, 0);
@@ -2560,10 +2577,15 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _prjToContainerPoint: function () {
+    _prjToContainerPoint(pCoordinate, zoom, out, altitude) {
+        const res = this._getResolution(zoom);
+        return this._prjToContainerPointAtRes(pCoordinate, res, out, altitude);
+    },
+
+    _prjToContainerPointAtRes: function () {
         const POINT = new Point(0, 0);
-        return function (pCoordinate, zoom, out, altitude) {
-            return this._pointToContainerPoint(this._prjToPoint(pCoordinate, zoom, POINT), zoom, altitude || 0, out);
+        return function (pCoordinate, res, out, altitude) {
+            return this._pointAtResToContainerPoint(this._prjToPointAtRes(pCoordinate, res, POINT), res, altitude || 0, out);
         };
     }(),
 

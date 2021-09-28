@@ -13,7 +13,7 @@ import {
     flash,
     sign
 } from '../core/util';
-import { extendSymbol, getSymbolHash } from '../core/util/style';
+import { extendSymbol } from '../core/util/style';
 import { loadGeoSymbol } from '../core/mapbox';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
 import { replaceVariable, describeText } from '../core/util/strings';
@@ -281,9 +281,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#symbolchange
      */
     setSymbol(symbol) {
+        this.options.symbol = symbol;
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
-        this._symbolHash = getSymbolHash(symbol);
         delete this._compiledSymbol;
         return this;
     }

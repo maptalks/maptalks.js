@@ -5,6 +5,7 @@ import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
 import { getPointsResultPts } from '../../../core/util';
+import { getSymbolHash } from '../../../core/util/style';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
@@ -341,6 +342,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
+                if (!geo._symbolHash) {
+                    geo._symbolHash = getSymbolHash(geo.options.symbol);
+                }
                 const symbolkey = geo._symbolHash;
                 let fixedExtent;
                 if (symbolkey) {
