@@ -342,10 +342,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
             //不在视野内的，再用fixedExtent 精确判断下
             if (!geo._inCurrentView) {
-                if (!geo._symbolHash) {
-                    geo._symbolHash = getSymbolHash(geo.options.symbol);
-                }
-                const symbolkey = geo._symbolHash;
+                const symbolkey = geo.getSymbolHash();
                 let fixedExtent;
                 if (symbolkey) {
                     //相同的symbol 不要重复计算
