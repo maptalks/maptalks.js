@@ -599,10 +599,9 @@ class MapCanvasRenderer extends MapRenderer {
             this._cancelFrameLoop();
             return;
         }
-        if (framestamp) {
-            this._frameTimestamp = framestamp;
-            this.renderFrame(framestamp);
-        }
+        framestamp = framestamp || 0;
+        this._frameTimestamp = framestamp;
+        this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
     }
