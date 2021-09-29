@@ -2,7 +2,7 @@ import Point from '@mapbox/point-geometry';
 import convert from './util/convert';
 import IconAtlas from './atlas/IconAtlas';
 import GlyphAtlas from './atlas/GlyphAtlas';
-import { getIndexArrayType, fillTypedArray, getFormatWidth, getPosArrayType, getUnsignedArrayType } from './util/array';
+import { getIndexArrayType, fillTypedArray, getPosArrayType, getUnsignedArrayType } from './util/array';
 import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
@@ -328,7 +328,6 @@ export default class VectorPack {
         this.maxIndex = 0;
         this.maxPos = 0;
         this.maxAltitude = 0;
-        this.dataCount = 0;
         const data = this.data = {};
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
@@ -337,7 +336,6 @@ export default class VectorPack {
         for (let i = 0; i < format.length; i++) {
             data[format[i].name] = [];
         }
-        const formatWidth = this.formatWidth = getFormatWidth(format);
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
         let maxFeaIndex = 0;
@@ -378,7 +376,7 @@ export default class VectorPack {
         if (this.hasElements() && !elements.length) {
             return null;
         }
-        const ArrType = getIndexArrayType(maxFeaIndex);
+        const ArrType = getUnsignedArrayType(maxFeaIndex);
         featureIndexes = new ArrType(featureIndexes);
 
         if (this.options.positionType) {

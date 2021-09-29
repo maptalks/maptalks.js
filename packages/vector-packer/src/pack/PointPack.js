@@ -414,7 +414,7 @@ export default class PointPack extends VectorPack {
         return pack;
     }
 
-    placeVector(point, scale, formatWidth) {
+    placeVector(point, scale) {
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
         if (!this.options['allowEmptyPack'] && !shape) {
             return;
@@ -425,7 +425,7 @@ export default class PointPack extends VectorPack {
             return;
         }
         const data = this.data;
-        let currentIdx = this.dataCount / formatWidth;
+        let currentIdx = this.data.aPosition.length / 3;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;

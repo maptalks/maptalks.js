@@ -1,5 +1,5 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
-import { getIndexArrayType, getPosArrayType } from '../../common/Util';
+import { getIndexArrayType, getPosArrayType, getUnsignedArrayType } from '../../common/Util';
 import { KEY_IDX } from '../../common/Constant';
 import { PackUtil } from '@maptalks/vector-packer';
 
@@ -97,7 +97,7 @@ export function buildWireframe(
     const ctor = getIndexArrayType(maxIndex);
     const tIndices = new ctor(indices);
 
-    const feaCtor = getIndexArrayType(features.length);
+    const feaCtor = getUnsignedArrayType(features.length);
     const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
