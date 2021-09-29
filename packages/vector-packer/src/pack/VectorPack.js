@@ -177,7 +177,9 @@ export default class VectorPack {
         if (!features || !features.length) return Promise.resolve(null);
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
-        const symbol = this.symbolDef;
+        const symbol = loadFunctionTypes(this.symbolDef, () => {
+            return [options.zoom];
+        });
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
         if (debugIndex !== undefined) {

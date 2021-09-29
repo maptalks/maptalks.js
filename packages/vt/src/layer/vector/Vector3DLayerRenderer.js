@@ -7,7 +7,7 @@ import { extend, isNumber, hasOwn } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
-import { isFunctionDefinition } from '@maptalks/function-type';
+import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 
 // const SYMBOL_SIMPLE_PROPS = {
 //     textFill: 1,
@@ -576,15 +576,40 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         const markerFeatures = [];
         const textFeatures = [];
+        const zoom = this.getMap().getZoom();
+        let loadedSymbols;
+        if (Array.isArray(symbols)) {
+            loadedSymbols = symbols.map(symbol => {
+                if (!symbol) { return symbol; }
+                return loadFunctionTypes(symbol, () => {
+                    return zoom;
+                });
+            });
+        } else {
+            loadedSymbols = loadFunctionTypes(symbols, () => {
+                return zoom;
+            });
+        }
+
+        let symbolFnTypes;
+        if (Array.isArray(symbols)) {
+            symbolFnTypes = symbols.map(symbol => {
+                if (!symbol) { return symbol; }
+                return VectorPack.genFnTypes(symbol);
+            });
+        } else {
+            symbolFnTypes = VectorPack.genFnTypes(symbols);
+        }
         // 检查是否atlas需要重新创建，如果需要，则重新创建整个mesh
         for (let i = 0; i < feature.length; i++) {
             const fea = feature[i];
             if (!fea) {
                 continue;
             }
-            const symbol = Array.isArray(symbols) ? symbols[i] : symbols;
-            const fnTypes = VectorPack.genFnTypes(symbol);
-            const styledPoint = new StyledPoint(feature, symbol, fnTypes, options);
+            const symbolDef = Array.isArray(symbols) ? symbols[i] : symbols;
+            const symbol = Array.isArray(loadedSymbols) ? loadedSymbols[i] : loadedSymbols;
+            const fnTypes = Array.isArray(symbolFnTypes) ? symbolFnTypes[i] : symbolFnTypes;
+            const styledPoint = new StyledPoint(feature, symbolDef, symbol, fnTypes, options);
             const iconGlyph = styledPoint.getIconAndGlyph();
             if (!this._markerAtlas || !PointPack.isAtlasLoaded(iconGlyph, this._markerAtlas)) {
                 this._markRebuild();

@@ -23,6 +23,7 @@ module.exports = {
         center: [1, 1],
         zoom: 6
     },
+    diffCount: 10,
     options: {
         style: {
             $root: 'file://' + path.resolve(__dirname, '../../../resources'),

@@ -3,20 +3,17 @@ import { getMarkerPathBase64, evaluateIconSize, evaluateTextSize } from '../styl
 import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
-import { loadFunctionTypes } from '@maptalks/function-type';
 import { convertRTLText } from './util/convert_rtl_text';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
 export default class StyledPoint {
-    constructor(feature, symbol, fnTypes, options) {
+    constructor(feature, symbolDef, loadedSymbol, fnTypes, options) {
         //anchor(世界坐标), offset(normalized offset), tex, size(世界坐标), opacity, rotation
         //u_size_scale 当前像素坐标相对世界坐标的大小, u_rotation map的旋转角度(?)
         this.feature = feature;
-        this.symbolDef = symbol;
-        this.symbol = loadFunctionTypes(symbol, () => {
-            return [options.zoom];
-        });
+        this.symbolDef = symbolDef;
+        this.symbol = loadedSymbol;
         this.options = options;
         this._thisReplacer = this._replacer.bind(this);
         this._fnTypes = fnTypes;
