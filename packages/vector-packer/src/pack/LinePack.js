@@ -374,7 +374,7 @@ export default class LinePack extends VectorPack {
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
-            this.offset = this.data.length / this.formatWidth;
+            this.offset = this.data.aPosition.length / 3;
             const line = lines[i];
             this._addLine(line, feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
@@ -727,14 +727,14 @@ export default class LinePack extends VectorPack {
     fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
         const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         if (this.options.center) {
-            data.push(x, y, 0);
+            data.aPosition.push(x, y, 0);
         } else {
             x = (x << 1) + (round ? 1 : 0);
             y = (y << 1) + (up ? 1 : 0);
-            data.push(x, y, 0);
+            data.aPosition.push(x, y, 0);
         }
 
-        data.push(
+        data.aExtrude.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             EXTRUDE_SCALE * extrudeX,
             EXTRUDE_SCALE * extrudeY
@@ -747,28 +747,28 @@ export default class LinePack extends VectorPack {
             if (this.iconAtlas) {
                 v += 4 * (this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
             }
-            data.push(v); //aUp
+            data.aExtrude.push(v); //aUp
         }
-        data.push(linesofar);
+        data.aLinesofar.push(linesofar);
         if (lineWidthFn) {
             //乘以2是为了解决 #190
-            data.push(Math.round(this.feaLineWidth * 2));
+            data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
         }
         if (lineGapWidthFn) {
             //乘以2是为了解决 #190
-            data.push(Math.round(this.feaLineGapWidth * 2));
+            data.aLineGapWidth.push(Math.round(this.feaLineGapWidth * 2));
         }
         if (lineColorFn) {
-            data.push(...this.feaColor);
+            data.aColor.push(...this.feaColor);
         }
         if (lineOpacityFn) {
-            data.push(this.feaOpacity);
+            data.aOpacity.push(this.feaOpacity);
         }
         if (this.dasharrayFn) {
-            data.push(...this.feaDash);
+            data.aDasharray.push(...this.feaDash);
         }
         if (this.dashColorFn) {
-            data.push(...this.feaDashColor);
+            data.aDashColor.push(...this.feaDashColor);
         }
         // if (this.symbol['lineOffset']) {
         //     //添加 aExtrudeOffset 数据，用来在vert glsl中决定offset的矢量方向
@@ -787,21 +787,22 @@ export default class LinePack extends VectorPack {
         //         );
         //     }
         // }
+
         if (this.iconAtlas) {
-            data.push(...this.feaTexInfo);
+            data.aTexInfo.push(...this.feaTexInfo);
         }
         if (lineDxFn) {
-            data.push(this.feaLineDx);
+            data.aLineDx.push(this.feaLineDx);
         }
         if (lineDyFn) {
-            data.push(this.feaLineDy);
+            data.aLineDy.push(this.feaLineDy);
         }
         if (linePatternAnimSpeedFn) {
-            data.push(this.feaPatternAnimSpeed * 127);
+            data.aLinePatternAnimSpeed.push(this.feaPatternAnimSpeed * 127);
         }
         if (linePatternGapFn) {
             // 0 - 25.5
-            data.push(this.feaLinePatternGap * 10);
+            data.aLinePatternGap.push(this.feaLinePatternGap * 10);
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
@@ -813,9 +814,10 @@ export default class LinePack extends VectorPack {
     _filterPolygonEdges(elements) {
         const EXTENT = this.options['EXTENT'];
         const edges = this.elements;
+        const positionSize = 3;
         for (let i = 0; i < edges.length; i += 3) {
-            if (EXTENT === Infinity || !isClippedLineEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT) &&
-                !isClippedLineEdge(this.data, edges[i + 1], edges[i + 2], this.formatWidth, EXTENT)) {
+            if (EXTENT === Infinity || !isClippedLineEdge(this.data.aPosition, edges[i], edges[i + 1], positionSize, EXTENT) &&
+                !isClippedLineEdge(this.data.aPosition, edges[i + 1], edges[i + 2], positionSize, EXTENT)) {
                 elements.push(edges[i], edges[i + 1], edges[i + 2]);
             }
         }

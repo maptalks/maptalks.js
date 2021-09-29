@@ -385,7 +385,6 @@ export default class VectorPack {
             //update aPosition's type
             format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
         }
-
         const center = this.options.center;
         if (center && (center[0] || center[1])) {
             const aPosition = data.aPosition;

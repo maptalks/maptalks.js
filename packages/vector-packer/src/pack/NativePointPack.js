@@ -31,8 +31,8 @@ export default class NativePointPack extends VectorPack {
 
         for (let ii = 0; ii < anchors.length; ii++) {
             const point = anchors[ii];
-            this.data.push(point.x, point.y);
-            this.data.push(altitude);
+            this.data.aPosition.push(point.x, point.y);
+            this.data.aPosition.push(altitude);
 
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {

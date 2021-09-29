@@ -657,7 +657,7 @@ export default class PointPack extends VectorPack {
             data.aTextSize.push(textSize);
         }
         if (textHaloFillFn) {
-            data.aTextHaloFill.push(textHaloFill);
+            data.aTextHaloFill.push(...textHaloFill);
         }
         if (textHaloRadiusFn) {
             data.aTextHaloRadius.push(textHaloRadius);

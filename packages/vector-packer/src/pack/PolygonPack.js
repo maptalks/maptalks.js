@@ -161,7 +161,7 @@ export default class PolygonPack extends VectorPack {
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
-            const triangleIndex = this.data.length / this.formatWidth;
+            const triangleIndex = this.data.aPosition.length / 3;
 
             const flattened = [];
             const holeIndices = [];
@@ -181,23 +181,23 @@ export default class PolygonPack extends VectorPack {
 
                 const lineIndex = this.lineElements.length;
 
-                this.data.push(
+                this.data.aPosition.push(
                     ring[0].x, ring[0].y, altitude
                 );
                 if (hasUV) {
-                    this.data.push(...uvStart, ...uvSize);
+                    this.data.aTexInfo.push(...uvStart, ...uvSize);
                 }
                 if (dynFill !== undefined) {
-                    this.data.push(...dynFill);
+                    this.data.aColor.push(...dynFill);
                 }
                 if (dynOpacity !== undefined) {
-                    this.data.push(dynOpacity);
+                    this.data.aOpacity.push(dynOpacity);
                 }
                 if (dynUVScale !== undefined) {
-                    this.data.push(...dynUVScale);
+                    this.data.aUVScale.push(...dynUVScale);
                 }
                 if (dynUVOffset !== undefined) {
-                    this.data.push(...dynUVOffset);
+                    this.data.aUVOffset.push(...dynUVOffset);
                 }
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
                 this.addLineElements(lineIndex + ring.length - 1, lineIndex);
@@ -206,23 +206,23 @@ export default class PolygonPack extends VectorPack {
                 flattened.push(ring[0].y);
 
                 for (let i = 1; i < ring.length; i++) {
-                    this.data.push(
+                    this.data.aPosition.push(
                         ring[i].x, ring[i].y, altitude
                     );
                     if (hasUV) {
-                        this.data.push(...uvStart, ...uvSize);
+                        this.data.aTexInfo.push(...uvStart, ...uvSize);
                     }
                     if (dynFill !== undefined) {
-                        this.data.push(...dynFill);
+                        this.data.aColor.push(...dynFill);
                     }
                     if (dynOpacity !== undefined) {
-                        this.data.push(dynOpacity);
+                        this.data.aOpacity.push(dynOpacity);
                     }
                     if (dynUVScale !== undefined) {
-                        this.data.push(...dynUVScale);
+                        this.data.aUVScale.push(...dynUVScale);
                     }
                     if (dynUVOffset !== undefined) {
-                        this.data.push(...dynUVOffset);
+                        this.data.aUVOffset.push(...dynUVOffset);
                     }
                     this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);

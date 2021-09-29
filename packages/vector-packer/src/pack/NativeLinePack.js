@@ -50,7 +50,7 @@ export default class NativeLinePack extends VectorPack {
         }
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
-            this.offset = this.data.length / this.formatWidth;
+            this.offset = this.data.aPosition.length / 3;
             this._addLine(lines[i], feature);
             if (isPolygon) {
                 //去掉polygon在瓦片范围外的边
@@ -141,13 +141,12 @@ export default class NativeLinePack extends VectorPack {
 
     addLineVertex(data, point) {
         // linesofar *= LINE_DISTANCE_SCALE;
-        data.push(
+        data.aPosition.push(
             point.x,
-            point.y
+            point.y,
+            0
             // linesofar
         );
-        data.push(0);
-
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }
 
@@ -159,7 +158,7 @@ export default class NativeLinePack extends VectorPack {
         const EXTENT = this.options['EXTENT'],
             edges = this.elements;
         for (let i = 0; i < edges.length; i += 2) {
-            if (!isClippedEdge(this.data, edges[i], edges[i + 1], this.formatWidth, EXTENT)) {
+            if (!isClippedEdge(this.data.aPosition, edges[i], edges[i + 1], 3, EXTENT)) {
                 elements.push(edges[i], edges[i + 1]);
             }
         }

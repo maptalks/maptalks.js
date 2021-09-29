@@ -27,10 +27,10 @@ export default class CirclePack extends VectorPack {
         let currentIdx = data.length / formatWidth;
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            data.push(anchor.x * 2 + (-1 + 1) / 2, anchor.y * 2 + (-1 + 1) / 2, altitude);
-            data.push(anchor.x * 2 + (1 + 1) / 2, anchor.y * 2 + (-1 + 1) / 2, altitude);
-            data.push(anchor.x * 2 + (1 + 1) / 2, anchor.y * 2 + (1 + 1) / 2, altitude);
-            data.push(anchor.x * 2 + (-1 + 1) / 2, anchor.y * 2 + (1 + 1) / 2, altitude);
+            data.aPosition.push(anchor.x * 2 + (-1 + 1) / 2, anchor.y * 2 + (-1 + 1) / 2, altitude);
+            data.aPosition.push(anchor.x * 2 + (1 + 1) / 2, anchor.y * 2 + (-1 + 1) / 2, altitude);
+            data.aPosition.push(anchor.x * 2 + (1 + 1) / 2, anchor.y * 2 + (1 + 1) / 2, altitude);
+            data.aPosition.push(anchor.x * 2 + (-1 + 1) / 2, anchor.y * 2 + (1 + 1) / 2, altitude);
 
             this.addElements(currentIdx, currentIdx + 1, currentIdx + 2);
             this.addElements(currentIdx, currentIdx + 2, currentIdx + 3);
