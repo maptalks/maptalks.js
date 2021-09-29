@@ -87,12 +87,11 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const startLength = this.data.length;
-        // if (vertices.length)
-        //     console.log(vertices[0]);
+        const prevCount = this.data.aPosition.length / 3;
+
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
-        const formatWidth = this.formatWidth;
-        const end0 = this.data.length / formatWidth - this.offset;
+        const currentCount = this.data.aPosition.length / 3;
+        const end0 = this.data.aPosition.length / 3 - this.offset;
         const isPolygon = feature.type === 3; //POLYGON)
         // debugger
         const generateSide = this.options['side'] !== false;
@@ -101,58 +100,79 @@ export default class LineExtrusionPack extends LinePack {
             const topLength = generateTop ? 1 : 0;
             const sideLenth = 4;
             const vertexLength = topLength + sideLenth;
-            const length = this.data.length;
+            // const length = this.data.length;
             //封闭两端
             //在data末尾补充首尾两端的端点
 
             //line开始时顶点顺序: down0, down0-底, up0, up0-底
-            // console.log(this.data[startLength + (topLength + 1) * formatWidth], this.data[startLength + (topLength + 1) * formatWidth + 1], this.data[startLength + (topLength + 1) * formatWidth + 2]);
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[startLength + formatWidth * 3 + i]);
+            let count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[prevCount * width + width * 3 + i]);
+                }
             }
 
-            // console.log(this.data[startLength + formatWidth * 3], this.data[startLength + formatWidth * 3 + 1], this.data[startLength + formatWidth * 3 + 2]);
             //down0
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[startLength + formatWidth * vertexLength + i]);
+            count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[prevCount * width + width * vertexLength + i]);
+                }
             }
 
-            // console.log(this.data[startLength + formatWidth * vertexLength], this.data[startLength + formatWidth * vertexLength + 1], this.data[startLength + formatWidth * vertexLength + 2]);
             //down1
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[startLength + formatWidth * (vertexLength + 3) + i]);
+            count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[prevCount * width + width * (vertexLength + 3) + i]);
+                }
             }
-            // console.log(this.data[startLength + formatWidth * (vertexLength + 3)], this.data[startLength + formatWidth * (vertexLength + 3) + 1], this.data[startLength + formatWidth * (vertexLength + 3) + 2]);
+
 
             //第一个up0的第二条数据(没人用),down0, up1
             super.addElements(topLength + 1, end0 + 1, end0);
             //up1, down0, dow1
             super.addElements(end0, end0 + 1, end0 + 2);
 
-            const end1 = this.data.length / formatWidth - this.offset;
+            const end1 = this.data.aPosition.length / 3 - this.offset;
 
             //line结束的顶点顺序: down1, down1底, up1, up1底
             //up1底
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[length - formatWidth + i]);
+            count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[currentCount * width - width + i]);
+                }
             }
-            // console.log(this.data[length - formatWidth], this.data[length - formatWidth + 1], this.data[length - formatWidth + 2]);
 
-            //up1（重用addLine阶段添加的没人用的端点）
-            // for (let i = 0; i < formatWidth; i++) {
-            //     this.data.push(this.data[length - 3 * formatWidth + i]);
-            // }
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
+
             //down1底
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[length - vertexLength * formatWidth - formatWidth + i]);
+            count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[currentCount * width - vertexLength * width - width + i]);
+                }
             }
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
+
             //down1
-            for (let i = 0; i < formatWidth; i++) {
-                this.data.push(this.data[length - vertexLength * formatWidth - 3 * formatWidth + i]);
+            count = (this.data.aPosition.length / 3);
+            for (const p in this.data) {
+                const arr = this.data[p];
+                const width = arr.length / count;
+                for (let i = 0; i < width; i++) {
+                    arr.push(arr[currentCount * width - vertexLength * width - 3 * width + i]);
+                }
             }
-            // console.log(this.data[this.data.length - formatWidth], this.data[this.data.length - formatWidth + 1], this.data[this.data.length - formatWidth + 2]);
 
             //up1底，(addLine中添加的没人用的up1), down1底
             super.addElements(end1, end0 - 3, end1 + 1);
@@ -191,31 +211,39 @@ export default class LineExtrusionPack extends LinePack {
 
     _fillTop(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
-        data.push(x, y, ALTITUDE_SCALE, linesofar, +up, extrudedPointX, extrudedPointY, 1, aExtrudeX, aExtrudeY);
+        data.aPosition.push(x, y, ALTITUDE_SCALE);
+        data.aLinesofar.push(linesofar);
+        data.aUp.push(+up);
+        data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        data.aExtrude.push(aExtrudeX, aExtrudeY);
         if (lineColorFn) {
-            data.push(...this.feaColor);
+            data.aColor.push(...this.feaColor);
         }
         if (lineWidthFn) {
             //乘以2是为了解决 #190
-            data.push(Math.round(this.feaLineWidth * 2));
+            data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
         }
         if (this._hasALineHeight) {
-            data.push(this.feaAltitude);
+            data.aLineHeight.push(this.feaAltitude);
         }
     }
 
     _fillBottom(data, x, y, extrudeX, extrudeY, round, up, linesofar, extrudedPointX, extrudedPointY, aExtrudeX, aExtrudeY) {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
-        data.push(x, y, this.feaMinHeight || 0, linesofar, +up, extrudedPointX, extrudedPointY, 0, aExtrudeX, aExtrudeY);
+        data.aPosition.push(x, y, this.feaMinHeight || 0);
+        data.aLinesofar.push(linesofar);
+        data.aUp.push(+up);
+        data.aExtrudedPosition.push(extrudedPointX, extrudedPointY, 1);
+        data.aExtrude.push(aExtrudeX, aExtrudeY);
         if (lineColorFn) {
-            data.push(...this.feaColor);
+            data.aColor.push(...this.feaColor);
         }
         if (lineWidthFn) {
             //乘以2是为了解决 #190
-            data.push(Math.round(this.feaLineWidth * 2));
+            data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
         }
         if (this._hasALineHeight) {
-            data.push(this.feaAltitude);
+            data.aLineHeight.push(this.feaAltitude);
         }
     }
 
@@ -269,12 +297,11 @@ export default class LineExtrusionPack extends LinePack {
         //    up0  ____  up1
         //  down0 |____| down1
         // const { vertexLength } = this;
-        const formatWidth = this.formatWidth; //x, y, height, linesofar, up
         //*2 是因为不同于 LinePack, LineExtrusionPack 在addLineVertex方法中会为每个端点插入两个vertex (0和height)
         e1 *= length;
         e2 *= length;
         e3 *= length;
-        const up = this.data[(offset + e3) * formatWidth + 4];
+        const up = this.data.aUp[(offset + e3) + 4];
         if (up) {
             //2020-04-23 mapbox-gl-js新的lineBucket修改了e1,e2,e3的顺序，所以这里e1和e2交换了位置
             if (generateTop) {

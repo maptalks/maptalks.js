@@ -6,11 +6,15 @@
  */
 export function fillTypedArray(format, data) {
     const arrays = {};
-    for (const p in format) {
-        const d = format[p];
+    for (let i = 0; i < format.length; i++) {
+        const d = format[i];
         const type = d.type;
         const name = d.name;
-        arrays[name] = new type(data[name]);
+        if (type === Array) {
+            arrays[name] = data[name];
+        } else {
+            arrays[name] = new type(data[name]);
+        }
     }
     return arrays;
 }
