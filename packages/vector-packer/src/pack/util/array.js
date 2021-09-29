@@ -6,28 +6,11 @@
  */
 export function fillTypedArray(format, data) {
     const arrays = {};
-    const dataWidth = getFormatWidth(format);
-    const count = data.length / dataWidth;
     for (const p in format) {
         const d = format[p];
         const type = d.type;
-        const width = d.width;
         const name = d.name;
-        arrays[name] = new type(count * width);
-    }
-
-    for (let i = 0; i < count; i++) {
-        let p = 0;
-        for (const prop in format) {
-            const d = format[prop];
-            const width = d.width;
-            const name  = d.name;
-            const arr = arrays[name];
-            for (let ii = 0; ii < width; ii++) {
-                arr[i * width + ii] = data[i * dataWidth + p + ii];
-            }
-            p += width;
-        }
+        arrays[name] = new type(data[name]);
     }
     return arrays;
 }

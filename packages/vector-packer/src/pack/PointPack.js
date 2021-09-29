@@ -425,7 +425,7 @@ export default class PointPack extends VectorPack {
             return;
         }
         const data = this.data;
-        let currentIdx = data.length / formatWidth;
+        let currentIdx = this.dataCount / formatWidth;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
@@ -562,11 +562,8 @@ export default class PointPack extends VectorPack {
                 //把line的端点存到line vertex array里
                 const { tl, tr, bl, br, tex } = quad;
                 //char's quad if flipped
-                data.push(x, y, altitude);
-                data.push(
-                    tl.x * 10, tl.y * 10,
-                    tex.x, tex.y + tex.h
-                );
+                this._fillPos(data, x, y, altitude, tl.x * 10, tl.y * 10,
+                    tex.x, tex.y + tex.h);
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
@@ -574,11 +571,8 @@ export default class PointPack extends VectorPack {
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
                     allowOverlap, ignorePlacement);
 
-                data.push(x, y, altitude);
-                data.push(
-                    tr.x * 10, tr.y * 10,
-                    tex.x + tex.w, tex.y + tex.h
-                );
+                this._fillPos(data, x, y, altitude, tr.x * 10, tr.y * 10,
+                    tex.x + tex.w, tex.y + tex.h);
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
@@ -586,11 +580,8 @@ export default class PointPack extends VectorPack {
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
                     allowOverlap, ignorePlacement);
 
-                data.push(x, y, altitude);
-                data.push(
-                    bl.x * 10, bl.y * 10,
-                    tex.x, tex.y
-                );
+                this._fillPos(data, x, y, altitude, bl.x * 10, bl.y * 10,
+                    tex.x, tex.y);
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
@@ -598,11 +589,8 @@ export default class PointPack extends VectorPack {
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
                     allowOverlap, ignorePlacement);
 
-                data.push(x, y, altitude);
-                data.push(
-                    br.x * 10, br.y * 10,
-                    tex.x + tex.w, tex.y
-                );
+                this._fillPos(data, x, y, altitude, br.x * 10, br.y * 10,
+                    tex.x + tex.w, tex.y);
                 if (isText) {
                     this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
                 }
@@ -623,6 +611,12 @@ export default class PointPack extends VectorPack {
         }
     }
 
+    _fillPos(data, x, y, altitude, shapeX, shapeY, texX, texY) {
+        data.aPosition.push(x, y, altitude);
+        data.aShape.push(shapeX, shapeY);
+        data.aTexCoord.push(texX, texY);
+    }
+
     /**
      *
      * @param {Number[]} data
@@ -634,12 +628,12 @@ export default class PointPack extends VectorPack {
      * @param {Number} texy - flip quad's tex coord y
      */
     _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical) {
-        data.push(textCount);
+        data.aCount.push(textCount);
         if (alongLine) {
-            data.push(glyphOffset[0], glyphOffset[1]);
+            data.aGlyphOffset.push(glyphOffset[0], glyphOffset[1]);
             const startIndex = anchor.startIndex;
-            data.push(anchor.segment + startIndex, startIndex, anchor.line.length);
-            data.push(vertical);
+            data.aSegment.push(anchor.segment + startIndex, startIndex, anchor.line.length);
+            data.aVertical.push(vertical);
         }
     }
 
@@ -657,57 +651,57 @@ export default class PointPack extends VectorPack {
             markerAllowOverlapFn, markerIgnorePlacementFn,
             markerOpacityFn } = this._fnTypes;
         if (textFillFn) {
-            data.push(...textFill);
+            data.aTextFill.push(...textFill);
         }
         if (textSizeFn) {
-            data.push(textSize);
+            data.aTextSize.push(textSize);
         }
         if (textHaloFillFn) {
-            data.push(...textHaloFill);
+            data.aTextHaloFill.push(textHaloFill);
         }
         if (textHaloRadiusFn) {
-            data.push(textHaloRadius);
+            data.aTextHaloRadius.push(textHaloRadius);
         }
         if (textHaloOpacityFn) {
-            data.push(textHaloOpacity);
+            data.aTextHaloOpacity.push(textHaloOpacity);
         }
         if (textDxFn) {
-            data.push(textDx);
+            data.aTextDx.push(textDx);
         }
         if (textDyFn) {
-            data.push(textDy);
+            data.aTextDy.push(textDy);
         }
         if (markerWidthFn) {
-            data.push(markerWidth);
+            data.aMarkerWidth.push(markerWidth);
         }
         if (markerHeightFn) {
-            data.push(markerHeight);
+            data.aMarkerHeight.push(markerHeight);
         }
         if (markerDxFn) {
-            data.push(markerDx);
+            data.aMarkerDx.push(markerDx);
         }
         if (markerDyFn) {
-            data.push(markerDy);
+            data.aMarkerDy.push(markerDy);
         }
         const opacityFn = markerOpacityFn || textOpacityFn;
         if (opacityFn) {
-            data.push(opacity);
+            data.aColorOpacity.push(opacity);
         }
         if (textPitchAlignmentFn || markerPitchAlignmentFn) {
-            data.push(pitchAlign);
+            data.aPitchAlign.push(pitchAlign);
         }
         if (markerRotationAlignmentFn ||  textRotationAlignmentFn) {
-            data.push(rotateAlign);
+             data.aRotationAlign.push(rotateAlign);
         }
         if (markerRotationFn || textRotationFn) {
-            data.push(rotation * 9362);
+            data.aRotation.push(rotation * 9362)
         }
         const allowOverlapFn = markerAllowOverlapFn || textAllowOverlapFn;
         const ignorePlacementFn = markerIgnorePlacementFn || textIgnorePlacementFn;
         if (allowOverlapFn || ignorePlacementFn) {
             const overlap = (allowOverlapFn ? 1 << 3 : 0) + allowOverlap * (1 << 2);
             const placement = (ignorePlacementFn ? 1 << 1 : 0) + ignorePlacement;
-            data.push(overlap + placement);
+            data.aOverlap.push(overlap + placement);
         }
         //update pack properties
         if (textHaloRadius > 0) {

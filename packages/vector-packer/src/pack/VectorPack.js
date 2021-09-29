@@ -328,11 +328,15 @@ export default class VectorPack {
         this.maxIndex = 0;
         this.maxPos = 0;
         this.maxAltitude = 0;
-        const data = this.data = [];
+        this.dataCount = 0;
+        const data = this.data = {};
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(Array.isArray(vectors[0]) ? vectors[0][0].symbol : vectors[0].symbol);
+        for (let i = 0; i < format.length; i++) {
+            data[format[i].name] = [];
+        }
         const formatWidth = this.formatWidth = getFormatWidth(format);
         //每个顶点的feature index, 用于构造 pickingId
         let featureIndexes = [];
@@ -353,7 +357,7 @@ export default class VectorPack {
                     hasNegative = true;
                 }
             }
-            const eleCount = data.length;
+            const eleCount = this.data.aPosition.length;
             if (!Array.isArray(vectors[i])) {
                 this._placeVector(vectors[i], scale);
             } else {
@@ -361,7 +365,7 @@ export default class VectorPack {
                     this._placeVector(vectors[i][j], scale);
                 }
             }
-            const count = (data.length - eleCount) / formatWidth;
+            const count = (data.aPosition.length - eleCount) / 3;
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {
                 featureIndexes.push(vectors[i].featureIdx);
@@ -386,8 +390,8 @@ export default class VectorPack {
 
         const center = this.options.center;
         if (center && (center[0] || center[1])) {
-            const aPosition = data;
-            for (let i = 0; i < aPosition.length; i += formatWidth) {
+            const aPosition = data.aPosition;
+            for (let i = 0; i < aPosition.length; i += 3) {
                 aPosition[i] -= center[0];
                 aPosition[i + 1] -= center[1];
             }
