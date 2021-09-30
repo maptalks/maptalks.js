@@ -375,7 +375,7 @@ class WaterPainter extends BasicPainter {
             lightDirection: directionalLight.direction || DEFAULT_DIR_LIGHT.direction,
             lightColor: directionalLight.color || DEFAULT_DIR_LIGHT.color,
             camPos: map.cameraPosition,
-            timeElapsed: (this.layer.getRenderer().getFrameTimestamp() || 0) / (1 / (symbol.waterSpeed || 1) * 10000),
+            timeElapsed: symbol.animation ? (this.layer.getRenderer().getFrameTimestamp() || 0) / (1 / (symbol.waterSpeed || 1) * 10000) : 0,
             normalTexture: this._normalTex || this._emptyTex,
             heightTexture: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
