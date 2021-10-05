@@ -1,6 +1,6 @@
 import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
-import { isNumber, extend, isArray, isSupportVAO, hasOwn } from './common/Util';
+import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -607,12 +607,18 @@ export default class Geometry {
         let size = 0;
         for (const p in this.data) {
             if (hasOwn(this.data, p)) {
-                const buffer = this.data[p];
-                if (buffer.data) {
-                    size += buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
-                } else {
-                    size += buffer.length * buffer.BYTES_PER_ELEMENT;
-                }
+                size += getBufferSize(this.data[p]);
+            }
+        }
+        if (this.elements) {
+            const elements = this.elements;
+            if (elements.destroy) {
+                size += elements['_elements'].buffer.byteLength;
+            } else if (elements.BYTES_PER_ELEMENT) {
+                size += elements.length * elements.BYTES_PER_ELEMENT;
+            } else if (elements.length) {
+                // uint32 in default
+                size += elements.length * 4;
             }
         }
         return size;

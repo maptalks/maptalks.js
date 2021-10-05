@@ -1,5 +1,5 @@
 import Eventable from './common/Eventable.js';
-import { isNil, extend1, hasOwn } from './common/Util.js';
+import { isNil, extend1, hasOwn, getTexMemorySize } from './common/Util.js';
 import AbstractTexture from './AbstractTexture.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -183,6 +183,19 @@ class Material {
 
     _incrVersion() {
         this._version++;
+    }
+
+    getMemorySize() {
+        const uniforms = this.uniforms;
+        let size = 0;
+        for (const p in uniforms) {
+            if (this.isTexture(p)) {
+                size += uniforms[p].getMemorySize();
+            } else if (this.uniforms[p].destroy) {
+                size += getTexMemorySize(this.uniforms[p]);
+            }
+        }
+        return size;
     }
 }
 

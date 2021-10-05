@@ -1,4 +1,4 @@
-import { isFunction, hasOwn } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels } from './common/Util.js';
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -89,11 +89,31 @@ class AbstractTexture {
     getREGLTexture(regl) {
         if (!this._texture) {
             this._texture = this.createREGLTexture(regl);
+            if (!this.config.persistent) {
+                // delete persistent data to save memories
+                this.config.data = [];
+                this.config.faces = [];
+            }
         }
         if (this.dirty) {
             this._updateREGL();
         }
         return this._texture;
+    }
+
+    getMemorySize() {
+        if (!this.config) {
+            return 0;
+        }
+        const { width, height, type, format } = this.config;
+        const byteWidth = getTextureByteWidth(type || 'uint8');
+        const channels = getTextureChannels(format || 'rgba');
+        if (this.config.faces) {
+            // texture cube
+            return width * height * byteWidth * channels * 6;
+        } else {
+            return width * height * byteWidth * channels;
+        }
     }
 
     _updateREGL() {
@@ -165,3 +185,4 @@ function floorPowerOfTwo(value) {
 // function ceilPowerOfTwo(value) {
 //     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 // }
+

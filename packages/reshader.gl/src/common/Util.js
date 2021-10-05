@@ -183,3 +183,50 @@ export function isSupportVAO(regl) {
 export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
+
+export function getBufferSize(buffer) {
+    if (buffer.data) {
+        if (buffer.data.BYTES_PER_ELEMENT) {
+            return buffer.data.length * buffer.data.BYTES_PER_ELEMENT;
+        } else if (buffer.data.length) {
+            return buffer.data.length * 4;
+        }
+    } else if (buffer.BYTES_PER_ELEMENT) {
+        return buffer.length * buffer.BYTES_PER_ELEMENT;
+    } else if (buffer.length) {
+        // FLOAT32 in default
+        return buffer.length * 4;
+    }else if (buffer.buffer && buffer.buffer.destroy) {
+        return buffer.buffer['_buffer'].byteLength;
+    }
+    return 0;
+}
+
+export function getTexMemorySize(tex) {
+    return tex.width * tex.height * getTextureChannels(tex.format) * getTextureByteWidth(tex.type) * (tex['_reglType'] === 'textureCube' ? 6 : 1);
+}
+
+
+export function getTextureByteWidth(type) {
+    if (type === 'uint8') {
+        return 1;
+    } else if (type === 'uint16' || type === 'float16' || type === 'half float') {
+        return 2;
+    } else if (type === 'uint32' || type === 'float' || type === 'float32') {
+        return 4;
+    }
+    return 0;
+}
+
+export function getTextureChannels(format) {
+    if (format === 'depth' || format === 'alpha' || format === 'luminance') {
+        return 1;
+    } else if (format === 'luminance alpha' || format === 'depth stencil') {
+        return 2;
+    } else if (format === 'srgba' || format === 'rgb5 a1' || format.substring(0, 4) === 'rgba') {
+        return 4;
+    } else if (format === 'srgb' || format.substring(0, 3) === 'rgb') {
+        return 3;
+    }
+    return 1;
+}

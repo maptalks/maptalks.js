@@ -322,6 +322,10 @@ class Mesh {
     _incrVersion() {
         this._version++;
     }
+
+    getMemorySize() {
+        return (this.geometry && this.geometry.getMemorySize() || 0) + (this.material && this.material.getMemorySize() || 0);
+    }
 }
 
 Mesh.prototype.getWorldTransform = function () {

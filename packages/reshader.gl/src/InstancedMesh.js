@@ -1,5 +1,5 @@
 import { mat4, vec4 } from 'gl-matrix';
-import { extend, isSupportVAO } from './common/Util.js';
+import { extend, isSupportVAO, getBufferSize, hasOwn } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
 
@@ -22,6 +22,21 @@ export default class InstancedMesh extends Mesh {
     set instanceCount(count) {
         this._incrVersion();
         this._instanceCount = count;
+    }
+
+    getMemorySize() {
+        // TODO 需要确认是否是 mesh.memorySize * instanceCount
+        return super.getMemorySize() + this._getInstanceMemorySize();
+    }
+
+    _getInstanceMemorySize() {
+         let size = 0;
+         for (const p in this.instancedData) {
+             if (hasOwn(this.instanceData, p)) {
+                 size += getBufferSize(this.instancedData[p]);
+             }
+         }
+         return size;
     }
 
     _checkInstancedProp() {
