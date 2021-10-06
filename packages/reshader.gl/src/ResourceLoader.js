@@ -62,7 +62,7 @@ class ResourceLoader {
             return;
         }
         resources[url].count--;
-        if (resources[url.count] <= 0) {
+        if (resources[url].count <= 0) {
             delete resources[url];
         }
     }

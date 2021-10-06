@@ -91,8 +91,15 @@ class AbstractTexture {
             this._texture = this.createREGLTexture(regl);
             if (!this.config.persistent) {
                 // delete persistent data to save memories
-                this.config.data = [];
-                this.config.faces = [];
+                if (this.config.data) {
+                    this.config.data = [];
+                }
+                if (this.config.faces) {
+                    this.config.faces = [];
+                }
+                if (this.config.image) {
+                    this.config.image.array = [];
+                }
             }
         }
         if (this.dirty) {
@@ -125,6 +132,7 @@ class AbstractTexture {
 
     dispose() {
         if (this.config && this.config.url) {
+            URL.revokeObjectURL(this.config.url);
             this.resLoader.disposeRes(this.config.url);
         }
         if (this._texture && !this._texture[KEY_DISPOSED]) {
