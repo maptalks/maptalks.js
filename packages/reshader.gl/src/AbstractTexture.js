@@ -1,4 +1,4 @@
-import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray } from './common/Util.js';
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -44,21 +44,17 @@ class AbstractTexture {
                 config.data = resLoader.getDefaultTexture(config.url);
                 this.promise = promise;
                 promise.then(data => {
-                    if (!this.config) {
-                        //disposed
-                        return data;
-                    }
-                    if ((data.data instanceof Image) && this._needPowerOf2()) {
-                        data.data = resize(data.data);
-                    }
                     delete this.promise;
                     self._loading = false;
                     if (!self.config) {
                         //disposed
                         return data;
                     }
+                    if ((data.data instanceof Image) && this._needPowerOf2()) {
+                        data.data = resize(data.data);
+                    }
                     self.onLoad(data);
-                    if (!Array.isArray(data)) {
+                    if (!isArray(data)) {
                         data = [data];
                     }
                     self.fire('complete', { target: this, resources: data });
@@ -67,6 +63,17 @@ class AbstractTexture {
                     console.error('error when loading texture image.', err);
                     self.fire('error', { target: this, error: err });
                 });
+            } else if (config.data && this._needPowerOf2()) {
+                if ((config.data instanceof Image)) {
+                    config.data = resize(config.data);
+                    config.width = config.data.width;
+                    config.height = config.data.height;
+                }
+                if (!config.hdr && isArray(config.data) && !isPowerOfTwo(config.width) && !isPowerOfTwo(config.height)) {
+                    config.data = resizeFromArray(config.data, config.width, config.height);
+                    config.width = config.data.width;
+                    config.height = config.data.height;
+                }
             }
         }
 
@@ -157,6 +164,31 @@ class AbstractTexture {
 }
 
 export default Eventable(AbstractTexture);
+
+function resizeFromArray(arr, width, height) {
+    let newWidth = width;
+    let newHeight = height;
+    if (!isPowerOfTwo(width)) {
+        newWidth = floorPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        newHeight = floorPowerOfTwo(height);
+    }
+
+    const imageData = new ImageData(new Uint8ClampedArray(arr), width, height);
+
+    const srcCanvas = document.createElement('canvas');
+    srcCanvas.width = width;
+    srcCanvas.height = height;
+    srcCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    canvas.getContext('2d').drawImage(srcCanvas, 0, 0, newWidth, newHeight);
+    console.warn(`Texture's size is not power of two, resize from (${width}, ${height}) to (${newWidth}, ${newHeight})`);
+    return canvas;
+}
 
 function resize(image) {
     if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
