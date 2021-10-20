@@ -23,7 +23,8 @@ const options = {
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,
     forceRenderOnRotating : true,
-    viewMoveThreshold: 100
+    viewMoveThreshold: 100,
+    geometryEvents: true
 };
 
 export default class GroupGLLayer extends maptalks.Layer {
@@ -312,13 +313,22 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
     }
 
-    identify(coordinate, options) {
+    /**
+     * Identify the geometries on the given coordinate
+     * @param  {maptalks.Coordinate} coordinate   - coordinate to identify
+     * @param  {Object} [options=null]  - options
+     * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
+     * @param  {Object} [options.count=null]  - result count
+     * @return {Geometry[]} geometries identified
+     */
+    identify(coordinate, options = {}) {
         const map = this.getMap();
-        if (!map) {
+        const renderer = this.getRenderer();
+        if (!map || !renderer) {
             return [];
         }
-        const containerPoint =  map.coordinateToContainerPoint(new maptalks.Coordinate(coordinate));
-        return this.identifyAtPoint(containerPoint, options);
+        const cp = map.coordToContainerPoint(new maptalks.Coordinate(coordinate));
+        return this.identifyAtPoint(cp, options);
     }
 
     /**
@@ -331,31 +341,39 @@ export default class GroupGLLayer extends maptalks.Layer {
      **/
     identifyAtPoint(point, options = {}) {
         const childLayers = this.getLayers();
-        const layers = (options && options.layers) || childLayers;
+        const layers = (options && options.childLayers) || childLayers;
         const map = this.getMap();
         if (!map) {
             return [];
         }
         const count = isNil(options.count) ? 1 : options.count;
         let result = [];
-        for (let i = 0; i < layers.length; i++) {
+        const len = layers.length;
+        for (let i = len - 1; i >= 0; i--) {
             const layer = layers[i];
             if (childLayers.indexOf(layer) < 0 || !layer.identifyAtPoint) {
                 continue;
             }
-            const picks = layer.identifyAtPoint(point, options);
+            let picks = layer.identifyAtPoint(point, options);
             if (!picks || !picks.length) {
                 continue;
             }
-            if (options.orderByCamera) {
-                result.push(...picks.filter(p => !!p.point));
-            } else {
-                result.push(...picks);
+            if (options.filter) {
+                picks = picks.filter(g => options.filter(g));
             }
+            if (!picks.length) {
+                continue;
+            }
+            result.push(...picks);
         }
         if (options.orderByCamera) {
             const cameraPosition = map.cameraPosition;
             result.sort((a, b) => {
+                if (!b.point) {
+                    return -1;
+                } else if (!a.point) {
+                    return 1;
+                }
                 return vec3.dist(a.point, cameraPosition) - vec3.dist(b.point, cameraPosition);
             });
         }

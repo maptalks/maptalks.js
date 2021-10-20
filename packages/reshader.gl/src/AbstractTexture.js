@@ -54,7 +54,7 @@ class AbstractTexture {
                         data.data = resize(data.data);
                     }
                     self.onLoad(data);
-                    if (!isArray(data)) {
+                    if (!Array.isArray(data)) {
                         data = [data];
                     }
                     self.fire('complete', { target: this, resources: data });
