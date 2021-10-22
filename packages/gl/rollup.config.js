@@ -37,7 +37,7 @@ const plugins = production ? [terser({
     }
 })] : [];
 
-const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
+const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 const configPlugins = [
     glsl(),
@@ -62,7 +62,6 @@ module.exports = [
                 'maptalks' : 'maptalks'
             },
             banner,
-            outro,
             'file': 'build/gl.es.js'
         }
     },
@@ -100,4 +99,15 @@ module.exports = [
             'file': pkg.module
         }
     },
+    {
+        input: 'src/transcoders.js',
+        plugins: plugins,
+        output: {
+            'sourcemap': false,
+            'format': 'es',
+            banner,
+            outro,
+            'file': 'dist/transcoders.js'
+        }
+    }
 ];

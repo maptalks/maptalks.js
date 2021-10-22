@@ -12,3 +12,5 @@ export { createREGL, reshader };
 import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis } from './gl.es.js';
 
 export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis };
+import transcoders from '../src/transcoders';
+export { transcoders };

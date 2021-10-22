@@ -17,7 +17,8 @@
   },
   "files": [
     "dist/maptalksgl.js",
-    "dist/maptalksgl.es.js"
+    "dist/maptalksgl.es.js",
+    "dist/transcoders.js"
   ],
   "keywords": [
     "webgl",

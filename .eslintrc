@@ -11,7 +11,8 @@
     "sourceType": "module"
   },
   "globals": {
-    "importScripts" : true
+    "importScripts": true,
+    "globalThis": true
   },
   "rules": {
   }
