@@ -2017,11 +2017,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Point} 2D point
      * @private
      */
-    _prjsToPointsAtRes(pCoords, res) {
+    _prjsToPointsAtRes(pCoords, res, resultPoints = []) {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
-            const pt = transformation.transform(pCoords[i], res);
+            const pt = transformation.transform(pCoords[i], res, resultPoints[i]);
             pts.push(pt);
         }
         return pts;

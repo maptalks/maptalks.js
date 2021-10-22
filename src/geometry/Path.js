@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArrayHasData, isFunction } from '../core/util';
+import { isNil, isNumber, isArrayHasData, isFunction, getPointsResultPts } from '../core/util';
 import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -250,13 +250,17 @@ class Path extends Geometry {
         if (!Array.isArray(prjCoords)) {
             return map._prjToPointAtRes(prjCoords, res);
         } else {
+            let resultPoints = [];
+            const glPointKey = '_glPt';
             if (!Array.isArray(prjCoords[0])) {
-                return map._prjsToPointsAtRes(prjCoords, res);
+                resultPoints = getPointsResultPts(prjCoords, glPointKey);
+                return map._prjsToPointsAtRes(prjCoords, res, resultPoints);
             }
             const pts = [];
             for (let i = 0, len = prjCoords.length; i < len; i++) {
                 const prjCoord = prjCoords[i];
-                const pt = map._prjsToPointsAtRes(prjCoord, res);
+                resultPoints = getPointsResultPts(prjCoord, glPointKey);
+                const pt = map._prjsToPointsAtRes(prjCoord, res, resultPoints);
                 pts.push(pt);
             }
             return pts;
