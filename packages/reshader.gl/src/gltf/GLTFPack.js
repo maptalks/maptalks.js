@@ -27,6 +27,7 @@ export default class GLTFPack {
         this.gltf = gltf;
         this.regl = regl;
         this.geometries = [];
+        this._emptyTexture = regl.texture({ width: 2, height: 2 });
     }
 
     getMeshesInfo() {
@@ -75,6 +76,7 @@ export default class GLTFPack {
     }
 
     dispose() {
+        this._emptyTexture.destroy();
         const geometries = this.getMeshesInfo();
         geometries.forEach(g => {
             g.geometry.dispose();
@@ -391,6 +393,10 @@ export default class GLTFPack {
     }
 
     _toTexture(texture) {
+        if (!texture) {
+            // empty texture
+            return this._emptyTexture;
+        }
         const data = texture.image.array;
         const sampler = texture.sampler || {};
         const width = texture.image.width;
