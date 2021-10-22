@@ -11,8 +11,10 @@ const transcoders = globals['___gl_transcoders'] = globals['___gl_transcoders'] 
 
 function inject(chunk) {
     // 奇怪的变量名是为了避免与worker源代码中的变量名冲突
-    const prefix = 'function (exports) {';
     const fnString = chunk.toString();
+    const prefixIndex = fnString.indexOf('{') + 1;
+    const prefix = fnString.substring(0, prefixIndex);
+
     const transcoders = globals['___gl_transcoders'] = globals['___gl_transcoders'] || {};
     let injected = `${prefix}
     const _____getGlobal = ${getGlobal.toString()};
