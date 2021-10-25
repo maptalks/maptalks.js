@@ -38,13 +38,13 @@ const options = {
     // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'debugOutline' : '#0f0',
+    'debugOutline': '#0f0',
     'cssFilter': null,
-    'forceRenderOnMoving' : false,
-    'forceRenderOnZooming' : false,
-    'forceRenderOnRotating' : false,
-    'collision' : false,
-    'collisionScope' : 'layer',
+    'forceRenderOnMoving': false,
+    'forceRenderOnZooming': false,
+    'forceRenderOnRotating': false,
+    'collision': false,
+    'collisionScope': 'layer',
     'hitDetect': (function () {
         return !Browser.mobile;
     })()
@@ -235,6 +235,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             return this.map;
         }
         return null;
+    }
+    /**
+     * Whether to be added to the map
+     * @returns {boolean} -
+     */
+    isAdd() {
+        return !!this.getMap();
     }
 
     /**
@@ -488,13 +495,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
     }
 
-    onAdd() {}
+    onAdd() { }
 
-    onRendererCreate() {}
+    onRendererCreate() { }
 
-    onCanvasCreate() {}
+    onCanvasCreate() { }
 
-    onRemove() {}
+    onRemove() { }
 
     _bindMap(map, zIndex) {
         if (!map) {
