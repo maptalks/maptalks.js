@@ -418,14 +418,16 @@ function createGeometry(primitive) {
     }
     //如果有morph，需要预先填充morph空数据，动画开启后，会不断向这些空数据中填充morphTargets数据
     if (primitive.morphTargets) {
+        const length = attributes['POSITION'].interleavedArray ? attributes['POSITION'].interleavedArray.length : attributes['POSITION'].length;
         for (let i = 0; i < 8; i++) {
             if (!attributes[`POSITION${i}`]) {
-                attributes[`POSITION${i}`] = new Float32Array(attributes['POSITION'].length).fill(0);
+                attributes[`POSITION${i}`] = new Float32Array(length).fill(0);
             }
         }
         for (let i = 0; i < 4; i++) {
+            const length = attributes['NORMAL'].array ? attributes['NORMAL'].array.length : attributes['NORMAL'].length;
             if (!attributes[`NORMAL${i}`]) {
-                attributes[`NORMAL${i}`] = new Float32Array(attributes['NORMAL'].length).fill(0);
+                attributes[`NORMAL${i}`] = new Float32Array(length).fill(0);
             }
         }
     }
@@ -462,6 +464,7 @@ function createGeometry(primitive) {
     }
     if (primitive.mode > 3 && !modelGeometry.data['NORMAL']) {
         modelGeometry.createNormal('NORMAL');
+        // modelGeometry.data['NORMAL'] = new Uint8Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]);
     }
     return modelGeometry;
 }
