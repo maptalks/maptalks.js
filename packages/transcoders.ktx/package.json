@@ -1,0 +1,16 @@
+{
+  "name": "@maptalks/transcoders.ktx",
+  "version": "0.1.0",
+  "description": "ktx transcoder for @maptalks/gl",
+  "module": "src/index.js",
+  "main": "dist/transcoders.ktx",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "webgl",
+    "ktx"
+  ],
+  "author": "fuzhen",
+  "license": "ISC"
+}
