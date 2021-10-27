@@ -1,3 +1,4 @@
+import { isArray } from '../common/Util';
 import Geometry from '../Geometry';
 
 export default class GeometryResource {
@@ -38,10 +39,18 @@ export default class GeometryResource {
         const newData = {};
         const vertexCount = geometry.getVertexCount();
         for (const p in data) {
-            const size = data[p].length / vertexCount;
-            newData[p] = new data[p].constructor(vertexCount * size);
-            for (let i = 0; i < vertexCount * size; i++) {
-                newData[p][i] = data[p][i];
+            if (isArray(data[p])) {
+                const size = data[p].length / vertexCount;
+                newData[p] = new data[p].constructor(vertexCount * size);
+                for (let i = 0; i < vertexCount * size; i++) {
+                    newData[p][i] = data[p][i];
+                }
+            } else {
+                const size = data[p].interleavedArray.length / vertexCount;
+                newData[p] = new data[p].interleavedArray.constructor(vertexCount * size);
+                for (let i = 0; i < vertexCount * size; i++) {
+                    newData[p][i] = data[p].interleavedArray[i];
+                }
             }
         }
 

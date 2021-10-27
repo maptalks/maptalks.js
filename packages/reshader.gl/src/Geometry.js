@@ -49,6 +49,10 @@ export default class Geometry {
                 count = getElementLength(elements);
             } else if (pos && pos.length) {
                 count = pos.length / this.desc.positionSize;
+            } else if (pos && pos.interleavedArray) {
+                count = pos.interleavedArray.length / this.desc.positionSize;
+            } else if (pos && pos.array) {
+                count = pos.array.length / this.desc.positionSize;
             }
         }
         this.count = count;
@@ -93,6 +97,10 @@ export default class Geometry {
                     size: attribute.itemSize,
                     count: attribute.count
                 };
+                if (attribute.interleavedArray) {
+                    //interleavedArray存储着还原的数据
+                    this.data[attr].interleavedArray = attribute.interleavedArray
+                }
                 if (!buffers[bufferView]) {
                     buffers[bufferView] = {
                         data: attribute.array
@@ -169,6 +177,10 @@ export default class Geometry {
                                 dimension
                             });
                         }
+                    } else if (reglData[attr].stride !== undefined) {
+                        buffers.push(
+                            reglData[attr]
+                        );
                     } else {
                         buffers.push(buffer);
                     }
@@ -236,7 +248,7 @@ export default class Geometry {
                 continue;
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
-            if (data[key].buffer && !(data[key].buffer instanceof ArrayBuffer)) {
+            if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
                 if (data[key].buffer.destroy) {
                     buffers[key] = data[key];
                 } else if (allocatedBuffers[data[key].buffer]) {
@@ -280,6 +292,8 @@ export default class Geometry {
             // 因为data可能被转成regl buffer，需要保存到this._vertexCount
             // 在 updateData时再更新
             this._vertexCount = Math.ceil(data.length /  positionSize);
+        } else if (data && data.count !== undefined) {
+            this._vertexCount = data.count;
         }
         return this._vertexCount;
     }
@@ -457,7 +471,13 @@ export default class Geometry {
         let posArr = this.data[posAttr];
         if (!isArray(posArr)) {
             // form of object: { usage : 'static', data : [...] }
-            posArr = posArr.data;
+            if (posArr.data) {
+                posArr = posArr.data;
+            } else if (posArr.interleavedArray) {
+                posArr = posArr.interleavedArray;
+            } else {
+                posArr = posArr.array;
+            }
         }
         if (posArr && posArr.length) {
             //TODO only support size of 3 now
@@ -503,13 +523,30 @@ export default class Geometry {
         bbox.dirty();
     }
 
+    //attribute上结构有三种
+    // 1. 数组或者类型数组
+    // 2. Object形式（regl的buffer定义）
+    // 3. interweaved
+    _getAttributeData(name) {
+        const data = this.data[name];
+        const bufferView = data.buffer;
+        if (data.interleavedArray) {
+            return data.interleavedArray;
+        } else if (isArray(data)) {
+            return data;
+        } else if (this._buffers[bufferView]) {
+            return this._buffers[bufferView].data;
+        }
+    }
+
     createTangent(name = 'aTangent') {
         this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const { normalAttribute, positionAttribute, uv0Attribute } = this.desc;
-        const normals = this.data[normalAttribute];
+        const normals = this._getAttributeData(normalAttribute);
+        const positions = this._getAttributeData(positionAttribute);
         const tangents = buildTangents(
-            this.data[positionAttribute],
+            positions,
             normals,
             this.data[uv0Attribute],
             this.elements
@@ -529,8 +566,8 @@ export default class Geometry {
     createNormal(name = 'aNormal') {
         this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
-        const vertices = this.data[this.desc.positionAttribute];
-        this.data[name] = buildNormals(vertices, this.elements);
+        const pos = this._getAttributeData(this.desc.positionAttribute);
+        this.data[name] = buildNormals(pos, this.elements);
         delete this._reglData;
     }
 
