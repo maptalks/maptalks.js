@@ -70,7 +70,7 @@ module.exports = [
         plugins: configPlugins,
         external : ['maptalks'],
         output: {
-            'sourcemap': production ? false : 'inline',
+            'sourcemap': false,
             'format': 'umd',
             'name': 'maptalksgl',
             'globals' : {
@@ -106,7 +106,6 @@ module.exports = [
             'sourcemap': false,
             'format': 'es',
             banner,
-            outro,
             'file': 'dist/transcoders.js'
         }
     }
