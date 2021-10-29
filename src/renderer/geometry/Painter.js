@@ -123,7 +123,7 @@ class Painter extends Class {
      * for strokeAndFillSymbolizer
      * @return {Object[]} resources to render vector
      */
-    getPaintParams(dx, dy, ignoreAltitude, ptkey = '_pt') {
+    getPaintParams(dx, dy, ignoreAltitude, disableClip, ptkey = '_pt') {
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
@@ -187,7 +187,7 @@ class Painter extends Class {
             points = params[0];
 
         const mapExtent = containerExtent;
-        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey);
+        const cPoints = this._pointContainerPoints(points, dx, dy, ignoreAltitude, disableClip || this._hitPoint && !mapExtent.contains(this._hitPoint), null, ptkey);
         if (!cPoints) {
             return null;
         }
@@ -227,7 +227,7 @@ class Painter extends Class {
         let cPoints;
         const roundPoint = this.getLayer().options['roundPoint'];
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
-        let needClip = true;
+        let needClip = !disableClip;
         const clipBBoxBufferSize = renderer.layer.options['clipBBoxBufferSize'] || 3;
         const symbolizers = this.symbolizers;
 

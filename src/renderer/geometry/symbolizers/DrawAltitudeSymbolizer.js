@@ -51,12 +51,12 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
         const style = this._getStyle();
         this._prepareContext(ctx);
         if (this.geometry.type === 'LineString') {
-            const paintParams = this._getPaintParams(style['lineDx'], style['lineDy']);
+            const paintParams = this._getPaintParams(style['lineDx'], style['lineDy'], false, true);
             if (!paintParams) {
                 return;
             }
             //container points that ignore altitude
-            const groundPoints = this.getPainter().getPaintParams(style['lineDx'], style['lineDy'], true, '_groundpt')[0];
+            const groundPoints = this.getPainter().getPaintParams(style['lineDx'], style['lineDy'], true, true, '_groundpt')[0];
             this._drawLineAltitude(ctx, paintParams[0], groundPoints);
         } else {
             const point = this._getRenderContainerPoints(),
@@ -86,7 +86,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
     }
 
     _getPaintParams(dx, dy) {
-        return this.getPainter().getPaintParams(dx || 0, dy || 0, null, '_altpt');
+        return this.getPainter().getPaintParams(dx || 0, dy || 0, null, true, '_altpt');
     }
 
     _drawMarkerAltitude(ctx, point, groundPoint) {
