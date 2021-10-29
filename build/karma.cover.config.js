@@ -1,7 +1,7 @@
 const base = require('./karma.base.config.js');
 
 module.exports = function (config) {
-
+    base.files.push('test/core/ClassSpec.js');
     const options = Object.assign(base, {
         browsers: ['Chrome'],
         reporters: ['mocha', 'coverage'],
