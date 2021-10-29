@@ -1,9 +1,12 @@
 const base = require('./karma.base.config.js');
 
 module.exports = function (config) {
-    config.set(Object.assign(base, {
-        browsers: ['Chrome'],
+    const options = Object.assign(base, {
+        browsers: ['IE'],
         reporters: ['mocha'],
         singleRun: true
-    }));
+    });
+
+    config.set(options);
 };
+

@@ -13,7 +13,6 @@ module.exports = {
         'test/resources/ua-parser.min.js',
         //js for TileOffsetSpec.js
         'test/resources/chncrs.js',
-        'test/core/ClassSpec.js',
         'test/**/!(ClassSpec).js',
         {
             pattern: 'assets/css/**/*.css',

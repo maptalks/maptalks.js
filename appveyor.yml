@@ -23,7 +23,7 @@ test_script:
   - npm --version
   # run tests
   - npm run pretest
-  - gulp test
+  - npm run testIE
 
 
 matrix:
