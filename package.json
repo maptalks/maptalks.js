@@ -35,7 +35,6 @@
     "report-coverage": "codecov",
     "test": "karma start build/karma.cover.config.js",
     "testIE": "karma start build/karma.ie.config.js",
-    "tdd": "karma start --no-single-run & karma run",
     "version": "npm run build",
     "publish-next": "npm publish --tag next"
   },
