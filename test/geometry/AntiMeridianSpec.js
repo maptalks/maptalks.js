@@ -213,7 +213,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).not.to.be.painted(0, -10);
-            expect(rectangle.getSize()._round().toArray()).to.be.eql([437, 54]);
+            expect(rectangle.getSize()._round().toArray()).to.be.eql([368, 54]);
         });
 
         it('paint at [-180, -85]', function () {
@@ -224,7 +224,7 @@ describe('Geometry.AntiMeridian', function () {
             expect(layer).to.be.painted(10, 0);
             expect(layer).to.be.painted(0, 10);
             expect(layer).not.to.be.painted(0, -10);
-            expect(rectangle.getSize()._round().toArray()).to.be.eql([135, 51]);
+            expect(rectangle.getSize()._round().toArray()).to.be.eql([75, 51]);
         });
     });
 
