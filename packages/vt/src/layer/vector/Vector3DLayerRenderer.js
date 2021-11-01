@@ -673,7 +673,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         const symbols = target['_getInternalSymbol']();
         const options = { zoom: this.getMap().getZoom() };
-        const uid = this._convertGeo(target);
+        const uid = target[ID_PROP];
         let feature = this.features[uid];
         if (!Array.isArray(feature)) {
             feature = [feature];
@@ -1083,7 +1083,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const uid = target[ID_PROP];
         const features = this.features[uid];
         const currentFea =  Array.isArray(features) ? features[0] : features;
-        this._convertGeometries([target]);
         if (compareCoordSize(coordJSON, currentFea.geometry)) {
             // 当数据的端点数量不变时，可以进行局部更新
             // 但不适用lineMesh，因lineMesh因为会因为lineJoin角度变化，生成的实际端点数量会变化，无法局部更新
@@ -1093,6 +1092,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.onGeometryPositionChange(e);
             return;
         }
+        this._convertGeometries([target]);
         this._markRebuildGeometry();
         redraw(this);
     }
@@ -1100,6 +1100,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onGeometryPositionChange(e) {
         const target = e.target['_getParent']() || e.target;
         const uid = target[ID_PROP];
+        this._convertGeometries([target]);
         // 为应对同一个数据的频繁修改，发生变化的数据留到下一帧再统一修改
         this._dirtyTargetsInCurrentFrame[uid] = target;
         redraw(this);
