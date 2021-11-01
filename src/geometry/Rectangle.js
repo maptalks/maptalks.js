@@ -248,8 +248,11 @@ class Rectangle extends Polygon {
             w *= sx;
             h *= sy;
         }
-        const se = measurer.locate(this._coordinates, w, h);
-        return se;
+        // const se = measurer.locate(this._coordinates, w, h);
+        const rightPoint = measurer.locate(this._coordinates, w, 0);
+        const bottomPoint = measurer.locate(this._coordinates, 0, h);
+        rightPoint.y = bottomPoint.y;
+        return rightPoint;
     }
 
     _computeGeodesicLength() {
