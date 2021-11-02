@@ -91,13 +91,14 @@ vec4 bloomCombine() {
     bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur3, gTexCoord), rgbmRange), 1.0)).rgb * getRadiusFactored(factor3, midVal);
     bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur4, gTexCoord), rgbmRange), 1.0)).rgb * getRadiusFactored(factor4, midVal);
     bloom += (vec4(decodeRGBM(texture2D(TextureBloomBlur5, gTexCoord), rgbmRange), 1.0)).rgb * getRadiusFactored(factor5, midVal);
-    vec4 color;
+    vec4 bloomInputColor;
     if (enableAA == 1.0) {
-        color = applyFXAA(TextureInput, gl_FragCoord.xy);
+        // TextureInput是bloom本体
+        bloomInputColor = applyFXAA(TextureInput, gl_FragCoord.xy);
     } else {
-        color = texture2D(TextureInput, gTexCoord);
+        bloomInputColor = texture2D(TextureInput, gTexCoord);
     }
-    color.rgb = mix(vec3(0.0), color.rgb, sign(color.a));
+    bloomInputColor.rgb = mix(vec3(0.0), bloomInputColor.rgb, sign(bloomInputColor.a));
 
     vec4 srcColor = texture2D(TextureSource, gTexCoord);
     #ifdef HAS_NOAA_TEX
@@ -108,7 +109,8 @@ vec4 bloomCombine() {
     float bloomAlpha = sqrt((bloom.r + bloom.g + bloom.b) / 3.0);
     vec4 bloomColor = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha);
 
-    return color * color.a + srcColor * (1.0 - color.a) + bloomColor;
+    // srcColor 必须乘以 (1.0 - bloomInputColor.a)，否则会引起 fuzhenn/maptalks-studio#2571 中的bug
+    return bloomInputColor + srcColor * (1.0 - bloomInputColor.a) + bloomColor;
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / outputSize.xy;
