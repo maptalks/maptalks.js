@@ -5,9 +5,10 @@ class MeshShader extends Shader {
 
     draw(regl, meshes) {
         if (!meshes || !meshes.length) {
-            return this;
+            return 0;
         }
         const props = [];
+        let count = 0;
         let preCommand;
         for (let i = 0, l = meshes.length; i < l; i++) {
             if (!meshes[i].isValid()) {
@@ -42,6 +43,7 @@ class MeshShader extends Shader {
             v.shaderContext = this.context;
             this.appendDescUniforms(v);
             props.push(v);
+            count++;
 
             if (i < l - 1) {
                 preCommand = command;
@@ -49,7 +51,7 @@ class MeshShader extends Shader {
                 command(props);
             }
         }
-        return this;
+        return count;
     }
 
     _ensureContextDefines(v) {
