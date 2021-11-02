@@ -13,6 +13,7 @@ const DEFAULT_DIR_LIGHT = {
 
 const TIME_NOISE_TEXTURE_REPEAT = 0.3737;
 const SYMBOL_INDEX = { index: 0 };
+const EMPTY_HSV = [0, 0, 0];
 
 const frag = `
     #define SHADER_NAME WATER_STENCIL
@@ -382,6 +383,9 @@ class WaterPainter extends BasicPainter {
             waveParams: [0.0900, symbol.uvScale || 3, 0.0300, -0.5],
             waterDir: getWaterDirVector(waterDir, symbol.waterDirection || 0),
             waterBaseColor: symbol.waterBaseColor || [0.1451, 0.2588, 0.4863, 1],
+
+            contrast: symbol.contrast || 1,
+            hsv: symbol.hsv || EMPTY_HSV
         };
         this.setIncludeUniformValues(uniforms, context);
         if (context && context.ssr && context.ssr.renderUniforms) {

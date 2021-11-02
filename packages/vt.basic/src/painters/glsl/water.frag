@@ -3,6 +3,10 @@
 precision highp float;
 precision highp sampler2D;
 
+#include <hsv_frag>
+uniform vec3 hsv;
+uniform float contrast;
+
 #if defined(HAS_SHADOWING)
     #include <vsm_shadow_frag>
 #endif
@@ -454,4 +458,11 @@ void main() {
     vec4 vPosView = viewMatrix * vec4(vPos, 1.0);
     vec4 final = vec4(renderPixel(n, v, l, waterBaseColor.rgb, lightColor, localUp, shadow, tangentNormalFoam.w, vPosView.xyz), waterBaseColor.a);
     gl_FragColor = delinearizeGamma(final);
+
+    if (contrast != 1.0) {
+        gl_FragColor = contrastMatrix(contrast) * gl_FragColor;
+    }
+    if (length(hsv) > 0.0) {
+        gl_FragColor = hsv_apply(gl_FragColor, hsv);
+    }
 }
