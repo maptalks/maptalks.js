@@ -201,29 +201,33 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         //为了解决UglifyJS对 feature[KEY_IDX] 不正确的mangle
         // const KEY_IDX_NAME = (KEY_IDX + '').trim();
         // let count = 0;
-        for (const p in this.features) {
-            if (hasOwn(this.features, p)) {
-                const feature = this.features[p];
-                if (Array.isArray(feature)) {
-                    // count = count++;
-                    for (let i = 0; i < feature.length; i++) {
-                        const fea = feature[i];
-                        if (!fea.visible) {
-                            this._showHideUpdated = true;
-                        }
-                        this._addCoordsToCenter(fea.geometry, center);
-                        // fea[KEY_IDX_NAME] = count++;
-                        features.push(fea);
-                    }
-                } else {
-                    if (!feature.visible) {
+        this.layer['_sortGeometries']();
+        const geometries = this.layer.getGeometries();
+        for (let i = 0; i < geometries.length; i++) {
+            const geo = geometries[i];
+            const uid = geo[ID_PROP];
+            if (!this.features[uid]) {
+                continue;
+            }
+            const feature = this.features[uid];
+            if (Array.isArray(feature)) {
+                // count = count++;
+                for (let i = 0; i < feature.length; i++) {
+                    const fea = feature[i];
+                    if (!fea.visible) {
                         this._showHideUpdated = true;
                     }
-                    this._addCoordsToCenter(feature.geometry, center);
-                    // feature[KEY_IDX_NAME] = count++;
-                    features.push(feature);
+                    this._addCoordsToCenter(fea.geometry, center);
+                    // fea[KEY_IDX_NAME] = count++;
+                    features.push(fea);
                 }
-
+            } else {
+                if (!feature.visible) {
+                    this._showHideUpdated = true;
+                }
+                this._addCoordsToCenter(feature.geometry, center);
+                // feature[KEY_IDX_NAME] = count++;
+                features.push(feature);
             }
         }
 
@@ -846,10 +850,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _markRebuildGeometry() {
         this._dirtyGeo = true;
+        this.setToRedraw();
     }
 
     _markRebuild() {
         this._dirtyAll = true;
+        this.setToRedraw();
     }
 
 
@@ -1107,7 +1113,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometryZIndexChange() {
-        // nothing need to be done
+        this._markRebuild();
     }
 
     onGeometryShow(e) {

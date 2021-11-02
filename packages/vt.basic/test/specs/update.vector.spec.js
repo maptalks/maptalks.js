@@ -62,6 +62,35 @@ describe('vector layers update style specs', () => {
         });
     });
 
+    it('should can update marker zIndex', done => {
+        const marker0 = new maptalks.Marker([0, 0], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#0f0',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+        const marker1 = new maptalks.Marker([0, 0], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+        const layer = new PointLayer('point', [marker0, marker1]);
+        assertChangeStyle(done, layer, [0, 255, 0, 255], [0, 0], () => {
+            marker0.setZIndex(1);
+            marker1.setZIndex(0);
+            return 3;
+        }, null, false);
+    });
+
     it('should can updateSymbol for PointLayer', done => {
         const marker = new maptalks.Marker([0, 0], {
             symbol: {
