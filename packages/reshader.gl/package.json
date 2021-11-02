@@ -22,7 +22,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/gltf-loader": "^0.13.0",
+    "@maptalks/gltf-loader": "^0.14.0",
     "@maptalks/tbn-packer": "^1.2.7",
     "gl-matrix": "^2.6.1"
   },
@@ -34,7 +34,7 @@
     "@rollup/plugin-node-resolve": "^13.0.4",
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
-    "maptalks": "^1.0.0-beta.1",
+    "maptalks": "^1.0.0-beta.3",
     "mocha": "^9.0.3",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1"
