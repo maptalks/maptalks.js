@@ -413,7 +413,10 @@ include(GLContext.prototype, {
         const v = this.states.textures;
         const preActive = v.active;
         v.active = unit;
-        gl.activeTexture(unit);
+        if (this.activeUnit !== unit) {
+            gl.activeTexture(unit);
+            this.activeUnit = unit;
+        }
         if (preActive === -1) {
             v.units[unit - 0x84C0][gl.TEXTURE_2D] = v.units[-1][gl.TEXTURE_2D];
             v.units[unit - 0x84C0][gl.TEXTURE_CUBE_MAP] = v.units[-1][gl.TEXTURE_CUBE_MAP];
@@ -528,6 +531,7 @@ include(GLContext.prototype, {
 
 
     _restore(preStates) {
+        delete this.activeUnit;
         const target = this.states;
 
         const gl = this._gl;
