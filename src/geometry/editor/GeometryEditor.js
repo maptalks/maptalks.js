@@ -160,7 +160,7 @@ class GeometryEditor extends Eventable(Class) {
             shadow.config('draggable', true);
             shadow.on('dragend', this._onMarkerDragEnd, this);
         }
-        if (geometry instanceof Marker) {
+        if ((geometry instanceof Marker) && this.options['resize'] !== false) {
             this.createMarkerEditor();
         } else if (geometry instanceof Circle) {
             this.createCircleEditor();
