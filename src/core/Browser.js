@@ -1,4 +1,4 @@
-import { isFunction } from './util';
+import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 
 let Browser = {};

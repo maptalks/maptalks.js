@@ -3,7 +3,6 @@ import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
-import Polygon from './Polygon';
 import simplify from 'simplify-js';
 
 /**
@@ -39,20 +38,6 @@ const options = {
  * @extends Geometry
  */
 class Path extends Geometry {
-
-    getOutline() {
-        const painter = this._getPainter();
-        if (!painter) {
-            return null;
-        }
-        const extent = this.getExtent();
-        return new Polygon(extent.toArray(), {
-            symbol: {
-                'lineWidth': 1,
-                'lineColor': '6b707b'
-            }
-        });
-    }
 
     /**
      * Show the linestring with animation
