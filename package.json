@@ -84,7 +84,7 @@
     "maptalks-jsdoc": "^0.2.5",
     "minimist": "^1.2.0",
     "mocha": "^3.5.0",
-    "rollup": "^0.64.1",
+    "rollup": "^0.68.2",
     "rollup-plugin-babel": "^4.0.3-0",
     "rollup-plugin-commonjs": "^9.1.0",
     "rollup-plugin-json": "^4.0.0",
