@@ -202,7 +202,7 @@ class GeometryDragHandler extends Handler {
         }
         const geo = this._shadow || target;
         const axis = geo.options['dragOnAxis'],
-            dragOnScreenAxis = this._shadow.options['dragOnScreenAxis'],
+            dragOnScreenAxis = geo.options['dragOnScreenAxis'],
             point = e['containerPoint'];
         let coord = e['coordinate'];
         this._lastPoint = this._lastPoint || point;
