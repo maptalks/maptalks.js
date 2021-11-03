@@ -1,6 +1,5 @@
 import { DEFAULT_TEXT_SIZE } from '../Constants';
 import { isString, isNil, isNumber } from './common';
-import { getDomRuler, removeDomNode } from './dom';
 import Point from '../../geo/Point';
 import Size from '../../geo/Size';
 
@@ -88,19 +87,19 @@ export function stringLength(text, font, size) {
     return new Size(w, size || DEFAULT_TEXT_SIZE);
 }
 
-export function getFontHeight(font) {
-    //dom
-    const domRuler = getDomRuler('span');
-    if (font !== '_default_') {
-        domRuler.style.font = font;
-    }
-    domRuler.innerHTML = '秦';
-    const h = domRuler.clientHeight;
-    //if not removed, the canvas container on chrome will turn to unexpected blue background.
-    // Reason is unknown.
-    removeDomNode(domRuler);
-    return h;
-}
+// export function getFontHeight(font) {
+//     //dom
+//     const domRuler = getDomRuler('span');
+//     if (font !== '_default_') {
+//         domRuler.style.font = font;
+//     }
+//     domRuler.innerHTML = '秦';
+//     const h = domRuler.clientHeight;
+//     //if not removed, the canvas container on chrome will turn to unexpected blue background.
+//     // Reason is unknown.
+//     removeDomNode(domRuler);
+//     return h;
+// }
 
 /**
  * Split text content by dom.
