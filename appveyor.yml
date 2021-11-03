@@ -1,6 +1,6 @@
 # Test against the latest version of this Node.js version
 environment:
-  nodejs_version: "6.9.0"
+  nodejs_version: "14.18.1"
   matrix:
     # first group
     - MAPTALKS_BROWSERS: IE
