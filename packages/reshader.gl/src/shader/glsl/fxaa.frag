@@ -22,6 +22,9 @@ uniform sampler2D textureSource;
 #ifdef HAS_NOAA_TEX
   uniform sampler2D noAaTextureSource;
 #endif
+#ifdef HAS_POINT_TEX
+  uniform sampler2D pointTextureSource;
+#endif
 #ifdef HAS_TAA_TEX
   uniform sampler2D taaTextureSource;
   #ifdef HAS_FXAA_TEX
@@ -190,8 +193,16 @@ void main() {
     if (enableSharpen == 1.0) {
         color = sharpen(color);
     }
-    #ifdef HAS_NOAA_TEX
-      vec4 color1 = texture2D(noAaTextureSource, vTexCoord);
+    #if defined(HAS_NOAA_TEX) || defined(HAS_POINT_TEX)
+      vec4 pointColor = vec4(0.0);
+      vec4 noaaColor = vec4(0.0);
+      #ifdef HAS_POINT_TEX
+        pointColor = texture2D(pointTextureSource, vTexCoord);
+      #endif
+      #ifdef HAS_NOAA_TEX
+        noaaColor = texture2D(noAaTextureSource, vTexCoord);
+      #endif
+      vec4 color1 = pointColor + noaaColor * (1.0 - pointColor.a);
       color = color1 + color * (1.0 - color1.a);
     #endif
 

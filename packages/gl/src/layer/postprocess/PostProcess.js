@@ -31,12 +31,12 @@ export default class PostProcess {
         // }
     }
 
-    bloom(curTex, noAaTex, threshold, bloomFactor, bloomRadius, enableAA) {
+    bloom(curTex, noAaTex, pointTex, threshold, bloomFactor, bloomRadius, enableAA) {
         if (!this._bloomPass) {
             this._bloomPass = new reshader.BloomPass(this._regl);
         }
         const bloomTex = this._bloomFBO.color[0];
-        return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius, noAaTex, enableAA);
+        return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius, noAaTex, pointTex, enableAA);
     }
 
     drawBloom(depthTex) {
@@ -203,7 +203,7 @@ export default class PostProcess {
         }, sourceTex, depthTex);
     }
 
-    fxaa(fbo, source, noAaSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
+    fxaa(fbo, source, noAaSource, pointSource, taaTextureSource, fxaaTextureSource, enableFXAA, enableToneMapping, enableSharpen, pixelRatio, sharpFactor,
         textureOutline, highlightFactor, outlineFactor, outlineWidth, outlineColor) {
         if (fbo && (fbo.width !== source.fbo || fbo.height !== source.height)) {
             fbo.resize(source.width, source.height);
@@ -229,10 +229,16 @@ export default class PostProcess {
         } else {
             delete shaderDefines['HAS_NOAA_TEX'];
         }
+        if (pointSource) {
+            shaderDefines['HAS_POINT_TEX'] = 1;
+        } else {
+            delete shaderDefines['HAS_POINT_TEX'];
+        }
         this._fxaaShader.setDefines(shaderDefines);
         this._renderer.render(this._fxaaShader, {
             textureSource: source,
             noAaTextureSource: noAaSource,
+            pointTextureSource: pointSource,
             taaTextureSource,
             fxaaTextureSource,
             resolution: vec2.set(RESOLUTION, source.width, source.height),

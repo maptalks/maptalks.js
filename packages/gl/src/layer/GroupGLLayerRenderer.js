@@ -175,6 +175,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         this._renderInMode('noAa', this._noAaFBO, methodName, args, true);
         this._noaaDrawCount = fGL.getDrawCalls();
 
+        fGL.resetDrawCalls();
+        this._renderInMode('point', this._pointFBO, methodName, args, true);
+        this._pointDrawCount = fGL.getDrawCalls();
+
         // return tex;
     }
 
@@ -425,6 +429,10 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 color: EMPTY_COLOR,
                 framebuffer: this._noAaFBO
             });
+            regl.clear({
+                color: EMPTY_COLOR,
+                framebuffer: this._pointFBO
+            });
             if (this._taaFBO && this._taaDrawCount) {
                 regl.clear({
                     color: EMPTY_COLOR,
@@ -459,6 +467,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO.height !== height)) {
             this._targetFBO.resize(width, height);
             this._noAaFBO.resize(width, height);
+            this._pointFBO.resize(width, height);
             if (this._taaFBO) {
                 this._taaFBO.resize(width, height);
             }
@@ -554,6 +563,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         if (this._targetFBO) {
             this._targetFBO.destroy();
             this._noAaFBO.destroy();
+            this._pointFBO.destroy();
             if (this._taaFBO) {
                 this._taaFBO.destroy();
                 delete this._taaFBO;
@@ -564,6 +574,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             }
             delete this._targetFBO;
             delete this._noAaFBO;
+            delete this._pointFBO;
             if (this._postFBO) {
                 this._postFBO.destroy();
                 delete this._postFBO;
@@ -942,6 +953,8 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             this._targetFBO = regl.framebuffer(fboInfo);
             const noAaInfo = this._createFBOInfo(config, this._depthTex);
             this._noAaFBO = regl.framebuffer(noAaInfo);
+            const pointInfo = this._createFBOInfo(config, this._depthTex);
+            this._pointFBO = regl.framebuffer(pointInfo);
             this._clearFramebuffers();
         }
         return {
@@ -1077,6 +1090,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
 
         let tex = this._targetFBO.color[0];
         const noAaTex = this._noaaDrawCount && this._noAaFBO.color[0];
+        const pointTex = this._pointDrawCount && this._pointFBO.color[0];
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
@@ -1084,6 +1098,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             tex,
             // 如果hasPost为true，则fxaa阶段不输入noAaTex，否则会在renderFBOToScreen阶段给文字和图标应用抗锯齿，造成绘制问题
             !bloomPainted && noAaTex,
+            !bloomPainted && pointTex,
             taaTex,
             this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
             enableAntialias,//+(!hasPost && enableAntialias),
@@ -1122,7 +1137,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
             const threshold = +bloomConfig.threshold || 0;
             const factor = getValueOrDefault(bloomConfig, 'factor', 1);
             const radius = getValueOrDefault(bloomConfig, 'radius', 1);
-            tex = this._postProcessor.bloom(tex, noAaTex, threshold, factor, radius, enableAntialias);
+            tex = this._postProcessor.bloom(tex, noAaTex, pointTex, threshold, factor, radius, enableAntialias);
         }
 
         if (enableSSR) {

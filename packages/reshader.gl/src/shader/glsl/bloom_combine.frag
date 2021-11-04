@@ -16,6 +16,9 @@ uniform sampler2D TextureSource;
 #ifdef HAS_NOAA_TEX
     uniform sampler2D noAaTextureSource;
 #endif
+#ifdef HAS_POINT_TEX
+    uniform sampler2D pointTextureSource;
+#endif
 uniform float enableAA;
 
 uniform vec2 outputSize;
@@ -106,11 +109,16 @@ vec4 bloomCombine() {
       srcColor = noAaColor + srcColor * (1.0 - noAaColor.a);
     #endif
 
+    vec4 pointColor = vec4(0.0);
+    #ifdef HAS_POINT_TEX
+        pointColor = texture2D(pointTextureSource, gTexCoord);
+    #endif
+
     float bloomAlpha = sqrt((bloom.r + bloom.g + bloom.b) / 3.0);
     vec4 bloomColor = vec4(linearTosRGB(bloom * bloomFactor), bloomAlpha);
 
     // srcColor 必须乘以 (1.0 - bloomInputColor.a)，否则会引起 fuzhenn/maptalks-studio#2571 中的bug
-    return bloomInputColor + srcColor * (1.0 - bloomInputColor.a) + bloomColor;
+    return pointColor + (bloomInputColor + srcColor * (1.0 - bloomInputColor.a)) * (1.0 - pointColor.a) + bloomColor;
 }
 void main(void) {
     gTexCoord = gl_FragCoord.xy / outputSize.xy;
