@@ -37,19 +37,15 @@ export default class GeometryResource {
         const data = geometry.data;
         const indices = geometry.elements;
         const newData = {};
-        const vertexCount = geometry.getVertexCount();
         for (const p in data) {
             if (isArray(data[p])) {
-                const size = data[p].length / vertexCount;
-                newData[p] = new data[p].constructor(vertexCount * size);
-                for (let i = 0; i < vertexCount * size; i++) {
-                    newData[p][i] = data[p][i];
-                }
+                newData[p] = data[p].slice();
             } else {
-                const size = data[p].interleavedArray.length / vertexCount;
-                newData[p] = new data[p].interleavedArray.constructor(vertexCount * size);
-                for (let i = 0; i < vertexCount * size; i++) {
-                    newData[p][i] = data[p].interleavedArray[i];
+                const interleavedArray = geometry._getAttributeData(p);
+                if (p !== geometry.desc.positionAttribute) {
+                    newData[p] = interleavedArray;
+                } else {
+                    newData[p] = interleavedArray.slice();
                 }
             }
         }

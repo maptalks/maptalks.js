@@ -3,6 +3,7 @@ import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-pac
 import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
+import * as gltf from '@maptalks/gltf-loader';
 
 const REGL_TYPES = {
     5120: 'int8',
@@ -62,9 +63,9 @@ export default class Geometry {
         this.properties = {};
         this._buffers = {};
         this._vao = {};
-        this.updateBoundingBox();
         this.getVertexCount();
         this._prepareData();
+        this.updateBoundingBox();
     }
 
     set version(v) {
@@ -95,12 +96,11 @@ export default class Geometry {
                     stride: attribute.byteStride,
                     type: REGL_TYPES[attribute.componentType],
                     size: attribute.itemSize,
-                    count: attribute.count
+                    count: attribute.count,
+                    interleaved: attribute.interleaved,
+                    byteOffset: attribute.offset,
+                    componentType: attribute.componentType
                 };
-                if (attribute.interleavedArray) {
-                    //interleavedArray存储着还原的数据
-                    this.data[attr].interleavedArray = attribute.interleavedArray
-                }
                 if (!buffers[bufferView]) {
                     buffers[bufferView] = {
                         data: attribute.array
@@ -358,6 +358,9 @@ export default class Geometry {
             this.data[name] = buffer;
         }
         this._prepareData();
+        if (this.desc.positionAttribute === name) {
+            this._posDirty = true;
+        }
         delete this._reglData;
         return this;
     }
@@ -389,6 +392,9 @@ export default class Geometry {
             }
         }
         this._prepareData();
+        if (this.desc.positionAttribute === name) {
+            this._posDirty = true;
+        }
         delete this._reglData;
         return this;
     }
@@ -452,6 +458,7 @@ export default class Geometry {
         delete this._attributes;
         this.count = 0;
         this.elements = [];
+        delete this._tempPosArray;
         this._disposed = true;
     }
 
@@ -473,10 +480,10 @@ export default class Geometry {
             // form of object: { usage : 'static', data : [...] }
             if (posArr.data) {
                 posArr = posArr.data;
-            } else if (posArr.interleavedArray) {
-                posArr = posArr.interleavedArray;
+            } else if (posArr.interleaved) {
+                posArr = this._getAttributeData(this.desc.positionAttribute);
             } else {
-                posArr = posArr.array;
+                posArr = this._buffers[posArr.buffer].data;
             }
         }
         if (posArr && posArr.length) {
@@ -523,20 +530,37 @@ export default class Geometry {
         bbox.dirty();
     }
 
-    //attribute上结构有三种
+    //attribute上结构有2种,对于interleaved结构的数组，可以按需加载，节约内存
     // 1. 数组或者类型数组
     // 2. Object形式（regl的buffer定义）
-    // 3. interweaved
+
     _getAttributeData(name) {
         const data = this.data[name];
         const bufferView = data.buffer;
-        if (data.interleavedArray) {
-            return data.interleavedArray;
-        } else if (isArray(data)) {
+        if (isArray(data)) {
             return data;
-        } else if (this._buffers[bufferView]) {
-            return this._buffers[bufferView].data;
+        } else if (data.interleaved) {
+            const attribute = this._buffers[bufferView] ? this._buffers[bufferView].data : data.array;
+            const { count, size, stride, byteOffset, componentType } = data;
+            const ctor = gltf.GLTFLoader.getTypedArrayCtor(componentType);
+            //对于POSITION数据，为避免updateBBox时频繁创建临时数组，采用缓存tempPosArray的策略获取interleavedArray,
+            //对于非POSITION的数据，直接readInterleavedArray读取即可
+            if (name === this.desc.positionAttribute) {
+                if (!this._tempPosArray || (this._tempPosArray && this._tempPosArray.length < size *count)) {
+                    this._tempPosArray = new ctor(size * count);
+                    return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+                }
+                if (!this._posDirty) {
+                    return this._tempPosArray;
+                }
+                this._posDirty = false;
+                return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+            } else {
+                const tempArray = new ctor(size * count);
+                return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+            }
         }
+
     }
 
     createTangent(name = 'aTangent') {
