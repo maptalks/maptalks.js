@@ -35,12 +35,14 @@ class LightManager {
         } else if (!oldConfig || !oldConfig.ambient || !ambientEqual(oldConfig.ambient, config.ambient)) {
             this._initAmbientResources();
             return;
-        } else if (this._iblMaps && config.ambient.resource.sh) {
+        } else if (this._iblMaps) {
             if (config.ambient.prefilterCubeSize !== oldConfig.ambient && oldConfig.ambient.prefilterCubeSize) {
                 this._onHDRLoaded();
             }
             ambientUpdate = true;
-            this._iblMaps.sh = config.ambient.resource.sh;
+            if (config.ambient.resource.sh) {
+                this._iblMaps.sh = config.ambient.resource.sh;
+            }
         }
         this._map.fire('updatelights', { ambientUpdate });
     }
