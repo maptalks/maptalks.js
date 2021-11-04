@@ -36,6 +36,9 @@ class LightManager {
             this._initAmbientResources();
             return;
         } else if (this._iblMaps && config.ambient.resource.sh) {
+            if (config.ambient.prefilterCubeSize !== oldConfig.ambient && oldConfig.ambient.prefilterCubeSize) {
+                this._onHDRLoaded();
+            }
             ambientUpdate = true;
             this._iblMaps.sh = config.ambient.resource.sh;
         }
@@ -92,8 +95,8 @@ class LightManager {
     _onHDRLoaded() {
         if (this._hdr) {
             this._iblMaps = this._createIBLMaps(this._hdr);
-            this._hdr.dispose();
-            delete this._hdr;
+            // this._hdr.dispose();
+            // delete this._hdr;
             this._map.fire('updatelights', { 'ambientUpdate': true });
         }
     }
@@ -114,7 +117,7 @@ class LightManager {
             prefilterCubeSize: cubeSize,
             format: 'array'
         });
-        hdr.dispose();
+        // hdr.dispose();
         if (config['sh']) {
             maps.sh = config['sh'];
             //兼容老的[[], [], ..]形式的sh
