@@ -408,7 +408,8 @@ export default class TextPainter extends CollisionPainter {
     forEachBox(mesh, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        const { aFeaIds, aCount, features, elements } = mesh.geometry.properties;
+        const { aPickingId, aFeaIds, aCount, features, elements } = mesh.geometry.properties;
+        const ids = aFeaIds && aFeaIds.length ? aFeaIds : aPickingId;
         const enableUniquePlacement = this.isEnableUniquePlacement();
 
         const meshBox = this._getMeshBoxes(1);
@@ -418,12 +419,12 @@ export default class TextPainter extends CollisionPainter {
         let index = 0;
 
         let idx = elements[0];
-        let start = 0, current = aFeaIds[idx];
+        let start = 0, current = ids[idx];
         //每个文字有6个element
         for (let i = 0; i <= elements.length; i += BOX_ELEMENT_COUNT) {
             idx = elements[i];
             //pickingId发生变化，新的feature出现
-            if (aFeaIds[idx] !== current || i === elements.length) {
+            if (ids[idx] !== current || i === elements.length) {
                 const feature = features[current] && features[current].feature;
                 if (enableUniquePlacement && this.isMeshUniquePlaced(mesh) && feature && !feature.label) {
                     const properties = feature.properties || {};
@@ -444,7 +445,7 @@ export default class TextPainter extends CollisionPainter {
                     meshBox[0].boxCount = charCount;
                     fn.call(this, mesh, meshBox, matrix, index++);
                 }
-                current = aFeaIds[idx];
+                current = ids[idx];
                 start = i;
             }
         }

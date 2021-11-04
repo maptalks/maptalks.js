@@ -27,6 +27,10 @@ const NO_COLLISION = { collides: 0, boxes: [] };
 
 export default class CollisionPainter extends BasicPainter {
 
+    supportRenderMode(mode) {
+        return mode === 'point';
+    }
+
     startMeshCollision(mesh) {
         const { meshKey } = mesh.properties;
         const { renderer } = this._cachedInstances;

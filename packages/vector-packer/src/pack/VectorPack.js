@@ -337,7 +337,7 @@ export default class VectorPack {
             data[format[i].name] = [];
         }
         //每个顶点的feature index, 用于构造 pickingId
-        let featureIndexes = [];
+        let feaIdxValues = [];
         let maxFeaIndex = 0;
         const featIds = [];
         let maxFeaId = 0;
@@ -366,7 +366,7 @@ export default class VectorPack {
             const count = (data.aPosition.length - eleCount) / 3;
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {
-                featureIndexes.push(vectors[i].featureIdx);
+                feaIdxValues.push(vectors[i].featureIdx);
                 if (isNumber(feaId)) {
                     featIds.push(feaId);
                 }
@@ -377,7 +377,7 @@ export default class VectorPack {
             return null;
         }
         const ArrType = getUnsignedArrayType(maxFeaIndex);
-        featureIndexes = new ArrType(featureIndexes);
+        feaIdxValues = new ArrType(feaIdxValues);
 
         if (this.options.positionType) {
             format[0].type = this.options.positionType;
@@ -395,7 +395,8 @@ export default class VectorPack {
         }
 
         const arrays = fillTypedArray(format, data);
-        arrays.aPickingId = featureIndexes;
+        // aPickingId中存放的featureIdx，即 KEY_IDX 属性里的值
+        arrays.aPickingId = feaIdxValues;
 
         //因为 IS_2D_POSITION 会导致program切换，2位aPosition和3位aPosition的性能变化不大，所以不再执行only2D逻辑
         // if (!this.maxAltitude) {
@@ -427,6 +428,7 @@ export default class VectorPack {
 
         if (featIds.length) {
             const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
+            // featureIds 里存放的是 feature.id
             result.featureIds = new feaCtor(featIds);
             buffers.push(result.featureIds.buffer);
         } else {

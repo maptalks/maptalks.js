@@ -120,7 +120,12 @@ class IconPainter extends CollisionPainter {
         if (!this.layer.options['collision']) {
             return;
         }
-        const { aFeaIds, elements, aCount } = geo.properties;
+        // aFeaIds 中存放的是 feature.id 的值
+        // aPickingIds 中存放的 KEY_IDX 的值
+        // Vector3DLayer 中，feature有多个symbol时，会有多个数据的 feature.id 相同，但KEY_IDX不同的情况存在
+        // 但 feature.id 可能不存在（比如mapbox的vt在线服务），aPickingId一定存在，所以遍历用的id数组优先选用 aFeaIds，没有的话就选用aPickingId
+        const { aPickingId, aFeaIds, elements, aCount } = geo.properties;
+        const ids = aFeaIds && aFeaIds.length ? aFeaIds : aPickingId;
         const collideBoxIndex = {};
         if (!elements) {
             // an empty icon
@@ -130,7 +135,7 @@ class IconPainter extends CollisionPainter {
 
         let index = 0;
         let idx = elements[0];
-        let start = 0, current = aFeaIds[idx];
+        let start = 0, current = ids[idx];
         let charCount = 1;
         if (aCount) {
             charCount = aCount[elements[start]];
@@ -138,14 +143,14 @@ class IconPainter extends CollisionPainter {
         for (let ii = 0; ii <= elements.length; ii += BOX_ELEMENT_COUNT) {
             idx = elements[ii];
             //pickingId发生变化，新的feature出现
-            if (aFeaIds[idx] !== current || ii === elements.length) {
+            if (ids[idx] !== current || ii === elements.length) {
                 collideBoxIndex[current] = [
                     start,
                     ii,
                     (ii - start) / (charCount * BOX_ELEMENT_COUNT),
                     index++
                 ];
-                current = aFeaIds[idx];
+                current = ids[idx];
                 start = ii;
                 if (aCount) {
                     charCount = aCount[elements[start]];
@@ -187,7 +192,7 @@ class IconPainter extends CollisionPainter {
         const isEnableCollision = this._needUpdateCollision();
         if (isEnableCollision && meshes.length > 0) {
             const group = new CollisionGroup(meshes);
-            group.properties.uniquePickingIds = meshes[0].geometry.properties.uniquePickingIds;
+            group.properties.uniqueFeaIndexes = meshes[0].geometry.properties.uniqueFeaIndexes;
             group.properties.meshKey = meshes[0].properties.meshKey;
             group.properties.level = meshes[0].properties.level;
             this._meshesToCheck.push(group);
@@ -349,11 +354,11 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(meshGroup, fn) {
-        const uniquePickingIds = meshGroup.properties.uniquePickingIds;
+        const uniqueFeaIndexes = meshGroup.properties.uniqueFeaIndexes;
         const context = { boxIndex: 0 };
-        const count = uniquePickingIds.length;
+        const count = uniqueFeaIndexes.length;
         for (let i = 0; i < count; i++) {
-            this._iterateMeshBox(meshGroup, uniquePickingIds[i], fn, context);
+            this._iterateMeshBox(meshGroup, uniqueFeaIndexes[i], fn, context);
         }
     }
 

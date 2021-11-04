@@ -26,7 +26,7 @@ export default class BasicPainter extends Painter {
         const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: this.getPrimitive(), positionSize: glData.positionSize });
         geometry.properties = {
             features,
-            uniquePickingIds: features ? Object.keys(features) : [],
+            uniqueFeaIndexes: features ? Object.keys(features) : [],
             // Vector3DLayer中需要保存elements来实现show hide
             elements: glData.indices
         };
@@ -36,7 +36,8 @@ export default class BasicPainter extends Painter {
         if (glData.glyphAtlas) {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;
         }
-        // 用于碰撞检测
+        // aPickingId 中存放的是 KEY_IDX 的值，Vector3DLayer中如果一个feature有多个symbol，feature.id相同但pickingId不同
+        // aFeaIds 用于碰撞检测, 存放的是 feature.id
         geometry.properties.aFeaIds = glData.featureIds;
         extend(geometry.properties, glData.properties);
         return {
