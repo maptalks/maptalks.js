@@ -107,6 +107,7 @@ class Painter extends Class {
      * @return {Point[]} points to render
      */
     getRenderPoints(placement) {
+        this._verifyProjection();
         if (!this._renderPoints) {
             this._renderPoints = {};
         }
