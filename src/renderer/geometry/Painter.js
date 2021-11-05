@@ -28,6 +28,7 @@ const TEMP_FIXED_EXTENT = new PointExtent();
 const TEMP_CLIP_EXTENT0 = new PointExtent();
 const TEMP_CLIP_EXTENT1 = new PointExtent();
 const TEMP_CLIP_EXTENT2 = new PointExtent();
+const PROJECTION = {};
 // const TEMP_CONTAINER_EXTENT = new PointExtent();
 
 const TEMP_BBOX = {
@@ -911,7 +912,7 @@ class Painter extends Class {
     }
 
     _verifyProjection() {
-        const projection = this.geometry._getProjection();
+        const projection = this.geometry._getProjection() || PROJECTION;
         if (this._projCode && this._projCode !== projection.code) {
             this.removeCache();
         }
