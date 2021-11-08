@@ -42,6 +42,10 @@ const DEFAULT_UNIFORMS = {
     'metallicRoughnessTexture': null,
     'emissiveTexture': null,
 
+    'preventTexRepetition': 0,
+    'uvOrigin': [0, 0],
+    'noiseTexture': null,
+
     'clearCoatTint': [0.0060, 0.0060, 0.0060], //0.0060, 0.0060, 0.0060
 
     'specularAAVariance': 20,

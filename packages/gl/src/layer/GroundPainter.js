@@ -376,8 +376,10 @@ class GroundPainter {
         const w = extent.getWidth() / texWidth * 2;
         const h = extent.getHeight() / texHeight * 2;
 
+        const uvOrigin = [xmin / texWidth - uvStartX, ymax / texHeight - uvStartY];
         this._ground.setUniform('uvOffset', [uvStartX + offset[0], uvStartY + offset[1]]);
         this._ground.setUniform('uvScale', [w, -h]);
+        this._ground.setUniform('uvOrigin', uvOrigin);
     }
 
     _getGroundDefines(context) {
