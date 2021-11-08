@@ -25,7 +25,7 @@ class MeshPainter extends Painter {
         return false;
     }
 
-    createMesh(geo, transform) {
+    createMesh(geo, transform, { tilePoint }) {
         if (!this.material) {
             //还没有初始化
             this.setToRedraw();
@@ -97,6 +97,7 @@ class MeshPainter extends Painter {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
+        mesh.setUniform('uvOrigin', tilePoint);
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
             enumerable: true,
             get: () => {
