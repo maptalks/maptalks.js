@@ -276,12 +276,19 @@ class VectorTileLayer extends maptalks.TileLayer {
             return this;
         }
         let renderIdx = idx;
+        if (!styles[idx].renderPlugin.sceneConfig) {
+            styles[idx].renderPlugin.sceneConfig = {};
+        }
         extend(styles[idx].renderPlugin.sceneConfig, sceneConfig);
         let computedSceneConfig;
         if (styleIdx !== undefined) {
             checkFeaStyleExist(this._originFeatureStyle, idx, styleIdx);
             renderIdx = this._originFeatureStyle[idx].style[styleIdx]._renderIdx;
-            computedSceneConfig = styles[renderIdx].renderPlugin.sceneConfig;
+            const renderPlugin = styles[renderIdx].renderPlugin;
+            if (!renderPlugin.sceneConfig) {
+                renderPlugin.sceneConfig = {};
+            }
+            computedSceneConfig = renderPlugin.sceneConfig;
         } else {
             checkStyleExist(styles, idx);
             computedSceneConfig = styles[idx].renderPlugin.sceneConfig;
@@ -289,7 +296,11 @@ class VectorTileLayer extends maptalks.TileLayer {
         extend(computedSceneConfig, sceneConfig);
 
         if (Array.isArray(this.options.style)) {
-            extend(this.options.style[idx].renderPlugin.sceneConfig, sceneConfig);
+            const renderPlugin = this.options.style[idx].renderPlugin;
+            if (!renderPlugin.sceneConfig) {
+                renderPlugin.sceneConfig = {};
+            }
+            extend(renderPlugin.sceneConfig, sceneConfig);
         } else {
             const styles = this._getTargetStyle(type, this.options.style);
             let renderPlugin;
