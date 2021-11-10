@@ -25,7 +25,7 @@ class MeshPainter extends Painter {
         return false;
     }
 
-    createMesh(geo, transform, { tilePoint }) {
+    createMesh(geo, transform, { tilePoint, tileZoom }) {
         if (!this.material) {
             //还没有初始化
             this.setToRedraw();
@@ -97,7 +97,26 @@ class MeshPainter extends Painter {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
-        mesh.setUniform('uvOrigin', tilePoint);
+
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const sr = this.layer.getSpatialReference && this.layer.getSpatialReference();
+        const layerRes = sr ? sr.getResolution(tileZoom) : map.getResolution(tileZoom);
+        const glScale = layerRes / glRes;
+        // vector-packer/PACK_TEX_SIZE
+        const PACK_TEX_SIZE = 128 / 256;
+        // const uvScale = this.material.get('uvScale') || [1, 1];
+        // mesh.setUniform('uvOrigin', [tilePoint[0] * glScale / (PACK_TEX_SIZE * uvScale[0]), tilePoint[1] * glScale / (PACK_TEX_SIZE * uvScale[0])]);
+        Object.defineProperty(mesh.uniforms, 'uvOrigin', {
+            enumerable: true,
+            get: () => {
+                const uvScale = this.dataConfig.uvScale || [1, 1];
+                const uvOrigin = [tilePoint[0] * glScale / (PACK_TEX_SIZE * uvScale[0]), tilePoint[1] * glScale / (PACK_TEX_SIZE * uvScale[1])]
+                return uvOrigin;
+                // const fract = [uvOrigin[0] % 1, uvOrigin[1] % 1];
+                // return [uvOrigin[0] - fract[0], uvOrigin[1] - fract[1]];
+            }
+        });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
             enumerable: true,
             get: () => {

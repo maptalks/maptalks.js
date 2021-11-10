@@ -330,6 +330,7 @@ class StandardPainter extends MeshPainter {
                             wrap: 'repeat'
                         };
                     }
+                    texConf.flipY = true;
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     material[p].once('complete', this._bindedOnTextureLoad);
                     material[p].once('disposed', this._bindDisposeCachedTexture);

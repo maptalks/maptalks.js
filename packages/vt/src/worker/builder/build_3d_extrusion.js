@@ -48,7 +48,8 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             topUVMode,
             sideUVMode,
             //>> needed by uv computation
-            glScale: glScale * localScale,
+            glScale,
+            localScale,
             //用于白模侧面的uv坐标v的计算
             // zScale用于将meter转为gl point值
             // localScale用于将gl point转为瓦片内坐标

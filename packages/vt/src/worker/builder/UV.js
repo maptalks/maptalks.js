@@ -1,9 +1,9 @@
 import computeOMBB from './Ombb.js';
 import { vec2 } from 'gl-matrix';
 
-export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight) {
     if (mode === 0) {
-        buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight);
+        buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight);
     } else if (mode === 1) {
         buildOmbbUV(start, offset, uvs, vertices);
     }
@@ -31,7 +31,7 @@ function buildOmbbUV(start, offset, uvs, vertices) {
         // uvs[idx + 1] = uvStart[1] + (y * glScale) / texHeight;
 
         uvs[idx] = cacAnchor(x, y, v0, kw, w);
-        uvs[idx + 1] = cacAnchor(x, y, v1, kh, h);
+        uvs[idx + 1] = -cacAnchor(x, y, v1, kh, h);
     }
 }
 
@@ -42,18 +42,20 @@ function cacAnchor(x, y, v, k, len) {
     return vec2.distance(v, V2) / len;
 }
 
-function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, texWidth, texHeight) {
+function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight) {
     //为了提升精度，计算uvOrigin的小数部分
-    const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
+    // console.log([(uvOrigin.x / texWidth), (uvOrigin.y / texHeight)]);
+    // const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
+    const uvStart = [0, 0];
     for (let i = start; i < offset; i += 3) {
         const idx = i / 3 * 2;
         const x = vertices[i], y = vertices[i + 1];
-        uvs[idx] = uvStart[0] + (x * glScale) / texWidth;
-        uvs[idx + 1] = uvStart[1] + (y * glScale) / texHeight;
+        uvs[idx] = uvStart[0] + (x * glScale * localScale) / texWidth;
+        uvs[idx + 1] = uvStart[1] - (y * glScale * localScale) / texHeight;
     }
 }
 
-export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, glScale, vScale) {
+export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -94,10 +96,10 @@ export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, g
         }
 
 
-        const u = len * glScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
+        const u = len * glScale * localScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
         const v = (z === maxz ? 0 : h * vScale / texHeight);
         uvs[ix / 3 * 2] = u;
-        uvs[ix / 3 * 2 + 1] = v;
+        uvs[ix / 3 * 2 + 1] = -v;
 
         if (m === 0) {
             lensofar += seg;
