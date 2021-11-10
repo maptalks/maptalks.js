@@ -133,17 +133,20 @@ vec2 rotateUV(vec2 uv, float rotation) {
 void main() {
     #if defined(HAS_MAP)
         #ifdef HAS_RANDOM_TEX
-            vec2 origin = uvOrigin * uvScale;
+            vec2 origin = uvOrigin;
+            vec2 texCoord = aTexCoord * uvScale + uvOffset;
             if (uvRotation != 0.0) {
                 origin = rotateUV(origin, uvRotation);
+                texCoord = rotateUV(texCoord, uvRotation);
             }
-            vTexCoord = mod(origin, 1.0) + aTexCoord * uvScale + uvOffset;
+            vTexCoord = mod(origin, 1.0) + texCoord;
         #else
             vTexCoord = aTexCoord * uvScale + uvOffset;
+            if (uvRotation != 0.0) {
+                vTexCoord = rotateUV(vTexCoord, uvRotation);
+            }
         #endif
-        if (uvRotation != 0.0) {
-            vTexCoord = rotateUV(vTexCoord, uvRotation);
-        }
+
     #endif
 
     #if defined(HAS_TANGENT)

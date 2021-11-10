@@ -437,6 +437,7 @@ class GroundPainter {
                     texConf.flipY = true;
                     texConf.min = 'linear';
                     texConf.mag = 'linear';
+                    texConf.flipY = true;
                     // texConf.aniso = 4;
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     hasTexture = true;
