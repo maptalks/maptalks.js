@@ -6,6 +6,9 @@ attribute vec3 aPosition;
 
 #if defined(HAS_MAP)
     attribute vec2 aTexCoord;
+    #ifdef HAS_RANDOM_TEX
+        uniform vec2 uvOrigin;
+    #endif
     uniform vec2 uvScale;
     uniform vec2 uvOffset;
     uniform float uvRotation;
@@ -129,10 +132,21 @@ vec2 rotateUV(vec2 uv, float rotation) {
 
 void main() {
     #if defined(HAS_MAP)
-        vTexCoord = aTexCoord * uvScale + uvOffset;
-        if (uvRotation != 0.0) {
-            vTexCoord = rotateUV(vTexCoord, uvRotation);
-        }
+        #ifdef HAS_RANDOM_TEX
+            vec2 origin = uvOrigin;
+            vec2 texCoord = aTexCoord * uvScale + uvOffset;
+            if (uvRotation != 0.0) {
+                origin = rotateUV(origin, uvRotation);
+                texCoord = rotateUV(texCoord, uvRotation);
+            }
+            vTexCoord = mod(origin, 1.0) + texCoord;
+        #else
+            vTexCoord = aTexCoord * uvScale + uvOffset;
+            if (uvRotation != 0.0) {
+                vTexCoord = rotateUV(vTexCoord, uvRotation);
+            }
+        #endif
+
     #endif
 
     #if defined(HAS_TANGENT)

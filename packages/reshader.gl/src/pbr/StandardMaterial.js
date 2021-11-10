@@ -42,7 +42,6 @@ const DEFAULT_UNIFORMS = {
     'metallicRoughnessTexture': null,
     'emissiveTexture': null,
 
-    'preventTexRepetition': 0,
     'uvOrigin': [0, 0],
     'noiseTexture': null,
 
@@ -118,6 +117,9 @@ class StandardMaterial extends Material {
             defines['HAS_NORMAL_MAP'] ||
             defines['HAS_BUMP_MAP']) {
             defines['HAS_MAP'] = 1;
+        }
+        if (uniforms['noiseTexture']) {
+            defines['HAS_RANDOM_TEX'] = 1;
         }
         return defines;
     }
