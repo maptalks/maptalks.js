@@ -89,16 +89,9 @@ class StandardPainter extends MeshPainter {
 
         const uvOffsetAnim = this._getUVOffsetAnim();
         if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
-            const symbol = this.getSymbols()[0];
-            const uvOffset = symbol.material.uvOffset;
-            const timeStamp = this.layer.getRenderer().getFrameTimestamp();
-            const offset = [uvOffset[0], uvOffset[1]];
-            if (uvOffsetAnim[0]) {
-                offset[0] = (timeStamp * uvOffsetAnim[0] % 1000) / 1000;
-            }
-            if (uvOffsetAnim[1]) {
-                offset[1] = (timeStamp * uvOffsetAnim[1] % 1000) / 1000;
-            }
+            this.material.set('uvOffset', [0, 0]);
+        } else {
+            const offset = this.getUVOffset(uvOffsetAnim);
             this.material.set('uvOffset', offset);
         }
     }

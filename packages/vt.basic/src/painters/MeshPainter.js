@@ -111,11 +111,20 @@ class MeshPainter extends Painter {
             enumerable: true,
             get: () => {
                 const uvScale = this.getSymbol(symbolIndex).material.uvScale || [1, 1];
-                const dataUVScale = this.dataConfig.uvScale || [1, 1];
-                const uvOrigin = [uvScale[0] * tilePoint[0] * glScale / (PACK_TEX_SIZE * dataUVScale[0]), uvScale[1] * tilePoint[1] * glScale / (PACK_TEX_SIZE * dataUVScale[1])]
-                return uvOrigin;
-                // const fract = [uvOrigin[0] % 1, uvOrigin[1] % 1];
-                // return [uvOrigin[0] - fract[0], uvOrigin[1] - fract[1]];
+                const dataUVScale = this.dataConfig.dataUVScale || [1, 1];
+                // 每个瓦片左上角的坐标值
+                const xmin = uvScale[0] * tilePoint[0] * glScale;
+                const ymax = uvScale[1] * tilePoint[1] * glScale;
+                // 纹理的高宽
+                const texWidth = PACK_TEX_SIZE * dataUVScale[0];
+                const texHeight = PACK_TEX_SIZE * dataUVScale[1];
+                const uvOffsetAnim = this.getUVOffsetAnim();
+                if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+                    const offset = this.getUVOffset(uvOffsetAnim);
+                    return [xmin / texWidth + offset[0], ymax / texHeight - offset[1]];
+                } else {
+                    return [xmin / texWidth, ymax / texHeight];
+                }
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
@@ -127,6 +136,28 @@ class MeshPainter extends Painter {
         });
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
+    }
+
+
+    getUVOffsetAnim() {
+        const symbol = this.getSymbols()[0];
+        return symbol.material && symbol.material.uvOffsetAnim;
+    }
+
+    getUVOffset(uvOffsetAnim) {
+        const symbol = this.getSymbols()[0];
+        const uvOffset = symbol.material.uvOffset;
+        const timeStamp = this.layer.getRenderer().getFrameTimestamp();
+        const offset = [uvOffset[0], uvOffset[1]];
+        // 256是noiseTexture的高宽，乘以256才能保证动画首尾衔接，不会出现跳跃现象
+        const speed = 500000;
+        if (uvOffsetAnim && uvOffsetAnim[0]) {
+            offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * 256;
+        }
+        if (uvOffsetAnim && uvOffsetAnim[1]) {
+            offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * 256;
+        }
+        return offset;
     }
 
     needPolygonOffset() {
