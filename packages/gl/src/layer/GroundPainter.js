@@ -356,30 +356,50 @@ class GroundPainter {
         const ymax = center[1] + height;
 
         let offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
+        offset[0] = offset[0] || 0;
+        offset[1] = offset[1] || 0;
         const uvOffsetAnim = this._getUVOffsetAnim();
-        if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
+        const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
+        if (hasUVAnim) {
             offset = [offset[0], offset[1]];
             const timeStamp = performance.now();
+            // 256 是noiseTexture的高宽，乘以256可以保证动画首尾平滑过渡，不会出现跳跃
+            const speed = 50000;
             if (uvOffsetAnim[0]) {
-                offset[0] = (timeStamp * uvOffsetAnim[0] % 1000) / 1000;
+                offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * 256;
             }
             if (uvOffsetAnim[1]) {
-                offset[1] = (timeStamp * uvOffsetAnim[1] % 1000) / 1000;
+                offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * 256;
             }
 
         }
         const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
         const texWidth = TEX_SIZE_W / scale[0];
         const texHeight = TEX_SIZE_H / scale[1];
-        const uvStartX = (xmin / texWidth) % 1;
-        const uvStartY = (ymax / texHeight) % 1;
         const w = extent.getWidth() / texWidth * 2;
         const h = extent.getHeight() / texHeight * 2;
-
-        const uvOrigin = [xmin / texWidth - uvStartX, ymax / texHeight - uvStartY];
-        this._ground.setUniform('uvOffset', [uvStartX + offset[0], uvStartY + offset[1]]);
         this._ground.setUniform('uvScale', [w, -h]);
-        this._ground.setUniform('uvOrigin', uvOrigin);
+        if (hasUVAnim) {
+            // 打开纹理随机分布时，地面的uv动画通过把offset值计入uvOrigin来实现的
+            const origin = [xmin + (uvOffsetAnim[0] ? offset[0] : 0), ymax - (uvOffsetAnim[1] ? offset[1] : 0)];
+            const uvStartX = (origin[0] / texWidth) % 1;
+            const uvStartY = (origin[1] / texHeight) % 1;
+            const uvOrigin = [origin[0] / texWidth - uvStartX, origin[1] / texHeight - uvStartY];
+            // 如果坐标轴上有uvOffsetAnim，则把offset设为0，因为origin中已经计入了offset
+            // 如果没有uvOffsetAnim，则直接采用uvOffset的值
+            this._ground.setUniform('uvOffset', [
+                uvStartX + (uvOffsetAnim[0] ? 0 : offset[0]),
+                uvStartY + (uvOffsetAnim[1] ? 0 : offset[1])
+            ]);
+            this._ground.setUniform('uvOrigin', uvOrigin);
+        } else {
+            const uvStartX = (xmin / texWidth) % 1;
+            const uvStartY = (ymax / texHeight) % 1;
+            const uvOrigin = [xmin / texWidth - uvStartX, ymax / texHeight - uvStartY];
+            this._ground.setUniform('uvOffset', [uvStartX + offset[0], uvStartY + offset[1]]);
+            this._ground.setUniform('uvOrigin', uvOrigin);
+        }
+
     }
 
     _getGroundDefines(context) {
