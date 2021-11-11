@@ -110,8 +110,9 @@ class MeshPainter extends Painter {
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
             enumerable: true,
             get: () => {
-                const uvScale = this.dataConfig.uvScale || [1, 1];
-                const uvOrigin = [tilePoint[0] * glScale / (PACK_TEX_SIZE * uvScale[0]), tilePoint[1] * glScale / (PACK_TEX_SIZE * uvScale[1])]
+                const uvScale = this.getSymbol(symbolIndex).material.uvScale || [1, 1];
+                const dataUVScale = this.dataConfig.uvScale || [1, 1];
+                const uvOrigin = [uvScale[0] * tilePoint[0] * glScale / (PACK_TEX_SIZE * dataUVScale[0]), uvScale[1] * tilePoint[1] * glScale / (PACK_TEX_SIZE * dataUVScale[1])]
                 return uvOrigin;
                 // const fract = [uvOrigin[0] % 1, uvOrigin[1] % 1];
                 // return [uvOrigin[0] - fract[0], uvOrigin[1] - fract[1]];
