@@ -46,14 +46,14 @@ export default class GLTFManager {
         }
     }
 
-    _exportGLTFResource(gltf) {
+    _exportGLTFResource(gltf, url) {
         const gltfPack = GLTFHelper.exportGLTFPack(gltf, this.regl);
         const geometries = gltfPack.getMeshesInfo();
         const resourceMap = {
             gltfPack,
             resources: geometries,
             json: gltf,
-            refCount: 0
+            refCount: this.resourceMap[url].refCount //这里不能设置为0，由于是异步，会把前面累增的量重置为0
         };
         return resourceMap;
     }
@@ -66,7 +66,7 @@ export default class GLTFManager {
 
     _loadGLTFModel(url) {
         return this._loadData(url).then(data => {
-            this.resourceMap[url] = this._exportGLTFResource(data);
+            this.resourceMap[url] = this._exportGLTFResource(data, url);
             return this.resourceMap[url];
         });
     }
