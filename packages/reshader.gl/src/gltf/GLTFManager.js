@@ -53,7 +53,7 @@ export default class GLTFManager {
             gltfPack,
             resources: geometries,
             json: gltf,
-            refCount: this.resourceMap[url].refCount //这里不能设置为0，由于是异步，会把前面累增的量重置为0
+            refCount: this.resourceMap[url] ? this.resourceMap[url].refCount : 0 //这里不能设置为0，由于是异步，会把前面累增的量重置为0
         };
         return resourceMap;
     }
