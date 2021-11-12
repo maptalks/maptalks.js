@@ -13,7 +13,7 @@ export default class GLTFManager {
     loginGLTF(url, gltf) {
         if (!this.resourceMap[url]) {
             //传入载入好的gltf数据不需要再载入
-            this.resourceMap[url] = gltf ? this._exportGLTFResource(gltf) : this._loadGLTFModel(url).catch(e => {
+            this.resourceMap[url] = gltf ? this._exportGLTFResource(gltf, url) : this._loadGLTFModel(url).catch(e => {
                 return e;
             });
             this.resourceMap[url].refCount = 1;
