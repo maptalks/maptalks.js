@@ -601,6 +601,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
         framestamp = framestamp || 0;
         this._frameTimestamp = framestamp;
+        this._resizeCount = 0;
         this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
@@ -830,9 +831,9 @@ class MapCanvasRenderer extends MapRenderer {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
                         this._checkSize(entries[0].contentRect);
-
+                        this._resizeCount = this._resizeCount || 0;
                         //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
-                        this.renderFrame(this._frameTimestamp || 0);
+                        this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
