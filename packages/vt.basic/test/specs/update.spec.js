@@ -1136,7 +1136,7 @@ describe('update style specs', () => {
                         layer.updateSymbol(0, { material });
                         painted = true;
                     } else {
-                        assert.deepEqual(pixel, [8, 47, 35, 255]);
+                        assert.deepEqual(pixel, [64, 73, 71, 255]);
                         done();
                     }
                 }

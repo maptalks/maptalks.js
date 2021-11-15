@@ -9,6 +9,7 @@ import Color from 'color';
 
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
+const EMPTY_UV_OFFSET = [0, 0];
 
 //一个三维mesh绘制的通用painter，负责mesh的create, add 和 delete, 负责fn-type的更新
 class MeshPainter extends Painter {
@@ -146,7 +147,7 @@ class MeshPainter extends Painter {
 
     getUVOffset(uvOffsetAnim) {
         const symbol = this.getSymbols()[0];
-        const uvOffset = symbol.material.uvOffset;
+        const uvOffset = symbol.material && symbol.material.uvOffset || EMPTY_UV_OFFSET;
         const timeStamp = this.layer.getRenderer().getFrameTimestamp();
         const offset = [uvOffset[0], uvOffset[1]];
         // 256是noiseTexture的高宽，乘以256才能保证动画首尾衔接，不会出现跳跃现象
