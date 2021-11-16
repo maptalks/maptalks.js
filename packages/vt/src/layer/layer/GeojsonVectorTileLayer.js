@@ -23,42 +23,65 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     getWorkerOptions() {
         const options = super.getWorkerOptions();
-        options.data = this.features;
+        let workerData = this.options.data;
+        if (isString(workerData)) {
+            workerData = toAbsoluteURL(workerData);
+        } else {
+            workerData = this.features;
+        }
+        options.data = workerData;
         options.tileBuffer = this.options.tileBuffer;
         options.extent = this.options.extent;
         return options;
     }
 
     setData(data) {
+        this.options.data = data;
         if (data && (isString(data) || data.url)) {
+            const renderInited = !!this.getRenderer();
             this._fetchData(data, (err, json) => {
                 if (err) {
                     throw err;
                 }
-                this.setData(json);
-                this.options.data = data;
+                this._setData(json);
+                if (renderInited) {
+                    this._updateWorker();
+                }
             });
             return this;
         }
-        this.options.data = data;
+        this._setData(data);
+        this._updateWorker();
+        return this;
+    }
+
+    _setData(data) {
         if (this.options.convertFn) {
             const fn = new Function('data', this.options.convertFn + '\nreturn convert(data)');
             data = fn(data);
         }
         this.features = data;
         this._generateIdMap();
+
+        return this;
+    }
+
+    _updateWorker() {
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.clear();
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
-                workerConn.setData(this.features, (err, params) => {
+                let workerData = this.options.data;
+                if (isString(workerData)) {
+                    workerData = toAbsoluteURL(workerData);
+                }
+                workerConn.setData(workerData, (err, params) => {
+                    renderer.clear();
                     this.onWorkerReady(params);
                     renderer.setToRedraw();
                 });
             }
         }
-        return this;
     }
 
     getExtent() {
@@ -138,3 +161,11 @@ GeoJSONVectorTileLayer.registerJSONType('GeoJSONVectorTileLayer');
 GeoJSONVectorTileLayer.mergeOptions(options);
 
 export default GeoJSONVectorTileLayer;
+
+function toAbsoluteURL(url) {
+   let a = document.createElement('a');
+    a.href = url;
+    url = a.href;
+    a = null;
+    return url;
+}
