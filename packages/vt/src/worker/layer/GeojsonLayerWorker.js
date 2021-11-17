@@ -58,7 +58,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 const data = resp;
                 const { first1000, idMap } = this._generateId(data);
                 this.index = geojsonvt(resp, this.options.geojsonvt || options);
-                const extent = bbox(first1000);
+                const extent = first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
                 cb(null, { extent, idMap });
             });
         } else {
@@ -67,10 +67,10 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             }
             const features = Array.isArray(data) ? data : data.features;
             let first1000 = features;
-            if (features.length > 1000) {
+            if (features && features.length > 1000) {
                 first1000 = features.slice(0, 1000);
             }
-            const extent = bbox({ type: "FeatureCollection", features: first1000 });
+            const extent = first1000 && first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
             this.index = geojsonvt(data, this.options.geojsonvt || options);
             cb(null, { extent });
         }
@@ -110,7 +110,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 visit(f);
             });
         }
-        return { first1000: { type: "FeatureCollection", features: first1000 }, idMap };
+        return { first1000, idMap };
     }
 
     getTileFeatures(tileInfo, cb) {
