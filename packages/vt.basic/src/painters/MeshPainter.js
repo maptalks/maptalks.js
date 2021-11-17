@@ -119,13 +119,14 @@ class MeshPainter extends Painter {
                 // 纹理的高宽
                 const texWidth = PACK_TEX_SIZE * dataUVScale[0];
                 const texHeight = PACK_TEX_SIZE * dataUVScale[1];
+                return [xmin / texWidth, ymax / texHeight];
+            }
+        });
+        Object.defineProperty(mesh.uniforms, 'uvOffset', {
+            enumerable: true,
+            get: () => {
                 const uvOffsetAnim = this.getUVOffsetAnim();
-                if (uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1])) {
-                    const offset = this.getUVOffset(uvOffsetAnim);
-                    return [xmin / texWidth + offset[0], ymax / texHeight - offset[1]];
-                } else {
-                    return [xmin / texWidth, ymax / texHeight];
-                }
+                return this.getUVOffset(uvOffsetAnim);
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
@@ -150,13 +151,15 @@ class MeshPainter extends Painter {
         const uvOffset = symbol.material && symbol.material.uvOffset || EMPTY_UV_OFFSET;
         const timeStamp = this.layer.getRenderer().getFrameTimestamp();
         const offset = [uvOffset[0], uvOffset[1]];
+        const hasNoise = !!symbol.material && symbol.material.noiseTexture;
         // 256是noiseTexture的高宽，乘以256才能保证动画首尾衔接，不会出现跳跃现象
-        const speed = 500000;
+        const speed = hasNoise ? 500000 : 1000
+        const scale = hasNoise ? 256 : 1;
         if (uvOffsetAnim && uvOffsetAnim[0]) {
-            offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * 256;
+            offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * scale;
         }
         if (uvOffsetAnim && uvOffsetAnim[1]) {
-            offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * 256;
+            offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * scale;
         }
         return offset;
     }
