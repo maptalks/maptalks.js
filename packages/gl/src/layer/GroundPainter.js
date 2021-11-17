@@ -359,17 +359,19 @@ class GroundPainter {
         offset[0] = offset[0] || 0;
         offset[1] = offset[1] || 0;
         const uvOffsetAnim = this._getUVOffsetAnim();
+        const hasNoise = this.material.get('noiseTexture');
         const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
         if (hasUVAnim) {
             offset = [offset[0], offset[1]];
             const timeStamp = performance.now();
             // 256 是noiseTexture的高宽，乘以256可以保证动画首尾平滑过渡，不会出现跳跃
-            const speed = 50000;
+            const speed = hasNoise ? 50000 : 1000;
+            const scale = (hasNoise ? 256 : 1);
             if (uvOffsetAnim[0]) {
-                offset[0] = (timeStamp * uvOffsetAnim[0] % speed) / speed * 256;
+                offset[0] = ((timeStamp * uvOffsetAnim[0]) % speed) / speed * scale;
             }
             if (uvOffsetAnim[1]) {
-                offset[1] = (timeStamp * uvOffsetAnim[1] % speed) / speed * 256;
+                offset[1] = ((timeStamp * uvOffsetAnim[1]) % speed) / speed * scale;
             }
 
         }
@@ -379,7 +381,7 @@ class GroundPainter {
         const w = extent.getWidth() / texWidth * 2;
         const h = extent.getHeight() / texHeight * 2;
         this._ground.setUniform('uvScale', [w, -h]);
-        if (hasUVAnim) {
+        if (hasUVAnim && hasNoise) {
             // 打开纹理随机分布时，地面的uv动画通过把offset值计入uvOrigin来实现的
             const origin = [xmin + (uvOffsetAnim[0] ? offset[0] : 0), ymax - (uvOffsetAnim[1] ? offset[1] : 0)];
             const uvStartX = (origin[0] / texWidth) % 1;
