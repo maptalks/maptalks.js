@@ -24,8 +24,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     getWorkerOptions() {
         const options = super.getWorkerOptions();
         let workerData = this.options.data;
-        if (isString(workerData)) {
-            workerData = toAbsoluteURL(workerData);
+        if (isString(workerData) || workerData && workerData.url) {
+            workerData = convertUrl(workerData);
         } else {
             workerData = this.features;
         }
@@ -39,15 +39,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this.options.data = data;
         if (data && (isString(data) || data.url)) {
             const renderInited = !!this.getRenderer();
-            this._fetchData(data, (err, json) => {
-                if (err) {
-                    throw err;
-                }
-                this._setData(json);
-                if (renderInited) {
-                    this._updateWorker();
-                }
-            });
+            if (renderInited) {
+                this._updateWorker();
+            }
             return this;
         }
         this._setData(data);
@@ -72,8 +66,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             const workerConn = renderer.getWorkerConnection();
             if (workerConn) {
                 let workerData = this.options.data;
-                if (isString(workerData)) {
-                    workerData = toAbsoluteURL(workerData);
+                if (isString(workerData) || workerData.url) {
+                    workerData = convertUrl(workerData);
+                } else {
+                    workerData = this.features;
                 }
                 workerConn.setData(workerData, (err, params) => {
                     renderer.clear();
@@ -89,8 +85,13 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
     }
 
     onWorkerReady(params) {
-        if (params && params.extent) {
-            this._setExtent(params.extent);
+        if (params) {
+            if (params.extent) {
+                this._setExtent(params.extent);
+            }
+            if (params.idMap) {
+                this._idMaps = params.idMap;
+            }
         }
         this.fire('dataload');
     }
@@ -168,4 +169,13 @@ function toAbsoluteURL(url) {
     url = a.href;
     a = null;
     return url;
+}
+
+function convertUrl(data) {
+    if (data.url) {
+        data.url = toAbsoluteURL(data);
+    } else {
+        data = toAbsoluteURL(data);
+    }
+    return data;
 }

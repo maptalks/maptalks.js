@@ -1,4 +1,4 @@
-import { isString } from '../../common/Util';
+import { isString, extend } from '../../common/Util';
 import Ajax from '../util/Ajax';
 import { log2 } from '../../common/Util';
 import geojsonvt from 'geojson-vt';
@@ -52,21 +52,26 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             indexMaxZoom: 5,       // max zoom in the initial tile index
             indexMaxPoints: 100000 // max number of points per tile in the index
         };
-        if (isString(data)) {
+        if (isString(data) && data.substring(0, 1) != '{') {
             Ajax.getJSON(data, this.options, (err, resp) => {
                 if (err) cb(err);
                 const data = resp;
-                const first1000 = this._generateId(data);
+                const { first1000, idMap } = this._generateId(data);
                 this.index = geojsonvt(resp, this.options.geojsonvt || options);
                 const extent = bbox(first1000);
-                cb(null, { extent });
+                cb(null, { extent, idMap });
             });
         } else {
             if (typeof data === 'string') {
                 data = JSON.parse(data);
             }
+            const features = Array.isArray(data) ? data : data.features;
+            let first1000 = features;
+            if (features.length > 1000) {
+                first1000 = features.slice(0, 1000);
+            }
+            const extent = bbox({ type: "FeatureCollection", features: first1000 });
             this.index = geojsonvt(data, this.options.geojsonvt || options);
-            const extent = bbox(data);
             cb(null, { extent });
         }
     }
@@ -74,34 +79,38 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     _generateId(data) {
         // generate id
         const first1000 = [];
+        const idMap = {};
         let uid = 0;
+
+        function visit(f) {
+            if (!f) {
+                return;
+            }
+            if (f.id === undefined || f.id === null) {
+                f.id = uid++;
+            }
+            idMap[f.id] = extend({}, f);
+            if (f.geometry) {
+                idMap[f.id].geometry = extend({}, f.geometry);
+                idMap[f.id].geometry.coordinates = null;
+            } else if (f.coordinates) {
+                idMap[f.id].coordinates = null;
+            }
+
+            if (first1000.length < 1000) {
+                first1000.push(f);
+            }
+        }
         if (Array.isArray(data)) {
             data.forEach(f => {
-                if (!f) {
-                    return;
-                }
-                if (f.id === undefined || f.id === null) {
-                    f.id = uid++;
-                }
-                if (first1000.length < 1000) {
-                    first1000.push(f);
-                }
-
+                visit(f);
             });
         } else if (data.features) {
             data.features.forEach(f => {
-                if (!f) {
-                    return;
-                }
-                if (f.id === undefined || f.id === null) {
-                    f.id = uid++;
-                }
-                if (first1000.length < 1000) {
-                    first1000.push(f);
-                }
+                visit(f);
             });
         }
-        return { type: "FeatureCollection", features: first1000 };
+        return { first1000: { type: "FeatureCollection", features: first1000 }, idMap };
     }
 
     getTileFeatures(tileInfo, cb) {
