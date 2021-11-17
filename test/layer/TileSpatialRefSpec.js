@@ -24,6 +24,88 @@ describe('TileSpatialRefSpec', function () {
         REMOVE_CONTAINER(container);
     });
 
+    it('tilelayer with none pyramid spatialReference', function () {
+        createMap([0, 0], 0, { projection: 'EPSG:4326' });
+        var earchRadiusInMeters = 6378137;
+        function getMeterPerMapUnit(mapUnit) {
+            var meterPerMapUnit = 1;
+            if (mapUnit === "meter") {
+                meterPerMapUnit = 1;
+            } else if (mapUnit === "degrees") {
+                // 每度表示多少米。
+                meterPerMapUnit = (Math.PI * 2 * earchRadiusInMeters) / 360;
+            } else if (mapUnit === "kilometer") {
+                meterPerMapUnit = 1.0e-3;
+            } else if (mapUnit === "inch") {
+                meterPerMapUnit = 1 / 2.5399999918e-2;
+            } else if (mapUnit === "feet") {
+                meterPerMapUnit = 0.3048;
+            }
+            return meterPerMapUnit;
+        }
+
+        var scaleDenominators =
+            [
+                591657527,
+                295828763.5,
+                147914381.75,
+                73957190.875,
+                36978595.4375,
+                18489297.71875,
+                11555811.0742188,
+                9244648.859375,
+                6933486.64453125,
+                5777905.53710938,
+                5200114.98339844,
+                4622324.4296875,
+                3466743.32226563,
+                2311162.21484375,
+                1155581.10742188,
+                577790.55371094,
+                288895.27685547,
+                144447.638427735,
+                72223.8192138675,
+                36111.9096069337,
+                18055.9548034669,
+                9027.97740173345,
+                4513.98870086672,
+                2256.99435043336
+            ];
+
+        var scales = scaleDenominators.map(function (s) {
+            return 1 / s;
+        });
+        var _scales = scales.map(function (s) {
+            var a = getMeterPerMapUnit("degrees") || 1;
+            return 1 / (0.0254 / (96 * s) / a);
+        });
+
+        var resolutions = _scales.map(function (s) {
+            return 1 / s;
+        });
+
+        var crs = {
+            projection: "EPSG:4326",
+            resolutions: resolutions,
+            fullExtent: {
+                top: 90.0,
+                left: -180.0,
+                bottom: -90.0,
+                right: 180.0
+            }
+        };
+        var tileLayer = new maptalks.TileLayer('tile', {
+            renderer : 'canvas',
+            spatialReference: crs,
+            urlTemplate : '#',
+            placeholder : true,
+            pyramidMode: 1,
+            repeatWorld: true
+        }).addTo(map);
+        expect(tileLayer.getSpatialReference().isPyramid()).not.to.be.ok();
+    });
+
+
     it('tilelayer with baidu projection on zoom 0', function () {
         createMap([0, 0], 0, { projection: 'baidu' });
         var tileLayer = new maptalks.TileLayer('tile', {

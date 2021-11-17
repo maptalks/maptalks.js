@@ -189,12 +189,6 @@ class TileLayer extends Layer {
     getTiles(z, parentLayer) {
         this._coordCache = {};
         const sr = this.getSpatialReference();
-        // const tileGrid0 = this._getPyramidTiles(z, parentLayer || this);
-        // const tileGrid1 = this._getCascadeTiles(z, parentLayer || this);
-        // const tileZoom = this._getTileZoom(this.getMap().getZoom());
-        // const t00 = tileGrid0.tileGrids[0].tiles.filter(t => tileZoom - t.z <= 1).length;
-        // const t10 = tileGrid1.tileGrids[0].tiles.length + (tileGrid1.tileGrids[1] && tileGrid1.tileGrids[1].tiles.length || 0);
-        // console.log('pyramid', tileGrid0.count, t00, 'cascade', tileGrid1.count, t10);
         if (!this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid()) {
             return this._getPyramidTiles(z, parentLayer);
         } else {

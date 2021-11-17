@@ -203,7 +203,7 @@ export default class SpatialReference {
         if (this._pyramid) {
             for (let i = 0; i < resolutions.length; i++) {
                 if (resolutions[i] && resolutions[i - 1]) {
-                    if (resolutions[i] / resolutions[i - 1] === 2) {
+                    if (resolutions[i - 1] / resolutions[i] !== 2) {
                         this._pyramid = false;
                         break;
                     }
