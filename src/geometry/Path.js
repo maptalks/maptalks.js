@@ -4,6 +4,7 @@ import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
 import simplify from 'simplify-js';
+import Point from '../geo/Point';
 
 /**
  * @property {Object} options - configuration options
@@ -71,7 +72,7 @@ class Path extends Geometry {
         this._animLenSoFar = 0;
         this.show();
         const isPolygon = !!this.getShell;
-        const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
+        const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
 
         const prjAnimCoords = projection.projectCoords(animCoords);
@@ -82,9 +83,17 @@ class Path extends Geometry {
             easing = options['easing'] || 'out';
         this.setCoordinates([]);
         let length = 0;
-        for (let i = 1; i < prjAnimCoords.length; i++) {
-            length += prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
+        if (prjAnimCoords.length) {
+            prjAnimCoords[0]._distance = 0;
         }
+        for (let i = 1; i < prjAnimCoords.length; i++) {
+            const distance = prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
+            // cache distance calc
+            prjAnimCoords[i]._distance = distance;
+            length += distance;
+        }
+        this._tempCoord = new Coordinate(0, 0);
+        this._tempPrjCoord = new Point(0, 0);
         const player = this._showPlayer = Animation.animate({
             't': duration
         }, {
@@ -109,6 +118,8 @@ class Path extends Geometry {
                 delete this._animIdx;
                 delete this._animLenSoFar;
                 delete this._animTailRatio;
+                delete this._tempCoord;
+                delete this._tempPrjCoord;
                 this.setCoordinates(coordinates);
             }
             if (cb) {
@@ -123,19 +134,20 @@ class Path extends Geometry {
         if (t === 0) {
             return coordinates[0];
         }
-        const projection = this._getProjection();
+        // const projection = this._getProjection();
         // const map = this.getMap();
         const targetLength = t / duration * length;
         let segLen = 0;
         let i, l;
-        for (i = this._animIdx, l = prjCoords.length; i < l - 1; i++) {
-            segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
+        for (i = this._animIdx + 1, l = prjCoords.length; i < l; i++) {
+            // segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
+            segLen = prjCoords[i]._distance;
             if (this._animLenSoFar + segLen > targetLength) {
                 break;
             }
             this._animLenSoFar += segLen;
         }
-        this._animIdx = i;
+        this._animIdx = i - 1;
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
             return coordinates[coordinates.length - 1];
@@ -147,9 +159,18 @@ class Path extends Geometry {
             r = span / segLen;
         this._animTailRatio = r;
         const x = p1.x + (p2.x - p1.x) * r,
-            y = p1.y + (p2.y - p1.y) * r,
-            lastCoord = new Coordinate(x, y);
-        const targetCoord = projection.unproject(lastCoord);
+            y = p1.y + (p2.y - p1.y) * r;
+        this._tempPrjCoord.x = x;
+        this._tempPrjCoord.y = y;
+        const lastCoord = this._tempPrjCoord;
+
+        const c1 = coordinates[idx], c2 = coordinates[idx + 1];
+        const cx = c1.x + (c2.x - c1.x) * r,
+            cy = c1.y + (c2.y - c1.y) * r;
+        this._tempCoord.x = cx;
+        this._tempCoord.y = cy;
+        // const targetCoord = projection.unproject(lastCoord, this._tempCoord);
+        const targetCoord = this._tempCoord;
         const isPolygon = !!this.getShell;
         if (!isPolygon && this.options['smoothness'] > 0) {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
