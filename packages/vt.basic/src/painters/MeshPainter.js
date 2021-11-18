@@ -126,7 +126,12 @@ class MeshPainter extends Painter {
             enumerable: true,
             get: () => {
                 const uvOffsetAnim = this.getUVOffsetAnim();
-                return this.getUVOffset(uvOffsetAnim);
+                const offset = this.getUVOffset(uvOffsetAnim);
+                if (this.material && this.material.get('noiseTexture')) {
+                    offset[0] *= -1;
+                    // offset[1] *= -1;
+                }
+                return offset;
             }
         });
         Object.defineProperty(mesh.uniforms, 'hasAlpha', {
