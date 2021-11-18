@@ -13,14 +13,15 @@ class Renderer {
 
         shader.setUniforms(uniforms || EMPTY_UNIFORMS);
         shader.setFramebuffer(framebuffer);
+        let count = 0;
         if (scene) {
             const { opaques, transparents } = scene.getSortedMeshes();
-            shader.draw(this.regl, opaques);
-            shader.draw(this.regl, transparents);
+            count += shader.draw(this.regl, opaques);
+            count += shader.draw(this.regl, transparents);
         } else {
-            shader.draw(this.regl);
+            count += shader.draw(this.regl);
         }
-        return this;
+        return count;
     }
 
     clear(options) {
