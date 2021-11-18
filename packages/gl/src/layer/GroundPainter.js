@@ -383,7 +383,7 @@ class GroundPainter {
         this._ground.setUniform('uvScale', [w, -h]);
         if (hasUVAnim && hasNoise) {
             // 打开纹理随机分布时，地面的uv动画通过把offset值计入uvOrigin来实现的
-            const origin = [xmin + (uvOffsetAnim[0] ? offset[0] : 0), ymax - (uvOffsetAnim[1] ? offset[1] : 0)];
+            const origin = [xmin - (uvOffsetAnim[0] ? offset[0] : 0), ymax + (uvOffsetAnim[1] ? offset[1] : 0)];
             const uvStartX = (origin[0] / texWidth) % 1;
             const uvStartY = (origin[1] / texHeight) % 1;
             const uvOrigin = [origin[0] / texWidth - uvStartX, origin[1] / texHeight - uvStartY];
