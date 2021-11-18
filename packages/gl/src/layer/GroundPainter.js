@@ -359,7 +359,7 @@ class GroundPainter {
         offset[0] = offset[0] || 0;
         offset[1] = offset[1] || 0;
         const uvOffsetAnim = this._getUVOffsetAnim();
-        const hasNoise = this.material.get('noiseTexture');
+        const hasNoise = this.material && this.material.get('noiseTexture');
         const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
         if (hasUVAnim) {
             offset = [offset[0], offset[1]];
