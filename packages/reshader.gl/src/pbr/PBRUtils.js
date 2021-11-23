@@ -69,7 +69,8 @@ function onUpdatelights(canvas, regl, e) {
 
 }
 
-export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
+const DEFAULT_HALTON = [0, 0];
+export function getPBRUniforms(map, iblTexes, dfgLUT, ssr, jitter) {
     const viewMatrix = map.viewMatrix;
     const projMatrix = map.projMatrix;
     const cameraPosition = map.cameraPosition;
@@ -84,13 +85,13 @@ export function getPBRUniforms(map, iblTexes, dfgLUT, context) {
         cameraNearFar: [map.cameraNear, map.cameraFar]
     }, lightUniforms);
     uniforms['brdfLUT'] = dfgLUT;
-    if (context && context.ssr && context.ssr.renderUniforms) {
-        extend(uniforms, context.ssr.renderUniforms);
+    if (ssr && ssr.renderUniforms) {
+        extend(uniforms, ssr.renderUniforms);
     }
-    if (context && context.jitter) {
-        uniforms['halton'] = context.jitter;
+    if (jitter) {
+        uniforms['halton'] = jitter;
     } else {
-        uniforms['halton'] = [0, 0];
+        uniforms['halton'] = DEFAULT_HALTON;
     }
     return uniforms;
 }
