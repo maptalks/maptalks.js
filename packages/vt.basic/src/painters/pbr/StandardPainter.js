@@ -118,7 +118,6 @@ class StandardPainter extends MeshPainter {
 
 
     delete() {
-        this.getMap().off('updatelights', this.onUpdatelights, this);
         super.delete();
         this.disposeIBLTextures();
         this.material.dispose();
@@ -138,7 +137,8 @@ class StandardPainter extends MeshPainter {
 
 
     init(context) {
-        this.getMap().on('updatelights', this.onUpdatelights, this);
+        this.getMap().on('updatelights', this._onUpdatelights, this);
+        this.createIBLTextures();
         //保存context，updateSceneConfig时读取
         this._context = this._context || context;
         const regl = this.regl;
@@ -357,17 +357,29 @@ class StandardPainter extends MeshPainter {
     }
 
     getUniformValues(map, context) {
-        if (!this.iblTexes) {
-            this.createIBLTextures();
-        }
-        const uniforms = getPBRUniforms(map, this.iblTexes, this.dfgLUT, context);
+        const { iblTexes, dfgLUT } = this.getIBLRes();
+        const uniforms = getPBRUniforms(map, iblTexes, dfgLUT, context);
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
 
     _getDefines(defines) {
-        defines['HAS_IBL_LIGHTING'] = 1;
+        if (this.hasIBL()) {
+            defines['HAS_IBL_LIGHTING'] = 1;
+        } else {
+            delete defines['HAS_IBL_LIGHTING'];
+        }
         return defines;
+    }
+
+    _onUpdatelights() {
+        if (!this.shader) {
+            return;
+        }
+        const defines = this.shader.shaderDefines;
+        this._getDefines(defines);
+        this.shader.shaderDefines = defines;
+
     }
 }
 

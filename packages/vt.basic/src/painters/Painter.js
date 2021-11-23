@@ -7,7 +7,7 @@ import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import deepEuqal from 'fast-deep-equal';
 
-const { createIBLTextures, disposeIBLTextures } = reshader.pbr.PBRUtils;
+const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
 const TEX_CACHE_KEY = '__gl_textures';
 
@@ -931,64 +931,21 @@ class Painter {
         }
     }
 
+    getIBLRes() {
+        const canvas = this.layer.getRenderer().canvas;
+        return getIBLResOnCanvas(canvas);
+    }
+
     createIBLTextures() {
         const canvas = this.layer.getRenderer().canvas;
-        if (!canvas.dfgLUT) {
-            canvas.dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this.regl);
-            canvas.dfgLUT.mtkCount = 0;
-        }
-        if (this.dfgLUT !== canvas.dfgLUT) {
-            canvas.dfgLUT.mtkCount++;
-            this.dfgLUT = canvas.dfgLUT;
-        }
-        if (!this.hasIBL()) {
-            return;
-        }
-        if (!canvas.iblTexes) {
-            canvas.iblTexes = createIBLTextures(this.regl, this.getMap());
-            canvas.iblTexes.mtkCount = 0;
-        }
-        this.iblTexes = canvas.iblTexes;
-        canvas.iblTexes.mtkCount++;
+        loginIBLResOnCanvas(canvas, this.regl, this.getMap());
         this.setToRedraw(true);
         this.layer.fire('iblupdated');
     }
 
     disposeIBLTextures() {
         const canvas = this.layer.getRenderer().canvas;
-        if (this.dfgLUT && this.dfgLUT === canvas.dfgLUT) {
-            canvas.dfgLUT.mtkCount--;
-            if (canvas.dfgLUT.mtkCount <= 0) {
-                canvas.dfgLUT.destroy();
-                delete canvas.dfgLUT;
-            }
-        }
-        delete this.dfgLUT;
-        if (this.iblTexes && this.iblTexes === canvas.iblTexes) {
-            canvas.iblTexes.mtkCount--;
-            if (canvas.iblTexes.mtkCount <= 0) {
-                disposeIBLTextures(canvas.iblTexes);
-                delete canvas.iblTexes;
-            }
-        }
-    }
-
-    onUpdatelights(param) {
-        if (param.ambientUpdate) {
-            const canvas = this.layer.getRenderer().canvas;
-            const iblTexes = canvas.iblTexes;
-            const myIblTexes = this.iblTexes;
-            delete this.iblTexes;
-            if (iblTexes && myIblTexes === canvas.iblTexes && iblTexes.event !== param) {
-                disposeIBLTextures(iblTexes);
-                delete canvas.iblTexes;
-                this.createIBLTextures();
-                if (canvas.iblTexes) {
-                    canvas.iblTexes.event = param;
-                }
-            }
-        }
-        this.setToRedraw(true);
+        logoutIBLResOnCanvas(canvas, this.getMap());
     }
 
     // 在createFnTypeConfig方法中，有时fnTypeConfig中计算的值仍然是fn-type，(例如Vector3DLayer的数据symbol属性是fn type时)

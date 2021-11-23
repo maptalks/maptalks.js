@@ -145,6 +145,8 @@
         // intensity: 80000
       }
     };
+
+    const ambientResource = lights.ambient.resource;
     map.setLightConfig(lights);
 
     function updateLight() {
@@ -152,7 +154,7 @@
         ambient: {
         resource: {
           ////echarts-gl上的例子
-          // url: './resources/pisa.hdr',
+          url: './resources/pisa.hdr',
           // sh: [
           //   [0.8216, 0.6652, 0.5816],
           //   [0.0265, -0.0286, -0.0697],
@@ -558,6 +560,17 @@
     });
 
     initGUI();
+
+    function updateAmbientLight() {
+      if (lights.ambient.resource) {
+        lights.ambient.resource = null;
+        map.setLightConfig(lights);
+      } else {
+        lights.ambient.resource = ambientResource;
+        map.setLightConfig(lights);
+      }
+
+    }
 
     function initGUI() {
       var gui = new dat.GUI( { width: 250 } );

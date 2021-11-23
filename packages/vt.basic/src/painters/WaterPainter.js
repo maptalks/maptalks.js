@@ -100,7 +100,7 @@ class WaterPainter extends BasicPainter {
     }
 
     init(context) {
-        this.getMap().on('updatelights', this.onUpdatelights, this);
+        this.createIBLTextures();
         const regl = this.regl;
 
 
@@ -351,9 +351,7 @@ class WaterPainter extends BasicPainter {
     }
 
     _getWaterUniform(map, context) {
-        if (!this.iblTexes) {
-            this.createIBLTextures();
-        }
+        const { iblTexes } = this.getIBLRes();
         const projViewMatrix = map.projViewMatrix;
         const lightManager = map.getLightManager();
         let directionalLight = lightManager && lightManager.getDirectionalLight() || {};
@@ -362,8 +360,8 @@ class WaterPainter extends BasicPainter {
         const waterDir = this._waterDir = this._waterDir || [];
         const uniforms = {
             hdrHsv: ambientLight.hsv || [0, 0, 0],
-            specularPBR: this.iblTexes && this.iblTexes.prefilterMap,
-            rgbmRange: this.iblTexes && this.iblTexes.rgbmRange,
+            specularPBR: iblTexes && iblTexes.prefilterMap,
+            rgbmRange: iblTexes && iblTexes.rgbmRange,
             ambientColor: ambientLight.color || [0.2, 0.2, 0.2],
             outSize: [this.canvas.width, this.canvas.height],
             // uniform vec3 diffuseSPH[9];
@@ -395,7 +393,6 @@ class WaterPainter extends BasicPainter {
     }
 
     delete() {
-        this.getMap().off('updatelights', this.onUpdatelights, this);
         super.delete();
         if (this._emptyTex) {
             this._emptyTex.destroy();
