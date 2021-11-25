@@ -1,6 +1,6 @@
 import { vec3, vec4 } from 'gl-matrix';
 import { packTangentFrame, buildTangents, buildNormals } from '@maptalks/tbn-packer';
-import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize } from './common/Util';
+import { isNumber, extend, isArray, isSupportVAO, hasOwn, getBufferSize, isInStride, isInterleaved } from './common/Util';
 import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import * as gltf from '@maptalks/gltf-loader';
@@ -36,6 +36,11 @@ const DEFAULT_DESC = {
     'color0Attribute': 'aColor0',
     'tangentAttribute': 'aTangent'
 };
+
+let UID = 1;
+function GUID() {
+    return UID++;
+}
 
 export default class Geometry {
     constructor(data, elements, count, desc) {
@@ -84,27 +89,35 @@ export default class Geometry {
         if (!this.data) {
             return;
         }
+
         //TODO 可以直接从POSITION的min/max读出bbox，省去遍历
         const buffers = this._buffers || {};
         for (const attr in this.data) {
             const attribute = this.data[attr];
-            if (attribute && attribute.bufferView !== undefined) {
-                const bufferView = attribute.bufferView;
-                this.data[attr] =  {
-                    buffer: bufferView,
-                    offset: attribute.byteOffset,
-                    stride: attribute.byteStride,
-                    type: REGL_TYPES[attribute.componentType],
-                    size: attribute.itemSize,
-                    count: attribute.count,
-                    interleaved: attribute.interleaved,
-                    byteOffset: attribute.offset,
-                    componentType: attribute.componentType
-                };
-                if (!buffers[bufferView]) {
-                    buffers[bufferView] = {
-                        data: attribute.array
+            if (attribute && attribute.array) {
+                if (isInStride(attribute.array)) {
+                    let id = attribute.array.buffer['__id'];
+                    if (!id) {
+                        id = attribute.array.buffer['__id'] = GUID();
+                    }
+                    this.data[attr] =  {
+                        buffer: id,
+                        offset: attribute.byteOffset,
+                        stride: attribute.byteStride,
+                        type: REGL_TYPES[attribute.componentType],
+                        size: attribute.itemSize,
+                        count: attribute.count,
+                        byteOffset: attribute.offset,
+                        componentType: attribute.componentType
                     };
+
+                    if (!buffers[id]) {
+                        buffers[id] = {
+                            data: attribute.array.buffer
+                        };
+                    }
+                } else {
+                    this.data[attr] = attribute.array;
                 }
             }
         }
@@ -480,10 +493,10 @@ export default class Geometry {
             // form of object: { usage : 'static', data : [...] }
             if (posArr.data) {
                 posArr = posArr.data;
-            } else if (posArr.interleaved) {
+            } else if (isInterleaved(posArr)) {
                 posArr = this._getAttributeData(this.desc.positionAttribute);
-            } else {
-                posArr = this._buffers[posArr.buffer].data;
+            } else if (posArr.array) {
+                posArr = posArr.array;
             }
         }
         if (posArr && posArr.length) {
@@ -536,11 +549,11 @@ export default class Geometry {
 
     _getAttributeData(name) {
         const data = this.data[name];
-        const bufferView = data.buffer;
+        const bufKey = data.buffer;
         if (isArray(data)) {
             return data;
-        } else if (data.interleaved) {
-            const attribute = this._buffers[bufferView] ? this._buffers[bufferView].data : data.array;
+        } else if (isInterleaved(data)) {
+            const attribute = this._buffers[bufKey] ? this._buffers[bufKey].data : data.array;
             const { count, size, stride, byteOffset, componentType } = data;
             const ctor = gltf.GLTFLoader.getTypedArrayCtor(componentType);
             //对于POSITION数据，为避免updateBBox时频繁创建临时数组，采用缓存tempPosArray的策略获取interleavedArray,
@@ -548,16 +561,16 @@ export default class Geometry {
             if (name === this.desc.positionAttribute) {
                 if (!this._tempPosArray || (this._tempPosArray && this._tempPosArray.length < size *count)) {
                     this._tempPosArray = new ctor(size * count);
-                    return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+                    return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, byteOffset, componentType);
                 }
                 if (!this._posDirty) {
                     return this._tempPosArray;
                 }
                 this._posDirty = false;
-                return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+                return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, byteOffset, componentType);
             } else {
                 const tempArray = new ctor(size * count);
-                return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute.buffer, count, size, stride, byteOffset, componentType);
+                return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute, count, size, stride, byteOffset, componentType);
             }
         }
 
@@ -839,4 +852,3 @@ function getTypeCtor(arr, byteWidth) {
 //     }
 //     return tangent;
 // }
-

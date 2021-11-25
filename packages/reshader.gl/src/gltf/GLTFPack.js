@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { defined, isNumber } from '../common/Util';
+import { defined, isNumber, isInterleaved } from '../common/Util';
 import Skin from './Skin';
 import TRS from './TRS';
 import * as gltf from '@maptalks/gltf-loader';
@@ -431,7 +431,7 @@ function createGeometry(primitive) {
     }
     //如果有morph，需要预先填充morph空数据，动画开启后，会不断向这些空数据中填充morphTargets数据
     if (primitive.morphTargets) {
-        const length = attributes['POSITION'].interleaved ? attributes['POSITION'].itemSize * attributes['POSITION'].count : attributes['POSITION'].length;
+        const length = isInterleaved(attributes['POSITION']) ? attributes['POSITION'].itemSize * attributes['POSITION'].count : attributes['POSITION'].length;
         for (let i = 0; i < 8; i++) {
             if (!attributes[`POSITION${i}`]) {
                 attributes[`POSITION${i}`] = new Float32Array(length).fill(0);

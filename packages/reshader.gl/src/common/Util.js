@@ -230,3 +230,20 @@ export function getTextureChannels(format) {
     }
     return 1;
 }
+
+export function isInStride(array) {
+    if (!array || !array.buffer) {
+        return false;
+    }
+    const bytesLen = array.length * array.BYTES_PER_ELEMENT;
+    const bufLen = array.buffer.byteLength;
+    return bytesLen < bufLen;
+}
+
+
+export function isInterleaved(dataObj) {
+    return dataObj && (dataObj.stride > 0 || isInStride(dataObj.array));
+    // const { stride, componentType, count, size } = dataObj;
+    // const bytesPerElement = gltf.GLTFLoader.getTypedArrayCtor(componentType).BYTES_PER_ELEMENT;
+    // return stride > bytesPerElement * count * size;
+}
