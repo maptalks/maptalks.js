@@ -358,7 +358,7 @@ class StandardPainter extends MeshPainter {
 
     getUniformValues(map, context) {
         const { iblTexes, dfgLUT } = this.getIBLRes();
-        const uniforms = getPBRUniforms(map, iblTexes, dfgLUT, context);
+        const uniforms = getPBRUniforms(map, iblTexes, dfgLUT, context && context.ssr, context && context.jitter);
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
