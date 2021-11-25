@@ -69,7 +69,7 @@ class AbstractTexture {
                     config.width = config.data.width;
                     config.height = config.data.height;
                 }
-                if (!config.hdr && isArray(config.data) && !isPowerOfTwo(config.width) && !isPowerOfTwo(config.height)) {
+                if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
                     config.data = resizeFromArray(config.data, config.width, config.height);
                     config.width = config.data.width;
                     config.height = config.data.height;
