@@ -21,6 +21,14 @@ class LinePainter extends BasicPainter {
             symbol.lineColor = lineColor.map(c => c * 255);
         }
 
+        const lineStrokeColor = symbol.lineStrokeColor;
+        if (Array.isArray(lineStrokeColor)) {
+            if (lineStrokeColor.length === 3) {
+                lineStrokeColor.push(1);
+            }
+            symbol.lineStrokeColor = lineStrokeColor.map(c => c * 255);
+        }
+
         const lineDashColor = symbol.lineDashColor;
         if (Array.isArray(lineDashColor)) {
             if (lineDashColor.length === 3) {
@@ -77,6 +85,7 @@ class LinePainter extends BasicPainter {
         this.setLineUniforms(symbol, uniforms);
 
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#000', createColorSetter(this.colorCache));
+        setUniformFromSymbol(uniforms, 'lineStrokeColor', symbol, 'lineStrokeColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;
             if (dasharray && dasharray.length) {
@@ -142,6 +151,9 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
+        if (geometry.data.aStrokeColor) {
+            defines['HAS_STROKE_COLOR'] = 1;
+        }
         this.setMeshDefines(defines, geometry);
         if (geometry.properties.hasUp) {
             // vector tile 里， round和up是存在position里的
@@ -197,7 +209,7 @@ class LinePainter extends BasicPainter {
     setLineUniforms(symbol, uniforms) {
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-        setUniformFromSymbol(uniforms, 'lineGapWidth', symbol, 'lineGapWidth', 0);
+        setUniformFromSymbol(uniforms, 'lineStrokeWidth', symbol, 'lineStrokeWidth', 0);
         setUniformFromSymbol(uniforms, 'lineBlur', symbol, 'lineBlur', 0.7);
         setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
         setUniformFromSymbol(uniforms, 'lineDx', symbol, 'lineDx', 0);
@@ -214,8 +226,8 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
-        if (geometry.data.aLineGapWidth) {
-            defines['HAS_GAP_WIDTH'] = 1;
+        if (geometry.data.aLineStrokeWidth) {
+            defines['HAS_STROKE_WIDTH'] = 1;
         }
         if (geometry.data.aLineDx) {
             defines['HAS_LINE_DX'] = 1;
@@ -309,7 +321,7 @@ class LinePainter extends BasicPainter {
     createShapeFnTypeConfigs(map, symbolDef) {
         const aLineWidthFn = interpolated(symbolDef['lineWidth']);
         const aLineOpacityFn = interpolated(symbolDef['lineOpacity']);
-        const aLineGapWidthFn = interpolated(symbolDef['lineGapWidth']);
+        const aLineStrokeWidthFn = interpolated(symbolDef['lineStrokeWidth']);
         const aLineDxFn = interpolated(symbolDef['lineDx']);
         const aLineDyFn = interpolated(symbolDef['lineDy']);
         const u16 = new Uint16Array(1);
@@ -332,15 +344,15 @@ class LinePainter extends BasicPainter {
                 }
             },
             {
-                attrName: 'aLineGapWidth',
-                symbolName: 'lineGapWidth',
+                attrName: 'aLineStrokeWidth',
+                symbolName: 'lineStrokeWidth',
                 type: Uint8Array,
                 width: 1,
-                define: 'HAS_GAP_WIDTH',
+                define: 'HAS_STROKE_WIDTH',
                 evaluate: properties => {
-                    const lineGapWidth = aLineGapWidthFn(map.getZoom(), properties);
+                    const lineStrokeWidth = aLineStrokeWidthFn(map.getZoom(), properties);
                     //乘以2是为了解决 #190
-                    u16[0] = Math.round(lineGapWidth * 2.0);
+                    u16[0] = Math.round(lineStrokeWidth * 2.0);
                     return u16[0];
                 }
             },

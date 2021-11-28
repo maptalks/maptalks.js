@@ -16,8 +16,10 @@ const style = [
             }
         },
         symbol: {
-            lineWidth: 12,
-            lineGapWidth: 8
+            lineStrokeColor: '#000',
+            lineColor: [0, 0, 0, 0],
+            lineWidth: 8,
+            lineStrokeWidth: 6
         }
     }
 ];

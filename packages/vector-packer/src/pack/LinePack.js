@@ -78,7 +78,7 @@ export default class LinePack extends VectorPack {
     }
 
     getFormat() {
-        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
+        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const format = [
             {
                 type: Int16Array,
@@ -119,12 +119,12 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (lineGapWidthFn) {
+        if (lineStrokeWidthFn) {
             format.push(
                 {
                     type: Uint8Array,
                     width: 1,
-                    name: 'aLineGapWidth'
+                    name: 'aLineStrokeWidth'
                 }
             );
         }
@@ -134,6 +134,15 @@ export default class LinePack extends VectorPack {
                     type: Uint8Array,
                     width: 4,
                     name: 'aColor'
+                }
+            );
+        }
+        if (lineStrokeColorFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aStrokeColor'
                 }
             );
         }
@@ -213,7 +222,7 @@ export default class LinePack extends VectorPack {
     }
 
     placeVector(line) {
-        const { lineJoinFn, lineCapFn, lineWidthFn, lineGapWidthFn,
+        const { lineJoinFn, lineCapFn, lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn,
             lineColorFn, lineOpacityFn, lineJoinPatternModeFn,
             lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const symbol = this.symbol,
@@ -249,20 +258,20 @@ export default class LinePack extends VectorPack {
         } else {
             this.feaLineWidth = symbol['lineWidth'];
         }
-        if (lineGapWidthFn) {
+        if (lineStrokeWidthFn) {
             // {
-            //     lineGapWidth: {
+            //     lineStrokeWidth: {
             //         property: 'type',
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            let lineGapWidth = lineGapWidthFn(this.options['zoom'], feature.properties);
-            if (isNil(lineGapWidth)) {
-                lineGapWidth = 0;
+            let lineStrokeWidth = lineStrokeWidthFn(this.options['zoom'], feature.properties);
+            if (isNil(lineStrokeWidth)) {
+                lineStrokeWidth = 0;
             }
-            this.feaLineGapWidth = lineGapWidth;
+            this.feaLineStrokeWidth = lineStrokeWidth;
         } else {
-            this.feaLineGapWidth = symbol['lineGapWidth'] || 0;
+            this.feaLineStrokeWidth = symbol['lineStrokeWidth'] || 0;
         }
         if (lineColorFn) {
             this.feaColor = lineColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
@@ -277,6 +286,22 @@ export default class LinePack extends VectorPack {
                 }
                 if (this.feaColor.length === 3) {
                     this.feaColor.push(255);
+                }
+            }
+        }
+        if (lineStrokeColorFn) {
+            this.feaStrokeColor = lineStrokeColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
+            if (isFunctionDefinition(this.feaStrokeColor)) {
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                this.feaStrokeColor = [0, 0, 0, 0];
+            } else {
+                if (!Array.isArray(this.feaStrokeColor)) {
+                    this.feaStrokeColor = Color(this.feaStrokeColor).array();
+                } else {
+                    this.feaStrokeColor = this.feaStrokeColor.map(c => c * 255);
+                }
+                if (this.feaStrokeColor.length === 3) {
+                    this.feaStrokeColor.push(255);
                 }
             }
         }
@@ -725,7 +750,7 @@ export default class LinePack extends VectorPack {
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
     fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
-        const { lineWidthFn, lineGapWidthFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
+        const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         if (this.options.center) {
             data.aPosition.push(x, y, 0);
         } else {
@@ -754,12 +779,15 @@ export default class LinePack extends VectorPack {
             //乘以2是为了解决 #190
             data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
         }
-        if (lineGapWidthFn) {
+        if (lineStrokeWidthFn) {
             //乘以2是为了解决 #190
-            data.aLineGapWidth.push(Math.round(this.feaLineGapWidth * 2));
+            data.aLineStrokeWidth.push(Math.round(this.feaLineStrokeWidth * 2));
         }
         if (lineColorFn) {
             data.aColor.push(...this.feaColor);
+        }
+        if (lineStrokeColorFn) {
+            data.aStrokeColor.push(...this.feaStrokeColor);
         }
         if (lineOpacityFn) {
             data.aOpacity.push(this.feaOpacity);

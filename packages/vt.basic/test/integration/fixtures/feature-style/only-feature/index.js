@@ -61,7 +61,7 @@ const featureStyle = [
                     ],
                     'lineDx': 0,
                     'lineDy': 0,
-                    'lineGapWidth': 0,
+                    'lineStrokeWidth': 0,
                     'lineJoin': 'miter',
                     'lineOpacity': 1,
                     'linePatternAnimSpeed': 0,

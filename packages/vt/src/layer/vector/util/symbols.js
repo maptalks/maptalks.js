@@ -242,15 +242,20 @@ export const LINE_SYMBOL = {
         default: 2,
         property: '_symbol_lineWidth'
     },
-    lineGapWidth: {
+    lineStrokeWidth: {
         type: 'identity',
         default: 0,
-        property: '_symbol_lineGapWidth'
+        property: '_symbol_lineStrokeWidth'
     },
     lineColor: {
         type: 'identity',
-        default: 20,
+        default: [1, 0, 0, 1],
         property: '_symbol_lineColor'
+    },
+    lineStrokeColor: {
+        type: 'identity',
+        default: [0, 0, 0, 0],
+        property: '_symbol_lineStrokeColor'
     },
     lineDx: {
         type: 'identity',

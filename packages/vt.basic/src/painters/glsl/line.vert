@@ -30,30 +30,11 @@ attribute vec3 aPosition;
     varying highp float vLinesofar;
 #endif
 
-#ifdef HAS_PATTERN
-    attribute vec4 aTexInfo;
-    varying vec4 vTexInfo;
-
-    varying float vJoin;
-#endif
-
-#ifdef HAS_DASHARRAY
-    #ifdef HAS_DASHARRAY_ATTR
-        attribute vec4 aDasharray;
-        varying vec4 vDasharray;
-    #endif
-
-    #ifdef HAS_DASHARRAY_COLOR
-        attribute vec4 aDashColor;
-        varying vec4 vDashColor;
-    #endif
-#endif
-
 uniform float cameraToCenterDistance;
-#if defined(HAS_GAP_WIDTH)
-    attribute float aLineGapWidth;
+#if defined(HAS_STROKE_WIDTH)
+    attribute float aLineStrokeWidth;
 #else
-    uniform float lineGapWidth;
+    uniform float lineStrokeWidth;
 #endif
 
 uniform mat4 projViewModelMatrix;
@@ -94,22 +75,46 @@ varying float vGammaScale;
     uniform float lineWidth;
 #endif
 
-#ifdef HAS_PATTERN
-    #ifdef HAS_PATTERN_ANIM
-        attribute float aLinePatternAnimSpeed;
-        varying float vLinePatternAnimSpeed;
-    #endif
-
-    #ifdef HAS_PATTERN_GAP
-        attribute float aLinePatternGap;
-        varying float vLinePatternGap;
-    #endif
-#endif
-
 #ifndef PICKING_MODE
-    #ifdef HAS_COLOR
-        attribute vec4 aColor;
-        varying vec4 vColor;
+    #ifndef HAS_GRADIENT
+        #ifdef HAS_COLOR
+            attribute vec4 aColor;
+            varying vec4 vColor;
+        #endif
+
+        #ifdef HAS_PATTERN
+            #ifdef HAS_PATTERN_ANIM
+                attribute float aLinePatternAnimSpeed;
+                varying float vLinePatternAnimSpeed;
+            #endif
+
+            #ifdef HAS_PATTERN_GAP
+                attribute float aLinePatternGap;
+                varying float vLinePatternGap;
+            #endif
+
+            attribute vec4 aTexInfo;
+            varying vec4 vTexInfo;
+
+            varying float vJoin;
+        #endif
+
+        #ifdef HAS_DASHARRAY
+            #ifdef HAS_DASHARRAY_ATTR
+                attribute vec4 aDasharray;
+                varying vec4 vDasharray;
+            #endif
+
+            #ifdef HAS_DASHARRAY_COLOR
+                attribute vec4 aDashColor;
+                varying vec4 vDashColor;
+            #endif
+        #endif
+    #endif
+
+    #ifdef HAS_STROKE_COLOR
+        attribute vec4 aStrokeColor;
+        varying vec4 vStrokeColor;
     #endif
 
     #ifdef HAS_OPACITY
@@ -156,10 +161,10 @@ void main() {
     vec4 vertex = projViewModelMatrix * pos4;
     vVertex = (modelMatrix * pos4).xyz;
 
-    #ifdef HAS_GAP_WIDTH
-        float gapwidth = aLineGapWidth / 4.0;
+    #ifdef HAS_STROKE_WIDTH
+        float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
     #else
-        float gapwidth = lineGapWidth / 2.0;
+        float strokeWidth = lineStrokeWidth;
     #endif
 
     #ifdef HAS_LINE_WIDTH
@@ -168,11 +173,12 @@ void main() {
     #else
         float myLineWidth = lineWidth * layerScale;
     #endif
-    float halfwidth = myLineWidth / 2.0;
+    float halfwidth = myLineWidth / 2.0 + strokeWidth;
     // offset = -1.0 * offset;
 
+    float gapwidth = sign(strokeWidth) * myLineWidth / 2.0;
     float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
-    float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
+    float outset = halfwidth + sign(halfwidth) * ANTIALIASING;
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
@@ -220,16 +226,6 @@ void main() {
     float projDistance = gl_Position.w;
     gl_Position.xy += vec2(myLineDx, myLineDy) * 2.0 / canvasSize * projDistance;
 
-    #ifdef HAS_PATTERN
-        #ifdef HAS_PATTERN_ANIM
-            vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
-        #endif
-
-        #ifdef HAS_PATTERN_GAP
-            vLinePatternGap = aLinePatternGap / 10.0;
-        #endif
-    #endif
-
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);
         vGammaScale = projDistance / cameraToCenterDistance;
@@ -240,18 +236,45 @@ void main() {
             #endif
         #endif
 
-        #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
-            #ifdef HAS_GRADIENT
-                vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
-                vGradIndex = aGradIndex;
-            #else
-                vLinesofar = aLinesofar / tileRatio * scale;
+            #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+                #ifdef HAS_GRADIENT
+                    vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
+                    vGradIndex = aGradIndex;
+                #else
+                    vLinesofar = aLinesofar / tileRatio * scale;
+                #endif
+            #endif
+
+        #ifndef HAS_GRADIENT
+            #ifdef HAS_COLOR
+                vColor = aColor;
+            #endif
+
+            #ifdef HAS_DASHARRAY
+                #ifdef HAS_DASHARRAY_ATTR
+                    vDasharray = aDasharray;
+                #endif
+
+                #ifdef HAS_DASHARRAY_COLOR
+                    vDashColor = aDashColor / 255.0;
+                #endif
+            #endif
+
+            #ifdef HAS_PATTERN
+                vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
+                vJoin = floor(aExtrude.z / 4.0);
+                #ifdef HAS_PATTERN_ANIM
+                    vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+                #endif
+
+                #ifdef HAS_PATTERN_GAP
+                    vLinePatternGap = aLinePatternGap / 10.0;
+                #endif
             #endif
         #endif
 
-
-        #ifdef HAS_COLOR
-            vColor = aColor;
+        #ifdef HAS_STROKE_COLOR
+            vStrokeColor = aStrokeColor;
         #endif
 
         #ifdef HAS_OPACITY
@@ -260,21 +283,6 @@ void main() {
 
         #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
             shadow_computeShadowPars(localVertex);
-        #endif
-
-        #ifdef HAS_DASHARRAY
-            #ifdef HAS_DASHARRAY_ATTR
-                vDasharray = aDasharray;
-            #endif
-
-            #ifdef HAS_DASHARRAY_COLOR
-                vDashColor = aDashColor / 255.0;
-            #endif
-        #endif
-
-        #ifdef HAS_PATTERN
-            vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
-            vJoin = floor(aExtrude.z / 4.0);
         #endif
     #else
         fbo_picking_setData(projDistance, true);

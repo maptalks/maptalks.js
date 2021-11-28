@@ -11,7 +11,7 @@ attribute vec2 aExtrude;
 attribute float aLinesofar;
 
 uniform float cameraToCenterDistance;
-uniform float lineGapWidth;
+uniform float lineStrokeWidth;
 uniform float lineWidth;
 uniform mat4 projViewModelMatrix;
 uniform float tileResolution;
@@ -28,12 +28,12 @@ uniform float trailLength;
 varying float vTime;
 
 void main() {
-    float gapwidth = lineGapWidth / 2.0;
+    float strokewidth = lineStrokeWidth / 2.0;
     float halfwidth = lineWidth / 2.0;
     // offset = -1.0 * offset;
 
-    float inset = gapwidth + sign(gapwidth) * ANTIALIASING;
-    float outset = gapwidth + halfwidth + sign(halfwidth) * ANTIALIASING;
+    float inset = lineWidth + sign(lineWidth) * ANTIALIASING;
+    float outset = halfwidth + strokewidth + sign(halfwidth) * ANTIALIASING;
 
     vec2 extrude = aExtrude;
     // Scale the extrusion vector down to a normal and then up by the line width

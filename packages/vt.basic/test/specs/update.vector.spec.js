@@ -934,12 +934,11 @@ describe('vector layers update style specs', () => {
             if (count >= 1 && !removed) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
-                assert.deepEqual(pixel, [0, 0, 20, 255]);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
                 polygon.remove();
                 removed = true;
             } else if (outlined) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
                 assert(pixel[3] === 0);
                 done();
             } else if (removed) {

@@ -14,7 +14,7 @@ import StyledVector from './StyledVector';
 
 const interpolatedSymbols = {
     'lineWidth': 1,
-    'lineGapWidth': 1,
+    'lineStrokeWidth': 1,
     'lineDx': 1,
     'lineDy': 1,
     'lineOpacity': 1,

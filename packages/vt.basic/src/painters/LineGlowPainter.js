@@ -28,10 +28,6 @@ class LineGlowPainter extends LinePainter {
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
-                'cameraToCenterDistance',
-                'lineWidth',
-                'lineGapWidth',
-                'blur',
                 'lineOpacity',
                 {
                     name: 'projViewModelMatrix',
@@ -41,13 +37,7 @@ class LineGlowPainter extends LinePainter {
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
                     }
-                },
-                'tileRatio',
-                'resolution',
-                'tileResolution',
-                'currentTime',
-                'trailLength',
-                'animation'
+                }
             ],
             extraCommandProps: {
                 viewport,

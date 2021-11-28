@@ -16,6 +16,12 @@ uniform lowp float lineBlur;
     uniform lowp vec4 lineColor;
 #endif
 
+#ifdef HAS_STROKE_COLOR
+    varying vec4 vStrokeColor;
+#else
+    uniform lowp vec4 lineStrokeColor;
+#endif
+
 #ifdef HAS_OPACITY
     varying float vOpacity;
 #else
@@ -152,7 +158,17 @@ void main() {
             color *= inGap;
         }
     #endif
-    color *= alpha;
+
+    #ifdef HAS_STROKE_COLOR
+        vec4 strokeColor = vStrokeColor / 255.0;
+    #else
+        vec4 strokeColor = lineStrokeColor;
+    #endif
+    strokeColor = mix(color, strokeColor, sign(strokeColor.a));
+    // color *= alpha;
+    // 后半部分只有 dist <= vWidth.t 时才有值，没有设置lineStrokeWidth时，后半部分永远为0
+    color = strokeColor * alpha + max(sign(vWidth.t - dist), 0.0) * color * (1.0 - alpha);
+
     #ifdef HAS_DASHARRAY
         #ifdef HAS_DASHARRAY_ATTR
             vec4 dasharray = vDasharray;
