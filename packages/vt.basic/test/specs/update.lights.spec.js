@@ -101,7 +101,7 @@ describe('lights specs', () => {
                 const x = renderer.canvas.width;
                 const y = renderer.canvas.height;
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                if (count === 1 && renderCount <= 2) {
+                if (count === 2 && renderCount <= 2) {
                     //第一次更新环境光的颜色
                     assert.deepEqual(pixel, [216, 0, 161, 255]);
                 } else if (count === 1 && renderCount === 3) {
