@@ -531,6 +531,9 @@ include(GLContext.prototype, {
 
 
     _restore(preStates) {
+        if (!preStates) {
+            return;
+        }
         delete this.activeUnit;
         const target = this.states;
 
