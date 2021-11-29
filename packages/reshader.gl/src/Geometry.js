@@ -107,7 +107,6 @@ export default class Geometry {
                         type: REGL_TYPES[attribute.componentType],
                         size: attribute.itemSize,
                         count: attribute.count,
-                        byteOffset: attribute.offset,
                         componentType: attribute.componentType
                     };
 
@@ -554,23 +553,23 @@ export default class Geometry {
             return data;
         } else if (isInterleaved(data)) {
             const attribute = this._buffers[bufKey] ? this._buffers[bufKey].data : data.array;
-            const { count, size, stride, byteOffset, componentType } = data;
+            const { count, size, stride, offset, componentType } = data;
             const ctor = gltf.GLTFLoader.getTypedArrayCtor(componentType);
             //对于POSITION数据，为避免updateBBox时频繁创建临时数组，采用缓存tempPosArray的策略获取interleavedArray,
             //对于非POSITION的数据，直接readInterleavedArray读取即可
             if (name === this.desc.positionAttribute) {
                 if (!this._tempPosArray || (this._tempPosArray && this._tempPosArray.length < size *count)) {
                     this._tempPosArray = new ctor(size * count);
-                    return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, byteOffset, componentType);
+                    return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, offset, componentType);
                 }
                 if (!this._posDirty) {
                     return this._tempPosArray;
                 }
                 this._posDirty = false;
-                return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, byteOffset, componentType);
+                return gltf.GLTFLoader.readInterleavedArray(this._tempPosArray, attribute, count, size, stride, offset, componentType);
             } else {
                 const tempArray = new ctor(size * count);
-                return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute, count, size, stride, byteOffset, componentType);
+                return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute, count, size, stride, offset, componentType);
             }
         }
 
