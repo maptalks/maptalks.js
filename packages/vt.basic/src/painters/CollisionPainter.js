@@ -99,7 +99,7 @@ export default class CollisionPainter extends BasicPainter {
     _endCollision() {
         // 用来判断这一帧中是否需要计算collision
         // 如果这一帧和上一帧的collision都是关闭的，则可以略过collision的计算，提升性能
-        this._enableCollisionInPreFrame = this.sceneConfig.collision;
+        this._enableCollisionInPreFrame = this.sceneConfig.collision !== false;
     }
 
     _getCachedCollision(meshKey, boxIndex) {
@@ -354,7 +354,7 @@ export default class CollisionPainter extends BasicPainter {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
         const isIgnorePlacement = this._isIgnorePlacement(symbol, mesh, elements[start]);
         const isAllowOverlap = this._isAllowOverlap(symbol, mesh, elements[start]);
-        if (!this.sceneConfig.collision || isIgnorePlacement && isAllowOverlap) {
+        if (this.sceneConfig.collision === false || isIgnorePlacement && isAllowOverlap) {
             return NO_COLLISION;
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
@@ -365,7 +365,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _isIgnorePlacement(symbol, mesh, index) {
-        if (!this.sceneConfig.collision) {
+        if (this.sceneConfig.collision === false) {
             return true;
         }
         const aOverlap = mesh.geometry.properties['aOverlap'];
@@ -384,7 +384,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _isAllowOverlap(symbol, mesh, index) {
-        if (!this.sceneConfig.collision) {
+    if (this.sceneConfig.collision === false) {
             return true;
         }
         const aOverlap = mesh.geometry.properties['aOverlap'];
@@ -626,7 +626,7 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _needUpdateCollision() {
-        return this.sceneConfig.collision || this._enableCollisionInPreFrame;
+        return this.sceneConfig.collision !== false || this._enableCollisionInPreFrame;
     }
 
     updateCollision(context) {
