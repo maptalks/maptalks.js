@@ -89,7 +89,6 @@ const GLTFMixin = Base =>
                 'instance_vectorA': new Float32Array(count * 4),
                 'instance_vectorB': new Float32Array(count * 4),
                 'instance_vectorC': new Float32Array(count * 4),
-                'instance_vectorD': new Float32Array(count * 4),
                 // 'instance_color': [],
                 'aPickingId': []
             };
@@ -291,11 +290,11 @@ const GLTFMixin = Base =>
         }
 
         _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
-            function setInstanceData(name, idx, start, stride, matrix) {
-                instanceData[name][idx * 4] = matrix[start * stride];
-                instanceData[name][idx * 4 + 1] = matrix[start * stride + 1];
-                instanceData[name][idx * 4 + 2] = matrix[start * stride + 2];
-                instanceData[name][idx * 4 + 3] = matrix[start * stride + 3];
+            function setInstanceData(name, idx, matrix, col) {
+                instanceData[name][idx * 4] = matrix[col];
+                instanceData[name][idx * 4 + 1] = matrix[col + 4];
+                instanceData[name][idx * 4 + 2] = matrix[col + 8];
+                instanceData[name][idx * 4 + 3] = matrix[col + 12];
             }
 
 
@@ -314,10 +313,9 @@ const GLTFMixin = Base =>
                     positionSize === 2 ? 0 : aPosition[i * positionSize + 2] * zScale
                 );
                 mat4.fromTranslation(mat, pos);
-                setInstanceData('instance_vectorA', i, 0, 4, mat);
-                setInstanceData('instance_vectorB', i, 1, 4, mat);
-                setInstanceData('instance_vectorC', i, 2, 4, mat);
-                setInstanceData('instance_vectorD', i, 3, 4, mat);
+                setInstanceData('instance_vectorA', i, mat, 0);
+                setInstanceData('instance_vectorB', i, mat, 1);
+                setInstanceData('instance_vectorC', i, mat, 2);
                 instanceData['aPickingId'][i] = i;
             }
         }
