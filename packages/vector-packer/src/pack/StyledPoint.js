@@ -33,9 +33,13 @@ export default class StyledPoint {
         const symbol = this.symbol;
         const iconGlyph = this.getIconAndGlyph();
         const properties = this.feature.properties;
+        properties['$layer'] = this.feature.layer;
+        properties['$type'] = this.feature.type;
         if (iconGlyph && iconGlyph.glyph) {
             const { font, text } = iconGlyph.glyph;
             if (text === '') {
+                delete properties['$layer'];
+                delete properties['$type'];
                 return null;
             }
             const glyphSize = 24;
@@ -75,6 +79,8 @@ export default class StyledPoint {
         } else if (iconGlyph && iconGlyph.icon) {
             if (!iconAtlas.positions[iconGlyph.icon]) {
                 //图片没有载入成功
+                delete properties['$layer'];
+                delete properties['$type'];
                 return null;
             }
             const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
@@ -86,6 +92,8 @@ export default class StyledPoint {
             }
         }
         this._shape = shape;
+        delete properties['$layer'];
+        delete properties['$type'];
         return shape;
     }
 
@@ -100,6 +108,8 @@ export default class StyledPoint {
         const result = {};
         const symbol = this.symbol;
         const properties = this.feature.properties;
+        properties['$layer'] = this.feature.layer;
+        properties['$type'] = this.feature.type;
         const markerFile = markerFileFn ? markerFileFn(null, properties) : symbol.markerFile;
         const markerType = markerTypeFn ? markerTypeFn(null, properties) : symbol.markerType;
         const hasMarker = markerFile || markerType || symbol.markerPath;
@@ -225,6 +235,8 @@ export default class StyledPoint {
             }
         }
         this.iconGlyph = result;
+        delete properties['$layer'];
+        delete properties['$type'];
         return result;
 
 
