@@ -154,7 +154,12 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         const aColor = new Uint8Array(feaIndexes.length * 4);
         for (let i = 0; i < feaIndexes.length; i++) {
             const feature = features[feaIndexes[i]];
-            let color = colorFn(zoom, feature.properties);
+            const properties = feature.properties || {};
+            properties['$layer'] = feature.layer;
+            properties['$type'] = feature.type;
+            let color = colorFn(zoom, properties);
+            delete properties['$layer'];
+            delete properties['$type'];
             if (!Array.isArray(color)) {
                 color = colorCache[color] = colorCache[color] || Color(color).array();
             }
@@ -178,7 +183,12 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         const aOpacity = new Uint8Array(feaIndexes.length);
         for (let i = 0; i < feaIndexes.length; i++) {
             const feature = features[feaIndexes[i]];
-            const opacity = opacityFn(zoom, feature.properties);
+            const properties = feature.properties || {};
+            properties['$layer'] = feature.layer;
+            properties['$type'] = feature.type;
+            const opacity = opacityFn(zoom, properties);
+            delete properties['$layer'];
+            delete properties['$type'];
             aOpacity[i] = opacity * 255;
         }
         fnTypes.aOpacity = aOpacity;

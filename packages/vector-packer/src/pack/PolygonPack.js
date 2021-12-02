@@ -101,8 +101,11 @@ export default class PolygonPack extends VectorPack {
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity, dynUVScale, dynUVOffset;
         const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
+        const properties = feature.properties || {};
+        properties['$layer'] = feature.layer;
+        properties['$type'] = feature.type;
         if (polygonFillFn) {
-            dynFill = polygonFillFn(this.options['zoom'], feature.properties) || [255, 255, 255, 255];
+            dynFill = polygonFillFn(this.options['zoom'], properties) || [255, 255, 255, 255];
             if (isFunctionDefinition(dynFill)) {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 dynFill = [0, 0, 0, 0];
@@ -119,21 +122,21 @@ export default class PolygonPack extends VectorPack {
 
         }
         if (polygonOpacityFn) {
-            dynOpacity = polygonOpacityFn(this.options['zoom'], feature.properties);
+            dynOpacity = polygonOpacityFn(this.options['zoom'], properties);
             if (isNil(dynOpacity)) {
                 dynOpacity = 1;
             }
             dynOpacity *= 255;
         }
         if (uvScaleFn) {
-            dynUVScale = uvScaleFn(this.options['zoom'], feature.properties);
+            dynUVScale = uvScaleFn(this.options['zoom'], properties);
             if (isNil(dynUVScale)) {
                 dynUVScale = [1, 1];
             }
             dynUVScale = [dynUVScale[0] * 255, dynUVScale[1] * 255];
         }
         if (uvOffsetFn) {
-            dynUVOffset = uvOffsetFn(this.options['zoom'], feature.properties);
+            dynUVOffset = uvOffsetFn(this.options['zoom'], properties);
             if (isNil(dynUVOffset)) {
                 dynUVOffset = [0, 0];
             }
@@ -142,12 +145,12 @@ export default class PolygonPack extends VectorPack {
         const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
 
-        const altitude = this.getAltitude(feature.properties);
+        const altitude = this.getAltitude(properties);
         const uvStart = [0, 0];
         const uvSize = [0, 0];
         if (hasUV) {
             const { polygonPatternFileFn } = this._fnTypes;
-            const patternFile = polygonPatternFileFn ? polygonPatternFileFn(null, feature.properties) : this.symbol['polygonPatternFile'];
+            const patternFile = polygonPatternFileFn ? polygonPatternFileFn(null, properties) : this.symbol['polygonPatternFile'];
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
                 const image = this.iconAtlas.positions[patternFile];
@@ -158,6 +161,9 @@ export default class PolygonPack extends VectorPack {
                 uvSize[1] = image.displaySize[1] - 1;
             }
         }
+        delete properties['$layer'];
+        delete properties['$type'];
+
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];

@@ -107,7 +107,7 @@ export default class StyledPoint {
         const { zoom } = this.options;
         const result = {};
         const symbol = this.symbol;
-        const properties = this.feature.properties;
+        const properties = this.feature.properties || {};
         properties['$layer'] = this.feature.layer;
         properties['$type'] = this.feature.type;
         const markerFile = markerFileFn ? markerFileFn(null, properties) : symbol.markerFile;

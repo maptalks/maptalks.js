@@ -512,12 +512,17 @@ function fillTextFitData(map, iconGeometry) {
             const idx = elements[i];
             const pickingId = aPickingId[idx];
             const feature = features[pickingId];
-            const properties = feature && feature.feature && feature.feature.properties;
+            const fea = feature && feature.feature || {};
+            const properties = fea.properties || {};
+            properties['$layer'] = fea.layer;
+            properties['$type'] =  fea.type;
             let v = markerTextFitFn(null, properties);
             if (isFunctionDefinition(v)) {
                 const fn = properties.textFitFn = properties.textFitFn || interpolated(v);
                 v = fn(null, properties);
             }
+            delete properties['$layer'];
+            delete properties['$type'];
             if (v === 'both') {
                 fitWidthIcons.push(i / BOX_ELEMENT_COUNT);
                 fitHeightIcons.push(i / BOX_ELEMENT_COUNT);
@@ -643,7 +648,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
         const feature = features[pickingId] && features[pickingId].feature;
         const properties = feature && feature.properties || {};
         properties['$layer'] = feature && feature.layer;
-        properties['$type'] = feature && feature.layer;
+        properties['$type'] = feature && feature.type;
         let textSize = (textSizeFn ? textSizeFn(zoom, properties) : textSizeDef);
         if (isFunctionDefinition(textSize)) {
             const fn = properties.textSizeFn = properties.textSizeFn || interpolated(textSize);

@@ -230,6 +230,9 @@ export default class LinePack extends VectorPack {
             roundLimit = 1.05;
         const feature = line.feature,
             isPolygon = feature.type === 3; //POLYGON
+        const properties = feature.properties || {};
+        properties['$layer'] = feature.layer;
+        properties['$type'] = feature.type;
         const elements = this.elements;
         if (isPolygon) {
             //Polygon时，需要遍历elements，去掉(filter)瓦片范围外的edge
@@ -238,10 +241,10 @@ export default class LinePack extends VectorPack {
         }
         let join = symbol['lineJoin'] || 'miter', cap = symbol['lineCap'] || 'butt';
         if (lineJoinFn) {
-            join = lineJoinFn(this.options['zoom'], feature.properties) || 'miter'; //bevel, miter, round
+            join = lineJoinFn(this.options['zoom'], properties) || 'miter'; //bevel, miter, round
         }
         if (lineCapFn) {
-            cap = lineCapFn(this.options['zoom'], feature.properties) || 'butt'; //bevel, miter, round
+            cap = lineCapFn(this.options['zoom'], properties) || 'butt'; //bevel, miter, round
         }
         if (lineWidthFn) {
             // {
@@ -250,7 +253,7 @@ export default class LinePack extends VectorPack {
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            let lineWidth = lineWidthFn(this.options['zoom'], feature.properties);
+            let lineWidth = lineWidthFn(this.options['zoom'], properties);
             if (isNil(lineWidth)) {
                 lineWidth = 4;
             }
@@ -265,7 +268,7 @@ export default class LinePack extends VectorPack {
             //         stops: [1, { stops: [[2, 3], [3, 4]] }]
             //     }
             // }
-            let lineStrokeWidth = lineStrokeWidthFn(this.options['zoom'], feature.properties);
+            let lineStrokeWidth = lineStrokeWidthFn(this.options['zoom'], properties);
             if (isNil(lineStrokeWidth)) {
                 lineStrokeWidth = 0;
             }
@@ -274,7 +277,7 @@ export default class LinePack extends VectorPack {
             this.feaLineStrokeWidth = symbol['lineStrokeWidth'] || 0;
         }
         if (lineColorFn) {
-            this.feaColor = lineColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
+            this.feaColor = lineColorFn(this.options['zoom'], properties) || [0, 0, 0, 255];
             if (isFunctionDefinition(this.feaColor)) {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaColor = [0, 0, 0, 0];
@@ -290,7 +293,7 @@ export default class LinePack extends VectorPack {
             }
         }
         if (lineStrokeColorFn) {
-            this.feaStrokeColor = lineStrokeColorFn(this.options['zoom'], feature.properties) || [0, 0, 0, 255];
+            this.feaStrokeColor = lineStrokeColorFn(this.options['zoom'], properties) || [0, 0, 0, 255];
             if (isFunctionDefinition(this.feaStrokeColor)) {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaStrokeColor = [0, 0, 0, 0];
@@ -306,14 +309,14 @@ export default class LinePack extends VectorPack {
             }
         }
         if (lineOpacityFn) {
-            let opacity = lineOpacityFn(this.options['zoom'], feature.properties);
+            let opacity = lineOpacityFn(this.options['zoom'], properties);
             if (isNil(opacity)) {
                 opacity = 1;
             }
             this.feaOpacity = 255 * opacity;
         }
         if (this.dasharrayFn) {
-            let dasharray = this.dasharrayFn(this.options['zoom'], feature.properties) || [0, 0, 0, 0];
+            let dasharray = this.dasharrayFn(this.options['zoom'], properties) || [0, 0, 0, 0];
             if (dasharray.length < 4) {
                 const old = dasharray;
                 if (dasharray.length === 1) {
@@ -327,7 +330,7 @@ export default class LinePack extends VectorPack {
             this.feaDash = dasharray;
         }
         if (this.dashColorFn) {
-            let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], feature.properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
+            let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
             if (!Array.isArray(dashColor)) {
                 dashColor = Color(dashColor).array();
             } else {
@@ -355,27 +358,27 @@ export default class LinePack extends VectorPack {
             }
             //feaJoinPatternMode为1时，把join部分用uvStart的像素代替
             if (lineJoinPatternModeFn) {
-                this.feaJoinPatternMode = lineJoinPatternModeFn(this.options['zoom'], feature.properties) || 0;
+                this.feaJoinPatternMode = lineJoinPatternModeFn(this.options['zoom'], properties) || 0;
             } else {
                 this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
         }
         if (lineDxFn) {
-            let dx = lineDxFn(this.options['zoom'], feature.properties);
+            let dx = lineDxFn(this.options['zoom'], properties);
             if (isNil(dx)) {
                 dx = 0;
             }
             this.feaLineDx = dx;
         }
         if (lineDyFn) {
-            let dy = lineDyFn(this.options['zoom'], feature.properties);
+            let dy = lineDyFn(this.options['zoom'], properties);
             if (isNil(dy)) {
                 dy = 0;
             }
             this.feaLineDy = dy;
         }
         if (linePatternAnimSpeedFn) {
-            let speed = linePatternAnimSpeedFn(this.options['zoom'], feature.properties);
+            let speed = linePatternAnimSpeedFn(this.options['zoom'], properties);
             if (isNil(speed)) {
                 speed = 0;
             }
@@ -385,12 +388,14 @@ export default class LinePack extends VectorPack {
             this.feaPatternAnimSpeed = speed;
         }
         if (linePatternGapFn) {
-            let gap = linePatternGapFn(this.options['zoom'], feature.properties);
+            let gap = linePatternGapFn(this.options['zoom'], properties);
             if (isNil(gap)) {
                 gap = 0;
             }
             this.feaLinePatternGap = gap;
         }
+        delete properties['$layer'];
+        delete properties['$type'];
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
         let lines = feature.geometry;
@@ -922,7 +927,13 @@ function hasDasharray(dash) {
 
 function hasFeatureDash(features, zoom, fn) {
     for (let i = 0; i < features.length; i++) {
-        if (fn(zoom, features[i].properties)) {
+        const properties = features[i].properties || {};
+        properties['$layer'] = features[i].layer;
+        properties['$type'] = features[i].type;
+        const hasDash = fn(zoom, properties);
+        delete properties['$layer'];
+        delete properties['$type'];
+        if (hasDash) {
             return true;
         }
     }
