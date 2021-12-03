@@ -2,6 +2,7 @@ const maptalks = require('maptalks');
 const path = require('path');
 const assert = require('assert');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+require('../../../../packages/vt.basic/dist/maptalks.vt.basic.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 // const deepEqual = require('fast-deep-equal');
 
@@ -96,9 +97,13 @@ describe('GeoJSONVectorTileLayer', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: points
         }).addTo(map);
+        let count = 0;
         layer.on('workerready', e => {
-            assert.ok(e);
-            done();
+            count++;
+            if (count === 1) {
+                assert.ok(e);
+                done();
+            }
         });
     });
 
@@ -108,10 +113,14 @@ describe('GeoJSONVectorTileLayer', () => {
         });
         const json = layer.toJSON();
         const layer2 = maptalks.Layer.fromJSON(json);
+        let count = 0;
         layer2.on('workerready', e => {
-            assert.ok(e);
-            assert.ok(layer2.getData().features.length === points.features.length);
-            done();
+            count++;
+            if (count === 1) {
+                assert.ok(e);
+                assert.ok(layer2.getData().features.length === points.features.length);
+                done();
+            }
         });
         layer2.addTo(map);
     });
@@ -123,10 +132,14 @@ describe('GeoJSONVectorTileLayer', () => {
         const groupLayer = new GroupGLLayer('group', [layer]);
         const json = groupLayer.toJSON();
         const layer2 = maptalks.Layer.fromJSON(json);
+        let count = 0;
         layer2.on('layerload', e => {
-            assert.ok(e);
-            assert.ok(layer2.getLayers()[0].getData().features.length === points.features.length);
-            done();
+            count++;
+            if (count === 2) {
+                assert.ok(e);
+                assert.ok(layer2.getLayers()[0].getData().features.length === points.features.length);
+                done();
+            }
         });
         layer2.addTo(map);
     });
@@ -143,13 +156,17 @@ describe('GeoJSONVectorTileLayer', () => {
         const groupLayer = new GroupGLLayer('group', [layer]);
         const json = groupLayer.toJSON();
         const layer2 = maptalks.Layer.fromJSON(json);
+        let count = 0;
         layer2.on('layerload', e => {
-            assert.ok(e);
-            const data = layer2.getLayers()[0].getData();
-            assert.ok(data.type === 'FeatureCollection');
-            assert.ok(data.features.length === points.features.length);
-            assert.ok(data.features.length === points.features.length);
-            done();
+            count++;
+            if (count === 2) {
+                assert.ok(e);
+                const data = layer2.getLayers()[0].getData();
+                assert.ok(data.type === 'FeatureCollection');
+                assert.ok(data.features.length === points.features.length);
+                assert.ok(data.features.length === points.features.length);
+                done();
+            }
         });
         layer2.addTo(map);
     });
@@ -203,13 +220,17 @@ describe('GeoJSONVectorTileLayer', () => {
                 ]
             }
         });
+        let count = 0;
         layer.on('layerload', () => {
-            layer.updateSceneConfig(0, { foo2: 2 });
-            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
-            assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
-            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
-            assert.deepStrictEqual(layer.options.data, url);
-            done();
+            count++;
+            if (count === 2) {
+                layer.updateSceneConfig(0, { foo2: 2 });
+                assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+                assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+                assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+                assert.deepStrictEqual(layer.options.data, url);
+                done();
+            }
         });
         layer.addTo(map);
     });
@@ -232,13 +253,37 @@ describe('GeoJSONVectorTileLayer', () => {
                 ]
             }
         });
+        let count = 0;
         layer.on('layerload', () => {
-            layer.updateSceneConfig(0, { foo2: 2 });
-            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
-            assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
-            assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
-            assert.deepStrictEqual(layer.options.data, dataUrl);
-            done();
+            count++;
+            if (count === 2) {
+                layer.updateSceneConfig(0, { foo2: 2 });
+                assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+                assert.deepStrictEqual(layer.getStyle().style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
+                assert.deepStrictEqual(layer.options.style.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });
+                assert.deepStrictEqual(layer.options.data, dataUrl);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('should can load url format style', done => {
+        const dataUrl = {
+            url: path.join(__dirname, 'point.json'),
+            method: 'get'
+        };
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: dataUrl,
+            style: path.join(__dirname, 'style.json'),
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                assert.deepStrictEqual(layer.getComputedStyle().style[0].renderPlugin.sceneConfig, { foo: 1 });
+                done();
+            }
         });
         layer.addTo(map);
     });

@@ -1,0 +1,10 @@
+{
+    "$root": ".",
+    "resources": [],
+    "style": [
+        {
+            "renderPlugin": { "type": "native-point", "dataConfig": { "type": "native-point" }, "sceneConfig": { "foo": 1 } },
+            "symbol": { "markerType": "square", "markerSize": 20 }
+        }
+    ]
+}

@@ -106,21 +106,30 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     setStyle(style) {
-        if (isString(style)) {
+        if (style && (isString(style) || style.url)) {
             const url = style;
             const endIndex = url.lastIndexOf('/');
             const prefix = endIndex < 0 ? '.' : url.substring(0, endIndex);
             const root = prefix;
             this.ready = false;
-            Ajax.getJSON(url, (err, json) => {
+            Ajax.getJSON(style.url ? style.url : style, style.url ? style : {}, (err, json) => {
                 if (err) {
                     this.setStyle([]);
                     throw err;
                 }
-                this.setStyle({
-                    $root: root,
-                    style: json
-                });
+                let styleJSON;
+                if (json.style) {
+                    styleJSON = json;
+                    if (!styleJSON['$root']) {
+                        styleJSON['$root'] = root;
+                    }
+                } else {
+                    styleJSON = {
+                        $root: root,
+                        style: json
+                    }
+                }
+                this.setStyle(styleJSON);
                 this.options['style'] = url;
             });
             return this;

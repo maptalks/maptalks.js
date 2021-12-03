@@ -52,8 +52,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             indexMaxZoom: 5,       // max zoom in the initial tile index
             indexMaxPoints: 100000 // max number of points per tile in the index
         };
-        if (isString(data) && data.substring(0, 1) != '{') {
-            Ajax.getJSON(data, this.options, (err, resp) => {
+        if (isString(data) && data.substring(0, 1) != '{' || data.url) {
+            Ajax.getJSON(data.url ? data.url : data, data.url ? data : {}, (err, resp) => {
                 if (err) cb(err);
                 const data = resp;
                 const { first1000, idMap } = this._generateId(data);

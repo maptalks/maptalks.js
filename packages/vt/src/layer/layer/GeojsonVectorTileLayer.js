@@ -173,7 +173,7 @@ function toAbsoluteURL(url) {
 
 function convertUrl(data) {
     if (data.url) {
-        data.url = toAbsoluteURL(data);
+        data.url = toAbsoluteURL(data.url);
     } else {
         data = toAbsoluteURL(data);
     }
