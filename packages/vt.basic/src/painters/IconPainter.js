@@ -5,7 +5,7 @@ import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
 import { getIconBox } from './util/get_icon_box';
-import { isNil, isIconText } from '../Util';
+import { isNil, isIconText, getUniqueIds } from '../Util';
 import { createTextMesh, createTextShader, GAMMA_SCALE, isLabelCollides, getLabelEntryKey, getTextFnTypeConfig } from './util/create_text_painter';
 import CollisionGroup from './CollisionGroup';
 
@@ -14,9 +14,7 @@ import textFrag from './glsl/text.frag';
 import textPickingVert from './glsl/text.vert';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE } from './Constant';
-import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize } from './util/create_marker_painter';
-
-const BOX_ELEMENT_COUNT = 6;
+import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -120,12 +118,12 @@ class IconPainter extends CollisionPainter {
         if (!this.layer.options['collision']) {
             return;
         }
-        // aFeaIds 中存放的是 feature.id 的值
+        // collideIds 中存放的是 feature.id 的值
         // aPickingIds 中存放的 KEY_IDX 的值
         // Vector3DLayer 中，feature有多个symbol时，会有多个数据的 feature.id 相同，但KEY_IDX不同的情况存在
-        // 但 feature.id 可能不存在（比如mapbox的vt在线服务），aPickingId一定存在，所以遍历用的id数组优先选用 aFeaIds，没有的话就选用aPickingId
-        const { aPickingId, aFeaIds, elements, aCount } = geo.properties;
-        const ids = aFeaIds && aFeaIds.length ? aFeaIds : aPickingId;
+        // 但 feature.id 可能不存在（比如mapbox的vt在线服务），aPickingId一定存在，所以遍历用的id数组优先选用 collideIds，没有的话就选用aPickingId
+        const { collideIds, elements, aCount } = geo.properties;
+        const ids = collideIds;
         const collideBoxIndex = {};
         if (!elements) {
             // an empty icon
@@ -160,7 +158,7 @@ class IconPainter extends CollisionPainter {
         geo.properties.collideBoxIndex = collideBoxIndex;
     }
 
-    createMesh(geo, transform) {
+    createMesh(geo, transform, params, context) {
         const enableCollision = this.isEnableCollision();
         const layer = this.layer;
         const { geometry, symbolIndex } = geo;
@@ -184,15 +182,82 @@ class IconPainter extends CollisionPainter {
                 meshes.push(...mesh);
             }
         }
+        if (symbolDef.markerPlacement === 'line') {
+            this._rebuildCollideIds(geometry, context);
+        }
         this._prepareCollideIndex(geometry);
         return meshes;
+    }
+
+    _rebuildCollideIds(geometry, context) {
+        // icon是沿线分布时，因为所有沿线生成的icon的aPickingId都是一样的，每个icon无法独立判断碰撞检测
+        // 因此需要为每个icon和相应的text生成独立的collideId
+        const { collideIds } = geometry.properties;
+        const newCollideIds = new Uint16Array(collideIds.length);
+        if (this._isMarkerGeo(geometry)) {
+            let id = 0;
+            for (let i = 0; i < collideIds.length; i += BOX_VERTEX_COUNT) {
+                newCollideIds.fill(id++, i, i + BOX_VERTEX_COUNT);
+            }
+            geometry.properties.collideIds = newCollideIds;
+            geometry.properties.uniqueCollideIds = getUniqueIds(newCollideIds);
+            context.markerCollideMap = {
+                old: collideIds,
+                new: newCollideIds
+            };
+        } else if (this._isTextGeo(geometry)) {
+            const { collideIds, aCount } = geometry.properties;
+            if (!aCount) {
+                // text geometry 的 textSize 为0 或者 textOpacity为0
+                return;
+            }
+            if (context.markerCollideMap) {
+                // counter是，pickingId不变时，icon的序号
+                let counter = 0;
+                let current = collideIds[0];
+                let currentOldIndex = context.markerCollideMap.old.indexOf(current);
+                let currentCount = aCount[0];
+                for (let i = 0; i < collideIds.length; i += currentCount * BOX_VERTEX_COUNT) {
+                    // 1. 获取当前的pickingId
+                    const cid = collideIds[i];
+                    if (current !== cid) {
+                        current = cid;
+                        // 2. 获取pickingId在icon.oldCollideIds的起始序号
+                        currentOldIndex = context.markerCollideMap.old.indexOf(current);
+                        counter = 0;
+                    }
+                    // 3. 获取text对应的icon的collide值 = 2得到的起始序号 + icon序号 * BOX_VERTEX_COUNT
+                    const id = context.markerCollideMap.new[currentOldIndex + counter * BOX_VERTEX_COUNT];
+                    const next =  i + currentCount * BOX_VERTEX_COUNT;
+                    collideIds.fill(id, i, next);
+                    counter++;
+                    if (next < collideIds.length) {
+                        currentCount = aCount[next];
+                    }
+                }
+                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds);
+            } else {
+                // 只定义了 text 属性
+                let id = 0;
+                let currentCount = aCount[0];
+                for (let i = 0; i < collideIds.length; i += currentCount * BOX_VERTEX_COUNT) {
+                    const next =  i + currentCount * BOX_VERTEX_COUNT;
+                    collideIds.fill(id++, i, next);
+                    if (next < collideIds.length) {
+                        currentCount = aCount[next];
+                    }
+                }
+                geometry.properties.uniqueCollideIds = getUniqueIds(collideIds);
+            }
+
+        }
     }
 
     addMesh(meshes) {
         const isEnableCollision = this._needUpdateCollision();
         if (isEnableCollision && meshes.length > 0) {
             const group = new CollisionGroup(meshes);
-            group.properties.uniqueFeaIndexes = meshes[0].geometry.properties.uniqueFeaIndexes;
+            group.properties.uniqueCollideIds = meshes[0].geometry.properties.uniqueCollideIds;
             group.properties.meshKey = meshes[0].properties.meshKey;
             group.properties.level = meshes[0].properties.level;
             this._meshesToCheck.push(group);
@@ -354,11 +419,11 @@ class IconPainter extends CollisionPainter {
     }
 
     forEachBox(meshGroup, fn) {
-        const uniqueFeaIndexes = meshGroup.properties.uniqueFeaIndexes;
+        const uniqueCollideIds = meshGroup.properties.uniqueCollideIds;
         const context = { boxIndex: 0 };
-        const count = uniqueFeaIndexes.length;
+        const count = uniqueCollideIds.length;
         for (let i = 0; i < count; i++) {
-            this._iterateMeshBox(meshGroup, uniqueFeaIndexes[i], fn, context);
+            this._iterateMeshBox(meshGroup, uniqueCollideIds[i], fn, context);
         }
     }
 
@@ -378,6 +443,11 @@ class IconPainter extends CollisionPainter {
         let count = 0;
         for (let j = 0; j < meshes.length; j++) {
             if (!this.isMeshIterable(meshes[j])) {
+                continue;
+            }
+            const { collideBoxIndex } = meshes[j].geometry.properties;
+            const boxInfo = collideBoxIndex[pickingIndex];
+            if (!boxInfo) {
                 continue;
             }
             count++;

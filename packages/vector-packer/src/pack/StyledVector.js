@@ -23,12 +23,8 @@ export default class StyledVector {
     _getResource(pattern, patternFn) {
         if (patternFn) {
             const feature = this.feature;
-            const properties = feature && feature.properties || {};
-            properties['$layer'] = feature.layer;
-            properties['$type'] = feature.type;
+            const properties = feature.properties;
             pattern = patternFn(this.options['zoom'], properties);
-            delete properties['$layer'];
-            delete properties['$type'];
         }
         return pattern;
     }

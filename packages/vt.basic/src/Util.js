@@ -146,3 +146,16 @@ export function isIconText(symbolDef) {
 export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
+
+export function getUniqueIds(ids) {
+    const result = [ids[0]];
+    let current = ids[0];
+    for (let i = 1; i < ids.length; i++) {
+        if (ids[i] !== current) {
+            result.push(ids[i]);
+            current = ids[i];
+        }
+    }
+    return result;
+
+}

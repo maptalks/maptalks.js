@@ -6,8 +6,8 @@ import { createAtlasTexture } from './atlas_util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 // import { getIconBox } from './get_icon_box';
 
-const BOX_ELEMENT_COUNT = 6;
-const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
+export const BOX_ELEMENT_COUNT = 6;
+export const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
 const I8 = new Int8Array(1);
 
@@ -338,7 +338,7 @@ export function prepareLabelIndex(map, iconGeometry, textGeometry, markerTextFit
     }
 }
 
-
+// labelIndex中存的是icon对应的label在textGeometry.element中的start和end
 function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     let markerTextFitFn = iconGeometry.properties.textFitFn;
     if (isFunctionDefinition(markerTextFit)) {

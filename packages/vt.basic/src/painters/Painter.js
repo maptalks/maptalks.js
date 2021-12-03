@@ -215,12 +215,13 @@ class Painter {
     }
 
     createMeshes(geometries, transform, params) {
+        const context = {};
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            const mesh = this.createMesh(geometries[i], transform, params);
+            const mesh = this.createMesh(geometries[i], transform, params, context);
             if (Array.isArray(mesh)) {
                 meshes.push(...mesh);
             } else {

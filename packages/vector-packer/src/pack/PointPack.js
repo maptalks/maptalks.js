@@ -429,9 +429,7 @@ export default class PointPack extends VectorPack {
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;
-        const properties = point.feature.properties || {};
-        properties['$layer'] = point.feature.layer;
-        properties['$type'] = point.feature.type;
+        const properties = point.feature.properties;
         // const size = point.size;
         const alongLine = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
         const isText = symbol['textName'] !== undefined;
@@ -547,8 +545,6 @@ export default class PointPack extends VectorPack {
         if (opacityFn) {
             opacity = opacityFn(this.options['zoom'], properties) * 255;
         }
-        delete properties['$layer'];
-        delete properties['type'];
         const extent = this.options.EXTENT;
         const textCount = quads.length;
         const altitude = this.getAltitude(point.feature.properties);
@@ -717,8 +713,6 @@ export default class PointPack extends VectorPack {
         const { feature, symbol } = point;
         const placement = this._getPlacement(symbol, point);
         const properties = feature.properties;
-        properties['$layer'] = feature.layer;
-        properties['$type'] = feature.type;
         const { markerSpacingFn, textSpacingFn } = this._fnTypes;
         const spacing = (
             (markerSpacingFn ? markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
@@ -727,8 +721,6 @@ export default class PointPack extends VectorPack {
         ) * scale;
         const EXTENT = this.options.EXTENT;
         const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing);
-        delete properties['$layer'];
-        delete properties['$type'];
         //TODO 还需要mergeLines
         return anchors;
     }
@@ -740,9 +732,7 @@ export default class PointPack extends VectorPack {
 
     _getPlacement(symbol, point) {
         const { markerPlacementFn, textPlacementFn } = this._fnTypes;
-        const properties = point.feature && point.feature.properties || {};
-        properties['$layer'] = point.feature.layer;
-        properties['$type'] = point.feature.type;
+        const properties = point.feature.properties;
         let placement;
         if (markerPlacementFn) {
             placement = markerPlacementFn(null, properties);
@@ -750,8 +740,6 @@ export default class PointPack extends VectorPack {
         if (!placement && textPlacementFn) {
             placement = textPlacementFn(null, properties);
         }
-        delete properties['$layer'];
-        delete properties['$type'];
         return placement || symbol.markerPlacement || symbol.textPlacement;
     }
 }

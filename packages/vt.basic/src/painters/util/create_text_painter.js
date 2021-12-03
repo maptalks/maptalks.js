@@ -42,7 +42,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         return meshes;
     }
 
-    if (symbol['textSize'] === 0 || symbol['textOpacity'] === 0) {
+    if (symbolDef['textSize'] === 0 || symbolDef['textOpacity'] === 0) {
         return meshes;
     }
     prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
@@ -594,7 +594,10 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const symbol = this.getSymbol(geoProps.symbolIndex);
     const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
     const { aTextSize, aTextHaloRadius, aShape } = geoProps;
-    const textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize) || DEFAULT_UNIFORMS['textSize'];
+    let textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize);
+    if (textSize === null || textSize === undefined) {
+        textSize = DEFAULT_UNIFORMS['textSize'];
+    }
     const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
 
     const anchor = getAnchor(ANCHOR, mesh, elements[start]);

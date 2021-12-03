@@ -101,9 +101,7 @@ export default class PolygonPack extends VectorPack {
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity, dynUVScale, dynUVOffset;
         const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
-        const properties = feature.properties || {};
-        properties['$layer'] = feature.layer;
-        properties['$type'] = feature.type;
+        const properties = feature.properties;
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], properties) || [255, 255, 255, 255];
             if (isFunctionDefinition(dynFill)) {
@@ -161,8 +159,6 @@ export default class PolygonPack extends VectorPack {
                 uvSize[1] = image.displaySize[1] - 1;
             }
         }
-        delete properties['$layer'];
-        delete properties['$type'];
 
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         for (let i = 0; i < rings.length; i++) {

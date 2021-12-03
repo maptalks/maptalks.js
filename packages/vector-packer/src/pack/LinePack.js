@@ -230,9 +230,7 @@ export default class LinePack extends VectorPack {
             roundLimit = 1.05;
         const feature = line.feature,
             isPolygon = feature.type === 3; //POLYGON
-        const properties = feature.properties || {};
-        properties['$layer'] = feature.layer;
-        properties['$type'] = feature.type;
+        const properties = feature.properties;
         const elements = this.elements;
         if (isPolygon) {
             //Polygon时，需要遍历elements，去掉(filter)瓦片范围外的edge
@@ -394,8 +392,6 @@ export default class LinePack extends VectorPack {
             }
             this.feaLinePatternGap = gap;
         }
-        delete properties['$layer'];
-        delete properties['$type'];
         const extent = this.options.EXTENT;
         //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
         let lines = feature.geometry;
@@ -927,12 +923,8 @@ function hasDasharray(dash) {
 
 function hasFeatureDash(features, zoom, fn) {
     for (let i = 0; i < features.length; i++) {
-        const properties = features[i].properties || {};
-        properties['$layer'] = features[i].layer;
-        properties['$type'] = features[i].type;
+        const properties = features[i].properties;
         const hasDash = fn(zoom, properties);
-        delete properties['$layer'];
-        delete properties['$type'];
         if (hasDash) {
             return true;
         }

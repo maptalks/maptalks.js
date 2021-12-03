@@ -59,12 +59,8 @@ export default class CirclePack extends VectorPack {
     _getPlacement(symbol, point) {
         const { markerPlacementFn } = this._fnTypes;
         if (markerPlacementFn) {
-            const properties = point.feature && point.feature.properties || {};
-            properties['$layer'] = point.feature.layer;
-            properties['$type'] = point.feature.type;
+            const properties = point.feature.properties;
             const placement =  markerPlacementFn(null, properties);
-            delete properties['layer'];
-            delete properties['type'];
             return placement;
         }
         return symbol.markerPlacement;

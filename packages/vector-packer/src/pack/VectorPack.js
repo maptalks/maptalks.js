@@ -208,6 +208,11 @@ export default class VectorPack {
             if (debugIndex !== undefined && feature['_debug_info'].index !== debugIndex) {
                 continue;
             }
+            if (!feature.properties) {
+                feature.properties = {};
+            }
+            feature.properties['$layer'] = feature.layer;
+            feature.properties['$type'] = feature.type;
             const vector = this.createStyledVector(feature, symbol, fnTypes, options, iconReqs, glyphReqs);
             if (!vector || !vector.feature.geometry) {
                 continue;
@@ -438,17 +443,11 @@ export default class VectorPack {
     }
 
     _placeVector(vector, scale) {
-        const properties = vector.feature && vector.feature.properties || {};
-        properties['$layer'] = vector.feature.layer;
-        properties['$type'] = vector.feature.type;
+        const properties = vector.feature.properties;
         if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
-            delete properties['$layer'];
-            delete properties['$type'];
             return;
         }
         this.placeVector(vector, scale, this.formatWidth);
-        delete properties['$layer'];
-        delete properties['$type'];
     }
 
     addElements(...e) {

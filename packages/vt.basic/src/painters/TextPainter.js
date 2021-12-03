@@ -408,8 +408,8 @@ export default class TextPainter extends CollisionPainter {
     forEachBox(mesh, fn) {
         const map = this.getMap();
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
-        const { aPickingId, aFeaIds, aCount, features, elements } = mesh.geometry.properties;
-        const ids = aFeaIds && aFeaIds.length ? aFeaIds : aPickingId;
+        const { collideIds, aCount, features, elements } = mesh.geometry.properties;
+        const ids = collideIds;
         const enableUniquePlacement = this.isEnableUniquePlacement();
 
         const meshBox = this._getMeshBoxes(1);
