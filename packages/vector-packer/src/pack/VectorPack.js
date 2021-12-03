@@ -182,10 +182,6 @@ export default class VectorPack {
         });
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
-        if (debugIndex !== undefined) {
-            i = debugIndex;
-            l = debugIndex + 1;
-        }
         for (; i < l; i++) {
             const feature = features[i];
             // let vector;
@@ -206,7 +202,10 @@ export default class VectorPack {
             //         continue;
             //     }
             // } else {
-            if (!feature.geometry) {
+            if (!feature || !feature.geometry) {
+                continue;
+            }
+            if (debugIndex !== undefined && feature['_debug_info'].index !== debugIndex) {
                 continue;
             }
             const vector = this.createStyledVector(feature, symbol, fnTypes, options, iconReqs, glyphReqs);
