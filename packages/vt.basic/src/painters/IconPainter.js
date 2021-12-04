@@ -217,7 +217,7 @@ class IconPainter extends CollisionPainter {
                 let current = collideIds[0];
                 let currentOldIndex = context.markerCollideMap.old.indexOf(current);
                 let currentCount = aCount[0];
-                for (let i = 0; i < collideIds.length; i += currentCount * BOX_VERTEX_COUNT) {
+                for (let i = 0; i < collideIds.length;) {
                     // 1. 获取当前的pickingId
                     const cid = collideIds[i];
                     if (current !== cid) {
@@ -230,6 +230,7 @@ class IconPainter extends CollisionPainter {
                     const id = context.markerCollideMap.new[currentOldIndex + counter * BOX_VERTEX_COUNT];
                     const next =  i + currentCount * BOX_VERTEX_COUNT;
                     collideIds.fill(id, i, next);
+                    i += currentCount * BOX_VERTEX_COUNT;
                     counter++;
                     if (next < collideIds.length) {
                         currentCount = aCount[next];
@@ -240,9 +241,10 @@ class IconPainter extends CollisionPainter {
                 // 只定义了 text 属性
                 let id = 0;
                 let currentCount = aCount[0];
-                for (let i = 0; i < collideIds.length; i += currentCount * BOX_VERTEX_COUNT) {
+                for (let i = 0; i < collideIds.length;) {
                     const next =  i + currentCount * BOX_VERTEX_COUNT;
                     collideIds.fill(id++, i, next);
+                    i += currentCount * BOX_VERTEX_COUNT;
                     if (next < collideIds.length) {
                         currentCount = aCount[next];
                     }
@@ -415,6 +417,7 @@ class IconPainter extends CollisionPainter {
         if (aOpacity && aOpacity.dirty) {
             mesh.geometry.updateData('aOpacity', aOpacity);
             aOpacity.dirty = false;
+            this.setToRedraw();
         }
     }
 
