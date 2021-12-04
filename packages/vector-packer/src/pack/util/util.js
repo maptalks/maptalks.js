@@ -75,6 +75,19 @@ export function isNil(v) {
     return v === null || v === undefined;
 }
 
+/**
+ * Check whether the object is a string
+ * @param {Object} obj
+ * @return {Boolean}
+ * @memberOf Util
+ */
+export function isString(obj) {
+    if (isNil(obj)) {
+        return false;
+    }
+    return typeof obj === 'string' || (obj.constructor !== null && obj.constructor === String);
+}
+
 export function wrap(n, min, max) {
     if (n === max || n === min) {
         return n;

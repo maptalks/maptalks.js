@@ -4,7 +4,7 @@ import { getPointAnchors } from './util/get_point_anchors.js';
 import { getGlyphQuads, getIconQuads, getEmptyIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
 import Color from 'color';
-import { isOut, isNil, wrap } from './util/util';
+import { isOut, isNil, wrap, isString } from './util/util';
 import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
@@ -161,7 +161,8 @@ export default class PointPack extends VectorPack {
                 textSymbol['textPlacement'] = iconSymbol['markerPlacement'];
                 textSymbol['textSpacing'] = iconSymbol['markerSpacing'];
                 textSymbol['isIconText'] = true;
-            } else if (symbol['mergeOnProperty']) {
+            }
+            if (symbol['mergeOnProperty']) {
                 textSymbol['mergeOnProperty'] = symbol['mergeOnProperty'];
             }
 
@@ -217,14 +218,32 @@ export default class PointPack extends VectorPack {
         super(features, symbol, options);
     }
 
-    _mergeFeatures(features) {
-        const textName = this.symbolDef['mergeOnProperty'];
-        return mergeLines(features, textName);
+    _mergeFeatures(features, property) {
+        if (!property) {
+            return features;
+        }
+        return mergeLines(features, property);
     }
 
     load(scale = 1) {
-        if (this._isLinePlacement() && this.features) {
-            this.features = this._mergeFeatures(this.features);
+        // debugger
+        const merging = this._getFeaturesToMerge();
+        if (merging.length) {
+            const result = [];
+            for (let i = 0; i < merging.length; i++) {
+                result.push(this._mergeFeatures(merging[i].features, merging[i].property))
+            }
+            if (result.length === 1) {
+                this.features = result[0];
+            } else {
+                this.features = [];
+                for (let i = 0; i < result.length; i++) {
+                    this.features = this.features.concat(result[i]);
+                }
+                this.features.sort((a, b) => {
+                    return a['__index'] - b['__index'];
+                });
+            }
         }
         return super.load(scale);
     }
@@ -725,9 +744,47 @@ export default class PointPack extends VectorPack {
         return anchors;
     }
 
-    _isLinePlacement() {
+    _getFeaturesToMerge() {
         const symbolDef = this.symbolDef;
-        return symbolDef['mergeOnProperty'] && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line');
+        const { markerPlacementFn, textPlacementFn, mergeOnPropertyFn } = this._fnTypes;
+        if (!symbolDef['mergeOnProperty'] || !markerPlacementFn && !textPlacementFn && symbolDef['textPlacement'] !== 'line' && symbolDef['markerPlacement'] !== 'line') {
+            return [];
+        }
+        if (isString(symbolDef['mergeOnProperty']) && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line')) {
+            return [{ features: this.features, property: symbolDef['mergeOnProperty'] }];
+        }
+        const result = [];
+        const merging = {};
+        const unMerged = [];
+        const features = this.features;
+        const zoom = this.options['zoom'];
+        for (let i = 0; i < features.length; i++) {
+            features[i]['__index'] = i;
+            const properties = features[i].properties = features[i].properties || {};
+            properties['$layer'] = features[i].layer;
+            properties['$type'] = features[i].type;
+            let placement = markerPlacementFn ? markerPlacementFn(zoom, properties) : symbolDef['markerPlacement'];
+            if (placement !== 'line') {
+                placement = textPlacementFn ? textPlacementFn(zoom, properties) : symbolDef['textPlacement'];
+            }
+            const property = mergeOnPropertyFn ? mergeOnPropertyFn(zoom, properties) : symbolDef['mergeOnProperty'];
+            if (placement !== 'line' || isNil(property)) {
+                unMerged.push(features[i]);
+                continue;
+            }
+            if (merging[property] === undefined) {
+                merging[property] = result.length;
+                result.push({
+                    features: [],
+                    property
+                });
+            }
+            result[merging[property]].features.push(features[i]);
+        }
+        if (unMerged.length) {
+            result.push({ features: unMerged });
+        }
+        return result;
     }
 
     _getPlacement(symbol, point) {

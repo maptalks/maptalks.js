@@ -321,6 +321,8 @@ export default class BaseLayerWorker {
                                 delete o.extent;
                                 delete o.properties['$layer'];
                                 delete o.properties['$type'];
+                                // _getFeaturesToMerge 中用于排序的临时字段
+                                delete o['__index'];
                                 allFeas[i] = o;
                             }
                         }
