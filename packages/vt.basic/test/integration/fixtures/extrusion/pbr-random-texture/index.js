@@ -63,7 +63,7 @@ const style = [{
 module.exports = {
     style,
     data: data,
-    renderingCount: 3,
+    renderingCount: 4,
     view: {
         pitch: 0,
         center: [0, 0],

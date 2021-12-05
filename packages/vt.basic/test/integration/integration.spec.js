@@ -41,6 +41,7 @@ describe('vector tile integration specs', () => {
 
     const runner = (p, style) => {
         return done => {
+            let ended = false;
             container.style.width = (style.containerWidth || 128) + 'px';
             container.style.height = (style.containerHeight || 128) + 'px';
             const options = style.view || DEFAULT_VIEW;
@@ -69,10 +70,11 @@ describe('vector tile integration specs', () => {
                         generated = true;
                         done();
                     }
-                } else if (count >= limit) {
+                } else if (!ended && count >= limit) {
                     //比对测试
                     match(canvas, expectedPath, (err, result) => {
                         if (err) {
+                            ended = true;
                             done(err);
                             return;
                         }
@@ -85,6 +87,7 @@ describe('vector tile integration specs', () => {
                             writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         assert(result.diffCount === 0);
+                        ended = true;
                         done();
                     });
                 } else {

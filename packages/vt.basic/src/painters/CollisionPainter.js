@@ -190,6 +190,9 @@ export default class CollisionPainter extends BasicPainter {
                     for (let i = 0; i < l; i++) {
                         const { mesh, allElements, boxCount, start, end } = meshBoxes[i];
                         const childCollision = this._isBoxVisible(mesh, allElements, boxCount, start, end, mvpMatrix, boxIndex);
+                        if (childCollision.isAllowOverlap) {
+                            collision.isAllowOverlap = 1;
+                        }
                         if (collides === 0) {
                             collides = childCollision.collides;
                         }
@@ -202,22 +205,24 @@ export default class CollisionPainter extends BasicPainter {
                 } else if (collision.boxes && collision.boxes.length) {
                     //因为可能有新的boxes加入场景，所以要重新检查缓存中的box是否有collides
                     //但zooming时不检查，有collides的仍继续隐藏
-                    const { boxes } = collision;
+                    const { boxes, isAllowOverlap } = collision;
                     let collides = 0;
-                    let offscreenCount = 0;
-                    for (let i = 0; i < boxes.length; i++) {
-                        if (!collides) {
-                            const boxCollides = this.isCollides(boxes[i]);
-                            if (boxCollides === -1) {
-                                offscreenCount++;
-                            } else if (boxCollides === 1) {
-                                collides = 1;
-                                break;
+                    if (!isAllowOverlap) {
+                        let offscreenCount = 0;
+                        for (let i = 0; i < boxes.length; i++) {
+                            if (!collides) {
+                                const boxCollides = this.isCollides(boxes[i]);
+                                if (boxCollides === -1) {
+                                    offscreenCount++;
+                                } else if (boxCollides === 1) {
+                                    collides = 1;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if (offscreenCount === boxes.length) {
-                        collides = -1;
+                        if (offscreenCount === boxes.length) {
+                            collides = -1;
+                        }
                     }
                     collision.collides = collides;
                 }
@@ -360,6 +365,7 @@ export default class CollisionPainter extends BasicPainter {
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
         if (isAllowOverlap) {
             collision.collides = 0;
+            collision.isAllowOverlap = 1;
         }
         return collision;
     }
