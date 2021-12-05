@@ -185,6 +185,9 @@ class IconPainter extends CollisionPainter {
         if (symbolDef.markerPlacement === 'line') {
             this._rebuildCollideIds(geometry, context);
         }
+        if (symbolDef.markerPlacement === 'line' || symbolDef.textPlacement === 'line') {
+            meshes.forEach(m => m.properties.isLinePlacement = true);
+        }
         this._prepareCollideIndex(geometry);
         return meshes;
     }
@@ -213,6 +216,8 @@ class IconPainter extends CollisionPainter {
             }
             if (context.markerCollideMap) {
                 // counter是，pickingId不变时，icon的序号
+                const { markerCollideMap } = context;
+                let maxId = markerCollideMap.new[markerCollideMap.new.length - 1];
                 let counter = 0;
                 let current = collideIds[0];
                 let currentOldIndex = context.markerCollideMap.old.indexOf(current);
@@ -227,7 +232,8 @@ class IconPainter extends CollisionPainter {
                         counter = 0;
                     }
                     // 3. 获取text对应的icon的collide值 = 2得到的起始序号 + icon序号 * BOX_VERTEX_COUNT
-                    const id = context.markerCollideMap.new[currentOldIndex + counter * BOX_VERTEX_COUNT];
+                    // currentOldIndex 为 -1时，说明文字没有对应的icon数据，它的id则从 maxId 开始计数。
+                    const id = currentOldIndex === -1 ? ++maxId : context.markerCollideMap.new[currentOldIndex + counter * BOX_VERTEX_COUNT];
                     const next =  i + currentCount * BOX_VERTEX_COUNT;
                     collideIds.fill(id, i, next);
                     i += currentCount * BOX_VERTEX_COUNT;
@@ -417,7 +423,6 @@ class IconPainter extends CollisionPainter {
         if (aOpacity && aOpacity.dirty) {
             mesh.geometry.updateData('aOpacity', aOpacity);
             aOpacity.dirty = false;
-            this.setToRedraw();
         }
     }
 

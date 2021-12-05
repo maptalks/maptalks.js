@@ -688,7 +688,8 @@ export default class CollisionPainter extends BasicPainter {
         if (!zooming && this._zooming) {
             //记录zoom结束的时间戳
             const renderer = this.layer.getRenderer();
-            this._zoomEndMeshes = this.scene.getMeshes().filter(m => !renderer.isForeground(m));
+            // linePlacement的mesh不放到zoomEndMeshes中
+            this._zoomEndMeshes = this.scene.getMeshes().filter(m => !renderer.isForeground(m) && !m.properties.isLinePlacement);
         } else if (zooming && !this._zooming) {
             this._preRes = map.getResolution();
         }
