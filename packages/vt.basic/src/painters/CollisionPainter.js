@@ -636,6 +636,7 @@ export default class CollisionPainter extends BasicPainter {
         if (this._zoomEndMeshes && this._zoomEndMeshes.length) {
             this._updateZoomMeshesLevel();
             if (this._zoomEndMeshes) {
+                this.setToRedraw();
                 this.scene.addMesh(this._zoomEndMeshes);
             }
         }
@@ -802,7 +803,7 @@ export default class CollisionPainter extends BasicPainter {
         for (let i = 0; i < this._zoomEndMeshes.length; i++) {
             const mesh = this._zoomEndMeshes[i];
             const tileInfo = mesh.properties.tile;
-            if (!mesh._fadeOutStartTime && !renderer.isBackTile(tileInfo.id)) {
+            if (!mesh._fadeOutStartTime && renderer.isBackTile(tileInfo.id)) {
                 mesh._fadeOutStartTime = timestamp;
             }
             //需要更新zoom meshes 的level，让他们改为在background阶段绘制
