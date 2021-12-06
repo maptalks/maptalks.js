@@ -44,7 +44,7 @@ export default class CirclePack extends VectorPack {
 
     _getAnchors(point, scale) {
         const { feature, symbol } = point;
-        const placement = this._getPlacement(symbol, point);
+        const placement = this._getPlacement(symbol);
         const properties = feature.properties;
         const { markerSpacingFn } = this._fnTypes;
         const spacing = (
@@ -56,13 +56,7 @@ export default class CirclePack extends VectorPack {
         return anchors;
     }
 
-    _getPlacement(symbol, point) {
-        const { markerPlacementFn } = this._fnTypes;
-        if (markerPlacementFn) {
-            const properties = point.feature.properties;
-            const placement =  markerPlacementFn(null, properties);
-            return placement;
-        }
+    _getPlacement(symbol) {
         return symbol.markerPlacement;
     }
 }
