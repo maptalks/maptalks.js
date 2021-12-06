@@ -823,7 +823,7 @@ class TileLayer extends Layer {
         };
         const sr = this.getSpatialReference();
         const res = sr.getResolution(zoom);
-        const glScale = map.getGLScale(z);
+        const glScale = res / map.getGLRes();
 
         const repeatWorld = !this._hasOwnSR && this.options['repeatWorld'];
 
