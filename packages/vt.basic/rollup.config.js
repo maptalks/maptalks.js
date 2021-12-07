@@ -16,7 +16,7 @@ const plugins = production ? [
             }
         },
         output: {
-            // beautify: true,
+            beautify: true,
             comments: '/^!/'
         }
     })] : [];

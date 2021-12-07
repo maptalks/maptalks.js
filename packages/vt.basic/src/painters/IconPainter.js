@@ -428,6 +428,9 @@ class IconPainter extends CollisionPainter {
 
     forEachBox(meshGroup, fn) {
         const uniqueCollideIds = meshGroup.properties.uniqueCollideIds;
+        if (!uniqueCollideIds) {
+            return;
+        }
         const context = { boxIndex: 0 };
         const count = uniqueCollideIds.length;
         for (let i = 0; i < count; i++) {
