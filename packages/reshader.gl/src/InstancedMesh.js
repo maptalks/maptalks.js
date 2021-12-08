@@ -32,7 +32,7 @@ export default class InstancedMesh extends Mesh {
     _getInstanceMemorySize() {
          let size = 0;
          for (const p in this.instancedData) {
-             if (hasOwn(this.instanceData, p)) {
+             if (hasOwn(this.instancedData, p)) {
                  size += getBufferSize(this.instancedData[p]);
              }
          }
