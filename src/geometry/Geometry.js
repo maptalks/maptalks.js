@@ -527,6 +527,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!painter) {
             return false;
         }
+        //bbox not contains mousepoint
+        if (painter && painter._containerBbox && painter.symbolizers.length === 1) {
+            const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
+            if (containerPoint.x < minx - lineWidth || containerPoint.x > maxx + lineWidth ||
+                containerPoint.y < miny - lineWidth || containerPoint.y > maxy + lineWidth) {
+                return false;
+            }
+        }
         if (isNil(t) && this._hitTestTolerance) {
             t = this._hitTestTolerance();
         }

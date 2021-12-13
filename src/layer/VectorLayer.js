@@ -135,8 +135,17 @@ class VectorLayer extends OverlayLayer {
         }
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
-            if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
+            const painter = geo._getPainter();
+            if (!geo || !geo.isVisible() || !painter || !geo.options['interactive']) {
                 continue;
+            }
+            // bbox not contains mousepoint
+            if (painter && painter._containerBbox && painter.symbolizers.length === 1) {
+                const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
+                if (cp.x < minx - lineWidth || cp.x > maxx + lineWidth ||
+                    cp.y < miny - lineWidth || cp.y > maxy + lineWidth) {
+                    continue;
+                }
             }
             if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
                 // Except for LineString with arrows or curves

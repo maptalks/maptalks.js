@@ -356,11 +356,16 @@ class Painter extends Class {
             }
         }
         //cache geometry bbox
-        TEMP_BBOX.minx = minx;
-        TEMP_BBOX.miny = miny;
-        TEMP_BBOX.maxx = maxx;
-        TEMP_BBOX.maxy = maxy;
-        this._containerBbox = TEMP_BBOX;
+        if (!this._containerBbox) {
+            this._containerBbox = { ...TEMP_BBOX };
+        }
+        if (!this.isHitTesting()) {
+            this._containerBbox.minx = minx;
+            this._containerBbox.miny = miny;
+            this._containerBbox.maxx = maxx;
+            this._containerBbox.maxy = maxy;
+        }
+        // this._containerBbox = TEMP_BBOX;
         return cPoints;
     }
 
@@ -568,6 +573,12 @@ class Painter extends Class {
                 this._prepareShadow(ctx, this.symbolizers[i].symbol);
             }
             this.symbolizers[i].symbolize.apply(this.symbolizers[i], contexts);
+            if (this.symbolizers.length === 1 && this._containerBbox) {
+                if (this._containerBbox.lineWidth === undefined) {
+                    this._containerBbox.lineWidth = 1;
+                }
+                this._containerBbox.lineWidth = Math.max(this._containerBbox.lineWidth, this.symbolizers[i].style.lineWidth || 1);
+            }
         }
         this._afterPaint();
         this._painted = true;
