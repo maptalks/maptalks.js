@@ -165,9 +165,9 @@ export default class GLTFPack {
             node.trs.update(animation);
         }
         if (parentNodeMatrix) {
-            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.matrix || node.trs.getMatrix());
+            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.trs.getMatrix());
         } else {
-            mat4.copy(node.nodeMatrix, node.matrix || node.trs.getMatrix());
+            mat4.copy(node.nodeMatrix, node.trs.getMatrix());
         }
         const nodeMatrix = node.nodeMatrix;
         if (node.children) {
