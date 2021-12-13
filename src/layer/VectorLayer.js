@@ -140,7 +140,7 @@ class VectorLayer extends OverlayLayer {
                 continue;
             }
             // bbox not contains mousepoint
-            if (painter && painter._containerBbox && painter.symbolizers.length === 1) {
+            if (painter && painter._containerBbox && painter.symbolizers.length === 1 && geo._isPoly()) {
                 const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
                 if (cp.x < minx - lineWidth || cp.x > maxx + lineWidth ||
                     cp.y < miny - lineWidth || cp.y > maxy + lineWidth) {

@@ -518,17 +518,21 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (containerPoint instanceof Coordinate) {
             containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
-        return this._containsPoint(containerPoint, t);
+        return this._containsPoint(containerPoint, t, false);
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
-    _containsPoint(containerPoint, t) {
+    _isPoly() {
+        return this._jsonType && ['Polygon', 'LineString'].indexOf(this._jsonType) > -1;
+    }
+
+    _containsPoint(containerPoint, t, isHit = true) {
         const painter = this._getPainter();
         if (!painter) {
             return false;
         }
         //bbox not contains mousepoint
-        if (painter && painter._containerBbox && painter.symbolizers.length === 1) {
+        if (isHit && painter && painter._containerBbox && painter.symbolizers.length === 1 && this._isPoly()) {
             const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
             if (containerPoint.x < minx - lineWidth || containerPoint.x > maxx + lineWidth ||
                 containerPoint.y < miny - lineWidth || containerPoint.y > maxy + lineWidth) {
