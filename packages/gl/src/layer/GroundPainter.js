@@ -206,7 +206,7 @@ class GroundPainter {
             if (!this._iblTexes) {
                 this._iblTexes = createIBLTextures(this._regl, this.getMap());
             }
-            uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context);
+            uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context && context.ssr, context && context.jitter);
         } else {
             const map = this.getMap();
             uniforms = {
