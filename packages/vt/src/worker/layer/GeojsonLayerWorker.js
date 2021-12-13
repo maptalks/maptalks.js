@@ -55,7 +55,12 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         if (isString(data) && data.substring(0, 1) != '{' || data.url) {
             Ajax.getJSON(data.url ? data.url : data, data.url ? data : {}, (err, resp) => {
                 if (err) cb(err);
+                if (!resp) {
+                    cb(null, { extent: null, idMap: {} });
+                    return;
+                }
                 const data = resp;
+                // debugger
                 const { first1000, idMap } = this._generateId(data);
                 this.index = geojsonvt(resp, this.options.geojsonvt || options);
                 const extent = first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
@@ -84,6 +89,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
         function visit(f) {
             if (!f) {
+                return;
+            }
+            if (f.type === 'Feature' && !f.geometry) {
                 return;
             }
             if (f.id === undefined || f.id === null) {
