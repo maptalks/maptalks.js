@@ -142,14 +142,15 @@ class VectorLayer extends OverlayLayer {
             }
             const isInMapView = mapSize && cp.x >= 0 && cp.y >= 0 && cp.x <= mapSize.width && cp.y <= mapSize.height;
             // bbox not contains mousepoint
-            if (isInMapView && painter && painter._containerBbox && painter.symbolizers.length === 1 && geo._isPoly()) {
+            const isPoly = geo._isPoly();
+            if (isInMapView && painter && painter._containerBbox && painter.symbolizers.length === 1 && isPoly) {
                 const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
                 if (cp.x < minx - lineWidth || cp.x > maxx + lineWidth ||
                     cp.y < miny - lineWidth || cp.y > maxy + lineWidth) {
                     continue;
                 }
             }
-            if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
+            if (!isPoly && (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve)))) {
                 // Except for LineString with arrows or curves
                 let extent = geo.getContainerExtent(TEMP_EXTENT);
                 if (tolerance) {

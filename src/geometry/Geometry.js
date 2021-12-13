@@ -522,8 +522,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         // return this._containsPoint(this.getMap()._containerPointToPoint(new Point(containerPoint)), t);
     }
 
+    //is polygon,linestring,multipolygon,multilinestring
     _isPoly() {
-        return this._jsonType && ['Polygon', 'LineString'].indexOf(this._jsonType) > -1;
+        return (this._jsonType && ['Polygon', 'LineString'].indexOf(this._jsonType) > -1) ||
+            (this.getGeometries && ['MultiPolygon', 'MultiLineString'].indexOf(this.getType()) > -1);
     }
 
     _containsPoint(containerPoint, t, mapSize) {
