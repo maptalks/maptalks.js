@@ -133,14 +133,16 @@ class VectorLayer extends OverlayLayer {
                 return hits;
             }
         }
+        const mapSize = map.getSize();
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             const painter = geo._getPainter();
             if (!geo || !geo.isVisible() || !painter || !geo.options['interactive']) {
                 continue;
             }
+            const isInMapView = mapSize && cp.x >= 0 && cp.y >= 0 && cp.x <= mapSize.width && cp.y <= mapSize.height;
             // bbox not contains mousepoint
-            if (painter && painter._containerBbox && painter.symbolizers.length === 1 && geo._isPoly()) {
+            if (isInMapView && painter && painter._containerBbox && painter.symbolizers.length === 1 && geo._isPoly()) {
                 const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
                 if (cp.x < minx - lineWidth || cp.x > maxx + lineWidth ||
                     cp.y < miny - lineWidth || cp.y > maxy + lineWidth) {
@@ -157,7 +159,7 @@ class VectorLayer extends OverlayLayer {
                     continue;
                 }
             }
-            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance, mapSize) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {
