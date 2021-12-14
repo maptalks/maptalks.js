@@ -365,7 +365,6 @@ class Painter extends Class {
             this._containerBbox.maxx = maxx;
             this._containerBbox.maxy = maxy;
         }
-        // this._containerBbox = TEMP_BBOX;
         return cPoints;
     }
 
@@ -937,7 +936,7 @@ class Painter extends Class {
     }
 
     _isNotComplexSymbol() {
-        return this._containerBbox && this.symbolizers.length === 1;
+        return this.symbolizers.length === 1;
     }
 }
 

@@ -477,6 +477,9 @@ export function containerPointInMapView(containerPoint, mapSize) {
 }
 
 export function containerPointOutContainerBBox(containerPoint, containerBBox) {
+    if (!containerBBox || !containerPoint) {
+        return false;
+    }
     const { minx, miny, maxx, maxy } = containerBBox;
     const bboxValide = Math.abs(minx) !== Infinity && Math.abs(miny) !== Infinity &&
         Math.abs(maxx) !== Infinity && Math.abs(maxy) !== Infinity;

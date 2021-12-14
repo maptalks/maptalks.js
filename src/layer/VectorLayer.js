@@ -150,7 +150,7 @@ class VectorLayer extends OverlayLayer {
             const isPoly = geo._isPoly();
             const isNotComplexSymbol = painter._isNotComplexSymbol && painter._isNotComplexSymbol();
             const polyAndNotComplexSymbol = isPoly && isNotComplexSymbol;
-            if (isInMapView && polyAndNotComplexSymbol) {
+            if (isInMapView && polyAndNotComplexSymbol && painter._containerBbox) {
                 if (containerPointOutContainerBBox(cp, painter._containerBbox)) {
                     continue;
                 }
