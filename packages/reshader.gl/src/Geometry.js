@@ -555,6 +555,9 @@ export default class Geometry {
             const attribute = this._buffers[bufKey] ? this._buffers[bufKey].data : data.array;
             const { count, size, stride, offset, componentType } = data;
             const ctor = gltf.GLTFLoader.getTypedArrayCtor(componentType);
+            if ((stride === 0 || stride === size * ctor.BYTES_PER_ELEMENT) && offset % ctor.BYTES_PER_ELEMENT === 0) {
+                return new ctor(attribute, offset, count * size);
+            }
             //对于POSITION数据，为避免updateBBox时频繁创建临时数组，采用缓存tempPosArray的策略获取interleavedArray,
             //对于非POSITION的数据，直接readInterleavedArray读取即可
             if (name === this.desc.positionAttribute) {
