@@ -148,19 +148,23 @@ class VectorLayer extends OverlayLayer {
             }
             // bbox not contains mousepoint
             const isPoly = geo._isPoly();
-            if (isInMapView && isPoly && painter._isNotComplexSymbol && painter._isNotComplexSymbol()) {
+            const isNotComplexSymbol = painter._isNotComplexSymbol && painter._isNotComplexSymbol();
+            if (isInMapView && isPoly && isNotComplexSymbol) {
                 if (containerPointOutContainerBBox(cp, painter._containerBbox)) {
                     continue;
                 }
             }
-            if (!isPoly && (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve)))) {
-                // Except for LineString with arrows or curves
-                let extent = geo.getContainerExtent(TEMP_EXTENT);
-                if (tolerance) {
-                    extent = extent._expand(tolerance);
-                }
-                if (!extent || !extent.contains(cp)) {
-                    continue;
+            //其他的图形或者复合样式仍然保持原来的逻辑
+            if (!(isNotComplexSymbol && isPoly)) {
+                if ((!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve)))) {
+                    // Except for LineString with arrows or curves
+                    let extent = geo.getContainerExtent(TEMP_EXTENT);
+                    if (tolerance) {
+                        extent = extent._expand(tolerance);
+                    }
+                    if (!extent || !extent.contains(cp)) {
+                        continue;
+                    }
                 }
             }
             if (geo._containsPoint(cp, tolerance, mapSize) && (!filter || filter(geo))) {
