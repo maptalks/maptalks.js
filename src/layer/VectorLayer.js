@@ -134,13 +134,17 @@ class VectorLayer extends OverlayLayer {
             }
         }
         const mapSize = map.getSize();
+        const isInMapView = containerPointInMapView(cp, mapSize);
+        //如果鼠标位置在当前地图视野内，仅仅需要判断render的_geosToDraw就可以了，无需判断所有的geolist
+        if (isInMapView) {
+            geometries = renderer._geosToDraw || [];
+        }
         for (let i = geometries.length - 1; i >= 0; i--) {
             const geo = geometries[i];
             const painter = geo._getPainter();
             if (!geo || !geo.isVisible() || !painter || !geo.options['interactive']) {
                 continue;
             }
-            const isInMapView = containerPointInMapView(cp, mapSize);
             // bbox not contains mousepoint
             const isPoly = geo._isPoly();
             if (isInMapView && isPoly && painter._isNotComplexSymbol && painter._isNotComplexSymbol()) {
