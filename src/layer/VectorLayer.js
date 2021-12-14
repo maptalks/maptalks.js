@@ -1,5 +1,5 @@
 import Browser from '../core/Browser';
-import { isNil } from '../core/util';
+import { containerPointInMapView, containerPointOutContainerBBox, isNil } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -140,13 +140,11 @@ class VectorLayer extends OverlayLayer {
             if (!geo || !geo.isVisible() || !painter || !geo.options['interactive']) {
                 continue;
             }
-            const isInMapView = mapSize && cp.x >= 0 && cp.y >= 0 && cp.x <= mapSize.width && cp.y <= mapSize.height;
+            const isInMapView = containerPointInMapView(cp, mapSize);
             // bbox not contains mousepoint
             const isPoly = geo._isPoly();
-            if (isInMapView && painter && painter._containerBbox && painter.symbolizers.length === 1 && isPoly) {
-                const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
-                if (cp.x < minx - lineWidth || cp.x > maxx + lineWidth ||
-                    cp.y < miny - lineWidth || cp.y > maxy + lineWidth) {
+            if (isInMapView && isPoly && painter._isNotComplexSymbol && painter._isNotComplexSymbol()) {
+                if (containerPointOutContainerBBox(cp, painter._containerBbox)) {
                     continue;
                 }
             }

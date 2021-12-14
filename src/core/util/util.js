@@ -470,3 +470,16 @@ export function getPointsResultPts(points = [], ptKey = '_pt') {
     }
     return resultPoints;
 }
+
+export function containerPointInMapView(containerPoint, mapSize) {
+    return containerPoint && mapSize && containerPoint.x >= 0 && containerPoint.y >= 0 &&
+        containerPoint.x <= mapSize.width && containerPoint.y <= mapSize.height;
+}
+
+export function containerPointOutContainerBBox(containerPoint, containerBBox) {
+    const { minx, miny, maxx, maxy } = containerBBox;
+    const lineWidth = containerBBox.lineWidth || 1;
+    const { x, y } = containerPoint;
+    return (x < minx - lineWidth || x > maxx + lineWidth ||
+        y < miny - lineWidth || y > maxy + lineWidth);
+}

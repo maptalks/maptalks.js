@@ -935,6 +935,10 @@ class Painter extends Class {
 
     _afterPaint() {
     }
+
+    _isNotComplexSymbol() {
+        return this._containerBbox && this.symbolizers.length === 1;
+    }
 }
 
 function interpolateAlt(points, orig, altitude) {

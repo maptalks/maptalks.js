@@ -11,7 +11,9 @@ import {
     isObject,
     forEachCoord,
     flash,
-    sign
+    sign,
+    containerPointInMapView,
+    containerPointOutContainerBBox
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
 import { loadGeoSymbol } from '../core/mapbox';
@@ -533,12 +535,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!painter) {
             return false;
         }
-        const isInMapView = mapSize && containerPoint.x >= 0 && containerPoint.y >= 0 && containerPoint.x <= mapSize.width && containerPoint.y <= mapSize.height;
+        const isInMapView = containerPointInMapView(containerPoint, mapSize);
         //bbox not contains mousepoint
-        if (isInMapView && painter && painter._containerBbox && painter.symbolizers.length === 1 && this._isPoly()) {
-            const { minx, miny, maxx, maxy, lineWidth } = painter._containerBbox;
-            if (containerPoint.x < minx - lineWidth || containerPoint.x > maxx + lineWidth ||
-                containerPoint.y < miny - lineWidth || containerPoint.y > maxy + lineWidth) {
+        if (isInMapView && painter._isNotComplexSymbol && painter._isNotComplexSymbol() && this._isPoly()) {
+            if (containerPointOutContainerBBox(containerPoint, painter._containerBbox)) {
                 return false;
             }
         }
