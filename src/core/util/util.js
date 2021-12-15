@@ -481,10 +481,10 @@ export function containerPointOutContainerBBox(containerPoint, containerBBox) {
         return false;
     }
     const { minx, miny, maxx, maxy } = containerBBox;
-    const bboxValide = Math.abs(minx) !== Infinity && Math.abs(miny) !== Infinity &&
+    const bboxValidate = Math.abs(minx) !== Infinity && Math.abs(miny) !== Infinity &&
         Math.abs(maxx) !== Infinity && Math.abs(maxy) !== Infinity;
     const lineWidth = containerBBox.lineWidth || 1;
     const { x, y } = containerPoint;
-    return bboxValide && (x < minx - lineWidth || x > maxx + lineWidth ||
+    return bboxValidate && (x < minx - lineWidth || x > maxx + lineWidth ||
         y < miny - lineWidth || y > maxy + lineWidth);
 }
