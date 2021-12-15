@@ -150,18 +150,20 @@ void main() {
 
     #endif
 
+    mat4 localPositionMatrix = getPositionMatrix();
+    mat3 positionNormalMatrix = mat3(localPositionMatrix);
+    mat3 normalMatrix = modelNormalMatrix * positionNormalMatrix;
     #if defined(HAS_TANGENT)
         vec3 t;
         toTangentFrame(aTangent, Normal, t);
         // Tangent = vec4(t, aTangent.w);
         // vec4 localTangent = Tangent;
         // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
-        vModelTangent = vec4(modelNormalMatrix * t, aTangent.w);
+        vModelTangent = vec4(normalMatrix * t, aTangent.w);
     #else
         Normal = aNormal;
     #endif
 
-    mat4 localPositionMatrix = getPositionMatrix();
     #ifdef IS_LINE_EXTRUSION
         vec3 linePosition = getLineExtrudePosition(aPosition);
         //linePixelScale = tileRatio * resolution / tileResolution
@@ -172,18 +174,19 @@ void main() {
     vModelVertex = (modelMatrix * localVertex).xyz;
 
     vec3 localNormal = Normal;
-    vModelNormal = modelNormalMatrix * localNormal;
+    vModelNormal = normalMatrix * localNormal;
 
     #if defined(HAS_TANGENT)
         vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
     #endif
 
     #ifdef HAS_SSR
-        vViewNormal = modelViewNormalMatrix * Normal;
+        mat3 ssrNormalMatrix = modelViewNormalMatrix * positionNormalMatrix;
+        vViewNormal = ssrNormalMatrix * Normal;
          #if defined(HAS_TANGENT)
             // Tangent = vec4(t, aTangent.w);
             vec4 localTangent = vec4(t, aTangent.w);;
-            vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
+            vViewTangent = vec4(ssrNormalMatrix * localTangent.xyz, localTangent.w);
         #endif
     #endif
 

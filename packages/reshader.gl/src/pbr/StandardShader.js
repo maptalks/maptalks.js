@@ -50,16 +50,14 @@ class StandardShader extends MeshShader {
                     // const transposed = mat3.transpose(model3, model3);
                     // const inverted = mat3.invert(transposed, transposed);
                     // return inverted;
-                    mat4.multiply(tempMat4, props['modelMatrix'], props['positionMatrix']);
-                    return mat3.fromMat4(modelNormalMatrix, tempMat4);
+                    return mat3.fromMat4(modelNormalMatrix, props['modelMatrix']);
                 }
             },
             {
                 name: 'modelViewNormalMatrix',
                 type: 'function',
                 fn: (_, props) => {
-                    mat4.multiply(tempMat4, props['modelMatrix'], props['positionMatrix']);
-                    const modelView = mat4.multiply(tempMat4, props['viewMatrix'], tempMat4);
+                    const modelView = mat4.multiply(tempMat4, props['viewMatrix'], props['modelMatrix']);
                     const inverted = mat4.invert(modelView, modelView);
                     const transposed = mat4.transpose(inverted, inverted);
                     return mat3.fromMat4(modelViewNormalMatrix, transposed);
