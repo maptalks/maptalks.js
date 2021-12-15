@@ -139,4 +139,13 @@ export default class CollectionPainter extends Class {
         return result;
     }
 
+    _isNotComplexSymbol() {
+        const geos = this.geometry.getGeometries();
+        if (geos.length) {
+            const painter = geos[0]._getPainter();
+            return painter.symbolizers.length === 1;
+        }
+        return false;
+    }
+
 }
