@@ -360,10 +360,13 @@ class Painter extends Class {
             this._containerBbox = { ...TEMP_BBOX };
         }
         if (!this.isHitTesting()) {
-            this._containerBbox.minx = minx;
-            this._containerBbox.miny = miny;
-            this._containerBbox.maxx = maxx;
-            this._containerBbox.maxy = maxy;
+            //is StrokeAndFillSymbolizer
+            if (Array.isArray(points[0])) {
+                this._containerBbox.minx = minx;
+                this._containerBbox.miny = miny;
+                this._containerBbox.maxx = maxx;
+                this._containerBbox.maxy = maxy;
+            }
         }
         return cPoints;
     }
