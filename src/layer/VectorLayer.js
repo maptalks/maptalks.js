@@ -168,7 +168,7 @@ class VectorLayer extends OverlayLayer {
                     }
                 }
             }
-            if (geo._containsPoint(cp, tolerance, mapSize) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance, isInMapView) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {

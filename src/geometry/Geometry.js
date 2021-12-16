@@ -12,7 +12,6 @@ import {
     forEachCoord,
     flash,
     sign,
-    containerPointInMapView,
     containerPointOutContainerBBox
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
@@ -530,12 +529,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             (this.getGeometries && ['MultiPolygon', 'MultiLineString'].indexOf(this.getType()) > -1);
     }
 
-    _containsPoint(containerPoint, t, mapSize) {
+    _containsPoint(containerPoint, t, isInMapView) {
         const painter = this._getPainter();
         if (!painter) {
             return false;
         }
-        const isInMapView = containerPointInMapView(containerPoint, mapSize);
         const isPoly = this._isPoly();
         const isNotComplexSymbol = painter._isNotComplexSymbol && painter._isNotComplexSymbol();
         //bbox not contains mousepoint

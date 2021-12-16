@@ -337,13 +337,13 @@ class GeometryCollection extends Geometry {
         return new Coordinate(sumX / counter, sumY / counter);
     }
 
-    _containsPoint(point, t, mapSize) {
+    _containsPoint(point, t, isInMapView) {
         if (this.isEmpty()) {
             return false;
         }
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
-            if (geometries[i]._containsPoint(point, t, mapSize)) {
+            if (geometries[i]._containsPoint(point, t, isInMapView)) {
                 return true;
             }
         }
