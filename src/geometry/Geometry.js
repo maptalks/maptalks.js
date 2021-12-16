@@ -535,9 +535,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return false;
         }
         const isPoly = this._isPoly();
-        const isNotComplexSymbol = painter._isNotComplexSymbol && painter._isNotComplexSymbol();
+        const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
         //bbox not contains mousepoint
-        if (isInMapView && isPoly && isNotComplexSymbol && painter._containerBbox) {
+        if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol && painter._containerBbox) {
             if (containerPointOutContainerBBox(containerPoint, painter._containerBbox)) {
                 return false;
             }

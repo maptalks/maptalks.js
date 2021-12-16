@@ -938,8 +938,8 @@ class Painter extends Class {
     _afterPaint() {
     }
 
-    _isNotComplexSymbol() {
-        return this.symbolizers.length === 1;
+    _isOnlyStrokeAndFillSymbol() {
+        return this.symbolizers.length === 1 && this.symbolizers[0] instanceof Symbolizers.StrokeAndFillSymbolizer;
     }
 }
 

@@ -148,15 +148,15 @@ class VectorLayer extends OverlayLayer {
             }
             // bbox not contains mousepoint
             const isPoly = geo._isPoly();
-            const isNotComplexSymbol = painter._isNotComplexSymbol && painter._isNotComplexSymbol();
-            const polyAndNotComplexSymbol = isPoly && isNotComplexSymbol;
-            if (isInMapView && polyAndNotComplexSymbol && painter._containerBbox) {
+            const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
+            const polyAndIsOnlyStrokeAndFillSymbol = isPoly && isOnlyStrokeAndFillSymbol;
+            if (isInMapView && polyAndIsOnlyStrokeAndFillSymbol && painter._containerBbox) {
                 if (containerPointOutContainerBBox(cp, painter._containerBbox)) {
                     continue;
                 }
             }
             //其他的图形或者复合样式仍然保持原来的逻辑
-            if (!polyAndNotComplexSymbol) {
+            if (!polyAndIsOnlyStrokeAndFillSymbol) {
                 if ((!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve)))) {
                     // Except for LineString with arrows or curves
                     let extent = geo.getContainerExtent(TEMP_EXTENT);
