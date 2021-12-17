@@ -28,7 +28,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         if (!this._imageData) {
             const { width, height } = this.context.canvas;
-            this._imageData = this.context.getImageData(0, 0, width, height);
+            try {
+                this._imageData = this.context.getImageData(0, 0, width, height);
+            } catch (error) {
+                console.warn('hit detect failed with tainted canvas, some geometries have external resources in another domain:\n', error);
+            }
         }
         return this._imageData;
     }
