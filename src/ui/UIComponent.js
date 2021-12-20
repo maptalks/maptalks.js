@@ -175,6 +175,7 @@ class UIComponent extends Eventable(Class) {
         this._measureSize(dom);
 
         if (this._singleton()) {
+            dom._uiComponent = this;
             map[this._uiDomKey()] = dom;
         }
 
@@ -280,6 +281,8 @@ class UIComponent extends Eventable(Class) {
         if (anim.scale) {
             dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
         }
+        //remove map bind events
+        this._switchMapEvents('off');
         return this;
     }
 
@@ -491,6 +494,10 @@ class UIComponent extends Eventable(Class) {
                     off(map[key], eventsToStop, stopPropagation);
                 }
                 removeDomNode(map[key]);
+                //remove map bind events
+                if (map[key]._uiComponent && !this.hideDom) {
+                    map[key]._uiComponent._switchMapEvents('off');
+                }
                 delete map[key];
             }
             delete this.__uiDOM;
@@ -544,7 +551,8 @@ class UIComponent extends Eventable(Class) {
     }
 
     _switchEvents(to) {
-        this._switchMapEvents(to);
+        //At the beginning,not bind map events,bind evetns when show
+        // this._switchMapEvents(to);
         const ownerEvents = this._getOwnerEvents();
         if (this._owner) {
             for (const p in ownerEvents) {
