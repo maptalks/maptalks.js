@@ -123,6 +123,7 @@ class MapDragHandler extends Handler {
         if (!this.startDragTime) {
             return;
         }
+        const isTouch = param.domEvent.type === 'touchend';
         const map = this.target;
         let t = now() - this.startDragTime;
         const mx = param['mousePos'].x,
@@ -134,7 +135,8 @@ class MapDragHandler extends Handler {
 
         if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
             t = 5 * t;
-            map.panBy(new Point(dx * 3, dy * 3), { 'duration': t * 1.5, 'easing': 'outExpo' });
+            const dscale = isTouch ? 5 : 2.8;
+            map.panBy(new Point(dx * dscale, dy * dscale), { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
         } else {
             map.onMoveEnd(param);
         }
