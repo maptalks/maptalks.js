@@ -205,13 +205,13 @@ class MapDragHandler extends Handler {
         this._clear();
         const t = now() - this.startDragTime;
         map.onDragRotateEnd(param);
-        if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
+        if (map.options['rotateAnimation'] && Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
             map._animateTo({
                 'bearing' : bearing + this._db / 2
             }, {
                 'easing'  : 'out',
-                'duration' : 800
+                'duration' : map.options['rotateAnimationDuration']
             });
         }
     }

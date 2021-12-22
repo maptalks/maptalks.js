@@ -35,6 +35,8 @@ const TEMP_COORD = new Coordinate(0, 0);
  * @property {Number}  [options.zoomAnimationDuration=330]      - zoom animation duration.
  * @property {Boolean} [options.panAnimation=true]              - continue to animate panning when draging or touching ended.
  * @property {Boolean} [options.panAnimationDuration=600]       - duration of pan animation.
+ * @property {Boolean} [options.rotateAnimation=true]           - continue to animate rotating when draging or touching rotation ended.
+ * @property {Boolean} [options.rotateAnimationDuration=800]    - duration of rotate animation.
  * @property {Boolean} [options.zoomable=true]                  - whether to enable map zooming.
  * @property {Boolean} [options.enableInfoWindow=true]          - whether to enable infowindow on this map.
  * @property {Boolean} [options.hitDetect=true]                 - whether to enable hit detecting of layers for cursor style on this map, disable it to improve performance.
@@ -95,8 +97,14 @@ const options = {
     'panAnimation': (function () {
         return !IS_NODE;
     })(),
+
     //default pan animation duration
     'panAnimationDuration': 600,
+
+    'rotateAnimation': (function () {
+        return !IS_NODE;
+    })(),
+    'rotateAnimationDuration': 800,
 
     'zoomable': true,
     'enableInfoWindow': true,
