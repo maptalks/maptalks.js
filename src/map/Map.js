@@ -104,7 +104,6 @@ const options = {
     'rotateAnimation': (function () {
         return !IS_NODE;
     })(),
-    'rotateAnimationDuration': 800,
 
     'zoomable': true,
     'enableInfoWindow': true,

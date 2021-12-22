@@ -20,6 +20,14 @@ const KEY = '__anim_player';
  * @protected
  */
 const Easing = {
+    outExpo(x) {
+        return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+    },
+
+    outQuint(x) {
+        return 1 - Math.pow(1 - x, 5);
+    },
+
     /**
      * Start slow and speed up.
      * @param {number} t Input between 0 and 1.

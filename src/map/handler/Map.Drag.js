@@ -1,4 +1,4 @@
-import { now } from '../../core/util';
+import { now, sign } from '../../core/util';
 import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
@@ -133,8 +133,8 @@ class MapDragHandler extends Handler {
         this._clear();
 
         if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
-            t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
-            map.panBy(new Point(dx, dy), { 'duration' : t });
+            t = 5 * t;
+            map.panBy(new Point(dx * 3, dy * 3), { 'duration': t * 1.5, 'easing': 'outExpo' });
         } else {
             map.onMoveEnd(param);
         }
@@ -208,10 +208,10 @@ class MapDragHandler extends Handler {
         if (map.options['rotateAnimation'] && Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
             map._animateTo({
-                'bearing' : bearing + this._db / 2
+                'bearing': bearing + this._db / 1.5
             }, {
-                'easing'  : 'out',
-                'duration' : map.options['rotateAnimationDuration']
+                'easing': 'outQuint',
+                'duration': 1600
             });
         }
     }
