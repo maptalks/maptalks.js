@@ -28,9 +28,11 @@ import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 import { isFunctionDefinition } from '../core/mapbox';
+import Size from '../geo/Size';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
+const TEMP_SIZE = new Size(0, 0);
 
 /**
  * @property {Object} options                       - geometry options
@@ -535,11 +537,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!map || !painter || !painter._containerBbox || !painter._isOnlyStrokeAndFillSymbol) {
             return false;
         }
-        const mapSize = map.getSize();
+        const mapSize = map.getSize(TEMP_SIZE);
         const isInMapView = containerPointInMapView(containerPoint, mapSize);
         const isPoly = this._isPoly();
         const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol();
-        if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol && painter._containerBbox) {
+        if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol) {
             return containerPointOutContainerBBox(containerPoint, painter._containerBbox);
         }
         return false;

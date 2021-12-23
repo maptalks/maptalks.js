@@ -467,9 +467,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's size (width and height) in pixel.
      * @return {Size}
      */
-    getSize() {
+    getSize(size) {
         if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
+        }
+        if (size) {
+            size.width = this.width;
+            size.height = this.height;
+            return size;
         }
         return new Size(this.width, this.height);
     }
