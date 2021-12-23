@@ -34,6 +34,22 @@ describe('UI.InfoWindow', function () {
         }, 100);
 
     });
+    it('set infowindow before add to map, fix #1548', function (done) {
+        var marker = new maptalks.Marker(map.getCenter());
+        marker.setInfoWindow({
+            animationDuration: 0,
+            title: 'hello maptalks',
+            content: 'hello maptalks'
+        });
+        marker.addTo(layer);
+        marker._fireEvent('click');
+        setTimeout(function () {
+
+            expect(marker.getInfoWindow().__uiDOM.style.display).not.to.be.eql('none');
+            done();
+        }, 100);
+
+    });
 
     it('infowindow template', function (done) {
         var msg = 'A light and plugable JavaScript library for integrated 2D/3D maps';

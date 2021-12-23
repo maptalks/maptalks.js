@@ -984,6 +984,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         this._layer = layer;
         this._clearCache();
+        this._bindInfoWindow();
+        this._bindMenu();
         // this._clearProjection();
         // this.callInitHooks();
     }
