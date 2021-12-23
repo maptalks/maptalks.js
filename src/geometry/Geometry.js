@@ -532,13 +532,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _isInsideContainerExtent(containerPoint) {
         const map = this.getMap(), painter = this._getPainter();
-        if (!map || !painter || !painter._containerBbox) {
+        if (!map || !painter || !painter._containerBbox || !painter._isOnlyStrokeAndFillSymbol) {
             return false;
         }
         const mapSize = map.getSize();
         const isInMapView = containerPointInMapView(containerPoint, mapSize);
         const isPoly = this._isPoly();
-        const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
+        const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol();
         if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol && painter._containerBbox) {
             return containerPointOutContainerBBox(containerPoint, painter._containerBbox);
         }
