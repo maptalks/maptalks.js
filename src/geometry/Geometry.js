@@ -12,6 +12,7 @@ import {
     forEachCoord,
     flash,
     sign,
+    containerPointInMapView,
     containerPointOutContainerBBox
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
@@ -529,18 +530,28 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             (this.getGeometries && ['MultiPolygon', 'MultiLineString'].indexOf(this.getType()) > -1);
     }
 
-    _containsPoint(containerPoint, t, isInMapView) {
+    _isInsideContainerExtent(containerPoint) {
+        const map = this.getMap(), painter = this._getPainter();
+        if (!map || !painter || !painter._containerBbox) {
+            return false;
+        }
+        const mapSize = map.getSize();
+        const isInMapView = containerPointInMapView(containerPoint, mapSize);
+        const isPoly = this._isPoly();
+        const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
+        if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol && painter._containerBbox) {
+            return containerPointOutContainerBBox(containerPoint, painter._containerBbox);
+        }
+        return false;
+    }
+
+    _containsPoint(containerPoint, t) {
         const painter = this._getPainter();
         if (!painter) {
             return false;
         }
-        const isPoly = this._isPoly();
-        const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
-        //bbox not contains mousepoint
-        if (isInMapView && isPoly && isOnlyStrokeAndFillSymbol && painter._containerBbox) {
-            if (containerPointOutContainerBBox(containerPoint, painter._containerBbox)) {
-                return false;
-            }
+        if (this._isInsideContainerExtent(containerPoint)) {
+            return false;
         }
         if (isNil(t) && this._hitTestTolerance) {
             t = this._hitTestTolerance();

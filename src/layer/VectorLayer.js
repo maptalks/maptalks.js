@@ -1,5 +1,5 @@
 import Browser from '../core/Browser';
-import { containerPointInMapView, containerPointOutContainerBBox, isNil } from '../core/util';
+import { containerPointInMapView, isNil } from '../core/util';
 import Extent from '../geo/Extent';
 import Geometry from '../geometry/Geometry';
 import OverlayLayer from './OverlayLayer';
@@ -147,14 +147,12 @@ class VectorLayer extends OverlayLayer {
                 continue;
             }
             // bbox not contains mousepoint
+            if (geo._isInsideContainerExtent(cp)) {
+                continue;
+            }
             const isPoly = geo._isPoly();
             const isOnlyStrokeAndFillSymbol = painter._isOnlyStrokeAndFillSymbol && painter._isOnlyStrokeAndFillSymbol();
             const polyAndIsOnlyStrokeAndFillSymbol = isPoly && isOnlyStrokeAndFillSymbol;
-            if (isInMapView && polyAndIsOnlyStrokeAndFillSymbol && painter._containerBbox) {
-                if (containerPointOutContainerBBox(cp, painter._containerBbox)) {
-                    continue;
-                }
-            }
             //其他的图形或者复合样式仍然保持原来的逻辑
             if (!polyAndIsOnlyStrokeAndFillSymbol) {
                 if ((!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve)))) {
@@ -168,7 +166,7 @@ class VectorLayer extends OverlayLayer {
                     }
                 }
             }
-            if (geo._containsPoint(cp, tolerance, isInMapView) && (!filter || filter(geo))) {
+            if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {
