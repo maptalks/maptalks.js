@@ -74,13 +74,16 @@ function transcode(rawBuffer, options) {
 
 function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
     const geometry = { indices: null, attributes: {}};
-    for (const name of attributes) {
-        const attributeID = decoder.GetAttributeId(dracoGeometry, dracoModule[name]);
+    for (const name in attributes) {
+        let attributeID = attributes[name];
+        if (attributeID < 0) {
+            attributeID = decoder.GetAttributeId(dracoGeometry, attributes[name]);
+        }
         if (attributeID === -1) continue;
         const attribute = decoder.GetAttribute(dracoGeometry, attributeID);
 
         const attributeType = dataTypes[attribute.data_type()];
-        const attributeData = decodeAttribute(decoder, dracoGeometry, name, attributeType, attribute);
+        const attributeData = decodeAttribute(decoder, dracoGeometry, attributeType, attribute);
         attributeData.name = name;
         geometry.attributes[name] = attributeData;
     }
@@ -107,7 +110,7 @@ function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
     return geometry;
 }
 
-function decodeAttribute(decoder, dracoGeometry, attributeName, attributeType, attribute) {
+function decodeAttribute(decoder, dracoGeometry, attributeType, attribute) {
     const numComponents = attribute.num_components();
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
@@ -157,7 +160,6 @@ function decodeAttribute(decoder, dracoGeometry, attributeName, attributeType, a
     }
     dracoModule.destroy(dracoArray);
     return {
-        name: attributeName,
         array: array,
         itemSize: numComponents
     };
