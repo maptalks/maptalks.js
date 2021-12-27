@@ -42,6 +42,8 @@ function GUID() {
     return UID++;
 }
 
+const REF_COUNT_KEY = '_reshader_refCount';
+
 export default class Geometry {
     constructor(data, elements, count, desc) {
         this._version = 0;
@@ -268,12 +270,20 @@ export default class Geometry {
                     buffers[key] = extend({}, data[key]);
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
                 }
+                const buffer = data[key].buffer;
+                if (!buffer[REF_COUNT_KEY]) {
+                    buffer[REF_COUNT_KEY] = 0;
+                }
+                buffer[REF_COUNT_KEY]++;
             } else {
-                const dimension = data[key].data ? data[key].data.length / vertexCount : data[key].length / vertexCount;
+                const arr = data[key].data ? data[key].data : data[key];
+                const dimension = arr.length / vertexCount;
                 const info = data[key].data ? data[key] : { data: data[key] };
                 info.dimension = dimension;
+                const buffer = regl.buffer(info);
+                buffer[REF_COUNT_KEY] = 1;
                 buffers[key] = {
-                    buffer : regl.buffer(info)
+                    buffer
                 };
             }
         }
@@ -291,6 +301,12 @@ export default class Geometry {
                 info.type = type;
             }
             this.elements = this.elements.destroy ? this.elements : regl.elements(info);
+            const elements = this.elements;
+            if (!elements[REF_COUNT_KEY]) {
+                elements[REF_COUNT_KEY] = 0;
+            }
+            elements[REF_COUNT_KEY]++;
+
         }
     }
 
@@ -460,8 +476,16 @@ export default class Geometry {
         this._deleteVAO();
         this._forEachBuffer(buffer => {
             if (!buffer[KEY_DISPOSED]) {
-                buffer[KEY_DISPOSED] = true;
-                buffer.destroy();
+                let refCount = buffer[REF_COUNT_KEY];
+                if (refCount) {
+                    refCount--;
+                }
+                if (refCount <= 0) {
+                    buffer[KEY_DISPOSED] = true;
+                    buffer.destroy();
+                } else {
+                    buffer[REF_COUNT_KEY] = refCount;
+                }
             }
         });
         this.data = {};
