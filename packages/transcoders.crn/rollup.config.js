@@ -16,27 +16,38 @@ const plugins = [
     commonjs(),
 ];
 
-const intro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\nreturn function () {\n`;
-const outro = '\n}';
-
-plugins.push(terser({
-    // mangle: {
-    //     properties: {
-    //         'regex' : /^_/,
-    //         'keep_quoted' : true,
-    //         'reserved': ['on', 'once', 'off'],
-    //     }
-    // },
-    compress: {
-        pure_getters: true
-    },
-    output : {
-        ecma: 2017,
-        // keep_quoted_props: true,
-        beautify: false,
-        comments : '/^!/'
+const intro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\nconst transcoder = function () {\n`;
+const outro = `
+    };
+    if (typeof exports === 'object' && typeof module !== 'undefined') {
+        const maptalksgl = require('@maptalks/gl');
+        maptalksgl.transcoders.registerTranscoder('crn', transcoder);
+    } else {
+        return exports;
     }
-}));
+`;
+
+if (production) {
+    plugins.push(terser({
+        // mangle: {
+        //     properties: {
+        //         'regex' : /^_/,
+        //         'keep_quoted' : true,
+        //         'reserved': ['on', 'once', 'off'],
+        //     }
+        // },
+        compress: {
+            pure_getters: true
+        },
+        output : {
+            ecma: 2017,
+            // keep_quoted_props: true,
+            beautify: true,
+            comments : '/^!/'
+        }
+    }));
+}
+
 module.exports = [
     {
         input: 'src/index.js',

@@ -21,7 +21,7 @@ function inject(chunk) {
     const g___lobals = _____getGlobal()
     const tran_____scoders = g___lobals['gl_trans__coders'] = g___lobals['gl_trans__coders'] || {};`
     for (const p in transcoders) {
-        if (p === 'inject') {
+        if (p === 'inject' || p === 'getTranscoder' || p === 'registerTranscoder') {
             continue;
         }
         injected += 'tran_____scoders["' + p + '"] =' + transcoders[p].toString() + '\n;';

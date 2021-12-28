@@ -1,7 +1,16 @@
+// 参考源代码
+// https://github.com/google/draco/blob/master/javascript/time_draco_decode.html
+// https://github.com/google/draco/tree/master/javascript/npm/draco3d
+
+// draco 1.5
 import wasmBinary from './lib/draco_decoder_base64.js';
+import DracoDecoderModule from './lib/draco_decoder.js';
 
 function createDecoderModule() {
-    return WebAssembly.instantiate(wasmBinary);
+  // DracoModule is created.
+  return DracoDecoderModule({
+      wasmBinary
+  })
 }
 
 const dataTypes = {
@@ -21,7 +30,7 @@ let dracoModule = null;
 
 export default function transcodeDRC(buffer, options) {
     if (!dracoModule) {
-        dracoModule = createDecoderModule({}).then((drcModule) => {
+        return createDecoderModule({}).then((drcModule) => {
             dracoModule = drcModule;
         }).then(() => {
             return transcode(buffer, options);
@@ -33,51 +42,48 @@ export default function transcodeDRC(buffer, options) {
 function transcode(rawBuffer, options) {
     const decoder = new dracoModule.Decoder();
     const buffer = new dracoModule.DecoderBuffer();
-    buffer.Init(new Int8Array(rawBuffer), rawBuffer.byteLength);
+    if (rawBuffer instanceof DataView) {
+        buffer.Init(new Int8Array(rawBuffer.buffer, rawBuffer.byteOffset, rawBuffer.byteLength), rawBuffer.byteLength);
+    } else {
+        buffer.Init(new Int8Array(rawBuffer), rawBuffer.byteLength);
+    }
+
     const geometryType = decoder.GetEncodedGeometryType(buffer);
 
     let dracoGeometry;
+    let decodingStatus = null;
     if (geometryType === dracoModule.TRIANGULAR_MESH) {
         dracoGeometry = new dracoModule.Mesh();
         decoder.DecodeBufferToMesh(buffer, dracoGeometry);
     } else if (geometryType === dracoModule.POINT_CLOUD) {
         dracoGeometry = new dracoModule.PointCloud();
-        decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
+        decodingStatus = decoder.DecodeBufferToPointCloud(buffer, dracoGeometry);
     } else {
         const errorMsg = 'Draco Error: Unknown geometry type: ' + geometryType;
         throw new Error(errorMsg);
     }
+    if (!decodingStatus.ok() || dracoGeometry.ptr === 0) {
+        throw new Error('Draco Error: Decoding failed: ' + decodingStatus.error_msg());
+    }
 
-    const geometry = decodeGeometry(decoder, buffer, options.attributes);
+    const geometry = decodeGeometry(decoder, geometryType, dracoGeometry, options.attributes);
     dracoModule.destroy(buffer);
 
     return Promise.resolve(geometry);
 }
 
-function decodeGeometry(decoder, decoderBuffer, attributes) {
-    let dracoGeometry = null;
-    let decodingStatus = null;
-    const geometryType = decoder.GetEncodedGeometryType(decoderBuffer);
-    if (geometryType === dracoModule.TRIANGULAR_MESH) {
-        dracoGeometry = new dracoModule.Mesh();
-        decodingStatus = decoder.DecodeBufferToMesh(decoderBuffer, dracoGeometry);
-    } else if (geometryType === dracoModule.POINT_CLOUD) {
-        dracoGeometry = new dracoModule.PointCloud();
-        decodingStatus = decoder.DecodeBufferToPointCloud(decoderBuffer, dracoGeometry);
-    } else {
-        throw new Error('Draco Error: Unexpected geometry type: ' + geometryType);
-    }
-    if (!decodingStatus.ok() || dracoGeometry.ptr === 0) {
-        throw new Error('Draco Error: Decoding failed: ' + decodingStatus.error_msg());
-    }
+function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
     const geometry = { indices: null, attributes: {}};
-    for (const name of attributes) {
-        const attributeID = decoder.GetAttributeId(dracoGeometry, dracoModule[name]);
+    for (const name in attributes) {
+        let attributeID = attributes[name];
+        if (attributeID < 0) {
+            attributeID = decoder.GetAttributeId(dracoGeometry, attributes[name]);
+        }
         if (attributeID === -1) continue;
         const attribute = decoder.GetAttribute(dracoGeometry, attributeID);
 
         const attributeType = dataTypes[attribute.data_type()];
-        const attributeData = decodeAttribute(decoder, dracoGeometry, name, attributeType, attribute);
+        const attributeData = decodeAttribute(decoder, dracoGeometry, attributeType, attribute);
         attributeData.name = name;
         geometry.attributes[name] = attributeData;
     }
@@ -104,7 +110,7 @@ function decodeGeometry(decoder, decoderBuffer, attributes) {
     return geometry;
 }
 
-function decodeAttribute(decoder, dracoGeometry, attributeName, attributeType, attribute) {
+function decodeAttribute(decoder, dracoGeometry, attributeType, attribute) {
     const numComponents = attribute.num_components();
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
@@ -154,7 +160,6 @@ function decodeAttribute(decoder, dracoGeometry, attributeName, attributeType, a
     }
     dracoModule.destroy(dracoArray);
     return {
-        name: attributeName,
         array: array,
         itemSize: numComponents
     };
