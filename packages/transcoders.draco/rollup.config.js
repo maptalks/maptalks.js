@@ -31,13 +31,14 @@ const outro = `
 
 if (production) {
     plugins.push(terser({
-        // mangle: {
-        //     properties: {
-        //         'regex' : /^_/,
-        //         'keep_quoted' : true,
-        //         'reserved': ['on', 'once', 'off'],
-        //     }
-        // },
+        toplevel: true,
+        mangle: {
+            // properties: {
+            //     // 'regex' : /^_/,
+            //     'keep_quoted' : true,
+            //     'reserved': ['maptalksgl', 'transcoders', 'draco'],
+            // }
+        },
         compress: {
             pure_getters: true
         },
