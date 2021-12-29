@@ -25,7 +25,7 @@ const outro = `
         const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('draco', transcoder);
     } else {
-        return exports;
+        return transcoder;
     }
 `;
 
