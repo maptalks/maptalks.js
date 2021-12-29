@@ -263,14 +263,16 @@ export default class Geometry {
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
+                let buffer;
                 if (data[key].buffer.destroy) {
                     buffers[key] = data[key];
+                    buffer = data[key].buffer;
                 } else if (allocatedBuffers[data[key].buffer]) {
                     //多个属性共用同一个ArrayBuffer(interleaved)
                     buffers[key] = extend({}, data[key]);
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
+                    buffer = buffers[key].buffer;
                 }
-                const buffer = data[key].buffer;
                 if (!buffer[REF_COUNT_KEY]) {
                     buffer[REF_COUNT_KEY] = 0;
                 }

@@ -7,8 +7,11 @@ attribute vec3 aPosition;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
 #endif
-#ifdef HAS_COLOR
+#if defined(HAS_COLOR)
     attribute vec4 aColor;
+    varying vec4 vColor;
+#elif defined(HAS_COLOR0)
+    attribute vec4 aColor0;
     varying vec4 vColor;
 #endif
 
@@ -98,13 +101,15 @@ void main()
     jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
-        vTexCoord = (aTexCoord + uvOffset) * uvScale;
+        vTexCoord = aTexCoord * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;
     #endif
-    #ifdef HAS_COLOR
+    #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
+    #elif defined(HAS_COLOR0)
+        vColor = aColor0 / 255.0;
     #endif
 
     #ifdef HAS_VIEWSHED
