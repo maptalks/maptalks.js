@@ -8,6 +8,7 @@ export { default as ToonMaterial } from './ToonMaterial.js';
 export { default as PhongSpecularGlossinessMaterial } from './PhongSpecularGlossinessMaterial.js';
 export { default as Mesh } from './Mesh.js';
 export { default as InstancedMesh } from './InstancedMesh.js';
+export { default as BoundingBox } from './BoundingBox.js';
 export { default as Renderer } from './Renderer.js';
 export { default as ResourceLoader } from './ResourceLoader.js';
 export { default as Scene } from './Scene.js';
