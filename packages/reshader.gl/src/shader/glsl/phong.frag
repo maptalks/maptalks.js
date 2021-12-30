@@ -41,7 +41,7 @@ varying vec3 vFragPos;
     varying float vExtrusionOpacity;
 #endif
 
-#if defined(HAS_COLOR)
+#if defined(HAS_COLOR) || defined(HAS_COLOR0)
     varying vec4 vColor;
 #elif defined(IS_LINE_EXTRUSION)
     uniform vec4 lineColor;
@@ -144,12 +144,15 @@ void main() {
         diff = toon / toons;
     #endif
     vec3 diffuse = light0_diffuse.rgb * diff * baseColor.rgb;
-    #if defined(HAS_COLOR)
+    #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         vec3 color = vColor.rgb;
     #elif defined(IS_LINE_EXTRUSION)
         vec3 color = lineColor.rgb;
     #else
         vec3 color = polygonFill.rgb;
+    #endif
+    #ifdef HAS_INSTANCE_COLOR
+        color *= vInstanceColor.rgb;
     #endif
     ambient *= color.rgb;
     diffuse *= color.rgb;
@@ -176,7 +179,7 @@ void main() {
 
     glFragColor = vec4(result, opacity);
     // glFragColor = linearTosRGB(glFragColor);
-    #if defined(HAS_COLOR)
+    #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         float colorAlpha = vColor.a;
     #elif defined(IS_LINE_EXTRUSION)
         float colorAlpha = lineColor.a;

@@ -25,19 +25,20 @@ const outro = `
         const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('draco', transcoder);
     } else {
-        return exports;
+        return transcoder;
     }
 `;
 
 if (production) {
     plugins.push(terser({
-        // mangle: {
-        //     properties: {
-        //         'regex' : /^_/,
-        //         'keep_quoted' : true,
-        //         'reserved': ['on', 'once', 'off'],
-        //     }
-        // },
+        toplevel: true,
+        mangle: {
+            // properties: {
+            //     // 'regex' : /^_/,
+            //     'keep_quoted' : true,
+            //     'reserved': ['maptalksgl', 'transcoders', 'draco'],
+            // }
+        },
         compress: {
             pure_getters: true
         },

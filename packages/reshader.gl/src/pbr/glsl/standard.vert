@@ -13,7 +13,7 @@ attribute vec3 aPosition;
 #endif
 #if defined(HAS_TANGENT)
     attribute vec4 aTangent;
-#else
+#elif defined(HAS_NORMAL)
     attribute vec3 aNormal;
 #endif
 
@@ -151,18 +151,27 @@ void main() {
     #endif
 
     mat4 localPositionMatrix = getPositionMatrix();
-    mat3 positionNormalMatrix = mat3(localPositionMatrix);
-    mat3 normalMatrix = modelNormalMatrix * positionNormalMatrix;
-    #if defined(HAS_TANGENT)
-        vec3 t;
-        toTangentFrame(aTangent, Normal, t);
-        // Tangent = vec4(t, aTangent.w);
-        // vec4 localTangent = Tangent;
-        // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
-        vModelTangent = vec4(normalMatrix * t, aTangent.w);
+
+    #if defined(HAS_TANGENT) || defined(HAS_NORMAL)
+        mat3 positionNormalMatrix = mat3(localPositionMatrix);
+        mat3 normalMatrix = modelNormalMatrix * positionNormalMatrix;
+        #if defined(HAS_TANGENT)
+            vec3 t;
+            toTangentFrame(aTangent, Normal, t);
+            // Tangent = vec4(t, aTangent.w);
+            // vec4 localTangent = Tangent;
+            // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
+            vModelTangent = vec4(normalMatrix * t, aTangent.w);
+        #else
+            Normal = aNormal;
+        #endif
+        vec3 localNormal = Normal;
+        vModelNormal = normalMatrix * localNormal;
     #else
-        Normal = aNormal;
+        Normal = vec3(0.0);
+        vModelNormal = vec3(0.0);
     #endif
+
 
     #ifdef IS_LINE_EXTRUSION
         vec3 linePosition = getLineExtrudePosition(aPosition);
@@ -173,8 +182,6 @@ void main() {
     #endif
     vModelVertex = (modelMatrix * localVertex).xyz;
 
-    vec3 localNormal = Normal;
-    vModelNormal = normalMatrix * localNormal;
 
     #if defined(HAS_TANGENT)
         vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);

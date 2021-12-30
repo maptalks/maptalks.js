@@ -1,13 +1,14 @@
 {
   "name": "@maptalks/transcoders.draco",
-  "version": "0.60.0",
+  "version": "0.62.0",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
-    "dev": "rollup -w -c rollup.config.js"
+    "dev": "rollup -w -c rollup.config.js",
+    "prepare": "npm run build"
   },
   "author": "fuzhen",
   "license": "ISC",
@@ -25,7 +26,7 @@
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
     "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1",
-    "rollup-plugin-polyfill-node": "^0.8.0"
+    "rollup-plugin-polyfill-node": "^0.8.0",
+    "rollup-plugin-terser": "^5.3.1"
   }
 }

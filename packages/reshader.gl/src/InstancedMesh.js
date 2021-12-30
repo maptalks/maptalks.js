@@ -194,8 +194,8 @@ export default class InstancedMesh extends Mesh {
     }
     /* eslint-disable camelcase */
     updateBoundingBox() {
-        const {  instance_vectorA, instance_vectorB, instance_vectorC, instance_vectorD } = this.instancedData;
-        if (!instance_vectorA || !instance_vectorB || !instance_vectorC || !instance_vectorD) {
+        const {  instance_vectorA, instance_vectorB, instance_vectorC } = this.instancedData;
+        if (!instance_vectorA || !instance_vectorB || !instance_vectorC) {
             return super.updateBoundingBox();
         }
         if (!this._bbox) {
@@ -205,10 +205,10 @@ export default class InstancedMesh extends Mesh {
         const { min, max } = box;
         for (let i = 0; i < instance_vectorA.length; i += 4) {
             mat4.set(MAT4,
-                instance_vectorA[i], instance_vectorA[i + 1], instance_vectorA[i + 2], instance_vectorA[i + 3],
-                instance_vectorB[i], instance_vectorB[i + 1], instance_vectorB[i + 2], instance_vectorB[i + 3],
-                instance_vectorC[i], instance_vectorC[i + 1], instance_vectorC[i + 2], instance_vectorC[i + 3],
-                instance_vectorD[i], instance_vectorD[i + 1], instance_vectorD[i + 2], instance_vectorD[i + 3],
+                instance_vectorA[i + 0], instance_vectorB[i + 0], instance_vectorC[i + 0], 0,
+                instance_vectorA[i + 1], instance_vectorB[i + 1], instance_vectorC[i + 1], 0,
+                instance_vectorA[i + 2], instance_vectorB[i + 2], instance_vectorC[i + 2], 0,
+                instance_vectorA[i + 3], instance_vectorB[i + 3], instance_vectorC[i + 3], 1
             );
             mat4.multiply(MAT4, MAT4, this.positionMatrix);
             const matrix = mat4.multiply(MAT4, this.localTransform, MAT4);

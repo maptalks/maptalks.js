@@ -3,6 +3,8 @@ import { vec3, mat4 } from 'gl-matrix';
 const TEMP_MATRIX = [];
 const IDENTITY_MATRIX = mat4.identity([]);
 
+const TEMP_BBOX = { min: [], max: [] };
+
 class BoundingBox {
     constructor(min, max) {
         this.min = min || [Infinity, Infinity, Infinity];
@@ -14,6 +16,42 @@ class BoundingBox {
         vec3.copy(out.min, bbox.min);
         vec3.copy(out.max, bbox.max);
         return out;
+    }
+
+    combine(bbox) {
+        if (!bbox) {
+            return this;
+        }
+        if (Array.isArray(bbox)) {
+            vec3.copy(TEMP_BBOX.min, bbox[0]);
+            vec3.copy(TEMP_BBOX.max, bbox[1]);
+            bbox = TEMP_BBOX;
+        }
+        if (bbox.min[0] < this.min[0]) {
+            this.min[0] = bbox.min[0];
+            this._dirty = true;
+        }
+        if (bbox.min[1] < this.min[1]) {
+            this.min[1] = bbox.min[1];
+            this._dirty = true;
+        }
+        if (bbox.min[2] < this.min[2]) {
+            this.min[2] = bbox.min[2];
+            this._dirty = true;
+        }
+        if (bbox.max[0] > this.max[0]) {
+            this.max[0] = bbox.max[0];
+            this._dirty = true;
+        }
+        if (bbox.max[1] > this.max[1]) {
+            this.max[1] = bbox.max[1];
+            this._dirty = true;
+        }
+        if (bbox.max[2] > this.max[2]) {
+            this.max[2] = bbox.max[2];
+            this._dirty = true;
+        }
+        return this;
     }
 
     dirty() {

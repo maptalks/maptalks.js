@@ -1,8 +1,8 @@
 import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 
-const tempMat4 = [], tempVec2 = [], tempMIN = [], tempMAX = [];
+const tempMat4 = [];
 
 let uuid = 0;
 /**
@@ -290,16 +290,16 @@ class Mesh {
         if (!mat4.exactEquals(tempMat4, this._currentTransform) || !this._geometry.boundingBox.equals(this._geoBox)) {
             this.updateBoundingBox();
         }
-        const min = vec3.copy(tempMIN, this._bbox.min);
-        const max = vec3.copy(tempMAX, this._bbox.max);
-        const bbox = vec2.set(tempVec2, min, max);
-        return bbox;
+        return this._bboxArr;
     }
 
     updateBoundingBox() {
         const box = this._geometry.boundingBox;
         if (!this._bbox) {
             this._bbox = new BoundingBox();
+        }
+        if (!this._bboxArr) {
+            this._bboxArr = [[], []];
         }
         if (!this._geoBox) {
             this._geoBox = new BoundingBox();
@@ -309,6 +309,9 @@ class Mesh {
         this._bbox.transform(this._positionMatrix, this._localTransform);
         this._currentTransform = mat4.multiply(this._currentTransform || [], this._localTransform, this._positionMatrix);
         BoundingBox.copy(this._geoBox, box);
+        vec3.copy(this._bboxArr[0], this._bbox.min);
+        vec3.copy(this._bboxArr[1], this._bbox.max);
+
     }
 
     _createDefinesKey(defines) {
