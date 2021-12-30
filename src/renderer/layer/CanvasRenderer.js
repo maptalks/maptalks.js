@@ -377,8 +377,8 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         const size = map.getSize();
         const r = map.getDevicePixelRatio(),
-            w = r * size.width,
-            h = r * size.height;
+            w = Math.round(r * size.width),
+            h = Math.round(r * size.height);
         if (this.layer._canvas) {
             const canvas = this.layer._canvas;
             canvas.width = w;
@@ -437,12 +437,13 @@ class CanvasRenderer extends Class {
         }
         const size = canvasSize || this.getMap().getSize();
         const r = this.getMap().getDevicePixelRatio();
-        if (canvas.width === r * size.width && canvas.height === r * size.height) {
+        const width = Math.round(r * size.width), height = Math.round(r * size.height);
+        if (canvas.width === width && canvas.height === height) {
             return;
         }
         //retina support
-        canvas.height = r * size.height;
-        canvas.width = r * size.width;
+        canvas.height = width;
+        canvas.width = height;
         if (r !== 1 && this.context) {
             this.context.scale(r, r);
         }
