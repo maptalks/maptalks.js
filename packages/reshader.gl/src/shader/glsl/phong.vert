@@ -17,7 +17,7 @@ attribute vec3 aPosition;
 
 #if defined(HAS_TANGENT)
     attribute vec4 aTangent;
-#else
+#elif defined(HAS_NORMAL)
     attribute vec3 aNormal;
 #endif
 
@@ -84,18 +84,23 @@ void main()
     #endif
     mat4 localPositionMatrix = getPositionMatrix();
 
-    mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);
     vFragPos = vec3(modelMatrix * localPositionMatrix * localPosition);
-    vec3 Normal;
-    #if defined(HAS_TANGENT)
-        vec3 t;
-        toTangentFrame(aTangent, Normal, t);
-        vTangent = vec4(localNormalMatrix * t, aTangent.w);
+
+    #if defined(HAS_NORMAL) || defined(HAS_TANGENT)
+        mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);
+        vec3 Normal;
+        #if defined(HAS_TANGENT)
+            vec3 t;
+            toTangentFrame(aTangent, Normal, t);
+            vTangent = vec4(localNormalMatrix * t, aTangent.w);
+        #else
+            Normal = aNormal;
+        #endif
+        vec4 localNormal = getNormal(Normal);
+        vNormal = normalize(vec3(localNormalMatrix * localNormal));
     #else
-        Normal = aNormal;
+        vNormal = vec3(0.0);
     #endif
-    vec4 localNormal = getNormal(Normal);
-    vNormal = normalize(vec3(localNormalMatrix * localNormal));
 
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
