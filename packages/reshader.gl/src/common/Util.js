@@ -1,3 +1,5 @@
+import * as gltf from '@maptalks/gltf-loader';
+
 /**
  * Check whether the object is a string
  * @param {Object} obj
@@ -231,18 +233,20 @@ export function getTextureChannels(format) {
     return 1;
 }
 
-export function isInStride(array) {
-    if (!array || !array.buffer) {
-        return false;
-    }
-    const bytesLen = array.length * array.BYTES_PER_ELEMENT;
-    const bufLen = array.buffer.byteLength;
-    return bytesLen < bufLen;
+export function isInStride(dataObj) {
+    // if (!array || !array.buffer) {
+    //     return false;
+    // }
+    // const bytesLen = array.length * array.BYTES_PER_ELEMENT;
+    // const bufLen = array.buffer.byteLength;
+    // return bytesLen < bufLen;
+    const ctor = gltf.GLTFLoader.getTypedArrayCtor(dataObj.componentType);
+    return dataObj.byteStride > 0 && dataObj.byteStride !== dataObj.itemSize * ctor.BYTES_PER_ELEMENT;
 }
 
 
 export function isInterleaved(dataObj) {
-    return dataObj && (dataObj.stride > 0 || isInStride(dataObj.array));
+    return dataObj && (dataObj.stride > 0 || isInStride(dataObj));
     // const { stride, componentType, count, size } = dataObj;
     // const bytesPerElement = gltf.GLTFLoader.getTypedArrayCtor(componentType).BYTES_PER_ELEMENT;
     // return stride > bytesPerElement * count * size;

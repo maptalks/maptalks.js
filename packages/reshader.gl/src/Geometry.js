@@ -97,7 +97,7 @@ export default class Geometry {
         for (const attr in this.data) {
             const attribute = this.data[attr];
             if (attribute && attribute.array) {
-                if (isInStride(attribute.array)) {
+                if (isInStride(attribute)) {
                     let id = attribute.array.buffer['__id'];
                     if (!id) {
                         id = attribute.array.buffer['__id'] = GUID();
