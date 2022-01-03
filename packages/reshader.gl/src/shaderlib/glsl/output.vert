@@ -72,17 +72,11 @@ vec4 getPosition(vec3 position) {
     return POSITION;
 }
 
-mat4 getNormalMatrix(mat4 worldMatrix) {
-    mat4 inverseMat = invert_matrix(worldMatrix);
-    mat4 normalMat = transpose_matrix(inverseMat);
-    return normalMat;
-}
-
-vec4 getNormal(vec3 NORMAL) {
+vec3 appendMorphNormal(vec3 NORMAL) {
     #ifdef HAS_MORPHNORMALS
-        vec4 normal = vec4(NORMAL + morphWeights1[0] * NORMAL0 + morphWeights1[1] * NORMAL1 + morphWeights1[2] * NORMAL2 + morphWeights1[3] * NORMAL3, 1.0);
+        vec3 normal = NORMAL + morphWeights1[0] * NORMAL0 + morphWeights1[1] * NORMAL1 + morphWeights1[2] * NORMAL2 + morphWeights1[3] * NORMAL3;
     #else
-        vec4 normal = vec4(NORMAL, 1.0);
+        vec3 normal = NORMAL;
     #endif
     return normal;
 }
