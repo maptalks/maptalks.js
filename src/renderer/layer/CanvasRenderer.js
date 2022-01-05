@@ -442,8 +442,8 @@ class CanvasRenderer extends Class {
             return;
         }
         //retina support
-        canvas.height = width;
-        canvas.width = height;
+        canvas.height = height;
+        canvas.width = width;
         if (r !== 1 && this.context) {
             this.context.scale(r, r);
         }
