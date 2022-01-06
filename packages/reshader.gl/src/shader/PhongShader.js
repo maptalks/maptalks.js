@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, mat3 } from 'gl-matrix';
 import phongFrag from './glsl/phong.frag';
 import phongVert from './glsl/phong.vert';
 import MeshShader from '../shader/MeshShader.js';
@@ -12,12 +12,13 @@ class PhongShader extends MeshShader {
             frag: phongFrag,
             uniforms: [
                 {
-                    name: 'normalMatrix',
+                    name: 'modelNormalMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        mat4.invert(normalMatrix, props['modelMatrix']);
-                        mat4.transpose(normalMatrix, normalMatrix);
-                        return normalMatrix;
+                        // mat4.invert(normalMatrix, props['modelMatrix']);
+                        // mat4.transpose(normalMatrix, normalMatrix);
+                        // return normalMatrix;
+                        return mat3.fromMat4(normalMatrix, props['modelMatrix']);
                     }
                 },
                 {

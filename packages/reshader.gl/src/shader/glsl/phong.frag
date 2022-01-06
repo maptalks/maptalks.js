@@ -211,6 +211,8 @@ void main() {
         glFragColor = draw_fog(glFragColor);
     #endif
 
+    // glFragColor = vec4(norm, 1.0);
+
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
     #endif

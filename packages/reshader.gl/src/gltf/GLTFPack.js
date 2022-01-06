@@ -6,21 +6,10 @@ import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import GLTFResource from './GLTFResource';
+import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap } from '../common/REGLHelper';
 
 let timespan = 0;
-const MODES = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
-//将GLTF规范里面的sampler数码映射到regl接口的sampler
-const TEXTURE_SAMPLER = {
-    '9728' : 'nearest',
-    '9729' : 'linear',
-    '9984' : 'nearest mipmap nearest',
-    '9985' : 'linear mipmap nearest',
-    '9986' : 'nearest mipmap linear',
-    '9987' : 'linear mipmap linear',
-    '33071' : 'clamp', //gl.CLAMP_TO_EDGE
-    '33684' : 'mirrored', //gl.MIRRORED_REPEAT
-    '10497' : 'repeat' //gl.REPEAT
-};
+
 export default class GLTFPack {
 
     constructor(gltf, regl) {
@@ -413,10 +402,10 @@ export default class GLTFPack {
             width,
             height,
             data,
-            mag: TEXTURE_SAMPLER[sampler.magFilter] || TEXTURE_SAMPLER['9729'],
-            min: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.minFilter] || TEXTURE_SAMPLER['9729'] : TEXTURE_SAMPLER['9729'],
-            wrapS: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.wrapS] || TEXTURE_SAMPLER['10497'] : TEXTURE_SAMPLER['33071'],
-            wrapT: widthHeightIsPowerOf2 ? TEXTURE_SAMPLER[sampler.wrapT] || TEXTURE_SAMPLER['10497'] : TEXTURE_SAMPLER['33071']
+            mag: getTextureMagFilter(sampler.magFilter) || 'linear',
+            min: widthHeightIsPowerOf2 ? getTextureMinFilter(sampler.minFilter) || 'linear' : 'linear',
+            wrapS: widthHeightIsPowerOf2 ? getTextureWrap(sampler.wrapS) || 'repeat' : 'clamp',
+            wrapT: widthHeightIsPowerOf2 ? getTextureWrap(sampler.wrapT) || 'repeat' : 'clamp'
         });
     }
 }
@@ -464,7 +453,7 @@ function createGeometry(primitive) {
         0,
         {
             //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
-            primitive : isNumber(primitive.mode) ? MODES[primitive.mode] : primitive.mode,
+            primitive : isNumber(primitive.mode) ? getPrimitive(primitive.mode) : primitive.mode,
             positionAttribute: 'POSITION',
             normalAttribute: 'NORMAL',
             uv0Attribute: 'TEXCOORD_0',

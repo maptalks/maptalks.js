@@ -89,7 +89,10 @@ class Shader {
         const uniforms = meshProps;
         const desc = this.contextDesc;
         for (const p in desc) {
-            if (desc[p] && desc[p].type === 'array') {
+            if (!desc[p]) {
+                continue;
+            }
+            if (desc[p].type === 'array') {
                 //an array uniform's value
                 const name = p, len = desc[p].length;
                 // change uniform value to the following form as regl requires:
@@ -111,6 +114,17 @@ class Shader {
                 for (let i = 0; i < len; i++) {
                     uniforms[name][`${i}`] = values[i];
                 }
+            } else if (desc[p].type === 'function') {
+                if (!Object.getOwnPropertyDescriptor(uniforms, p)) {
+                    Object.defineProperty(uniforms, p, {
+                        configurable: false,
+                        enumerable: true,
+                        get: function () {
+                            return desc[p].fn(null, meshProps);
+                        }
+                    });
+                }
+
             }
         }
 

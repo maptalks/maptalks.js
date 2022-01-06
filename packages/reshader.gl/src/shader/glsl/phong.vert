@@ -26,7 +26,7 @@ varying vec3 vNormal;
 
 uniform mat4 projMatrix;
 uniform mat4 viewModelMatrix;
-uniform mat4 normalMatrix;
+uniform mat3 modelNormalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 positionMatrix;
 uniform vec2 halton;
@@ -87,7 +87,7 @@ void main()
     vFragPos = vec3(modelMatrix * localPositionMatrix * localPosition);
 
     #if defined(HAS_NORMAL) || defined(HAS_TANGENT)
-        mat4 localNormalMatrix = getNormalMatrix(localPositionMatrix);
+        mat3 localNormalMatrix = modelNormalMatrix * mat3(localPositionMatrix);
         vec3 Normal;
         #if defined(HAS_TANGENT)
             vec3 t;
@@ -96,8 +96,8 @@ void main()
         #else
             Normal = aNormal;
         #endif
-        vec4 localNormal = getNormal(Normal);
-        vNormal = normalize(vec3(localNormalMatrix * localNormal));
+        vec3 localNormal = appendMorphNormal(Normal);
+        vNormal = normalize(localNormalMatrix * localNormal);
     #else
         vNormal = vec3(0.0);
     #endif
