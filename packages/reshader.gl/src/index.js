@@ -50,6 +50,9 @@ import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };
 export { default as GLTFManager } from './gltf/GLTFManager.js';
 
+import * as REGLHelper  from './common/REGLHelper.js';
+export { REGLHelper };
+
 /*import * as SkyboxHelper from './skybox/SkyboxHelper.js';
 export { SkyboxHelper };*/
 
@@ -91,3 +94,5 @@ export { default as FBORayPicking } from './picking/FBORayPicking';
 
 import * as Constants from './common/Constants';
 export { Constants };
+
+export { default as KHRTechniquesWebglManager } from './extensions/KHRTechniquesWebglManager';

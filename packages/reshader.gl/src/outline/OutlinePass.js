@@ -41,7 +41,6 @@ export default class OutlinePass {
         this.extentShader = new MeshShader({
             vert: sceneVert,
             frag: extentFrag,
-            positionAttribute: 'POSITION',
             extraCommandProps: {
                 viewport,
                 cull: {
@@ -53,13 +52,6 @@ export default class OutlinePass {
         this.outlineShader = new QuadShader({
             vert : quadVert,
             frag : outlineFrag,
-            uniforms : [
-                'texSize',
-                'visibleEdgeColor',
-                'maskTexture',
-                'lineWidth'
-            ],
-            positionAttribute : 'POSITION',
             extraCommandProps: {
                 viewport,
                 depth: {
