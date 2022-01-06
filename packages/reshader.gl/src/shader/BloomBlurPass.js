@@ -118,12 +118,6 @@ class BloomBlurPass {
         if (!this._blur0Shader) {
             const config = {
                 frag: blurFrag,
-                uniforms: [
-                    'textureSampler',
-                    'bloomThreshold',
-                    'resolution',
-                    'direction'
-                ],
                 extraCommandProps: {
                     viewport: {
                         x: 0,

@@ -237,15 +237,6 @@ class BlurPass {
         if (!this._blur0Shader) {
             const config = {
                 vert: quadVert,
-                uniforms: [
-                    'inputRGBM',
-                    'rgbmRange',
-                    'TextureBlurInput',
-                    'blurDir',
-                    'outSize',
-                    'pixelRatio',
-                    'outputSize',
-                ],
                 extraCommandProps: {
                     viewport: {
                         x: 0,
