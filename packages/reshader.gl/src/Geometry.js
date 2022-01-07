@@ -96,7 +96,16 @@ export default class Geometry {
         const buffers = this._buffers || {};
         for (const attr in this.data) {
             const attribute = this.data[attr];
-            if (attribute && attribute.array) {
+            if (!attribute) {
+                continue;
+            }
+            if (attribute.buffer && attribute.buffer.destroy) {
+                const buffer = attribute.buffer;
+                if (!buffer[REF_COUNT_KEY]) {
+                    buffer[REF_COUNT_KEY] = 0;
+                }
+                buffer[REF_COUNT_KEY]++;
+            } else if (attribute && attribute.array) {
                 if (isInStride(attribute)) {
                     let id = attribute.array.buffer['__id'];
                     if (!id) {
@@ -263,20 +272,13 @@ export default class Geometry {
             }
             //如果调用过addBuffer，buffer有可能是ArrayBuffer
             if (data[key].buffer !== undefined && !(data[key].buffer instanceof ArrayBuffer)) {
-                let buffer;
                 if (data[key].buffer.destroy) {
                     buffers[key] = data[key];
-                    buffer = data[key].buffer;
                 } else if (allocatedBuffers[data[key].buffer]) {
                     //多个属性共用同一个ArrayBuffer(interleaved)
                     buffers[key] = extend({}, data[key]);
                     buffers[key].buffer = allocatedBuffers[data[key].buffer].buffer;
-                    buffer = buffers[key].buffer;
                 }
-                if (!buffer[REF_COUNT_KEY]) {
-                    buffer[REF_COUNT_KEY] = 0;
-                }
-                buffer[REF_COUNT_KEY]++;
             } else {
                 const arr = data[key].data ? data[key].data : data[key];
                 const dimension = arr.length / vertexCount;

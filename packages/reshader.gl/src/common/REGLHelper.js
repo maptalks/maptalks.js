@@ -1,3 +1,6 @@
+import { extend, isArray } from './Util';
+
+
 const reglPrimitives = ['points', 'lines', 'line strip', 'line loop', 'triangles', 'triangle strip', 'triangle fan'];
 export function getPrimitive(mode) {
     return reglPrimitives[mode];
@@ -51,6 +54,7 @@ export function getTextureMinFilter(filter) {
     return textureMinFilters[filter];
 }
 
+let count = 0;
 
 const textureWrap = {
     0x2901: 'repeat',
@@ -61,3 +65,52 @@ export function getTextureWrap(wrap) {
     return textureWrap[wrap];
 }
 
+const BUFFER_KEY = '__reshader_webgl_buffer';
+const TEXTURE_KEY = '__reshader_webgl_tex';
+// 避免重复创建webgl buffer
+export function getUniqueREGLBuffer(regl, data, options) {
+    let array;
+    if (isArray(data)) {
+        if (data.buffer && data.byteOffset !== undefined) {
+            array = data;
+        }
+    } else if (data.array && data.array.buffer && data.array.byteOffset !== undefined) {
+        array = data.array;
+    }
+    if (!array) {
+        return null;
+    }
+    const arrayBuffer = array.buffer;
+    const byteOffset = array.byteOffset;
+    if (!arrayBuffer[BUFFER_KEY]) {
+        arrayBuffer[BUFFER_KEY] = {};
+    }
+    let buffer = arrayBuffer[BUFFER_KEY][byteOffset];
+    if (!buffer) {
+        const info = {};
+        if (options)  {
+            extend(info, options);
+        }
+        info.data = array;
+        buffer = regl.buffer(info);
+        // console.log(count++, (array.byteLength / 1024 / 1024).toFixed(1));
+        arrayBuffer[BUFFER_KEY][byteOffset] = buffer;
+    }
+    return buffer;
+}
+
+export function getUniqueTexture(regl, texConfig) {
+    const array = texConfig.data
+    const arrayBuffer = array.buffer;
+    const byteOffset = array.byteOffset;
+    if (!arrayBuffer[TEXTURE_KEY]) {
+        arrayBuffer[TEXTURE_KEY] = {};
+    }
+    let reglTex = arrayBuffer[TEXTURE_KEY][byteOffset];
+    if (!reglTex) {
+        console.log(count++, +((array.byteLength / 1024 / 1024).toFixed(1)));
+        reglTex = regl.texture(texConfig);
+        arrayBuffer[TEXTURE_KEY][byteOffset] = reglTex;
+    }
+    return reglTex;
+}
