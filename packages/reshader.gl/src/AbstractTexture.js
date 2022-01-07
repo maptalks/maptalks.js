@@ -2,6 +2,7 @@ import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray } 
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
+export const REF_COUNT_KEY = '_reshader_refCount';
 /**
  * Abstract Texture
  * Common methods for Texture2D and TextureCube
@@ -143,9 +144,14 @@ class AbstractTexture {
             this.resLoader.disposeRes(this.config.url);
         }
         if (this._texture && !this._texture[KEY_DISPOSED]) {
-            this._texture.destroy();
-            this._texture[KEY_DISPOSED] = true;
-            delete this._texture;
+            if (this._texture[REF_COUNT_KEY]) {
+                this._texture[REF_COUNT_KEY]--;
+            }
+            if (!this._texture[REF_COUNT_KEY]) {
+                this._texture.destroy();
+                this._texture[KEY_DISPOSED] = true;
+                delete this._texture;
+            }
         }
         delete this.resLoader;
         const url = this.config && this.config.url;
