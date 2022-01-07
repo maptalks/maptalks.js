@@ -84,6 +84,7 @@ const UNIFORM_DECLARES = [
 ];
 
 const DEFAULT_UNIFORM_SEMANTICS = {
+    'LOCAL': 'positionMatrix',
     'MODEL': 'modelMatrix',
     'VIEW': 'viewMatrix',
     'PROJECTION': 'projMatrix',
