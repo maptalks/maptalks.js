@@ -240,6 +240,9 @@ export function isInStride(dataObj) {
     // const bytesLen = array.length * array.BYTES_PER_ELEMENT;
     // const bufLen = array.buffer.byteLength;
     // return bytesLen < bufLen;
+    if (!dataObj.componentType) {
+        return false;
+    }
     const ctor = gltf.GLTFLoader.getTypedArrayCtor(dataObj.componentType);
     return dataObj.byteStride > 0 && dataObj.byteStride !== dataObj.itemSize * ctor.BYTES_PER_ELEMENT;
 }
