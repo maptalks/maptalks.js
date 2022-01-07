@@ -54,8 +54,6 @@ export function getTextureMinFilter(filter) {
     return textureMinFilters[filter];
 }
 
-let count = 0;
-
 const textureWrap = {
     0x2901: 'repeat',
     0x812F: 'clamp',
@@ -108,7 +106,6 @@ export function getUniqueTexture(regl, texConfig) {
     }
     let reglTex = arrayBuffer[TEXTURE_KEY][byteOffset];
     if (!reglTex) {
-        console.log(count++, +((array.byteLength / 1024 / 1024).toFixed(1)));
         reglTex = regl.texture(texConfig);
         arrayBuffer[TEXTURE_KEY][byteOffset] = reglTex;
     }
