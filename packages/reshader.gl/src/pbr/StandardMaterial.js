@@ -89,6 +89,13 @@ class StandardMaterial extends Material {
             }
             defines['COLOR0_SIZE'] = size;
         }
+
+        if (geometry.data[geometry.desc.tangentAttribute]) {
+            defines['HAS_TANGENT'] = 1;
+        } else if (geometry.data[geometry.desc.normalAttribute]) {
+            defines['HAS_NORMAL'] = 1;
+        }
+
         if (!geometry.data[geometry.desc.uv0Attribute]) {
             return defines;
         }

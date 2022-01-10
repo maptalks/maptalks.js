@@ -135,6 +135,7 @@ class LightManager {
             console.log(JSON.stringify(maps.sh));
         }*/
         if (regl._temp) {
+            delete this._hdr;
             regl.destroy();
         }
         return maps;

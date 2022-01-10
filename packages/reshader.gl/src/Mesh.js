@@ -262,6 +262,7 @@ class Mesh {
         if (!isSupportVAO(regl) || this.disableVAO) {
             props.elements = this._geometry.getElements();
         }
+        props.meshProperties = this.properties;
         props.meshConfig = this.config;
         props.count = this._geometry.getDrawCount();
         props.offset = this._geometry.getDrawOffset();

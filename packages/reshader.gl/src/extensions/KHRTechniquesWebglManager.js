@@ -3,7 +3,7 @@
 
 import MeshShader from '../shader/MeshShader';
 import { extend } from '../common/Util';
-import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat } from '../common/REGLHelper';
+import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Material from '../Material';
 import Geometry from '../Geometry';
 import Texture2D from '../Texture2D';
@@ -84,6 +84,7 @@ const UNIFORM_DECLARES = [
 ];
 
 const DEFAULT_UNIFORM_SEMANTICS = {
+    'LOCAL': 'positionMatrix',
     'MODEL': 'modelMatrix',
     'VIEW': 'viewMatrix',
     'PROJECTION': 'projMatrix',
@@ -170,10 +171,12 @@ export default class KHRTechniquesWebglManager {
         }
         const attrs = {};
         for (const p in attributes) {
-            if (attributeSemantics[p]) {
-                attrs[attributeSemantics[p]] = attributes[p];
-            } else {
-                attrs[p] = attributes[p];
+            const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize });
+            // 优先采用 attributeSemantics中定义的属性
+            const name = attributeSemantics[p] || p;
+            attrs[name] = { buffer };
+            if (name === attributeSemantics['POSITION']) {
+                attrs[name].array = attributes[p].array;
             }
         }
         const geometry = new Geometry(

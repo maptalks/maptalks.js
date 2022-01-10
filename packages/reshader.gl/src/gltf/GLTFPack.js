@@ -7,6 +7,7 @@ import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import GLTFResource from './GLTFResource';
 import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap } from '../common/REGLHelper';
+import Texture from '../Texture2D';
 
 let timespan = 0;
 
@@ -154,9 +155,9 @@ export default class GLTFPack {
             node.trs.update(animation);
         }
         if (parentNodeMatrix) {
-            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.trs.getMatrix());
+            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.matrix || node.trs.getMatrix());
         } else {
-            mat4.copy(node.nodeMatrix, node.trs.getMatrix());
+            mat4.copy(node.nodeMatrix, node.matrix || node.trs.getMatrix());
         }
         const nodeMatrix = node.nodeMatrix;
         if (node.children) {
@@ -397,8 +398,8 @@ export default class GLTFPack {
         const sampler = texture.sampler || {};
         const width = texture.image.width;
         const height = texture.image.height;
-        const widthHeightIsPowerOf2 = isPowerOf2(width) && isPowerOf2(width);
-        return this.regl.texture({
+        const widthHeightIsPowerOf2 = isPowerOf2(width) && isPowerOf2(height);
+        return new Texture({
             width,
             height,
             data,
