@@ -72,6 +72,12 @@ class StandardPainter extends MeshPainter {
         }
         if (context.onlyUpdateDepthInTaa) {
             this.shader = this._updateDepthShader;
+            // #2793
+            // 上一帧如果开启了ssr，当前帧关闭ssr时，因为上一帧的ssr绘制到了ssr fbo里，这里必须要重新绘制
+            if (!isSsr && this._previousSSR) {
+                this.shader = shader;
+                this.setToRedraw(true);
+            }
         }
         this.updateIBLDefines(shader);
         super.paint(context);
@@ -94,6 +100,7 @@ class StandardPainter extends MeshPainter {
             const offset = this.getUVOffset(uvOffsetAnim);
             this.material.set('uvOffset', offset);
         }
+        this._previousSSR = isSsr;
     }
 
     getShadowMeshes() {

@@ -147,6 +147,47 @@ describe('postprocess specs', () => {
         groupLayer.addTo(map);
     });
 
+    it('fuzhenn/maptalks-ide#2793,  retire taa when switching ssr', done => {
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: DATA,
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: getRenderPlugin('lit'),
+                    symbol: {
+                        ssr: true,
+                        material: getMaterial('lit')
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                antialias: {
+                    enable: true,
+                    taa: true
+                },
+                ssr: {
+                    enable: true
+                }
+            }
+        };
+        let groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        groupLayer.on('taaend', () => {
+            count++;
+            if (count === 1) {
+                layer.updateSymbol(0, { ssr: false });
+            } else if (count === 2) {
+                const canvas = map.getRenderer().canvas;
+                const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'ssr', 'expected.png');
+                compareExpected(canvas, expectedPath, done);
+            }
+        });
+        groupLayer.addTo(map);
+    });
+
 
     it.skip('should can update symbol', done => {
         assertStyle(layer => {
