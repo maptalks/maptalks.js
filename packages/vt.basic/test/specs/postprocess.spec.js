@@ -179,7 +179,7 @@ describe('postprocess specs', () => {
             count++;
             if (count === 1) {
                 layer.updateSymbol(0, { ssr: false });
-            } else if (count === 2) {
+            } else if (count === 3) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'ssr', 'expected.png');
                 compareExpected(canvas, expectedPath, done);
