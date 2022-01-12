@@ -558,7 +558,10 @@ function fillTextFitData(map, iconGeometry) {
     //把aMarkerWidth和aMarkerHeight从Uint8Array改为Uint16Array，因为text-fit后的宽度或高度很可能超过255
     if (hasWidth) {
         if (!aMarkerWidth) {
+            // 因为 aMarkerWidth 可能不会被更新（例如markerTextFit为height时），预先用 markerWidth 填充 aMarkerWidth
+            const markerWidth = this.getSymbol(iconGeometry.properties.symbolIndex).markerWidth || 0;
             props.aMarkerWidth = new Uint16Array(count);
+            props.aMarkerWidth.fill(markerWidth);
             iconGeometry.data.aMarkerWidth = new Uint16Array(count);
         } else {
             const arr = iconGeometry.data.aMarkerWidth;
@@ -573,7 +576,9 @@ function fillTextFitData(map, iconGeometry) {
     }
     if (hasHeight) {
         if (!aMarkerHeight) {
+            const markerHeight = this.getSymbol(iconGeometry.properties.symbolIndex).markerHeight || 0;
             props.aMarkerHeight = new Uint16Array(count);
+            props.aMarkerHeight.fill(markerHeight);
             iconGeometry.data.aMarkerHeight = new Uint16Array(count);
         } else {
             const arr = iconGeometry.data.aMarkerHeight;

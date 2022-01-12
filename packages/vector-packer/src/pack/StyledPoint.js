@@ -4,6 +4,7 @@ import { getSDFFont, resolveText } from '../style/Text';
 import { WritingMode, shapeText, shapeIcon } from './util/shaping';
 import { allowsLetterSpacing } from './util/script_detection';
 import { convertRTLText } from './util/convert_rtl_text';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
 
@@ -73,14 +74,14 @@ export default class StyledPoint {
                 );
             }
         } else if (iconGlyph && iconGlyph.icon) {
-            if (!iconAtlas.positions[iconGlyph.icon]) {
+            if (!iconAtlas.positions[iconGlyph.icon.url]) {
                 //图片没有载入成功
                 return null;
             }
             const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
             const vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
             const markerAnchor = getAnchor(hAlignment, vAlignment);
-            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon], markerAnchor);
+            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon.url], markerAnchor);
             if (!this.size) {
                 this.size = shape.image.displaySize;
             }
@@ -93,7 +94,7 @@ export default class StyledPoint {
         if (this.iconGlyph) {
             return this.iconGlyph;
         }
-        const { markerFileFn, markerTypeFn, markerWidthFn, markerHeightFn, markerFillFn, markerFillPatternFileFn, markerFillOpacityFn,
+        const { markerFileFn, markerTypeFn, /*markerWidthFn, markerHeightFn, */markerFillFn, markerFillPatternFileFn, markerFillOpacityFn, markerTextFitFn, markerTextFitPaddingFn,
             markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, textNameFn,
             textFaceNameFn, textStyleFn, textWeightFn } = this._fnTypes;
         const { zoom } = this.options;
@@ -106,33 +107,62 @@ export default class StyledPoint {
         const hasText = !isNil(this.symbolDef.textName);
         let size;
         if (hasMarker) {
-            size = evaluateIconSize(symbol, properties, zoom);
+            size = evaluateIconSize(symbol, this.symbolDef, properties, zoom) || [0, 0];
+            if (symbol.markerTextFit) {
+                let textFit = symbol.markerTextFit;
+                if (markerTextFitFn) {
+                    textFit = markerTextFitFn(zoom, properties);
+                }
+                if (textFit && textFit !== 'none') {
+                    const textSize = symbol.text.textSize;
+                    const textName = symbol.text.textName;
+                    const text = resolveText(textName, properties);
+                    if (isFunctionDefinition(textSize) && !symbol.text['__fn_textSize']) {
+                        symbol.text['__fn_textSize'] = interpolated(textSize);
+                    }
+                    const tsize = evaluateTextSize(symbol.text, properties, zoom);
+                    if (textFit === 'width' || textFit === 'both') {
+                        size[0] = tsize[0] * text.length;
+                    }
+                    if (textFit === 'height' || textFit === 'both') {
+                        size[1] = tsize[1];
+                    }
+                    let padding = symbol.markerTextFitPadding || [0, 0, 0, 0];
+                    if (markerTextFitPaddingFn) {
+                        padding = markerTextFitPaddingFn(zoom, properties);
+                    }
+                    size[0] += padding[1] + padding[3];
+                    size[1] += padding[0] + padding[2];
+                }
+            }
         }
         if (hasText) {
-            size = evaluateTextSize(symbol, properties, zoom);
+            size = evaluateTextSize(symbol, this.symbolDef, properties, zoom);
         }
+        size[0] = Math.ceil(size[0]);
+        size[1] = Math.ceil(size[1]);
         this.size = size;
         if (hasMarker) {
             let icon;
             if (markerType) {
                 const url = {};
                 url['markerType'] = markerType;
-                if (markerWidthFn) {
-                    const width =  markerWidthFn(null, properties);
-                    if (!isNil(width)) {
-                        url['markerWidth'] = width;
-                    }
-                } else if (symbol.markerWidth >= 0) {
-                    url['markerWidth'] = symbol.markerWidth;
-                }
-                if (markerHeightFn) {
-                    const height = markerHeightFn(null, properties);
-                    if (!isNil(height)) {
-                        url['markerHeight'] = height;
-                    }
-                } else if (symbol.markerHeight >= 0) {
-                    url['markerHeight'] = symbol.markerHeight;
-                }
+                // if (markerWidthFn) {
+                //     const width =  markerWidthFn(null, properties);
+                //     if (!isNil(width)) {
+                //         url['markerWidth'] = width;
+                //     }
+                // } else if (symbol.markerWidth >= 0) {
+                //     url['markerWidth'] = symbol.markerWidth;
+                // }
+                // if (markerHeightFn) {
+                //     const height = markerHeightFn(null, properties);
+                //     if (!isNil(height)) {
+                //         url['markerHeight'] = height;
+                //     }
+                // } else if (symbol.markerHeight >= 0) {
+                //     url['markerHeight'] = symbol.markerHeight;
+                // }
                 if (markerFillFn) {
                     const fill = markerFillFn(null, properties);
                     if (!isNil(fill)) {
@@ -202,7 +232,10 @@ export default class StyledPoint {
                 icon = markerFile ? markerFile.replace(URL_PATTERN, this._thisReplacer) :
                     symbol.markerPath ? getMarkerPathBase64(symbol, size[0], size[1]) : null;
             }
-            result.icon = icon;
+            result.icon = {
+                url: icon,
+                size
+            };
         }
 
         if (hasText) {

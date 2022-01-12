@@ -46,8 +46,8 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
-                width = this.width;
-                height = this.height;
+                width = this.size && this.size[0] || this.width;
+                height = this.size && this.size[1] || this.height;
                 if (width > maxSize) {
                     height = Math.floor(maxSize / width * height);
                     width = maxSize;
@@ -81,6 +81,7 @@ export default class IconRequestor {
         let marker;
         for (let i = 0; i < urls.length; i++) {
             const url = urls[i];
+            const size = icons[url];
             const icon = this._getCache(url);
             if (icon && icon !== 'error') {
                 images[url] = this._getCache(url);
@@ -104,6 +105,8 @@ export default class IconRequestor {
                 delete symbol.markerDy;
                 delete symbol.markerPlacement;
                 delete symbol.markerFile;
+                symbol.markerWidth = size[0];
+                symbol.markerHeight = size[1];
                 marker.setSymbol(symbol);
                 const sprite = marker['_getSprite'](this.resources);
                 if (sprite) {
@@ -133,6 +136,7 @@ export default class IconRequestor {
                 this._requesting[url].push(callback);
                 const img = new Image();
                 img.index = i;
+                img.size = size;
                 img.onload = onload;
                 img.onerror = onerror;
                 img.onabort = onerror;

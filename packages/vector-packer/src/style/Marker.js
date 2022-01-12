@@ -109,11 +109,11 @@ function translateToSVGStyles(s) {
     return result;
 }
 
-export function evaluateIconSize(symbol, properties, zoom) {
-    if (isNil(symbol.markerWidth) || isNil(symbol.markerHeight)) {
+export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
+    if (isNil(symbolDef.markerWidth) || isNil(symbolDef.markerHeight)) {
         return null;
     }
-    let width = isNil(symbol.markerWidth) ? symbol.textSize : symbol.markerWidth,
+    let width = isNil(symbolDef.markerWidth) ? symbol.textSize : symbol.markerWidth,
         height = symbol.markerHeight;
     if (symbol['__fn_markerWidth'] || symbol['__fn_textSize']) {
         width = symbol['__fn_markerWidth'] || symbol['__fn_textSize'];
@@ -140,9 +140,9 @@ export function evaluateIconSize(symbol, properties, zoom) {
 
 const DEFAULT_TEXT_SIZE = 16;
 
-export function evaluateTextSize(symbol, properties, zoom) {
+export function evaluateTextSize(symbol, symbolDef, properties, zoom) {
     let textSize = symbol.textSize;
-    if (isNil(textSize)) {
+    if (isNil(symbolDef.textSize)) {
         //default text size of marker
         return [DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SIZE];
     }

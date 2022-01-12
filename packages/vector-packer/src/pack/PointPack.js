@@ -207,6 +207,12 @@ export default class PointPack extends VectorPack {
             }
         }
         if (iconSymbol) {
+            if (iconSymbol.markerTextFit && textSymbol) {
+                // 存在markerTextFit时，需要根据textSize和text长度实时计算marker高宽，所以需要保存下面的信息
+                iconSymbol.text = {};
+                iconSymbol.text.textName = textSymbol.textName;
+                iconSymbol.text.textSize = textSymbol.textSize;
+            }
             iconSymbol.index = {
                 index: idx,
                 type: 0
@@ -225,7 +231,7 @@ export default class PointPack extends VectorPack {
         const { icon, glyph } = iconGlyph;
         const { iconAtlas, glyphAtlas } = atlas;
         if (icon) {
-            if (!iconAtlas || !iconAtlas.positions[icon]) {
+            if (!iconAtlas || !iconAtlas.positions[icon.url]) {
                 return false;
             }
         }
@@ -253,8 +259,16 @@ export default class PointPack extends VectorPack {
         const point = new StyledPoint(feature, this.symbolDef, symbol, fnTypes, options);
         const iconGlyph = point.getIconAndGlyph();
         if (iconGlyph.icon && !this.options['atlas']) {
-            if (!iconReqs[iconGlyph.icon]) {
-                iconReqs[iconGlyph.icon] = 1;
+            const { url, size } = iconGlyph.icon;
+            // 有时请求同一个图片时，尺寸不同 (例如有 markerTextFit 时)，只保存最大的尺寸
+            if (!iconReqs[url]) {
+                iconReqs[url] = iconGlyph.icon.size;
+            }
+            if (iconReqs[url][0] < size[0]) {
+                iconReqs[url][0] = size[0];
+            }
+            if (iconReqs[url][1] < size[1]) {
+                iconReqs[url][1] = size[1];
             }
         }
         if (iconGlyph.glyph && !this.options['atlas']) {
