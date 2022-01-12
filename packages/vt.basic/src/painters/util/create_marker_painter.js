@@ -56,7 +56,7 @@ export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig
     }
 
     setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
-    setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', 1);
+    setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', symbol.markerTextFit ? 0 : 1);
     setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', DEFAULT_MARKER_WIDTH);
     setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight', DEFAULT_MARKER_HEIGHT);
     setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx', 0);
