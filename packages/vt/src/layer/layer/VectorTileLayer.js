@@ -38,7 +38,8 @@ const defaultOptions = {
     textGamma: 1,
     //是否限制每帧的 tile mesh creation
     tileMeshCreationLimitPerFrame: 0,
-    maxIconSize: 256,
+    // altas中会在四周留一个像素的空隙，所以设为254，最大尺寸的icon也刚好存入256高宽的图片中
+    maxIconSize: 254,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true

@@ -21,7 +21,7 @@ export default class PolygonPack extends VectorPack {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
         const pattern = vector.getPolygonResource();
         if (!this.options['atlas'] && pattern) {
-            iconReqs[pattern] = 1;
+            iconReqs[pattern] = [0, 0];
         }
         return vector;
     }
@@ -152,11 +152,13 @@ export default class PolygonPack extends VectorPack {
             const image = this.iconAtlas.glyphMap[patternFile];
             if (image) {
                 const image = this.iconAtlas.positions[patternFile];
-                uvStart[0] = image.tl[0];
-                uvStart[1] = image.tl[1];
+                // fuzhenn/maptalks-designer#607
+                // uvStart增大一个像素，uvSize缩小一个像素，避免插值造成的缝隙
+                uvStart[0] = image.tl[0] + 1;
+                uvStart[1] = image.tl[1] + 1;
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-                uvSize[0] = image.displaySize[0] - 1;
-                uvSize[1] = image.displaySize[1] - 1;
+                uvSize[0] = image.displaySize[0] - 3;
+                uvSize[1] = image.displaySize[1] - 3;
             }
         }
 

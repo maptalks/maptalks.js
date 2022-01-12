@@ -17,7 +17,7 @@ export default class IconRequestor {
             cb(null, { icons: null });
             return;
         }
-        const maxSize = this.options['maxSize'] || 256;
+        const maxSize = this.options['maxSize'] || 254;
         const urls = Object.keys(icons);
         const images = {}, buffers = [];
         let count = 0;
