@@ -562,6 +562,9 @@ function fillTextFitData(map, iconGeometry) {
             const markerWidth = this.getSymbol(iconGeometry.properties.symbolIndex).markerWidth || 0;
             props.aMarkerWidth = new Uint16Array(count);
             props.aMarkerWidth.fill(markerWidth);
+            if (markerWidth) {
+                props.aMarkerWidth.dirty = true;
+            }
             iconGeometry.data.aMarkerWidth = new Uint16Array(count);
         } else {
             const arr = iconGeometry.data.aMarkerWidth;
@@ -579,6 +582,9 @@ function fillTextFitData(map, iconGeometry) {
             const markerHeight = this.getSymbol(iconGeometry.properties.symbolIndex).markerHeight || 0;
             props.aMarkerHeight = new Uint16Array(count);
             props.aMarkerHeight.fill(markerHeight);
+            if (markerHeight) {
+                props.aMarkerHeight.dirty = true;
+            }
             iconGeometry.data.aMarkerHeight = new Uint16Array(count);
         } else {
             const arr = iconGeometry.data.aMarkerHeight;

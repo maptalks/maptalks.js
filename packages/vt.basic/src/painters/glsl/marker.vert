@@ -139,7 +139,8 @@ void main() {
         shape *= vec2(1.0, -1.0);
     }
     #ifdef HAS_PAD_OFFSET
-        shape = (shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) + vec2(aPadOffsetX, aPadOffsetY)) * layerScale;
+        // aPadOffsetX - 1.0 是为了解决1个像素偏移的问题, fuzhenn/maptalks-designer#638
+        shape = (shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) + vec2(aPadOffsetX - 1.0, aPadOffsetY)) * layerScale;
     #else
         shape = shape / iconSize * vec2(myMarkerWidth, myMarkerHeight) * layerScale;
     #endif
