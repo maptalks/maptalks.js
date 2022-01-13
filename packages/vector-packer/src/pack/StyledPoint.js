@@ -94,7 +94,7 @@ export default class StyledPoint {
         if (this.iconGlyph) {
             return this.iconGlyph;
         }
-        const { markerFileFn, markerTypeFn, /*markerWidthFn, markerHeightFn, */markerFillFn, markerFillPatternFileFn, markerFillOpacityFn, markerTextFitFn, markerTextFitPaddingFn,
+        const { markerFileFn, markerTypeFn, markerWidthFn, markerHeightFn, markerFillFn, markerFillPatternFileFn, markerFillOpacityFn, markerTextFitFn, markerTextFitPaddingFn,
             markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, textNameFn,
             textFaceNameFn, textStyleFn, textWeightFn } = this._fnTypes;
         const { zoom } = this.options;
@@ -147,22 +147,22 @@ export default class StyledPoint {
             if (markerType) {
                 const url = {};
                 url['markerType'] = markerType;
-                // if (markerWidthFn) {
-                //     const width =  markerWidthFn(null, properties);
-                //     if (!isNil(width)) {
-                //         url['markerWidth'] = width;
-                //     }
-                // } else if (symbol.markerWidth >= 0) {
-                //     url['markerWidth'] = symbol.markerWidth;
-                // }
-                // if (markerHeightFn) {
-                //     const height = markerHeightFn(null, properties);
-                //     if (!isNil(height)) {
-                //         url['markerHeight'] = height;
-                //     }
-                // } else if (symbol.markerHeight >= 0) {
-                //     url['markerHeight'] = symbol.markerHeight;
-                // }
+                if (markerWidthFn) {
+                    const width =  markerWidthFn(null, properties);
+                    if (!isNil(width)) {
+                        url['markerWidth'] = width;
+                    }
+                } else if (symbol.markerWidth >= 0) {
+                    url['markerWidth'] = symbol.markerWidth;
+                }
+                if (markerHeightFn) {
+                    const height = markerHeightFn(null, properties);
+                    if (!isNil(height)) {
+                        url['markerHeight'] = height;
+                    }
+                } else if (symbol.markerHeight >= 0) {
+                    url['markerHeight'] = symbol.markerHeight;
+                }
                 if (markerFillFn) {
                     const fill = markerFillFn(null, properties);
                     if (!isNil(fill)) {
