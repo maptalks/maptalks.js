@@ -117,22 +117,31 @@ export default class StyledPoint {
                     const textSize = symbol.text.textSize;
                     const textName = symbol.text.textName;
                     const text = resolveText(textName, properties);
-                    if (isFunctionDefinition(textSize) && !symbol.text['__fn_textSize']) {
-                        symbol.text['__fn_textSize'] = interpolated(textSize);
+                    if (!text) {
+                        // blank text
+                        size[0] = size[1] = -1;
+                    } else {
+                        if (isFunctionDefinition(textSize) && !symbol.text['__fn_textSize']) {
+                            symbol.text['__fn_textSize'] = interpolated(textSize);
+                        }
+                        const tsize = evaluateTextSize(symbol.text, properties, zoom);
+                        if (textFit === 'width' || textFit === 'both') {
+                            size[0] = tsize[0] * text.length;
+                        }
+                        // TODO 这里不支持多行文字
+                        if (textFit === 'height' || textFit === 'both') {
+                            size[1] = tsize[1];
+                        }
+                        if (tsize[0] && tsize[1]) {
+                            let padding = symbol.markerTextFitPadding || [0, 0, 0, 0];
+                            if (markerTextFitPaddingFn) {
+                                padding = markerTextFitPaddingFn(zoom, properties);
+                            }
+                            size[0] += padding[1] + padding[3];
+                            size[1] += padding[0] + padding[2];
+                        }
                     }
-                    const tsize = evaluateTextSize(symbol.text, properties, zoom);
-                    if (textFit === 'width' || textFit === 'both') {
-                        size[0] = tsize[0] * text.length;
-                    }
-                    if (textFit === 'height' || textFit === 'both') {
-                        size[1] = tsize[1];
-                    }
-                    let padding = symbol.markerTextFitPadding || [0, 0, 0, 0];
-                    if (markerTextFitPaddingFn) {
-                        padding = markerTextFitPaddingFn(zoom, properties);
-                    }
-                    size[0] += padding[1] + padding[3];
-                    size[1] += padding[0] + padding[2];
+
                 }
             }
         }
@@ -142,7 +151,8 @@ export default class StyledPoint {
         size[0] = Math.ceil(size[0]);
         size[1] = Math.ceil(size[1]);
         this.size = size;
-        if (hasMarker) {
+        // size为0时，仍然能请求图片，例如只有markerFile的symbol，size < 0时的图片应该忽略，例如文字为空的markerTextFit图标
+        if (hasMarker && size[0] >= 0 && size[1] >= 0) {
             let icon;
             if (markerType) {
                 const url = {};

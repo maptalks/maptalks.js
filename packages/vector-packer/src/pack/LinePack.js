@@ -72,7 +72,7 @@ export default class LinePack extends VectorPack {
         const vector = new StyledVector(feature, symbol, fnTypes, options);
         const pattern = vector.getLineResource();
         if (!this.options['atlas'] && pattern) {
-            iconReqs[pattern] = 1;
+            iconReqs[pattern] = [0, 0];
         }
         return vector;
     }
