@@ -1,4 +1,4 @@
-import { extend, isNil, isString, isNumber, isFunction, hasOwn } from './Util';
+import { extend, isNil, isString, isNumber, isFunction, hasOwn, isObject } from './Util';
 
 /**
  * Get SVG Base64 String from a marker symbol with (markerType : path)
@@ -113,29 +113,40 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
     if (isNil(symbolDef.markerWidth) || isNil(symbolDef.markerHeight)) {
         return null;
     }
-    let width = isNil(symbolDef.markerWidth) ? symbol.textSize : symbol.markerWidth,
-        height = symbol.markerHeight;
-    if (symbol['__fn_markerWidth'] || symbol['__fn_textSize']) {
-        width = symbol['__fn_markerWidth'] || symbol['__fn_textSize'];
+    let width = symbolDef.markerWidth;
+    let height = symbolDef.markerHeight;
+    if (isObject(width)) {
+        if (width.type !== 'identity') {
+            width = findLargestStops(width);
+        } else {
+            // 要先执行一次 symbol.markerWidth, __fn_markerWidth才会生成
+            width = symbol.markerWidth;
+            if (symbol['__fn_markerWidth']) {
+                width = symbol['__fn_markerWidth'](zoom, properties);
+            }
+            // identity 返回的是stops
+            if (isObject(width)) {
+                width = findLargestStops(width);
+            }
+        }
     }
-    if (symbol['__fn_markerHeight']) {
-        height = symbol['__fn_markerHeight'];
-    }
-    const size = [];
-    if (isFunction(width)) {
-        size[0] = width(zoom, properties);
-    } else {
-        size[0] = width;
+    if (isObject(height)) {
+        if (height.type !== 'identity') {
+            height = findLargestStops(height);
+        } else {
+            height = symbol.markerHeight;
+            if (symbol['__fn_markerHeight']) {
+                height = symbol['__fn_markerHeight'](zoom, properties);
+            }
+            // identity 返回的是stops
+            if (isObject(height)) {
+                height = findLargestStops(height);
+            }
+
+        }
     }
 
-    if (isFunction(height)) {
-        const h = height(zoom, properties);
-        size[1] = h;
-    } else {
-        size[1] = height;
-    }
-
-    return size;
+    return [width, height];
 }
 
 const DEFAULT_TEXT_SIZE = 16;
@@ -158,4 +169,19 @@ export function evaluateTextSize(symbol, symbolDef, properties, zoom) {
 
     size[1] = size[0];
     return size;
+}
+
+export function findLargestStops(value) {
+    const stops = value.stops;
+    let max = -Infinity;
+    for (let i = 0; i < stops.length; i++) {
+        let v = stops[i][1];
+        if (isObject(stops[i][1])) {
+            v = findLargestStops(stops[i][1]);
+        }
+        if (v > max) {
+            max = v;
+        }
+    }
+    return max;
 }
