@@ -110,11 +110,11 @@ function translateToSVGStyles(s) {
 }
 
 export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
-    if (isNil(symbolDef.markerWidth) || isNil(symbolDef.markerHeight)) {
+    if (isNil(symbolDef.markerWidth) && isNil(symbolDef.markerHeight)) {
         return null;
     }
-    let width = symbolDef.markerWidth;
-    let height = symbolDef.markerHeight;
+    let width = symbolDef.markerWidth || 0;
+    let height = symbolDef.markerHeight || 0;
     if (isObject(width)) {
         if (width.type !== 'identity') {
             width = findLargestStops(width);

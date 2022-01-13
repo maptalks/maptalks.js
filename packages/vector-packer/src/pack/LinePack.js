@@ -346,11 +346,13 @@ export default class LinePack extends VectorPack {
             this.feaTexInfo = this.feaTexInfo || [0, 0, 0, 0];
             if (image) {
                 const { tl, displaySize } = this.iconAtlas.positions[res];
-                this.feaTexInfo[0] = tl[0];
-                this.feaTexInfo[1] = tl[1];
+                // fuzhenn/maptalks-ide#2778
+                // uvStart增大一个像素，uvSize缩小一个像素，避免插值造成的缝隙
+                this.feaTexInfo[0] = tl[0] + 1;
+                this.feaTexInfo[1] = tl[1] + 1;
                 //uvSize - 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
-                this.feaTexInfo[2] = displaySize[0] - 1;
-                this.feaTexInfo[3] = displaySize[1] - 1;
+                this.feaTexInfo[2] = displaySize[0] - 3;
+                this.feaTexInfo[3] = displaySize[1] - 3;
             } else {
                 this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
             }

@@ -45,9 +45,27 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
-                width = this.size && this.size[0] || this.width;
-                height = this.size && this.size[1] || this.height;
-
+                const ratio = this.width / this.height;
+                if (this.size[0]) {
+                    width = this.size[0];
+                } else {
+                    width = this.width;
+                }
+                if (this.size[1]) {
+                    height = this.size[1];
+                    if (!this.size[0]) {
+                        width = height * ratio;
+                    }
+                } else if (this.size[0]) {
+                    height = width / ratio;
+                } else {
+                    height = this.height;
+                }
+                this.size[0] = width;
+                this.size[1] = height;
+                self._ensureMaxSize(null, this.size);
+                width = this.size[0];
+                height = this.size[1];
                 ctx.canvas.width = width;
                 ctx.canvas.height = height;
                 ctx.drawImage(this, 0, 0, width, height);
@@ -179,32 +197,37 @@ export default class IconRequestor {
     }
 
     _ensureMaxSize(url, size) {
+        if (!size[0] || !size[1]) {
+            return;
+        }
         const maxSize = this.options['maxSize'] || 254;
         let [width, height] = size;
         const ratio = width / height;
 
-        const cached = this._cache.get(url);
-        if (cached && cached !== 'error') {
-            // 缓存中width或height更大时，则取更大的值
-            const { width: cachedWidth, height: cachedHeight } = cached.data;
-            if (cachedWidth > width) {
-                width = cachedWidth;
-            }
-            if (cachedHeight > height) {
-                height = cachedHeight;
+        if (url) {
+            const cached = this._cache.get(url);
+            if (cached && cached !== 'error') {
+                // 缓存中width或height更大时，则取更大的值
+                const { width: cachedWidth, height: cachedHeight } = cached.data;
+                if (cachedWidth > width) {
+                    width = cachedWidth;
+                }
+                if (cachedHeight > height) {
+                    height = cachedHeight;
+                }
             }
         }
 
         if (width > maxSize) {
-            height = Math.floor(maxSize / ratio);
+            height = maxSize / ratio;
             width = maxSize;
         }
         if (height > maxSize) {
-            width = Math.floor(maxSize * ratio);
+            width = maxSize * ratio;
             height = maxSize;
         }
-        size[0] = width;
-        size[1] = height;
+        size[0] = Math.floor(width);
+        size[1] = Math.floor(height);
 
     }
 }
