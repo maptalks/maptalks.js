@@ -380,6 +380,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!this._requestingMVT[url]) {
             return;
         }
+        if (data.canceled) {
+            return;
+        }
         const layer = this.layer;
         const useDefault = layer.isDefaultRender();
         const { tiles } = this._requestingMVT[url];
@@ -402,9 +405,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             return;
         }
-        if (data.canceled) {
-            return;
-        }
+
         if (data.style !== this._styleCounter) {
             //返回的是上一个style的tileData
             return;
