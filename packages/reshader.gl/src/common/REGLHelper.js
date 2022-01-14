@@ -98,7 +98,11 @@ export function getUniqueREGLBuffer(regl, data, options) {
 }
 
 export function getUniqueTexture(regl, texConfig) {
-    const array = texConfig.data
+    const array = texConfig.data;
+    if (!array || !array.buffer) {
+        // 数据非类型数组，直接创建texture并返回
+        return regl.texture(texConfig);
+    }
     const arrayBuffer = array.buffer;
     const byteOffset = array.byteOffset;
     if (!arrayBuffer[TEXTURE_KEY]) {
