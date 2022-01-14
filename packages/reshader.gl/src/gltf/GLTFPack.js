@@ -1,12 +1,12 @@
 import { mat4 } from 'gl-matrix';
-import { defined, isNumber, isInterleaved } from '../common/Util';
+import { defined, isNumber, isInterleaved, extend } from '../common/Util';
 import Skin from './Skin';
 import TRS from './TRS';
 import * as gltf from '@maptalks/gltf-loader';
 import Geometry from '../Geometry';
 import { KEY_DISPOSED } from '../common/Constants.js';
 import GLTFResource from './GLTFResource';
-import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap } from '../common/REGLHelper';
+import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Texture from '../Texture2D';
 
 let timespan = 0;
@@ -282,7 +282,7 @@ export default class GLTFPack {
             node.mesh.node = node;
             node.geometries = node.geometries || [];
             node.mesh.primitives.forEach(primitive => {
-                const geometry = createGeometry(primitive);
+                const geometry = createGeometry(primitive, this.regl);
                 geometry.properties.morphTargets = primitive.morphTargets;
                 //一个node下可能有多个geometry, node附带的weights会影响其下辖的所有geometry的morph变形结果，这里保存
                 //geometries，方便后面morph的运算
@@ -411,37 +411,39 @@ export default class GLTFPack {
     }
 }
 
-function createGeometry(primitive) {
-    const attributes = {};
-    for (const attr in primitive.attributes) {
-        attributes[attr] =  primitive.attributes[attr];
-        if (attributes[attr].bufferView === undefined) {
-            attributes[attr] = attributes[attr].array;
+function createGeometry(primitive, regl) {
+    const attributes = primitive.attributes;
+    const aColor0 = attributes['COLOR_0'];
+    //将float类型的颜色值转为0-255的uint8类型
+    if (aColor0 && aColor0.array instanceof Float32Array) {
+        const color = new Uint8Array(aColor0.array.length);
+        for (let i = 0; i < color.length; i++) {
+            color[i] = Math.round(aColor0.array[i] * 255);
+        }
+        aColor0.array = color;
+    }
+    const attrs = {};
+    for (const name in attributes) {
+        // 把原有的array赋给attr，用于计算 bbox、buildUniqueVertex
+        attrs[name] = extend({}, attributes[name]);
+        if (regl) {
+            attrs[name].buffer = getUniqueREGLBuffer(regl, attributes[name], { dimension: attributes[name].itemSize });
         }
     }
+
     //如果有morph，需要预先填充morph空数据，动画开启后，会不断向这些空数据中填充morphTargets数据
     if (primitive.morphTargets) {
-        const length = isInterleaved(attributes['POSITION']) ? attributes['POSITION'].itemSize * attributes['POSITION'].count : attributes['POSITION'].length;
+        const length = isInterleaved(attrs['POSITION']) ? attrs['POSITION'].itemSize * attrs['POSITION'].count : attrs['POSITION'].array.length;
         for (let i = 0; i < 8; i++) {
-            if (!attributes[`POSITION${i}`]) {
-                attributes[`POSITION${i}`] = new Float32Array(length).fill(0);
+            if (!attrs[`POSITION${i}`]) {
+                attrs[`POSITION${i}`] = new Float32Array(length).fill(0);
             }
         }
         for (let i = 0; i < 4; i++) {
-            const length = attributes['NORMAL'].array ? attributes['NORMAL'].array.length : attributes['NORMAL'].length;
-            if (!attributes[`NORMAL${i}`]) {
-                attributes[`NORMAL${i}`] = new Float32Array(length).fill(0);
+            const length = attrs['NORMAL'].array ? attrs['NORMAL'].array.length : attrs['NORMAL'].length;
+            if (!attrs[`NORMAL${i}`]) {
+                attrs[`NORMAL${i}`] = new Float32Array(length).fill(0);
             }
-        }
-    }
-    if (attributes['COLOR_0']) {
-        //将float类型的颜色值转为0-255的uint8类型
-        if (attributes['COLOR_0'] instanceof Float32Array) {
-            const color = new Uint8Array(attributes['COLOR_0'].length);
-            for (let i = 0; i < color.length; i++) {
-                color[i] = Math.round(attributes['COLOR_0'][i] * 255);
-            }
-            attributes['COLOR_0'] = color;
         }
     }
     let indices = primitive.indices;
@@ -449,7 +451,7 @@ function createGeometry(primitive) {
         indices = indices.array;
     }
     const modelGeometry = new Geometry(
-        attributes,
+        attrs,
         indices,
         0,
         {

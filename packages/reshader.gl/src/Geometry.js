@@ -290,6 +290,7 @@ export default class Geometry {
                     buffer
                 };
             }
+            delete data[key].array;
         }
         this.data = buffers;
         delete this._reglData;
@@ -319,6 +320,9 @@ export default class Geometry {
         let data = this.data[positionAttribute];
         if (data.data) {
             data = data.data;
+        }
+        if (data.array) {
+            data = data.array;
         }
         if (isArray(data)) {
             // 因为data可能被转成regl buffer，需要保存到this._vertexCount
@@ -577,9 +581,9 @@ export default class Geometry {
     _getAttributeData(name) {
         const data = this.data[name];
         const bufKey = data.buffer;
-        if (isArray(data)) {
+        if (!isInterleaved(data)) {
             return data;
-        } else if (isInterleaved(data)) {
+        } else {
             const attribute = this._buffers[bufKey] ? this._buffers[bufKey].data : data.array;
             const { count, size, stride, offset, componentType } = data;
             const ctor = gltf.GLTFLoader.getTypedArrayCtor(componentType);
@@ -603,7 +607,6 @@ export default class Geometry {
                 return gltf.GLTFLoader.readInterleavedArray(tempArray, attribute, count, size, stride, offset, componentType);
             }
         }
-
     }
 
     createTangent(name = 'aTangent') {
@@ -634,7 +637,7 @@ export default class Geometry {
         this._incrVersion();
         //TODO data 可能是含stride的interleaved类型
         const pos = this._getAttributeData(this.desc.positionAttribute);
-        this.data[name] = buildNormals(pos, this.elements);
+        this.data[name] = buildNormals(pos.array || pos, this.elements);
         delete this._reglData;
     }
 
@@ -672,7 +675,8 @@ export default class Geometry {
         const keys = Object.keys(data);
         const oldData = {};
 
-        const pos = data[this.desc.positionAttribute];
+        let pos = data[this.desc.positionAttribute];
+        pos = pos.length ?  pos : pos.array; //存在两种结构 array或者 { array }
         if (!isArray(pos)) {
             throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
         }
@@ -681,13 +685,14 @@ export default class Geometry {
         const l = indices.length;
         for (let i = 0; i < keys.length; i++) {
             const name = keys[i];
-            const size = data[name].length / vertexCount;
-            if (!isArray(data[name])) {
+            const attr = data[name].length ? data[name] : data[name].array;//存在两种结构 array或者 { array }
+            const size = attr.length / vertexCount;
+            if (!isArray(attr)) {
                 throw new Error(name + ' must be array to build unique vertex.');
             }
-            oldData[name] = data[name];
+            oldData[name] = attr;
             oldData[name].size = size;
-            data[name] = new data[name].constructor(l * size);
+            data[name] = new attr.constructor(l * size);
         }
 
         let cursor = 0;
