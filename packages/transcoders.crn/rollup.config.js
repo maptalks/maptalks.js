@@ -36,13 +36,14 @@ if (production) {
         //         'reserved': ['on', 'once', 'off'],
         //     }
         // },
+        mangle: {},
         compress: {
             pure_getters: true
         },
         output : {
             ecma: 2017,
             // keep_quoted_props: true,
-            beautify: true,
+            beautify: false,
             comments : '/^!/'
         }
     }));
