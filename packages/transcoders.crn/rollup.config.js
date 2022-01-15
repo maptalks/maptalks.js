@@ -18,12 +18,12 @@ const plugins = [
 
 const intro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\nconst transcoder = function () {\n`;
 const outro = `
-    };
+        };
     if (typeof exports === 'object' && typeof module !== 'undefined') {
         const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('crn', transcoder);
     } else {
-        return exports;
+        return transcoder;
     }
 `;
 
