@@ -15,6 +15,9 @@
     "webgl",
     "ktx2"
   ],
+  "files": [
+    "dist/transcoders.ktx2.js"
+  ],
   "author": "fuzhen",
   "license": "ISC",
   "devDependencies": {
