@@ -18,7 +18,13 @@ const options = {
         'OES_texture_half_float', 'OES_texture_half_float_linear',
         'OES_texture_float', 'OES_texture_float_linear',
         'WEBGL_depth_texture', 'EXT_shader_texture_lod',
-        'WEBGL_compressed_texture_s3tc'
+        // compressed textures
+        'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_etc',
+        'WEBGL_compressed_texture_etc1',
+        'WEBGL_compressed_texture_pvrtc',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb'
     ],
     forceRenderOnZooming : true,
     forceRenderOnMoving : true,

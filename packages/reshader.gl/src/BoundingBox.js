@@ -15,6 +15,9 @@ class BoundingBox {
     static copy(out, bbox) {
         vec3.copy(out.min, bbox.min);
         vec3.copy(out.max, bbox.max);
+        for (let i = 0; i < bbox.vertex.length; i++) {
+            vec3.copy(out.vertex[i], bbox.vertex[i]);
+        }
         return out;
     }
 
