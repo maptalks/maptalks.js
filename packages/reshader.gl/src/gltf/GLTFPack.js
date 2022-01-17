@@ -398,15 +398,14 @@ export default class GLTFPack {
         const sampler = texture.sampler || {};
         const width = texture.image.width;
         const height = texture.image.height;
-        const widthHeightIsPowerOf2 = isPowerOf2(width) && isPowerOf2(height);
         return new Texture({
             width,
             height,
             data,
             mag: getTextureMagFilter(sampler.magFilter) || 'linear',
-            min: widthHeightIsPowerOf2 ? getTextureMinFilter(sampler.minFilter) || 'linear' : 'linear',
-            wrapS: widthHeightIsPowerOf2 ? getTextureWrap(sampler.wrapS) || 'repeat' : 'clamp',
-            wrapT: widthHeightIsPowerOf2 ? getTextureWrap(sampler.wrapT) || 'repeat' : 'clamp'
+            min: getTextureMinFilter(sampler.minFilter) || 'linear',
+            wrapS: getTextureWrap(sampler.wrapS) || 'repeat',
+            wrapT: getTextureWrap(sampler.wrapT) || 'repeat'
         });
     }
 }
@@ -471,10 +470,6 @@ function createGeometry(primitive, regl) {
         modelGeometry.createNormal('NORMAL');
     }
     return modelGeometry;
-}
-
-function isPowerOf2(value) {
-    return (value > 0) && (value & (value - 1)) === 0;
 }
 
 function numericalSort(a, b) {
