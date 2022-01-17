@@ -74,9 +74,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const symbol = opts['symbol'];
         const properties = opts['properties'];
         const id = opts['id'];
+        const zoomLimit = opts['zoomLimit'];
         delete opts['symbol'];
         delete opts['id'];
         delete opts['properties'];
+        delete opts['zoomLimit'];
         super(opts);
         if (symbol) {
             this.setSymbol(symbol);
@@ -89,6 +91,26 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNil(id)) {
             this.setId(id);
         }
+        if (zoomLimit) {
+            this.setZoomLimit(zoomLimit);
+        }
+    }
+
+    /**
+     * get level display limit
+     * @return {number[]}
+     */
+    getZoomLimit() {
+        return this._zoomLimit;
+    }
+
+    /**
+     * set the level display limit
+     * @param zoomLimit
+     */
+    setZoomLimit(zoomLimit = [1, 21]) {
+        if (isNumber(zoomLimit[0]) && isNumber(zoomLimit[1]))
+            this._zoomLimit = zoomLimit;
     }
 
     /**
@@ -1287,10 +1309,14 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     onConfig(conf) {
-        let properties;
+        let properties, zoomLimit;
         if (conf['properties']) {
             properties = conf['properties'];
             delete conf['properties'];
+        }
+        if (conf['zoomLimit']) {
+            zoomLimit = conf['zoomLimit'];
+            delete conf['zoomLimit'];
         }
         let needRepaint = false;
         for (const p in conf) {
@@ -1304,6 +1330,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         if (properties) {
             this.setProperties(properties);
+            this._repaint();
+        } else if (zoomLimit) {
+            this.setZoomLimit(zoomLimit);
             this._repaint();
         } else if (needRepaint) {
             this._repaint();

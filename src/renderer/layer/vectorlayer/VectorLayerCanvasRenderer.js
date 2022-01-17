@@ -182,19 +182,24 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     checkGeo(geo) {
+        const zoom = this.getMap().getZoom();
+        const zoomLimit = geo.getZoomLimit();
         //点的话已经在批量处理里判断过了
         if (geo.type === 'Point' && this._onlyHasPoint !== undefined) {
             if (geo._inCurrentView) {
-                this._hasPoint = true;
-                geo._isCheck = true;
-                this._geosToDraw.push(geo);
+                if (!zoomLimit || (zoomLimit[0] <= zoom && zoom <= zoomLimit[1])) {
+                    this._hasPoint = true;
+                    geo._isCheck = true;
+                    this._geosToDraw.push(geo);
+                }
             }
             return;
         }
         // LineString ,Polygon,Circle etc
         geo._isCheck = false;
         if (!geo || !geo.isVisible() || !geo.getMap() ||
-            !geo.getLayer() || (!geo.getLayer().isCanvasRender())) {
+            !geo.getLayer() || (!geo.getLayer().isCanvasRender()) ||
+            (zoomLimit && !(zoomLimit[0] <= zoom && zoom <= zoomLimit[1]))) {
             return;
         }
 
@@ -359,11 +364,14 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 geo._inCurrentView = TEMP_FIXEDEXTENT.intersects(containerExtent);
             }
             if (geo._inCurrentView) {
+                const zoomLimit = geo.getZoomLimit();
+                const zoom = map.getZoom();
+                const flag = !zoomLimit || zoomLimit[0] <= zoom && zoom <= zoomLimit[1];
                 if (!geo.isVisible() || !isCanvasRender) {
                     geo._inCurrentView = false;
                 }
                 //如果当前图层上只有点，整个checkGeo都不用执行了,这里已经把所有的点都判断了
-                if (this._onlyHasPoint && geo._inCurrentView) {
+                if (this._onlyHasPoint && geo._inCurrentView && flag) {
                     this._hasPoint = true;
                     geo._isCheck = true;
                     this._geosToDraw.push(geo);
