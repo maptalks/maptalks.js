@@ -380,7 +380,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!this._requestingMVT[url]) {
             return;
         }
-        if (data.canceled) {
+        if (data && data.canceled) {
             return;
         }
         const layer = this.layer;
