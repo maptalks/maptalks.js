@@ -93,7 +93,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 this._idMaps = params.idMap;
             }
         }
-        this.fire('dataload', { extent: params.extent });
+        this.fire('dataload', { extent: params && params.extent });
     }
 
     _setExtent(extent) {
