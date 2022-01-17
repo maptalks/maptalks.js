@@ -1,16 +1,34 @@
 {
-  "name": "@maptalks/transcoders.ktx",
-  "version": "0.64.0",
-  "description": "ktx transcoder for @maptalks/gl",
+  "name": "@maptalks/transcoders.ktx2",
+  "version": "0.65.0",
+  "description": "ktx2 transcoder for @maptalks/gl",
   "module": "src/index.js",
-  "main": "dist/transcoders.ktx",
+  "main": "dist/transcoders.ktx2.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build-dev": "rollup -c rollup.config.js",
+    "dev": "rollup -w -c rollup.config.js",
+    "prepare": "npm run build"
   },
   "keywords": [
     "webgl",
-    "ktx"
+    "ktx2"
+  ],
+  "files": [
+    "dist/transcoders.ktx2.js"
   ],
   "author": "fuzhen",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "eslint": "^7.32.0",
+    "eslint-plugin-mocha": "^9.0.0",
+    "rollup": "^2.56.2",
+    "rollup-plugin-polyfill-node": "^0.8.0",
+    "rollup-plugin-terser": "^5.3.1"
+  }
 }

@@ -40,6 +40,11 @@ export default class GeometryResource {
         for (const p in data) {
             if (isArray(data[p])) {
                 newData[p] = data[p].slice();
+            } else if (data[p].buffer && data[p].buffer.destroy) {
+                newData[p] = { buffer: data[p].buffer };
+                if (isArray(data[p].array)) {
+                    newData[p].array = data[p].array.slice();
+                }
             } else {
                 const interleavedArray = geometry._getAttributeData(p);
                 if (p !== geometry.desc.positionAttribute) {

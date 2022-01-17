@@ -254,3 +254,14 @@ export function isInterleaved(dataObj) {
     // const bytesPerElement = gltf.GLTFLoader.getTypedArrayCtor(componentType).BYTES_PER_ELEMENT;
     // return stride > bytesPerElement * count * size;
 }
+
+export function getSupportedFormats(gl) {
+    return {
+        'etc': !!gl.getExtension('WEBGL_compressed_texture_etc'),
+        'etc1': !!gl.getExtension('WEBGL_compressed_texture_etc1'),
+        's3tc': !!gl.getExtension('WEBGL_compressed_texture_s3tc'),
+        'pvrtc': !!gl.getExtension('WEBGL_compressed_texture_pvrtc'),
+        'astc': !!gl.getExtension('WEBGL_compressed_texture_astc'),
+        'bc7': !!gl.getExtension('EXT_texture_compression_bptc'),
+    };
+}

@@ -1,9 +1,12 @@
 {
   "name": "@maptalks/transcoders.crn",
-  "version": "0.64.0",
+  "version": "0.65.0",
   "description": "crn transcoder for @maptalks/gl",
   "module": "src/index.js",
   "main": "dist/transcoders.crn.js",
+  "files": [
+    "dist/transcoders.crn.js"
+  ],
   "scripts": {
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
