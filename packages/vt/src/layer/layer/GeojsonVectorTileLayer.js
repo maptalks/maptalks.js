@@ -73,7 +73,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 }
                 workerConn.setData(workerData, (err, params) => {
                     renderer.clear();
-                    this.onWorkerReady(params);
+                    this.onWorkerReady(null, params);
                     renderer.setToRedraw();
                 });
             }
