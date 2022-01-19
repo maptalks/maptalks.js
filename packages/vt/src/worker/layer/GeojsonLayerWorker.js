@@ -3,7 +3,7 @@ import Ajax from '../util/Ajax';
 import { log2 } from '../../common/Util';
 import geojsonvt from 'geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
-import bbox from 'geojson-bbox';
+import bbox from '@maptalks/geojson-bbox';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -62,9 +62,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 const data = resp;
                 // debugger
                 const { first1000, idMap } = this._generateId(data);
-                this.index = geojsonvt(resp, this.options.geojsonvt || options);
-                const extent = first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
-                cb(null, { extent, idMap });
+                this._generate(first1000, idMap, data, options, cb);
             });
         } else {
             if (typeof data === 'string') {
@@ -75,9 +73,18 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             if (features && features.length > 1000) {
                 first1000 = features.slice(0, 1000);
             }
+            this._generate(first1000, null, data, options, cb);
+        }
+    }
+
+    _generate(first1000, idMap, data, options, cb) {
+        try {
             const extent = first1000 && first1000.length ? bbox({ type: "FeatureCollection", features: first1000 }) : null;
             this.index = geojsonvt(data, this.options.geojsonvt || options);
-            cb(null, { extent });
+            cb(null, { extent, idMap });
+        } catch (err) {
+            console.warn(err);
+            cb({ error: err.message });
         }
     }
 

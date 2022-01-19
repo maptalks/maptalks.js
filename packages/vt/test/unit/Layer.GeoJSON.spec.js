@@ -287,4 +287,17 @@ describe('GeoJSONVectorTileLayer', () => {
         });
         layer.addTo(map);
     });
+
+    it('should can fire dataerror event', done => {
+        const url = path.join(__dirname, 'fixtures', 'error-point.geojson');
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: url,
+        });
+        layer.on('dataerror', e => {
+            assert(e.error);
+            assert(e.error.error);
+            done();
+        });
+        layer.addTo(map);
+    });
 });

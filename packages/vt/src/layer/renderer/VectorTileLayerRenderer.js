@@ -201,10 +201,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const workerConn = this._workerConn;
         //setTimeout in case layer's style is set to layer after layer's creating.
         workerConn.addLayer((err, params) => {
-            if (err) throw err;
             if (!this.layer) return;
             this.ready = true;
-            this.layer.onWorkerReady(params);
+            this.layer.onWorkerReady(err, params);
             this.layer.fire('workerready');
             this.setToRedraw();
         });

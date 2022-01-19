@@ -1,0 +1,19 @@
+{
+  "type": "FeatureCollection",
+  "name": "point-1",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature1",
+      "properties": {
+        "osm_id": "3406566",
+        "highway": "traffic_signals",
+        "ref": null
+      },
+      "geometry": { "type": "Point", "coordinatess": [] }
+    }
+  ]
+}

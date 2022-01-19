@@ -84,7 +84,11 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         return this._dataExtent;
     }
 
-    onWorkerReady(params) {
+    onWorkerReady(err, params) {
+        if (err) {
+            this.fire('dataerror', { error: err });
+            return;
+        }
         if (params) {
             if (params.extent) {
                 this._setExtent(params.extent);
