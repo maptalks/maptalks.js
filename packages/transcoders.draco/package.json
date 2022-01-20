@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.draco",
-  "version": "0.65.0",
+  "version": "0.65.1",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
   "scripts": {
