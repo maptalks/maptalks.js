@@ -20,7 +20,7 @@ const noSsrFilter = m => !m.ssr;
 const SSR_STATIC = 1;
 const SSR_IN_ONE_FRAME = 2;
 
-class Renderer extends maptalks.renderer.CanvasRenderer {
+class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     setToRedraw() {
         this.setRetireFrames();
@@ -475,6 +475,7 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
                 this._fxaaFBO.resize(width, height);
             }
         }
+        this._clearFramebuffers();
         this.forEachRenderer(renderer => {
             if (renderer.canvas) {
                 renderer.resizeCanvas();
@@ -632,12 +633,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const me = this;
         //drawBloom中会手动创建context
         return function (timestamp, context) {
+            context = context || me._drawContext;
             const hasRenderTarget = context && context.renderTarget;
             if (hasRenderTarget) {
                 context.renderTarget.getFramebuffer = getFramebuffer;
                 context.renderTarget.getDepthTexture = getDepthTexture;
             }
-            return drawMethod.call(this, timestamp, context || me._drawContext);
+            return drawMethod.call(this, timestamp, context);
         };
     }
 
@@ -645,12 +647,13 @@ class Renderer extends maptalks.renderer.CanvasRenderer {
         const me = this;
         //drawBloom中会手动创建context
         return function (event, timestamp, context) {
+            context = context || me._drawContext;
             const hasRenderTarget = context && context.renderTarget;
             if (hasRenderTarget) {
                 context.renderTarget.getFramebuffer = getFramebuffer;
                 context.renderTarget.getDepthTexture = getDepthTexture;
             }
-            return drawMethod.call(this, event, timestamp, context || me._drawContext);
+            return drawMethod.call(this, event, timestamp, context);
         };
     }
 
@@ -1175,7 +1178,7 @@ function getDepthTexture(fbo) {
     return fbo.depthStencil._texture.texture;
 }
 
-export default Renderer;
+export default GroupGLLayerRenderer;
 
 
 function getValueOrDefault(v, key, defaultValue) {
