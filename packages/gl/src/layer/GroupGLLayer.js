@@ -218,6 +218,9 @@ export default class GroupGLLayer extends maptalks.Layer {
         layer['_bindMap'](map);
         layer.once('renderercreate', this._onChildRendererCreate, this);
         // layer.on('setstyle updatesymbol', this._onChildLayerStyleChanged, this);
+        layer.once('remove', e => {
+            this.removeLayer(e.target);
+        });
         layer.load();
         this._bindChildListeners(layer);
     }
