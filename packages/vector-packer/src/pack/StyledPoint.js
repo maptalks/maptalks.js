@@ -148,6 +148,9 @@ export default class StyledPoint {
         if (hasText) {
             size = evaluateTextSize(symbol, this.symbolDef, properties, zoom);
         }
+        if (!size) {
+            return result;
+        }
         size[0] = Math.ceil(size[0]);
         size[1] = Math.ceil(size[1]);
         this.size = size;
