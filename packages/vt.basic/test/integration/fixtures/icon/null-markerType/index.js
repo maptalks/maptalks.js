@@ -1,4 +1,5 @@
 const data = require('../../data');
+// fuzhenn/maptalks-ide#2860
 
 const style = [
     {
