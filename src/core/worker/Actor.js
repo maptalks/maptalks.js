@@ -160,7 +160,8 @@ export default class Actor {
         data.workerId = targetID;
         data.workerKey = this.workerKey;
         data.actorId = this.actorId;
-        this.workers[targetID].postMessage(data, buffers || EMPTY_BUFFERS);
+        // this.workers[targetID].postMessage(data, buffers || EMPTY_BUFFERS);
+        this.workerPool.addMessage(targetID, data, buffers || EMPTY_BUFFERS);
 
         return targetID;
     }
