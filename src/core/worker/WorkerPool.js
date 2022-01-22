@@ -23,7 +23,7 @@ class MessageBatch {
     }
 
     isFull() {
-        return this._messages.length >= this.limit;
+        return this._messages.length >= this._limit;
     }
 
     getMessage() {
