@@ -520,6 +520,7 @@ export default class Geometry {
         }
         const posAttr = this.desc.positionAttribute;
         let posArr = this.data[posAttr];
+        let posMin, posMax;
         if (!isArray(posArr)) {
             // form of object: { usage : 'static', data : [...] }
             if (posArr.data) {
@@ -527,6 +528,8 @@ export default class Geometry {
             } else if (isInterleaved(posArr)) {
                 posArr = this._getAttributeData(this.desc.positionAttribute);
             } else if (posArr.array) {
+                posMin = posArr.min;
+                posMax = posArr.max;
                 posArr = posArr.array;
             }
         }
@@ -534,19 +537,24 @@ export default class Geometry {
             //TODO only support size of 3 now
             const min = bbox.min;
             const max = bbox.max;
-            vec3.set(min, posArr[0], posArr[1], posArr[2]);
-            vec3.set(max, posArr[0], posArr[1], posArr[2]);
-            for (let i = 3; i < posArr.length;) {
-                const x = posArr[i++];
-                const y = posArr[i++];
-                const z = posArr[i++];
-                if (x < min[0]) { min[0] = x; }
-                if (y < min[1]) { min[1] = y; }
-                if (z < min[2]) { min[2] = z; }
+            if (posMin && posMax) {
+                vec3.set(min, ...posMin);
+                vec3.set(max, ...posMax);
+            } else {
+                vec3.set(min, posArr[0], posArr[1], posArr[2]);
+                vec3.set(max, posArr[0], posArr[1], posArr[2]);
+                for (let i = 3; i < posArr.length;) {
+                    const x = posArr[i++];
+                    const y = posArr[i++];
+                    const z = posArr[i++];
+                    if (x < min[0]) { min[0] = x; }
+                    if (y < min[1]) { min[1] = y; }
+                    if (z < min[2]) { min[2] = z; }
 
-                if (x > max[0]) { max[0] = x; }
-                if (y > max[1]) { max[1] = y; }
-                if (z > max[2]) { max[2] = z; }
+                    if (x > max[0]) { max[0] = x; }
+                    if (y > max[1]) { max[1] = y; }
+                    if (z > max[2]) { max[2] = z; }
+                }
             }
             bbox.updateVertex();
             bbox.dirty();
