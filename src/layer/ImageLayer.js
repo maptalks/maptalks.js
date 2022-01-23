@@ -192,6 +192,9 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             x = y = 0;
         }
         const scale = map.getGLScale();
+        if (image.bitmap) {
+            image = image.bitmap;
+        }
         ctx.drawImage(image, x, y, extent.getWidth() / scale, extent.getHeight() / scale);
         if (bearing) {
             ctx.restore();

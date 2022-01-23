@@ -5,16 +5,17 @@ import {
     now,
     isFunction,
     extend,
-    getImageBitmap
+    getImageBitMap
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
-import { default as TileLayer, imageFetchWorkerKey } from '../../../layer/tile/TileLayer';
+import { default as TileLayer } from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
 import Actor from '../../../core/worker/Actor';
+import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -379,7 +380,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     this.onTileError(null, tile, err);
                 } else {
                     extend(tileImage, data);
-                    getImageBitmap(data, bitmap => {
+                    getImageBitMap(data, bitmap => {
                         data.bitmap = bitmap;
                         this.onTileLoad(data, tile);
                     });

@@ -1,11 +1,11 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitmap } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
-import { imageFetchWorkerKey } from '../../layer/tile/TileLayer';
+import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -771,7 +771,7 @@ class CanvasRenderer extends Class {
                         resolve(url);
                         return;
                     }
-                    getImageBitmap(data, bitmap => {
+                    getImageBitMap(data, bitmap => {
                         data.bitmap = bitmap;
                         me._cacheResource(url, data);
                         resolve(url);

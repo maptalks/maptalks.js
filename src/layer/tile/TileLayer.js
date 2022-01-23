@@ -10,6 +10,7 @@ import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
+import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -1279,8 +1280,6 @@ function (exports) {
     }
 }
 `;
-
-export const imageFetchWorkerKey = 'core-fetch-image';
 
 function registerWorkerSource() {
     if (!Browser.decodeImageInWorker) {
