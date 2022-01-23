@@ -29,11 +29,11 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    fetchImage(url, cb) {
+    fetchImage(url, workerId, cb) {
         const data = {
             url
         };
-        this.send(data, EMPTY_ARRAY, cb);
+        this.send(data, EMPTY_ARRAY, cb, workerId);
     }
 }
 
@@ -59,7 +59,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._childTiles = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
         if (Browser.decodeImageInWorker) {
-            this.workerConn = new TileWorkerConnection();
+            this._tileImageWorkerConn = new TileWorkerConnection();
         }
     }
 
@@ -373,9 +373,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     loadTile(tile) {
         let tileImage;
-        if (this.workerConn) {
+        if (this._tileImageWorkerConn) {
             tileImage = {};
-            this.workerConn.fetchImage(tile.url, (err, data) => {
+            const { x, y } = tile;
+            const workerId = Math.abs(x + y) % this._tileImageWorkerConn.workers.length;
+            this._tileImageWorkerConn.fetchImage(tile.url, workerId, (err, data) => {
                 if (err) {
                     this.onTileError(null, tile, err);
                 } else {
