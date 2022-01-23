@@ -940,10 +940,10 @@ export class ResourceCache {
 
     remove() {
         for (const p in this.resources) {
-            const image = this.resources[p];
-            if (image && image.close) {
+            const res = this.resources[p];
+            if (res && res.image && res.image.close) {
                 // close bitmap
-                image.close();
+                res.image.close();
             }
         }
         this.resources = {};
