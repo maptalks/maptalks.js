@@ -295,9 +295,6 @@ const Canvas = {
     image(ctx, img, x, y, width, height) {
         ctx.canvas._drawn = true;
         try {
-            if (img.bitmap) {
-                img = img.bitmap;
-            }
             if (isNumber(width) && isNumber(height)) {
                 ctx.drawImage(img, x, y, width, height);
             } else {

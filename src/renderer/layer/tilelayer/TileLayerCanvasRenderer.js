@@ -381,8 +381,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 } else {
                     extend(tileImage, data);
                     getImageBitMap(data, bitmap => {
-                        data.bitmap = bitmap;
-                        this.onTileLoad(data, tile);
+                        this.onTileLoad(bitmap, tile);
                     });
                 }
             });
@@ -712,8 +711,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tile || !tile.image) {
             return;
         }
-        if (tile.image.bitmap) {
-            tile.image.bitmap.close();
+        if (tile.image.close) {
+            tile.image.close();
         }
         tile.image.onload = null;
         tile.image.onerror = null;

@@ -212,6 +212,9 @@ class CanvasRenderer extends Class {
         delete this.context;
         delete this.canvasExtent2D;
         delete this._extent2D;
+        if (this.resources) {
+            this.resources.remove();
+        }
         delete this.resources;
         delete this.layer;
     }
@@ -762,7 +765,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (Browser.decodeImageInWorker) {
+            if (!isSVG(url[0]) && Browser.decodeImageInWorker) {
                 this._resWorkerConn.fetchImage(url[0], (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
@@ -772,8 +775,7 @@ class CanvasRenderer extends Class {
                         return;
                     }
                     getImageBitMap(data, bitmap => {
-                        data.bitmap = bitmap;
-                        me._cacheResource(url, data);
+                        me._cacheResource(url, bitmap);
                         resolve(url);
                     });
                 });
@@ -851,7 +853,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && Browser.imageBitMap) {
+        if (img && !img.close && Browser.imageBitMap) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
@@ -933,5 +935,16 @@ export class ResourceCache {
             return url;
         }
         return url[0];
+    }
+
+    remove() {
+        for (const p in this.resources) {
+            const image = this.resources[p];
+            if (image && image.close) {
+                // close bitmap
+                image.close();
+            }
+        }
+        this.resources = {};
     }
 }

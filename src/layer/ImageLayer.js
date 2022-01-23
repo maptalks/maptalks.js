@@ -136,7 +136,10 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         return urls;
     }
 
-    retireImage(/* image */) {
+    retireImage(image) {
+        if (image.close) {
+            image.close();
+        }
 
     }
 
@@ -192,9 +195,6 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             x = y = 0;
         }
         const scale = map.getGLScale();
-        if (image.bitmap) {
-            image = image.bitmap;
-        }
         ctx.drawImage(image, x, y, extent.getWidth() / scale, extent.getHeight() / scale);
         if (bearing) {
             ctx.restore();
@@ -241,6 +241,9 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     retireImage(image) {
+        if (image.close) {
+            image.close();
+        }
         this.disposeImage(image);
     }
 
