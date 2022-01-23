@@ -3,19 +3,38 @@ import {
     loadImage,
     emptyImageUrl,
     now,
-    isFunction
+    isFunction,
+    extend,
+    getImageBitmap
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
-import TileLayer from '../../../layer/tile/TileLayer';
+import Browser from '../../../core/Browser';
+import { default as TileLayer, imageFetchWorkerKey } from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
+import Actor from '../../../core/worker/Actor';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
+
+
+const EMPTY_ARRAY = [];
+class TileWorkerConnection extends Actor {
+    constructor() {
+        super(imageFetchWorkerKey);
+    }
+
+    fetchImage(url, cb) {
+        const data = {
+            url
+        };
+        this.send(data, EMPTY_ARRAY, cb);
+    }
+}
 
 /**
  * @classdesc
@@ -38,6 +57,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._parentTiles = [];
         this._childTiles = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        if (Browser.decodeImageInWorker) {
+            this.workerConn = new TileWorkerConnection();
+        }
     }
 
     getCurrentTileZoom() {
@@ -349,16 +371,32 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     loadTile(tile) {
-        const tileSize = this.layer.getTileSize(tile.layer);
-        const tileImage = new Image();
+        let tileImage;
+        if (this.workerConn) {
+            tileImage = {};
+            this.workerConn.fetchImage(tile.url, (err, data) => {
+                if (err) {
+                    this.onTileError(null, tile, err);
+                } else {
+                    extend(tileImage, data);
+                    getImageBitmap(data, bitmap => {
+                        data.bitmap = bitmap;
+                        this.onTileLoad(data, tile);
+                    });
+                }
+            });
+        } else {
+            const tileSize = this.layer.getTileSize(tile.layer);
+            tileImage = new Image();
 
-        tileImage.width = tileSize['width'];
-        tileImage.height = tileSize['height'];
+            tileImage.width = tileSize['width'];
+            tileImage.height = tileSize['height'];
 
-        tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
-        tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
+            tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
+            tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
 
-        this.loadTileImage(tileImage, tile['url']);
+            this.loadTileImage(tileImage, tile['url']);
+        }
         return tileImage;
     }
 
@@ -672,6 +710,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     deleteTile(tile) {
         if (!tile || !tile.image) {
             return;
+        }
+        if (tile.image.bitmap) {
+            tile.image.bitmap.close();
         }
         tile.image.onload = null;
         tile.image.onerror = null;
