@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -39,6 +39,9 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
+        if (Browser.decodeImageInWorker) {
+            this._resWorkerConn = new ResourceWorkerConnection();
+        }
         this.setToRedraw();
     }
 
@@ -56,9 +59,6 @@ class CanvasRenderer extends Class {
             /* eslint-disable no-use-before-define */
             this.resources = new ResourceCache();
             /* eslint-enable no-use-before-define */
-            if (Browser.decodeImageInWorker) {
-                this._resWorkerConn = new ResourceWorkerConnection();
-            }
         }
         this.checkAndDraw(this._tryToDraw, framestamp);
     }
@@ -766,7 +766,8 @@ class CanvasRenderer extends Class {
                 return;
             }
             if (!isSVG(url[0]) && Browser.decodeImageInWorker) {
-                this._resWorkerConn.fetchImage(url[0], (err, data) => {
+                const uri = getAbsoluteURL(url[0]);
+                me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
                             console.warn(err);

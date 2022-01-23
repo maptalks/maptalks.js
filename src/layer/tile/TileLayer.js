@@ -1276,6 +1276,8 @@ function (exports) {
                 const imgData = offCtx.getImageData(0, 0, width, height);
                 // debugger
                 cb(null, { width, height, data : new Uint8Array(imgData.data) });
+            }).catch(err => {
+                cb(err);
             });
     }
 }
