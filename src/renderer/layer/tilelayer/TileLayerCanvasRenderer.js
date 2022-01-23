@@ -3,19 +3,40 @@ import {
     loadImage,
     emptyImageUrl,
     now,
-    isFunction
+    isFunction,
+    getImageBitMap
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
-import TileLayer from '../../../layer/tile/TileLayer';
+import Browser from '../../../core/Browser';
+import { default as TileLayer } from '../../../layer/tile/TileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
 import Canvas from '../../../core/Canvas';
+import Actor from '../../../core/worker/Actor';
+import { imageFetchWorkerKey } from '../../../core/worker/CoreWorkers';
 
 const TILE_POINT = new Point(0, 0);
 const TEMP_POINT = new Point(0, 0);
 const TEMP_POINT1 = new Point(0, 0);
 const TEMP_POINT2 = new Point(0, 0);
+
+
+const EMPTY_ARRAY = [];
+class TileWorkerConnection extends Actor {
+    constructor() {
+        super(imageFetchWorkerKey);
+    }
+
+    fetchImage(url, workerId, cb) {
+        const data = {
+            url
+        };
+        this.send(data, EMPTY_ARRAY, cb, workerId);
+    }
+}
+
+const BLANK_IMAGE = new Image();
 
 /**
  * @classdesc
@@ -38,6 +59,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._parentTiles = [];
         this._childTiles = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        if (Browser.decodeImageInWorker) {
+            this._tileImageWorkerConn = new TileWorkerConnection();
+        }
     }
 
     getCurrentTileZoom() {
@@ -349,17 +373,41 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     loadTile(tile) {
-        const tileSize = this.layer.getTileSize(tile.layer);
-        const tileImage = new Image();
+        let tileImage;
+        if (this._tileImageWorkerConn) {
+            tileImage = {};
+            this._fetchImage(tileImage, tile);
+        } else {
+            const tileSize = this.layer.getTileSize(tile.layer);
+            tileImage = new Image();
 
-        tileImage.width = tileSize['width'];
-        tileImage.height = tileSize['height'];
+            tileImage.width = tileSize['width'];
+            tileImage.height = tileSize['height'];
 
-        tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
-        tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
+            tileImage.onload = this.onTileLoad.bind(this, tileImage, tile);
+            tileImage.onerror = this.onTileError.bind(this, tileImage, tile);
 
-        this.loadTileImage(tileImage, tile['url']);
+            this.loadTileImage(tileImage, tile['url']);
+        }
         return tileImage;
+    }
+
+    _fetchImage(image, tile) {
+        if (image instanceof Image) {
+            image.src = tile.url;
+        } else {
+            const { x, y } = tile;
+            const workerId = Math.abs(x + y) % this._tileImageWorkerConn.workers.length;
+            this._tileImageWorkerConn.fetchImage(tile.url, workerId, (err, data) => {
+                if (err) {
+                    this.onTileError(image, tile, err);
+                } else {
+                    getImageBitMap(data, bitmap => {
+                        this.onTileLoad(bitmap, tile);
+                    });
+                }
+            });
+        }
     }
 
     loadTileImage(tileImage, url) {
@@ -414,17 +462,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const tileRetryCount = this.layer.options['tileRetryCount'];
         if (tileRetryCount > tileImage.onerrorTick) {
             tileImage.onerrorTick++;
-            tileImage.src = tileInfo.url;
+            this._fetchImage(tileImage, tileInfo);
             return;
         }
-        if (tileImage instanceof Image) {
-            const errorUrl = this.layer.options['errorUrl'];
-            if (errorUrl && tileImage.src !== errorUrl) {
+        const errorUrl = this.layer.options['errorUrl'];
+        if (errorUrl) {
+            if ((tileImage instanceof Image) && tileImage.src !== errorUrl) {
                 tileImage.src = errorUrl;
                 return;
+            } else {
+                tileImage = new Image();
+                tileImage.src = errorUrl;
             }
-            this.abortTileLoading(tileImage, tileInfo);
         }
+        tileImage = tileImage instanceof Image ? tileImage : BLANK_IMAGE;
+        this.abortTileLoading(tileImage, tileInfo);
+
         tileImage.loadTime = 0;
         delete this.tilesLoading[tileInfo['id']];
         this._addTileToCache(tileInfo, tileImage);
@@ -672,6 +725,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     deleteTile(tile) {
         if (!tile || !tile.image) {
             return;
+        }
+        if (tile.image.close) {
+            tile.image.close();
         }
         tile.image.onload = null;
         tile.image.onerror = null;

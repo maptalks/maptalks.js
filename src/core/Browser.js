@@ -91,7 +91,8 @@ if (!IS_NODE) {
         webgl: webgl,
         imageBitMap,
         resizeObserver,
-        btoa
+        btoa,
+        decodeImageInWorker: imageBitMap && !gecko
     };
 }
 

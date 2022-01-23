@@ -1,9 +1,25 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
+import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
+import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
+
+const EMPTY_ARRAY = [];
+class ResourceWorkerConnection extends Actor {
+    constructor() {
+        super(imageFetchWorkerKey);
+    }
+
+    fetchImage(url, cb) {
+        const data = {
+            url
+        };
+        this.send(data, EMPTY_ARRAY, cb);
+    }
+}
 
 /**
  * @classdesc
@@ -23,6 +39,9 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
+        if (Browser.decodeImageInWorker) {
+            this._resWorkerConn = new ResourceWorkerConnection();
+        }
         this.setToRedraw();
     }
 
@@ -193,6 +212,9 @@ class CanvasRenderer extends Class {
         delete this.context;
         delete this.canvasExtent2D;
         delete this._extent2D;
+        if (this.resources) {
+            this.resources.remove();
+        }
         delete this.resources;
         delete this.layer;
     }
@@ -743,37 +765,55 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            const img = new Image();
-            if (!isNil(crossOrigin)) {
-                img['crossOrigin'] = crossOrigin;
-            } else if (renderer !== 'canvas') {
-                img['crossOrigin'] = '';
-            }
-            if (isSVG(url[0]) && !IS_NODE) {
-                //amplify the svg image to reduce loading.
-                if (url[1]) { url[1] *= 2; }
-                if (url[2]) { url[2] *= 2; }
-            }
-            img.onload = function () {
-                me._cacheResource(url, img);
-                resolve(url);
-            };
-            img.onabort = function (err) {
-                if (console) { console.warn('image loading aborted: ' + url[0]); }
-                if (err) {
-                    if (console) { console.warn(err); }
+            if (!isSVG(url[0]) && Browser.decodeImageInWorker) {
+                const uri = getAbsoluteURL(url[0]);
+                me._resWorkerConn.fetchImage(uri, (err, data) => {
+                    if (err) {
+                        if (err && typeof console !== 'undefined') {
+                            console.warn(err);
+                        }
+                        resolve(url);
+                        return;
+                    }
+                    getImageBitMap(data, bitmap => {
+                        me._cacheResource(url, bitmap);
+                        resolve(url);
+                    });
+                });
+            } else {
+                const img = new Image();
+                if (!isNil(crossOrigin)) {
+                    img['crossOrigin'] = crossOrigin;
+                } else if (renderer !== 'canvas') {
+                    img['crossOrigin'] = '';
                 }
-                resolve(url);
-            };
-            img.onerror = function (err) {
-                // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && typeof console !== 'undefined') {
-                    console.warn(err);
+                if (isSVG(url[0]) && !IS_NODE) {
+                    //amplify the svg image to reduce loading.
+                    if (url[1]) { url[1] *= 2; }
+                    if (url[2]) { url[2] *= 2; }
                 }
-                resources.markErrorResource(url);
-                resolve(url);
-            };
-            loadImage(img, url);
+                img.onload = function () {
+                    me._cacheResource(url, img);
+                    resolve(url);
+                };
+                img.onabort = function (err) {
+                    if (console) { console.warn('image loading aborted: ' + url[0]); }
+                    if (err) {
+                        if (console) { console.warn(err); }
+                    }
+                    resolve(url);
+                };
+                img.onerror = function (err) {
+                    // if (console) { console.warn('image loading failed: ' + url[0]); }
+                    if (err && typeof console !== 'undefined') {
+                        console.warn(err);
+                    }
+                    resources.markErrorResource(url);
+                    resolve(url);
+                };
+                loadImage(img, url);
+            }
+
         };
 
     }
@@ -814,7 +854,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && Browser.imageBitMap) {
+        if (img && !img.close && Browser.imageBitMap) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
@@ -896,5 +936,16 @@ export class ResourceCache {
             return url;
         }
         return url[0];
+    }
+
+    remove() {
+        for (const p in this.resources) {
+            const image = this.resources[p];
+            if (image && image.close) {
+                // close bitmap
+                image.close();
+            }
+        }
+        this.resources = {};
     }
 }
