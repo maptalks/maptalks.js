@@ -5,7 +5,7 @@ import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
-import { imageFetchWorkerKey } from '../../../layer/tile/TileLayer';
+import { imageFetchWorkerKey } from '../../layer/tile/TileLayer';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
