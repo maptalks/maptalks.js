@@ -52,6 +52,13 @@ if (!IS_NODE) {
 
     const devicePixelRatio = (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
 
+    let decodeImageInWorker = false;
+    try {
+        const offCanvas = new OffscreenCanvas(2, 2);
+        offCanvas.getContext('2d');
+        decodeImageInWorker = true;
+    } catch {}
+
     Browser = {
         ie: ie,
         ielt9: ie && !document.addEventListener,
@@ -92,7 +99,7 @@ if (!IS_NODE) {
         imageBitMap,
         resizeObserver,
         btoa,
-        decodeImageInWorker: imageBitMap && !gecko
+        decodeImageInWorker
     };
 }
 
