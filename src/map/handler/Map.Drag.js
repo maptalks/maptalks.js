@@ -2,7 +2,6 @@ import { now } from '../../core/util';
 import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
-import Point from '../../geo/Point';
 import Map from '../Map';
 
 class MapDragHandler extends Handler {
