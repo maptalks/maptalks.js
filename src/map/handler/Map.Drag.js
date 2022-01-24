@@ -136,7 +136,7 @@ class MapDragHandler extends Handler {
 
         this._clear();
 
-        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dx) + Math.abs(dy) > 5) {
+        if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
             t = 5 * t;
             const dscale = isTouch ? 5 : 2.8;
             const targetPrjCoord = currentCenter.add(dxy._multi(dscale));

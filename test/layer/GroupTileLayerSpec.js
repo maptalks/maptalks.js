@@ -226,4 +226,24 @@ describe('GroupTileLayer', function () {
             done();
         };
     });
+
+    it('should can use GroupTileLayer as child layer', function (done) {
+        var group =  new maptalks.GroupTileLayer('base', [
+            new maptalks.TileLayer('tile2', {
+                urlTemplate : TILE_IMAGE
+            }),
+
+            new maptalks.GroupTileLayer('test',[
+                new maptalks.TileLayer('boudaries', {
+                    urlTemplate : TILE_IMAGE
+                })
+            ])
+        ], {
+            renderer : 'canvas'
+        });
+        group.once('layerload', function () {
+            done();
+        });
+        map.addLayer(group);
+    });
 });
