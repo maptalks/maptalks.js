@@ -693,7 +693,7 @@ export default class Geometry {
         const l = indices.length;
         for (let i = 0; i < keys.length; i++) {
             const name = keys[i];
-            const attr = data[name].length ? data[name] : data[name].array;//存在两种结构 array或者 { array }
+            const attr = isArray(data[name]) ? data[name] : data[name].array;//存在两种结构 array或者 { array }
             const size = attr.length / vertexCount;
             if (!isArray(attr)) {
                 throw new Error(name + ' must be array to build unique vertex.');
