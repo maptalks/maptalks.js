@@ -57,7 +57,9 @@ if (!IS_NODE) {
         const offCanvas = new OffscreenCanvas(2, 2);
         offCanvas.getContext('2d');
         decodeImageInWorker = true;
-    } catch {}
+    } catch (err) {
+        decodeImageInWorker = false;
+    }
 
     Browser = {
         ie: ie,
