@@ -201,7 +201,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileCachedOrLoading(tileId) {
-        return this.tilesLoading[tileId] || this.tilesInView[tileId] || this.tileCache.get(tileId);
+        return this.tileCache.get(tileId) || this.tilesInView[tileId] || this.tilesLoading[tileId];
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders) {
