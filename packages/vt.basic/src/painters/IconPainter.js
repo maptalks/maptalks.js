@@ -168,7 +168,7 @@ class IconPainter extends CollisionPainter {
         const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
         const meshes = [];
         if (this._isMarkerGeo(geometry)) {
-            const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, fnTypeConfig.icon, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
+            const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.icon, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
             if (mesh) {
                 delete mesh.geometry.properties.glyphAtlas;
                 meshes.push(mesh);

@@ -1,7 +1,7 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5] }, properties: { type: 1 } }
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
     ]
 };
 
@@ -22,7 +22,7 @@ const style = [
             markerWidth: {
                 stops: [
                     [5, 4],
-                    [15, 15]
+                    [15, 30]
                 ]
             },
             markerHeight: {
@@ -41,6 +41,6 @@ module.exports = {
     data,
     view: {
         center: [0, 0],
-        zoom: 5
+        zoom: 15
     }
 };

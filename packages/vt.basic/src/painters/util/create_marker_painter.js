@@ -11,7 +11,7 @@ export const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
 const I8 = new Int8Array(1);
 
-export function createMarkerMesh(regl, geometry, transform, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
+export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
         return null;
     }
