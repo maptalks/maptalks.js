@@ -335,6 +335,7 @@ class GeometryDragHandler extends Handler {
             delete this._shadowConnectors;
         }
         if (this._dragStageLayer) {
+            this._dragStageLayer._getRenderer().resources = new ResourceCache();
             this._dragStageLayer.remove();
         }
     }

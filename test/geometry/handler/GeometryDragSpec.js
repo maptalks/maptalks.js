@@ -234,4 +234,54 @@ describe('Geometry.Drag', function () {
 
     });
 
+    it('dragging a vector marker, #1570', function (done) {
+        var marker = new maptalks.Marker(center, {
+            draggable : true,
+            dragShadow: true,
+            symbol : {
+                'markerType': 'ellipse',
+                  'markerFill': 'rgb(135,196,240)',
+                  'markerFillOpacity': 1,
+                  'markerLineColor': '#34495e',
+                  'markerLineWidth': 3,
+                  'markerLineOpacity': 1,
+                  'markerLineDasharray': [],
+                  'markerWidth': 40,
+                  'markerHeight': 40,
+                  'markerDx': 0,
+                  'markerDy': 0,
+                  'markerOpacity': 1
+                // markerType : 'ellipse',
+                //     markerWidth : 20,
+                //     markerHeight : 20
+            }
+        });
+        var layer = map.getLayer('id').clear();
+        layer.once('layerload', function () {
+            var domPosition = GET_PAGE_POSITION(container);
+            var point = map.coordinateToContainerPoint(marker.getFirstCoordinate()).add(domPosition);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+
+            for (var i = 0; i < 10; i++) {
+                happen.mousemove(document, {
+                    'clientX':point.x + i,
+                    'clientY':point.y + i
+                });
+            }
+
+            happen.mouseup(document);
+            setTimeout(function () {
+                expect(layer).to.be.painted(0, 1);
+                done();
+            }, 20);
+
+        });
+        marker.addTo(layer);
+
+    });
+
+
 });

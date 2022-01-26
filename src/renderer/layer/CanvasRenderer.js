@@ -859,6 +859,10 @@ export class ResourceCache {
                 return;
             }
             createImageBitmap(img).then(imageBitmap => {
+                if (!this.resources[url[0]]) {
+                    //removed
+                    return;
+                }
                 this.resources[url[0]].image = imageBitmap;
             });
         }
