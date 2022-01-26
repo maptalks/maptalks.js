@@ -60,6 +60,27 @@ describe('Geometry.Marker', function () {
         expect(size.height).to.be.above(0);
     });
 
+    it('updateSize', function () {
+        var marker = new maptalks.Marker(map.getCenter(), {
+            symbol: [{
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 30,
+            }]
+        });
+        layer.addGeometry(marker);
+        var size = marker.getSize();
+
+        marker.updateSymbol([{
+            markerWidth: 10,
+            markerHeight: 15
+        }]);
+
+        size = marker.getSize();
+        expect(size.width).to.be.eql(12);
+        expect(size.height).to.be.eql(17);
+    });
+
     it('show/hide/isVisible', function () {
         var marker = new maptalks.Marker({ x: 0, y: 0 });
         layer.addGeometry(marker);
