@@ -127,6 +127,8 @@ export default class BaseLayerWorker {
                 extend(data.data, props);
             }
             cb(null, data.data, data.buffers);
+        }).catch(err => {
+            cb(err);
         });
     }
 

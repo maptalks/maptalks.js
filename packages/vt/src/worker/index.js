@@ -15,6 +15,9 @@ export const onmessage = function (message, postResponse) {
         }
     } else {
         this.dispatcher[data.command]({ actorId: message.actorId, mapId: data.mapId, layerId: data.layerId, params: data.params }, (err, data, buffers) => {
+            if (err) {
+                console.error(err);
+            }
             postResponse(err, data, buffers);
         });
     }
