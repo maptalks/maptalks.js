@@ -84,14 +84,51 @@ describe('#MapPan', function () {
         }, 50);
     });
 
-    it('change zoom or center during panning', function (done) {
+    it('change center during panning', function (done) {
         var coord = center.substract(1, 1),
             newCenter = center.add(1, 1);
         map.once('moveend', function () {
-            expect(map.getCenter()).to.be.closeTo(newCenter);
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
             done();
         });
         map.panTo(coord, { 'animation' : true });
-        map.setCenterAndZoom(newCenter, map.getZoom() + 1);
+        map.setCenter(newCenter);
+    });
+
+    it('change zoom during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setZoom(map.getZoom() + 1);
+    });
+
+    it('change bearing during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setBearing(30);
+    });
+
+    it('change pitch during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setPitch(30);
     });
 });

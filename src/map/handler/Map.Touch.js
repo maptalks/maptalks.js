@@ -84,10 +84,10 @@ class MapTouchZoomHandler extends Handler {
             map.onZooming(zoom, this._Origin);
         }
         if (this.mode === 'rotate' || this.mode === 'rotate_zoom') {
-            map.setBearing(this._startBearing + bearing);
+            map._setBearing(this._startBearing + bearing);
             map.onDragRotating(param);
         } else if (this.mode === 'pitch') {
-            map.setPitch(map.getPitch() + pitch);
+            map._setPitch(map.getPitch() + pitch);
             map.onDragRotating(param);
         }
         /**

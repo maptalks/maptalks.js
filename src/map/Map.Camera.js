@@ -76,6 +76,13 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setBearing(bearing) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
+        return this._setBearing(bearing);
+    },
+
+    _setBearing(bearing) {
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
         }
@@ -136,6 +143,13 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setPitch(pitch) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
+        return this._setPitch(pitch);
+    },
+
+    _setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
         }

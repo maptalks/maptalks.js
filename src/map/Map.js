@@ -1495,6 +1495,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#movestart
      */
     onMoveStart(param) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
         const prjCenter = this._getPrjCenter();
         if (!this._originCenter || this._verifyExtent(prjCenter)) {
             this._originCenter = prjCenter;

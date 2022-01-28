@@ -193,10 +193,10 @@ class MapDragHandler extends Handler {
             this._db = this._db || 0;
             this._db += db;
 
-            map.setBearing(bearing);
+            map._setBearing(bearing);
         }
         if (this._rotateMode.indexOf('pitch') >= 0 && map.options['dragPitch']) {
-            map.setPitch(map.getPitch() + (this.preY - my) * 0.4);
+            map._setPitch(map.getPitch() + (this.preY - my) * 0.4);
         }
         this.preX = mx;
         this.preY = my;

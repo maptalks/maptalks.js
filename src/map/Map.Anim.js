@@ -124,10 +124,10 @@ Map.include(/** @lends Map.prototype */{
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
                 }
                 if (!isNil(frame.styles['pitch'])) {
-                    this.setPitch(frame.styles['pitch']);
+                    this._setPitch(frame.styles['pitch']);
                 }
                 if (!isNil(frame.styles['bearing'])) {
-                    this.setBearing(frame.styles['bearing']);
+                    this._setBearing(frame.styles['bearing']);
                 }
                 // preView = this.getView();
                 /**
@@ -147,10 +147,10 @@ Map.include(/** @lends Map.prototype */{
                         this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (!isNil(props['pitch'])) {
-                        this.setPitch(props['pitch'][1]);
+                        this._setPitch(props['pitch'][1]);
                     }
                     if (!isNil(props['bearing'])) {
-                        this.setBearing(props['bearing'][1]);
+                        this._setBearing(props['bearing'][1]);
                     }
                 }
                 this._endAnim(player, props, zoomOrigin, options);
@@ -357,10 +357,10 @@ Map.include(/** @lends Map.prototype */{
                     this.onZooming(props['zoom'][1], zoomOrigin);
                 }
                 if (props['pitch']) {
-                    this.setPitch(props['pitch'][1]);
+                    this._setPitch(props['pitch'][1]);
                 }
                 if (props['bearing']) {
-                    this.setBearing(props['bearing'][1]);
+                    this._setBearing(props['bearing'][1]);
                 }
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
@@ -369,10 +369,10 @@ Map.include(/** @lends Map.prototype */{
                         this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (props['pitch']) {
-                        this.setPitch(props['pitch'][1]);
+                        this._setPitch(props['pitch'][1]);
                     }
                     if (props['bearing']) {
-                        this.setBearing(props['bearing'][1]);
+                        this._setBearing(props['bearing'][1]);
                     }
                 }
                 this._endAnim(player, props, zoomOrigin, options);
