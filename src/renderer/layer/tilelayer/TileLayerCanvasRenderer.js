@@ -28,10 +28,10 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    fetchImage(url, workerId, cb, extraParams) {
+    fetchImage(url, workerId, cb, fetchOptions) {
         const data = {
             url,
-            extraParams
+            fetchOptions
         };
         this.send(data, EMPTY_ARRAY, cb, workerId);
     }
@@ -407,7 +407,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
-            }, this.layer.options['extraParams']);
+            }, this.layer.options['fetchOptions']);
         }
     }
 

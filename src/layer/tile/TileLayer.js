@@ -73,7 +73,7 @@ class TileHashset {
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
  * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
- * @property {Object}              [options.extraParams=null]       - extra params,such as   extraParams: { 'headers': { 'Accept': '' } }
+ * @property {Object}              [options.fetchOptions=null]       - fetch params,such as   fetchOptions: { 'headers': { 'Accept': '' } }
  * @memberOf TileLayer
  * @instance
  */
@@ -1250,23 +1250,23 @@ const workerSource = `
 function (exports) {
     exports.onmessage = function (msg, postResponse) {
         var url = msg.data.url;
-        var extraParams = msg.data.extraParams;
+        var fetchOptions = msg.data.fetchOptions;
         requestImageOffscreen(url, function (err, data) {
             var buffers = [];
             if (data && data.data && data.data.buffer) {
                 buffers.push(data.data.buffer);
             }
             postResponse(err, data, buffers);
-        }, extraParams);
+        }, fetchOptions);
     }
 
     var offCanvas, offCtx;
-    function requestImageOffscreen(url, cb, extraParams) {
+    function requestImageOffscreen(url, cb, fetchOptions) {
         if (!offCanvas) {
             offCanvas = new OffscreenCanvas(2, 2);
             offCtx = offCanvas.getContext('2d');
         }
-        fetch(url, extraParams ? extraParams: {})
+        fetch(url, fetchOptions ? fetchOptions: {})
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
