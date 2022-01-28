@@ -407,7 +407,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
-            }, this.layer.options['fetchOptions']);
+            }, this.layer.options['fetchOptions'] || { headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }});
         }
     }
 
