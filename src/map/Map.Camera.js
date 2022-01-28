@@ -79,7 +79,7 @@ Map.include(/** @lends Map.prototype */{
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
-        return this._setPitch(bearing);
+        return this._setBearing(bearing);
     },
 
     _setBearing(bearing) {
