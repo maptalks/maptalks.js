@@ -268,7 +268,7 @@ describe('update style specs', () => {
         assertChangeStyle(done, [0, 0, 255, 255], layer => {
             layer.updateSymbol(1, { visible: true });
             assert(layer.options.style[1].symbol.visible === true);
-        }, true, style);
+        }, true, style, 1);
     });
 
     it('should can set visible of multiple symbol', done => {
@@ -1576,7 +1576,7 @@ describe('update style specs', () => {
     });
 
 
-    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style) {
+    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount) {
         style = style || [
             {
                 filter: {
@@ -1592,8 +1592,10 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: line,
-            style
+            style,
+            meshLimitPerFrame: 1000
         });
+        renderCount = renderCount || 0;
         let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();
@@ -1607,12 +1609,12 @@ describe('update style specs', () => {
                 return;
             }
             count++;
-            if (count === 1) {
+            if (count === renderCount + 1) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 changeFun(layer);
-            } else if (count === 2) {
+            } else if (count === renderCount + 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);

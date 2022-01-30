@@ -243,6 +243,7 @@ function createPainterPlugin(type, Painter) {
             mesh.properties.tileTransform = tileTransform;
             mesh.properties.createTime = timestamp;
             mesh.properties.meshKey = key;
+            mesh.needUpdateShadow = true;
             if (enableTileStencil) {
                 const defines = mesh.defines || {};
                 defines['ENABLE_TILE_STENCIL'] = 1;

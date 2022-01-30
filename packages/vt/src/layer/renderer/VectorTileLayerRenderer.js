@@ -463,7 +463,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
             const tileData = i === 0 ? data : copyTileData(data);
-            this.onTileLoad(tileData, tileInfo);
             this._tileQueue.push({ tileData, tileInfo });
         }
         this.layer.fire('datareceived');
@@ -967,6 +966,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const queue = this._tileQueue;
         while (queue.length && count < limit) {
             const { tileData, tileInfo } = queue.shift();
+            this.onTileLoad(tileData, tileInfo);
             this._createOneTile(tileInfo, tileData);
             count++;
         }
