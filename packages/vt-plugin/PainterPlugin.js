@@ -12,7 +12,6 @@ const NO_REDRAW = {
 
 const EMPTY_ARRAY = [];
 
-const THROTTLE_KEY = '__vt_plugin_mesh_throttle';
 let meshUID = 1;
 /**
  * Create a VT Plugin with a given painter
@@ -33,7 +32,6 @@ function createPainterPlugin(type, Painter) {
         },
 
         startFrame: function (context) {
-            const keyName = (THROTTLE_KEY + '').trim();
             const layer = context.layer,
                 regl = context.regl,
                 sceneConfig = context.sceneConfig,
@@ -55,9 +53,6 @@ function createPainterPlugin(type, Painter) {
             } else if (excludes !== this._excludes) {
                 this._excludesFunc = excludes ? createFilter(excludes) : null;
                 this._excludes = excludes;
-            }
-            if (layer.options['meshCreationLimitOnInteracting'] && layer.getMap()[keyName]) {
-                layer.getMap()[keyName].length = 0;
             }
             //先清除所有的tile mesh, 在后续的paintTile中重新加入，每次只绘制必要的tile
             painter.startFrame(context);
@@ -96,34 +91,23 @@ function createPainterPlugin(type, Painter) {
             return painter.getShadowMeshes() || EMPTY_ARRAY;
         },
 
-        paintTile: function (context) {
+        createTile: function (context) {
             const {
-                layer,
                 tileCache,
                 tileData,
-                tileInfo,
-                tileExtent,
-                tileTransform,
-                tileTranslationMatrix,
-                tileZoom,
-                sceneConfig,
-                bloom
             } = context;
+            let retire = false;
             const painter = this.painter;
             if (!painter) {
-                return NO_REDRAW;
+                return { retire };
             }
-            let retire = false;
             const key = this._getMeshKey(context);
             let geometries = tileCache.geometry;
             if (!geometries) {
-                if (this._throttle(layer, key)) {
-                    return NO_REDRAW;
-                }
                 const features = tileData.features;
                 const glData = tileData.data;
                 if (!glData || !glData.length) {
-                    return NO_REDRAW;
+                    return { retire };
                 }
                 const data = glData;
                 if (this.painter.colorSymbol) {
@@ -141,31 +125,75 @@ function createPainterPlugin(type, Painter) {
                     }
                 }
             }
-            if (!geometries) {
-                return NO_REDRAW;
-            }
 
             let meshes = this._getMesh(key);
             if (!meshes) {
-                if (this._throttle(layer, key)) {
-                    return NO_REDRAW;
+                const { meshes: newMeshes, retire: isRetire } = this._createMeshes(geometries, context);
+                if (!retire) {
+                    retire = isRetire;
                 }
-                const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
-                meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
-                if (meshes.length) {
-                    const enableTileStencil = layer.getRenderer().isEnableTileStencil();
-                    for (let i = 0; i < meshes.length; i++) {
-                        if (meshes[i]) {
-                            retire = true;
-                            this._fillMeshProps(meshes[i], tileTransform, context.timestamp, meshUID++, enableTileStencil);
-                        }
-                    }
-                    if (sceneConfig.animation) {
-                        meshes._animationTime = context.timestamp;
-                    }
-                    this._meshCache[key] = meshes;
+                meshes = newMeshes;
+            }
+            return { retire };
+        },
 
+        _createMeshes(geometries, context) {
+             const {
+                layer,
+                tileInfo,
+                tileExtent,
+                tileTransform,
+                tileTranslationMatrix,
+                tileZoom,
+                sceneConfig
+            } = context;
+            let retire = false;
+            const painter = this.painter;
+            const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
+            const meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+            if (meshes.length) {
+                const enableTileStencil = layer.getRenderer().isEnableTileStencil();
+                for (let i = 0; i < meshes.length; i++) {
+                    if (meshes[i]) {
+                        retire = true;
+                        this._fillMeshProps(meshes[i], tileTransform, context.timestamp, meshUID++, enableTileStencil);
+                    }
                 }
+                if (sceneConfig.animation) {
+                    meshes._animationTime = context.timestamp;
+                }
+                const key = this._getMeshKey(context);
+                this._meshCache[key] = meshes;
+            }
+            return { meshes, retire };
+        },
+
+        paintTile: function (context) {
+            const {
+                tileCache,
+                tileInfo,
+                tileZoom,
+                sceneConfig,
+                bloom
+            } = context;
+            const painter = this.painter;
+            if (!painter) {
+                return NO_REDRAW;
+            }
+
+            let geometries = tileCache.geometry;
+            if (!geometries) {
+                return NO_REDRAW;
+            }
+            let retire = false;
+            const key = this._getMeshKey(context);
+            let meshes = this._getMesh(key);
+            if (!meshes) {
+                const { meshes: newMeshes, retire: isRetire } = this._createMeshes(geometries, context);
+                if (!retire) {
+                    retire = isRetire;
+                }
+                meshes = newMeshes;
             }
             if (!meshes.length) {
                 return NO_REDRAW;
@@ -424,27 +452,6 @@ function createPainterPlugin(type, Painter) {
             } else {
                 geometry.setElements(glData.indices);
             }
-        },
-
-        _throttle(layer, key) {
-            const keyName = (THROTTLE_KEY + '').trim();
-            const limit = layer.options['tileMeshCreationLimitPerFrame'] || 0;
-            if (!limit) {
-                return false;
-            }
-            const map = layer.getMap();
-            if (!map.isInteracting()) {
-                return false;
-            }
-            let keys = map[keyName];
-            if (!keys) {
-                keys = map[keyName] = [];
-            }
-            if (keys.indexOf(key) >= 0) {
-                return false;
-            }
-            keys.push(key);
-            return keys.length > limit;
         },
 
         outline(fbo, featureIds) {

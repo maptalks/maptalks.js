@@ -121,7 +121,7 @@ describe('postprocess specs', () => {
             if (count === 1) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'beforeSetStyle', 'expected.png');
-                compareExpected(canvas, expectedPath);
+                compareExpected(canvas, { expectedPath });
                 layer.setStyle([
                     {
                         renderPlugin: {
@@ -141,7 +141,7 @@ describe('postprocess specs', () => {
             } else if (count >= 2) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'setStyle', 'expected.png');
-                compareExpected(canvas, expectedPath, done);
+                compareExpected(canvas, { expectedPath }, done);
             }
         });
         groupLayer.addTo(map);
@@ -182,7 +182,7 @@ describe('postprocess specs', () => {
             } else if (count === 3) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'ssr', 'expected.png');
-                compareExpected(canvas, expectedPath, done);
+                compareExpected(canvas, { expectedPath }, done);
             }
         });
         groupLayer.addTo(map);

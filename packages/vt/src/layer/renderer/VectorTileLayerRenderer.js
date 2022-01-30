@@ -24,6 +24,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._requestingMVT = {};
         this._vtResCache = {};
         this._vtResLoading = {};
+        this._tileQueue = [];
     }
 
     getTileLevelValue(tileInfo, currentTileZoom) {
@@ -119,6 +120,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     //always redraw when map is interacting
     needToRedraw() {
+        if (this._tileQueue.length) {
+            return true;
+        }
         const redraw = super.needToRedraw();
         if (!redraw) {
             const plugins = this._getFramePlugins();
@@ -264,6 +268,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
+        this._consumeTileQueue();
         super.draw(timestamp);
         if (this._currentTimestamp !== timestamp) {
             this._prepareRender(timestamp);
@@ -457,7 +462,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         data.layers = layers;
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
-            this.onTileLoad(i === 0 ? data : copyTileData(data), tileInfo);
+            const tileData = i === 0 ? data : copyTileData(data);
+            this.onTileLoad(tileData, tileInfo);
+            this._tileQueue.push({ tileData, tileInfo });
         }
         this.layer.fire('datareceived');
     }
@@ -846,6 +853,58 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     drawTile(tileInfo, tileData) {
+        if (!tileData.cache) return;
+        const tileCache = tileData.cache;
+        const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
+        const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
+
+        const pluginData = [];
+        pushIn(pluginData, tileData.data);
+        pushIn(pluginData, tileData.featureData);
+
+        const plugins = this._getFramePlugins(tileData);
+
+        plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
+            const visible = this._isVisible(idx);
+            if (!pluginData[idx] || !visible) {
+                return;
+            }
+            if (!tileCache[idx]) {
+                return;
+            }
+            const context = {
+                regl: this.regl,
+                layer: this.layer,
+                gl: this.gl,
+                sceneConfig: plugin.config.sceneConfig,
+                pluginIndex: idx,
+                tileCache: tileCache[idx],
+                tileData: pluginData[idx],
+                tileTransform,
+                tileTranslationMatrix,
+                tileExtent: tileData.extent,
+                timestamp: this._frameTime,
+                tileInfo,
+                tileZoom: this['_tileZoom'],
+                bloom: this._parentContext && this._parentContext.bloom
+            };
+            const status = plugin.paintTile(context);
+            if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
+                this._needRetire = true;
+            }
+            if (status.redraw) {
+                //let plugin to determine when to redraw
+                this.setToRedraw();
+            }
+        });
+        this.setCanvasUpdated();
+    }
+
+    _createOneTile(tileInfo, tileData) {
         if (!tileData.loadTime || tileData._empty) return;
         // const parentContext = this._parentContext;
         let tileCache = tileData.cache;
@@ -889,23 +948,28 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
                 tileInfo,
-                tileZoom: this['_tileZoom'],
-                bloom: this._parentContext && this._parentContext.bloom
+                tileZoom: this['_tileZoom']
             };
-            const status = plugin.paintTile(context);
+            const status = plugin.createTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
                 pluginData[idx] = 1;
             }
-            if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
+            if (!this._needRetire && status.retire && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;
             }
-            if (status.redraw) {
-                //let plugin to determine when to redraw
-                this.setToRedraw();
-            }
         });
-        this.setCanvasUpdated();
+    }
+
+    _consumeTileQueue() {
+        let count = 0;
+        const limit = this.layer.options['meshLimitPerFrame'];
+        const queue = this._tileQueue;
+        while (queue.length && count < limit) {
+            const { tileData, tileInfo } = queue.shift();
+            this._createOneTile(tileInfo, tileData);
+            count++;
+        }
     }
 
     pick(x, y, options) {

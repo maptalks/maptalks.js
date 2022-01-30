@@ -804,7 +804,7 @@ describe('update style specs', () => {
             } else if (count === 2) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'halo0', 'expected.png');
-                compareExpected(canvas, expectedPath, done);
+                compareExpected(canvas, { expectedPath, expectedDiffCount: 10 }, done);
             }
         });
         layer.addTo(map);

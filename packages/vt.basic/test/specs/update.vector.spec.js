@@ -1263,19 +1263,19 @@ describe('vector layers update style specs', () => {
             count++;
             if (count === 1) {
                 const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'no-collision.png');
-                compareExpected(canvas, expectedPath);
+                compareExpected(canvas, { expectedPath });
                 layer.options.sceneConfig.collision = true;
                 layer.getRenderer().setToRedraw();
             } else if (count === 2) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'collision.png');
-                compareExpected(canvas, expectedPath);
+                compareExpected(canvas, { expectedPath });
                 layer.options.sceneConfig.collision = false;
                 layer.getRenderer().setToRedraw();
             } else if (count === 3) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'collision', 'no-collision.png');
-                compareExpected(canvas, expectedPath, done);
+                compareExpected(canvas, { expectedPath }, done);
             }
         });
         layer.addTo(map);

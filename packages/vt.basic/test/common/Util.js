@@ -13,7 +13,7 @@ function readPixel(target, x, y) {
 }
 
 
-function compareExpected(canvas, expectedPath, done) {
+function compareExpected(canvas, { expectedPath, expectedDiffCount }, done) {
     match(canvas, expectedPath, (err, result) => {
         if (err) {
             if (done) {
@@ -21,6 +21,7 @@ function compareExpected(canvas, expectedPath, done) {
             }
             return;
         }
+        expectedDiffCount = expectedDiffCount || 0;
         if (result.diffCount > 0) {
             //保存差异图片
             const dir = expectedPath.substring(0, expectedPath.length - 'expected.png'.length);
@@ -29,7 +30,7 @@ function compareExpected(canvas, expectedPath, done) {
             const actualPath = dir + 'actual.png';
             writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
         }
-        assert(result.diffCount === 0);
+        assert(result.diffCount <= expectedDiffCount);
         if (done) {
             done();
         }
