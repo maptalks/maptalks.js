@@ -125,18 +125,18 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     }
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
-        const { attrName, evaluate, define } = config;
-        const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+        const attrName = config.attrName;
         if (!symbolChanged(geometry, symbolDef, config)) {
             const { aPickingId } = geometry.properties;
-            if (!aPickingId || !aIndex) {
+            if (!aPickingId || geometry._fnDataZoom === z) {
                 continue;
             }
-            if (geometry._fnDataZoom === z) {
+            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+            if (!aIndex) {
                 continue;
             }
             //fn-type的二级stops与zoom有关，更新数据
-            updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            updateFnTypeAttrib(attrName, geometry, aIndex, config.evaluate);
             continue;
         }
         // debugger
@@ -150,6 +150,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
         }
         // debugger
         const arr = prepareAttr(geometry, symbolDef, config);
+        const define = config.define;
         if (!arr) {
             //原有的arr和define要删除
             if (define) {
@@ -160,8 +161,9 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
                 }
             }
         } else {
+            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
             //增加了新的fn-type arr，相应的需要增加define
-            updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            updateFnTypeAttrib(attrName, geometry, aIndex, config.evaluate);
             if (define) {
                 const defines = mesh.defines;
                 defines[define] = 1;
