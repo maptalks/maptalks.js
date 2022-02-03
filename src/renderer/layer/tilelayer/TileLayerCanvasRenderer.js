@@ -28,9 +28,10 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
-    fetchImage(url, workerId, cb) {
+    fetchImage(url, workerId, cb, fetchOptions) {
         const data = {
-            url
+            url,
+            fetchOptions
         };
         this.send(data, EMPTY_ARRAY, cb, workerId);
     }
@@ -148,8 +149,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     //tell gl renderer not to bind gl buffer with image
                     tile.cache = false;
                     placeholders.push({
-                        image : placeholder,
-                        info : tile
+                        image: placeholder,
+                        info: tile
                     });
 
                     placeholderKeys[tileId] = 1;
@@ -250,14 +251,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     }
 
-    writeZoomStencil() {}
-    startZoomStencilTest() {}
-    endZoomStencilTest() {}
-    pauseZoomStencilTest() {}
-    resumeZoomStencilTest() {}
+    writeZoomStencil() { }
+    startZoomStencilTest() { }
+    endZoomStencilTest() { }
+    pauseZoomStencilTest() { }
+    resumeZoomStencilTest() { }
 
-    onDrawTileStart() {}
-    onDrawTileEnd() {}
+    onDrawTileStart() { }
+    onDrawTileEnd() { }
 
     _drawTile(info, image) {
         if (image) {
@@ -363,9 +364,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 if (tileImage.loadTime === undefined) {
                     // tile image's loading may not be async
                     this.tilesLoading[tile['id']] = {
-                        image : tileImage,
-                        current : true,
-                        info : tile
+                        image: tileImage,
+                        current: true,
+                        info: tile
                     };
                 }
             }
@@ -406,7 +407,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
-            });
+            }, this.layer.options['fetchOptions'] || { headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }});
         }
     }
 
@@ -434,7 +435,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // removed
             return;
         }
-        const e = { tile : tileInfo, tileImage: tileImage };
+        const e = { tile: tileInfo, tileImage: tileImage };
         /**
          * tileload event, fired when tile is loaded.
          *
@@ -491,7 +492,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
          * @property {TileLayer} target - tile layer
          * @property {Object} tileInfo - tile info
          */
-        this.layer.fire('tileerror', { tile : tileInfo });
+        this.layer.fire('tileerror', { tile: tileInfo });
     }
 
     drawTile(tileInfo, tileImage) {
@@ -661,9 +662,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _addTileToCache(tileInfo, tileImage) {
         this.tilesInView[tileInfo.id] = {
-            image : tileImage,
-            current : true,
-            info : tileInfo
+            image: tileImage,
+            current: true,
+            info: tileInfo
         };
     }
 
