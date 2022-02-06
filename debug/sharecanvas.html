@@ -31,7 +31,7 @@
             // devicePixelRatio: 2,
             centerCross: true,
             baseLayer: new maptalks.TileLayer('base', {
-                urlTemplate: 'https://smap.minedata.cn/service/map/satellite?z={z}&x={x}&y={y}',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                 subdomains: ['a', 'b', 'c', 'd'],
                 attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             })
@@ -53,7 +53,7 @@
         function addLayers() {
             for (let i = 0, len = 200; i < len; i++) {
                 const layer = new maptalks.VectorLayer('layer' + i, {
-                    shareCanvas: true
+                    shareCanvas: false
                 });
                 const points = randomLngLats().map(coordiante => {
                     return new maptalks.Marker(coordiante);
