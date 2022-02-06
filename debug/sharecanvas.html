@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map - Display a map</title>
+<style type="text/css">
+    html,
+    body {
+        margin: 0px;
+        height: 100%;
+        width: 100%
+    }
+
+    .container {
+        width: 100%;
+        height: 100%
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+<script type="text/javascript" src="../dist/maptalks.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/examples/js/libs/stats.min.js"></script>
+
+<body>
+
+    <div id="map" class="container"></div>
+
+    <script>
+
+        var map = new maptalks.Map('map', {
+            "center": [120.66798102314476, 30.98710361260956], "zoom": 9, "pitch": 0.20000000000003, "bearing": -3,
+            // devicePixelRatio: 2,
+            centerCross: true,
+            baseLayer: new maptalks.TileLayer('base', {
+                urlTemplate: 'https://smap.minedata.cn/service/map/satellite?z={z}&x={x}&y={y}',
+                subdomains: ['a', 'b', 'c', 'd'],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+            })
+        });
+        stats = new Stats();
+        stats.domElement.style.zIndex = 100;
+        document.getElementById('map').appendChild(stats.domElement);
+
+        function randomLngLats() {
+            const { x, y } = map.getCenter();
+            const lnglats = [];
+            while (lnglats.length < 10) {
+                const lng = x + Math.random() * 1, lat = y + Math.random();
+                lnglats.push([lng, lat]);
+            }
+            return lnglats;
+        }
+
+        function addLayers() {
+            for (let i = 0, len = 200; i < len; i++) {
+                const layer = new maptalks.VectorLayer('layer' + i, {
+                    shareCanvas: true
+                });
+                const points = randomLngLats().map(coordiante => {
+                    return new maptalks.Marker(coordiante);
+                });
+                layer.addTo(map);
+                layer.addGeometry(points);
+            }
+        }
+
+
+
+
+        function animation() {
+            // layer animation support Skipping frames
+            stats.update();
+            // map.setBearing(map.getBearing() + 0.1);
+            requestAnimationFrame(animation);
+        }
+        animation();
+        addLayers();
+    </script>
+</body>
+
+</html>

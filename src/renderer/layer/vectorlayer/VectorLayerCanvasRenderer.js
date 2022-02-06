@@ -5,6 +5,7 @@ import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
 import { getPointsResultPts } from '../../../core/util';
+import Canvas from '../../../core/Canvas';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
@@ -21,9 +22,39 @@ const PLACEMENT_CENTER = 'center';
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
+    createCanvas() {
+        if (!this.layer.options['shareCanvas']) {
+            return super.createCanvas();
+        } else {
+            if (this.canvas) {
+                return this;
+            }
+            const map = this.getMap();
+            const size = map.getSize();
+            const r = map.getDevicePixelRatio(),
+                w = Math.round(r * size.width),
+                h = Math.round(r * size.height);
+            if (this.layer._canvas) {
+                const canvas = this.layer._canvas;
+                canvas.width = w;
+                canvas.height = h;
+                if (canvas.style) {
+                    canvas.style.width = size.width + 'px';
+                    canvas.style.height = size.height + 'px';
+                }
+                this.canvas = this.layer._canvas;
+            } else {
+                this.canvas = Canvas.getLayerCanvas(map.id, w, h, map.CanvasClass);
+            }
+
+            this.onCanvasCreate();
+        }
+        return this;
+    }
+
     getImageData() {
         //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
-        if (!this.layer.options['geometryEvents'] || (!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
+        if (!this.layer.options['geometryEvents'] || this.layer.options['shareCanvas'] || (!this._lastRenderTime) || (now() - this._lastRenderTime) < 32) {
             return null;
         }
         if (!this._imageData) {

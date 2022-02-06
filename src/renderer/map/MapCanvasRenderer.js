@@ -47,8 +47,33 @@ class MapCanvasRenderer extends MapRenderer {
         this.updateMapDOM();
         map.clearCollisionIndex();
         const layers = this._getAllLayerToRender();
-        this.drawLayers(layers, framestamp);
-        const updated = this.drawLayerCanvas(layers);
+        if (this.isViewChanged()) {
+            this.clearCanvas();
+        }
+        if (this.baseContext) {
+            Canvas2D.clearRect(this.baseContext, 0, 0, this.canvas.width, this.canvas.height);
+        }
+        const baseLayer = map.getBaseLayer();
+        if (baseLayer) {
+            this.drawLayers([baseLayer], framestamp);
+            this.drawLayerCanvas([baseLayer]);
+        }
+        let updated = false;
+        for (let i = 0, len = layers.length; i < len; i++) {
+            if (layers[i] === baseLayer) {
+                continue;
+            }
+            const layerUpdate = this.drawLayers([layers[i]], framestamp);
+            if (layerUpdate) {
+                updated = this.drawLayerCanvas([layers[i]]);
+            }
+        }
+        if (this.context) {
+            this.context.drawImage(this.baseCanvas, 0, 0);
+            this.context.drawImage(this.vectorCanvas, 0, 0);
+        }
+        // this.drawLayers(layers, framestamp);
+        // const updated = this.drawLayerCanvas(layers);
         if (updated) {
             // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
             this.drawTops();
@@ -99,6 +124,7 @@ class MapCanvasRenderer extends MapRenderer {
             l = layers.length;
         const baseLayer = map.getBaseLayer();
         let t = 0;
+        let isUpdate = false;
         for (let i = 0; i < l; i++) {
             const layer = layers[i];
             if (!layer.isVisible()) {
@@ -144,6 +170,7 @@ class MapCanvasRenderer extends MapRenderer {
                     continue;
                 }
                 t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp);
+                isUpdate = true;
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
                 if (renderer.prepareRender) {
@@ -154,10 +181,13 @@ class MapCanvasRenderer extends MapRenderer {
                     renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
                 } else {
                     renderer.drawOnInteracting(this._eventParam, framestamp);
+                    isUpdate = true;
                 }
             } else {
                 // map is not interacting, call layer's render
+                // renderer.clearCanvas();
                 renderer.render(framestamp);
+                isUpdate = true;
                 //地图缩放完以后，如果下一次render需要载入资源，仍需要设置transformMatrix
                 //防止在资源载入完成之前，缺少transformMatrix导致的绘制错误
                 if (isCanvas && transformMatrix && renderer.isLoadingResource()) {
@@ -184,6 +214,7 @@ class MapCanvasRenderer extends MapRenderer {
                 this.setLayerCanvasUpdated();
             }
         }
+        return isUpdate;
     }
 
     /**
@@ -325,9 +356,9 @@ class MapCanvasRenderer extends MapRenderer {
             'context': this.context
         });
 
-        if (!this._updateCanvasSize()) {
-            this.clearCanvas();
-        }
+        // if (!this._updateCanvasSize()) {
+        //     this.clearCanvas();
+        // }
 
         const interacting = map.isInteracting(),
             limit = map.options['layerCanvasLimitOnInteracting'];
@@ -616,7 +647,13 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawLayerCanvasImage(layer, layerImage, targetWidth, targetHeight) {
-        const ctx = this.context;
+        const map = this.map;
+        let ctx;
+        if (layer === map.getBaseLayer()) {
+            ctx = this.baseContext;
+        } else {
+            ctx = this.vectorContext;
+        }
         const point = layerImage['point'].round();
         const dpr = this.map.getDevicePixelRatio();
         if (dpr !== 1) {
@@ -758,7 +795,10 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.canvas) {
             return;
         }
-        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        const contexts = this.getAllCanvasContext();
+        contexts.forEach(context => {
+            Canvas2D.clearRect(context, 0, 0, this.canvas.width, this.canvas.height);
+        });
     }
 
     _updateCanvasSize() {
@@ -772,17 +812,18 @@ class MapCanvasRenderer extends MapRenderer {
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
-        //retina屏支持
-
-        canvas.height = r * mapSize['height'];
-        canvas.width = r * mapSize['width'];
         this.topLayer.width = canvas.width;
         this.topLayer.height = canvas.height;
-        if (canvas.style) {
-            canvas.style.width = mapSize['width'] + 'px';
-            canvas.style.height = mapSize['height'] + 'px';
-        }
-
+        //retina屏支持
+        const canvasList = this.getAllCanvas();
+        canvasList.forEach(canvas => {
+            canvas.height = r * mapSize['height'];
+            canvas.width = r * mapSize['width'];
+            if (canvas.style) {
+                canvas.style.width = mapSize['width'] + 'px';
+                canvas.style.height = mapSize['height'] + 'px';
+            }
+        });
         return true;
     }
 
@@ -793,10 +834,24 @@ class MapCanvasRenderer extends MapRenderer {
             this.canvas = this.map._containerDOM;
         } else {
             this.canvas = createEl('canvas');
+            this.baseCanvas = createEl('canvas');
+            this.vectorCanvas = createEl('canvas');
             this._updateCanvasSize();
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
+        this.baseContext = this.baseCanvas.getContext('2d');
+        this.vectorContext = this.vectorCanvas.getContext('2d');
+    }
+
+    getAllCanvasContext() {
+        return [this.baseLayerContext, this.vectorContext, this.context].filter(context => {
+            return context;
+        });
+    }
+
+    getAllCanvas() {
+        return [this.canvas, this.baseCanvas, this.vectorCanvas];
     }
 
     _updateDomPosition(framestamp) {

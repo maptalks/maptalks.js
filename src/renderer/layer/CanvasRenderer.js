@@ -307,7 +307,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     hitDetect(point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || this.layer.options['shareCanvas']) {
             return false;
         }
         const map = this.getMap();
@@ -388,6 +388,7 @@ class CanvasRenderer extends Class {
         //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
         this.southWest = map._containerPointToPoint(new Point(0, map.height));
     }
+
 
     /**
      * Create renderer's Canvas

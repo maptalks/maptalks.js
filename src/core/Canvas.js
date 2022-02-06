@@ -24,8 +24,16 @@ let TEMP_CANVAS = null;
 
 const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
+const canvasCache = {};
 
 const Canvas = {
+    getLayerCanvas(mapId, width, height, canvasClass) {
+        if (!canvasCache[mapId]) {
+            canvasCache[mapId] = Canvas.createCanvas(width, height, canvasClass);
+        }
+        return canvasCache[mapId];
+    },
+
     setHitTesting(testing) {
         hitTesting = testing;
     },
