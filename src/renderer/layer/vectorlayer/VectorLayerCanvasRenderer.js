@@ -26,27 +26,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this.layer.options['shareCanvas']) {
             return super.createCanvas();
         } else {
-            if (this.canvas) {
-                return this;
+            const size = this._checkCanvas();
+            if (size) {
+                const map = this.getMap();
+                this.canvas = Canvas.getLayerCanvas(map.id, size.width, size.height, map.CanvasClass);
             }
-            const map = this.getMap();
-            const size = map.getSize();
-            const r = map.getDevicePixelRatio(),
-                w = Math.round(r * size.width),
-                h = Math.round(r * size.height);
-            if (this.layer._canvas) {
-                const canvas = this.layer._canvas;
-                canvas.width = w;
-                canvas.height = h;
-                if (canvas.style) {
-                    canvas.style.width = size.width + 'px';
-                    canvas.style.height = size.height + 'px';
-                }
-                this.canvas = this.layer._canvas;
-            } else {
-                this.canvas = Canvas.getLayerCanvas(map.id, w, h, map.CanvasClass);
-            }
-
             this.onCanvasCreate();
         }
         return this;

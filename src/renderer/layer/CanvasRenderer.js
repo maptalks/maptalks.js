@@ -389,13 +389,9 @@ class CanvasRenderer extends Class {
         this.southWest = map._containerPointToPoint(new Point(0, map.height));
     }
 
-
-    /**
-     * Create renderer's Canvas
-     */
-    createCanvas() {
+    _checkCanvas() {
         if (this.canvas) {
-            return;
+            return null;
         }
         const map = this.getMap();
         const size = map.getSize();
@@ -411,10 +407,24 @@ class CanvasRenderer extends Class {
                 canvas.style.height = size.height + 'px';
             }
             this.canvas = this.layer._canvas;
+            return null;
         } else {
-            this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
+            size.width = w;
+            size.height = h;
+            return size;
         }
+    }
 
+
+    /**
+     * Create renderer's Canvas
+     */
+    createCanvas() {
+        const size = this._checkCanvas();
+        if (size) {
+            const map = this.getMap();
+            this.canvas = Canvas2D.createCanvas(size.width, size.height, map.CanvasClass);
+        }
         this.onCanvasCreate();
 
     }
