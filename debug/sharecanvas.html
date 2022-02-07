@@ -2,7 +2,7 @@
 <html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Map - Display a map</title>
+<title>vectorlayer share canvas</title>
 <style type="text/css">
     html,
     body {
@@ -15,20 +15,37 @@
         width: 100%;
         height: 100%
     }
+
+    .panel {
+        position: absolute;
+        z-index: 1;
+        left: 5vw;
+        top: 0;
+    }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
 <script type="text/javascript" src="../dist/maptalks.js"></script>
+<!-- <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.min.js"></script> -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.97.0/examples/js/libs/stats.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/randomcolor@0.6.2/randomColor.min.js"></script>
 
 <body>
 
+    <div class="panel">
+        <button onclick="setOpacity()">opacity</button>
+    </div>
     <div id="map" class="container"></div>
 
     <script>
 
+        function setOpacity() {
+            map.getLayers().slice(0, 50).forEach(layer => {
+                layer.setOpacity(0.5);
+            });
+        }
+
         var map = new maptalks.Map('map', {
             "center": [120.66798102314476, 30.98710361260956], "zoom": 9, "pitch": 0.20000000000003, "bearing": -3,
-            // devicePixelRatio: 2,
             centerCross: true,
             baseLayer: new maptalks.TileLayer('base', {
                 urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
@@ -36,7 +53,7 @@
                 attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             })
         });
-        stats = new Stats();
+        var stats = new Stats();
         stats.domElement.style.zIndex = 100;
         document.getElementById('map').appendChild(stats.domElement);
 
@@ -44,7 +61,7 @@
             const { x, y } = map.getCenter();
             const lnglats = [];
             while (lnglats.length < 10) {
-                const lng = x + Math.random() * 1, lat = y + Math.random();
+                const lng = x + Math.random() * 1 - 0.3, lat = y + Math.random() - 0.3;
                 lnglats.push([lng, lat]);
             }
             return lnglats;
@@ -53,11 +70,26 @@
         function addLayers() {
             for (let i = 0, len = 200; i < len; i++) {
                 const layer = new maptalks.VectorLayer('layer' + i, {
-                    shareCanvas: false
+                    // 'forceRenderOnMoving': true,
+                    // 'forceRenderOnZooming': true,
+                    // 'forceRenderOnRotating': true,
+                    hitDetect: false,
+                    shareCanvas: true
                 });
+                const symbol = {
+                    markerType: 'ellipse',
+                    markerWidth: 20,
+                    markerHeight: 20,
+                    markerFill: randomColor()
+                }
                 const points = randomLngLats().map(coordiante => {
-                    return new maptalks.Marker(coordiante);
+                    return new maptalks.Marker(coordiante, { symbol });
                 });
+                // points.forEach(point => {
+                //     point.on('click', e => {
+                //         console.log(e);
+                //     })
+                // })
                 layer.addTo(map);
                 layer.addGeometry(points);
             }
