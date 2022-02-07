@@ -95,6 +95,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     needToRedraw() {
+        if (this.layer.options['shareCanvas']) {
+            return true;
+        }
         const map = this.getMap();
         if (map.isInteracting() && this.layer.options['enableAltitude']) {
             return true;

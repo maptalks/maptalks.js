@@ -47,38 +47,29 @@ class MapCanvasRenderer extends MapRenderer {
         this.updateMapDOM();
         map.clearCollisionIndex();
         const layers = this._getAllLayerToRender();
-        if (this.isViewChanged()) {
-            this.clearCanvas();
-        }
-        if (this.baseContext) {
-            Canvas2D.clearRect(this.baseContext, 0, 0, this.canvas.width, this.canvas.height);
-        }
+        this.clearCanvas();
         const baseLayer = map.getBaseLayer();
         if (baseLayer) {
             this.drawLayers([baseLayer], framestamp);
             this.drawLayerCanvas([baseLayer]);
         }
-        let updated = false;
         for (let i = 0, len = layers.length; i < len; i++) {
             if (layers[i] === baseLayer) {
                 continue;
             }
-            const layerUpdate = this.drawLayers([layers[i]], framestamp);
-            if (layerUpdate) {
-                updated = this.drawLayerCanvas([layers[i]]);
+            const updated = this.drawLayers([layers[i]], framestamp);
+            if (updated) {
+                // console.log(layers[i].getId());
             }
-        }
-        if (this.context) {
-            this.context.drawImage(this.baseCanvas, 0, 0);
-            this.context.drawImage(this.vectorCanvas, 0, 0);
+            this.drawLayerCanvas([layers[i]]);
         }
         // this.drawLayers(layers, framestamp);
         // const updated = this.drawLayerCanvas(layers);
-        if (updated) {
-            // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
-            this.drawTops();
-            this._drawCenterCross();
-        }
+        // if (updated) {
+        // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
+        this.drawTops();
+        this._drawCenterCross();
+        // }
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -337,9 +328,9 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return false;
         }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
-            return false;
-        }
+        // if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
+        //     return false;
+        // }
         if (!this.canvas) {
             this.createCanvas();
         }
@@ -647,13 +638,7 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     _drawLayerCanvasImage(layer, layerImage, targetWidth, targetHeight) {
-        const map = this.map;
-        let ctx;
-        if (layer === map.getBaseLayer()) {
-            ctx = this.baseContext;
-        } else {
-            ctx = this.vectorContext;
-        }
+        const ctx = this.context;
         const point = layerImage['point'].round();
         const dpr = this.map.getDevicePixelRatio();
         if (dpr !== 1) {
@@ -834,14 +819,10 @@ class MapCanvasRenderer extends MapRenderer {
             this.canvas = this.map._containerDOM;
         } else {
             this.canvas = createEl('canvas');
-            this.baseCanvas = createEl('canvas');
-            this.vectorCanvas = createEl('canvas');
             this._updateCanvasSize();
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
-        this.baseContext = this.baseCanvas.getContext('2d');
-        this.vectorContext = this.vectorCanvas.getContext('2d');
     }
 
     getAllCanvasContext() {
@@ -851,7 +832,9 @@ class MapCanvasRenderer extends MapRenderer {
     }
 
     getAllCanvas() {
-        return [this.canvas, this.baseCanvas, this.vectorCanvas];
+        return [this.canvas, this.baseCanvas, this.vectorCanvas].filter(canvas => {
+            return canvas;
+        });
     }
 
     _updateDomPosition(framestamp) {
