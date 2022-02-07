@@ -784,8 +784,6 @@ class MapCanvasRenderer extends MapRenderer {
         if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
             return false;
         }
-        this.topLayer.width = canvas.width;
-        this.topLayer.height = canvas.height;
         //retina屏支持
 
         canvas.height = r * mapSize['height'];
