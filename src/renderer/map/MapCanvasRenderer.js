@@ -65,12 +65,16 @@ class MapCanvasRenderer extends MapRenderer {
             this.drawLayers(layers, framestamp);
             this.drawLayerCanvas(layers);
         }
+        let updated = false;
         for (let i = 0, len = layers.length; i < len; i++) {
             if (layers[i] === baseLayer) {
                 continue;
             }
             this.drawLayers([layers[i]], framestamp);
-            this.drawLayerCanvas([layers[i]]);
+            const layerUpdated = this.drawLayerCanvas([layers[i]]);
+            if (layerUpdated) {
+                updated = true;
+            }
         }
         /**
        * renderend event, an event fired when map ends rendering.
@@ -85,11 +89,11 @@ class MapCanvasRenderer extends MapRenderer {
         });
         // this.drawLayers(layers, framestamp);
         // const updated = this.drawLayerCanvas(layers);
-        // if (updated) {
-        // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
-        this.drawTops();
-        this._drawCenterCross();
-        // }
+        if (updated) {
+            // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
+            this.drawTops();
+            this._drawCenterCross();
+        }
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -135,7 +139,6 @@ class MapCanvasRenderer extends MapRenderer {
             l = layers.length;
         const baseLayer = map.getBaseLayer();
         let t = 0;
-        let isUpdate = false;
         for (let i = 0; i < l; i++) {
             const layer = layers[i];
             if (!layer.isVisible()) {
@@ -181,7 +184,6 @@ class MapCanvasRenderer extends MapRenderer {
                     continue;
                 }
                 t += this._drawCanvasLayerOnInteracting(layer, t, timeLimit, framestamp);
-                isUpdate = true;
             } else if (isInteracting && renderer.drawOnInteracting) {
                 // dom layers
                 if (renderer.prepareRender) {
@@ -192,13 +194,10 @@ class MapCanvasRenderer extends MapRenderer {
                     renderer.checkAndDraw(renderer.drawOnInteracting, this._eventParam, framestamp);
                 } else {
                     renderer.drawOnInteracting(this._eventParam, framestamp);
-                    isUpdate = true;
                 }
             } else {
                 // map is not interacting, call layer's render
-                // renderer.clearCanvas();
                 renderer.render(framestamp);
-                isUpdate = true;
                 //地图缩放完以后，如果下一次render需要载入资源，仍需要设置transformMatrix
                 //防止在资源载入完成之前，缺少transformMatrix导致的绘制错误
                 if (isCanvas && transformMatrix && renderer.isLoadingResource()) {
@@ -225,7 +224,6 @@ class MapCanvasRenderer extends MapRenderer {
                 this.setLayerCanvasUpdated();
             }
         }
-        return isUpdate;
     }
 
     /**
@@ -355,22 +353,6 @@ class MapCanvasRenderer extends MapRenderer {
             this.createCanvas();
         }
 
-        // /**
-        //  * renderstart event, an event fired when map starts to render.
-        //  * @event Map#renderstart
-        //  * @type {Object}
-        //  * @property {String} type           - renderstart
-        //  * @property {Map} target            - the map fires event
-        //  * @property {CanvasRenderingContext2D} context  - canvas context
-        //  */
-        // map._fireEvent('renderstart', {
-        //     'context': this.context
-        // });
-
-        // if (!this._updateCanvasSize()) {
-        //     this.clearCanvas();
-        // }
-
         const interacting = map.isInteracting(),
             limit = map.options['layerCanvasLimitOnInteracting'];
         let len = layers.length;
@@ -407,18 +389,6 @@ class MapCanvasRenderer extends MapRenderer {
         for (let i = start; i < len; i++) {
             this._drawLayerCanvasImage(images[i][0], images[i][1], targetWidth, targetHeight);
         }
-
-        // /**
-        //  * renderend event, an event fired when map ends rendering.
-        //  * @event Map#renderend
-        //  * @type {Object}
-        //  * @property {String} type                      - renderend
-        //  * @property {Map} target              - the map fires event
-        //  * @property {CanvasRenderingContext2D} context - canvas context
-        //  */
-        // map._fireEvent('renderend', {
-        //     'context': this.context
-        // });
         return true;
     }
 
@@ -800,10 +770,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.canvas) {
             return;
         }
-        const contexts = this.getAllCanvasContext();
-        contexts.forEach(context => {
-            Canvas2D.clearRect(context, 0, 0, this.canvas.width, this.canvas.height);
-        });
+        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
     }
 
     _updateCanvasSize() {
@@ -820,15 +787,16 @@ class MapCanvasRenderer extends MapRenderer {
         this.topLayer.width = canvas.width;
         this.topLayer.height = canvas.height;
         //retina屏支持
-        const canvasList = this.getAllCanvas();
-        canvasList.forEach(canvas => {
-            canvas.height = r * mapSize['height'];
-            canvas.width = r * mapSize['width'];
-            if (canvas.style) {
-                canvas.style.width = mapSize['width'] + 'px';
-                canvas.style.height = mapSize['height'] + 'px';
-            }
-        });
+
+        canvas.height = r * mapSize['height'];
+        canvas.width = r * mapSize['width'];
+        this.topLayer.width = canvas.width;
+        this.topLayer.height = canvas.height;
+        if (canvas.style) {
+            canvas.style.width = mapSize['width'] + 'px';
+            canvas.style.height = mapSize['height'] + 'px';
+        }
+
         return true;
     }
 
@@ -843,18 +811,6 @@ class MapCanvasRenderer extends MapRenderer {
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
         this.context = this.canvas.getContext('2d');
-    }
-
-    getAllCanvasContext() {
-        return [this.baseLayerContext, this.vectorContext, this.context].filter(context => {
-            return context;
-        });
-    }
-
-    getAllCanvas() {
-        return [this.canvas, this.baseCanvas, this.vectorCanvas].filter(canvas => {
-            return canvas;
-        });
     }
 
     _updateDomPosition(framestamp) {
