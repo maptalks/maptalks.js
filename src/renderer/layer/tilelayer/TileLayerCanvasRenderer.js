@@ -375,7 +375,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     loadTile(tile) {
         let tileImage;
-        if (this._tileImageWorkerConn) {
+        if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             tileImage = {};
             this._fetchImage(tileImage, tile);
         } else {
@@ -407,7 +407,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
-            }, this.layer.options['fetchOptions'] || { headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }});
+            }, this.layer.options['fetchOptions'] || {
+                headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }
+            });
         }
     }
 
