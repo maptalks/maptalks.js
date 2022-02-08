@@ -4,7 +4,8 @@ import {
     emptyImageUrl,
     now,
     isFunction,
-    getImageBitMap
+    getImageBitMap,
+    isString
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
@@ -28,7 +29,20 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
+    checkUrl(url) {
+        if (!url || !isString(url)) {
+            return url;
+        }
+        const protocol = url.substring(0, 2).toLocaleLowerCase();
+        if (protocol === '//') {
+            return `${window.location.protocol}${url}`;
+        }
+        return url;
+
+    }
+
     fetchImage(url, workerId, cb, fetchOptions) {
+        url = this.checkUrl(url);
         const data = {
             url,
             fetchOptions
