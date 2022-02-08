@@ -68,7 +68,7 @@
         }
 
         function addLayers() {
-            for (let i = 0, len = 200; i < len; i++) {
+            for (let i = 0, len = 100; i < len; i++) {
                 const layer = new maptalks.VectorLayer('layer' + i, {
                     // 'forceRenderOnMoving': true,
                     // 'forceRenderOnZooming': true,
@@ -78,8 +78,8 @@
                 });
                 const symbol = {
                     markerType: 'ellipse',
-                    markerWidth: 20,
-                    markerHeight: 20,
+                    markerWidth: 15,
+                    markerHeight: 15,
                     markerFill: randomColor()
                 }
                 const points = randomLngLats().map(coordiante => {
