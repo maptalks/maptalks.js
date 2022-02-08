@@ -30,6 +30,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             if (size) {
                 const map = this.getMap();
                 this.canvas = Canvas.getLayerCanvas(map.id, size.width, size.height, map.CanvasClass);
+                const ctx = this.canvas.getContext('2d');
+                Canvas.clearRect(ctx, 0, 0, size.width, size.height);
             }
             this.onCanvasCreate();
         }
