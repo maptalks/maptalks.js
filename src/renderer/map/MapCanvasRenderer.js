@@ -346,9 +346,9 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return false;
         }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
-            return false;
-        }
+        // if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
+        //     return false;
+        // }
         if (!this.canvas) {
             this.createCanvas();
         }
