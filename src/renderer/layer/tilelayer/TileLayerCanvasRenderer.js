@@ -33,6 +33,7 @@ class TileWorkerConnection extends Actor {
         if (!url || !isString(url)) {
             return url;
         }
+        //The URL is processed. Here, only the relative protocol is processed
         const protocol = url.substring(0, 2).toLocaleLowerCase();
         if (protocol === '//') {
             return `${window.location.protocol}${url}`;
