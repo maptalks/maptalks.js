@@ -1246,7 +1246,7 @@ function distanceToRect(min, max, xyz) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-const workerSource = function (exports) {
+const workerSource = `function (exports) {
     exports.onmessage = function (msg, postResponse) {
         const url = msg.data.url;
         const fetchOptions = msg.data.fetchOptions;
@@ -1282,7 +1282,7 @@ const workerSource = function (exports) {
                 cb(err);
             });
     }
-};
+}`;
 
 function registerWorkerSource() {
     if (!Browser.decodeImageInWorker) {
