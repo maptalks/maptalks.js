@@ -1246,27 +1246,26 @@ function distanceToRect(min, max, xyz) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-const workerSource = `
-function (exports) {
+const workerSource = function (exports) {
     exports.onmessage = function (msg, postResponse) {
-        var url = msg.data.url;
-        var fetchOptions = msg.data.fetchOptions;
+        const url = msg.data.url;
+        const fetchOptions = msg.data.fetchOptions;
         requestImageOffscreen(url, function (err, data) {
-            var buffers = [];
+            const buffers = [];
             if (data && data.data && data.data.buffer) {
                 buffers.push(data.data.buffer);
             }
             postResponse(err, data, buffers);
         }, fetchOptions);
-    }
+    };
 
-    var offCanvas, offCtx;
+    let offCanvas, offCtx;
     function requestImageOffscreen(url, cb, fetchOptions) {
         if (!offCanvas) {
             offCanvas = new OffscreenCanvas(2, 2);
             offCtx = offCanvas.getContext('2d');
         }
-        fetch(url, fetchOptions ? fetchOptions: {})
+        fetch(url, fetchOptions ? fetchOptions : {})
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
@@ -1277,14 +1276,13 @@ function (exports) {
                 bitmap.close();
                 const imgData = offCtx.getImageData(0, 0, width, height);
                 // debugger
-                cb(null, { width, height, data : new Uint8Array(imgData.data) });
+                cb(null, { width, height, data: new Uint8Array(imgData.data) });
             }).catch(err => {
                 console.error(err);
                 cb(err);
             });
     }
-}
-`;
+};
 
 function registerWorkerSource() {
     if (!Browser.decodeImageInWorker) {
