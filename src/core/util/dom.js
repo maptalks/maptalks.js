@@ -6,10 +6,10 @@
  * @name DomUtil
  */
 
-import Browser from  '../Browser';
-import { IS_NODE } from './env';
-import { isString, isNil } from './common';
-import { splitWords } from './strings';
+import Browser from '../Browser';
+import {IS_NODE} from './env';
+import {isString, isNil} from './common';
+import {splitWords} from './strings';
 import Point from '../../geo/Point';
 import Size from '../../geo/Size';
 
@@ -115,6 +115,7 @@ export function createElOn(tagName, style, container) {
  * @param {HTMLElement} node
  * @memberOf DomUtil
  */
+
 /* istanbul ignore next */
 export function removeDomNode(node) {
     if (!node) {
@@ -172,12 +173,14 @@ export function addDomEvent(obj, typeArr, handler, context) {
             src: handler
         });
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-        if (Browser.ie) {
-            // ie doesn't support options as the third parameter
-            obj.addEventListener(type, eventHandler, false);
-        } else {
-            obj.addEventListener(type, eventHandler, { capture: false, passive: false });
-        }
+        // https://github.com/Modernizr/Modernizr/issues/1894
+        /* Add feature test for passive event listener support */
+        let supportsPassive = false;
+        try {
+            window.addEventListener('testPassive', _ => {}, { get passive() { supportsPassive = true; } });
+        } catch (e) {}
+
+        obj.addEventListener(type, eventHandler, supportsPassive ? { capture: false, passive: false } : false);
     }
     return this;
 }
@@ -197,6 +200,7 @@ export function removeDomEvent(obj, typeArr, handler) {
         }
         obj.removeEventListener(type, callback, false);
     }
+
     if (!obj || !obj.removeEventListener || !typeArr) {
         return this;
     }
