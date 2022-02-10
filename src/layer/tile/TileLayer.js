@@ -1246,12 +1246,13 @@ function distanceToRect(min, max, xyz) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-const workerSource = `function (exports) {
+const workerSource = `
+function (exports) {
     exports.onmessage = function (msg, postResponse) {
-        const url = msg.data.url;
-        const fetchOptions = msg.data.fetchOptions;
+        var url = msg.data.url;
+        var fetchOptions = msg.data.fetchOptions;
         requestImageOffscreen(url, function (err, data) {
-            const buffers = [];
+            var buffers = [];
             if (data && data.data && data.data.buffer) {
                 buffers.push(data.data.buffer);
             }
@@ -1259,7 +1260,7 @@ const workerSource = `function (exports) {
         }, fetchOptions);
     };
 
-    let offCanvas, offCtx;
+    var offCanvas, offCtx;
     function requestImageOffscreen(url, cb, fetchOptions) {
         if (!offCanvas) {
             offCanvas = new OffscreenCanvas(2, 2);
@@ -1269,12 +1270,12 @@ const workerSource = `function (exports) {
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
-                const { width, height } = bitmap;
+                var { width, height } = bitmap;
                 offCanvas.width = width;
                 offCanvas.height = height;
                 offCtx.drawImage(bitmap, 0, 0);
                 bitmap.close();
-                const imgData = offCtx.getImageData(0, 0, width, height);
+                var imgData = offCtx.getImageData(0, 0, width, height);
                 // debugger
                 cb(null, { width, height, data: new Uint8Array(imgData.data) });
             }).catch(err => {
