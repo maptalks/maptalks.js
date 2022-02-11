@@ -137,9 +137,6 @@ class UIComponent extends Eventable(Class) {
             return this;
         }
         this.options['visible'] = true;
-        if (!this._mapEventsOn) {
-            this._switchMapEvents('on');
-        }
 
         coordinate = coordinate || this._coordinate || this._owner.getCenter();
 
@@ -156,7 +153,11 @@ class UIComponent extends Eventable(Class) {
         this.fire('showstart');
         const container = this._getUIContainer();
         this._coordinate = coordinate;
+        //when single will off map events
         this._removePrevDOM();
+        if (!this._mapEventsOn) {
+            this._switchMapEvents('on');
+        }
         const dom = this.__uiDOM = this.buildOn(map);
         dom['eventsPropagation'] = this.options['eventsPropagation'];
 
