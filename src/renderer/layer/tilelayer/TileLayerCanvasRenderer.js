@@ -5,7 +5,8 @@ import {
     now,
     isFunction,
     getImageBitMap,
-    isString
+    isString,
+    getAbsoluteURL
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
@@ -34,11 +35,7 @@ class TileWorkerConnection extends Actor {
             return url;
         }
         //The URL is processed. Here, only the relative protocol is processed
-        const protocol = url.substring(0, 2).toLocaleLowerCase();
-        if (protocol === '//') {
-            return `${window.location.protocol}${url}`;
-        }
-        return url;
+        return getAbsoluteURL(url);
 
     }
 
