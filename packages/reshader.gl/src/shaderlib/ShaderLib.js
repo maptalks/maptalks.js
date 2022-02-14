@@ -25,6 +25,8 @@ import gl2_frag from './glsl/gl2.frag';
 
 import hsv_frag from './glsl/hsv.frag';
 
+import draco_decode_vert from './glsl/draco_decode.vert';
+
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 // import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
@@ -121,7 +123,9 @@ const ShaderChunk = {
     gl2_frag,
 
     //颜色饱和度
-    hsv_frag
+    hsv_frag,
+    //draco解压相关
+    draco_decode_vert
 };
 /* eslint-enable camelcase */
 

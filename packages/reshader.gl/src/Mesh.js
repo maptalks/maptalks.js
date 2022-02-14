@@ -1,4 +1,4 @@
-import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn } from './common/Util.js';
+import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn, defined } from './common/Util.js';
 import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
 
@@ -26,6 +26,7 @@ class Mesh {
         this._positionMatrix = mat4.identity(new Array(16));
         this.properties = {};
         this._dirtyUniforms = true;
+        this._dirtyGeometry = true;
         Object.defineProperty(this, 'uuid', {
             value: uuid++
         });
@@ -59,6 +60,7 @@ class Mesh {
     set geometry(geo) {
         if (this._geometry !== geo) {
             this._incrVersion();
+            this._dirtyGeometry = true;
         }
         this._geometry = geo;
     }
@@ -106,7 +108,7 @@ class Mesh {
     }
 
     get defines() {
-        return this._defines;
+        return this._getDefines();
     }
 
     set defines(v) {
@@ -149,13 +151,31 @@ class Mesh {
 
     getDefines() {
         const defines = {};
-        if (this._defines) {
-            extend(defines, this._defines);
-        }
+        extend(defines, this._getDefines());
         if (this._material && this._geometry) {
             this._material.appendDefines(defines, this._geometry);
         }
         return defines;
+    }
+
+    _getDefines() {
+        if (!this._defines) {
+           this._defines = {};
+        }
+        const geometry = this._geometry;
+        const position = geometry.data[geometry.desc.positionAttribute],
+        texcoord = geometry.data[geometry.desc.uv0Attribute],
+        normal = geometry.data[geometry.desc.normalAttribute];
+        if (position && position.quantization) {
+            this._defines['HAS_DECODE_POSITION'] = 1;
+        }
+        if (texcoord && texcoord.quantization) {
+            this._defines['HAS_DECODE_TEXCOORD'] = 1;
+        }
+        if (normal && normal.quantization) {
+            this._defines['HAS_DECODE_NORMAL'] = 1;
+        }
+        return this._defines;
     }
 
     setDefines(defines) {
@@ -206,9 +226,10 @@ class Mesh {
     // }
 
     getUniforms(regl) {
-        if (this._dirtyUniforms || this._material && this._materialVer !== this._material.version) {
+        if (this._dirtyUniforms || this._dirtyGeometry || this._material && this._materialVer !== this._material.version) {
             this._realUniforms = {
             };
+            this._getUniformsForDraco();
             if (this._material) {
                 const materialUniforms = this._material.getUniforms(regl);
                 for (const p in materialUniforms) {
@@ -236,11 +257,49 @@ class Mesh {
                 }
             }
             this._dirtyUniforms = false;
+            this._dirtyGeometry = false;
             this._materialVer = this._material && this._material.version;
         }
         this._realUniforms['modelMatrix'] = isFunction(this._localTransform) ? this._localTransform() : this._localTransform;
         this._realUniforms['positionMatrix'] = isFunction(this._positionMatrix) ? this._positionMatrix() : this._positionMatrix;
         return this._realUniforms;
+    }
+
+    _getUniformsForDraco() {
+        const geometry = this._geometry;
+        const position = geometry.data[geometry.desc.positionAttribute],
+        texcoord = geometry.data[geometry.desc.uv0Attribute],
+        normal = geometry.data[geometry.desc.normalAttribute];
+        if (position && position.quantization) {
+            const quantization = position.quantization;
+            const gltf_u_dec_position_normConstant = quantization.range / (1 << quantization.quantizationBits)
+            this._defineUniformsProperty(this._realUniforms, 'minValues_pos', quantization.minValues);
+            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_position_normConstant', gltf_u_dec_position_normConstant);
+        }
+        if (texcoord && texcoord.quantization) {
+            const quantization = texcoord.quantization;
+            this._defineUniformsProperty(this._realUniforms, 'minValues_tex', quantization.minValues);
+            const gltf_u_dec_texcoord_0_normConstant = quantization.range / (1 << quantization.quantizationBits)
+            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_texcoord_0_normConstant', gltf_u_dec_texcoord_0_normConstant);
+        }
+        if (normal && normal.quantization) {
+            const quantization = normal.quantization;
+            const gltf_u_dec_normal_rangeConstant = (1 << quantization.quantizationBits) - 1.0;
+            this._defineUniformsProperty(this._realUniforms, 'gltf_u_dec_normal_rangeConstant', gltf_u_dec_normal_rangeConstant);
+        }
+    }
+
+    _defineUniformsProperty(uniforms, p, v) {
+        if (defined(uniforms[p])) {
+            return;
+        }
+        Object.defineProperty(uniforms, p, {
+            enumerable: true,
+            configurable: true,
+            get: function () {
+                return v;
+            }
+        });
     }
 
 

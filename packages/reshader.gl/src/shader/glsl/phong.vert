@@ -1,3 +1,4 @@
+#include <gl2_vert>
 attribute vec3 aPosition;
 #include <line_extrusion_vert>
 
@@ -13,12 +14,6 @@ attribute vec3 aPosition;
 #elif defined(HAS_COLOR0)
     attribute vec4 aColor0;
     varying vec4 vColor;
-#endif
-
-#if defined(HAS_TANGENT)
-    attribute vec4 aTangent;
-#elif defined(HAS_NORMAL)
-    attribute vec3 aNormal;
 #endif
 
 varying vec3 vFragPos;
@@ -94,7 +89,11 @@ void main()
             toTangentFrame(aTangent, Normal, t);
             vTangent = vec4(localNormalMatrix * t, aTangent.w);
         #else
-            Normal = aNormal;
+            #ifdef HAS_DECODE_NORMAL
+                Normal = getNormal(aNormal);
+            #else
+                Normal = aNormal;
+            #endif
         #endif
         vec3 localNormal = appendMorphNormal(Normal);
         vNormal = normalize(localNormalMatrix * localNormal);
@@ -106,7 +105,8 @@ void main()
     jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
-        vTexCoord = aTexCoord * uvScale + uvOffset;
+        vec2 TexCoord = getTexcoord(aTexCoord);
+        vTexCoord = TexCoord * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;

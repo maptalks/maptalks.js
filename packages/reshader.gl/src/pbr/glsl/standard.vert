@@ -11,11 +11,6 @@ attribute vec3 aPosition;
     uniform vec2 uvOffset;
     uniform float uvRotation;
 #endif
-#if defined(HAS_TANGENT)
-    attribute vec4 aTangent;
-#elif defined(HAS_NORMAL)
-    attribute vec3 aNormal;
-#endif
 
 vec3 Vertex;
 vec3 Normal;
@@ -130,9 +125,10 @@ vec2 rotateUV(vec2 uv, float rotation) {
 
 void main() {
     #if defined(HAS_MAP)
+        vec2 TexCoord = getTexcoord(aTexCoord);
         #ifdef HAS_RANDOM_TEX
             vec2 origin = uvOrigin;
-            vec2 texCoord = aTexCoord * uvScale + uvOffset;
+            vec2 texCoord = TexCoord * uvScale + uvOffset;
             if (uvRotation != 0.0) {
                 origin = rotateUV(origin, uvRotation);
                 texCoord = rotateUV(texCoord, uvRotation);
@@ -140,7 +136,7 @@ void main() {
             vTexCoord = mod(origin, 1.0) + texCoord;
         #else
             vec2 origin = uvOrigin;
-            vec2 texCoord = aTexCoord * uvScale;
+            vec2 texCoord = TexCoord * uvScale;
             if (uvRotation != 0.0) {
                 origin = rotateUV(origin, uvRotation);
                 texCoord = rotateUV(texCoord, uvRotation);
@@ -163,7 +159,11 @@ void main() {
             // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
             vModelTangent = vec4(normalMatrix * t, aTangent.w);
         #else
-            Normal = aNormal;
+            #ifdef HAS_DECODE_NORMAL
+                Normal = getNormal(aNormal);
+            #else
+                Normal = aNormal;
+            #endif
         #endif
         vec3 localNormal = Normal;
         vModelNormal = normalMatrix * localNormal;

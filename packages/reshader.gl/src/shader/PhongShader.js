@@ -32,6 +32,7 @@ class PhongShader extends MeshShader {
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
         });
+        this.version = 300;
     }
 
     getGeometryDefines(geometry) {

@@ -1,4 +1,5 @@
 #include <invert_matrix>
+#include <draco_decode_vert>
 #ifdef HAS_INSTANCE
     #include <instance_vert>
     #ifdef HAS_INSTANCE_COLOR
@@ -61,7 +62,8 @@ mat4 getPositionMatrix() {
     return worldMatrix;
 }
 
-vec4 getPosition(vec3 position) {
+vec4 getPosition(vec3 aPosition) {
+    vec3 position = getPositionAsDraco(aPosition);
     #ifdef HAS_MORPH
         vec4 POSITION = vec4(position + morphWeights1[0] * POSITION0 + morphWeights1[1] * POSITION1 + morphWeights1[2] * POSITION2 + morphWeights1[3] * POSITION3
         + morphWeights2[0] * POSITION4 + morphWeights2[1] * POSITION5 + morphWeights2[2] * POSITION6 + morphWeights2[3] * POSITION7
