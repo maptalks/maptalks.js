@@ -172,19 +172,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
             src: handler
         });
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-        // https://github.com/Modernizr/Modernizr/issues/1894
-        /* Add feature test for passive event listener support */
-        let supportsPassive = false;
-        try {
-            window.addEventListener('testPassive', _ => {
-            }, {
-                get passive() {
-                    supportsPassive = true;
-                }
-            });
-        } catch (e) {
-        }
-        obj.addEventListener(type, eventHandler, supportsPassive ? {capture: false, passive: false} : false);
+        obj.addEventListener(type, eventHandler, Browser.supportsPassive ? { capture: false, passive: false } : false);
     }
     return this;
 }

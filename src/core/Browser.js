@@ -60,6 +60,18 @@ if (!IS_NODE) {
     } catch (err) {
         decodeImageInWorker = false;
     }
+    // https://github.com/Modernizr/Modernizr/issues/1894
+    /* Add feature test for passive event listener support */
+    let supportsPassive = false;
+    try {
+        window.addEventListener('testPassive', _ => {
+        }, {
+            get passive() {
+                supportsPassive = true;
+            }
+        });
+    } catch (e) {
+    }
 
     Browser = {
         ie: ie,
@@ -101,7 +113,8 @@ if (!IS_NODE) {
         imageBitMap,
         resizeObserver,
         btoa,
-        decodeImageInWorker
+        decodeImageInWorker,
+        supportsPassive
     };
 }
 
