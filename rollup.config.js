@@ -59,4 +59,4 @@ module.exports = [
                 'file': pkg.module
             }
         ]
-    }]
+    }];
