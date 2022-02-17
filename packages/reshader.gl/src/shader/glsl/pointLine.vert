@@ -15,10 +15,7 @@ uniform float pointSize;
     varying vec2 vTexCoord;
 #endif
 #include <get_output>
-#include <viewshed_vert>
-#include <flood_vert>
 #include <heatmap_render_vert>
-#include <fog_render_vert>
 
 #ifdef HAS_FLOODANALYSE
     varying float vHeight;
@@ -37,19 +34,7 @@ void main()
         vTexCoord = aTexCoord;
     #endif
 
-    #ifdef HAS_VIEWSHED
-        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
-    #endif
-
-    #ifdef HAS_FLOODANALYSE
-        flood_getHeight(modelMatrix * localPositionMatrix * localPosition);
-    #endif
-
     #ifdef HAS_HEATMAP
         heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
-    #endif
-
-    #ifdef HAS_FOG
-        fog_getDist(modelMatrix * localPositionMatrix * localPosition);
     #endif
 }

@@ -77,11 +77,7 @@ varying vec3 vFragPos;
         uniform sampler2D specularGlossinessTexture;
     #endif
 #endif
-
-#include <viewshed_frag>
-#include <flood_frag>
 #include <heatmap_render_frag>
-#include <fog_render_frag>
 
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
@@ -198,20 +194,6 @@ void main() {
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
     #endif
-
-    #ifdef HAS_VIEWSHED
-        glFragColor = viewshed_draw(glFragColor);
-    #endif
-
-    #ifdef HAS_FLOODANALYSE
-        glFragColor = draw_floodAnalyse(glFragColor);
-    #endif
-
-    #ifdef HAS_FOG
-        glFragColor = draw_fog(glFragColor);
-    #endif
-
-    // glFragColor = vec4(norm, 1.0);
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

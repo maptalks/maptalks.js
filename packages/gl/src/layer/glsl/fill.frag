@@ -11,7 +11,6 @@ precision mediump float;
 
 uniform vec4 polygonFill;
 uniform float polygonOpacity;
-
 void main() {
     #ifdef HAS_PATTERN
         vec4 color = texture2D(polygonPatternFile, vTexCoord);

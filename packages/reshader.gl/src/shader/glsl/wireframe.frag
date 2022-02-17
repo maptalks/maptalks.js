@@ -40,10 +40,6 @@ varying vec3 vPosition;
   varying vec4 vInstanceColor;
 #endif
 
-#include <viewshed_frag>
-#include <flood_frag>
-#include <fog_render_frag>
-
 #define F4 0.309016994374947451
 #define halfDist 0.5
 
@@ -247,17 +243,6 @@ vec4 getStyledWireframe (vec3 barycentric) {
 void main () {
   glFragColor = getStyledWireframe(vBarycentric);
   glFragColor *= (halfDist + opacity);
-  #ifdef HAS_VIEWSHED
-      glFragColor = viewshed_draw(glFragColor);
-  #endif
-
-  #ifdef HAS_FLOODANALYSE
-      glFragColor = draw_floodAnalyse(glFragColor);
-  #endif
-
-  #ifdef HAS_FOG
-      glFragColor = draw_fog(glFragColor);
-  #endif
 
   #if __VERSION__ == 100
       gl_FragColor = glFragColor;

@@ -1,5 +1,6 @@
 attribute vec3 aPosition;
 uniform mat4 projViewModelMatrix;
+uniform mat4 modelMatrix;
 
 #ifdef HAS_PATTERN
     attribute vec2 aTexCoord;

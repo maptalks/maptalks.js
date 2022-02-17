@@ -9,9 +9,6 @@ uniform mat4 projViewModelMatrix;
 uniform mat4 positionMatrix;
 varying vec3 vPosition;
 #include <get_output>
-#include <viewshed_vert>
-#include <flood_vert>
-#include <fog_render_vert>
 
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
@@ -19,15 +16,4 @@ void main () {
     gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
     vPosition = aPosition;
-    #ifdef HAS_VIEWSHED
-        viewshed_getPositionFromViewpoint(modelMatrix * localPositionMatrix * localPosition);
-    #endif
-
-    #ifdef HAS_FLOODANALYSE
-        flood_getHeight(modelMatrix * localPositionMatrix * localPosition);
-    #endif
-
-    #ifdef HAS_FOG
-        fog_getDist(modelMatrix * localPositionMatrix * localPosition);
-    #endif
 }

@@ -532,6 +532,10 @@ class GroundPainter {
     _getUVOffsetAnim() {
         return this.material && this.material.get('uvOffsetAnim');
     }
+
+    getRenderMeshes() {
+        return this._groundScene.getMeshes();
+    }
 }
 
 export default GroundPainter;

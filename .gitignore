@@ -4,3 +4,4 @@ node_modules
 yarn.lock
 dist
 web.config
+debug

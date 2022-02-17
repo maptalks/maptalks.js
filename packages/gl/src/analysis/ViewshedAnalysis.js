@@ -17,6 +17,7 @@ export default class ViewshedAnalysis extends Analysis {
         this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
         this._renderOptions['verticalAngle'] = this.options.verticalAngle;
         this._renderOptions['horizonAngle'] = this.options.horizonAngle;
+        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         if (renderer) {
             this._setViewshedPass(renderer);
         } else {
@@ -53,16 +54,13 @@ export default class ViewshedAnalysis extends Analysis {
         this.layer.addAnalysis(this);
     }
 
-    renderAnalysis(context, toAnalyseMeshes) {
-        super.renderAnalysis(context);
-        const analysisType = this.getAnalysisType();
-        const renderUniforms = {};
-        const uniforms =  this._viewshedPass.render(toAnalyseMeshes, this._renderOptions);
-        renderUniforms['viewshed_depthMapFromViewpoint'] = uniforms.depthMap;
-        renderUniforms['viewshed_projViewMatrixFromViewpoint'] = uniforms.projViewMatrixFromViewpoint;
-        renderUniforms['viewshed_visibleColor'] = this._renderOptions['visibleColor'] || [0.0, 1.0, 0.0, 1.0];
-        renderUniforms['viewshed_invisibleColor'] = this._renderOptions['invisibleColor'] || [1.0, 0.0, 0.0, 1.0];
-        context[analysisType]['renderUniforms'] = renderUniforms;
+    renderAnalysis(meshes) {
+        const uniforms = {};
+        const viewshedMap =  this._viewshedPass.render(meshes, this._renderOptions);
+        uniforms['viewshedMap'] = viewshedMap;
+        uniforms['viewshed_visibleColor'] =  this._renderOptions['visibleColor'] || [0.0, 1.0, 0.0, 1.0];
+        uniforms['viewshed_invisibleColor'] = this._renderOptions['invisibleColor'] || [1.0, 0.0, 0.0, 1.0];
+        return uniforms;
     }
 
     getDefines() {

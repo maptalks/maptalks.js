@@ -64,13 +64,10 @@ varying vec3 vModelVertex;
 
 #include <line_extrusion_vert>
 #include <get_output>
-#include <viewshed_vert>
-#include <flood_vert>
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
     #include <vsm_shadow_vert>
 #endif
 #include <heatmap_render_vert>
-#include <fog_render_vert>
 
 #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
     varying vec3 vTangentViewPos;
@@ -218,20 +215,8 @@ void main() {
         shadow_computeShadowPars(position);
     #endif
 
-    #ifdef HAS_VIEWSHED
-        viewshed_getPositionFromViewpoint(modelMatrix * position);
-    #endif
-
-    #ifdef HAS_FLOODANALYSE
-        flood_getHeight(modelMatrix * position);
-    #endif
-
     #ifdef HAS_HEATMAP
         heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
-    #endif
-
-    #ifdef HAS_FOG
-        fog_getDist( modelMatrix * position);
     #endif
 
     #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)

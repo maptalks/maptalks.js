@@ -5,13 +5,13 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         this.layer = layer;
     }
 
-    renderAnalysis(context) {
-        const analysisType = this.getAnalysisType();
-        context.includes[analysisType] = 1;
-        context[analysisType] = {
-            defines: this.getDefines()
-        };
-    }
+    // renderAnalysis(context) {
+    //     const analysisType = this.getAnalysisType();
+    //     context.includes[analysisType] = 1;
+    //     context[analysisType] = {
+    //         defines: this.getDefines()
+    //     };
+    // }
 
     remove() {
         if (this.layer) {

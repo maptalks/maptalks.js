@@ -9,15 +9,10 @@ import get_output from './glsl/output.vert';
 import instance_vert from './glsl/instance.vert';
 //skin.vert
 import skin_vert from './glsl/skin.vert';
-
-import viewshed_frag from './glsl/viewshed.frag';
-import viewshed_vert from './glsl/viewshed.vert';
-import flood_frag from './glsl/flood.frag';
-import flood_vert from './glsl/flood.vert';
 import heatmap_render_frag from './glsl/heatmap_render.frag';
 import heatmap_render_vert from './glsl/heatmap_render.vert';
-import fog_render_vert from './glsl/fog.vert';
-import fog_render_frag from './glsl/fog.frag';
+// import fog_render_vert from './glsl/fog.vert';
+// import fog_render_frag from './glsl/fog.frag';
 
 import line_extrusion_vert from './glsl/line_extrusion.vert';
 import gl2_vert from './glsl/gl2.vert';
@@ -25,6 +20,7 @@ import gl2_frag from './glsl/gl2.frag';
 
 import hsv_frag from './glsl/hsv.frag';
 
+import snow_frag from './glsl/snow.frag';
 import draco_decode_vert from './glsl/draco_decode.vert';
 
 //webgl 2.0中的函数实现
@@ -107,23 +103,20 @@ const ShaderChunk = {
     get_output,
     instance_vert,
     skin_vert,
-    viewshed_frag,
-    viewshed_vert,
-    flood_frag,
-    flood_vert,
     heatmap_render_vert,
     heatmap_render_frag,
 
     line_extrusion_vert,
 
-    fog_render_vert,
-    fog_render_frag,
+    // fog_render_vert,
+    // fog_render_frag,
 
     gl2_vert,
     gl2_frag,
 
     //颜色饱和度
     hsv_frag,
+    snow_frag,
     //draco解压相关
     draco_decode_vert
 };

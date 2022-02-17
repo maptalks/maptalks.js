@@ -1,0 +1,26 @@
+#if __VERSION__ == 100
+  #ifdef GL_OES_standard_derivatives
+    #extension GL_OES_standard_derivatives : enable
+  #endif
+#endif
+precision mediump float;
+#include <gl2_frag>
+precision mediump float;
+uniform sampler2D perlinTexture;
+varying vec2 vTexCoord;
+
+float lerp(float a, float b, float w) {
+    return a + w * (b - a);
+}
+
+void main() {
+    float snowIntense = texture2D(perlinTexture, vTexCoord).r;
+    vec3 fixedC = vec3(1.0, 1.0, 1.0);
+    float r = lerp(0.5, fixedC.x, snowIntense);
+    float g = lerp(0.5, fixedC.y, snowIntense);
+    float b = lerp(0.5, fixedC.z, snowIntense);
+    glFragColor = vec4(r, g, b, 1.0);
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
+}

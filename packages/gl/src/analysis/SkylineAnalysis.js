@@ -22,24 +22,50 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     _setSkylinePass(renderer) {
-        const viewport = { width: renderer.canvas.width, height: renderer.canvas.height };
-        const skylineRenderer = new reshader.Renderer(renderer.regl);
-        this._skylinePass = new reshader.OutlinePass(skylineRenderer, viewport) || this._skylinePass;
+        const viewport = {
+            x : 0,
+            y : 0,
+            width : () => {
+                return renderer.canvas ? renderer.canvas.width : 1;
+            },
+            height : () => {
+                return renderer.canvas ? renderer.canvas.height : 1;
+            }
+        };
+        this._fbo = renderer.regl.framebuffer({
+            color: renderer.regl.texture({
+                width: 1,
+                height: 1,
+                wrap: 'clamp',
+                mag : 'linear',
+                min : 'linear'
+            }),
+            depth: true
+        });
+        this.renderer = new reshader.Renderer(renderer.regl);
+        this._skylinePass = new reshader.OutlinePass(this.renderer, viewport) || this._skylinePass;
         this.layer.addAnalysis(this);
         this._ground = this._createGround(renderer.regl);
     }
 
-    renderAnalysis(context, toAanalyseMeshes, fbo) {
-        super.renderAnalysis(context);
+    renderAnalysis(meshes) {
         this._ground = this._ground || this._createGround();
         const map = this.layer.getMap();
         this._transformGround(map);
-        let skylineMeshes = toAanalyseMeshes.concat([this._ground]);
-        this._skylinePass.render(skylineMeshes, fbo, {
+        const uniforms = {};
+        let skylineMeshes = meshes.concat([this._ground]);
+        this.renderer.clear({
+            color : [0, 0, 0, 1],
+            depth : 1,
+            framebuffer : this._fbo
+        });
+        this._skylinePass.render(skylineMeshes, this._fbo, {
             projViewMatrix: map.projViewMatrix,
             lineColor: this.options['lineColor'],
             lineWidth: this.options['lineWidth']
         });
+       uniforms['skylineMap'] = this._fbo;
+       return uniforms;
     }
 
     _createGround(regl) {
@@ -57,6 +83,9 @@ export default class SkylineAnalysis extends Analysis {
 
     remove() {
         super.remove();
+        if (this._fbo) {
+            this._fbo.destroy();
+        }
         if (this._skylinePass) {
             this._skylinePass.dispose();
         }
@@ -67,6 +96,8 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     getDefines() {
-        return null;
+        return {
+            HAS_SKYLINE:1
+        };
     }
 }

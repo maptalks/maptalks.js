@@ -1,4 +1,5 @@
 import Analysis from './Analysis';
+import * as reshader from '@maptalks/reshader.gl';
 
 export default class FloodAnalysis extends Analysis {
     constructor(options) {
@@ -8,20 +9,41 @@ export default class FloodAnalysis extends Analysis {
 
     addTo(layer) {
         super.addTo(layer);
-        this.layer.addAnalysis(this);
+        const renderer = this.layer.getRenderer();
+        const map = this.layer.getMap();
+        this._renderOptions = {};
+        this._renderOptions['waterHeight'] = this.options.waterHeight;
+        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+        if (renderer) {
+            this._setViewshedPass(renderer);
+        } else {
+            this.layer.once('renderercreate', e => {
+                this._setViewshedPass(e.renderer);
+            }, this);
+        }
         return this;
     }
 
-    renderAnalysis(context) {
-        super.renderAnalysis(context);
-        const analysisType = this.getAnalysisType();
-        context[analysisType]['renderUniforms'] = this._createUniforms();
+    _setViewshedPass(renderer) {
+        const viewport = {
+            x : 0,
+            y : 0,
+            width : () => {
+                return renderer.canvas ? renderer.canvas.width : 1;
+            },
+            height : () => {
+                return renderer.canvas ? renderer.canvas.height : 1;
+            }
+        };
+        const floodRenderer = new reshader.Renderer(renderer.regl);
+        this._floodPass = new reshader.FloodPass(floodRenderer, viewport) || this._floodPass;
+        this.layer.addAnalysis(this);
     }
 
-    _createUniforms() {
+    renderAnalysis(meshes) {
         const uniforms = {};
-        uniforms['flood_waterHeight'] = this.options['waterHeight'];
         uniforms['flood_waterColor'] = this.options['waterColor'];
+        uniforms['floodMap'] = this._floodPass.render(meshes, this._renderOptions);
         return uniforms;
     }
 

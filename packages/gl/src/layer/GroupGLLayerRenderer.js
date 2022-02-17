@@ -6,7 +6,9 @@ import * as reshader from '@maptalks/reshader.gl';
 import createREGL from '@maptalks/regl';
 import GroundPainter from './GroundPainter';
 import EnvironmentPainter from './EnvironmentPainter';
+import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
+import AnalysisPainter from '../analysis/AnalysisPainter.js';
 
 const EMPTY_COLOR = [0, 0, 0, 0];
 
@@ -38,6 +40,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         if (this._envPainter) {
             this._envPainter.update();
+        }
+        if (this._weatherPainter) {
+            this._weatherPainter.update();
         }
         this.setToRedraw();
     }
@@ -177,6 +182,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         fGL.resetDrawCalls();
         this._renderInMode('point', this._pointFBO, methodName, args, true);
+        this._weatherPainter.renderScene(drawContext);
         this._pointDrawCount = fGL.getDrawCalls();
 
         // return tex;
@@ -247,6 +253,13 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._outlineCounts = fGl.getDrawCalls();
     }
 
+    _renderRain(context) {
+        if (!this.isEnableRain()) {
+            return;
+        }
+        this._rainPainter.paint(context);
+    }
+
     _getOutlineFBO() {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
@@ -285,6 +298,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         const map = this.getMap();
         if (map.isInteracting() && this._groundPainter && this._groundPainter.isEnable()) {
+            return true;
+        }
+        if (this._rainPainter && this._rainPainter.isEnable()) {
             return true;
         }
         const layers = this.layer.getLayers();
@@ -383,6 +399,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         this._groundPainter = new GroundPainter(this.regl, this.layer);
         this._envPainter = new EnvironmentPainter(this.regl, this.layer);
+        const weatherConfig = this.layer.getWeatherConfig();
+        this._weatherPainter = new WeatherPainter(this.regl, layer, weatherConfig);
+        this._analysisPainter = new AnalysisPainter(this.regl, layer);
 
         const sceneConfig =  this.layer._getSceneConfig() || {};
         const config = sceneConfig && sceneConfig.postProcess;
@@ -557,6 +576,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._outlineFBO.destroy();
             delete this._outlineFBO;
         }
+        if (this._rainPainter) {
+            this._rainPainter.dispose();
+            delete this._rainPainter;
+        }
         super.onRemove();
     }
 
@@ -705,6 +728,12 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return config && config.enable && config.outline && config.outline.enable;
     }
 
+    isEnableWeather() {
+        const sceneConfig =  this.layer._getSceneConfig();
+        const config = sceneConfig && sceneConfig.weather;
+        return config && config.enable;
+    }
+
     _getViewStates() {
         const map = this.layer.getMap();
 
@@ -766,6 +795,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _prepareDrawContext(timestamp) {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
+        const weatherConfig = sceneConfig.weather;
         const context = {
             timestamp,
             renderMode: this._renderMode || 'default',
@@ -774,7 +804,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             testSceneFilter: mesh => {
                 return !context.sceneFilter || context.sceneFilter(mesh);
             },
-            isFinalRender: false
+            isFinalRender: false,
+            weather: {//drawContext传递到各个子图层中，用来渲染天气相关
+                fog: weatherConfig && weatherConfig.fog
+            }
         };
 
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
@@ -814,7 +847,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget = renderTarget;
             }
         }
-        this._renderAnalysis(context, renderTarget);
+        // this._renderAnalysis(context, renderTarget);
         if (this._renderMode !== 'noAa') {
 
             this._shadowContext = this._prepareShadowContext(context);
@@ -841,7 +874,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return context;
     }
 
-    _renderAnalysis(context, renderTarget) {
+    _renderAnalysis(tex) {
         let toAnalyseMeshes = [];
         this.forEachRenderer(renderer => {
             if (!renderer.getAnalysisMeshes) {
@@ -854,14 +887,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 }
             }
         });
-        const analysisTaskList = this.layer._analysisTaskList;
-        if (!analysisTaskList) {
-            return;
-        }
-        for (let i = 0; i < analysisTaskList.length; i++) {
-            const task = analysisTaskList[i];
-            task.renderAnalysis(context, toAnalyseMeshes, renderTarget && renderTarget.fbo);
-        }
+        return this._analysisPainter.paint(tex, toAnalyseMeshes);
     }
 
     _updateIncludesState(context) {
@@ -940,6 +966,23 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         //     this.setRetireFrames();
         // }
         return uniforms;
+    }
+
+    _renderWeather(tex) {
+        let meshes = [];
+        this.forEachRenderer((renderer, layer) => {
+            if (!renderer.getShadowMeshes || !layer.isVisible()) {
+                return;
+            }
+            const renderMeshes = renderer.getShadowMeshes();
+            meshes = meshes.concat(renderMeshes);
+        });
+        if (this._groundPainter) {
+            const groundMesh = this._groundPainter.getRenderMeshes();
+            meshes = meshes.concat(groundMesh);
+        }
+        const weatherConfig = this.layer.getWeatherConfig();
+        return this._weatherPainter.paint(tex, meshes, weatherConfig);
     }
 
     _getFramebufferTarget() {
@@ -1151,6 +1194,12 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this._needRetireFrames = needRetireFrames;
                 this._needUpdateSSR = false;
             }
+        }
+        if (this._analysisPainter) {
+            tex = this._renderAnalysis(tex);
+        }
+        if (this.isEnableWeather()) {
+            tex = this._renderWeather(tex);
         }
 
         if (hasPost) {
