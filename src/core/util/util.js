@@ -497,3 +497,13 @@ export function getAbsoluteURL(url) {
     a = null;
     return url;
 }
+
+export function calCanvasSize(size, devicePixelRatio) {
+    const { width, height } = size;
+    return {
+        cssWidth: width + 'px',
+        cssHeight: height + 'px',
+        width: Math.round(width * devicePixelRatio),
+        height: Math.round(height * devicePixelRatio)
+    };
+}

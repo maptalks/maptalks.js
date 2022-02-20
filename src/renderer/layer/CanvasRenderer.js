@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -459,7 +459,13 @@ class CanvasRenderer extends Class {
         }
         const size = canvasSize || this.getMap().getSize();
         const r = this.getMap().getDevicePixelRatio();
-        const width = Math.round(r * size.width), height = Math.round(r * size.height);
+        const { width, height, cssWidth, cssHeight } = calCanvasSize(size, r);
+        // width/height不变并不意味着 css width/height 不变
+        if (this.layer._canvas && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
+            canvas.style.width = cssWidth;
+            canvas.style.height = cssHeight;
+        }
+
         if (canvas.width === width && canvas.height === height) {
             return;
         }
@@ -469,20 +475,20 @@ class CanvasRenderer extends Class {
         if (r !== 1 && this.context) {
             this.context.scale(r, r);
         }
-        if (this.layer._canvas && canvas.style) {
-            canvas.style.width = size.width + 'px';
-            canvas.style.height = size.height + 'px';
-        }
     }
 
     /**
      * Clear the canvas to blank
      */
     clearCanvas() {
-        if (!this.context) {
+        if (!this.context || !this.getMap()) {
             return;
         }
-        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        //fix #1597
+        const r = this.getMap().getDevicePixelRatio();
+        const rScale = 1 / r;
+        const w = this.canvas.width * rScale, h = this.canvas.height * rScale;
+        Canvas2D.clearRect(this.context, 0, 0, Math.max(w, this.canvas.width), Math.max(h, this.canvas.height));
     }
 
     /**

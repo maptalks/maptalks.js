@@ -3,6 +3,10 @@ import { IS_NODE } from './util/env';
 
 let Browser = {};
 
+function getDevicePixelRatio() {
+    return (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+}
+
 if (!IS_NODE) {
     const ua = navigator.userAgent.toLowerCase(),
         doc = document.documentElement,
@@ -50,7 +54,7 @@ if (!IS_NODE) {
     // }
     const webgl = typeof window !== 'undefined' && ('WebGLRenderingContext' in window);
 
-    const devicePixelRatio = (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+    const devicePixelRatio = getDevicePixelRatio();
 
     let decodeImageInWorker = false;
     try {
@@ -101,7 +105,16 @@ if (!IS_NODE) {
         imageBitMap,
         resizeObserver,
         btoa,
-        decodeImageInWorker
+        decodeImageInWorker,
+        checkDevicePixelRatio: () => {
+            if (typeof window !== 'undefined') {
+                const devicePixelRatio = getDevicePixelRatio();
+                const changed = devicePixelRatio !== Browser.devicePixelRatio;
+                Browser.devicePixelRatio = devicePixelRatio;
+                return changed;
+            }
+            return false;
+        }
     };
 }
 
