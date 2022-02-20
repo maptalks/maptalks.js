@@ -79,6 +79,7 @@ const TEMP_COORD = new Coordinate(0, 0);
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
+ * @property {Boolean} [options.monitorDPRChange=true]           - dynamic monitor DevicePixelRatio change
  * @memberOf Map
  * @instance
  */
@@ -129,7 +130,8 @@ const options = {
     'renderer': 'canvas',
 
     'cascadePitches': [10, 60],
-    'renderable': true
+    'renderable': true,
+    'monitorDPRChange': true
 };
 
 /**
