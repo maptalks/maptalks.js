@@ -795,7 +795,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _prepareDrawContext(timestamp) {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
-        const weatherConfig = sceneConfig.weather;
+        const weatherConfig = sceneConfig && sceneConfig.weather;
         const context = {
             timestamp,
             renderMode: this._renderMode || 'default',

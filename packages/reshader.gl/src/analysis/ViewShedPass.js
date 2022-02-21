@@ -61,9 +61,9 @@ export default class ViewshedPass {
         const scene = new Scene(meshes);
         const eyePos = config.eyePos;
         const lookPoint = config.lookPoint;
-        const verticalAngle = config.verticalAngle;
-        const horizonAngle = config.horizonAngle;
-        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizonAngle);
+        const verticalAngle = config.verticalAngle || 90;
+        const horizontalAngle = config.horizontalAngle || 90;
+        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle);
         this._renderDepth(scene, projViewMatrixFromViewpoint);
         this._renderViewshedMap(scene, projViewMatrixFromViewpoint, config.projViewMatrix);
         return this._fbo;
@@ -103,10 +103,10 @@ export default class ViewshedPass {
     }
 
     //根据视点位置，方向，垂直角，水平角构建矩阵
-    _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizonAngle) {
-        const aspect =  verticalAngle / horizonAngle;
+    _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle) {
+        const aspect =  verticalAngle / horizontalAngle;
         const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
-        const projMatrix = mat4.perspective([], horizonAngle * Math.PI / 180, aspect, 1.0, distance);
+        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return projViewMatrix;

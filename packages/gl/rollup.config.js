@@ -61,7 +61,6 @@ module.exports = [
             'globals' : {
                 'maptalks' : 'maptalks'
             },
-            banner,
             'file': 'build/gl.es.js'
         }
     },

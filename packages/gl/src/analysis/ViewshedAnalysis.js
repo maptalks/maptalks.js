@@ -16,7 +16,7 @@ export default class ViewshedAnalysis extends Analysis {
         this._renderOptions['eyePos'] = coordinateToWorld(map, this.options.eyePos);
         this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
         this._renderOptions['verticalAngle'] = this.options.verticalAngle;
-        this._renderOptions['horizonAngle'] = this.options.horizonAngle;
+        this._renderOptions['horizontalAngle'] = this.options.horizontalAngle;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         if (renderer) {
             this._setViewshedPass(renderer);
@@ -29,7 +29,7 @@ export default class ViewshedAnalysis extends Analysis {
     }
 
     update(name, value) {
-        if (value.length > 0) {
+        if (name === 'eyePos' || name === 'lookPoint') {
             const map = this.layer.getMap();
             this._renderOptions[name] = coordinateToWorld(map, value);
         } else {

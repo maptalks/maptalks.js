@@ -1,6 +1,8 @@
 import Analysis from './Analysis';
 import * as reshader from '@maptalks/reshader.gl';
 
+const DEFAULT_WATER_COLOR = [0.1451, 0.2588, 0.4863];
+
 export default class FloodAnalysis extends Analysis {
     constructor(options) {
         super(options);
@@ -42,7 +44,7 @@ export default class FloodAnalysis extends Analysis {
 
     renderAnalysis(meshes) {
         const uniforms = {};
-        uniforms['flood_waterColor'] = this.options['waterColor'];
+        uniforms['flood_waterColor'] = this.options['waterColor'] || DEFAULT_WATER_COLOR;
         uniforms['floodMap'] = this._floodPass.render(meshes, this._renderOptions);
         return uniforms;
     }
