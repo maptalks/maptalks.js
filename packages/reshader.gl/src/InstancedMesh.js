@@ -1,10 +1,6 @@
-import { mat4, vec4 } from 'gl-matrix';
 import { extend, isSupportVAO, getBufferSize, hasOwn } from './common/Util.js';
 import Mesh from './Mesh.js';
 import { KEY_DISPOSED } from './common/Constants';
-
-const MAT4 = [];
-const MIN4 = [], MAX4 = [];
 
 export default class InstancedMesh extends Mesh {
     constructor(instancedData, instanceCount, geometry, material, config = {}) {
@@ -56,8 +52,12 @@ export default class InstancedMesh extends Mesh {
                 const attributes = activeAttributes.map(attr => attr.name);
                 const buffers = [];
                 for (let i = 0; i < attributes.length; i++) {
-                    const data = geoBuffers[attributes[i]] || this.instancedData[attributes[i]];
-                    buffers.push(data);
+                    const data = geoBuffers[attributes[i]];
+                    if (data && data.buffer) {
+                        buffers.push(data.buffer);
+                    } else {
+                        buffers.push(this.instancedData[attributes[i]]);
+                    }
                 }
                 const vaoData = {
                     attributes: buffers,
@@ -186,46 +186,46 @@ export default class InstancedMesh extends Mesh {
         this._vao = {};
     }
 
-    getBoundingBox() {
-        if (!this._bbox) {
-            this.updateBoundingBox();
-        }
-        return this._bbox;
-    }
-    /* eslint-disable camelcase */
-    updateBoundingBox() {
-        const {  instance_vectorA, instance_vectorB, instance_vectorC } = this.instancedData;
-        if (!instance_vectorA || !instance_vectorB || !instance_vectorC) {
-            return super.updateBoundingBox();
-        }
-        if (!this._bbox) {
-            this._bbox = [[Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]];
-        }
-        const box = this.geometry.boundingBox;
-        const { min, max } = box;
-        for (let i = 0; i < instance_vectorA.length; i += 4) {
-            mat4.set(MAT4,
-                instance_vectorA[i + 0], instance_vectorB[i + 0], instance_vectorC[i + 0], 0,
-                instance_vectorA[i + 1], instance_vectorB[i + 1], instance_vectorC[i + 1], 0,
-                instance_vectorA[i + 2], instance_vectorB[i + 2], instance_vectorC[i + 2], 0,
-                instance_vectorA[i + 3], instance_vectorB[i + 3], instance_vectorC[i + 3], 1
-            );
-            mat4.multiply(MAT4, MAT4, this.positionMatrix);
-            const matrix = mat4.multiply(MAT4, this.localTransform, MAT4);
-            vec4.set(MIN4, min[0], min[1], min[2], 1);
-            vec4.set(MAX4, max[0], max[1], max[2], 1);
-            vec4.transformMat4(MIN4, MIN4, matrix);
-            vec4.transformMat4(MAX4, MAX4, matrix);
-            this._bbox[0][0] = Math.min(this._bbox[0][0], MIN4[0]);
-            this._bbox[0][1] = Math.min(this._bbox[0][1], MIN4[1]);
-            this._bbox[0][2] = Math.min(this._bbox[0][2], MIN4[2]);
+    // getBoundingBox() {
+    //     if (!this._bbox) {
+    //         this.updateBoundingBox();
+    //     }
+    //     return this._bbox;
+    // }
+    // /* eslint-disable camelcase */
+    // updateBoundingBox() {
+    //     const {  instance_vectorA, instance_vectorB, instance_vectorC } = this.instancedData;
+    //     if (!instance_vectorA || !instance_vectorB || !instance_vectorC) {
+    //         return super.updateBoundingBox();
+    //     }
+    //     if (!this._bbox) {
+    //         this._bbox = [[Infinity, Infinity, Infinity], [-Infinity, -Infinity, -Infinity]];
+    //     }
+    //     const box = this.geometry.boundingBox;
+    //     const { min, max } = box;
+    //     for (let i = 0; i < instance_vectorA.length; i += 4) {
+    //         mat4.set(MAT4,
+    //             instance_vectorA[i + 0], instance_vectorB[i + 0], instance_vectorC[i + 0], 0,
+    //             instance_vectorA[i + 1], instance_vectorB[i + 1], instance_vectorC[i + 1], 0,
+    //             instance_vectorA[i + 2], instance_vectorB[i + 2], instance_vectorC[i + 2], 0,
+    //             instance_vectorA[i + 3], instance_vectorB[i + 3], instance_vectorC[i + 3], 1
+    //         );
+    //         mat4.multiply(MAT4, MAT4, this.positionMatrix);
+    //         const matrix = mat4.multiply(MAT4, this.localTransform, MAT4);
+    //         vec4.set(MIN4, min[0], min[1], min[2], 1);
+    //         vec4.set(MAX4, max[0], max[1], max[2], 1);
+    //         vec4.transformMat4(MIN4, MIN4, matrix);
+    //         vec4.transformMat4(MAX4, MAX4, matrix);
+    //         this._bbox[0][0] = Math.min(this._bbox[0][0], MIN4[0]);
+    //         this._bbox[0][1] = Math.min(this._bbox[0][1], MIN4[1]);
+    //         this._bbox[0][2] = Math.min(this._bbox[0][2], MIN4[2]);
 
-            this._bbox[1][0] = Math.max(this._bbox[1][0], MIN4[0]);
-            this._bbox[1][1] = Math.max(this._bbox[1][1], MIN4[1]);
-            this._bbox[1][2] = Math.max(this._bbox[1][2], MIN4[2]);
-        }
-        return this._bbox;
-    }
+    //         this._bbox[1][0] = Math.max(this._bbox[1][0], MIN4[0]);
+    //         this._bbox[1][1] = Math.max(this._bbox[1][1], MIN4[1]);
+    //         this._bbox[1][2] = Math.max(this._bbox[1][2], MIN4[2]);
+    //     }
+    //     return this._bbox;
+    // }
     /* eslint-enable camelcase */
 
     _getBytesPerElement(dtype) {

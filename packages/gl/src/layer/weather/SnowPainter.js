@@ -48,6 +48,9 @@ class SnowPainter {
         this._scene.setMeshes(this._groundMask);
         this.renderer = new reshader.Renderer(this._regl);
         const snowConfig = this._getSnowConfig();
+        if (!snowConfig) {
+            return;
+        }
         if (!snowConfig.snowGroundTexture) {
             this._groundNormal = this._regl.texture({width: 2, height: 2});
             console.warn('should set snow ground texture.');

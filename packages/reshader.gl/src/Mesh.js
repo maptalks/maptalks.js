@@ -366,8 +366,13 @@ class Mesh {
         }
         BoundingBox.copy(this._bbox, box);
         this._bbox.updateVertex();
-        this._bbox.transform(this._positionMatrix, this._localTransform);
-        this._currentTransform = mat4.multiply(this._currentTransform || [], this._localTransform, this._positionMatrix);
+        if (this.constructor.name === 'InstancedMesh') {
+            this._bbox.transform(this._localTransform, this._positionMatrix);
+            this._currentTransform = mat4.multiply(this._currentTransform || [], this._positionMatrix, this._localTransform);
+        } else {
+            this._bbox.transform(this._positionMatrix, this._localTransform);
+            this._currentTransform = mat4.multiply(this._currentTransform || [], this._localTransform, this._positionMatrix);
+        }
         BoundingBox.copy(this._geoBox, box);
         vec3.copy(this._bboxArr[0], this._bbox.min);
         vec3.copy(this._bboxArr[1], this._bbox.max);
