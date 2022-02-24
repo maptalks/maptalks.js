@@ -2,9 +2,31 @@ import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 
 let Browser = {};
+let requestAnimFrame;
 
 function getDevicePixelRatio() {
     return (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+}
+
+function getRequestAnimationFrame() {
+    if (typeof window !== 'undefined') {
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+    }
+    return null;
+}
+
+function loop() {
+    if (Browser.checkDevicePixelRatio) {
+        Browser.checkDevicePixelRatio();
+    }
+    requestAnimFrame(loop);
 }
 
 if (!IS_NODE) {
@@ -64,6 +86,7 @@ if (!IS_NODE) {
     } catch (err) {
         decodeImageInWorker = false;
     }
+    requestAnimFrame = getRequestAnimationFrame();
 
     Browser = {
         ie: ie,
@@ -106,8 +129,9 @@ if (!IS_NODE) {
         resizeObserver,
         btoa,
         decodeImageInWorker,
+        monitorDPRChange: true,
         checkDevicePixelRatio: () => {
-            if (typeof window !== 'undefined') {
+            if (typeof window !== 'undefined' && Browser.monitorDPRChange) {
                 const devicePixelRatio = getDevicePixelRatio();
                 const changed = devicePixelRatio !== Browser.devicePixelRatio;
                 Browser.devicePixelRatio = devicePixelRatio;
@@ -116,6 +140,10 @@ if (!IS_NODE) {
             return false;
         }
     };
+}
+
+if (requestAnimFrame) {
+    requestAnimFrame(loop);
 }
 
 export default Browser;

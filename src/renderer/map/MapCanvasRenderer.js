@@ -68,10 +68,6 @@ class MapCanvasRenderer extends MapRenderer {
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
         this._canvasUpdated = false;
-        // Dynamic monitoring of devicepixelratio
-        if (Browser.checkDevicePixelRatio && this.map.options['monitorDPRChange']) {
-            Browser.checkDevicePixelRatio();
-        }
         return true;
     }
 
