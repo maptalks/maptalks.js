@@ -82,7 +82,8 @@ function convertFeature(features, geojson, options, index) {
         }
         return;
     } else {
-        throw new Error('Input data is not a valid GeoJSON object.');
+        console.warn(`Input data type(${type}) is not a valid GeoJSON geometry type.`);
+        return;
     }
 
     features.push(createFeature(id, type, geometry, geojson.properties));

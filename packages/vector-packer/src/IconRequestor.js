@@ -1,11 +1,10 @@
-import { Marker, renderer } from 'maptalks';
+import { Marker } from 'maptalks';
 import LRUCache from './LRUCache';
 
 export default class IconRequestor {
     //options.errorUrl : alt image when failing loading the icon
     constructor(options) {
         this.options = options || {};
-        this.resources = new renderer.ResourceCache();
         this._requesting = {};
         this._cache = new LRUCache(256, function () {});
         const canvas = document.createElement('canvas');
@@ -119,7 +118,7 @@ export default class IconRequestor {
                 symbol.markerWidth = size[0];
                 symbol.markerHeight = size[1];
                 marker.setSymbol(symbol);
-                const sprite = marker['_getSprite'](this.resources);
+                const sprite = marker['_getSprite']();
                 if (sprite) {
                     const canvas = sprite.canvas;
                     const width = canvas.width;

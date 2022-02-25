@@ -3,7 +3,7 @@ import { createPainterPlugin } from '@maptalks/vt-plugin';
 import FillPainter from './painters/FillPainter';
 import LinePainter from './painters/LinePainter';
 import LineGradientPainter from './painters/LineGradientPainter';
-import LineGlowPainter from './painters/LineGlowPainter';
+// import LineGlowPainter from './painters/LineGlowPainter';
 import IconPainter from './painters/IconPainter';
 import TextPainter from './painters/TextPainter';
 import NativePointPainter from './painters/NativePointPainter';
@@ -14,8 +14,8 @@ import PhongPainter from './painters/PhongPainter';
 import WireframePainter from './painters/WireframePainter';
 
 import StandardPainter from './painters/pbr/StandardPainter';
-import ClothPainter from './painters/pbr/ClothPainter';
-import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
+// import ClothPainter from './painters/pbr/ClothPainter';
+// import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
 import GLTFPhongPainter from './painters/GLTFPhongPainter';
 import GLTFStandardPainter from './painters/GLTFStandardPainter';
@@ -60,11 +60,11 @@ WireframePlugin.registerAt(VectorTileLayer);
 const LitPlugin = createPainterPlugin('lit', StandardPainter);
 LitPlugin.registerAt(VectorTileLayer);
 
-const ClothPlugin = createPainterPlugin('cloth', ClothPainter);
-ClothPlugin.registerAt(VectorTileLayer);
+/*const ClothPlugin = createPainterPlugin('cloth', ClothPainter);
+ClothPlugin.registerAt(VectorTileLayer);*/
 
-const SubsurfacePlugin = createPainterPlugin('subsurface', SubsurfacePainter);
-SubsurfacePlugin.registerAt(VectorTileLayer);
+/*const SubsurfacePlugin = createPainterPlugin('subsurface', SubsurfacePainter);
+SubsurfacePlugin.registerAt(VectorTileLayer);*/
 
 const GLTFPhongPlugin = createPainterPlugin('gltf-phong', GLTFPhongPainter);
 GLTFPhongPlugin.registerAt(VectorTileLayer);
@@ -102,7 +102,7 @@ export {
     FillPainter,
     IconPainter,
     TextPainter,
-    LineGlowPainter,
+    // LineGlowPainter,
     NativeLinePainter,
     NativePointPainter,
     // TrailLinePainter,
@@ -112,10 +112,11 @@ export {
 
     //pbr plugins
     LitPlugin,
-    ClothPlugin,
-    SubsurfacePlugin,
+    // ClothPlugin,
+    // SubsurfacePlugin,
 
     //gltf plugins
+    GLTFPhongPlugin,
     GLTFStandardPlugin,
 
     HeatmapPlugin,

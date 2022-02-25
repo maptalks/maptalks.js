@@ -53,8 +53,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this._clearPlugin();
                 this._initPlugins();
                 this.setToRedraw();
+                this.layer.fire('refreshstyle');
             });
-            this.layer.fire('refreshstyle');
         } else {
             this._initPlugins();
         }

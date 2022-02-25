@@ -13,7 +13,7 @@ const defaultOptions = {
     collision: false,
     collisionFrameLimit: 1,
     sceneConfig: {
-        collision: false,
+        collision: true,
         fading: false,
         fadingDuration: 16 * 14,
         fadeInDelay: 600,

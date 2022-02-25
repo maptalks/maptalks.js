@@ -7,16 +7,12 @@ import Color from 'color';
 
 const defaultOptions = {
     renderer: 'gl',
-    fadeAnimation: false,
     altitudeProperty: 'altitude',
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
-    clipByPitch: false,
-    zoomBackground: true,
     tileSize: [512, 512],
     tileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
-    stencil: false,
     features: true,
     schema: false,
     cascadeTiles: true,
@@ -27,7 +23,7 @@ const defaultOptions = {
     //每帧每个瓦片最多能绘制的sdf数量
     glyphSdfLimitPerFrame: 15,
     //zooming或zoom fading时，每个瓦片最多能绘制的box(icon或text)数量
-    boxLimitOnZoomout: 7,
+    // boxLimitOnZoomout: 7,
     meshLimitPerFrame: 1,
     maxCacheSize: 72,
     antialias: false,
@@ -37,8 +33,6 @@ const defaultOptions = {
     defaultRendering: true,
     //允许用户调整文字的gamma清晰度
     textGamma: 1,
-    //是否限制每帧的 tile mesh creation
-    tileMeshCreationLimitPerFrame: 0,
     // altas中会在四周留一个像素的空隙，所以设为254，最大尺寸的icon也刚好存入256高宽的图片中
     maxIconSize: 254,
     workarounds: {
