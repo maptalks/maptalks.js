@@ -4,7 +4,9 @@ import {
     emptyImageUrl,
     now,
     isFunction,
-    getImageBitMap
+    getImageBitMap,
+    isString,
+    getAbsoluteURL
 } from '../../../core/util';
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
@@ -28,7 +30,17 @@ class TileWorkerConnection extends Actor {
         super(imageFetchWorkerKey);
     }
 
+    checkUrl(url) {
+        if (!url || !isString(url)) {
+            return url;
+        }
+        //The URL is processed. Here, only the relative protocol is processed
+        return getAbsoluteURL(url);
+
+    }
+
     fetchImage(url, workerId, cb, fetchOptions) {
+        url = this.checkUrl(url);
         const data = {
             url,
             fetchOptions
@@ -375,7 +387,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     loadTile(tile) {
         let tileImage;
-        if (this._tileImageWorkerConn) {
+        if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             tileImage = {};
             this._fetchImage(tileImage, tile);
         } else {
@@ -407,7 +419,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         this.onTileLoad(bitmap, tile);
                     });
                 }
-            }, this.layer.options['fetchOptions'] || { headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }});
+            }, this.layer.options['fetchOptions'] || {
+                headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }
+            });
         }
     }
 
