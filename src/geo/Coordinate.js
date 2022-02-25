@@ -11,6 +11,7 @@ import Position from './Position';
  * @example
  * var coord = new Coordinate({ x : 0, y : 0 });
  * @category basic types
+ * @extends Position
  */
 class Coordinate extends Position {
 

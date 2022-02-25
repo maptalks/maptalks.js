@@ -1258,7 +1258,7 @@ function (exports) {
             }
             postResponse(err, data, buffers);
         }, fetchOptions);
-    }
+    };
 
     var offCanvas, offCtx;
     function requestImageOffscreen(url, cb, fetchOptions) {
@@ -1266,24 +1266,24 @@ function (exports) {
             offCanvas = new OffscreenCanvas(2, 2);
             offCtx = offCanvas.getContext('2d');
         }
-        fetch(url, fetchOptions ? fetchOptions: {})
+        fetch(url, fetchOptions ? fetchOptions : {})
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
-                const { width, height } = bitmap;
+                var { width, height } = bitmap;
                 offCanvas.width = width;
                 offCanvas.height = height;
                 offCtx.drawImage(bitmap, 0, 0);
                 bitmap.close();
-                const imgData = offCtx.getImageData(0, 0, width, height);
+                var imgData = offCtx.getImageData(0, 0, width, height);
                 // debugger
-                cb(null, { width, height, data : new Uint8Array(imgData.data) });
+                cb(null, { width, height, data: new Uint8Array(imgData.data) });
             }).catch(err => {
+                console.error(err);
                 cb(err);
             });
     }
-}
-`;
+}`;
 
 function registerWorkerSource() {
     if (!Browser.decodeImageInWorker) {

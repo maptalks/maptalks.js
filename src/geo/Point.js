@@ -10,6 +10,7 @@ import Position from './Position';
  * @example
  * var point = new Point({x:1000, y:1000});
  * @category basic types
+ * @extends Position
  */
 class Point extends Position {
 
