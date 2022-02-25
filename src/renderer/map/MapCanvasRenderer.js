@@ -888,6 +888,22 @@ class MapCanvasRenderer extends MapRenderer {
         if (Browser.webgl && typeof document !== 'undefined') {
             addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
         }
+        if (Browser.devicePixelRatio) {
+            let tempDPI = Browser.devicePixelRatio;
+            Object.defineProperty(Browser, 'devicePixelRatio', {
+                get: () => {
+                    return tempDPI;
+                },
+                set: (value) => {
+                    if (value !== tempDPI) {
+                        tempDPI = value;
+                        if (this.map && !this.map.options['devicePixelRatio']) {
+                            this.map.checkSize(true);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     _onMapMouseMove(param) {
