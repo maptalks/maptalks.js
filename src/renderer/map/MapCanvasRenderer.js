@@ -895,6 +895,7 @@ class MapCanvasRenderer extends MapRenderer {
                     return tempDPI;
                 },
                 set: (value) => {
+                    //when devicePixelRatio change force resize all layers
                     if (value !== tempDPI) {
                         tempDPI = value;
                         if (this.map && !this.map.options['devicePixelRatio']) {

@@ -111,12 +111,15 @@ if (!IS_NODE) {
             if (typeof window !== 'undefined' && Browser.monitorDPRChange) {
                 const devicePixelRatio = getDevicePixelRatio();
                 const changed = devicePixelRatio !== Browser.devicePixelRatio;
-                Browser.devicePixelRatio = devicePixelRatio;
+                if (changed) {
+                    Browser.devicePixelRatio = devicePixelRatio;
+                }
                 return changed;
             }
             return false;
         }
     };
+    //monitor devicePixelRatio change
     if (typeof window !== 'undefined' && window.matchMedia) {
         for (let i = 1; i < 500; i++) {
             const dpi = (i * 0.01).toFixed(2);
