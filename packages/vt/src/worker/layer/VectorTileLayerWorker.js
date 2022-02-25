@@ -38,18 +38,23 @@ export default class VectorTileLayerWorker extends LayerWorker {
                     };
                     const types = layers[layer].types;
                     for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
-                        feature = tile.layers[layer].feature(i);
+                        try {
+                            feature = tile.layers[layer].feature(i);
 
-                        types[feature.type] = 1;
-                        // feature.properties['$layer'] = layer;
-                        // feature.properties['$type'] = feature.type;
-                        features.push({
-                            type: feature.type,
-                            layer: layer,
-                            geometry: feature.loadGeometry(),
-                            properties: feature.properties,
-                            extent: feature.extent
-                        });
+                            types[feature.type] = 1;
+                            // feature.properties['$layer'] = layer;
+                            // feature.properties['$type'] = feature.type;
+                            features.push({
+                                type: feature.type,
+                                layer: layer,
+                                geometry: feature.loadGeometry(),
+                                properties: feature.properties,
+                                extent: feature.extent
+                            });
+                        } catch (err) {
+                            console.warn('error when load vt geometry:', err);
+                        }
+
                     }
                 }
             }
