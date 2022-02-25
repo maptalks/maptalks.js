@@ -1,7 +1,7 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack/*, CirclePack*/ } from '@maptalks/vector-packer';
-// import { GlyphRequestor } from '@maptalks/vector-packer';
+// import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
 // import Browser from '../util/Browser';
@@ -162,13 +162,35 @@ export default class BaseLayerWorker {
 
     fetchIconGlyphs(icons, glyphs, cb) {
         //2019-03-20 win10 chrome 74 64位，OffscreenCanvas fillText性能只有主线程的10%，还不可用
-        // if (glyphs && Browser.offscreenCanvas) {
-        //     this._glyphRequestor = new GlyphRequestor();
-        //     this._glyphRequestor.getGlyphs(glyphs, cb);
+        // 2021-02-25 Offscreen.fillText会造成程序出错，还不可用
+        // debugger
+        // if (Browser.offscreenCanvas) {
+        //     if (!this._glyphRequestor) {
+        //         this._glyphRequestor = new GlyphRequestor();
+        //     }
+        //     debugger
+        //     this._glyphRequestor.getGlyphs(glyphs, (err, glyphData) => {
+        //         if (err) {
+        //             cb(err);
+        //             return;
+        //         }
+
+        //         // this._iconRequestor.getIcons(icons, (err, data) => {
+        //         //     if (err) {
+        //         //         cb(err);
+        //         //         return;
+        //         //     }
+        //         //     cb(null, { icons: data.icons, glyphs: glyphData.glyphs });
+        //         // });
+        //         this.upload('fetchIconGlyphs', { icons, glyphs: null }, null, data => {
+        //             cb(null, { icons: data.icons, glyphs: glyphData.glyphs });
+        //         });
+        //     });
         // } else {
-        //command, params, buffers and callback
-        this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
+        //     //command, params, buffers and callback
+        //     this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
         // }
+        this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
     }
 
     _createTileData(layers, features, { glScale, zScale, tileInfo }) {

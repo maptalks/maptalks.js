@@ -165,8 +165,9 @@ describe('vector tile integration specs', () => {
                             groupLayer.getRenderer().setToRedraw();
                         }
                         return;
+                    } if (count === limit) {
+                        groupLayer.once('layerload', groupLayerListener);
                     }
-                    groupLayer.once('layerload', groupLayerListener);
                 });
             } else {
                 groupLayer.on('layerload', () => {
@@ -174,8 +175,9 @@ describe('vector tile integration specs', () => {
                     count++;
                     if (count < limit) {
                         return;
+                    } else if (count === limit) {
+                        groupLayerListener();
                     }
-                    groupLayerListener();
                 });
             }
             groupLayer.addTo(map);
