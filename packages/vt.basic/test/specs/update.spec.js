@@ -980,7 +980,7 @@ describe('update style specs', () => {
                 }
             }
         };
-        map.setLightConfig({
+        map.setLights({
           "directional": {
             "direction": [
               1,
@@ -1101,7 +1101,7 @@ describe('update style specs', () => {
                 symbol: { lineWidth: 24, material }
             }
         ];
-        map.setLightConfig({
+        map.setLights({
             ambient: {
                 color: [0.3, 0.3, 0.3]
             },
@@ -1180,7 +1180,7 @@ describe('update style specs', () => {
                 symbol: { material }
             }
         ];
-        map.setLightConfig({
+        map.setLights({
             ambient: {
                 color: [0.3, 0.3, 0.3]
             },
@@ -1274,7 +1274,7 @@ describe('update style specs', () => {
         const style = [
             linePlugin
         ];
-        map.setLightConfig({
+        map.setLights({
             ambient: {
                 color: [0.3, 0.3, 0.3]
             },
@@ -1501,7 +1501,7 @@ describe('update style specs', () => {
         layer.once('pluginsinited', () => {
             layer.updateDataConfig(0, { foo2: 2 });
             layer.updateDataConfig(1, { foo3: 2 });
-            assert.equal(refreshCount, 2);
+            assert.equal(refreshCount, 0);
             assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
             assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
             assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, { type: 'native-point', foo2: 2 });
