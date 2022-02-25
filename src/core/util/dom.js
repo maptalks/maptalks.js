@@ -172,12 +172,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
             src: handler
         });
         // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
-        if (Browser.ie) {
-            // ie doesn't support options as the third parameter
-            obj.addEventListener(type, eventHandler, false);
-        } else {
-            obj.addEventListener(type, eventHandler, { capture: false, passive: false });
-        }
+        obj.addEventListener(type, eventHandler, Browser.supportsPassive ? { capture: false, passive: false } : false);
     }
     return this;
 }
