@@ -163,7 +163,7 @@ if (!IS_NODE) {
                 maps.filter(map => {
                     return map;
                 }).forEach(map => {
-                    if (map.options['devicePixelRatio'] || !map.checkSize || !map.getRendere) {
+                    if (map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
                         return;
                     }
                     const renderer = map.getRenderer();
