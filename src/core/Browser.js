@@ -155,21 +155,22 @@ if (!IS_NODE) {
                 return tempDPI;
             },
             set: (value) => {
-                //when devicePixelRatio change force resize all layers
-                if (value !== tempDPI) {
-                    tempDPI = value;
-                    maps.filter(map => {
-                        return map;
-                    }).forEach(map => {
-                        if (map.options['devicePixelRatio'] || !map.checkSize) {
-                            return;
-                        }
-                        const renderer = map.getRenderer();
-                        if (renderer) {
-                            map.checkSize(true);
-                        }
-                    });
+                if (value === tempDPI) {
+                    return;
                 }
+                //when devicePixelRatio change force resize all layers
+                tempDPI = value;
+                maps.filter(map => {
+                    return map;
+                }).forEach(map => {
+                    if (map.options['devicePixelRatio'] || !map.checkSize || !map.getRendere) {
+                        return;
+                    }
+                    const renderer = map.getRenderer();
+                    if (renderer) {
+                        map.checkSize(true);
+                    }
+                });
             }
         });
     }
