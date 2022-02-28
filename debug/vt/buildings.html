@@ -147,10 +147,10 @@
     };
 
     const ambientResource = lights.ambient.resource;
-    map.setLightConfig(lights);
+    map.setLights(lights);
 
     function updateLight() {
-      map.setLightConfig({
+      map.setLights({
         ambient: {
         resource: {
           ////echarts-gl上的例子
@@ -492,7 +492,7 @@
 
     function updateCubeLight() {
       lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';
-      map.setLightConfig(lights);
+      map.setLights(lights);
     }
 
     function highlight() {
@@ -564,10 +564,10 @@
     function updateAmbientLight() {
       if (lights.ambient.resource) {
         lights.ambient.resource = null;
-        map.setLightConfig(lights);
+        map.setLights(lights);
       } else {
         lights.ambient.resource = ambientResource;
-        map.setLightConfig(lights);
+        map.setLights(lights);
       }
 
     }
@@ -588,17 +588,17 @@
 
       xCtrl.onChange(function () {
         dirConfig[0] = direction.x;
-        map.setLightConfig(lights);
+        map.setLights(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
       yCtrl.onChange(function () {
         dirConfig[1] = direction.y;
-        map.setLightConfig(lights);
+        map.setLights(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
       zCtrl.onChange(function () {
         dirConfig[2] = direction.z;
-        map.setLightConfig(lights);
+        map.setLights(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
 
@@ -614,7 +614,7 @@
       var rCtrl = folder.add(ambient, 'r', 0, 360, 0.1);
       rCtrl.onChange(function () {
         lights.ambient.orientation = ambient.r;
-        map.setLightConfig(lights);
+        map.setLights(lights);
         groupLayer.setSceneConfig(sceneConfig);
       });
       var mCtrl = folder.add(ambient, 'mode', 0, 1, 1);
@@ -709,7 +709,7 @@
       var hdrHsvValue = { 环境光色相: 0, 环境光饱和度: 0, 环境光亮度: 0 };
       var hdrHsvOnChange = function () {
         lights.ambient["hsv"] = [hdrHsvValue['环境光色相'], hdrHsvValue['环境光饱和度'], hdrHsvValue['环境光亮度']];
-        map.setLightConfig(lights);
+        map.setLights(lights);
       };
       var hdrHsv = gui.addFolder('环境光色相/饱和度');
       hdrHsv.open();
