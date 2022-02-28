@@ -39,6 +39,7 @@
     "publish-next": "npm publish --tag next"
   },
   "module": "dist/maptalks.es.js",
+  "moduleall": "dist/maptalks.all.es.js",
   "main": "dist/maptalks.js",
   "jsnext:main": "dist/maptalks.es.js",
   "style": "dist/maptalks.css",
