@@ -50,18 +50,37 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
         const rings = classifyRings(feature.geometry, 0);
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
-            // 16 here represents 2 pixels
-            const poi = findPoleOfInaccessibility(polygon, 16);
-            if (!isOut(poi, EXTENT)) {
-                anchors.push(poi);
+            if (placement === 'vertex') {
+                for (let ii = 0; ii < polygon.length; ii++) {
+                    const ring = polygon[ii];
+                    for (let iii = 0; iii < ring.length; iii++) {
+                        if (!isOut(ring[iii], EXTENT)) {
+                            anchors.push(ring[iii]);
+                        }
+                    }
+                }
+            } else {
+                // 16 here represents 2 pixels
+                const poi = findPoleOfInaccessibility(polygon, 16);
+                if (!isOut(poi, EXTENT)) {
+                    anchors.push(poi);
+                }
             }
         }
     } else if (feature.type === 2) {
         // https://github.com/mapbox/mapbox-gl-js/issues/3808
         for (let i = 0; i < feature.geometry.length; i++) {
             const line = feature.geometry[i];
-            if (!isOut(line[0], EXTENT)) {
-                anchors.push(line[0]);
+            if (placement === 'vertex') {
+                for (let ii = 0; ii < line.length; ii++) {
+                    if (!isOut(line[ii], EXTENT)) {
+                        anchors.push(line[ii]);
+                    }
+                }
+            } else {
+                if (!isOut(line[0], EXTENT)) {
+                    anchors.push(line[0]);
+                }
             }
         }
     } else if (feature.type === 1) {
