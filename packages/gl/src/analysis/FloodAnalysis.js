@@ -45,6 +45,7 @@ export default class FloodAnalysis extends Analysis {
     renderAnalysis(meshes) {
         const uniforms = {};
         uniforms['flood_waterColor'] = this.options['waterColor'] || DEFAULT_WATER_COLOR;
+        this._renderOptions['waterHeight'] = this.options['waterHeight'];
         uniforms['floodMap'] = this._floodPass.render(meshes, this._renderOptions);
         return uniforms;
     }
