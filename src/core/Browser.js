@@ -64,14 +64,16 @@ if (!IS_NODE) {
     /* Add feature test for passive event listener support */
     let supportsPassive = false;
     try {
-        window.addEventListener('testPassive', _ => {
+        window.addEventListener('testPassive', () => {
         }, {
             get passive() {
                 supportsPassive = true;
             }
         });
+    /*eslint-disable no-empty */
     } catch (e) {
     }
+    /*eslint-enable no-empty */
 
     Browser = {
         ie: ie,
