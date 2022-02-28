@@ -460,6 +460,10 @@ export function getPointsResultPts(points = [], ptKey = '_pt') {
     const resultPoints = [];
     for (let i = 0, len = points.length; i < len; i++) {
         const point = points[i];
+        if (!point) {
+            resultPoints.push(null);
+            continue;
+        }
         if (!point[ptKey]) {
             point[ptKey] = new Point(0, 0);
         }

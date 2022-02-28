@@ -69,14 +69,13 @@ if (!IS_NODE) {
     /* Add feature test for passive event listener support */
     let supportsPassive = false;
     try {
-        // eslint-disable-next-line no-unused-vars
-        window.addEventListener('testPassive', _ => {
+        window.addEventListener('testPassive', () => {
         }, {
             get passive() {
                 supportsPassive = true;
             }
         });
-        // eslint-disable-next-line no-empty
+    /*eslint-disable no-empty */
     } catch (e) {
     }
 

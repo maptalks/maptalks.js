@@ -368,6 +368,9 @@ const ImageGLRenderable = Base => {
          * @param {WebGLTexture} texture
          */
         saveImageBuffer(buffer) {
+            if (!this._imageBuffers) {
+                this._imageBuffers = [];
+            }
             this._imageBuffers.push(buffer);
         }
 
