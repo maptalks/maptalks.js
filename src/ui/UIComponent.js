@@ -578,6 +578,7 @@ class UIComponent extends Eventable(Class) {
         const events = {};
         if (this._owner && (this._owner instanceof Geometry)) {
             events.positionchange = this.onGeometryPositionChange;
+            events.symbolchange = this.onGeometryPositionChange;
         }
         if (this.getOwnerEvents) {
             extend(events, this.getOwnerEvents());
