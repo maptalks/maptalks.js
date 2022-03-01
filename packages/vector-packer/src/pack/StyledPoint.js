@@ -108,23 +108,34 @@ export default class StyledPoint {
         let size;
         if (hasMarker) {
             size = evaluateIconSize(symbol, this.symbolDef, properties, zoom, markerWidthFn, markerHeightFn) || [0, 0];
-            if (symbol.markerTextFit) {
-                let textFit = symbol.markerTextFit;
-                if (markerTextFitFn) {
-                    textFit = markerTextFitFn(zoom, properties);
-                }
+            let textFit = symbol.markerTextFit;
+            if (markerTextFitFn) {
+                textFit = markerTextFitFn(zoom, properties);
+            }
+            if (textFit) {
                 if (textFit && textFit !== 'none') {
                     const textSize = symbol.text.textSize;
-                    const textName = symbol.text.textName;
+                    let textName = symbol.text.textName;
+                    if (isFunctionDefinition(textName)) {
+                        textName = interpolated(textName)(zoom, properties);
+                    }
                     const text = resolveText(textName, properties);
                     if (!text) {
                         // blank text
                         size[0] = size[1] = -1;
                     } else {
                         if (isFunctionDefinition(textSize) && !symbol.text['__fn_textSize']) {
-                            symbol.text['__fn_textSize'] = interpolated(textSize);
+                            symbol.text['__fn_textSize_0'] = interpolated(textSize);
+                            symbol.text['__fn_textSize'] = (zoom, properties) => {
+                                const v = symbol.text['__fn_textSize_0'](zoom, properties);
+                                if (isFunctionDefinition(v)) {
+                                    return interpolated(v)(zoom, properties);
+                                } else {
+                                    return v;
+                                }
+                            };
                         }
-                        const tsize = evaluateTextSize(symbol.text, properties, zoom);
+                        const tsize = evaluateTextSize(symbol.text, symbol.text, properties, zoom);
                         if (textFit === 'width' || textFit === 'both') {
                             size[0] = tsize[0] * text.length;
                         }
