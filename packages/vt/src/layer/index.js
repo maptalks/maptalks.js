@@ -15,6 +15,8 @@ Vector3DLayer.VERSION = version;
 
 initialize();
 
+export * from './plugins'
+
 export {
     VectorTileLayer,
     MapboxVectorTileLayer,

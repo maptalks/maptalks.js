@@ -2,6 +2,8 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
 const terser = require('rollup-plugin-terser').terser;
+const glslMinify = require('@maptalks/rollup-plugin-glsl-minify');
+const replace = require('@rollup/plugin-replace');
 const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
@@ -36,94 +38,121 @@ function removeGlobal() {
     };
 }
 
+function glsl() {
+
+    return {
+        transform(code, id) {
+            if (/\.vert$/.test(id) === false && /\.frag$/.test(id) === false && /\.glsl$/.test(id) === false) return null;
+            var transformedCode = code
+                .replace(/\r{1,}/g, '\\n') // # \r+ to \n
+                .replace(/[ \t]*\/\/.*\n/g, '') // remove //
+                .replace(/[ \t]*\/\*[\s\S]*?\*\//g, '') // remove /* */
+                .replace(/\n{1,}/g, '\\n') // # \n+ to \n
+                .replace(/"/g, '\\"');
+            transformedCode = `export default "${transformedCode}";`;
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
+
+
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 const outro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');`;
 
 module.exports = [{
-    input: 'src/worker/index.js',
-    plugins: [
-        json(),
-        nodeResolve({
-            mainFields: ['module', 'main'],
-        }),
-        commonjs()
-    ],
-    external: ['maptalks'],
-    output: {
-        format: 'amd',
-        name: 'maptalks',
-        globals: {
-            'maptalks': 'maptalks'
+        input: 'src/worker/index.js',
+        external: ['maptalks'],
+        plugins: [
+            json(),
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            replace({
+              // 'this.exports = this.exports || {}': '',
+              '(function (exports) {': 'function (exports) {',
+              '})(this.exports = this.exports || {});': '}',
+              preventAssignment: false,
+              delimiters: ['', '']
+            })
+        ],
+        output: {
+            strict: false,
+            format: 'iife',
+            name: 'exports',
+            globals: ['exports'],
+            extend: true,
+            file: 'build/worker.js',
+            banner: `export default `,
+            footer: ``
         },
-        extend: true,
-        file: 'build/worker.js'
     },
-    // watch: {
-    //     include: 'src/worker/**'
-    // }
-},
-{
-    input: 'src/layer/index.js',
-    external: ['maptalks', '@maptalks/gl'],
-    plugins: [
-        json(),
-        nodeResolve({
-            mainFields: ['module', 'main'],
-        }),
-        commonjs()
-    ],
-    output: {
-        format: 'amd',
-        name: 'maptalks',
-        globals: {
-            'maptalks': 'maptalks',
-            '@maptalks/gl': 'maptalksgl'
+    {
+        input: './build/index.js',
+        external: ['maptalks', '@maptalks/gl'],
+        output: {
+            globals: {
+                'maptalks': 'maptalks',
+                '@maptalks/gl': 'maptalksgl'
+            },
+            banner,
+            outro,
+            extend: true,
+            name: 'maptalks',
+            file: outputFile,
+            format: 'umd',
+            sourcemap: production ? false : 'inline',
         },
-        extend: true,
-        file: 'build/layer.js'
+        plugins: [
+            json(),
+            production ? glslMinify({
+                commons: []
+            }) : glsl(),
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            removeGlobal()
+        ].concat(plugins),
+        watch: {
+            include: 'build/**/*.js'
+        }
     },
-    // watch: {
-    //     include: 'src/layer/**'
-    // }
-},
-{
-    input: './build/index.js',
-    external: ['maptalks', '@maptalks/gl'],
-    output: {
-        globals: {
-            'maptalks': 'maptalks',
-            '@maptalks/gl': 'maptalksgl'
+    {
+        input: './build/index.js',
+        external: ['maptalks', '@maptalks/gl',
+        '@mapbox/point-geometry', '@mapbox/vector-tile', '@maptalks/feature-filter', '@maptalks/function-type', '@maptalks/geojson-bbox',
+        '@maptalks/tbn-packer', '@maptalks/vt-plugin',
+         'animation-easings', 'color', 'earcut', 'fast-deep-equal', 'geojson-vt', 'gl-matrix', 'pbf', 'quickselect', 'rbush', 'vt-pbf'],
+        output: {
+            globals: {
+                'maptalks': 'maptalks',
+                '@maptalks/gl': 'maptalksgl'
+            },
+            banner,
+            outro,
+            extend: true,
+            name: 'maptalks',
+            file: 'dist/maptalks.vt.mjs',
+            format: 'es',
+            sourcemap: production ? false : 'inline',
         },
-        banner,
-        outro,
-        extend: true,
-        name: 'maptalks',
-        file: outputFile,
-        format: 'umd',
-        sourcemap: false,
-        intro: `
-var IS_NODE = typeof exports === 'object' && typeof module !== 'undefined';
-var maptalks = maptalks;
-var maptalksgl = maptalksgl;
-if (IS_NODE) {
-    maptalks = maptalks || require('maptalks');
-    maptalksgl = maptalksgl || require('@maptalks/gl');
-}
-var workerLoaded;
-function define(_, chunk) {
-if (!workerLoaded) {
-    maptalks['registerWorkerAdapter']('${pkg.name}', chunk);
-    workerLoaded = true;
-} else {
-    var exports = IS_NODE ? module.exports : maptalks;
-    chunk(exports, maptalks, maptalksgl);
-}
-}`
-    },
-    plugins: [
-        removeGlobal()
-    ].concat(plugins),
-    watch: {
-        include: 'build/**/*.js'
+        plugins: [
+            json(),
+            production ? glslMinify({
+                commons: []
+            }) : glsl(),
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            removeGlobal()
+        ].concat(plugins),
+        watch: {
+            include: 'build/**/*.js'
+        }
     }
-}];
+];

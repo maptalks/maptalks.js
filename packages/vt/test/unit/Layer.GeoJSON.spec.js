@@ -2,7 +2,6 @@ const maptalks = require('maptalks');
 const path = require('path');
 const assert = require('assert');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
-require('../../../../packages/vt.basic/dist/maptalks.vt.basic.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 // const deepEqual = require('fast-deep-equal');
 

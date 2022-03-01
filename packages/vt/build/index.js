@@ -5,7 +5,8 @@ import * as maptalksgl from '@maptalks/gl';
 const mat4 = maptalksgl.mat4;
 mat4.create();
 
-import './worker.js';
+import chunk from './worker.js';
+maptalks.registerWorkerAdapter('@maptalks/vt', chunk);
 
-import './layer.js';
+export * from '../src/layer/';
 

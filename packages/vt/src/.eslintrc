@@ -1,11 +1,20 @@
 {
-
+  "root": true,
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true
+  },
+  "extends": "eslint:recommended",
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "sourceType": "module"
+  },
   "globals": {
     "importScripts" : true
   },
   "rules": {
-    "no-var" : "error",
-    "prefer-const": "error",
-    "global-require": 0
+    "object-curly-spacing": [2, "always"],
+    "key-spacing": 2
   }
 }

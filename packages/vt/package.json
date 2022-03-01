@@ -4,6 +4,7 @@
   "description": "The vector-tile plugin for maptalks.js",
   "main": "dist/maptalks.vt.js",
   "browser": "dist/maptalks.vt.js",
+  "module": "dist/maptalks.vt.mjs",
   "files": [
     "dist/maptalks.vt.js"
   ],
@@ -28,6 +29,7 @@
     "@maptalks/tbn-packer": "^1.2.6",
     "@maptalks/vector-packer": "^0.60.3",
     "@maptalks/vt-plugin": "^0.60.3",
+    "animation-easings": "^0.1.0",
     "color": "^3.0.0",
     "earcut": "^2.2.1",
     "fast-deep-equal": "^2.0.1",
@@ -41,9 +43,11 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
+    "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-replace": "4.0.0",
     "electron": "^4.2.12",
     "electron-mocha": "^6.0.4",
     "eslint": "^7.32.0",
