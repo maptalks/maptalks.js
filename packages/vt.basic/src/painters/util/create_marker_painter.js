@@ -239,7 +239,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
                 }
 
-                u8[0] = y;
+                u8[0] = x;
                 return u8[0];
             }
         },
