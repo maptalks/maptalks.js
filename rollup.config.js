@@ -69,7 +69,7 @@ module.exports = [
                 'sourcemap': false,
                 'format': 'es',
                 banner,
-                'file': pkg.moduleall
+                'file': pkg.module_browser
             }
         ]
     }];
