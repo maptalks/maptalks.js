@@ -109,7 +109,7 @@ function translateToSVGStyles(s) {
     return result;
 }
 
-export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
+export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidthFn, markerHeightFn) {
     if (isNil(symbolDef.markerWidth) && isNil(symbolDef.markerHeight)) {
         return null;
     }
@@ -126,7 +126,11 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
             }
             // identity 返回的是stops
             if (isObject(width)) {
-                width = findLargestStops(width);
+                if (width.type === 'identity') {
+                    width = markerWidthFn(zoom, properties);
+                } else {
+                    width = findLargestStops(width);
+                }
             }
         }
     }
@@ -140,7 +144,11 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom) {
             }
             // identity 返回的是stops
             if (isObject(height)) {
-                height = findLargestStops(height);
+                if (height.type === 'identity') {
+                    height = markerHeightFn(zoom, properties);
+                } else {
+                    height = findLargestStops(height);
+                }
             }
 
         }

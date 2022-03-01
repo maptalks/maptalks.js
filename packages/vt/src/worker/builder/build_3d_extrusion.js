@@ -148,7 +148,7 @@ function createQuaternion(normals, tangents) {
 const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const fnTypes = {};
-    if (isFnTypeSymbol('polygonFill', symbol)) {
+    if (isFnTypeSymbol(symbol['polygonFill'])) {
         const colorCache = {};
         const colorFn = piecewiseConstant(symbol.polygonFill);
         const aColor = new Uint8Array(feaIndexes.length * 4);
@@ -178,7 +178,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         }
         fnTypes.aColor = aColor;
     }
-    if (isFnTypeSymbol('polygonOpacity', symbol)) {
+    if (isFnTypeSymbol(symbol['polygonOpacity'])) {
         const opacityFn = interpolated(symbol.polygonOpacity);
         const aOpacity = new Uint8Array(feaIndexes.length);
         for (let i = 0; i < feaIndexes.length; i++) {

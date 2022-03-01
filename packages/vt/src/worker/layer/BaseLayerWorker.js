@@ -757,7 +757,7 @@ function hasFnTypeKeys(symbol) {
         return 0;
     }
     for (const p in symbol) {
-        if (isFnTypeSymbol(p, symbol)) {
+        if (isFnTypeSymbol(symbol[p])) {
             return 1;
         }
     }

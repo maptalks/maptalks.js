@@ -59,11 +59,27 @@ export default class VectorPack {
     static genFnTypes(symbolDef) {
         const fnTypes = {};
         for (const p in symbolDef) {
-            if (isFnTypeSymbol(p, symbolDef)) {
+            if (isFnTypeSymbol(symbolDef[p])) {
                 if (interpolatedSymbols[p]) {
-                    fnTypes[p + 'Fn'] = interpolated(symbolDef[p]);
+                    fnTypes[p + '_Fn_0'] = interpolated(symbolDef[p]);
+                    fnTypes[p + 'Fn'] = (zoom, properties) => {
+                        const v = fnTypes[p + '_Fn_0'](zoom, properties);
+                        if (isFnTypeSymbol(v)) {
+                            return interpolated(v)(zoom, properties);
+                        } else {
+                            return v;
+                        }
+                    }
                 } else {
-                    fnTypes[p + 'Fn'] = piecewiseConstant(symbolDef[p]);
+                    fnTypes[p + '_Fn_0'] = piecewiseConstant(symbolDef[p]);
+                    fnTypes[p + 'Fn'] = (zoom, properties) => {
+                        const v = fnTypes[p + '_Fn_0'](zoom, properties);
+                        if (isFnTypeSymbol(v)) {
+                            return piecewiseConstant(v)(zoom, properties);
+                        } else {
+                            return v;
+                        }
+                    }
                 }
             }
         }
@@ -84,7 +100,7 @@ export default class VectorPack {
         this.styledVectors = [];
         this.properties = {};
         this._fnTypes = VectorPack.genFnTypes(this.symbolDef);
-        if (isFnTypeSymbol('visible', this.symbolDef)) {
+        if (isFnTypeSymbol(this.symbolDef['visible'])) {
             this._visibleFn = interpolated(this.symbolDef['visible']);
         }
         if (options.atlas) {

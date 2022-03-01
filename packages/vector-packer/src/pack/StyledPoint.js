@@ -107,7 +107,7 @@ export default class StyledPoint {
         const hasText = !isNil(this.symbolDef.textName);
         let size;
         if (hasMarker) {
-            size = evaluateIconSize(symbol, this.symbolDef, properties, zoom) || [0, 0];
+            size = evaluateIconSize(symbol, this.symbolDef, properties, zoom, markerWidthFn, markerHeightFn) || [0, 0];
             if (symbol.markerTextFit) {
                 let textFit = symbol.markerTextFit;
                 if (markerTextFitFn) {

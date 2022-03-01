@@ -195,8 +195,8 @@ export function compileStyle(styles) {
     return compile(styles);
 }
 
-export function isFnTypeSymbol(name, symbolDef) {
-    return isFunctionDefinition(symbolDef[name]) && symbolDef[name].property;
+export function isFnTypeSymbol(v) {
+    return isFunctionDefinition(v) && v.property;
 }
 
 export function hasOwn(obj, prop) {
