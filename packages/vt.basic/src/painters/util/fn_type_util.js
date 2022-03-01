@@ -9,6 +9,8 @@ export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
     'markerWidth': 1,
     'markerHeight': 1,
     'markerOpacity': 1,
+    'markerDx': 1,
+    'markerDy': 1,
     'lineWidth': 1,
     'lineColor': 1,
     'lineOpacity': 1,

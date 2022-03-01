@@ -65,7 +65,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                     props['_symbol_' + p] = symbol[i][p];
                 }
             }
-            const pickingId = (currentFeature && currentFeature[i]) ? currentFeature[i].id : kidGen.pickingId++;
+            const pickingId = (currentFeature && currentFeature[i]) ? currentFeature[i][keyName] : kidGen.pickingId++;
             const fea = {
                 type,
                 id: kid,

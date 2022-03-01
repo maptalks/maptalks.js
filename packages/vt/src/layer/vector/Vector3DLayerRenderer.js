@@ -1015,6 +1015,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     onGeometryAdd(geometries) {
+        if (!this.canvas) {
+            // 说明createContext还没有调用，createContext中同样也会调用该方法，避免重复调用。
+            return;
+        }
         if (!geometries || !geometries.length) {
             return;
         }

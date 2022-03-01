@@ -1281,6 +1281,56 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('fuzhenn/memo#65, correct symbol', done => {
+        const symbol = [
+            {
+              markerFile: 'file://' + path.resolve(__dirname, 'fixtures/marker-symbols/station-orange.png'),
+              markerWidth: {
+                stops: [
+                  [4, 21],
+                  [8, 28]
+                ]
+              },
+              markerHeight: {
+                stops: [
+                  [4, 24],
+                  [8, 32]
+                ]
+              }
+            },
+            {
+              markerFile: 'file://' + path.resolve(__dirname, 'fixtures/marker-symbols/oil-4.png'),
+              markerWidth: {
+                stops: [
+                  [4, 7],
+                  [8, 14]
+                ]
+              },
+              markerHeight: {
+                stops: [
+                  [4, 15],
+                  [8, 30]
+                ]
+              },
+              markerDx: {
+                stops: [
+                  [4, 20],
+                  [8, 30]
+                ]
+              }
+            }
+          ];
+        const marker0 = new maptalks.Marker([0, 0], { symbol });
+        const layer = new PointLayer('point').addTo(map);
+        const canvas = map.getRenderer().canvas;
+        layer.once('canvasisdirty', () => {
+            const expectedPath = path.join(__dirname, 'fixtures', 'marker-symbols', 'expected.png');
+            compareExpected(canvas, { expectedPath });
+            done();
+        });
+        layer.addGeometry([marker0]);
+    });
+
     it('marker should can update textFill with 2 markers, fuzhenn/maptalks-studio#2375', done => {
         const marker0 = new maptalks.Marker(map.getCenter(), {
             id: 0,
