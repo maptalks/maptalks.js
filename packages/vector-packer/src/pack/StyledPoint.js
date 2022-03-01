@@ -124,10 +124,12 @@ export default class StyledPoint {
                         // blank text
                         size[0] = size[1] = -1;
                     } else {
-                        if (isFunctionDefinition(textSize) && !symbol.text['__fn_textSize']) {
-                            symbol.text['__fn_textSize_0'] = interpolated(textSize);
-                            symbol.text['__fn_textSize'] = (zoom, properties) => {
-                                const v = symbol.text['__fn_textSize_0'](zoom, properties);
+                        const textSizeFnName = '__fn_textSize'.trim();
+                        const textSizeFn0Name = '__fn_textSize_0'.trim();
+                        if (isFunctionDefinition(textSize) && !symbol.text[textSizeFnName]) {
+                            symbol.text[textSizeFn0Name] = interpolated(textSize);
+                            symbol.text[textSizeFnName] = (zoom, properties) => {
+                                const v = symbol.text[textSizeFn0Name](zoom, properties);
                                 if (isFunctionDefinition(v)) {
                                     return interpolated(v)(zoom, properties);
                                 } else {

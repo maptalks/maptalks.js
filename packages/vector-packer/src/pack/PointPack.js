@@ -25,6 +25,8 @@ const DEFAULT_UNIFORMS = {
     'textRotation': 0
 };
 
+const IDX_PROP = '__index';
+
 function getPackSDFFormat(symbol) {
     if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
         //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
@@ -130,6 +132,7 @@ export default class PointPack extends VectorPack {
     }
 
     static mergeLineFeatures(features, symbolDef, zoom) {
+        const keyName = (IDX_PROP + '').trim();
         const merging = getFeauresToMerge(features, symbolDef, zoom);
         if (merging.length) {
             const result = [];
@@ -148,7 +151,7 @@ export default class PointPack extends VectorPack {
                     mergedFeatures = mergedFeatures.concat(result[i]);
                 }
                 mergedFeatures.sort((a, b) => {
-                    return a['__index'] - b['__index'];
+                    return a[keyName] - b[keyName];
                 });
                 return mergedFeatures;
             }
@@ -764,6 +767,7 @@ export default class PointPack extends VectorPack {
 }
 
 function getFeauresToMerge(features, symbolDef, zoom) {
+    const keyName = (IDX_PROP + '').trim();
     const fnTypes = VectorPack.genFnTypes(symbolDef);
     const { mergeOnPropertyFn } = fnTypes;
     if (!symbolDef['mergeOnProperty'] || symbolDef['textPlacement'] !== 'line' && symbolDef['markerPlacement'] !== 'line') {
@@ -776,7 +780,7 @@ function getFeauresToMerge(features, symbolDef, zoom) {
     const merging = {};
     const unMerged = [];
     for (let i = 0; i < features.length; i++) {
-        features[i]['__index'] = i;
+        features[i][keyName] = i;
         const properties = features[i].properties = features[i].properties || {};
         properties['$layer'] = features[i].layer;
         properties['$type'] = features[i].type;

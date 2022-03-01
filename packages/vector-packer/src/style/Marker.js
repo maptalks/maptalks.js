@@ -113,6 +113,8 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidt
     if (isNil(symbolDef.markerWidth) && isNil(symbolDef.markerHeight)) {
         return null;
     }
+    const keyNameWidth = '__fn_markerWidth'.trim();
+    const keyNameHeight = '__fn_markerHeight'.trim();
     let width = symbolDef.markerWidth || 0;
     let height = symbolDef.markerHeight || 0;
     if (isObject(width)) {
@@ -121,8 +123,8 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidt
         } else {
             // 要先执行一次 symbol.markerWidth, __fn_markerWidth才会生成
             width = symbol.markerWidth;
-            if (symbol['__fn_markerWidth']) {
-                width = symbol['__fn_markerWidth'](zoom, properties);
+            if (symbol[keyNameWidth]) {
+                width = symbol[keyNameWidth](zoom, properties);
             }
             // identity 返回的是stops
             if (isObject(width)) {
@@ -139,8 +141,8 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidt
             height = findLargestStops(height);
         } else {
             height = symbol.markerHeight;
-            if (symbol['__fn_markerHeight']) {
-                height = symbol['__fn_markerHeight'](zoom, properties);
+            if (symbol[keyNameHeight]) {
+                height = symbol[keyNameHeight](zoom, properties);
             }
             // identity 返回的是stops
             if (isObject(height)) {
@@ -160,13 +162,14 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidt
 const DEFAULT_TEXT_SIZE = 16;
 
 export function evaluateTextSize(symbol, symbolDef, properties, zoom) {
+    const keyName = '__fn_textSize'.trim();
     let textSize = symbol.textSize;
     if (isNil(symbolDef.textSize)) {
         //default text size of marker
         return [DEFAULT_TEXT_SIZE, DEFAULT_TEXT_SIZE];
     }
-    if (symbol['__fn_textSize']) {
-        textSize = symbol['__fn_textSize'];
+    if (symbol[keyName]) {
+        textSize = symbol[keyName];
     }
     const size = [];
     if (isFunction(textSize)) {

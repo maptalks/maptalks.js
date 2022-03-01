@@ -186,6 +186,7 @@ export default class VectorPack {
     load(scale = 1) {
         // fix terser's bug
         const keyName = (KEY_IDX + '').trim();
+        const keyNameDebug = ('_debug_info').trim();
         const fnTypes = this._fnTypes;
         const vectors = this.styledVectors;
         this.count = 0;
@@ -222,7 +223,7 @@ export default class VectorPack {
                 if (!feature || !feature.geometry) {
                     continue;
                 }
-                if (debugIndex !== undefined && feature['_debug_info'].index !== debugIndex) {
+                if (debugIndex !== undefined && feature[keyNameDebug].index !== debugIndex) {
                     continue;
                 }
                 if (!feature.properties) {

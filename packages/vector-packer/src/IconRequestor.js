@@ -124,7 +124,8 @@ export default class IconRequestor {
                 symbol.markerWidth = size[0];
                 symbol.markerHeight = size[1];
                 marker.setSymbol(symbol);
-                const sprite = marker['_getSprite']();
+                const methodName = '_getSprite'.trim();
+                const sprite = marker[methodName]();
                 if (sprite) {
                     const canvas = sprite.canvas;
                     const width = canvas.width;
