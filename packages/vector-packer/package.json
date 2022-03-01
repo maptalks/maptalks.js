@@ -2,15 +2,18 @@
   "name": "@maptalks/vector-packer",
   "version": "0.61.0",
   "description": "Packer to pack simple vector graphics for gl",
-  "module": "src/index.js",
-  "jsnext:main": "src/index.js",
+  "module": "dist/vector-packer.mjs",
   "files": [
-    "src/index.js"
+    "dist/vector-packer.mjs"
   ],
   "scripts": {
-    "dev": "rollup -w -c ./rollup.config.js",
-    "lint": "eslint src/**/*.js test/**/*.js",
-    "tdd": "karma start --no-single-run"
+    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build-dev": "rollup -c rollup.config.js",
+    "dev": "rollup -w -c rollup.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run lint && npm run build",
+    "lint": "eslint src/**/*.js",
+    "preversion": "npm run lint"
   },
   "keywords": [
     "webgl"
@@ -33,7 +36,11 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
     "eslint": "^7.32.0",
-    "eslint-plugin-mocha": "^9.0.0"
+    "eslint-plugin-mocha": "^9.0.0",
+    "rollup": "^2.56.2",
+    "rollup-plugin-terser": "^5.3.1"
   }
 }
