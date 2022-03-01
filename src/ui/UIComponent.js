@@ -160,7 +160,7 @@ class UIComponent extends Eventable(Class) {
         }
         const dom = this.__uiDOM = this.buildOn(map);
         dom['eventsPropagation'] = this.options['eventsPropagation'];
-
+        this._observerDomSize(dom);
         if (!dom) {
             /**
              * showend event.
@@ -337,6 +337,11 @@ class UIComponent extends Eventable(Class) {
      * @return {Size} size
      */
     getSize() {
+        if (this._domContentRect && this._size) {
+            //update size by resizeObserver result
+            this._size.width = this._domContentRect.width;
+            this._size.height = this._domContentRect.height;
+        }
         if (this._size) {
             return this._size.copy();
         } else {
@@ -510,6 +515,12 @@ class UIComponent extends Eventable(Class) {
             removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
         }
+        if (this._resizeObserver) {
+            //dispose resizeObserver
+            this._resizeObserver.disconnect();
+            delete this._resizeObserver;
+            delete this._domContentRect;
+        }
     }
 
     /**
@@ -578,6 +589,7 @@ class UIComponent extends Eventable(Class) {
         const events = {};
         if (this._owner && (this._owner instanceof Geometry)) {
             events.positionchange = this.onGeometryPositionChange;
+            events.symbolchange = this.onGeometryPositionChange;
         }
         if (this.getOwnerEvents) {
             extend(events, this.getOwnerEvents());
@@ -651,6 +663,25 @@ class UIComponent extends Eventable(Class) {
         } else {
             return 'translate(' + p.x + 'px,' + p.y + 'px)';
         }
+    }
+
+    _observerDomSize(dom) {
+        if (!dom || !Browser.resizeObserver || this._resizeObserver) {
+            return this;
+        }
+        this._resizeObserver = new ResizeObserver((entries) => {
+            if (entries.length) {
+                this._domContentRect = entries[0].contentRect;
+            } else {
+                delete this._domContentRect;
+            }
+            //update dom position
+            if (this.onEvent) {
+                this.onEvent();
+            }
+        });
+        this._resizeObserver.observe(dom);
+        return this;
     }
 
     isSupportZoomFilter() {
