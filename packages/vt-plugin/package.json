@@ -18,8 +18,6 @@
     "author": "fuzhenn",
     "license": "UNLICENSED",
     "dependencies": {
-        "animation-easings": "^0.1.0",
-        "color": "^3.0.0"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.15.0",
