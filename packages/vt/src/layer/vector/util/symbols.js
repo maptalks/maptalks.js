@@ -30,6 +30,11 @@ export const  MARKER_SYMBOL = {
         default: undefined,
         property: '_symbol_markerType'
     },
+    markerPath: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_markerPath'
+    },
     markerFill: {
         type: 'identity',
         default: undefined,

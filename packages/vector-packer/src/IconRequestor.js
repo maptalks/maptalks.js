@@ -1,4 +1,4 @@
-import { Marker } from 'maptalks';
+import { Marker, Util } from 'maptalks';
 import LRUCache from './LRUCache';
 
 export default class IconRequestor {
@@ -99,9 +99,15 @@ export default class IconRequestor {
             } else if (icon === 'error') {
                 continue;
             }
+            let symbol, realUrl = url;
             if (url.indexOf('vector://') === 0) {
+                symbol = JSON.parse(url.substring('vector://'.length));
+                if (symbol.markerType === 'path') {
+                    realUrl = Util.getMarkerPathBase64(symbol, symbol['markerWidth'], symbol['markerHeight']);
+                }
+            }
+            if (url.indexOf('vector://') === 0 && symbol.markerType !== 'path') {
                 marker = marker ||  new Marker([0, 0]);
-                const symbol = JSON.parse(url.substring('vector://'.length));
                 const { markerFill, markerLineColor } = symbol;
                 if (markerFill && Array.isArray(markerFill)) {
                     symbol.markerFill = convertColorArray(markerFill);
@@ -154,7 +160,7 @@ export default class IconRequestor {
                 img.crossOrigin = 'Anonymous';
                 hasRequests = true;
                 count++;
-                img.src = url;
+                img.src = realUrl;
             }
         }
         if (!hasRequests) {

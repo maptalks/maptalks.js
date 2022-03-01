@@ -216,8 +216,13 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_DX',
-            evaluate: properties => {
-                const x = markerDxFn(map.getZoom(), properties);
+            evaluate: (properties, value, geometry) => {
+                let x = markerDxFn(map.getZoom(), properties);
+                if (isFunctionDefinition(x)) {
+                    x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
+                }
+
+                // const x = markerDxFn(map.getZoom(), properties);
                 u8[0] = x;
                 return u8[0];
             }
@@ -228,8 +233,12 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_DY',
-            evaluate: properties => {
-                const y = markerDyFn(map.getZoom(), properties);
+            evaluate: (properties, value, geometry) => {
+                let x = markerDyFn(map.getZoom(), properties);
+                if (isFunctionDefinition(x)) {
+                    x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
+                }
+
                 u8[0] = y;
                 return u8[0];
             }
