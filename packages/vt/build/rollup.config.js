@@ -125,7 +125,7 @@ module.exports = [{
         input: './build/index.js',
         external: ['maptalks', '@maptalks/gl',
         '@mapbox/point-geometry', '@mapbox/vector-tile', '@maptalks/feature-filter', '@maptalks/function-type', '@maptalks/geojson-bbox',
-        '@maptalks/tbn-packer', '@maptalks/vt-plugin',
+        '@maptalks/tbn-packer', '@maptalks/vt-plugin', '@maptalks/vector-packer',
          'animation-easings', 'color', 'earcut', 'fast-deep-equal', 'geojson-vt', 'gl-matrix', 'pbf', 'quickselect', 'rbush', 'vt-pbf'],
         output: {
             globals: {
