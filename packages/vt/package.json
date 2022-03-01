@@ -6,7 +6,8 @@
   "browser": "dist/maptalks.vt.js",
   "module": "dist/maptalks.vt.mjs",
   "files": [
-    "dist/maptalks.vt.js"
+    "dist/maptalks.vt.js",
+    "dist/maptalks.vt.mjs"
   ],
   "scripts": {
     "lint": "eslint src/**/*.js test/**/*.js",
