@@ -38,9 +38,12 @@
     "version": "npm run build",
     "publish-next": "npm publish --tag next"
   },
-  "module": "dist/maptalks.es.js",
+  "unpkg": "dist/maptalks.js",
+  "jsdelivr": "dist/maptalks.js",
+  "module": "dist/maptalks.es-bundler.js",
+  "module_browser": "dist/maptalks.es.js",
   "main": "dist/maptalks.js",
-  "jsnext:main": "dist/maptalks.es.js",
+  "jsnext:main": "dist/maptalks.es-bundler.js",
   "style": "dist/maptalks.css",
   "dependencies": {
     "@maptalks/feature-filter": "^1.0.0",

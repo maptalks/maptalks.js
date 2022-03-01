@@ -59,4 +59,17 @@ module.exports = [
                 'file': pkg.module
             }
         ]
+    },
+    //for browser esm
+    {
+        input: 'src/index.js',
+        plugins: rollupPlugins,
+        output: [
+            {
+                'sourcemap': false,
+                'format': 'es',
+                banner,
+                'file': pkg.module_browser
+            }
+        ]
     }];
