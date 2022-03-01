@@ -519,6 +519,7 @@ class UIComponent extends Eventable(Class) {
             //dispose resizeObserver
             this._resizeObserver.disconnect();
             delete this._resizeObserver;
+            delete this._domContentRect;
         }
     }
 
