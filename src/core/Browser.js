@@ -122,6 +122,7 @@ if (!IS_NODE) {
         decodeImageInWorker,
         monitorDPRChange: true,
         supportsPassive,
+        maps,
         checkDevicePixelRatio: () => {
             if (typeof window !== 'undefined' && Browser.monitorDPRChange) {
                 const devicePixelRatio = getDevicePixelRatio();

@@ -1470,6 +1470,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this.renderer;
         this._fireEvent('removeend');
         this._clearAllListeners();
+        Browser.maps.splice(Browser.maps.indexOf(this), 1);
         return this;
     }
 
