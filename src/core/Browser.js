@@ -75,7 +75,7 @@ if (!IS_NODE) {
                 supportsPassive = true;
             }
         });
-    /*eslint-disable no-empty */
+        /*eslint-disable no-empty */
     } catch (e) {
     }
 
@@ -154,7 +154,7 @@ if (!IS_NODE) {
                 return tempDPI;
             },
             set: (value) => {
-                if (value === tempDPI) {
+                if (value === tempDPI || !Browser.monitorDPRChange) {
                     return;
                 }
                 //when devicePixelRatio change force resize all layers
