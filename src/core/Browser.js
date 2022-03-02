@@ -154,11 +154,14 @@ if (!IS_NODE) {
                 return tempDPI;
             },
             set: (value) => {
-                if (value === tempDPI || !Browser.monitorDPRChange) {
+                if (value === tempDPI) {
                     return;
                 }
                 //when devicePixelRatio change force resize all layers
                 tempDPI = value;
+                if (!Browser.monitorDPRChange) {
+                    return;
+                }
                 maps.filter(map => {
                     return map;
                 }).forEach(map => {
