@@ -2,7 +2,7 @@ import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 
 let Browser = {};
-const maps = [];
+const maps = {};
 
 function getDevicePixelRatio() {
     return (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
@@ -135,7 +135,9 @@ if (!IS_NODE) {
             return false;
         },
         collectMap: (map) => {
-            maps.push(map);
+            if (map) {
+                maps[map.id] = map;
+            }
         }
     };
     //monitor devicePixelRatio change
@@ -163,17 +165,16 @@ if (!IS_NODE) {
                 if (!Browser.monitorDPRChange) {
                     return;
                 }
-                maps.filter(map => {
-                    return map;
-                }).forEach(map => {
-                    if (map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
-                        return;
+                for (const mapId in maps) {
+                    const map = maps[mapId];
+                    if (!map || !map.options || map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
+                        continue;
                     }
                     const renderer = map.getRenderer();
                     if (renderer) {
                         map.checkSize(true);
                     }
-                });
+                }
             }
         });
     }
