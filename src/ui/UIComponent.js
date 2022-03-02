@@ -629,6 +629,13 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    onDomSizeChange() {
+        if (this.isVisible()) {
+            //when dom resize , update position
+            this._setPosition();
+        }
+    }
+
     _updatePosition() {
         // update position in the next frame to sync with layers
         const renderer = this.getMap()._getRenderer();
@@ -676,8 +683,8 @@ class UIComponent extends Eventable(Class) {
                 delete this._domContentRect;
             }
             //update dom position
-            if (this.onEvent) {
-                this.onEvent();
+            if (this.onDomSizeChange) {
+                this.onDomSizeChange();
             }
         });
         this._resizeObserver.observe(dom);
