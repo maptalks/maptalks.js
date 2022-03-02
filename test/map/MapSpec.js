@@ -436,6 +436,18 @@ describe('Map.Spec', function () {
                 duration: 30
             });
         });
+
+        it('initial center is not in maxExtent', function () {
+            map.remove();
+
+            map = new maptalks.Map(container, {
+                center: [1, 1],
+                maxExtent: [2, 5, 4, 7]
+            });
+            var newCenter = map.getCenter().toArray();
+            newCenter[1] = Math.round(newCenter[1]);
+            expect(newCenter).to.be.eql([3, 6]);
+        });
     });
 
     describe('#addLayer', function () {
