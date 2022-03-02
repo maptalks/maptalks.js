@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize } from '../../core/util';
 import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
@@ -769,20 +769,21 @@ class MapCanvasRenderer extends MapRenderer {
             mapSize = map.getSize(),
             canvas = this.canvas,
             r = map.getDevicePixelRatio();
-        if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
+        // width/height不变并不意味着 css width/height 不变
+        const { width, height, cssWidth, cssHeight } = calCanvasSize(mapSize, r);
+        if (canvas.style && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
+            canvas.style.width = cssWidth;
+            canvas.style.height = cssHeight;
+        }
+        if (width === canvas.width && height === canvas.height) {
             return false;
         }
         //retina屏支持
 
-        canvas.height = r * mapSize['height'];
-        canvas.width = r * mapSize['width'];
+        canvas.height = height;
+        canvas.width = width;
         this.topLayer.width = canvas.width;
         this.topLayer.height = canvas.height;
-        if (canvas.style) {
-            canvas.style.width = mapSize['width'] + 'px';
-            canvas.style.height = mapSize['height'] + 'px';
-        }
-
         return true;
     }
 
@@ -886,6 +887,9 @@ class MapCanvasRenderer extends MapRenderer {
 
         if (Browser.webgl && typeof document !== 'undefined') {
             addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
+        }
+        if (Browser.addDPRListening) {
+            Browser.addDPRListening(this.map);
         }
     }
 

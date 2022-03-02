@@ -1369,13 +1369,13 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#resize
      */
-    checkSize() {
+    checkSize(force) {
         const justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         const watched = this._getContainerDomSize(),
             oldHeight = this.height,
             oldWidth = this.width;
-        if (watched['width'] === oldWidth && watched['height'] === oldHeight) {
+        if (!force && watched['width'] === oldWidth && watched['height'] === oldHeight) {
             return this;
         }
         // refresh map's dom position
@@ -1475,6 +1475,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         delete this.renderer;
         this._fireEvent('removeend');
         this._clearAllListeners();
+        if (Browser.removeDPRListening) {
+            Browser.removeDPRListening(this);
+        }
         return this;
     }
 

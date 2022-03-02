@@ -2,6 +2,11 @@ import { isFunction } from './util/common';
 import { IS_NODE } from './util/env';
 
 let Browser = {};
+const maps = {};
+
+function getDevicePixelRatio() {
+    return (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+}
 
 if (!IS_NODE) {
     const ua = navigator.userAgent.toLowerCase(),
@@ -50,7 +55,7 @@ if (!IS_NODE) {
     // }
     const webgl = typeof window !== 'undefined' && ('WebGLRenderingContext' in window);
 
-    const devicePixelRatio = (window.devicePixelRatio || (window.screen.deviceXDPI / window.screen.logicalXDPI));
+    const devicePixelRatio = getDevicePixelRatio();
 
     let decodeImageInWorker = false;
     try {
@@ -70,10 +75,9 @@ if (!IS_NODE) {
                 supportsPassive = true;
             }
         });
-    /*eslint-disable no-empty */
+        /*eslint-disable no-empty */
     } catch (e) {
     }
-    /*eslint-enable no-empty */
 
     Browser = {
         ie: ie,
@@ -116,8 +120,67 @@ if (!IS_NODE) {
         resizeObserver,
         btoa,
         decodeImageInWorker,
-        supportsPassive
+        monitorDPRChange: true,
+        supportsPassive,
+        removeDPRListening: (map) => {
+            if (map) {
+                delete maps[map.id];
+            }
+        },
+        checkDevicePixelRatio: () => {
+            if (typeof window !== 'undefined' && Browser.monitorDPRChange) {
+                const devicePixelRatio = getDevicePixelRatio();
+                const changed = devicePixelRatio !== Browser.devicePixelRatio;
+                if (changed) {
+                    Browser.devicePixelRatio = devicePixelRatio;
+                }
+                return changed;
+            }
+            return false;
+        },
+        addDPRListening: (map) => {
+            if (map) {
+                maps[map.id] = map;
+            }
+        }
     };
-}
+    //monitor devicePixelRatio change
+    if (typeof window !== 'undefined' && window.matchMedia) {
+        for (let i = 1; i < 500; i++) {
+            const dpi = (i * 0.01).toFixed(2);
+            window.matchMedia(`screen and (resolution: ${dpi}dppx)`)
+                .addEventListener('change', Browser.checkDevicePixelRatio);
+        }
 
+    }
+
+    if (Browser.devicePixelRatio) {
+        let tempDPI = Browser.devicePixelRatio;
+        Object.defineProperty(Browser, 'devicePixelRatio', {
+            get: () => {
+                return tempDPI;
+            },
+            set: (value) => {
+                if (value === tempDPI) {
+                    return;
+                }
+                //when devicePixelRatio change force resize all layers
+                tempDPI = value;
+                if (!Browser.monitorDPRChange) {
+                    return;
+                }
+                for (const mapId in maps) {
+                    const map = maps[mapId];
+                    if (!map || !map.options || map.options['devicePixelRatio'] || !map.checkSize || !map.getRenderer) {
+                        continue;
+                    }
+                    const renderer = map.getRenderer();
+                    if (renderer) {
+                        map.checkSize(true);
+                    }
+                }
+            }
+        });
+    }
+}
 export default Browser;
