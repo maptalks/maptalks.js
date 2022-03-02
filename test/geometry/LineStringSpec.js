@@ -524,6 +524,42 @@ describe('Geometry.LineString', function () {
             console.log(extent);
             expect(extent).to.be.eql('-404,-38,320,151');
         });
+
+        it('markerPlacement of vertex-first with LineString of 1 coord', function () {
+            var lineWidth = 8;
+            var line = new maptalks.LineString([map.getCenter()], {
+                symbol: [{
+                    'lineColor': '#1bbc9b',
+                    'lineWidth': 6,
+                    'lineJoin': 'round', //miter, round, bevel
+                    'lineCap': 'round', //butt, round, square
+                    'lineDasharray': null, //dasharray, e.g. [10, 5, 5]
+                    'lineOpacity ': 1
+                  }, {
+                    markerType: 'ellipse',
+                    markerPlacement: 'vertex-first',
+                  }]
+            });
+            layer.addGeometry(line);
+        });
+
+        it('markerPlacement of vertex-last with LineString of 1 coord', function () {
+            var lineWidth = 8;
+            var line = new maptalks.LineString([map.getCenter()], {
+                symbol: [{
+                    'lineColor': '#1bbc9b',
+                    'lineWidth': 6,
+                    'lineJoin': 'round', //miter, round, bevel
+                    'lineCap': 'round', //butt, round, square
+                    'lineDasharray': null, //dasharray, e.g. [10, 5, 5]
+                    'lineOpacity ': 1
+                  }, {
+                    markerType: 'ellipse',
+                    markerPlacement: 'vertex-last',
+                  }]
+            });
+            layer.addGeometry(line);
+        });
     });
 
 });
