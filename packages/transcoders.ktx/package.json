@@ -2,8 +2,8 @@
   "name": "@maptalks/transcoders.ktx2",
   "version": "0.67.0",
   "description": "ktx2 transcoder for @maptalks/gl",
-  "module": "src/index.js",
   "main": "dist/transcoders.ktx2.js",
+  "module": "dist/transcoders.ktx2.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
@@ -16,7 +16,8 @@
     "ktx2"
   ],
   "files": [
-    "dist/transcoders.ktx2.js"
+    "dist/transcoders.ktx2.js",
+    "dist/transcoders.ktx2.mjs"
   ],
   "author": "fuzhen",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "@babel/preset-env": "^7.15.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "@rollup/plugin-replace": "4.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
     "rollup": "^2.56.2",
