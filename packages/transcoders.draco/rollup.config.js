@@ -2,11 +2,12 @@ const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const nodePolyfills = require('rollup-plugin-polyfill-node');
+const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
 
-const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.com\n */`;
+const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2022-${new Date().getFullYear()} maptalks.com\n */`;
 
 const plugins = [
     nodePolyfills(),
@@ -31,53 +32,75 @@ const outro = `
     }
 `;
 
-if (production) {
-    plugins.push(terser({
-        toplevel: true,
-        mangle: {
-            // properties: {
-            //     // 'regex' : /^_/,
-            //     'keep_quoted' : true,
-            //     'reserved': ['maptalksgl', 'transcoders', 'draco'],
-            // }
-        },
-        compress: {
-            pure_getters: true
-        },
-        output : {
-            ecma: 2017,
-            // keep_quoted_props: true,
-            beautify: true,
-            comments : '/^!/'
-        }
-    }));
-}
+const terserPlugin = terser({
+    toplevel: true,
+    mangle: {
+        // properties: {
+        //     // 'regex' : /^_/,
+        //     'keep_quoted' : true,
+        //     'reserved': ['maptalksgl', 'transcoders', 'draco'],
+        // }
+    },
+    compress: {
+        pure_getters: true
+    },
+    output : {
+        ecma: 2017,
+        // keep_quoted_props: true,
+        beautify: true,
+        comments : '/^!/'
+    }
+});
 
 module.exports = [
     {
         input: 'src/index.js',
         external : ['@maptalks/gl',],
-        plugins : plugins,
+        plugins : plugins.concat(production ? [terserPlugin] : []),
         output: [
             {
                 'sourcemap': false,
                 'format': 'umd',
+                extend: true,
                 'name': 'maptalksgl.transcoders.draco',
                 'globals' : {
                     '@maptalks/gl' : 'maptalksgl'
                 },
-                banner,
                 intro,
                 outro,
-                'file': pkg.main
+                file: pkg.main,
+                banner: `${banner}(function () {`,
+                footer: '}())'
             }
         ]
     }
 ];
 
 if (production) {
-
     module.exports.push(
+        {
+            input: 'src/index.js',
+            external : ['@maptalks/gl/dist/transcoders'],
+            plugins : plugins.concat([
+                replace({
+                  // '(function(A) {': 'function (A) {',
+                  'export { promisify as default };': 'return promisify;',
+                  preventAssignment: false,
+                  delimiters: ['', '']
+                }),
+                terserPlugin
+            ]),
+            output: {
+                strict: false,
+                format: 'es',
+                name: 'exports',
+                exports: 'named',
+                extend: true,
+                file: 'dist/transcoder.js',
+                banner: `export default function () {`,
+                footer: `}`
+            }
+        },
         {
             input: 'src/index.es.js',
             external : ['@maptalks/gl/dist/transcoders'],
@@ -95,5 +118,5 @@ if (production) {
                 file: pkg.module
             }
         }
-    )
+    );
 }
