@@ -199,7 +199,7 @@ class MapGeometryEventsHandler extends Handler {
 
         let geometryCursorStyle = null;
         const tops = this.target.getRenderer().getTopElements();
-        const topOnlyEvent = (isMousedown || eventType === 'click') && domEvent.button !== 2;
+        const topOnlyEvent = isMousedown && domEvent.button !== 2;
         for (let i = 0; i < tops.length; i++) {
             if (tops[i].hitTest(containerPoint)) {
                 const cursor = tops[i].options['cursor'];
