@@ -3,6 +3,7 @@
   "version": "0.67.0",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
+  "module": "dist/transcoders.draco.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
@@ -16,8 +17,12 @@
     "draco3d": "^1.4.3"
   },
   "files": [
-    "dist/transcoders.draco.js"
+    "dist/transcoders.draco.js",
+    "dist/transcoders.draco.mjs"
   ],
+  "dependencies": {
+    "@maptalks/gl": "^0.67.1"
+  },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",

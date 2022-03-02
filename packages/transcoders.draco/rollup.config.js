@@ -18,7 +18,9 @@ const plugins = [
     commonjs(),
 ];
 
-const intro = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\nconst transcoder = function () {\n`;
+
+const printVer = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\n`;
+const intro = `${printVer} const transcoder = function () {\n`;
 const outro = `
     };
     if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -45,7 +47,7 @@ if (production) {
         output : {
             ecma: 2017,
             // keep_quoted_props: true,
-            beautify: false,
+            beautify: true,
             comments : '/^!/'
         }
     }));
@@ -70,5 +72,28 @@ module.exports = [
                 'file': pkg.main
             }
         ]
-    },
+    }
 ];
+
+if (production) {
+
+    module.exports.push(
+        {
+            input: 'src/index.es.js',
+            external : ['@maptalks/gl/dist/transcoders'],
+            plugins : plugins,
+            output: {
+                globals: {
+                    '@maptalks/gl': 'maptalksgl'
+                },
+                extend: true,
+                format: 'es',
+                sourcemap: false,
+                name: 'maptalksgl.transcoders.draco',
+                banner,
+                intro: printVer,
+                file: pkg.module
+            }
+        }
+    )
+}
