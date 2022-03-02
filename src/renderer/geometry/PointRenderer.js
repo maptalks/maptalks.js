@@ -109,15 +109,16 @@ const PolyRenderer = {
 
         } else if (placement === 'vertex-first') {
             const coords = this._getPrjCoordinates();
-            points = coords.length ? [map._prjToPointAtRes(coords[0], glRes)] : [];
-            rotations = coords.length ? [[map._prjToPointAtRes(coords[0], glRes), coords[1] ? map._prjToPointAtRes(coords[1], glRes) : 0]] : [];
+            const point0 = map._prjToPointAtRes(coords[0], glRes);
+            points = coords.length ? [point0] : [];
+            rotations = coords.length ? [[point0, coords[1] ? map._prjToPointAtRes(coords[1], glRes) : point0]] : [];
         } else if (placement === 'vertex-last') {
             const coords = this._getPrjCoordinates();
             const l = coords.length;
-            points = l ? [map._prjToPointAtRes(coords[l - 1], glRes)] : [];
-            const current = l - 1,
-                previous = l > 1 ? l - 2 : l - 1;
-            rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : 0, map._prjToPointAtRes(coords[current], glRes)]] : [];
+            const curretPoint = map._prjToPointAtRes(coords[l - 1], glRes);
+            points = l ? [curretPoint] : [];
+            const previous = l > 1 ? l - 2 : l - 1;
+            rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
         } else {
             const pcenter = this._getProjection().project(this.getCenter());
             points = [map._prjToPointAtRes(pcenter, glRes)];
