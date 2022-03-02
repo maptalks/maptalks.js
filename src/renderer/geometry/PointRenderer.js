@@ -109,13 +109,14 @@ const PolyRenderer = {
 
         } else if (placement === 'vertex-first') {
             const coords = this._getPrjCoordinates();
-            const point0 = map._prjToPointAtRes(coords[0], glRes);
-            points = coords.length ? [point0] : [];
-            rotations = coords.length ? [[point0, coords[1] ? map._prjToPointAtRes(coords[1], glRes) : point0]] : [];
+            const l = coords.length;
+            const point0 = l ? map._prjToPointAtRes(coords[0], glRes) : null;
+            points = l ? [point0] : [];
+            rotations = l ? [[point0, coords[1] ? map._prjToPointAtRes(coords[1], glRes) : point0]] : [];
         } else if (placement === 'vertex-last') {
             const coords = this._getPrjCoordinates();
             const l = coords.length;
-            const curretPoint = map._prjToPointAtRes(coords[l - 1], glRes);
+            const curretPoint = l ? map._prjToPointAtRes(coords[l - 1], glRes) : null;
             points = l ? [curretPoint] : [];
             const previous = l > 1 ? l - 2 : l - 1;
             rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
