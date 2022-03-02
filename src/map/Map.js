@@ -216,8 +216,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
         this.setSpatialReference(opts['spatialReference'] || opts['view']);
 
-        this.setMaxExtent(opts['maxExtent']);
-
 
         this._mapViewPoint = new Point(0, 0);
 
@@ -230,6 +228,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (layers) {
             this.addLayer(layers);
         }
+
+        this.setMaxExtent(opts['maxExtent']);
 
         this._Load();
     }
@@ -568,11 +568,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         if (extent) {
             const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
-            if (!this._verifyExtent(this._getPrjCenter())) {
-                this._panTo(this._prjMaxExtent().getCenter());
-            }
             const projection = this.getProjection();
             this._prjMaxExtent = maxExt.convertTo(c => projection.project(c));
+            if (!this._verifyExtent(this._getPrjCenter())) {
+                if (this._loaded) {
+                    this._panTo(this._prjMaxExtent.getCenter());
+                } else {
+                    this._center = projection.unproject(this._prjMaxExtent.getCenter());
+                }
+
+            }
         } else {
             delete this.options['maxExtent'];
             delete this._prjMaxExtent;
