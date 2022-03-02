@@ -122,7 +122,11 @@ if (!IS_NODE) {
         decodeImageInWorker,
         monitorDPRChange: true,
         supportsPassive,
-        maps,
+        removeDPRListening: (map) => {
+            if (map) {
+                delete maps[map.id];
+            }
+        },
         checkDevicePixelRatio: () => {
             if (typeof window !== 'undefined' && Browser.monitorDPRChange) {
                 const devicePixelRatio = getDevicePixelRatio();
@@ -134,7 +138,7 @@ if (!IS_NODE) {
             }
             return false;
         },
-        collectMap: (map) => {
+        addDPRListening: (map) => {
             if (map) {
                 maps[map.id] = map;
             }

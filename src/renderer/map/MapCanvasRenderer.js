@@ -888,8 +888,8 @@ class MapCanvasRenderer extends MapRenderer {
         if (Browser.webgl && typeof document !== 'undefined') {
             addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
         }
-        if (Browser.collectMap) {
-            Browser.collectMap(this.map);
+        if (Browser.addDPRListening) {
+            Browser.addDPRListening(this.map);
         }
     }
 
