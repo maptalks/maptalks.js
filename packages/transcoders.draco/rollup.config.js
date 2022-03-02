@@ -47,7 +47,7 @@ const terserPlugin = terser({
     output : {
         ecma: 2017,
         // keep_quoted_props: true,
-        beautify: true,
+        beautify: false,
         comments : '/^!/'
     }
 });
