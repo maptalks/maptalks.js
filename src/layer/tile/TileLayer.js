@@ -1279,7 +1279,8 @@ function (exports) {
                 // debugger
                 cb(null, { width, height, data: new Uint8Array(imgData.data) });
             }).catch(err => {
-                console.error(err);
+                console.warn('error when loading tile:', url);
+                console.warn(err);
                 cb(err);
             });
     }
@@ -1289,6 +1290,6 @@ function registerWorkerSource() {
     if (!Browser.decodeImageInWorker) {
         return;
     }
-    registerWorkerAdapter(imageFetchWorkerKey, workerSource);
+    registerWorkerAdapter(imageFetchWorkerKey, function () { return workerSource; });
 }
 registerWorkerSource();

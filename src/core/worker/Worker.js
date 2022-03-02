@@ -1,3 +1,5 @@
+import { isFunction } from '../util/common.js';
+
 let adapters = {};
 /**
  * Register a worker adapter
@@ -88,7 +90,13 @@ const footer = `
 function compileWorkerSource() {
     let source = header;
     for (const p in adapters) {
-        const adapter = adapters[p];
+        let adapter = adapters[p];
+        if (isFunction(adapter)) {
+            if (adapter.length === 0) {
+                // new definition form of worker source
+                adapter = adapter();
+            }
+        }
         source += `
     workerExports = {};
     (${adapter})(workerExports, self);
