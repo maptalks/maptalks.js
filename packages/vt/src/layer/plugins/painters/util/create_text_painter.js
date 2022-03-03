@@ -54,31 +54,38 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = geometry.data;
         if (aTextSize) {
             //for collision
-            geometry.properties.aTextSize = geometry.properties[PREFIX + 'aTextSize'] || new aTextSize.constructor(aTextSize);
+            const keyName = (PREFIX + 'aTextSize').trim();
+            geometry.properties.aTextSize = geometry.properties[keyName] || new aTextSize.constructor(aTextSize);
         }
         if (aTextDx) {
             //for collision
-            geometry.properties.aTextDx = geometry.properties[PREFIX + 'aTextDx'] || new aTextDx.constructor(aTextDx);
+            const keyName = (PREFIX + 'aTextDx').trim();
+            geometry.properties.aTextDx = geometry.properties[keyName] || new aTextDx.constructor(aTextDx);
         }
         if (aTextDy) {
             //for collision
-            geometry.properties.aTextDy = geometry.properties[PREFIX + 'aTextDy'] || new aTextDy.constructor(aTextDy);
+            const keyName = (PREFIX + 'aTextDy').trim();
+            geometry.properties.aTextDy = geometry.properties[keyName] || new aTextDy.constructor(aTextDy);
         }
         if (aPitchAlign) {
             //for collision
-            geometry.properties.aPitchAlign = geometry.properties[PREFIX + 'aPitchAlign'] || new aPitchAlign.constructor(aPitchAlign);
+            const keyName = (PREFIX + 'aPitchAlign').trim();
+            geometry.properties.aPitchAlign = geometry.properties[keyName] || new aPitchAlign.constructor(aPitchAlign);
         }
         if (aRotationAlign) {
             //for collision
-            geometry.properties.aRotationAlign = geometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
+            const keyName = (PREFIX + 'aRotationAlign').trim();
+            geometry.properties.aRotationAlign = geometry.properties[keyName] || new aRotationAlign.constructor(aRotationAlign);
         }
         if (aRotation) {
             //for collision
-            geometry.properties.aRotation = geometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
+            const keyName = (PREFIX + 'aRotation').trim();
+            geometry.properties.aRotation = geometry.properties[keyName] || new aRotation.constructor(aRotation);
         }
         if (aOverlap) {
             //for collision
-            geometry.properties.aOverlap = geometry.properties[PREFIX + 'aOverlap'] || new aOverlap.constructor(aOverlap);
+            const keyName = (PREFIX + 'aOverlap').trim();
+            geometry.properties.aOverlap = geometry.properties[keyName] || new aOverlap.constructor(aOverlap);
         }
     }
 
@@ -244,7 +251,8 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
 
         const { aTextHaloRadius } = geometry.data;
         if (aTextHaloRadius && !geometry.properties.aTextHaloRadius) {
-            geometry.properties.aTextHaloRadius = geometry.properties[PREFIX + 'aTextHaloRadius'] || new aTextHaloRadius.constructor(aTextHaloRadius);
+            const keyName = (PREFIX + 'aTextHaloRadius').trim();
+            geometry.properties.aTextHaloRadius = geometry.properties[keyName] || new aTextHaloRadius.constructor(aTextHaloRadius);
         }
     }
 }

@@ -43,6 +43,7 @@ function prepareAttr(geometry, symbolDef, config) {
     }
 
     const { attrName, symbolName, evaluate } = config;
+    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
     let arr = geometry.data[attrName];
     if (!arr) {
         if (!isFnTypeSymbol(symbolDef[symbolName])) {
@@ -51,7 +52,7 @@ function prepareAttr(geometry, symbolDef, config) {
             //symbol是fn-type，但arr不存在，则创建
             arr = geometry.data[attrName] = new config.type(config.width * aPickingId.length);
             createZoomFnTypeIndexData(geometry, symbolDef, config);
-            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+            const aIndex = geometry.properties[aIndexPropName];
             updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
             return arr;
         }
@@ -95,15 +96,19 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
         return;
     }
     const arr = geometry.data[attrName];
-    geoProps[PREFIX + attrName + 'Index'] = aIndex;
-    geoProps[PREFIX + attrName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : new config.type(arr.length);
+    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
+    const attrPropName = (PREFIX + attrName).trim();
+    geoProps[aIndexPropName] = aIndex;
+    geoProps[attrPropName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : new config.type(arr.length);
 
 }
 
 function removeFnTypePropArrs(geometry, attrName) {
     const geoProps = geometry.properties;
-    delete geoProps[PREFIX + attrName + 'Index'];
-    delete geoProps[PREFIX + attrName];
+    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
+    const attrPropName = (PREFIX + attrName).trim();
+    delete geoProps[aIndexPropName];
+    delete geoProps[attrPropName];
 }
 
 /**
@@ -128,12 +133,13 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
         const attrName = config.attrName;
+        const aIndexPropName = (PREFIX + attrName + 'Index').trim();
         if (!symbolChanged(geometry, symbolDef, config)) {
             const { aPickingId } = geometry.properties;
             if (!aPickingId || geometry._fnDataZoom === z) {
                 continue;
             }
-            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+            const aIndex = geometry.properties[aIndexPropName];
             if (!aIndex) {
                 continue;
             }
@@ -163,7 +169,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
                 }
             }
         } else {
-            const aIndex = geometry.properties[PREFIX + attrName + 'Index'];
+            const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
             updateFnTypeAttrib(attrName, geometry, aIndex, config.evaluate);
             if (define) {
@@ -250,7 +256,8 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
     let arr;
     if (aIndex) {
         //二级stops存在与zoom有关的fn-type
-        arr = geometry.properties[PREFIX + attrName];
+        const attrProp = (PREFIX + attrName).trim();
+        arr = geometry.properties[attrProp];
         const len = arr.length / aPickingId.length;
         const l = aIndex.length;
         for (let i = 0; i < l; i += 2) {

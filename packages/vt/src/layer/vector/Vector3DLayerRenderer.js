@@ -441,7 +441,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const  { features, center } = this._getFeaturesToRender();
 
-
         const markerFeatures = [];
         const textFeatures = [];
         for (let i = 0; i < features.length; i++) {
@@ -831,15 +830,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _groupLineFeas(features) {
         //因为有虚线和没有虚线的line绘制逻辑不同，需要分开创建mesh
+        const dashKeyName = (prefix + 'lineDasharray').trim();
+        const patternKeyName = (prefix + 'linePatternFile').trim();
         const feas = [];
         const patternFeas = [];
         const dashFeas = [];
         for (let i = 0; i < features.length; i++) {
             const f = features[i];
-            const dash = f.properties && f.properties[prefix + 'lineDasharray'];
+            const dash = f.properties && f.properties[dashKeyName];
             if (dash && dashLength(dash)) {
                 dashFeas.push(f);
-            } else if (f.properties && f.properties[prefix + 'linePatternFile']) {
+            } else if (f.properties && f.properties[patternKeyName]) {
                 patternFeas.push(f);
             } else {
                 feas.push(f);
@@ -1372,15 +1373,19 @@ function isWinIntelGPU(gl) {
 export default Vector3DLayerRenderer;
 
 function hasMarkerSymbol({ properties }) {
-    return properties[prefix + 'markerFile'] || properties[prefix + 'markerType'];
+    const markerFileName = (prefix + 'markerFile').trim();
+    const markerTypeName = (prefix + 'markerType').trim();
+    return properties[markerFileName] || properties[markerTypeName];
 }
 
 function hasTextSymbol({ properties }) {
-    return properties[prefix + 'textName'];
+    const keyName = (prefix + 'textName').trim();
+    return properties[keyName];
 }
 
 function hasLineSymbol(fea) {
-    return fea.type === 2 || (fea.type === 3 && !!fea.properties[prefix + 'lineWidth']);
+    const lineWidthName = (prefix + 'lineWidth').trim();
+    return fea.type === 2 || (fea.type === 3 && !!fea.properties[lineWidthName]);
 }
 
 function dashLength(dash) {
@@ -1430,8 +1435,9 @@ function compareSymbolProp(symbol, feature) {
     }
     for (const p in symbol) {
         if (hasOwn(symbol, p)) {
+            const keyName = (prefix + p).trim();
             // 如果有fn-type的属性被更新，则重新rebuild all
-            if (isFunctionDefinition(symbol[p]) !== isFunctionDefinition(feature.properties[prefix + p])) {
+            if (isFunctionDefinition(symbol[p]) !== isFunctionDefinition(feature.properties[keyName])) {
                 return false;
             }
         }

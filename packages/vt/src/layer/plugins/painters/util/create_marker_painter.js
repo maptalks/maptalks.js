@@ -122,35 +122,43 @@ function prepareIconGeometry(iconGeometry) {
     const { aMarkerWidth, aMarkerHeight, aMarkerDx, aMarkerDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = iconGeometry.data;
     if (aMarkerWidth) {
         //for collision
-        iconGeometry.properties.aMarkerWidth = iconGeometry.properties[PREFIX + 'aMarkerWidth'] || new aMarkerWidth.constructor(aMarkerWidth);
+        const keyName = (PREFIX + 'aMarkerWidth').trim();
+        iconGeometry.properties.aMarkerWidth = iconGeometry.properties[keyName] || new aMarkerWidth.constructor(aMarkerWidth);
     }
     if (aMarkerHeight) {
         //for collision
-        iconGeometry.properties.aMarkerHeight = iconGeometry.properties[PREFIX + 'aMarkerHeight'] || new aMarkerHeight.constructor(aMarkerHeight);
+        const keyName = (PREFIX + 'aMarkerHeight').trim();
+        iconGeometry.properties.aMarkerHeight = iconGeometry.properties[keyName] || new aMarkerHeight.constructor(aMarkerHeight);
     }
     if (aMarkerDx) {
         //for collision
-        iconGeometry.properties.aMarkerDx = iconGeometry.properties[PREFIX + 'aMarkerDx'] || new aMarkerDx.constructor(aMarkerDx);
+        const keyName = (PREFIX + 'aMarkerDx').trim();
+        iconGeometry.properties.aMarkerDx = iconGeometry.properties[keyName] || new aMarkerDx.constructor(aMarkerDx);
     }
     if (aMarkerDy) {
         //for collision
-        iconGeometry.properties.aMarkerDy = iconGeometry.properties[PREFIX + 'aMarkerDy'] || new aMarkerDy.constructor(aMarkerDy);
+        const keyName = (PREFIX + 'aMarkerDy').trim();
+        iconGeometry.properties.aMarkerDy = iconGeometry.properties[keyName] || new aMarkerDy.constructor(aMarkerDy);
     }
     if (aPitchAlign) {
         //for collision
-        iconGeometry.properties.aPitchAlign = iconGeometry.properties[PREFIX + 'aPitchAlign'] || new aPitchAlign.constructor(aPitchAlign);
+        const keyName = (PREFIX + 'aPitchAlign').trim();
+        iconGeometry.properties.aPitchAlign = iconGeometry.properties[keyName] || new aPitchAlign.constructor(aPitchAlign);
     }
     if (aRotationAlign) {
         //for collision
-        iconGeometry.properties.aRotationAlign = iconGeometry.properties[PREFIX + 'aRotationAlign'] || new aRotationAlign.constructor(aRotationAlign);
+        const keyName = (PREFIX + 'aRotationAlign').trim();
+        iconGeometry.properties.aRotationAlign = iconGeometry.properties[keyName] || new aRotationAlign.constructor(aRotationAlign);
     }
     if (aRotation) {
         //for collision
-        iconGeometry.properties.aRotation = iconGeometry.properties[PREFIX + 'aRotation'] || new aRotation.constructor(aRotation);
+        const keyName = (PREFIX + 'aRotation').trim();
+        iconGeometry.properties.aRotation = iconGeometry.properties[keyName] || new aRotation.constructor(aRotation);
     }
     if (aOverlap) {
         //for placement
-        iconGeometry.properties.aOverlap = iconGeometry.properties[PREFIX + 'aOverlap'] || new aOverlap.constructor(aOverlap);
+        const keyName = (PREFIX + 'aOverlap').trim();
+        iconGeometry.properties.aOverlap = iconGeometry.properties[keyName] || new aOverlap.constructor(aOverlap);
     }
 }
 
@@ -580,8 +588,9 @@ function fillTextFitData(map, iconGeometry) {
             //在 fn-type 中已经创建
             iconGeometry.data.aMarkerWidth = new Uint16Array(arr);
             props.aMarkerWidth = new Uint16Array(arr);
-            if (props[PREFIX + 'aMarkerWidth']) {
-                props[PREFIX + 'aMarkerWidth'] = props.aMarkerWidth;
+            const keyName = (PREFIX + 'aMarkerWidth').trim();
+            if (props[keyName]) {
+                props[keyName] = props.aMarkerWidth;
             }
         }
 
@@ -600,8 +609,9 @@ function fillTextFitData(map, iconGeometry) {
             //在 fn-type 中已经创建
             iconGeometry.data.aMarkerHeight = new Uint16Array(arr);
             props.aMarkerHeight = new Uint16Array(arr);
-            if (props[PREFIX + 'aMarkerHeight']) {
-                props[PREFIX + 'aMarkerHeight'] = props.aMarkerHeight;
+            const keyName = (PREFIX + 'aMarkerHeight').trim();
+            if (props[keyName]) {
+                props[keyName] = props.aMarkerHeight;
             }
         }
     }

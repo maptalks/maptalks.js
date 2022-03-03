@@ -550,15 +550,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!layerPlugins[layerId]) {
                 layerPlugins[layerId] = [];
             }
-            if (!layerPlugins[layerId]['plugin_' + type]) {
+            const pluginTypeName = ('plugin_' + type).trim();
+            if (!layerPlugins[layerId][pluginTypeName]) {
                 style = this._getDefaultRenderPlugin(type);
                 style.filter = data.filter;
                 layerPlugins[layerId].push(style);
-                layerPlugins[layerId]['plugin_' + type] = style;
+                layerPlugins[layerId][pluginTypeName] = style;
                 isUpdated = true;
                 // layerStyles.push(style);
             } else {
-                style = layerPlugins[layerId]['plugin_' + type];
+                style = layerPlugins[layerId][pluginTypeName];
             }
         } else {
             const allStyles = layer._getComputedStyle();
@@ -581,7 +582,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugins = [];
             if (tileData) {
                 tileData.layers.forEach(info => {
-                    plugins.push(this._layerPlugins[info.layer]['plugin_' + info.type].plugin);
+                    const pluginTypeName = ('plugin_' + info.type).trim();
+                    plugins.push(this._layerPlugins[info.layer][pluginTypeName].plugin);
                 });
             } else {
                 Object.keys(this._layerPlugins).forEach(layer => {

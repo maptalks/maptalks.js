@@ -60,10 +60,12 @@ export default class VectorPack {
         const fnTypes = {};
         for (const p in symbolDef) {
             if (isFnTypeSymbol(symbolDef[p])) {
+                const fn0KeyName = (p + '_Fn_0').trim();
+                const fnKeyName = (p + 'Fn').trim();
                 if (interpolatedSymbols[p]) {
-                    fnTypes[p + '_Fn_0'] = interpolated(symbolDef[p]);
-                    fnTypes[p + 'Fn'] = (zoom, properties) => {
-                        const v = fnTypes[p + '_Fn_0'](zoom, properties);
+                    fnTypes[fn0KeyName] = interpolated(symbolDef[p]);
+                    fnTypes[fnKeyName] = (zoom, properties) => {
+                        const v = fnTypes[fn0KeyName](zoom, properties);
                         if (isFnTypeSymbol(v)) {
                             return interpolated(v)(zoom, properties);
                         } else {
@@ -71,9 +73,9 @@ export default class VectorPack {
                         }
                     }
                 } else {
-                    fnTypes[p + '_Fn_0'] = piecewiseConstant(symbolDef[p]);
-                    fnTypes[p + 'Fn'] = (zoom, properties) => {
-                        const v = fnTypes[p + '_Fn_0'](zoom, properties);
+                    fnTypes[fn0KeyName] = piecewiseConstant(symbolDef[p]);
+                    fnTypes[fnKeyName] = (zoom, properties) => {
+                        const v = fnTypes[fn0KeyName](zoom, properties);
                         if (isFnTypeSymbol(v)) {
                             return piecewiseConstant(v)(zoom, properties);
                         } else {

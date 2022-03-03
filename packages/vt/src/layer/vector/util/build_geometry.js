@@ -62,7 +62,8 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             const props = i === len - 1 ? properties : extend({}, properties);
             for (const p in symbol[i]) {
                 if (hasOwn(symbol[i], p)) {
-                    props['_symbol_' + p] = symbol[i][p];
+                    const keyName = ('_symbol_' + p).trim();
+                    props[keyName] = symbol[i][p];
                 }
             }
             const pickingId = (currentFeature && currentFeature[i]) ? currentFeature[i][keyName] : kidGen.pickingId++;
@@ -81,7 +82,8 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     } else {
         for (const p in symbol) {
             if (hasOwn(symbol, p)) {
-                properties['_symbol_' + p] = symbol[p];
+                const keyName = ('_symbol_' + p).trim();
+                properties[keyName] = symbol[p];
             }
         }
     }
