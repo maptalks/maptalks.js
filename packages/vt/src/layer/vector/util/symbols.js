@@ -129,7 +129,12 @@ export const  MARKER_SYMBOL = {
         type: 'identity',
         default: null,
         property: '_symbol_markerTextFitPadding'
-    }
+    },
+    markerPlacement: {
+        type: 'identity',
+        default: 'point',
+        property: '_symbol_markerPlacement'
+    },
 };
 
 export const TEXT_SYMBOL = {
@@ -238,7 +243,12 @@ export const TEXT_SYMBOL = {
         type: 'identity',
         default: 250,
         property: '_symbol_textSpacing'
-    }
+    },
+    textPlacement: {
+        type: 'identity',
+        default: 'point',
+        property: '_symbol_textPlacement'
+    },
 };
 
 export const LINE_SYMBOL = {

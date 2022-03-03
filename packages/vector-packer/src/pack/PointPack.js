@@ -747,7 +747,7 @@ export default class PointPack extends VectorPack {
 
     _getAnchors(point, shape, scale) {
         const { feature, symbol } = point;
-        const placement = this._getPlacement(symbol);
+        const placement = this._getPlacement(point, symbol);
         const properties = feature.properties;
         const { markerSpacingFn, textSpacingFn } = this._fnTypes;
         const spacing = (
@@ -761,7 +761,10 @@ export default class PointPack extends VectorPack {
         return anchors;
     }
 
-    _getPlacement(symbol) {
+    _getPlacement(point, symbol) {
+        if (this._fnTypes.markerPlacementFn) {
+            return this._fnTypes.markerPlacementFn(this.options['zoom'], point.feature.properties);
+        }
         return symbol.markerPlacement || symbol.textPlacement;
     }
 }

@@ -89,6 +89,9 @@ module.exports = [{
             banner: `export default `,
             footer: ``
         },
+        watch: {
+            include: ['src/worker/**/*.js']
+        }
     },
     {
         input: './build/index.js',
@@ -118,7 +121,7 @@ module.exports = [{
             removeGlobal()
         ].concat(plugins),
         watch: {
-            include: 'build/**/*.js'
+            include: ['build/**/*.js', 'src/layer/**/*.js']
         }
     },
     {
