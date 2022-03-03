@@ -38,6 +38,25 @@ function removeGlobal() {
     };
 }
 
+function transformBackQuote() {
+    return {
+        renderChunk(code) {
+            // if (/\.js/.test(id) === false) return null;
+            // var transformedCode = 'const code = `' + code.replace(/`/g, '\\`') + '`';
+            code = code.substring('export default '.length)
+                .replace(/\\/g, '\\\\')
+                .replace(/`/g, '\\`')
+                .replace(/\$\{/g, '${e}');
+            var transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
+            transformedCode += 'export default code';
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
+
 function glsl() {
 
     return {
@@ -77,8 +96,8 @@ module.exports = [{
               '})(this.exports = this.exports || {});': '}',
               preventAssignment: false,
               delimiters: ['', '']
-            })
-        ],
+            }),
+        ].concat(plugins).concat([transformBackQuote()]),
         output: {
             strict: false,
             format: 'iife',
@@ -87,7 +106,7 @@ module.exports = [{
             extend: true,
             file: 'build/worker.js',
             banner: `export default `,
-            footer: ``
+            // footer: ``
         },
         watch: {
             include: ['src/worker/**/*.js']
