@@ -352,35 +352,11 @@ class GeometryCollection extends Geometry {
     }
 
     _computeExtent(projection) {
-        if (this.isEmpty()) {
-            return null;
-        }
-        const extent = new Extent();
-        const geometries = this.getGeometries();
-        for (let i = 0, l = geometries.length; i < l; i++) {
-            const e = geometries[i]._computeExtent(projection);
-            if (e) {
-                extent._combine(e);
-            }
-        }
-
-        return extent;
+        return computeExtent.call(this, projection, '_computeExtent');
     }
 
     _computePrjExtent(projection) {
-        if (this.isEmpty()) {
-            return null;
-        }
-        const extent = new Extent();
-        const geometries = this.getGeometries();
-        for (let i = 0, l = geometries.length; i < l; i++) {
-            const e = geometries[i]._computePrjExtent(projection);
-            if (e) {
-                extent._combine(e);
-            }
-        }
-
-        return extent;
+        return computeExtent.call(this, projection, '_computePrjExtent');
     }
 
     _computeGeodesicLength(projection) {
@@ -547,17 +523,14 @@ function computeExtent(projection, fn) {
     if (this.isEmpty()) {
         return null;
     }
+    const extent = new Extent();
     const geometries = this.getGeometries();
-    let result = null;
     for (let i = 0, l = geometries.length; i < l; i++) {
-        const geo = geometries[i];
-        if (!geo) {
-            continue;
-        }
-        const geoExtent = geo[fn](projection);
-        if (geoExtent) {
-            result = geoExtent.combine(result);
+        const e = geometries[i][fn](projection);
+        if (e) {
+            extent._combine(e);
         }
     }
-    return result;
+
+    return extent;
 }
