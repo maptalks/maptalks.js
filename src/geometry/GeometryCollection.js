@@ -3,6 +3,7 @@ import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
+import Extent from '../geo/Extent';
 import Geometry from './Geometry';
 
 const TEMP_EXTENT = new PointExtent();
@@ -351,11 +352,35 @@ class GeometryCollection extends Geometry {
     }
 
     _computeExtent(projection) {
-        return computeExtent.call(this, projection, '_computeExtent');
+        if (this.isEmpty()) {
+            return null;
+        }
+        const extent = new Extent();
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
+            const e = geometries[i]._computeExtent(projection);
+            if (e) {
+                extent._combine(e);
+            }
+        }
+
+        return extent;
     }
 
     _computePrjExtent(projection) {
-        return computeExtent.call(this, projection, '_computePrjExtent');
+        if (this.isEmpty()) {
+            return null;
+        }
+        const extent = new Extent();
+        const geometries = this.getGeometries();
+        for (let i = 0, l = geometries.length; i < l; i++) {
+            const e = geometries[i]._computePrjExtent(projection);
+            if (e) {
+                extent._combine(e);
+            }
+        }
+
+        return extent;
     }
 
     _computeGeodesicLength(projection) {
