@@ -13,9 +13,6 @@
   },
   "author": "fuzhen",
   "license": "ISC",
-  "dependencies": {
-    "@maptalks/gl": "^0.67.5"
-  },
   "files": [
     "dist/transcoders.draco.js",
     "dist/transcoders.draco.mjs"
