@@ -255,7 +255,7 @@ class RainPainer {
             this._mesh.material.set('rainMap', rainMap);
             this._scene.setMeshes(this._mesh);
         }
-        if (rainConfig.rainTexture === !this._rainTexture) {
+        if (rainConfig.rainTexture !== this._rainTexture) {
             this._creatRainTexture().then(rainMap => {
                 this._mesh.material.set('rainMap', rainMap);
             });

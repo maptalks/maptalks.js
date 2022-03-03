@@ -34,8 +34,8 @@ export default class SkylineAnalysis extends Analysis {
         };
         this._fbo = renderer.regl.framebuffer({
             color: renderer.regl.texture({
-                width: 1,
-                height: 1,
+                width: viewport.width(),
+                height: viewport.height(),
                 wrap: 'clamp',
                 mag : 'linear',
                 min : 'linear'
