@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.draco",
-  "version": "0.67.4",
+  "version": "0.67.5",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
   "module": "dist/transcoders.draco.mjs",
@@ -14,7 +14,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "dependencies": {
-    "@maptalks/gl": "^0.67.1"
+    "@maptalks/gl": "^0.67.5"
   },
   "files": [
     "dist/transcoders.draco.js",
