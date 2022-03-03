@@ -23,6 +23,22 @@ const plugins = production ? [
             comments: '/^!/'
         }
     })] : [];
+
+const pluginsWorker = production ? [
+    terser({
+        module: true,
+        mangle: {
+            properties: {
+                'regex': /^_/,
+                'keep_quoted': true,
+                'reserved': ['on', 'once', 'off'],
+            }
+        },
+        output: {
+            beautify: false,
+            comments: '/^!/'
+        }
+    })] : [];
 //worker.js中的global可能被webpack替换为全局变量，造成worker代码执行失败，所以这里统一把typeof global替换为typeof undefined
 function removeGlobal() {
     return {
@@ -97,7 +113,7 @@ module.exports = [{
               preventAssignment: false,
               delimiters: ['', '']
             }),
-        ].concat(plugins).concat([transformBackQuote()]),
+        ].concat(pluginsWorker).concat([transformBackQuote()]),
         output: {
             strict: false,
             format: 'iife',
