@@ -8,7 +8,8 @@ import {
     isFunction,
     sign,
     UID,
-    b64toBlob
+    b64toBlob,
+    isNumber
 } from '../core/util';
 import Class from '../core/Class';
 import Browser from '../core/Browser';
@@ -1635,11 +1636,24 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     /**
-     * Get device's devicePixelRatio, you can override it by setting devicePixelRatio in options.
+     * Get map's devicePixelRatio, you can override it by setting devicePixelRatio in options.
      * @returns {Number}
      */
     getDevicePixelRatio() {
         return this.options['devicePixelRatio'] || Browser.devicePixelRatio || 1;
+    }
+
+    /**
+     * Set map's devicePixelRatio
+     * @param {Number} dpr
+     * @returns {Map} this
+     */
+    setDevicePixelRatio(dpr) {
+        if (isNumber(dpr) && dpr > 0 && dpr !== this.options['devicePixelRatio']) {
+            this.options['devicePixelRatio'] = dpr;
+            this.checkSize(true);
+        }
+        return this;
     }
 
     //-----------------------------------------------------------
