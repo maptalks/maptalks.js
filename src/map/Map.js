@@ -1645,7 +1645,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     /**
      * Set map's devicePixelRatio
-     * @returns {Number}
+     * @returns {this}
      */
     setDevicePixelRatio(dpr) {
         if (isNumber(dpr) && dpr > 0 && dpr !== this.options['devicePixelRatio']) {
