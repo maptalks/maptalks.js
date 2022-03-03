@@ -526,6 +526,9 @@ function computeExtent(projection, fn) {
     const extent = new Extent();
     const geometries = this.getGeometries();
     for (let i = 0, l = geometries.length; i < l; i++) {
+        if (!geometries[i]) {
+            continue;
+        }
         const e = geometries[i][fn](projection);
         if (e) {
             extent._combine(e);
