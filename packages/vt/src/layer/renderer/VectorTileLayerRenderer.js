@@ -1222,7 +1222,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true }
+                dataConfig: { type: 'fill', only2D: true },
+                sceneConfig: { antialias: true }
             };
             break;
         default:
