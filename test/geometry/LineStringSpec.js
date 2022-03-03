@@ -303,6 +303,15 @@ describe('Geometry.LineString', function () {
         expect(layer.identify({x: 118.84733998413094, y: 32.04636121481619}).length).to.be.above(0);
     });
 
+    //issue #1595
+    it('identify line with dx, dy, #1595', function () {
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.001, 0)], { symbol: { lineDx: 20, lineDy: 20, lineWidth :4 }});
+        layer.addGeometry(line);
+
+        var point = new maptalks.Point(map.width / 2 + 20, map.height / 2 + 20);
+        expect(layer.identifyAtPoint(point).length).to.be.above(0);
+    });
+
     //issue #522
     it('drawn with arrow of vertex-first', function () {
         map.setPitch(60);
