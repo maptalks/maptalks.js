@@ -95,7 +95,7 @@ export default class StyledPoint {
             return this.iconGlyph;
         }
         const { markerFileFn, markerTypeFn, markerPathFn, markerWidthFn, markerHeightFn, markerFillFn, markerFillPatternFileFn, markerFillOpacityFn, markerTextFitFn, markerTextFitPaddingFn,
-            markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, textNameFn,
+            markerLineColorFn, markerLineWidthFn, markerLineOpacityFn, markerLineDasharrayFn, markerLinePatternFileFn, markerPathWidthFn, markerPathHeightFn, textNameFn,
             textFaceNameFn, textStyleFn, textWeightFn } = this._fnTypes;
         const { zoom } = this.options;
         const result = {};
@@ -175,6 +175,8 @@ export default class StyledPoint {
                 url['markerType'] = markerType;
                 if (markerType === 'path') {
                     url['markerPath'] = markerPathFn ? markerPathFn(null, properties) : symbol.markerPath;
+                    url['markerPathWidth'] = markerPathWidthFn ? markerPathWidthFn(null, properties) : symbol.markerPathWidth;
+                    url['markerPathHeight'] = markerPathHeightFn ? markerPathHeightFn(null, properties) : symbol.markerPathHeight;
                 }
                 if (markerWidthFn) {
                     const width =  markerWidthFn(null, properties);
