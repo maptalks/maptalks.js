@@ -36,7 +36,7 @@ const style = [
         symbol: {
             material,
             lineWidth: 16,
-            lineOpacity: 1
+            lineOpacity: 0.5
         }
     }
 ];
