@@ -130,9 +130,7 @@ class WireframePainter extends Painter {
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
                     }
-                },
-                'outSize',
-                'opacity'
+                }
             ],
             extraCommandProps: {
                 stencil: {

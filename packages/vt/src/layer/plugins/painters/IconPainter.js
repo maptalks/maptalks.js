@@ -641,13 +641,6 @@ class IconPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
-                'flipY',
-                'markerWidth',
-                'markerHeight',
-                'markerDx',
-                'markerDy',
-                'markerRotation',
-                'cameraToCenterDistance',
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',
@@ -655,16 +648,6 @@ class IconPainter extends CollisionPainter {
                         return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                     }
                 },
-                'texSize',
-                'canvasSize',
-                'iconSize',
-                'pitchWithMap',
-                'mapPitch',
-                'markerPerspectiveRatio',
-                'texture',
-                'rotateWithMap',
-                'mapRotation',
-                'tileRatio',
                 {
                     name: 'zoomScale',
                     type: 'function',
@@ -714,13 +697,6 @@ class IconPainter extends CollisionPainter {
                 {
                     vert: '#define PICKING_MODE 1\n' + pickingVert,
                     uniforms: [
-                        'flipY',
-                        'markerWidth',
-                        'markerHeight',
-                        'markerDx',
-                        'markerDy',
-                        'markerRotation',
-                        'cameraToCenterDistance',
                         {
                             name: 'projViewModelMatrix',
                             type: 'function',
@@ -728,14 +704,6 @@ class IconPainter extends CollisionPainter {
                                 return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
                             }
                         },
-                        'canvasSize',
-                        'iconSize',
-                        'pitchWithMap',
-                        'mapPitch',
-                        'markerPerspectiveRatio',
-                        'rotateWithMap',
-                        'mapRotation',
-                        'tileRatio',
                         {
                             name: 'zoomScale',
                             type: 'function',

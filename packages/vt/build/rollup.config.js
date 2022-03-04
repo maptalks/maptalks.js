@@ -156,7 +156,7 @@ module.exports = [{
             removeGlobal()
         ].concat(plugins),
         watch: {
-            include: ['build/**/*.js', 'src/layer/**/*.js']
+            include: ['build/**/*.js', 'src/layer/**/*.js', 'src/layer/**/*.vert', 'src/layer/**/*.frag', 'src/layer/**/*.glsl']
         }
     },
     {

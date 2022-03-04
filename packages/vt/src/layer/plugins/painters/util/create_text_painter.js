@@ -299,12 +299,6 @@ export function createTextShader(layer, sceneConfig) {
     };
 
     const uniforms = [
-        'flipY',
-        'textSize',
-        'textDx',
-        'textDy',
-        'textRotation',
-        'cameraToCenterDistance',
         {
             name: 'projViewModelMatrix',
             type: 'function',
@@ -312,31 +306,13 @@ export function createTextShader(layer, sceneConfig) {
                 return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
             }
         },
-        'textPerspectiveRatio',
-        'texSize',
-        'canvasSize',
-        'glyphSize',
-        'pitchWithMap',
-        'mapPitch',
-        'texture',
-        'gammaScale',
-        'textFill',
-        'textOpacity',
-        'textHaloRadius',
-        'textHaloFill',
-        'textHaloBlur',
-        'textHaloOpacity',
-        'isHalo',
         {
             name: 'zoomScale',
             type: 'function',
             fn: function (context, props) {
                 return props['tileResolution'] / props['resolution'];
             }
-        },
-        'rotateWithMap',
-        'mapRotation',
-        'tileRatio'
+        }
     ];
 
     const extraCommandProps = {
