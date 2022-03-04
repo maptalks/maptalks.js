@@ -376,7 +376,7 @@ class InfoWindow extends UIComponent {
     }
 
     _getWindowWidth() {
-        const defaultWidth = 'auto';
+        const defaultWidth = options.width;
         let width = this.options['width'];
         if (!width) {
             width = defaultWidth;
