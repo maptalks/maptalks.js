@@ -27,6 +27,7 @@ module.exports = {
     view: {
         center: [0, 0],
         zoom: 6,
-        pitch: 50
+        pitch: 50,
+        bearing: 30
     }
 };

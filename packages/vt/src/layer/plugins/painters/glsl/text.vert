@@ -145,7 +145,11 @@ void main() {
         float rotation = textRotation - mapRotation * isRotateWithMap;
     #endif
     if (isPitchWithMap == 1.0) {
-        rotation += mapRotation;
+        #ifdef REVERSE_MAP_ROTATION_ON_PITCH
+            rotation += mapRotation;
+        #else
+            rotation -= mapRotation;
+        #endif
     }
     float angleSin = sin(rotation);
     float angleCos = cos(rotation);

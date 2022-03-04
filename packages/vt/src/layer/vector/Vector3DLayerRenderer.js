@@ -1194,6 +1194,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, this.layer.options.sceneConfig, 0);
+        this._markerPainter.setTextShaderDefines({
+            'REVERSE_MAP_ROTATION_ON_PITCH': 1
+        });
 
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);

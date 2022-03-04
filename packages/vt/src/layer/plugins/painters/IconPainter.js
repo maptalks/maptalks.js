@@ -61,6 +61,10 @@ class IconPainter extends CollisionPainter {
         this._meshesToCheck = [];
     }
 
+    setTextShaderDefines(defines) {
+        this._textDefines = defines;
+    }
+
     createFnTypeConfig(map, symbolDef) {
         const icon = getMarkerFnTypeConfig.call(this, map, symbolDef);
         const text = getTextFnTypeConfig.call(this, map, symbolDef);
@@ -684,11 +688,12 @@ class IconPainter extends CollisionPainter {
         const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
         // extraCommandProps.stencil.enable = false;
-
+        const defines = this._textDefines || {};
         this._textShader = new reshader.MeshShader({
             vert: textVert, frag: textFrag,
             uniforms,
-            extraCommandProps
+            extraCommandProps,
+            defines
         });
 
         if (this.pickingFBO) {
