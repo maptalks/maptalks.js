@@ -138,7 +138,7 @@ class MeshPainter extends Painter {
             enumerable: true,
             get: () => {
                 const symbol = this.getSymbol(symbolIndex);
-                return geometry.properties.hasAlpha || symbol['polygonOpacity'] < 1;
+                return geometry.properties.hasAlpha || symbol['polygonOpacity'] < 1 || symbol['lineOpacity'] < 1;
             }
         });
         mesh.properties.symbolIndex = symbolIndex;
