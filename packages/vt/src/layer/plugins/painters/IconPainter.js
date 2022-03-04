@@ -442,7 +442,7 @@ class IconPainter extends CollisionPainter {
         const map = this.getMap();
         // TODO  meshes[0]可能是不合法的数据
         const { collideBoxIndex } = mesh.meshes[0].geometry.properties;
-        const boxInfo = collideBoxIndex[pickingIndex];
+        const boxInfo = collideBoxIndex && collideBoxIndex[pickingIndex];
         if (!boxInfo) {
             return false;
         }
