@@ -123,9 +123,6 @@ module.exports = [{
             file: 'build/worker.js',
             banner: `export default `,
             // footer: ``
-        },
-        watch: {
-            include: ['src/worker/**/*.js']
         }
     },
     {
@@ -154,10 +151,7 @@ module.exports = [{
             }),
             commonjs(),
             removeGlobal()
-        ].concat(plugins),
-        watch: {
-            include: ['build/**/*.js', 'src/layer/**/*.js', 'src/layer/**/*.vert', 'src/layer/**/*.frag', 'src/layer/**/*.glsl']
-        }
+        ].concat(plugins)
     },
     {
         input: './build/index.js',
