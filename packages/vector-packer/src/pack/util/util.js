@@ -52,6 +52,9 @@ export function getHeightValue(properties, heightProp, defaultValue) {
 }
 
 export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty) {
+    if (!altitudeScale && altitudeScale !== 0) {
+        altitudeScale = 1;
+    }
     const altitudeValue = getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
     const altitude = altitudeValue * altitudeScale;
 

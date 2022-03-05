@@ -24,7 +24,7 @@ const data = {
                 ]
             },
             properties: {
-                levels: 3000
+                levels: 15000
             }
         }
     ]
@@ -34,7 +34,6 @@ const plugin = {
     dataConfig: {
         type: '3d-extrusion',
         altitudeProperty: 'levels',
-        altitudeScale: 5,
         defaultAltitude: 0
     },
     sceneConfig: {},
