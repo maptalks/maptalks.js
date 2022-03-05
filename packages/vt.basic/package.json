@@ -27,7 +27,6 @@
     "@mapbox/point-geometry": "^0.1.0",
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/gl": "<2.0.0",
-    "@maptalks/vt-plugin": "^0.63.0",
     "color": "^3.0.0",
     "fast-deep-equal": "^2.0.1"
   },
