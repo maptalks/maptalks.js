@@ -1,4 +1,4 @@
-import { isObject, isString } from '../core/util';
+import { isNumber, isObject, isString } from '../core/util';
 import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
@@ -9,9 +9,9 @@ const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 /**
  * @property {Object} options
  * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
- * @property {Boolean} [options.autoCloseOn=null] - Auto close infowindow on map's events, e.g. "click contextmenu" will close infowindow with click or right click on map.
- * @property {Boolean} [options.autoOpenOn=null]  - Auto open infowindow on owner's events, e.g. "click" will open infowindow with click or right click on window's owner.
- * @property {Number}  [options.width=300]     - default width
+ * @property {String} [options.autoCloseOn=null] - Auto close infowindow on map's events, e.g. "click contextmenu" will close infowindow with click or right click on map.
+ * @property {String} [options.autoOpenOn='click']  - Auto open infowindow on owner's events, e.g. "click" will open infowindow with click or right click on window's owner.
+ * @property {Number}  [options.width=auto]     - default width
  * @property {Number}  [options.minHeight=120] - minimun height
  * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
  * @property {String}  [options.title=null]    - title of the infowindow.
@@ -25,7 +25,7 @@ const options = {
     'autoPan': true,
     'autoCloseOn': null,
     'autoOpenOn': 'click',
-    'width': 300,
+    'width': 'auto',
     'minHeight': 120,
     'custom': false,
     'title': null,
@@ -156,7 +156,8 @@ class InfoWindow extends UIComponent {
         if (this.options['containerClass']) {
             dom.className = this.options['containerClass'];
         }
-        dom.style.width = this._getWindowWidth() + 'px';
+        const width = this._getWindowWidth();
+        dom.style.width = isNumber(width) ? width + 'px' : 'auto';
         dom.style.bottom = '0px'; // fix #657
         let content = '<em class="maptalks-ico"></em>';
         if (this.options['title']) {
@@ -375,7 +376,7 @@ class InfoWindow extends UIComponent {
     }
 
     _getWindowWidth() {
-        const defaultWidth = 300;
+        const defaultWidth = options.width;
         let width = this.options['width'];
         if (!width) {
             width = defaultWidth;
