@@ -171,7 +171,7 @@ gulp.task('connect', () => {
 gulp.task('doc', done => {
     const sources = require('./build/api-files.js');
     del([
-        './docs/api/**/*'
+        './docs/api/1.x/**/*'
     ], {
         force : true
     });
