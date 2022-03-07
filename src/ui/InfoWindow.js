@@ -9,8 +9,8 @@ const PROPERTY_PATTERN = /\{ *([\w_]+) *\}/g;
 /**
  * @property {Object} options
  * @property {Boolean} [options.autoPan=true]  - set it to false if you don't want the map to do panning animation to fit the opened window.
- * @property {Boolean} [options.autoCloseOn=null] - Auto close infowindow on map's events, e.g. "click contextmenu" will close infowindow with click or right click on map.
- * @property {Boolean} [options.autoOpenOn=null]  - Auto open infowindow on owner's events, e.g. "click" will open infowindow with click or right click on window's owner.
+ * @property {String} [options.autoCloseOn=null] - Auto close infowindow on map's events, e.g. "click contextmenu" will close infowindow with click or right click on map.
+ * @property {String} [options.autoOpenOn='click']  - Auto open infowindow on owner's events, e.g. "click" will open infowindow with click or right click on window's owner.
  * @property {Number}  [options.width=auto]     - default width
  * @property {Number}  [options.minHeight=120] - minimun height
  * @property {Boolean} [options.custom=false]  - set it to true if you want a customized infowindow, customized html codes or a HTMLElement is set to content.
