@@ -41,18 +41,18 @@ module.exports = [
     {
         input: 'src/index.js',
         external: [
-        'maptalks',
-        '@mapbox/point-geometry',
-    '@mapbox/shelf-pack',
-    '@mapbox/tiny-sdf',
-    '@maptalks/feature-filter',
-    '@maptalks/function-type',
-    '@maptalks/tbn-packer',
-    'color',
-    'earcut',
-    'gl-matrix',
-    'quickselect',
-    'tinyqueue'],
+            'maptalks',
+            '@mapbox/shelf-pack',
+            '@mapbox/tiny-sdf',
+            '@maptalks/feature-filter',
+            '@maptalks/function-type',
+            '@maptalks/tbn-packer',
+            'color',
+            'earcut',
+            'gl-matrix',
+            'quickselect',
+            'tinyqueue'
+        ],
         plugins: plugins,
         output: [
             {
