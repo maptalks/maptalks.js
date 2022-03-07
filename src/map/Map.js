@@ -1299,8 +1299,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for pointAtResToCoordinate
      */
-    pointAtResToCoord(point, zoom, out) {
-        return this.pointAtResToCoordinate(point, zoom, out);
+    pointAtResToCoord(point, res, out) {
+        return this.pointAtResToCoordinate(point, res, out);
     }
 
 
