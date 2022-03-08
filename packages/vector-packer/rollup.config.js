@@ -41,7 +41,9 @@ module.exports = [
     {
         input: 'src/index.js',
         external: [
+            // package.json中的dependencies必须要全部排除出去，否则会出现打包错误
             'maptalks',
+            '@mapbox/point-geometry',
             '@mapbox/shelf-pack',
             '@mapbox/tiny-sdf',
             '@maptalks/feature-filter',
