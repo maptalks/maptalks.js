@@ -24,29 +24,8 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@mapbox/point-geometry": "^0.1.0",
-    "@maptalks/function-type": "^1.2.3",
-    "@maptalks/gl": "<2.0.0",
-    "color": "^3.0.0",
-    "fast-deep-equal": "^2.0.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.15.0",
-    "@babel/preset-env": "^7.15.0",
-    "@maptalks/rollup-plugin-glsl-minify": "^0.1.7",
-    "@maptalks/vt": "^0.63.10",
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "electron": "^4.2.12",
-    "electron-mocha": "^6.0.4",
-    "eslint": "^7.32.0",
-    "eslint-plugin-mocha": "^9.0.0",
-    "maptalks": "^1.0.0-beta.3",
-    "mocha": "^9.0.3",
-    "pixelmatch": "^4.0.2",
-    "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1"
   },
   "gitHead": "36a6954658f5a3aff0fe84dd79964ee7f1317b06"
 }
