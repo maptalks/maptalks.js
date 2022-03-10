@@ -79,6 +79,10 @@ varying vec3 vFragPos;
 #endif
 #include <heatmap_render_frag>
 
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+  #include <vsm_shadow_frag>
+#endif
+
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
@@ -152,6 +156,7 @@ void main() {
     #endif
     ambient *= color.rgb;
     diffuse *= color.rgb;
+
     //镜面反色光
     vec3 viewDir = normalize(cameraPosition - vFragPos);
     // vec3 reflectDir = reflect(-lightDir, norm);
@@ -165,6 +170,11 @@ void main() {
     #ifdef HAS_OCCLUSION_MAP
         float ao = texture2D(occlusionTexture, vTexCoord).r;
         ambient *= ao;
+    #endif
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+        float shadowCoeff = shadow_computeShadow();
+        diffuse = shadow_blend(diffuse, shadowCoeff).rgb;
+        specular = shadow_blend(specular, shadowCoeff).rgb;
     #endif
     vec3 result = ambient + diffuse + specular;
 

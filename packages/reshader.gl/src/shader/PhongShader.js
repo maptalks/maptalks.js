@@ -7,28 +7,30 @@ class PhongShader extends MeshShader {
     constructor(config = {}) {
         const normalMatrix = [];
         const viewModelMatrix = [];
+        const extraUniforms = config.uniforms;
+        const uniforms = [
+            {
+                name: 'modelNormalMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    return mat3.fromMat4(normalMatrix, props['modelMatrix']);
+                }
+            },
+            {
+                name: 'viewModelMatrix',
+                type: 'function',
+                fn: function (context, props) {
+                    return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                }
+            }
+        ];
+        if (extraUniforms) {
+            uniforms.push(...extraUniforms);
+        }
         super({
             vert: phongVert,
             frag: phongFrag,
-            uniforms: [
-                {
-                    name: 'modelNormalMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        // mat4.invert(normalMatrix, props['modelMatrix']);
-                        // mat4.transpose(normalMatrix, normalMatrix);
-                        // return normalMatrix;
-                        return mat3.fromMat4(normalMatrix, props['modelMatrix']);
-                    }
-                },
-                {
-                    name: 'viewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
+            uniforms,
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
         });

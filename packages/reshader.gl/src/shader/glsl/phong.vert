@@ -32,6 +32,9 @@ uniform mat4 projViewMatrix;
 
 #include <get_output>
 #include <heatmap_render_vert>
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #include <vsm_shadow_vert>
+#endif
 
 #ifdef HAS_EXTRUSION_OPACITY
     attribute float aExtrusionOpacity;
@@ -110,6 +113,9 @@ void main()
         vColor = aColor0 / 255.0;
     #endif
 
+    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+        shadow_computeShadowPars(localPositionMatrix * localPosition);
+    #endif
     #ifdef HAS_HEATMAP
         heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
     #endif
