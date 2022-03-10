@@ -6,6 +6,8 @@ import * as reshader from '@maptalks/reshader.gl';
 import GroundPainter from './GroundPainter';
 import { extend } from './util/util';
 
+const EMPTY_COLOR = [0, 0, 0, 0];
+
 export default class HeatmapProcess {
 
     constructor(regl, sceneConfig, layer, colorStops, stencil, polygonOffset) {
@@ -16,22 +18,27 @@ export default class HeatmapProcess {
         this._stencil = stencil;
         this._polygonOffset = polygonOffset || { factor: 0, units: 0 };
         this._init();
+        this._outputSize = [];
     }
 
     render(scene, uniforms, fbo) {
         this._check();
         const map = this._layer.getMap();
         this.renderer.regl.clear({
-            color: [0, 0, 0, 0],
+            color: EMPTY_COLOR,
             depth: 1,
             stencil: 0xFF,
             framebuffer: this._heatmapFBO
         });
         this.renderer.render(this._heatmapShader, uniforms, scene, this._heatmapFBO);
+        const canvas = this._layer.getRenderer().canvas;
+        this._outputSize[0] = canvas.width;
+        this._outputSize[1] = canvas.height;
         const displayUniforms = extend({
             colorRamp: this._colorRampTex,
             inputTexture: this._heatmapFBO,
-            projViewMatrix: map.projViewMatrix
+            projViewMatrix: map.projViewMatrix,
+            textureOutputSize: this._outputSize
         }, uniforms);
         this._transformGround();
         this.renderer.render(this._displayShader, displayUniforms, this._groundScene, fbo);
@@ -168,6 +175,11 @@ export default class HeatmapProcess {
         });
 
         this._displayShader = new reshader.HeatmapDisplayShader({
+            x: 0,
+            y: 0,
+            width: () => canvas.width,
+            height: () => canvas.height
+        },{
             extraCommandProps: {
                 stencil: {
                     enable: false
@@ -180,13 +192,10 @@ export default class HeatmapProcess {
                 polygonOffset: {
                     enable: true,
                     offset: this._polygonOffset
+                },
+                scissor: {
+                    enable: false
                 }
-            },
-            viewport: {
-                x: 0,
-                y: 0,
-                width: () => canvas.width,
-                height: () => canvas.height
             }
         });
     }

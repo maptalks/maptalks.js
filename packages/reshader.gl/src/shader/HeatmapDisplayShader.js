@@ -2,10 +2,10 @@ import MeshShader from './MeshShader';
 import vert from './glsl/heatmap_display.vert';
 import frag from './glsl/heatmap_display.frag';
 import { mat4 } from 'gl-matrix';
-import { extend } from '../common/Util';
+import { extend, isFunction } from '../common/Util';
 
 export default class HeatmapDisplayShader extends MeshShader {
-    constructor(config) {
+    constructor(viewport, config) {
         const extraCommandProps = {
             blend: {
                 enable: true,
@@ -14,7 +14,8 @@ export default class HeatmapDisplayShader extends MeshShader {
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
-            }
+            },
+            viewport
         };
         if (config && config.extraCommandProps) {
             extend(extraCommandProps, config.extraCommandProps);
@@ -29,15 +30,6 @@ export default class HeatmapDisplayShader extends MeshShader {
                     type: 'function',
                     fn: function (context, props) {
                         return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    }
-                },
-                {
-                    name: 'textureOutputSize',
-                    type: 'function',
-                    fn: function (context) {
-                        textureOutputSize[0] = context.drawingBufferWidth;
-                        textureOutputSize[1] = context.drawingBufferHeight;
-                        return textureOutputSize;
                     }
                 }
             ],
