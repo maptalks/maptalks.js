@@ -25,6 +25,7 @@ const materialFormats = {
     0x1909: 'luminance',
     0x190A: 'luminance alpha',
     0x83f0: 'rgb s3tc dxt1',
+    0x83f1: 'rgba s3tc dxt1',
     0x83f2: 'rgba s3tc dxt3',
     0x83f3: 'rgba s3tc dxt5'
 };

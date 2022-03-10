@@ -100,6 +100,10 @@ class AbstractTexture {
             if (!this.config.persistent) {
                 // delete persistent data to save memories
                 if (this.config.data) {
+                    // imageBitmap
+                    if (this.config.data instanceof ImageBitmap) {
+                        this.config.data.close();
+                    }
                     this.config.data = [];
                 }
                 if (this.config.faces) {
