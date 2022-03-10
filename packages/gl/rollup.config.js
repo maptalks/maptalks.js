@@ -80,7 +80,7 @@ module.exports = [
             'file': outputFile
         },
         watch: {
-            include: ['build/**/*.js', '../reshader.gl/dist/*.js']
+            include: ['build/**/*.js', '../reshader.gl/dist/*.mjs']
         }
     },
     {
