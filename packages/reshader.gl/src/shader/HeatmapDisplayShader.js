@@ -14,12 +14,6 @@ export default class HeatmapDisplayShader extends MeshShader {
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'
-            },
-            viewport: {
-                x: 0,
-                y: 0,
-                width: (context, props) => props.inputTexture.width,
-                height: (context, props) => props.inputTexture.height
             }
         };
         if (config && config.extraCommandProps) {

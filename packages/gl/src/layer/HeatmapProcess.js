@@ -181,6 +181,12 @@ export default class HeatmapProcess {
                     enable: true,
                     offset: this._polygonOffset
                 }
+            },
+            viewport: {
+                x: 0,
+                y: 0,
+                width: () => canvas.width,
+                height: () => canvas.height
             }
         });
     }
