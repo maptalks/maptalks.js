@@ -7,6 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
+import Coordinate from '../../geo/Coordinate';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -37,6 +38,7 @@ const TEMP_BBOX = {
     maxx: -Infinity,
     maxy: -Infinity
 };
+const TEMP_CENTER = new Coordinate(0, 0);
 
 /**
  * @classdesc
@@ -907,8 +909,16 @@ class Painter extends Class {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
+        center = map.options['meterCalCenter'] || center;
+        if (Array.isArray(center)) {
+            TEMP_CENTER.x = center[0];
+            TEMP_CENTER.y = center[1];
+        } else {
+            TEMP_CENTER.x = center.x;
+            TEMP_CENTER.y = center.y;
+        }
         const glRes = map.getGLRes();
-        return map.distanceToPointAtRes(altitude, 0, glRes, center).x * sign(altitude);
+        return map.distanceToPointAtRes(altitude, 0, glRes, TEMP_CENTER).x * sign(altitude);
     }
 
     _verifyProjection() {

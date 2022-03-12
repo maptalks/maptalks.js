@@ -14,6 +14,9 @@ import Class from '../core/Class';
 import Eventable from '../core/Eventable';
 import Size from '../geo/Size';
 import Geometry from '../geometry/Geometry';
+import Coordinate from '../geo/Coordinate';
+
+const TEMP_CENTER = new Coordinate(0, 0);
 
 /**
  * @property {Object} options
@@ -419,7 +422,15 @@ class UIComponent extends Eventable(Class) {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        return map.distanceToPoint(altitude, 0, undefined, center).x * sign(altitude);
+        center = map.options['meterCalCenter'] || center;
+        if (Array.isArray(center)) {
+            TEMP_CENTER.x = center[0];
+            TEMP_CENTER.y = center[1];
+        } else {
+            TEMP_CENTER.x = center.x;
+            TEMP_CENTER.y = center.y;
+        }
+        return map.distanceToPoint(altitude, 0, undefined, TEMP_CENTER).x * sign(altitude);
     }
 
     _autoPan() {
