@@ -833,6 +833,7 @@ class MapCanvasRenderer extends MapRenderer {
                     if (!this.map || this.map.isRemoved()) {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
+                        this.map._containerDomContentRect = entries[0].contentRect;
                         this._checkSize(entries[0].contentRect);
                         this._resizeCount = this._resizeCount || 0;
                         //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层

@@ -1883,6 +1883,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const containerDOM = this._containerDOM;
         let width, height;
+        if (this._containerDomContentRect) {
+            width = this._containerDomContentRect.width;
+            height = this._containerDomContentRect.height;
+            return new Size(width, height);
+        }
         if (!isNil(containerDOM.width) && !isNil(containerDOM.height)) {
             width = containerDOM.width;
             height = containerDOM.height;
