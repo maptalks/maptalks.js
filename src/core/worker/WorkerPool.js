@@ -54,6 +54,7 @@ export default class WorkerPool {
                 worker.id = i;
                 this.workers.push(worker);
             }
+            URL.revokeObjectURL(url);
         }
         this.active[id] = true;
 
