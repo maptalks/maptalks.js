@@ -2,7 +2,7 @@ import MeshShader from './MeshShader';
 import vert from './glsl/heatmap_display.vert';
 import frag from './glsl/heatmap_display.frag';
 import { mat4 } from 'gl-matrix';
-import { extend, isFunction } from '../common/Util';
+import { extend } from '../common/Util';
 
 export default class HeatmapDisplayShader extends MeshShader {
     constructor(viewport, config) {
@@ -21,7 +21,6 @@ export default class HeatmapDisplayShader extends MeshShader {
             extend(extraCommandProps, config.extraCommandProps);
         }
         const projViewModelMatrix = [];
-        const textureOutputSize = [];
         super({
             vert, frag,
             uniforms: [
