@@ -177,8 +177,12 @@ export default class HeatmapProcess {
         this._displayShader = new reshader.HeatmapDisplayShader({
             x: 0,
             y: 0,
-            width: () => canvas.width,
-            height: () => canvas.height
+            width: () => {
+                return canvas ? canvas.width : 1;
+            },
+            height: () => {
+                return canvas ? canvas.height : 1;
+            }
         },{
             extraCommandProps: {
                 stencil: {
