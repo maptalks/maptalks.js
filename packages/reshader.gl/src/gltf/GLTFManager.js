@@ -53,7 +53,7 @@ export default class GLTFManager {
             gltfPack,
             resources: geometries,
             //目前只用到gltf原始数据中的assets和animations,为避免占用内存，只保存需要用到的信息
-            json: { assets: gltf.assets, animations: gltf.animations.map(animation => { return { name: animation.name }; }) },
+            json: { assets: gltf.assets, animations: gltf.animations ? gltf.animations.map(animation => { return { name: animation.name }; }) : null },
             refCount: this.resourceMap[url] ? this.resourceMap[url].refCount : 0 //这里不能设置为0，由于是异步，会把前面累增的量重置为0
         };
         return resourceMap;

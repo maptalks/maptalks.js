@@ -253,13 +253,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._outlineCounts = fGl.getDrawCalls();
     }
 
-    _renderRain(context) {
-        if (!this.isEnableRain()) {
-            return;
-        }
-        this._rainPainter.paint(context);
-    }
-
     _getOutlineFBO() {
         const { width, height } = this.canvas;
         let fbo = this._outlineFBO;
@@ -300,7 +293,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (map.isInteracting() && this._groundPainter && this._groundPainter.isEnable()) {
             return true;
         }
-        if (this._rainPainter && this._rainPainter.isEnable()) {
+        if (this._weatherPainter && this._weatherPainter.isEnable()) {
             return true;
         }
         const layers = this.layer.getLayers();
@@ -576,9 +569,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._outlineFBO.destroy();
             delete this._outlineFBO;
         }
-        if (this._rainPainter) {
-            this._rainPainter.dispose();
-            delete this._rainPainter;
+        if (this._weatherPainter) {
+            this._weatherPainter.dispose();
+            delete this._weatherPainter;
         }
         super.onRemove();
     }

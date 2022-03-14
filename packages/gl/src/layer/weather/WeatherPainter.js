@@ -143,19 +143,24 @@ class WeatherPainter {
         return render.getFrameTime();
     }
 
+    isEnable() {
+        const weatherConfig = this._layer.getWeatherConfig();
+        return weatherConfig && weatherConfig.enable;
+    }
+
     isEnableRain() {
         const weatherConfig = this._layer.getWeatherConfig();
-        return weatherConfig && weatherConfig.rain && weatherConfig.rain.enable;
+        return weatherConfig && weatherConfig.enable && weatherConfig.rain && weatherConfig.rain.enable;
     }
 
     isEnableFog() {
         const weatherConfig = this._layer.getWeatherConfig();
-        return weatherConfig && weatherConfig.fog && weatherConfig.fog.enable;
+        return weatherConfig && weatherConfig.enable && weatherConfig.fog && weatherConfig.fog.enable;
     }
 
     isEnableSnow() {
         const weatherConfig = this._layer.getWeatherConfig();
-        return weatherConfig && weatherConfig.snow && weatherConfig.snow.enable;
+        return weatherConfig && weatherConfig.enable && weatherConfig.snow && weatherConfig.snow.enable;
     }
 
     update() {
@@ -178,6 +183,24 @@ class WeatherPainter {
         const width = map.width, height = map.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
+        }
+    }
+
+    dispose() {
+        if (this._fbo) {
+            this._fbo.destroy();
+        }
+        if (this._weatherShader) {
+            this._weatherShader.dispose();
+            delete this._weatherShader;
+        }
+        if (this._rainPainter) {
+            this._rainPainter.dispose();
+            delete this._rainPainter;
+        }
+        if (this._snowPainter) {
+            this._snowPainter.dispose();
+            delete this._snowPainter;
         }
     }
 }
