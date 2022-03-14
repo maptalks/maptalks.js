@@ -295,9 +295,9 @@ export default class Geometry {
         this.data = buffers;
         delete this._reglData;
 
-        const isSupportVAO = isSupportVAO(regl);
+        const supportVAO = isSupportVAO(regl);
         const excludeElementsInVAO = options && options.excludeElementsInVAO;
-        if ((!isSupportVAO || excludeElementsInVAO) && this.elements && !isNumber(this.elements)) {
+        if ((!supportVAO || excludeElementsInVAO) && this.elements && !isNumber(this.elements)) {
             const info = {
                 primitive: this.getPrimitive(),
                 data: this.elements
@@ -313,7 +313,7 @@ export default class Geometry {
             }
             elements[REF_COUNT_KEY]++;
 
-        } else if (isSupportVAO && this.elements && this.elements.buffer) {
+        } else if (supportVAO && this.elements && this.elements.buffer) {
             if (this.elements.byteOffset > 0) {
                 // this.elements有可能被包含在一个很大的arraybuffer中，会造成这个很大arraybuffer被缓存，无法释放。
                 this.elements = this.elements.slice();
