@@ -31,7 +31,7 @@ class GLContext {
 
         this._gl['_fusiongl_drawCalls'] = 0;
 
-        this._is2 = (typeof WebGL2RenderingContext) && (this._gl instanceof WebGL2RenderingContext);
+        this._is2 = (typeof WebGL2RenderingContext !== 'undefined') && (this._gl instanceof WebGL2RenderingContext);
     }
 
     /**
