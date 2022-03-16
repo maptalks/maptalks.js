@@ -23,18 +23,16 @@ export default class HeatmapPainter extends BasicPainter {
         ];
     }
 
-    createGeometry(glData, features) {
-        const geometry = super.createGeometry(glData, features);
-        // heatmap 只支持一个symbol
-        const symbolDef = this.getSymbolDef({ index: 0 });
-        const fnTypeConfig = this.getFnTypeConfig({ index: 0 });
-        prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
-        return geometry;
-    }
+    createMesh(geo, transform) {
+        const { geometry, symbolIndex, ref } = geo;
+        if (ref === undefined) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
+        }
 
-    createMesh(geometry, transform) {
         // heatmap 只支持一个symbol
-        const symbol = this.getSymbol({ index: 0 });
+        const symbol = this.getSymbol(symbolIndex);
         const uniforms = {
             tileRatio: geometry.properties.tileRatio,
             dataResolution: geometry.properties.tileResolution
@@ -56,19 +54,23 @@ export default class HeatmapPainter extends BasicPainter {
         }
         mesh.setDefines(defines);
         mesh.setLocalTransform(transform);
+        mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
 
     callRenderer(uniforms, context) {
-        this._process.render(this.scene, uniforms, this.getRenderFBO(context));
+        const fbo = this.getRenderFBO(context);
+        this._process.render(this.scene, uniforms, fbo);
     }
 
     getUniformValues(map) {
+        const symbol = this.getSymbol({ index: 0 });
         const { projViewMatrix } = map;
         return {
             glScale: 1 / map.getGLScale(),
             resolution: map.getResolution(),
-            projViewMatrix
+            projViewMatrix,
+            heatmapOpacity: symbol.heatmapOpacity
         };
     }
 

@@ -106,6 +106,7 @@ const Ajax = {
             fetch(url, requestConfig).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
                 if (parsed.message) {
+                    parsed.url = url;
                     cb(parsed);
                 } else {
                     parsed.then(data => {

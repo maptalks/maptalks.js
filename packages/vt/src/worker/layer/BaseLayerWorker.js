@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack/*, CirclePack*/ } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -370,7 +370,6 @@ export default class BaseLayerWorker {
     _createTileGeometry(features, pluginConfig, context) {
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
-
         const tileSize = this.options.tileSize[0];
         const { extent, glScale, zScale, zoom, tilePoint } = context;
         const tileRatio = extent / tileSize;
@@ -468,15 +467,16 @@ export default class BaseLayerWorker {
             } else {
                 return Promise.all([new LineExtrusionPack(features, symbol, options).load()]);
             }
-        }/* else if (type === 'circle') {
+        } else if (type === 'circle') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 zoom,
                 debugIndex
             });
-            const pack = new CirclePack(features, symbol, options);
-            return pack.load();
-        }*/
+            return parseSymbolAndGenPromises(features, symbol, options, CirclePack);
+            // const pack = new CirclePack(features, symbol, options);
+            // return pack.load();
+        }
         return Promise.resolve([]);
     }
 
