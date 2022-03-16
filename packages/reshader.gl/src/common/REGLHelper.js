@@ -27,7 +27,16 @@ const materialFormats = {
     0x83f0: 'rgb s3tc dxt1',
     0x83f1: 'rgba s3tc dxt1',
     0x83f2: 'rgba s3tc dxt3',
-    0x83f3: 'rgba s3tc dxt5'
+    0x83f3: 'rgba s3tc dxt5',
+    0x8c00: 'rgb pvrtc 4bppv1',
+    0x8c01: 'rgb pvrtc 2bppv1',
+    0x8c02: 'rgba pvrtc 4bppv1',
+    0x8c03: 'rgba pvrtc 2bppv1',
+    0x8c92: 'rgb atc',
+    0x8C93: 'rgba atc explicit alpha',
+    0x87EE: 'rgba atc interpolated alpha',
+    0x8D64: 'rgb etc1'
+
 };
 export function getMaterialFormat(format) {
     return materialFormats[format];
