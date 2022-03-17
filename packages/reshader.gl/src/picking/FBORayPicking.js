@@ -1,4 +1,4 @@
-import { interpolate } from '../common/Util';
+import { interpolate, extend } from '../common/Util';
 import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
@@ -117,7 +117,11 @@ export default class FBORayPicking {
             }
         }
         const vert = this._vert,
-            extraCommandProps = this._extraCommandProps;
+            extraCommandProps = extend({}, this._extraCommandProps);
+        extraCommandProps.depth = {
+            enable: true,
+            func: '<='
+        };
         this._shader0 = new MeshShader({
             vert,
             frag : frag0,
