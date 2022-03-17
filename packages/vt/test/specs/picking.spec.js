@@ -2,6 +2,7 @@ const path = require('path');
 const assert = require('assert');
 const data = require('../integration/fixtures/data');
 const maptalks = require('maptalks');
+
 const {
     GeoJSONVectorTileLayer,
     PointLayer,
@@ -30,6 +31,7 @@ describe('picking specs', () => {
     afterEach(() => {
         map.remove();
     });
+
     const runner = (options, coord, expected, ignoreSymbol, done) => {
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
         map.on('click', e => {

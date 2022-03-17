@@ -5,6 +5,7 @@ import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend, pushIn } from '../../common/Util';
+import convertToPainterFeatures from './utils/convert_to_painter_features';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
@@ -446,6 +447,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const schema = this.layer.getDataSchema(tileZoom);
         this._updateSchema(schema, data.schema);
 
+        // data.features会在_parseTileData方法中被转化为 { [key_idx]: fea, .... } 的形式
         delete data.features;
         if (useDefault && data.data.length !== layers.length) {
             //因为默认绘制时，renderPlugin是以tileData中的图层顺序初始化的
@@ -478,21 +480,22 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const feaIndexes = pluginData.styledFeatures;
         //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
         //这样featureIndexes中的序号能从pFeatures取得正确的数据
-        const pluginFeas = {};
-        if (hasFeature(features)) {
-            //[feature index, style index]
-            for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
-                let feature = features[feaIndexes[ii]];
-                if (layer.options['features'] === 'id' && layer.getFeature) {
-                    feature = layer.getFeature(feature);
-                    feature.layer = i;
-                }
-                pluginFeas[feaIndexes[ii]] = {
-                    feature,
-                    symbol
-                };
-            }
-        }
+        const pluginFeas = convertToPainterFeatures(features, feaIndexes, i, symbol, layer);
+        // const pluginFeas = {};
+        // if (hasFeature(features)) {
+        //     //[feature index, style index]
+        //     for (let ii = 0, ll = feaIndexes.length; ii < ll; ii++) {
+        //         let feature = features[feaIndexes[ii]];
+        //         if (layer.options['features'] === 'id' && layer.getFeature) {
+        //             feature = layer.getFeature(feature);
+        //             feature.layer = i;
+        //         }
+        //         pluginFeas[feaIndexes[ii]] = {
+        //             feature,
+        //             symbol
+        //         };
+        //     }
+        // }
         delete pluginData.styledFeatures;
         pluginData.features = pluginFeas;
         let data = pluginData.data;
@@ -1463,19 +1466,6 @@ function copyTileData(data) {
 //z小的排在后面
 function sortByLevel(m0, m1) {
     return m1.info.z - m0.info.z;
-}
-
-function hasFeature(features) {
-    if (!features) {
-        return false;
-    }
-
-    for (const p in features) {
-        if (features[p] !== undefined && features[p] !== null) {
-            return true;
-        }
-    }
-    return false;
 }
 
 function hasMesh(plugin) {

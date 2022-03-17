@@ -1,13 +1,14 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
-import { convertToFeature, ID_PROP } from './util/build_geometry';
+import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
 import { extend, isNumber, hasOwn } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
+import convertToPainterFeatures from '../renderer/utils/convert_to_painter_features';
 
 // const SYMBOL_SIMPLE_PROPS = {
 //     textFill: 1,
@@ -51,7 +52,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         super(...args);
         this.features = {};
         this._geometries = {};
-        this._counter = 1;
+        this._counter = 0;
         this._allFeatures = {};
         this._featureMapping = {};
         this._markerFeatures = {};
@@ -302,7 +303,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!packData) {
                 return null;
             }
-            const geometries = painter.createGeometries([packData.data], features.map(feature => { return { feature }; }));
+            const geometries = painter.createGeometries([packData.data], convertToPainterFeatures(features, null, 0, symbol, this.layer));
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i].geometry);
             }
@@ -880,7 +881,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _convertGeo(geo) {
-        if (!geo[ID_PROP]) {
+        if (geo[ID_PROP] === undefined) {
             geo[ID_PROP] = this._counter++;
         }
         const uid = geo[ID_PROP];
