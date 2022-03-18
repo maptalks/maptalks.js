@@ -423,7 +423,7 @@ Map.include(/** @lends Map.prototype */{
             const fov = this.getFov() * Math.PI / 180;
             const farZ = this._getCameraFar(fov, this.getPitch());
             this.cameraFar = farZ;
-            this.cameraNear = Math.max(this.cameraCenterDistance / 10, 0.1);
+            this.cameraNear = this.cameraCenterDistance / 20;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
