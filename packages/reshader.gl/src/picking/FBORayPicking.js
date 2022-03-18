@@ -118,10 +118,7 @@ export default class FBORayPicking {
         }
         const vert = this._vert,
             extraCommandProps = extend({}, this._extraCommandProps);
-        extraCommandProps.depth = {
-            enable: true,
-            func: '<='
-        };
+        delete extraCommandProps.blend;
         this._shader0 = new MeshShader({
             vert,
             frag : frag0,
