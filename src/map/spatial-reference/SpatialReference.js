@@ -118,6 +118,14 @@ export default class SpatialReference {
             return null;
         }
         if (isObject(prjName)) {
+            if (!prjName.locate) {
+                prjName = extend({}, prjName);
+                if (prjName.measure === 'identity') {
+                    extend(prjName, Measurer.getInstance('IDENTITY'));
+                } else {
+                    extend(prjName, Measurer.getInstance('EPSG:4326'));
+                }
+            }
             return prjName;
         }
         prjName = (prjName + '').toLowerCase();
