@@ -51,6 +51,7 @@ describe('Map.Projection', function () {
         });
 
         var projection = map.getProjection();
+        expect(projection.locate).to.be.ok();
         var coords = [
             new maptalks.Coordinate(0, 0),
             new maptalks.Coordinate(1, 1)
