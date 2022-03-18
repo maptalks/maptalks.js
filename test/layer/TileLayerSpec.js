@@ -149,7 +149,7 @@ describe('TileLayer', function () {
                 },
                 'attribution' :  '&copy; <a target="_blank" href="http://map.baidu.com">Baidu</a>'
             }).addTo(map);
-            expect(layer.getTiles().tileGrids[0].tiles.length).to.be.eql(0);
+            expect(layer.getTiles().tileGrids[0].tiles.length).to.be.eql(4);
         });
     });
 
