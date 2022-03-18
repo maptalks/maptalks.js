@@ -212,8 +212,58 @@ class FillPainter extends BasicPainter {
 
         this.renderer = new reshader.Renderer(regl);
 
-
-        this._createShader(context);
+        const renderer = this.layer.getRenderer();
+        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+        const depthRange = this.sceneConfig.depthRange;
+        const extraCommandProps = {
+            viewport: this.pickingViewport,
+            stencil: {
+                enable: true,
+                mask: 0xFF,
+                func: {
+                    cmp: () => {
+                        return stencil ? '=' : '<=';
+                    },
+                    ref: (context, props) => {
+                        return stencil ? props.stencilRef : props.level;
+                    },
+                    mask: 0xFF
+                },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            depth: {
+                enable: true,
+                range: depthRange || [0, 1],
+                // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
+                // 如果mask设为false，会出现 antialias 打开时，会被Ground的ssr覆盖的问题 （绘制时ssr需要对比深度值）
+                // 以上问题已经解决 #284
+                mask: (_, props) => {
+                    if (!isNil(this.sceneConfig.depthMask)) {
+                        return !!this.sceneConfig.depthMask;
+                    }
+                    if (props.meshConfig.transparent) {
+                        return false;
+                    }
+                    const opacity = props['polygonOpacity'];
+                    return !(isNumber(opacity) && opacity < 1);
+                },
+                func: this.sceneConfig.depthFunc || '<='
+            },
+            blend: {
+                enable: true,
+                func: this.getBlendFunc(),
+                equation: 'add'
+            },
+            polygonOffset: {
+                enable: true,
+                offset: this.getPolygonOffset()
+            }
+        };
+        this._createShader(context, extraCommandProps);
 
         if (this.pickingFBO) {
             this.picking = [new reshader.FBORayPicking(
@@ -231,18 +281,14 @@ class FillPainter extends BasicPainter {
                             }
                         }
                     ],
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                    extraCommandProps
                 },
                 this.pickingFBO
             )];
         }
     }
 
-    _createShader(context) {
-        const canvas = this.canvas;
-
+    _createShader(context, extraCommandProps) {
         const uniforms = [
             {
                 name: 'projViewModelMatrix',
@@ -256,71 +302,13 @@ class FillPainter extends BasicPainter {
         ];
         const defines = {};
         this.fillIncludes(defines, uniforms, context);
-        const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
-            },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
-        };
-        const renderer = this.layer.getRenderer();
-        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
-        const depthRange = this.sceneConfig.depthRange;
+
+
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms,
             defines,
-            extraCommandProps: {
-                viewport,
-                stencil: {
-                    enable: true,
-                    mask: 0xFF,
-                    func: {
-                        cmp: () => {
-                            return stencil ? '=' : '<=';
-                        },
-                        ref: (context, props) => {
-                            return stencil ? props.stencilRef : props.level;
-                        },
-                        mask: 0xFF
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
-                },
-                depth: {
-                    enable: true,
-                    range: depthRange || [0, 1],
-                    // 如果mask设为true，fill会出现与轮廓线的深度冲突，出现奇怪的绘制
-                    // 如果mask设为false，会出现 antialias 打开时，会被Ground的ssr覆盖的问题 （绘制时ssr需要对比深度值）
-                    // 以上问题已经解决 #284
-                    mask: (_, props) => {
-                        if (!isNil(this.sceneConfig.depthMask)) {
-                            return !!this.sceneConfig.depthMask;
-                        }
-                        if (props.meshConfig.transparent) {
-                            return false;
-                        }
-                        const opacity = props['polygonOpacity'];
-                        return !(isNumber(opacity) && opacity < 1);
-                    },
-                    func: this.sceneConfig.depthFunc || '<='
-                },
-                blend: {
-                    enable: true,
-                    func: this.getBlendFunc(),
-                    equation: 'add'
-                },
-                polygonOffset: {
-                    enable: true,
-                    offset: this.getPolygonOffset()
-                }
-            }
+            extraCommandProps
         });
     }
 
