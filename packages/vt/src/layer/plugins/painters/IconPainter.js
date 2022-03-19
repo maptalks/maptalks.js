@@ -642,6 +642,29 @@ class IconPainter extends CollisionPainter {
             }
         };
 
+        const iconExtraCommandProps = {
+            viewport,
+            blend: {
+                enable: true,
+                func: this.getBlendFunc(),
+                equation: 'add',
+                // color: [0, 0, 0, 0]
+            },
+            depth: {
+                enable: true,
+                range: () => {
+                    return this.sceneConfig.depthRange || [0, 1];
+                },
+                func: () => {
+                    return this.sceneConfig.depthFunc || 'always';
+                },
+                mask: false
+            },
+            polygonOffset: {
+                enable: true,
+                offset: this.getPolygonOffset()
+            }
+        };
         this.shader = new reshader.MeshShader({
             vert, frag,
             uniforms: [
@@ -660,29 +683,7 @@ class IconPainter extends CollisionPainter {
                     }
                 }
             ],
-            extraCommandProps: {
-                viewport,
-                blend: {
-                    enable: true,
-                    func: this.getBlendFunc(),
-                    equation: 'add',
-                    // color: [0, 0, 0, 0]
-                },
-                depth: {
-                    enable: true,
-                    range: () => {
-                        return this.sceneConfig.depthRange || [0, 1];
-                    },
-                    func: () => {
-                        return this.sceneConfig.depthFunc || 'always';
-                    },
-                    mask: false
-                },
-                polygonOffset: {
-                    enable: true,
-                    offset: this.getPolygonOffset()
-                }
-            }
+            extraCommandProps: iconExtraCommandProps
         });
 
         const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
@@ -717,9 +718,7 @@ class IconPainter extends CollisionPainter {
                             }
                         }
                     ],
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                    extraCommandProps: iconExtraCommandProps
                 },
                 this.pickingFBO
             );
@@ -732,9 +731,7 @@ class IconPainter extends CollisionPainter {
                 {
                     vert: '#define PICKING_MODE 1\n' + textPickingVert,
                     uniforms,
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                    extraCommandProps
                 },
                 this.pickingFBO
             );

@@ -431,9 +431,7 @@ class LinePainter extends BasicPainter {
                             }
                         }
                     ],
-                    extraCommandProps: {
-                        viewport: this.pickingViewport
-                    }
+                    extraCommandProps: this.getExtraCommandProps()
                 },
                 this.pickingFBO
             )];
