@@ -37,7 +37,7 @@ $ npm install
 ### Commonly used NPM scripts
 
 ``` bash
-# watch and auto re-build dist/maptalks.js, and serve dist on http://localhost:20000/
+# watch and auto re-build dist/maptalks.js
 $ npm run dev
 
 # build all dist files, including npm packages
