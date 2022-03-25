@@ -72,7 +72,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._parentTiles = [];
         this._childTiles = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
-        if (Browser.decodeImageInWorker) {
+        if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker']) {
             this._tileImageWorkerConn = new TileWorkerConnection();
         }
     }

@@ -123,7 +123,9 @@ const options = {
 
     'zoomOffset': 0,
 
-    'pyramidMode': 1
+    'pyramidMode': 1,
+
+    'decodeImageInWorker': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
