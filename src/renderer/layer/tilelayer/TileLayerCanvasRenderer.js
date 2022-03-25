@@ -420,6 +420,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     });
                 }
             }, this.layer.options['fetchOptions'] || {
+                referrer: document.location.href,
                 headers: { accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' }
             });
         }
