@@ -3,6 +3,7 @@ import Class from '../../core/Class';
 import Point from '../../geo/Point';
 import { ResourceCache } from '../layer/CanvasRenderer';
 import { drawVectorMarker } from '../../core/util/draw';
+import { isNil } from '../../core/util/';
 import { getSymbolHash } from '../../core/util/style';
 import { getEventContainerPoint } from '../../core/util/dom';
 import DragHandler from '../../handler/Drag';
@@ -21,7 +22,7 @@ export default class EditHandle extends Eventable(Class) {
         this.h = symbol['markerHeight'] + lineWidth;
         this.dx = symbol['markerDx'] || 0;
         this.dy = symbol['markerDy'] || 0;
-        this.opacity = symbol['opacity'] || 1;
+        this.opacity = isNil(symbol['opacity']) ? 1 : symbol['opacity'];
         this.map = map;
         this.events = options.events;
         this._fetchImage();
