@@ -29,7 +29,7 @@ class Texture2D extends Texture {
     }
 
     createREGLTexture(regl) {
-        if (isArray(this.config.data)) {
+        if (isArray(this.config.data) || isArray(this.config.mipmap)) {
             const tex = getUniqueTexture(regl, this.config);
             if (!tex[REF_COUNT_KEY]) {
                 tex[REF_COUNT_KEY] = 0;

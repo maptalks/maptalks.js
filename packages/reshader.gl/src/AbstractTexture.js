@@ -112,6 +112,9 @@ class AbstractTexture {
                 if (this.config.image) {
                     this.config.image.array = [];
                 }
+                if (this.config.mipmap) {
+                    delete this.config.mipmap;
+                }
             }
         }
         if (this.dirty) {
