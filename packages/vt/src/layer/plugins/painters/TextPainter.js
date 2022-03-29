@@ -14,6 +14,7 @@ import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import { GLYPH_SIZE } from './Constant';
+import { TextUtil } from '@maptalks/vector-packer';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -431,7 +432,7 @@ export default class TextPainter extends CollisionPainter {
                     properties['$layer'] = feature.layer;
                     properties['$type'] = feature.type;
                     const textName = this._textNameFn[i] ? this._textNameFn[i](null, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
-                    const label = resolveText(textName, properties);
+                    const label = TextUtil.resolveText(textName, properties);
                     delete properties['$layer'];
                     delete properties['$type'];
                     feature.label = label;
@@ -771,32 +772,6 @@ export default class TextPainter extends CollisionPainter {
             // planeMatrix
         };
     }
-}
-
-const contentExpRe = /{(.+)}/g;
-/**
- * Replace variables wrapped by square brackets ({foo}) with actual values in props.
- * @example
- *     // will returns 'John is awesome'
- *     const actual = replaceVariable('{foo} is awesome', {'foo' : 'John'});
- * @param {String} str      - string to replace
- * @param {Object} props    - variable value properties
- * @return {String}
- * @memberOf StringUtil
- */
-export function resolveText(str, props) {
-    return str.replace(contentExpRe, function (str, key) {
-        if (!props) {
-            return '';
-        }
-        const value = props[key];
-        if (value === null || value === undefined) {
-            return '';
-        } else if (Array.isArray(value)) {
-            return value.join();
-        }
-        return value;
-    });
 }
 
 // function bytesAlign(attributes) {
