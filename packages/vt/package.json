@@ -23,6 +23,7 @@
   "dependencies": {
     "@mapbox/point-geometry": "^0.1.0",
     "@mapbox/vector-tile": "^1.3.0",
+    "@mapbox/mapbox-gl-style-spec": "^13.24.0-alpha.6",
     "@maptalks/feature-filter": "^1.0.0",
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/geojson-bbox": "^1.0.4",

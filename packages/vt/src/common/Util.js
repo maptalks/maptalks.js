@@ -1,5 +1,7 @@
-import { compileStyle as compile } from '@maptalks/feature-filter';
+import { createFilter } from '@maptalks/feature-filter';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
+const { isExpressionFilter } = expression;
 
 let id = 0;
 export function uid() {
@@ -201,4 +203,34 @@ export function isFnTypeSymbol(v) {
 
 export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+const EVALUATION_PARAM = {};
+
+export function compile(styles) {
+    if (!Array.isArray(styles)) {
+        return compile([styles]);
+    }
+    const compiled = [];
+    for (let i = 0; i < styles.length; i++) {
+        let filter;
+        if (styles[i]['filter'] === true) {
+            filter = function () { return true; };
+        } else {
+            if (isExpressionFilter(styles[i]['filter'])) {
+                let expression = createExpressionFilter(styles[i]['filter']);
+                expression = expression && expression.filter;
+                const filterFn = feature => {
+                    return expression && expression(EVALUATION_PARAM, feature);
+                };
+                filter = filterFn;
+            } else {
+                filter = createFilter(styles[i]['filter']);
+            }
+        }
+        compiled.push(extend({}, styles[i], {
+            filter: filter
+        }));
+    }
+    return compiled;
 }
