@@ -15,7 +15,7 @@ export function getSDFFont(textFaceName, textStyle, textWeight) {
 
 }
 
-const contentExpRe = /\{([\w_]+)\}/g;
+const contentExpRe = /{(.+)}/g;
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
