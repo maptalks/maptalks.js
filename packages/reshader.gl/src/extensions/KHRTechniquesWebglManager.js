@@ -127,7 +127,8 @@ export default class KHRTechniquesWebglManager {
         }
     }
 
-    createMesh(primitive, gltf, excludeElementsInVAO) {
+    // khr technique中的shader是webgl 2语法时，需要把useWebGL2参数设为true
+    createMesh(primitive, gltf, excludeElementsInVAO, useWebGL2) {
         const extension = gltf.extensions['KHR_techniques_webgl'];
         const matInfo = gltf.materials[primitive.material].extensions['KHR_techniques_webgl'];
         const { technique: techIndex, values } = matInfo;
@@ -140,14 +141,14 @@ export default class KHRTechniquesWebglManager {
         const fragCode = hashCode(frag);
         const hash = vertHash + '-' + fragCode;
         if (!this._khrShaders[hash]) {
-            this._khrShaders[hash] = this._createTechniqueShader(hash, extension, techIndex, this._commandProps);
+            this._khrShaders[hash] = this._createTechniqueShader(hash, extension, techIndex, this._commandProps, useWebGL2);
         }
         const { attributeSemantics } = this._khrShaders[hash];
         const geometry = this._createGeometry(primitive, attributeSemantics, excludeElementsInVAO, hash);
         const matValues = extend({}, values);
         for (const p in values) {
             // sampler 2D
-            if (technique.uniforms[p].type === 35678) {
+            if (technique.uniforms[p] && technique.uniforms[p].type === 35678) {
                 const texIndex = values[p].index;
                 const texInfo = gltf.textures[texIndex];
                 matValues[p] = this._getTexture(texInfo);
@@ -174,8 +175,14 @@ export default class KHRTechniquesWebglManager {
             const buffer = getUniqueREGLBuffer(this._regl, attributes[p], { dimension: attributes[p].itemSize });
             // 优先采用 attributeSemantics中定义的属性
             const name = attributeSemantics[p] || p;
-            attrs[name] = { buffer };
+            attrs[name] = {
+                buffer
+            };
+            if (attributes[p].quantization) {
+                attrs[name].quantization = attributes[p].quantization;
+            }
             if (name === attributeSemantics['POSITION']) {
+                // 用来计算vertexCount和boundingbox
                 attrs[name].array = attributes[p].array;
             }
         }
@@ -195,6 +202,10 @@ export default class KHRTechniquesWebglManager {
         );
         geometry.generateBuffers(this._regl, { excludeElementsInVAO });
         geometry.properties.shaderHash = shaderHash;
+        const positionData = geometry.data[geometry.desc.positionAttribute];
+        if (positionData && positionData.array) {
+            delete positionData.array;
+        }
         return geometry;
     }
 
@@ -203,11 +214,15 @@ export default class KHRTechniquesWebglManager {
         const config = {
             type : texInfo.type ? getMaterialType(texInfo.type) : 'uint8',
             format : texInfo.format ? getMaterialFormat(texInfo.format) : 'rgba',
-            flipY : false
+            flipY : !!texInfo.flipY
         };
 
         const image = texInfo.image;
-        config.data = image.array;
+        if (image.array) {
+            config.data = image.array;
+        } else if (image.mipmap) {
+            config.mipmap = image.mipmap;
+        }
         config.width = image.width;
         config.height = image.height;
 
@@ -223,7 +238,7 @@ export default class KHRTechniquesWebglManager {
 
     }
 
-    _createTechniqueShader(hash, extension, techIndex, extraCommandProps) {
+    _createTechniqueShader(hash, extension, techIndex, extraCommandProps, useWebGL2) {
         const { techniques, programs, shaders } = extension;
         const technique = techniques[techIndex];
         const program = programs[technique.program];
@@ -253,7 +268,9 @@ export default class KHRTechniquesWebglManager {
             uniforms: uniformDeclares,
             extraCommandProps
         });
-
+        if (useWebGL2) {
+            shader.version = 300;
+        }
         const attributeSemantics = {};
         for (const name in technique.attributes) {
             const semantic = technique.attributes[name];
