@@ -1124,6 +1124,7 @@ describe('update style specs', () => {
             layer
         ], { sceneConfig });
         let painted = false;
+        let finished = false;
         layer.once('canvasisdirty', () => {
             groupLayer.on('layerload', () => {
                 const canvas = groupLayer.getRenderer().canvas;
@@ -1135,7 +1136,8 @@ describe('update style specs', () => {
                         material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
                         layer.updateSymbol(0, { material });
                         painted = true;
-                    } else {
+                    } else if (!finished) {
+                        finished = true;
                         assert.deepEqual(pixel, [64, 73, 71, 255]);
                         done();
                     }
