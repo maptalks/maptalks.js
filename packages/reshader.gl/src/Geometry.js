@@ -5,6 +5,8 @@ import BoundingBox from './BoundingBox';
 import { KEY_DISPOSED } from './common/Constants';
 import * as gltf from '@maptalks/gltf-loader';
 
+const EMPTY_VAO_BUFFER = [];
+
 const REGL_TYPES = {
     5120: 'int8',
     5122: 'int16',
@@ -188,6 +190,7 @@ export default class Geometry {
                     if (!buffer || !buffer.destroy) {
                         const data = reglData[attr];
                         if (!data) {
+                            buffers.push(EMPTY_VAO_BUFFER);
                             continue;
                         }
                         const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
