@@ -136,10 +136,11 @@ export default class KHRTechniquesWebglManager {
         const program = extension.programs[technique.program];
         const vert = extension.shaders[program.vertexShader];
         const frag = extension.shaders[program.fragmentShader];
+        frag.content = checkFrag(frag.content);
 
-        const vertHash = hashCode(vert);
-        const fragCode = hashCode(frag);
-        const hash = vertHash + '-' + fragCode;
+        const vertHash = hashCode(vert.content);
+        const fragHash = hashCode(frag.content);
+        const hash = vertHash + '-' + fragHash;
         if (!this._khrShaders[hash]) {
             this._khrShaders[hash] = this._createTechniqueShader(hash, extension, techIndex, this._commandProps, useWebGL2);
         }
@@ -307,4 +308,12 @@ function hashCode(s) {
         hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
+}
+
+function checkFrag(fragCode) {
+    if (fragCode && fragCode.indexOf('precision') < 0) {
+        // 有些模型的frag里缺少precision定义
+        return 'precision mediump float;\n' + fragCode;
+    }
+    return fragCode;
 }
