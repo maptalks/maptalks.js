@@ -14,16 +14,16 @@ function createDecoderModule() {
 }
 
 const dataTypes = {
+    1: Int8Array,
+    2: Uint8Array,
+    3: Int16Array,
+    4: Uint16Array,
+    5: Int32Array,
+    6: Uint32Array,
+    // 7: Int64Array,
+    // 8: Uint64Array
     9: Float32Array,
     10: Float64Array,
-    1: Int8Array,
-    3: Int16Array,
-    5: Int32Array,
-    // 7: Int64Array,
-    2: Uint8Array,
-    4: Uint16Array,
-    6: Uint32Array,
-    // 8: Uint64Array
 };
 
 const componentTypes = {
@@ -58,6 +58,7 @@ export default function transcodeDRC(buffer, options) {
 
 function transcode(rawBuffer, options) {
     const decoder = new dracoModule.Decoder();
+    const metadataQuerier = new dracoModule.MetadataQuerier();
     if (options['skipAttributeTransform']) {
         const { attributes } = options;
         for (const name in attributes) {
@@ -92,16 +93,18 @@ function transcode(rawBuffer, options) {
         throw new Error('Draco Error: Decoding failed: ' + decodingStatus.error_msg());
     }
 
-    const geometry = decodeGeometry(decoder, geometryType, dracoGeometry, options.attributes);
+    const geometry = decodeGeometry(decoder, geometryType, dracoGeometry, options.attributes, options.metadatas, metadataQuerier);
     dracoModule.destroy(buffer);
     dracoModule.destroy(decoder);
+    dracoModule.destroy(metadataQuerier);
     return Promise.resolve(geometry);
 }
 
-function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
+function decodeGeometry(decoder, geometryType, dracoGeometry, attributes, metadatas, metadataQuerier) {
     const geometry = { indices: null, attributes: {}};
     for (const name in attributes) {
         let attributeID = attributes[name];
+        const attrMetadatas = metadatas && metadatas[name];
         if (attributeID < 0) {
             attributeID = decoder.GetAttributeId(dracoGeometry, attributes[name]);
         }
@@ -109,7 +112,11 @@ function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
         const attribute = decoder.GetAttributeByUniqueId(dracoGeometry, attributeID);
 
         const dataType = attribute.data_type();
-        const attributeData = decodeAttribute(decoder, dracoGeometry, dataType, attribute);
+        if (!dataType) {
+            // invalid data type
+            continue;
+        }
+        const attributeData = decodeAttribute(decoder, dracoGeometry, dataType, attribute, attrMetadatas, metadataQuerier);
         attributeData.name = name;
         geometry.attributes[name] = attributeData;
     }
@@ -147,7 +154,7 @@ function decodeGeometry(decoder, geometryType, dracoGeometry, attributes) {
     return geometry;
 }
 
-function decodeAttribute(decoder, dracoGeometry, dataType, attribute) {
+function decodeAttribute(decoder, dracoGeometry, dataType, attribute, metadatas, metadataQuerier) {
     const attributeType = dataTypes[dataType];
     const numComponents = attribute.num_components();
     const numPoints = dracoGeometry.num_points();
@@ -238,7 +245,7 @@ function decodeAttribute(decoder, dracoGeometry, dataType, attribute) {
             array = new Uint32Array(numValues);
             break;
         default:
-            throw new Error('Draco Error: Unexpected attribute type: ' + attributeType.name);
+            throw new Error('Draco Error: Unexpected attribute type: ' + attributeType && attributeType.name);
         }
         for (let i = 0; i < numValues; i++) {
             array[i] = dracoArray.GetValue(i);
@@ -247,17 +254,44 @@ function decodeAttribute(decoder, dracoGeometry, dataType, attribute) {
     }
 
 
-    return {
+    const meta = {};
+    if (metadatas) {
+        // get the attribute metadata
+        const metadata = decoder.GetAttributeMetadata(
+            dracoGeometry,
+            attribute.unique_id()
+        );
+        if (metadata.ptr) {
+            for (let i = 0; i < metadatas.length; i++) {
+                const fnName = getEntryMethod(metadatas[i].type);
+                const name = metadatas[i].name;
+                meta[name] = {};
+                meta[name].type = metadatas[i].type;
+                meta[name].value = metadataQuerier[fnName](
+                    metadata,
+                    name
+                );
+            }
+        }
+    }
+
+
+    const attrData = {
         array,
+        meta,
         componentType: getComponentType(array),
         count: numPoints,
         byteOffset: 0,
         byteStride: 0,
         byteLength: numValues * array.BYTES_PER_ELEMENT,
         type: accessorTypes[numComponents],
-        itemSize: numComponents,
-        quantization
+        itemSize: numComponents
     };
+
+    if (quantization) {
+        attrData.quantization = quantization;
+    }
+    return attrData;
 }
 
 function getIndexArrayType(max) {
@@ -317,4 +351,15 @@ function getComponentType(arr) {
         }
     }
     return componentTypes[dataType];
+}
+
+function getEntryMethod(type) {
+    if (type === 'double') {
+        return 'GetDoubleEntry';
+    } else if (type === 'string') {
+        return 'GetStringEntry';
+    } else if (type === 'int') {
+        return 'GetIntEntry';
+    }
+    return null;
 }
