@@ -190,7 +190,13 @@ export default class Geometry {
                     if (!buffer || !buffer.destroy) {
                         const data = reglData[attr];
                         if (!data) {
-                            buffers.push(EMPTY_VAO_BUFFER);
+                            if (this.desc.fillEmptyDataInMissingAttribute) {
+                                // 某些老版本浏览器（例如3dtiles中的electron），数据不能传空字符串，否则会报错
+                                // glDrawElements: attempt to access out of range vertices in attribute 1
+                                buffers.push(new Uint8Array(vertexCount * 4));
+                            } else {
+                                buffers.push(EMPTY_VAO_BUFFER);
+                            }
                             continue;
                         }
                         const dimension = (data.data && isArray(data.data) ? data.data.length : data.length) / vertexCount;
