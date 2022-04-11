@@ -162,14 +162,23 @@ export default class KHRTechniquesWebglManager {
     _createGeometry(gltfMesh, attributeSemantics, excludeElementsInVAO, shaderHash) {
         // TODO buffer只创建一次
         const attributes = gltfMesh.attributes;
-        const color0Name = attributeSemantics['COLOR_0'];
+        const color0Name = 'COLOR_0';
         // 把Float32类型的color0改为uint8类型数组
-        if (attributes[color0Name] && attributes[color0Name] instanceof Float32Array) {
-            const color = new Uint8Array(attributes[color0Name].length);
-            for (let i = 0; i < color.length; i++) {
-                color[i] = Math.round(attributes[color0Name][i] * 255);
+        if (attributes[color0Name]) {
+            const colors =  attributes[color0Name].array || attributes[color0Name];
+            if (colors instanceof Float32Array) {
+                const color = new Uint8Array(colors.length);
+                for (let i = 0; i < color.length; i++) {
+                    color[i] = Math.round(colors[i] * 255);
+                }
+                if (attributes[color0Name].array) {
+                    attributes[color0Name].array = color;
+                    attributes[color0Name].componentType = 5121;
+                } else {
+                    attributes[color0Name] = color;
+                }
+
             }
-            attributes[color0Name] = color;
         }
         const attrs = {};
         for (const p in attributes) {
