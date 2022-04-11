@@ -36,7 +36,8 @@ const DEFAULT_DESC = {
     'uv0Attribute': 'aTexCoord',
     'uv1Attribute': 'aTexCoord1',
     'color0Attribute': 'aColor0',
-    'tangentAttribute': 'aTangent'
+    'tangentAttribute': 'aTangent',
+    'batchIdAttribute': 'aBatchId'
 };
 
 let UID = 1;
