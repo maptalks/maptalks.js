@@ -307,7 +307,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     hitDetect(point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || (this.layer.isVisible && !this.layer.isVisible())) {
             return false;
         }
         const map = this.getMap();
