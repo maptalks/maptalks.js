@@ -26,7 +26,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/fusiongl": "^0.4.4",
+    "@maptalks/fusiongl": "^0.4.5",
     "@maptalks/regl": "^3.1.0",
     "@maptalks/reshader.gl": "^0.68.1",
     "gl-matrix": "^2.6.1"
