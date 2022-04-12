@@ -1,4 +1,4 @@
-import { isString, flash, isNil, extend } from '../core/util';
+import { isString, flash, isNil, extend, isFunction } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -338,9 +338,16 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     buildOn() {
         let dom;
-        if (isString(this.options['content'])) {
+        const content = this.options['content'];
+        const isStr = isString(content);
+        if (isStr || isFunction(content)) {
             dom = createEl('div');
-            dom.innerHTML = this.options['content'];
+            if (isStr) {
+                dom.innerHTML = this.options['content'];
+            } else {
+                //dymatic render dom content
+                content.bind(this)(dom);
+            }
         } else {
             dom = this.options['content'];
         }
