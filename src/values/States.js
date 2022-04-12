@@ -540,7 +540,7 @@ include(GLContext.prototype, {
         const gl = this._gl;
         for (const p in target) {
             if (p === 'capabilities' || p === 'textures' || p === 'attributes' ||
-                p === 'arrayBuffer' || p === 'elementArrayBuffer') {
+                p === 'arrayBuffer' || p === 'elementArrayBuffer' || p === 'vao') {
                 continue;
             } else if (p === 'program') {
                 if (target.program !== preStates.program) {
@@ -605,6 +605,13 @@ include(GLContext.prototype, {
             }
         }
 
+
+        if (this._is2) {
+            gl.bindVertexArray(null);
+        } else if (this._vaoOES) {
+            this._vaoOES.bindVertexArrayOES(null);
+        }
+
         //restore attributes
         const attrs = target.attributes,
             preAttrs = preStates.attributes;
@@ -640,8 +647,8 @@ include(GLContext.prototype, {
         if (vao !== preVao) {
             if (this._is2) {
                 gl.bindVertexArray(vao || null);
-            } else {
-                this.vaoOES.bindVertexArrayOES(vao || null);
+            } else if (this._vaoOES) {
+                this._vaoOES.bindVertexArrayOES(vao || null);
             }
         }
     }
