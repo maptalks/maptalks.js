@@ -622,6 +622,7 @@ class TileLayer extends Layer {
             count += cascadeTiles1 ? cascadeTiles1.tiles.length : 0;
             cascadeHeight = extent1.ymin;
             cascadeLevels += 4 * d;
+            tileGrids.push(cascadeTiles1);
         }
 
         let cascadeTiles2;
@@ -790,8 +791,10 @@ class TileLayer extends Layer {
         const map = this.getMap();
         let z = tileZoom;
         let frustumMatrix = map.projViewMatrix;
+        const canSplitTile = map.getResolution(tileZoom) / map.getResolution(tileZoom - 1) === 0.5;
         if (cascadeLevel < 2) {
-            if (cascadeLevel === 0) {
+            if (cascadeLevel === 0 && canSplitTile) {
+                // cascadeLevel为0时，查询父级瓦片，再对父级瓦片split
                 z -= 1;
             }
             frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ? map.cascadeFrustumMatrix1 : map.projViewMatrix;
@@ -951,7 +954,7 @@ class TileLayer extends Layer {
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
-                    if (cascadeLevel === 0) {
+                    if (canSplitTile && cascadeLevel === 0) {
                         this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets, parentRenderer);
                         extent._combine(tileExtent);
                     } else {
