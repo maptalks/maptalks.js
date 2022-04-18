@@ -9,6 +9,7 @@ void main()
 {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = localPositionMatrix * getPosition(aPosition);
+    gl_PointSize = 1.0;
     gl_Position = projViewMatrix * modelMatrix * localPosition;
-    viewshed_positionFromViewpoint = gl_Position;
+    viewshed_positionFromViewpoint = viewshed_projViewMatrixFromViewpoint * modelMatrix * localPosition;
 }

@@ -25,10 +25,12 @@ void main() {
     glFragColor = sceneColor;
     #ifdef HAS_VIEWSHED
         vec4 viewshedColor = texture2D(viewshedMap, vTexCoord);
-        if (viewshedColor.r > 0.0) {
-            glFragColor = viewshed_invisibleColor;
-        } else if (viewshedColor.g > 0.0) {
-            glFragColor = viewshed_visibleColor;
+        if (viewshedColor.r > 0.99) {
+            glFragColor = vec4(mix(viewshed_invisibleColor.rgb, sceneColor.rgb, 0.3), sceneColor.a);
+        } else if (viewshedColor.g > 0.99) {
+            glFragColor = vec4(mix(viewshed_visibleColor.rgb, sceneColor.rgb, 0.3), sceneColor.a);
+        } else if (viewshedColor.a < 0.01) {
+            glFragColor = vec4(viewshedColor.rgb, 1.0);
         }
     #endif
     #ifdef HAS_FLOODANALYSE

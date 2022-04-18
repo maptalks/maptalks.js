@@ -1,12 +1,34 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, quat, vec3 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
+import Geometry from '../Geometry';
+import Mesh from '../Mesh';
+import Material from '../Material';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
 import { isFunction } from '../common/Util';
 
+const helperPos = [
+    0, 0, 0,
+    1, 1, -1,
+    1, -1, -1,
+    1, -1, 1,
+    1, 1, 1
+]
+const helperIndices = [
+    0, 1,
+    0, 2,
+    0, 3,
+    0, 4,
+    1, 2,
+    2, 3,
+    3, 4,
+    4, 1
+];
+const MAT = [], QUAT = [], VEC3 = [];
+const clearColor = [0, 0, 0, 1];
 export default class ViewshedPass {
     constructor(renderer, viewport) {
         this.renderer = renderer;
@@ -49,23 +71,57 @@ export default class ViewshedPass {
             }),
             depth: true
         });
+        const helperGeometry = new Geometry({
+            POSITION: helperPos
+        },
+        helperIndices,
+        0,
+        {
+            //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
+            primitive : 'lines',
+            positionAttribute: 'POSITION'
+        });
+        this._helperMesh = new Mesh(helperGeometry, new Material({ lineColor: [0.8, 0.8, 0.1]}));
+        const defines = this._helperMesh.getDefines();
+        defines.HAS_HELPERLINE = 1;
+        this._helperMesh.setDefines(defines);
+        this._scene = new Scene();
     }
 
     render(meshes, config) {
         this._resize();
         this.renderer.clear({
-            color : [0, 0, 0, 1],
+            color : clearColor,
             depth : 1,
             framebuffer : this._fbo
         });
-        const scene = new Scene(meshes);
         const eyePos = config.eyePos;
         const lookPoint = config.lookPoint;
+        if (!eyePos || !lookPoint) {
+            return this._fbo;
+        }
         const verticalAngle = config.verticalAngle || 90;
         const horizontalAngle = config.horizontalAngle || 90;
+        const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
+        if (distance <= 0) {
+            console.warn('both lookpoint and eyePos are in the same position');
+        }
+        //计算辅助线框的矩阵
+        const modelMatrix = mat4.identity(MAT);
+        const vector = vec3.set(VEC3, lookPoint[0] - eyePos[0], lookPoint[1] - eyePos[1], lookPoint[2] - eyePos[2]);
+        const angle =  Math.acos(vector[0] / distance);
+        const angleZ = this._getRotateZAngle(angle, vector[1]);
+        const angleY = this._getRotateYAngle(angle, vector[2]);
+        const rotation = quat.fromEuler(QUAT, 0, (angleY / Math.PI) * 180, (angleZ / Math.PI) * 180);
+        const halfHorizontalAngle = (horizontalAngle * Math.PI) / (2 * 180);
+        const halfVerticalAngle = (verticalAngle * Math.PI) / (2 * 180);
+        mat4.fromRotationTranslationScale(modelMatrix, rotation, eyePos, [distance, distance * Math.tan(halfHorizontalAngle), distance * Math.tan(halfVerticalAngle)]);
+        this._helperMesh.localTransform = modelMatrix;
+        meshes.push(this._helperMesh);
+        this._scene.setMeshes(meshes);
         const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle);
-        this._renderDepth(scene, projViewMatrixFromViewpoint);
-        this._renderViewshedMap(scene, projViewMatrixFromViewpoint, config.projViewMatrix);
+        this._renderDepth(this._scene, projViewMatrixFromViewpoint);
+        this._renderViewshedMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
         return this._fbo;
     }
 
@@ -125,6 +181,10 @@ export default class ViewshedPass {
         if (this._viewshedShader) {
             this._viewshedShader.dispose();
         }
+        if (this._helperMesh) {
+            this._helperMesh.geometry.dispose();
+            this._helperMesh.dispose();
+        }
     }
 
     _resize() {
@@ -136,5 +196,25 @@ export default class ViewshedPass {
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
             this._depthFBO.resize(width, height);
         }
+    }
+
+    _getRotateZAngle(angle, vec) {
+      if (vec === 0) {
+        return Math.PI;
+      } else if (vec > 0) {
+        return angle;
+      } else {
+        return -angle;
+      }
+    }
+
+    _getRotateYAngle(angle, vec) {
+      if (vec === 0) {
+        return 0;
+      } else if (vec > 0) {
+        return angle + Math.PI;
+      } else {
+        return -angle + Math.PI;
+      }
     }
 }

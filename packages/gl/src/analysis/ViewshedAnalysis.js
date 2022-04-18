@@ -52,6 +52,7 @@ export default class ViewshedAnalysis extends Analysis {
         const viewshedRenderer = new reshader.Renderer(renderer.regl);
         this._viewshedPass = new reshader.ViewshedPass(viewshedRenderer, viewport) || this._viewshedPass;
         this.layer.addAnalysis(this);
+        renderer.setToRedraw();
     }
 
     renderAnalysis(meshes) {
@@ -78,7 +79,7 @@ export default class ViewshedAnalysis extends Analysis {
 }
 
 function coordinateToWorld(map, coordinate) {
-    if (!map) {
+    if (!map || !coordinate) {
         return null;
     }
     const p = map.coordinateToPointAtRes(new maptalks.Coordinate(coordinate[0], coordinate[1]), map.getGLRes());
