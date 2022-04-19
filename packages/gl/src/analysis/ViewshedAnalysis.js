@@ -17,6 +17,8 @@ export default class ViewshedAnalysis extends Analysis {
         this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
         this._renderOptions['verticalAngle'] = this.options.verticalAngle;
         this._renderOptions['horizontalAngle'] = this.options.horizontalAngle;
+        this._renderOptions['visibleColor'] = this.options.visibleColor;
+        this._renderOptions['invisibleColor'] = this.options.invisibleColor;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         if (renderer) {
             this._setViewshedPass(renderer);

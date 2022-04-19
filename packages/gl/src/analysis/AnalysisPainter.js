@@ -82,6 +82,9 @@ class AnalysisPainter {
 
     _hasAnalysis() {
         const tasks = this._layer && this._layer._analysisTaskList;
+        if (!tasks) {
+            return false;
+        }
         for (let i = 0; i < tasks.length;i++) {
             if (tasks[i].isEnable()) {
                 return true;
