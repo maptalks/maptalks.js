@@ -46,7 +46,7 @@ class AnalysisPainter {
         this._resize();
         const uniforms = {};
         const analysisTaskList = this._layer._analysisTaskList;
-        if (!analysisTaskList) {
+        if (!this._hasAnalysis()) {
             return tex;
         }
         delete this._shader.shaderDefines['HAS_FLOODANALYSE'];
@@ -58,6 +58,9 @@ class AnalysisPainter {
             extend(this._shader.shaderDefines, defines);
             const map = this.getMap();
             const width = map.width, height = map.height;
+            if (!task.isEnable()) {
+                continue;
+            }
             const analysisUniforms = task.renderAnalysis(meshes, width, height);
             if (analysisUniforms) {
                 extend(uniforms, analysisUniforms);
@@ -75,6 +78,16 @@ class AnalysisPainter {
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }
+    }
+
+    _hasAnalysis() {
+        const tasks = this._layer && this._layer._analysisTaskList;
+        for (let i = 0; i < tasks.length;i++) {
+            if (tasks[i].isEnable()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

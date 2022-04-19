@@ -1107,7 +1107,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const enableBloom = config.bloom && config.bloom.enable;
         const bloomPainted = enableBloom && this._bloomPainted;
         const enableAntialias = +!!(config.antialias && config.antialias.enable);
-        const hasPost = enableSSAO || enableBloom || enableSSR;
+        const enableAnalysis = this._analysisPainter._hasAnalysis();
+        const hasPost = enableSSAO || enableBloom || enableSSR || enableAnalysis;
 
         let postFBO = this._postFBO;
         if (hasPost) {

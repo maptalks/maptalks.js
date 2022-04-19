@@ -40,6 +40,15 @@ export default class ViewshedPass {
         this._depthShader = new MeshShader({
             vert: depthVert,
             frag: depthFrag,
+            uniforms: [
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: (context, props) => {
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    }
+                }
+            ],
             extraCommandProps: {
                 viewport: this._viewport
             }
@@ -57,6 +66,15 @@ export default class ViewshedPass {
         this._viewshedShader = new MeshShader({
             vert,
             frag,
+            uniforms: [
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: (context, props) => {
+                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                    }
+                }
+            ],
             extraCommandProps: {
                 viewport: this._viewport
             }
