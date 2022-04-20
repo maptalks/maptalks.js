@@ -612,39 +612,63 @@ include(GLContext.prototype, {
             this._vaoOES.bindVertexArrayOES(null);
         }
 
-        //restore attributes
-        const attrs = target.attributes,
-            preAttrs = preStates.attributes;
-        for (const p in attrs) {
-            if (!preAttrs[p] || attrs[p].buffer !== preAttrs[p].buffer ||
-                !equal(attrs[p].args, preAttrs[p].args)) {
-                if (attrs[p].buffer) {
-                    gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
-                    gl.vertexAttribPointer(...attrs[p].args);
-                    if (attrs[p].divisor !== undefined) {
+        const limit = this._attrLimit;
+
+        const attrs = target.attributes;
+        for (let i = 0; i < limit; i++) {
+            const attribute = attrs[i];
+            if (attribute) {
+                if (attribute.buffer) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+                    gl.vertexAttribPointer(...attribute.args);
+                    if (attribute.divisor !== undefined) {
                         if (this._is2) {
-                            gl.vertexAttribDivisor(+p, attrs[p].divisor);
+                            gl.vertexAttribDivisor(i, attribute.divisor);
                         } else {
-                            this.angleOES.vertexAttribDivisorANGLE(+p, attrs[p].divisor);
+                            this.angleOES.vertexAttribDivisorANGLE(i, attribute.divisor);
                         }
                     }
-                    if (attrs[p].enable) {
-                        gl.enableVertexAttribArray(attrs[p].args[0]);
-                    } else {
-                        gl.disableVertexAttribArray(attrs[p].args[0]);
-                    }
+                }
+                if (attribute.enable) {
+                    gl.enableVertexAttribArray(i);
+                } else {
+                    gl.disableVertexAttribArray(i);
                 }
             }
         }
+
+        //restore attributes
+        // const attrs = target.attributes,
+        //     preAttrs = preStates.attributes;
+        // for (const p in attrs) {
+        //     if (!preAttrs[p] || attrs[p].buffer !== preAttrs[p].buffer ||
+        //         !equal(attrs[p].args, preAttrs[p].args)) {
+        //         if (attrs[p].buffer) {
+        //             gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
+        //             gl.vertexAttribPointer(...attrs[p].args);
+        //             if (attrs[p].divisor !== undefined) {
+        //                 if (this._is2) {
+        //                     gl.vertexAttribDivisor(+p, attrs[p].divisor);
+        //                 } else {
+        //                     this.angleOES.vertexAttribDivisorANGLE(+p, attrs[p].divisor);
+        //                 }
+        //             }
+        //             if (attrs[p].enable) {
+        //                 gl.enableVertexAttribArray(attrs[p].args[0]);
+        //             } else {
+        //                 gl.disableVertexAttribArray(attrs[p].args[0]);
+        //             }
+        //         }
+        //     }
+        // }
 
         //restore array buffer and element array buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
 
         //TODO vao和buffer的顺序可能会有冲突
-        const vao = target.vao,
-            preVao = preStates.vao;
-        if (vao !== preVao) {
+        const vao = target.vao;
+        if (vao) {
             if (this._is2) {
                 gl.bindVertexArray(vao || null);
             } else if (this._vaoOES) {
