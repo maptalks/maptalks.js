@@ -768,9 +768,16 @@ class TileLayer extends Layer {
     }
 
     _getTileZoom(zoom) {
-        if (!this._hasOwnSR) {
-            const res0 = this.getMap().getResolution(zoom);
-            const res1 = this.getSpatialReference().getResolution(zoom);
+        if (this._hasOwnSR) {
+            // 要转换到同一计量单位下，都转为像素，这里没有很好的办法，先暂时用数值判断吧
+            let res0 = this.getMap().getResolution(zoom);
+            let res1 = this.getSpatialReference().getResolution(zoom);
+            if (res0 > 10) {
+                res0 = res0 * 180 / Math.PI / 6378137;
+            }
+            if (res1 > 10) {
+                res1 = res1 * 180 / Math.PI / 6378137;
+            }
             const dz = Math.log(res1 / res0) * Math.LOG2E; // polyfill of Math.log2
             zoom += dz;
         }
@@ -790,11 +797,10 @@ class TileLayer extends Layer {
         // rendWhenReady = false;
         const map = this.getMap();
         let z = tileZoom;
+        const mapZoom = map.getZoom();
         let frustumMatrix = map.projViewMatrix;
-        const canSplitTile = map.getResolution(tileZoom) / map.getResolution(tileZoom - 1) === 0.5;
         if (cascadeLevel < 2) {
-            if (cascadeLevel === 0 && canSplitTile) {
-                // cascadeLevel为0时，查询父级瓦片，再对父级瓦片split
+            if (cascadeLevel === 0) {
                 z -= 1;
             }
             frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ? map.cascadeFrustumMatrix1 : map.projViewMatrix;
@@ -835,7 +841,7 @@ class TileLayer extends Layer {
         // const glScale = res / map.getGLRes();
         let glScale;
         if (this._hasOwnSR) {
-            glScale = map.getGLScale(z);
+            glScale = map.getGLScale(mapZoom);
         } else {
             glScale = res / map.getGLRes();
         }
@@ -864,13 +870,13 @@ class TileLayer extends Layer {
             c = this._project(prjCenter, TEMP_POINT1);
         }
 
-        const extentScale = map.getGLScale() / map.getGLScale(zoom);
+        const extentScale = map.getGLScale() / map.getGLScale(mapZoom);
         TEMP_POINT2.x = extent2d.xmin * extentScale;
         TEMP_POINT2.y = extent2d.ymax * extentScale;
         TEMP_POINT3.x = extent2d.xmax * extentScale;
         TEMP_POINT3.y = extent2d.ymin * extentScale;
-        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), zoom, TEMP_POINT2), TEMP_POINT2);
-        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), zoom, TEMP_POINT3), TEMP_POINT3);
+        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), mapZoom, TEMP_POINT2), TEMP_POINT2);
+        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), mapZoom, TEMP_POINT3), TEMP_POINT3);
 
         const centerTile = tileConfig.getTileIndex(c, res, repeatWorld);
         const ltTile = tileConfig.getTileIndex(pmin, res, repeatWorld);
@@ -921,7 +927,7 @@ class TileLayer extends Layer {
                     // p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), z);
                 } else {
                     const pnw = tileConfig.getTilePrjNW(idx.x, idx.y, res);
-                    p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), z);
+                    p = map._prjToPoint(this._unproject(pnw, TEMP_POINT3), mapZoom);
                 }
 
                 let width, height;
@@ -934,7 +940,7 @@ class TileLayer extends Layer {
                         pp = tileConfig.getTilePointSE(idx.x, idx.y, res);
                     } else {
                         const pse = tileConfig.getTilePrjSE(idx.x, idx.y, res);
-                        pp = map._prjToPoint(this._unproject(pse, TEMP_POINT3), z, TEMP_POINT3);
+                        pp = map._prjToPoint(this._unproject(pse, TEMP_POINT3), mapZoom, TEMP_POINT3);
                     }
                     width = Math.ceil(Math.abs(pp.x - p.x));
                     height = Math.ceil(Math.abs(pp.y - p.y));
@@ -954,7 +960,7 @@ class TileLayer extends Layer {
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
-                    if (canSplitTile && cascadeLevel === 0) {
+                    if (cascadeLevel === 0) {
                         this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets, parentRenderer);
                         extent._combine(tileExtent);
                     } else {
@@ -998,7 +1004,7 @@ class TileLayer extends Layer {
 
         if (tiles.length) {
             //sort tiles according to tile's distance to center
-            const center = map._containerPointToPoint(containerExtent.getCenter(), z, TEMP_POINT)._add(offset);
+            const center = map._containerPointToPoint(containerExtent.getCenter(), mapZoom, TEMP_POINT)._add(offset);
             const point0 = new Point(0, 0);
             const point1 = new Point(0, 0);
             tiles.sort(function (a, b) {
