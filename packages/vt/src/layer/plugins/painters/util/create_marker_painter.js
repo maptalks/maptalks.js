@@ -65,7 +65,7 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'markerPitchAlignment', 0, v => v === 'map' ? 1 : 0);
     setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'markerRotationAlignment', 0, v => v === 'map' ? 1 : 0);
 
-    uniforms['texture'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : null;
+    uniforms['iconTex'] = iconAtlas ? createAtlasTexture(regl, iconAtlas, false) : null;
     uniforms['texSize'] = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
     geometry.generateBuffers(regl, { excludeElementsInVAO: true });
     const material = new reshader.Material(uniforms);

@@ -609,11 +609,11 @@ class IconPainter extends CollisionPainter {
             if (Array.isArray(meshes)) {
                 meshes.forEach(m => {
                     if (m && m.material) {
-                        delete m.material.uniforms.texture;
+                        delete m.material.uniforms.iconTex;
                     }
                 });
             } else if (meshes.material) {
-                delete meshes.material.uniforms.texture;
+                delete meshes.material.uniforms.iconTex;
             }
         }
         super.deleteMesh(meshes, keepGeometry);
@@ -658,7 +658,7 @@ class IconPainter extends CollisionPainter {
                 func: () => {
                     return this.sceneConfig.depthFunc || 'always';
                 },
-                mask: false
+                mask: isNil(this.sceneConfig.depthMask) ? true : this.sceneConfig.depthMask
             },
             polygonOffset: {
                 enable: true,
@@ -685,6 +685,7 @@ class IconPainter extends CollisionPainter {
             ],
             extraCommandProps: iconExtraCommandProps
         });
+        this.shader.version = 300;
 
         const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
