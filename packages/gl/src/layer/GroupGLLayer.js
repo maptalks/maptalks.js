@@ -357,6 +357,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @return {Array} result
      **/
     identifyAtPoint(point, options = {}) {
+        const isMapGeometryEvent = options.includeInternals;
         const childLayers = this.getLayers();
         const layers = (options && options.childLayers) || childLayers;
         const map = this.getMap();
@@ -369,6 +370,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         for (let i = len - 1; i >= 0; i--) {
             const layer = layers[i];
             if (childLayers.indexOf(layer) < 0 || !layer.identifyAtPoint) {
+                continue;
+            }
+            const geometryEvents = layer.options['geometryEvents'];
+            if (isMapGeometryEvent && (geometryEvents === false || geometryEvents === 0)) {
                 continue;
             }
             let picks = layer.identifyAtPoint(point, options);
