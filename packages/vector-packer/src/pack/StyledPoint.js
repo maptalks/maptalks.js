@@ -112,49 +112,46 @@ export default class StyledPoint {
             if (markerTextFitFn) {
                 textFit = markerTextFitFn(zoom, properties);
             }
-            if (textFit) {
-                if (textFit && textFit !== 'none') {
-                    const textSize = symbol.text.textSize;
-                    let textName = symbol.text.textName;
-                    if (isFunctionDefinition(textName)) {
-                        textName = interpolated(textName)(zoom, properties);
-                    }
-                    const text = resolveText(textName, properties);
-                    if (!text) {
-                        // blank text
-                        size[0] = size[1] = -1;
-                    } else {
-                        const textSizeFnName = '__fn_textSize'.trim();
-                        const textSizeFn0Name = '__fn_textSize_0'.trim();
-                        if (isFunctionDefinition(textSize) && !symbol.text[textSizeFnName]) {
-                            symbol.text[textSizeFn0Name] = interpolated(textSize);
-                            symbol.text[textSizeFnName] = (zoom, properties) => {
-                                const v = symbol.text[textSizeFn0Name](zoom, properties);
-                                if (isFunctionDefinition(v)) {
-                                    return interpolated(v)(zoom, properties);
-                                } else {
-                                    return v;
-                                }
-                            };
-                        }
-                        const tsize = evaluateTextSize(symbol.text, symbol.text, properties, zoom);
-                        if (textFit === 'width' || textFit === 'both') {
-                            size[0] = tsize[0] * text.length;
-                        }
-                        // TODO 这里不支持多行文字
-                        if (textFit === 'height' || textFit === 'both') {
-                            size[1] = tsize[1];
-                        }
-                        if (tsize[0] && tsize[1]) {
-                            let padding = symbol.markerTextFitPadding || [0, 0, 0, 0];
-                            if (markerTextFitPaddingFn) {
-                                padding = markerTextFitPaddingFn(zoom, properties);
+            if (textFit && symbol.text && textFit !== 'none') {
+                const textSize = symbol.text.textSize;
+                let textName = symbol.text.textName;
+                if (isFunctionDefinition(textName)) {
+                    textName = interpolated(textName)(zoom, properties);
+                }
+                const text = resolveText(textName, properties);
+                if (!text) {
+                    // blank text
+                    size[0] = size[1] = -1;
+                } else {
+                    const textSizeFnName = '__fn_textSize'.trim();
+                    const textSizeFn0Name = '__fn_textSize_0'.trim();
+                    if (isFunctionDefinition(textSize) && !symbol.text[textSizeFnName]) {
+                        symbol.text[textSizeFn0Name] = interpolated(textSize);
+                        symbol.text[textSizeFnName] = (zoom, properties) => {
+                            const v = symbol.text[textSizeFn0Name](zoom, properties);
+                            if (isFunctionDefinition(v)) {
+                                return interpolated(v)(zoom, properties);
+                            } else {
+                                return v;
                             }
-                            size[0] += padding[1] + padding[3];
-                            size[1] += padding[0] + padding[2];
-                        }
+                        };
                     }
-
+                    const tsize = evaluateTextSize(symbol.text, symbol.text, properties, zoom);
+                    if (textFit === 'width' || textFit === 'both') {
+                        size[0] = tsize[0] * text.length;
+                    }
+                    // TODO 这里不支持多行文字
+                    if (textFit === 'height' || textFit === 'both') {
+                        size[1] = tsize[1];
+                    }
+                    if (tsize[0] && tsize[1]) {
+                        let padding = symbol.markerTextFitPadding || [0, 0, 0, 0];
+                        if (markerTextFitPaddingFn) {
+                            padding = markerTextFitPaddingFn(zoom, properties);
+                        }
+                        size[0] += padding[1] + padding[3];
+                        size[1] += padding[0] + padding[2];
+                    }
                 }
             }
         }
