@@ -98,8 +98,8 @@ export default class FBORayPicking {
         this._uniforms = uniforms;
         this._defines = defines;
         this._extraCommandProps = extend({}, extraCommandProps);
-        delete extraCommandProps.blend;
-        delete extraCommandProps.stencil;
+        delete this._extraCommandProps.blend;
+        delete this._extraCommandProps.stencil;
         this._currentMeshes = [];
         this._init();
     }
