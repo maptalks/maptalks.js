@@ -419,7 +419,7 @@ class UIComponent extends Eventable(Class) {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        return map.distanceToPoint(altitude, 0, undefined, center).x * sign(altitude);
+        return map.altitudeToPoint(altitude, map._getResolution()).x * sign(altitude);
     }
 
     _autoPan() {
