@@ -97,7 +97,9 @@ export default class FBORayPicking {
         this._vert = vert;
         this._uniforms = uniforms;
         this._defines = defines;
-        this._extraCommandProps = extraCommandProps;
+        this._extraCommandProps = extend({}, extraCommandProps);
+        delete extraCommandProps.blend;
+        delete extraCommandProps.stencil;
         this._currentMeshes = [];
         this._init();
     }
@@ -117,8 +119,7 @@ export default class FBORayPicking {
             }
         }
         const vert = this._vert,
-            extraCommandProps = extend({}, this._extraCommandProps);
-        delete extraCommandProps.blend;
+            extraCommandProps = this._extraCommandProps;
         this._shader0 = new MeshShader({
             vert,
             frag : frag0,
