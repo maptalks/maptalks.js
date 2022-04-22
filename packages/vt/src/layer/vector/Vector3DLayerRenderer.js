@@ -121,14 +121,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         this._updateDirtyTargets();
 
-        if (layer.options['collision']) {
-            layer.clearCollisionIndex();
-        }
         this._frameTime = timestamp;
         this._parentContext = parentContext || {};
+        const renderMode = this._parentContext.renderMode;
+        const isDefaultRender = !renderMode || renderMode === 'default';
         const context = this._preparePaintContext();
         let polygonOffset = 0;
-        if (this.painter && this.meshes) {
+        if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
             this.painter.startFrame(context);
             this.painter.addMesh(this.meshes, null, { bloom: 1 });
             this.painter.prepareRender(context);
@@ -136,7 +135,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.painter.render(context);
         }
 
-        if (this._lineMeshes) {
+        if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
             this._linePainter.startFrame(context);
             this._linePainter.addMesh(this._lineMeshes, null, { bloom: 1 });
             this._linePainter.prepareRender(context);
@@ -144,7 +143,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._linePainter.render(context);
         }
 
-        if (this._markerMeshes) {
+        if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
+            if (layer.options['collision']) {
+                layer.clearCollisionIndex();
+            }
             this._markerPainter.startFrame(context);
             this._markerPainter.addMesh(this._markerMeshes, null, { bloom: 1 });
             this._markerPainter.prepareRender(context);
@@ -155,12 +157,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._markerPainter.render(context);
         }
 
-        this.completeRender();
-        this.layer.fire('canvasisdirty');
+        if (isDefaultRender || parentContext && parentContext.isFinalRender) {
+            this.completeRender();
+            this.layer.fire('canvasisdirty');
+        }
     }
 
-    supportRenderMode(mode) {
-        return mode === 'noAa';
+    supportRenderMode() {
+        return true;
     }
 
     isForeground() {

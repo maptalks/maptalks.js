@@ -2,7 +2,7 @@ const path = require('path');
 const assert = require('assert');
 const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptalks.vt.js');
+const { PointLayer, LineStringLayer, PolygonLayer, GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 
@@ -1386,6 +1386,51 @@ describe('vector layers update style specs', () => {
                 const pixel1 = readPixel(renderer.canvas, x / 2, y / 2 + 10);
                 assert.deepEqual(pixel, [255, 255, 0, 255]);
                 assert.deepEqual(pixel1, [0, 0, 255, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('z index of PointLayer and VectorTileLayer', done => {
+        const symbol = { markerType: 'ellipse', markerWidth: 10, markerHeight: 10, markerFill: '#f00', markerVerticalAlignment: 'middle' };
+        const marker0 = new maptalks.Marker([0, 0], { symbol });
+        const pointData = { type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] } }] };
+        const style = {
+            style: [
+                {
+                  "renderPlugin": {
+                    "type": "icon",
+                    "dataConfig": {
+                      "type": "point"
+                    }
+                  },
+                  "symbol": {
+                      markerType: 'ellipse',
+                      markerWidth: 20,
+                      markerHeight: 20,
+                      markerFill: '#00f'
+                  }
+                }
+            ]
+        }
+        const layer = new PointLayer('point', [marker0]);
+        const vtLayer = new GeoJSONVectorTileLayer('vt', {
+            data: pointData,
+            style
+        });
+        const sceneConfig = { postProcess: { enable: true, antialias: { enable: true } } };
+        const group = new GroupGLLayer('group', [vtLayer, layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        let finished = false;
+        vtLayer.on('canvasisdirty', () => {
+            count++;
+            if (!finished && count === 2) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                finished = true;
                 done();
             }
         });
