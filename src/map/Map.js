@@ -2439,13 +2439,13 @@ Map.include(/** @lends Map.prototype */{
     altitudeToPoint: function () {
         const POINT = new Point(0, 0);
         const DEFAULT_CENTER = new Coordinate(0, 0);
-        return function (altitude = 0, res) {
+        return function (altitude = 0, res, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
             res = res || this.getGLRes();
-            const center = DEFAULT_CENTER,
+            const center = paramCenter || DEFAULT_CENTER,
                 target = projection.locate(center, altitude, altitude);
             const p0 = this.coordToPointAtRes(center, res, POINT),
                 p1 = this.coordToPointAtRes(target, res);
