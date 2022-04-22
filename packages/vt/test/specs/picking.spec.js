@@ -100,6 +100,58 @@ describe('picking specs', () => {
             }];
             runner(options, coord, expected, true, done);
         });
+        it('should pick an icon with multiple symbols', done => {
+            const options = {
+                data: data.point,
+                style: [{
+                    renderPlugin: {
+                        type: 'icon',
+                        dataConfig: {
+                            type: 'point'
+                        },
+                        sceneConfig: {
+                            fading: false,
+                            collision: false
+                        }
+                    },
+                    symbol: [
+                        {
+                            markerFile: ICON_PATH
+                        },
+                        {
+                            markerType: 'ellipse',
+                            markerWidth: 10,
+                            markerHeight: 10,
+                        }
+                    ]
+                }],
+                pickingGeometry: true,
+                pickingPoint: true
+            };
+            const coord = [0.5, 0.5];
+            const expected = [{
+                'data': {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [0.5, 0.5]
+                        },
+                        'properties': {
+                            'type': 1,
+                            'height': 20000
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                },
+                'point': [736, 736, 0],
+                'type': 'icon',
+                'plugin': 0,
+                'featureId': 0
+            }];
+            runner(options, coord, expected, true, done);
+        });
         it('should pick an icon with text', done => {
             const options = {
                 data: data.point,
@@ -674,6 +726,67 @@ describe('picking specs', () => {
                             markerHeight: 10,
                             markerLineWidth: 0
                         }
+                    }
+                ]
+            });
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([0.6, 0.6]);
+                assert(redPoint[0] instanceof maptalks.Marker);
+                assert(redPoint[0].getProperties().idx === 11);
+                done();
+            });
+            layer.addTo(map);
+
+        });
+
+        it('should pick point with multiple symbols in PointLayer', done => {
+            const options = {
+                view: {
+                    center: [0, 0],
+                    zoom: 6
+                }
+            };
+            const data = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    properties: {
+                        idx: 10
+                    }
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [0.6, 0.6]
+                    },
+                    properties: {
+                        idx: 11
+                    }
+                }]
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new PointLayer('gvt', data, {
+                style: [
+                    {
+                        filter: true,
+                        symbol: [
+                            {
+                                markerType: 'ellipse',
+                                markerFill: '#f00',
+                                markerWidth: 20,
+                                markerHeight: 20
+                            },
+                            {
+                                markerType: 'ellipse',
+                                markerFill: '#00f',
+                                markerWidth: 10,
+                                markerHeight: 10
+                            }
+                        ]
                     }
                 ]
             });

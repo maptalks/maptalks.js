@@ -894,13 +894,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         this.features[uid] = convertToFeature(geo, this._kidGen, this.features[uid]);
         const feas = this.features[uid];
-        this._refreshFeatures(feas);
-        this.features[uid][ID_PROP] = uid;
+        this._refreshFeatures(feas, uid);
         this._geometries[uid] = geo;
         return uid;
     }
 
-    _refreshFeatures(feas) {
+    _refreshFeatures(feas, uid) {
         if (!feas) {
             return;
         }
@@ -911,7 +910,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             for (let j = 0; j < feas.length; j++) {
                 // kid 是painter内部用来
                 const kid = feas[j][KEY_IDX_NAME];
+                feas[j][ID_PROP] = uid;
                 this._allFeatures[kid] = { feature: feas[j] };
+                this._allFeatures[kid][ID_PROP] = uid;
                 // 采用 { feature } 结构，是为了和VT图层中 { feature, symbol } 统一
                 const feaObj = { feature: feas[j] };
                 if (hasMarkerSymbol(feas[j])) {
@@ -928,6 +929,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 }
             }
         } else {
+            feas[ID_PROP] = uid;
             const feaObj = { feature: feas };
             const kid = feas[KEY_IDX_NAME];
             if (hasMarkerSymbol(feas)) {
@@ -1168,16 +1170,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const geo = e.target;
         const uid = geo[ID_PROP];
         this.features[uid] = convertToFeature(geo, this._kidGen);
-        if (Array.isArray(this.features[uid])) {
-            const feature = this.features[uid];
-            for (let i = 0; i < feature.length; i++) {
-                feature[i][ID_PROP] = uid;
-            }
-        } else {
-            this.features[uid][ID_PROP] = uid;
-        }
-
-        this._refreshFeatures(this.features[uid]);
+        this._refreshFeatures(this.features[uid], uid);
         this._markRebuild();
         redraw(this);
     }
