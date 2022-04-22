@@ -177,7 +177,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
         fGL.resetDrawCalls();
-        this._renderInMode('noAa', this._noAaFBO, methodName, args, true);
+        this._renderInMode('noAa', this._noAaFBO, methodName, args);
         this._noaaDrawCount = fGL.getDrawCalls();
 
         fGL.resetDrawCalls();
