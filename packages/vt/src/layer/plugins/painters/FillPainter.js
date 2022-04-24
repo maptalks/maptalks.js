@@ -219,15 +219,13 @@ class FillPainter extends BasicPainter {
             viewport: this.pickingViewport,
             stencil: {
                 enable: true,
-                mask: 0xFF,
                 func: {
                     cmp: () => {
                         return stencil ? '=' : '<=';
                     },
                     ref: (context, props) => {
                         return stencil ? props.stencilRef : props.level;
-                    },
-                    mask: 0xFF
+                    }
                 },
                 op: {
                     fail: 'keep',

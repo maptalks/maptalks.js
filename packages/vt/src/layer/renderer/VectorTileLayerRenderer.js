@@ -269,7 +269,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
-        this._consumeTileQueue();
+        if (!parentContext || parentContext && parentContext.isFinalRender) {
+            // maptalks/issues#10
+            // 如果consumeTileQueue方法在每个renderMode都会调用，但多边形只在fxaa mode下才会绘制。
+            // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
+            // 改为consumeTileQueue只在finalRender时调用即解决问题
+            this._consumeTileQueue();
+        }
         super.draw(timestamp);
         if (this._currentTimestamp !== timestamp) {
             this._prepareRender(timestamp);
@@ -467,7 +473,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const tileData = i === 0 ? data : copyTileData(data);
             this._tileQueue.push({ tileData, tileInfo });
         }
-        this.layer.fire('datareceived');
+        this.layer.fire('datareceived', { url });
     }
 
     _parseTileData(styleType, i, pluginData, features) {
