@@ -1125,24 +1125,24 @@ describe('update style specs', () => {
         ], { sceneConfig });
         let painted = false;
         let finished = false;
-        layer.once('canvasisdirty', () => {
-            groupLayer.on('layerload', () => {
-                const canvas = groupLayer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
-                if (pixel[0] > 0) {
-                    if (!painted) {
-                        assert.deepEqual(pixel, [78, 78, 78, 255]);
+        let count = 0;
+        groupLayer.on('layerload', () => {
+            const canvas = groupLayer.getRenderer().canvas;
+            const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+            if (pixel[0] > 0) {
+                count++;
+                if (!painted) {
+                    assert.deepEqual(pixel, [78, 78, 78, 255]);
 
-                        material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
-                        layer.updateSymbol(0, { material });
-                        painted = true;
-                    } else if (!finished) {
-                        finished = true;
-                        assert.deepEqual(pixel, [64, 73, 71, 255]);
-                        done();
-                    }
+                    material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
+                    layer.updateSymbol(0, { material });
+                    painted = true;
+                } else if (!finished && count >= 4) {
+                    finished = true;
+                    assert.deepEqual(pixel, [64, 73, 71, 255]);
+                    done();
                 }
-            });
+            }
         });
         groupLayer.addTo(map);
     });

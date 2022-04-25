@@ -248,6 +248,15 @@ describe('vector tile integration specs', () => {
         }
     });
 
+    context('heatmap specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'heatmap'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
+
     context('default render specs', () => {
         const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'default'));
         for (const p in specs) {
