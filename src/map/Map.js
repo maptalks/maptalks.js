@@ -2440,25 +2440,15 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     altitudeToPoint: function () {
-        const POINT = new Point(0, 0);
         const DEFAULT_CENTER = new Coordinate(0, 0);
         return function (altitude = 0, res, paramCenter) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            res = res || this.getGLRes();
-            const center = paramCenter || DEFAULT_CENTER,
-                target = projection.locate(center, altitude, altitude);
-            const p0 = this.coordToPointAtRes(center, res, POINT),
-                p1 = this.coordToPointAtRes(target, res);
-            p1._sub(p0)._abs();
+            const p = this.distanceToPointAtRes(altitude, altitude, res, paramCenter || DEFAULT_CENTER);
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
-                p1.x *= heightFactor;
-                p1.y *= heightFactor;
+                p.x *= heightFactor;
+                p.y *= heightFactor;
             }
-            return p1;
+            return p;
         };
     }(),
 
