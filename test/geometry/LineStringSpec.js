@@ -531,7 +531,7 @@ describe('Geometry.LineString', function () {
             }).addTo(layer);
             var extent = polyline.getContainerExtent().round().toString();
             console.log(extent);
-            expect(extent).to.be.eql('-404,-38,320,151');
+            expect(extent).to.be.eql('-404,-37,320,151');
         });
 
         it('markerPlacement of vertex-first with LineString of 1 coord', function () {

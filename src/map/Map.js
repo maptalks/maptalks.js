@@ -81,6 +81,7 @@ const TEMP_COORD = new Coordinate(0, 0);
  *
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
+ * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @memberOf Map
  * @instance
  */
@@ -2426,6 +2427,28 @@ Map.include(/** @lends Map.prototype */{
                 p1 = this.coordToPointAtRes(target, res);
             p1._sub(p0)._abs();
             return p1;
+        };
+    }(),
+
+
+    /**
+     * Converts height/altitude  to the 2d point
+     *
+     * @param  {Number} altitude - the value of altitude,suche as: map.altitudeToPoint(100);
+     * @param  {Number} res - target resolution
+     * @return {Point}
+     * @function
+     */
+    altitudeToPoint: function () {
+        const DEFAULT_CENTER = new Coordinate(0, 0);
+        return function (altitude = 0, res, paramCenter) {
+            const p = this.distanceToPointAtRes(altitude, altitude, res, paramCenter || DEFAULT_CENTER);
+            const heightFactor = this.options['heightFactor'];
+            if (heightFactor && heightFactor !== 1) {
+                p.x *= heightFactor;
+                p.y *= heightFactor;
+            }
+            return p;
         };
     }(),
 
