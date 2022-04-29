@@ -90,21 +90,27 @@ function convertFeature(features, geojson, options, index) {
 }
 
 export function convertPoint(coords, out) {
-    out.push([new Point(coords[0], coords[1])]);
+    const point = new Point(coords[0], coords[1]);
+    // meter to centimeter
+    point.z = (coords[2] || 0) * 100;
+    out.push([point]);
 }
 
 export function convertLine(ring, out) {
     // var x0, y0;
     // var size = 0;
 
-    for (var j = 0; j < ring.length; j++) {
-        var x = ring[j][0];
-        var y = ring[j][1];
+    for (let j = 0; j < ring.length; j++) {
+        const x = ring[j][0];
+        const y = ring[j][1];
 
         // out.push(x);
         // out.push(y);
         // out.push(0);
-        out.push(new Point(x, y));
+        const point = new Point(x, y);
+        // meter to centimeter
+        point.z = (ring[j][2] || 0) * 100;
+        out.push(point);
 
         // if (j > 0) {
         //     if (isPolygon) {

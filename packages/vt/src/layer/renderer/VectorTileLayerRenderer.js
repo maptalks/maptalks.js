@@ -1167,8 +1167,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getCentiMeterScale(res) {
         const map = this.getMap();
-        const p = map.distanceToPointAtRes(1000, 0, res).x;
-        return p / 1000 / 10;
+        let p;
+        if (map.altitudeToPoint) {
+            p = map.altitudeToPoint(100, res);
+        } else {
+            p = map.distanceToPointAtRes(100, 0, res).x;
+        }
+        // to centimeter
+        return p / 100 / 100;
     }
 
     debugFBO(id, fbo) {

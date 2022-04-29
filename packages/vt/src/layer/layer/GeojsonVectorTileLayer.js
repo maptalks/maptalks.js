@@ -32,6 +32,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.data = workerData;
         options.tileBuffer = this.options.tileBuffer;
         options.extent = this.options.extent;
+        options.hasAltitude = this.options.enableAltitude;
         return options;
     }
 

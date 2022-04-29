@@ -42,6 +42,7 @@ const defaultOptions = {
     pyramidMode: 1,
     styleScale: 1,
     spatialReference: null, //'preset-vt-3857', preset-vt-4326'
+    enableAltitude: true
 };
 
 /**

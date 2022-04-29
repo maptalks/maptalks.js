@@ -27,94 +27,6 @@ const DEFAULT_UNIFORMS = {
 
 const IDX_PROP = '__index';
 
-function getPackSDFFormat(symbol) {
-    if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
-        //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
-        return [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aShape'
-            },
-            {
-                type: Uint16Array,
-                width: 2,
-                name: 'aTexCoord'
-            },
-            {
-                type: Uint8Array,
-                width: 1,
-                name: 'aCount'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aGlyphOffset'
-            },
-            //aSegment存放了anchor在line的片段序号
-            {
-                type: Uint16Array,
-                width: 3,
-                name: 'aSegment'
-            },
-            {
-                type: Uint8Array,
-                width: 1,
-                name: 'aVertical'
-            }
-        ];
-    } else {
-        return [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            },
-            {
-                type: Int16Array,
-                width: 2,
-                name: 'aShape'
-            },
-            {
-                type: Uint16Array,
-                width: 2,
-                name: 'aTexCoord'
-            },
-            {
-                type: Uint8Array,
-                width: 1,
-                name: 'aCount'
-            }
-        ];
-    }
-}
-
-function getPackMarkerFormat() {
-    return [
-        {
-            type: Int16Array,
-            width: 3,
-            name: 'aPosition'
-        },
-        {
-            type: Int16Array,
-            width: 2,
-            name: 'aShape'
-        },
-        {
-            type: Uint16Array,
-            width: 2,
-            name: 'aTexCoord'
-        }
-    ];
-}
-
-
 /**
  * 点类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
  * 设计上能直接在worker中执行
@@ -295,7 +207,7 @@ export default class PointPack extends VectorPack {
 
     getFormat(symbol) {
         const isText = symbol['textName'] !== undefined;
-        const format = isText ? getPackSDFFormat(symbol) : getPackMarkerFormat();
+        const format = isText ? this.getPackSDFFormat(symbol) : this.getPackMarkerFormat();
         if (isText) {
             format.push(...this._getTextFnTypeFormats());
         } else {
@@ -583,9 +495,9 @@ export default class PointPack extends VectorPack {
         }
         const extent = this.options.EXTENT;
         const textCount = quads.length;
-        const altitude = this.getAltitude(point.feature.properties);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
+            const altitude = anchor.z || 0;
             if (extent !== Infinity && isOut(anchor, extent)) {
                 continue;
             }
@@ -648,7 +560,7 @@ export default class PointPack extends VectorPack {
     }
 
     _fillPos(data, x, y, altitude, shapeX, shapeY, texX, texY) {
-        data.aPosition.push(x, y, altitude);
+        this.fillPosition(data, x, y, altitude);
         data.aShape.push(shapeX, shapeY);
         data.aTexCoord.push(texX, texY);
     }
@@ -767,6 +679,82 @@ export default class PointPack extends VectorPack {
         }
         return symbol.markerPlacement || symbol.textPlacement;
     }
+
+    getPackSDFFormat(symbol) {
+        if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
+            //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
+            return [
+                ...this.getPositionFormat(),
+                {
+                    type: Int16Array,
+                    width: 2,
+                    name: 'aShape'
+                },
+                {
+                    type: Uint16Array,
+                    width: 2,
+                    name: 'aTexCoord'
+                },
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aCount'
+                },
+                {
+                    type: Int16Array,
+                    width: 2,
+                    name: 'aGlyphOffset'
+                },
+                //aSegment存放了anchor在line的片段序号
+                {
+                    type: Uint16Array,
+                    width: 3,
+                    name: 'aSegment'
+                },
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aVertical'
+                }
+            ];
+        } else {
+            return [
+                ...this.getPositionFormat(),
+                {
+                    type: Int16Array,
+                    width: 2,
+                    name: 'aShape'
+                },
+                {
+                    type: Uint16Array,
+                    width: 2,
+                    name: 'aTexCoord'
+                },
+                {
+                    type: Uint8Array,
+                    width: 1,
+                    name: 'aCount'
+                }
+            ];
+        }
+    }
+
+    getPackMarkerFormat() {
+        return [
+            ...this.getPositionFormat(),
+            {
+                type: Int16Array,
+                width: 2,
+                name: 'aShape'
+            },
+            {
+                type: Uint16Array,
+                width: 2,
+                name: 'aTexCoord'
+            }
+        ];
+    }
+
 }
 
 function getFeauresToMerge(features, symbolDef, zoom) {

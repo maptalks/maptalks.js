@@ -1,3 +1,5 @@
+import { reshader } from '@maptalks/gl';
+import positionVert from './plugins/painters/glsl/position.vert';
 import { version } from '../../package.json';
 import VectorTileLayer from './layer/VectorTileLayer';
 import MapboxVectorTileLayer from './layer/MapboxVectorTileLayer';
@@ -9,6 +11,8 @@ import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
 import initialize from './initialize';
 import { PackUtil, SYMBOLS_NEED_REBUILD_IN_VT,  SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
+
+reshader.ShaderLib.register('vt_position_vert', positionVert);
 
 VectorTileLayer.VERSION = version;
 Vector3DLayer.VERSION = version;

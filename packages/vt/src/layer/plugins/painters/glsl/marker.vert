@@ -2,7 +2,13 @@
 #define SHADER_NAME MARKER
 #define RAD 0.0174532925
 
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
+
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
 //uint8
@@ -75,6 +81,8 @@ uniform float tileRatio;
 
 uniform float layerScale;
 
+#include <vt_position_vert>
+
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vOpacity;
@@ -83,7 +91,7 @@ uniform float layerScale;
 #endif
 
 void main() {
-    vec3 position = aPosition;
+    vec3 position = unpackVTPosition();
     #ifdef HAS_MARKER_WIDTH
         float myMarkerWidth = aMarkerWidth;
     #else

@@ -107,6 +107,9 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     if (geometry.data.aPadOffsetX) {
         defines['HAS_PAD_OFFSET'] = 1;
     }
+    if (geometry.data.aAltitude) {
+        defines['HAS_ALTITUDE'] = 1;
+    }
     mesh.setDefines(defines);
     mesh.setLocalTransform(transform);
     mesh.properties.symbolIndex = geometry.properties.symbolIndex;

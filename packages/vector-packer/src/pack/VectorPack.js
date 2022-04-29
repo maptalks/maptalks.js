@@ -11,6 +11,7 @@ import { createFilter } from '@maptalks/feature-filter';
 import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
+import { packPosition, unpackPosition } from './util/pack_position';
 
 const interpolatedSymbols = {
     'lineWidth': 1,
@@ -40,6 +41,8 @@ const interpolatedSymbols = {
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
+
+const TEMP_PACK_POS = [];
 
 /**
  * abstract class for all vector packs
@@ -111,6 +114,47 @@ export default class VectorPack {
         }
     }
 
+    needSeperateAltitude() {
+        return this.maxPosZ >= Math.pow(2, 17);
+    }
+
+    getPositionFormat() {
+        if (this.needSeperateAltitude()) {
+            return [
+                {
+                    type: Int16Array,
+                    width: 2,
+                    name: 'aPosition'
+                },
+                {
+                    type: Int32Array,
+                    width: 1,
+                    name: 'aAltitude'
+                }
+            ];
+        } else {
+            return [
+                {
+                    type: Int16Array,
+                    width: 3,
+                    name: 'aPosition'
+                }
+            ];
+        }
+    }
+
+    fillPosition(data, x, y, altitude) {
+
+        if (this.needSeperateAltitude()) {
+            data.aPosition.push(x, y);
+            data.aAltitude.push(altitude);
+        } else {
+            packPosition(TEMP_PACK_POS, x, y, altitude);
+            console.log(unpackPosition(...TEMP_PACK_POS));
+            data.aPosition.push(...TEMP_PACK_POS);
+        }
+    }
+
     _check(features) {
         if (!features.length) {
             return features;
@@ -153,6 +197,15 @@ export default class VectorPack {
                 }
             }
         }
+
+        let maxZ = 0;
+        for (let i = 0; i < checked.length; i++) {
+            const altitude = getMaxAltitude(checked[i] && checked[i].geometry);
+            if (altitude > maxZ) {
+                maxZ = altitude;
+            }
+        }
+        this.maxPosZ = maxZ;
 
         const orders = this.options.order;
         if (orders) {
@@ -539,3 +592,32 @@ function serializeAtlas(atlas) {
         positions: positions
     };
 }
+
+function getMaxAltitude(geometry) {
+    if (!geometry) {
+        return 0;
+    }
+    let altitude = 0;
+    if (Array.isArray(geometry)) {
+        for (let i = 0; i < geometry.length; i++) {
+            if (Array.isArray(geometry[i])) {
+                const alt = getMaxAltitude(geometry[i]);
+                if (alt > altitude) {
+                    altitude = alt;
+                }
+            } else {
+                const alt = Math.abs(geometry[i].z || 0);
+                if (alt > altitude) {
+                    altitude = alt;
+                }
+            }
+        }
+    } else {
+        const alt = Math.abs(geometry.z || 0);
+        if (alt > altitude) {
+            altitude = alt;
+        }
+    }
+    return altitude;
+}
+

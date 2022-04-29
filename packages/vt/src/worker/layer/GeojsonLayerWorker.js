@@ -47,6 +47,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             tolerance: this.options.extent / this.options.tileSize[0] * 1, // simplification tolerance (higher means simpler)
             extent: this.options.extent, // tile extent (both width and height)
             buffer: this.options.tileBuffer || 64,      // tile buffer on each side
+            hasAltitude: !!this.options.hasAltitude,
             debug: 0,      // logging level (0 to disable, 1 or 2)
             lineMetrics: true,
             indexMaxZoom: 5,       // max zoom in the initial tile index
