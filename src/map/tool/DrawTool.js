@@ -571,6 +571,9 @@ class DrawTool extends MapTool {
         }
         delete this._ending;
         delete this._historyPointer;
+        if (this._vertexes) {
+            this._vertexes = [];
+        }
         return this;
     }
 
