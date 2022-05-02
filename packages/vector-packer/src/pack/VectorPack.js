@@ -114,12 +114,12 @@ export default class VectorPack {
         }
     }
 
-    needSeperateAltitude() {
-        return this.maxPosZ >= Math.pow(2, 17);
+    needAltitudeAttribute() {
+        return this.options['forceAltitudeAttribute'] || this.maxPosZ >= Math.pow(2, 17);
     }
 
     getPositionFormat() {
-        if (this.needSeperateAltitude()) {
+        if (this.needAltitudeAttribute()) {
             return [
                 {
                     type: Int16Array,
@@ -127,7 +127,7 @@ export default class VectorPack {
                     name: 'aPosition'
                 },
                 {
-                    type: Int32Array,
+                    type: Float32Array,
                     width: 1,
                     name: 'aAltitude'
                 }
@@ -144,13 +144,11 @@ export default class VectorPack {
     }
 
     fillPosition(data, x, y, altitude) {
-
-        if (this.needSeperateAltitude()) {
+        if (this.needAltitudeAttribute()) {
             data.aPosition.push(x, y);
             data.aAltitude.push(altitude);
         } else {
             packPosition(TEMP_PACK_POS, x, y, altitude);
-            console.log(unpackPosition(...TEMP_PACK_POS));
             data.aPosition.push(...TEMP_PACK_POS);
         }
     }
@@ -198,14 +196,18 @@ export default class VectorPack {
             }
         }
 
-        let maxZ = 0;
-        for (let i = 0; i < checked.length; i++) {
-            const altitude = getMaxAltitude(checked[i] && checked[i].geometry);
-            if (altitude > maxZ) {
-                maxZ = altitude;
+        this.maxPosZ = 0;
+        if (!this.options['forceAltitudeAttribute']) {
+            let maxZ = 0;
+            for (let i = 0; i < checked.length; i++) {
+                const altitude = getMaxAltitude(checked[i] && checked[i].geometry);
+                if (altitude > maxZ) {
+                    maxZ = altitude;
+                }
             }
+            this.maxPosZ = maxZ;
         }
-        this.maxPosZ = maxZ;
+
 
         const orders = this.options.order;
         if (orders) {
@@ -413,6 +415,7 @@ export default class VectorPack {
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(Array.isArray(vectors[0]) ? vectors[0][0].symbol : vectors[0].symbol);
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < format.length; i++) {
             data[format[i].name] = [];
         }
@@ -443,7 +446,7 @@ export default class VectorPack {
                     this._placeVector(vectors[i][j], scale);
                 }
             }
-            const count = (data.aPosition.length - eleCount) / 3;
+            const count = (data.aPosition.length - eleCount) / positionSize;
             //fill feature index of every data
             for (let ii = 0; ii < count; ii++) {
                 feaIdxValues.push(vectors[i].featureIdx);
@@ -463,12 +466,12 @@ export default class VectorPack {
             format[0].type = this.options.positionType;
         } else {
             //update aPosition's type
-            format[0].type = getPosArrayType(Math.max(this.maxPos, this.maxAltitude));
+            format[0].type = getPosArrayType(this.maxPos);
         }
         const center = this.options.center;
         if (center && (center[0] || center[1])) {
             const aPosition = data.aPosition;
-            for (let i = 0; i < aPosition.length; i += 3) {
+            for (let i = 0; i < aPosition.length; i += positionSize) {
                 aPosition[i] -= center[0];
                 aPosition[i + 1] -= center[1];
             }
@@ -501,7 +504,7 @@ export default class VectorPack {
             data: arrays,
             // format,
             indices: this.hasElements() ? elements : null,
-            positionSize: 3, //!this.maxAltitude ? 2 : 3,
+            positionSize,
             buffers,
             symbolIndex: this.symbolDef.index || { index: 0 }
         };

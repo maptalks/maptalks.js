@@ -4,7 +4,7 @@ import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
-import { extend, pushIn } from '../../common/Util';
+import { extend, pushIn, getCentiMeterScale } from '../../common/Util';
 import convertToPainterFeatures from './utils/convert_to_painter_features';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
@@ -1167,14 +1167,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getCentiMeterScale(res) {
         const map = this.getMap();
-        let p;
-        if (map.altitudeToPoint) {
-            p = map.altitudeToPoint(100, res);
-        } else {
-            p = map.distanceToPointAtRes(100, 0, res).x;
-        }
-        // to centimeter
-        return p / 100 / 100;
+        return getCentiMeterScale(res, map);
     }
 
     debugFBO(id, fbo) {

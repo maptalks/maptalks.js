@@ -3,7 +3,7 @@ import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
-import { extend, isNumber, hasOwn } from '../../common/Util';
+import { extend, isNumber, hasOwn, getCentiMeterScale } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
@@ -557,8 +557,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             atlas,
             center,
             positionType: Float32Array,
-            altitudeProperty: 'altitude',
-            defaultAltitude: 0
+            defaultAltitude: 0,
+            forceAltitudeAttribute: true,
         };
         const textOptions = extend({}, markerOptions);
         markerOptions.allowEmptyPack = 1;
@@ -1347,10 +1347,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return false;
     }
 
-    _getCentiMeterScale(z) {
+    // _getCentiMeterScale(z) {
+    //     const map = this.getMap();
+    //     const p = map.distanceToPoint(1000, 0, z).x;
+    //     return p / 1000 / 10;
+    // }
+    _getCentiMeterScale(res) {
         const map = this.getMap();
-        const p = map.distanceToPoint(1000, 0, z).x;
-        return p / 1000 / 10;
+        return getCentiMeterScale(res, map);
     }
 }
 

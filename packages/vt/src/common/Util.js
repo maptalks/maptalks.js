@@ -234,3 +234,14 @@ export function compile(styles) {
     }
     return compiled;
 }
+
+export function getCentiMeterScale(res, map) {
+    let p;
+    if (map.altitudeToPoint) {
+        p = map.altitudeToPoint(100, res);
+    } else {
+        p = map.distanceToPointAtRes(100, 0, res).x;
+    }
+    // to centimeter
+    return p / 100 / 100;
+}

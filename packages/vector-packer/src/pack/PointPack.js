@@ -373,7 +373,8 @@ export default class PointPack extends VectorPack {
             return;
         }
         const data = this.data;
-        let currentIdx = this.data.aPosition.length / 3;
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
+        let currentIdx = this.data.aPosition.length / positionSize;
         // const minZoom = this.options.minZoom,
         //     maxZoom = this.options.maxZoom;
         const symbol = point.symbol;

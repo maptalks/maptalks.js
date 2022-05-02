@@ -20,7 +20,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
         for (let i = 0; i < coordinates.length; i++) {
             map.coordToPointAtRes(coordinates[i], glRes, POINT);
-            geometry.push([POINT.x, POINT.y]);
+            geometry.push([POINT.x, POINT.y, (coordinates[i].z || 0)]);
         }
     } else if (geo instanceof maptalks.LineString || geo instanceof maptalks.MultiLineString) {
         type = 2;
@@ -31,7 +31,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             geometry[i] = [];
             for (let ii = 0; ii < coordinates[i].length; ii++) {
                 map.coordToPointAtRes(coordinates[i][ii], glRes, POINT);
-                geometry[i].push([POINT.x, POINT.y]);
+                geometry[i].push([POINT.x, POINT.y, (coordinates[i][ii].z || 0)]);
             }
         }
     } else if (geo instanceof maptalks.Polygon || geo instanceof maptalks.MultiPolygon) {
@@ -45,7 +45,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 geometry[ringCount] = [];
                 for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
                     map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
-                    geometry[ringCount].push([POINT.x, POINT.y]);
+                    geometry[ringCount].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
                 }
                 ringCount++;
             }
