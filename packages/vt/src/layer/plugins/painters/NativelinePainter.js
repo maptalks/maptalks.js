@@ -35,6 +35,12 @@ class NativeLinePainter extends BasicPainter {
         });
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
+
+        const defines = {};
+        if (mesh.geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
+        mesh.setDefines(defines);
         return mesh;
     }
 

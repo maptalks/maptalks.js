@@ -24,11 +24,7 @@ export default class NativeLinePack extends VectorPack {
 
     getFormat() {
         return [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            }
+            ...this.getPositionFormat()
             //当前点距离起点的距离
             // {
             //     type: Uint16Array,
@@ -48,9 +44,10 @@ export default class NativeLinePack extends VectorPack {
         if (isPolygon) {
             this.elements = [];
         }
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
-            this.offset = this.data.aPosition.length / 3;
+            this.offset = this.data.aPosition.length / positionSize;
             this._addLine(lines[i], feature);
             if (isPolygon) {
                 //去掉polygon在瓦片范围外的边
@@ -140,12 +137,11 @@ export default class NativeLinePack extends VectorPack {
     }
 
     addLineVertex(data, point) {
-        // linesofar *= LINE_DISTANCE_SCALE;
-        data.aPosition.push(
+        this.fillPosition(
+            data,
             point.x,
             point.y,
-            0
-            // linesofar
+            point.z || 0
         );
         this.maxPos = Math.max(this.maxPos, Math.abs(point.x), Math.abs(point.y));
     }

@@ -1,5 +1,12 @@
 #define SHADER_NAME NATIVE_LINE
-attribute vec3 aPosition;
+
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
+
 uniform mat4 projViewModelMatrix;
 
 #ifndef PICKING_MODE
@@ -11,8 +18,11 @@ uniform mat4 projViewModelMatrix;
     #include <fbo_picking_vert>
 #endif
 
+#include <vt_position_vert>
+
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    vec3 position = unpackVTPosition();
+    gl_Position = projViewModelMatrix * vec4(position, 1.0);
 
     #ifndef PICKING_MODE
         #if defined(HAS_COLOR)
