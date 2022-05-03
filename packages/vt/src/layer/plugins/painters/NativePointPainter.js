@@ -48,6 +48,11 @@ class NativePointPainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
+        const defines = {};
+        if (mesh.geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
+        mesh.setDefines(defines)    ;
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;

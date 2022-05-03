@@ -14,11 +14,7 @@ const DEFAULT_SPACING = 250;
 export default class NativePointPack extends VectorPack {
     getFormat() {
         return [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            }
+            ...this.getPositionFormat()
         ];
     }
 
@@ -27,12 +23,10 @@ export default class NativePointPack extends VectorPack {
         const placement = this.symbol['markerPlacement'] || 'point';
         const anchors = this._getAnchors(point, spacing, placement);
 
-        const altitude = this.getAltitude(point.feature.properties);
-
         for (let ii = 0; ii < anchors.length; ii++) {
             const point = anchors[ii];
-            this.data.aPosition.push(point.x, point.y);
-            this.data.aPosition.push(altitude);
+
+            this.fillPosition(this.data, point.x, point.y, point.z);
 
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {

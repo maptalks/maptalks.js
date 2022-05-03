@@ -1,7 +1,12 @@
 #define SHADER_NAME NATIVE_POINT
 #include <gl2_vert>
 
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
 
 uniform mat4 projViewModelMatrix;
 uniform float markerSize;
@@ -10,8 +15,11 @@ uniform float markerSize;
     #include <fbo_picking_vert>
 #endif
 
+#include <vt_position_vert>
+
 void main() {
-    gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);
+    vec3 position = unpackVTPosition();
+    gl_Position = projViewModelMatrix * vec4(position, 1.0);
     gl_PointSize = markerSize;
 
     #ifdef PICKING_MODE

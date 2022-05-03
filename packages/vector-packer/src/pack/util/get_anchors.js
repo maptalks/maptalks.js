@@ -133,7 +133,8 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
 
             const t = (markedDistance - distance) / segmentDist,
                 x = interpolate(a.x, b.x, t),
-                y = interpolate(a.y, b.y, t);
+                y = interpolate(a.y, b.y, t),
+                z = interpolate(a.z || 0, b.z || 0, t);
 
             // Check that the point is within the tile boundaries and that
             // the label would fit before the beginning and end of the line
@@ -142,6 +143,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
                 const anchor = new Anchor(x, y, angle, i);
+                anchor.z = z;
                 anchor.line = line; //fuzhen 在anchor上增加了对line的引用，方便计算沿线偏移量
                 anchor._round();
 
