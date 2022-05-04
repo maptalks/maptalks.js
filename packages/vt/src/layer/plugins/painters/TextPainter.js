@@ -14,7 +14,7 @@ import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import { GLYPH_SIZE } from './Constant';
-import { TextUtil } from '@maptalks/vector-packer';
+import { TextUtil, PackUtil } from '@maptalks/vector-packer';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -459,7 +459,7 @@ export default class TextPainter extends CollisionPainter {
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;
 
-        const { aShape, aOffset, aAnchor } = geometry.properties;
+        const { aShape, aOffset, aAnchor, aAltitude } = geometry.properties;
         const aTextSize = geometry.properties['aTextSize'];
 
         // const layer = this.layer;
@@ -475,7 +475,13 @@ export default class TextPainter extends CollisionPainter {
 
         const isProjected = !planeMatrix;
         const idx = meshElements[start] * positionSize;
-        let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], positionSize === 2 ? 0 : aAnchor[idx + 2]);
+        // let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], positionSize === 2 ? 0 : aAnchor[idx + 2]);
+        let labelAnchor = ANCHOR;
+        if (geometry.data.aAltitude) {
+            vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAltitude[meshElements[start]]);
+        } else {
+            PackUtil.unpackPosition(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+        }
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
         vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1], projLabelAnchor[0], projLabelAnchor[1]);
         if (map.isOffscreen(ANCHOR_BOX)) {

@@ -196,6 +196,9 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         if (geometry.data.aRotation) {
             defines['HAS_ROTATION'] = 1;
         }
+        if (geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.properties.symbolIndex = geometry.properties.symbolIndex;
     });

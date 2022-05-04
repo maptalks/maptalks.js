@@ -41,7 +41,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
             if (symbol['textPlacement'] && !symbol['isIconText']) {
                 for (let ii = 0; ii < lines[i].length; ii++) {
                     //TODO 0是预留的高度值
-                    lineVertex.push(lines[i][ii].x, lines[i][ii].y, 0);
+                    lineVertex.push(lines[i][ii].x, lines[i][ii].y, lines[i][ii].z || 0);
                 }
             }
         }

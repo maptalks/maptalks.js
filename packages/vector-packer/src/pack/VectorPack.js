@@ -11,7 +11,7 @@ import { createFilter } from '@maptalks/feature-filter';
 import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
-import { packPosition, unpackPosition } from './util/pack_position';
+import { packPosition/*, unpackPosition*/ } from './util/pack_position';
 
 const interpolatedSymbols = {
     'lineWidth': 1,

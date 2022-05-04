@@ -1,7 +1,12 @@
 #define SHADER_NAME TEXT
 #define RAD 0.0174532925
 
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
 
 attribute vec2 aShape;
 attribute vec2 aTexCoord;
@@ -91,9 +96,10 @@ uniform float layerScale;
     #include <fbo_picking_vert>
 #endif
 
+#include <vt_position_vert>
 
 void main() {
-    vec3 position = aPosition;
+    vec3 position = unpackVTPosition();
 
     #ifdef HAS_TEXT_SIZE
         float myTextSize = aTextSize * layerScale;

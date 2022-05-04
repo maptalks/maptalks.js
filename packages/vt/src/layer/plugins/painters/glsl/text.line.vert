@@ -1,5 +1,10 @@
 #define SHADER_NAME TEXT_LINE
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
 
 attribute vec2 aTexCoord;
 attribute vec2 aOffset;
@@ -73,9 +78,10 @@ uniform float layerScale;
     #include <fbo_picking_vert>
 #endif
 
+#include <vt_position_vert>
 
 void main() {
-    vec3 position = aPosition;
+    vec3 position = unpackVTPosition();
     #ifdef HAS_TEXT_DX
         float myTextDx = aTextDx;
     #else

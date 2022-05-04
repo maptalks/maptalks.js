@@ -11,7 +11,7 @@
         vec2 pos = mod(aPosition.xy, modValue);
         vec2 highs = floor(abs(aPosition.xy) / modValue);
 
-        float altitude = sign(z) * (highs.x * 2.0 + highs.y) * pow(2.0, 15.0) + z;
+        float altitude = sign(z + 0.00001) * (highs.x * 2.0 + highs.y) * pow(2.0, 15.0) + z;
 
         return vec3(pos, altitude);
     }

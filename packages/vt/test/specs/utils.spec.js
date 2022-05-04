@@ -16,6 +16,88 @@ describe('util specs', () => {
     });
 });
 
+describe('pack position', () => {
+    it('pack normal altitude', () => {
+        const coord = [1024, 256, 200];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack negative altitude', () => {
+        const coord = [1024, 256, -200];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack edge altitude', () => {
+        const coord = [1024, 256, Math.pow(2, 17)];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        assert(packed[2] === 0);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack negative edge altitude', () => {
+        const coord = [1024, 256, -Math.pow(2, 17)];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        assert(packed[2] === -1);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual([1024, 256, -131073], unpacked);
+    });
+
+    it('pack edge altitude left', () => {
+        const coord = [1024, 256, Math.pow(2, 17) - 1];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack edge altitude right', () => {
+        const coord = [1024, 256, Math.pow(2, 17) + 1];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        assert(packed[2] === 1);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack negative edge altitude right', () => {
+        const coord = [1024, 256, -Math.pow(2, 17) + 1];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+
+    it('pack negative edge altitude left', () => {
+        const coord = [1024, 256, -Math.pow(2, 17) - 1];
+        const packed = PackUtil.packPosition([], ...coord);
+
+        assert(packed[2] === -1);
+
+        const unpacked = PackUtil.unpackPosition([], ...packed);
+
+        assert.deepEqual(coord, unpacked);
+    });
+});
+
 function reverseStr(s) {
     return s.split('').reverse().join('');
 }
