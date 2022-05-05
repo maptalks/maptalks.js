@@ -38,13 +38,13 @@ const options = {
     // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'debugOutline' : '#0f0',
+    'debugOutline': '#0f0',
     'cssFilter': null,
-    'forceRenderOnMoving' : false,
-    'forceRenderOnZooming' : false,
-    'forceRenderOnRotating' : false,
-    'collision' : false,
-    'collisionScope' : 'layer',
+    'forceRenderOnMoving': false,
+    'forceRenderOnZooming': false,
+    'forceRenderOnRotating': false,
+    'collision': false,
+    'collisionScope': 'layer',
     'hitDetect': (function () {
         return !Browser.mobile;
     })()
@@ -488,13 +488,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
     }
 
-    onAdd() {}
+    onAdd() { }
 
-    onRendererCreate() {}
+    onRendererCreate() { }
 
-    onCanvasCreate() {}
+    onCanvasCreate() { }
 
-    onRemove() {}
+    onRemove() { }
 
     _bindMap(map, zIndex) {
         if (!map) {
@@ -546,9 +546,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _doRemove() {
         this._loaded = false;
-        this.onRemove();
 
         this._switchEvents('off', this);
+        this.onRemove();
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
@@ -559,7 +559,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     _switchEvents(to, emitter) {
-        if (emitter && emitter.getEvents) {
+        if (emitter && emitter.getEvents && this.getMap()) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
     }
