@@ -160,6 +160,9 @@ class LinePainter extends BasicPainter {
             // 非vector tile，round和up是存在aExtrude的第三位的
             defines['HAS_UP'] = 1;
         }
+        if (geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
         mesh.setDefines(defines);
         return mesh;
     }

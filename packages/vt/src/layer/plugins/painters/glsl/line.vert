@@ -19,7 +19,13 @@
 #define EXTRUDE_SCALE 63.0;
 #define MAX_LINE_DISTANCE 65535.0
 
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
+
 #if defined(HAS_UP) || defined(HAS_PATTERN)
     attribute vec3 aExtrude;
 #else
@@ -141,8 +147,11 @@ varying float vGammaScale;
 
 varying vec3 vVertex;
 
+#include <vt_position_vert>
+
 void main() {
-    vec3 position = aPosition;
+    vec3 vertexPosition = unpackVTPosition();
+    vec3 position = vertexPosition;
     #ifdef HAS_UP
         float aUp = mod(aExtrude.z, 4.0);
         // aUp = round * 2 + up;
@@ -153,7 +162,7 @@ void main() {
     #else
         position.xy = floor(position.xy * 0.5);
 
-        vNormal = aPosition.xy - 2.0 * position.xy;
+        vNormal = vertexPosition.xy - 2.0 * position.xy;
         vNormal.y = vNormal.y * 2.0 - 1.0;
     #endif
 

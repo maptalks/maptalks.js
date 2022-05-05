@@ -389,9 +389,10 @@ export default class LinePack extends VectorPack {
         if (extent !== Infinity && feature.type !== 3) {
             lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
         }
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
-            this.offset = this.data.aPosition.length / 3;
+            this.offset = this.data.aPosition.length / positionSize;
             const line = lines[i];
             this._addLine(line, feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {

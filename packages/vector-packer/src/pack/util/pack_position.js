@@ -19,8 +19,8 @@ const modValue = Math.pow(2.0, 14.0);
 const modValue1 = Math.pow(2.0, 15.0);
 
 export function unpackPosition(out, x, y, z) {
-    const posx = x % modValue;
-    const posy = y % modValue;
+    const posx = Math.sign(x) * (Math.abs(x) % modValue);
+    const posy = Math.sign(y) * (Math.abs(y) % modValue);
 
     const highx = Math.floor(Math.abs(x) / modValue);
     const highy = Math.floor(Math.abs(y) / modValue);

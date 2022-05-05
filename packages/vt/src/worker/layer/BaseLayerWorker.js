@@ -363,6 +363,8 @@ export default class BaseLayerWorker {
                 },
                 buffers
             };
+        }).catch(err => {
+            console.error(err);
         });
 
     }

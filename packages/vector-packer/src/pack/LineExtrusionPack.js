@@ -87,11 +87,12 @@ export default class LineExtrusionPack extends LinePack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const prevCount = this.data.aPosition.length / 3;
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
+        const prevCount = this.data.aPosition.length / positionSize;
 
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
-        const currentCount = this.data.aPosition.length / 3;
-        const end0 = this.data.aPosition.length / 3 - this.offset;
+        const currentCount = this.data.aPosition.length / positionSize;
+        const end0 = this.data.aPosition.length / positionSize - this.offset;
         const isPolygon = feature.type === 3; //POLYGON)
         // debugger
         const generateSide = this.options['side'] !== false;
@@ -105,7 +106,7 @@ export default class LineExtrusionPack extends LinePack {
             //在data末尾补充首尾两端的端点
 
             //line开始时顶点顺序: down0, down0-底, up0, up0-底
-            let count = (this.data.aPosition.length / 3);
+            let count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -115,7 +116,7 @@ export default class LineExtrusionPack extends LinePack {
             }
 
             //down0
-            count = (this.data.aPosition.length / 3);
+            count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -125,7 +126,7 @@ export default class LineExtrusionPack extends LinePack {
             }
 
             //down1
-            count = (this.data.aPosition.length / 3);
+            count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -140,11 +141,11 @@ export default class LineExtrusionPack extends LinePack {
             //up1, down0, dow1
             super.addElements(end0, end0 + 1, end0 + 2);
 
-            const end1 = this.data.aPosition.length / 3 - this.offset;
+            const end1 = this.data.aPosition.length / positionSize - this.offset;
 
             //line结束的顶点顺序: down1, down1底, up1, up1底
             //up1底
-            count = (this.data.aPosition.length / 3);
+            count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -155,7 +156,7 @@ export default class LineExtrusionPack extends LinePack {
 
 
             //down1底
-            count = (this.data.aPosition.length / 3);
+            count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -165,7 +166,7 @@ export default class LineExtrusionPack extends LinePack {
             }
 
             //down1
-            count = (this.data.aPosition.length / 3);
+            count = (this.data.aPosition.length / positionSize);
             for (const p in this.data) {
                 const arr = this.data[p];
                 const width = arr.length / count;
@@ -405,7 +406,7 @@ export default class LineExtrusionPack extends LinePack {
 
         // const indices0 = indices.subarray(33, 36);
         // const arrays0 = {};
-        // const count = data.aPosition.length / 3;
+        // const count = data.aPosition.length / positionSize;
         // for (const p in arrays) {
         //     const size = arrays[p].length / count;
         //     const shortened = new arrays[p].constructor(size * 3);
