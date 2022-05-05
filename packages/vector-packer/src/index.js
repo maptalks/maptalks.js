@@ -15,6 +15,8 @@ import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
 import * as TextUtil from './style/Text.js';
 export { TextUtil };
+import * as StyleUtil from './style/Util.js';
+export { StyleUtil };
 //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
 export const PACK_TEX_SIZE = 128 / 256;
 

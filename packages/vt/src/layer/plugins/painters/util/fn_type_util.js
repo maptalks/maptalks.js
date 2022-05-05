@@ -1,5 +1,6 @@
 import { fillArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
+import { StyleUtil } from '@maptalks/vector-packer';
 
 export const PREFIX = '_fn_type_';
 export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
@@ -303,7 +304,7 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
         properties['$layer'] = feature.layer;
         properties['$type'] = feature.type;
     }
-    const value = evaluate(properties, arr[start * len], geometry);
+    const value = evaluate(properties, geometry, arr, start * len);
     if (Array.isArray(value)) {
         let dirty = false;
         for (let ii = 0; ii < len; ii++) {
@@ -325,7 +326,7 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
 }
 
 export function isFnTypeSymbol(symbolProp) {
-    return symbolProp && isFunctionDefinition(symbolProp) && symbolProp.property;
+    return StyleUtil.isFnTypeSymbol(symbolProp);
 }
 
 function checkIfIdentityZoomDependent(config, fnDef, geometry) {

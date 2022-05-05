@@ -147,5 +147,5 @@ export function evaluate(prop, properties, zoom) {
 }
 
 export function isFnTypeSymbol(v) {
-    return isFunctionDefinition(v) && v.property;
+    return v && isFunctionDefinition(v) && v.property;
 }

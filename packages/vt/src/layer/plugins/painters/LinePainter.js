@@ -6,7 +6,7 @@ import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
-import { prepareFnTypeData } from './util/fn_type_util';
+import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 
@@ -70,8 +70,8 @@ class LinePainter extends BasicPainter {
             return null;
         }
         const { geometry, symbolIndex, ref } = geo;
+        const symbolDef = this.getSymbolDef(symbolIndex);
         if (ref === undefined) {
-            const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
         }
@@ -154,7 +154,7 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aStrokeColor) {
             defines['HAS_STROKE_COLOR'] = 1;
         }
-        this.setMeshDefines(defines, geometry);
+        this.setMeshDefines(defines, geometry, symbolDef);
         if (geometry.properties.hasUp) {
             // vector tile 里， round和up是存在position里的
             // 非vector tile，round和up是存在aExtrude的第三位的
@@ -219,7 +219,7 @@ class LinePainter extends BasicPainter {
         // setUniformFromSymbol(uniforms, 'lineOffset', symbol, 'lineOffset', 0);
     }
 
-    setMeshDefines(defines, geometry) {
+    setMeshDefines(defines, geometry, symbolDef) {
         if (geometry.data.aOpacity) {
             defines['HAS_OPACITY'] = 1;
         }
@@ -229,19 +229,19 @@ class LinePainter extends BasicPainter {
         if (geometry.data.aLineStrokeWidth) {
             defines['HAS_STROKE_WIDTH'] = 1;
         }
-        if (geometry.data.aLineDx) {
+        if (isFnTypeSymbol(symbolDef['lineDx'])) {
             defines['HAS_LINE_DX'] = 1;
         }
-        if (geometry.data.aLineDy) {
+        if (isFnTypeSymbol(symbolDef['lineDy'])) {
             defines['HAS_LINE_DY'] = 1;
         }
         // if (symbol['lineOffset']) {
         //     defines['USE_LINE_OFFSET'] = 1;
         // }
-        if (geometry.data.aLinePatternAnimSpeed) {
+        if (isFnTypeSymbol(symbolDef['linePatternAnimSpeed'])) {
             defines['HAS_PATTERN_ANIM'] = 1;
         }
-        if (geometry.data.aLinePatternGap) {
+        if (isFnTypeSymbol(symbolDef['linePatternGap'])) {
             defines['HAS_PATTERN_GAP'] = 1;
         }
     }
@@ -259,7 +259,7 @@ class LinePainter extends BasicPainter {
         const aLinePatternAnimSpeedFn = piecewiseConstant(symbolDef['aLinePatternAnimSpeed']);
         const aLinePatternGapFn = piecewiseConstant(symbolDef['aLinePatternGap']);
         const shapeConfigs = this.createShapeFnTypeConfigs(map, symbolDef);
-        const i8  = new Int8Array(1);
+        const i8  = new Int8Array(2);
         return [
             {
                 //geometry.data 中的属性数据
@@ -269,7 +269,7 @@ class LinePainter extends BasicPainter {
                 type: Uint8Array,
                 width: 4,
                 define: 'HAS_COLOR',
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     let color = aColorFn(map.getZoom(), properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
@@ -282,12 +282,12 @@ class LinePainter extends BasicPainter {
                 }
             },
             {
-                attrName: 'aLinePatternAnimSpeed',
+                attrName: 'aLinePattern',
                 symbolName: 'linePatternAnimSpeed',
                 type: Int8Array,
-                width: 1,
-                define: 'HAS_PATTERN_ANIM',
-                evaluate: (properties, _, geometry) => {
+                width: 2,
+                define: 'HAS_LINE_PATTERN',
+                evaluate: (properties, geometry, arr, index) => {
                     let speed = aLinePatternAnimSpeedFn(map.getZoom(), properties);
                     if (isNil(speed)) {
                         speed = 0;
@@ -296,22 +296,24 @@ class LinePainter extends BasicPainter {
                         geometry.properties.hasPatternAnim = 1;
                     }
                     i8[0] = speed / 127;
+                    i8[1] = arr[index + 1];
                     return i8[0];
                 }
             },
             {
-                attrName: 'aLinePatternGap',
+                attrName: 'aLinePattern',
                 symbolName: 'linePatternGap',
-                type: Uint8Array,
-                width: 1,
-                define: 'HAS_PATTERN_GAP',
-                evaluate: (properties) => {
+                type: Int8Array,
+                width: 2,
+                define: 'HAS_LINE_PATTERN',
+                evaluate: (properties, geometry, arr, index) => {
                     let gap = aLinePatternGapFn(map.getZoom(), properties);
                     if (isNil(gap)) {
                         gap = 0;
                     }
-                    // 0 - 25.5
-                    i8[0] = gap * 10;
+                    // 0 - 12.7
+                    i8[1] = gap * 10;
+                    i8[0] = arr[index];
                     return i8[0];
                 }
             }
@@ -333,7 +335,7 @@ class LinePainter extends BasicPainter {
                 type: Uint8Array,
                 width: 1,
                 define: 'HAS_LINE_WIDTH',
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     let lineWidth = aLineWidthFn(map.getZoom(), properties);
                     if (isFunctionDefinition(lineWidth)) {
                         lineWidth = this.evaluateInFnTypeConfig(lineWidth, geometry, map, properties);
@@ -357,10 +359,10 @@ class LinePainter extends BasicPainter {
                 }
             },
             {
-                attrName: 'aLineDx',
+                attrName: 'aLineDxDy',
                 symbolName: 'lineDx',
                 type: Int8Array,
-                width: 1,
+                width: 2,
                 define: 'HAS_LINE_DX',
                 evaluate: properties => {
                     const lineDx = aLineDxFn(map.getZoom(), properties);
@@ -369,10 +371,10 @@ class LinePainter extends BasicPainter {
                 }
             },
             {
-                attrName: 'aLineDy',
+                attrName: 'aLineDxDy',
                 symbolName: 'lineDy',
                 type: Int8Array,
-                width: 1,
+                width: 2,
                 define: 'HAS_LINE_DY',
                 evaluate: properties => {
                     const lineDy = aLineDyFn(map.getZoom(), properties);
@@ -386,7 +388,7 @@ class LinePainter extends BasicPainter {
                 type: Uint8Array,
                 width: 1,
                 define: 'HAS_OPACITY',
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     let opacity = aLineOpacityFn(map.getZoom(), properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);

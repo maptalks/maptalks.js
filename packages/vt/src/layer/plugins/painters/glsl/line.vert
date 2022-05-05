@@ -43,14 +43,13 @@ uniform float tileResolution;
 uniform float resolution;
 //EXTENT / tileSize
 uniform float tileRatio;
-#ifdef HAS_LINE_DX
-    attribute float aLineDx;
-#else
+#if defined(HAS_LINE_DX) || defined(HAS_LINE_DY)
+    attribute vec2 aLineDxDy;
+#endif
+#ifndef HAS_LINE_DX
     uniform float lineDx;
 #endif
-#ifdef HAS_LINE_DY
-    attribute float aLineDy;
-#else
+#ifndef HAS_LINE_DY
     uniform float lineDy;
 #endif
 // uniform float lineOffset;
@@ -83,13 +82,14 @@ varying float vGammaScale;
         #endif
 
         #ifdef HAS_PATTERN
+            #if defined(HAS_PATTERN_ANIM) || defined(HAS_PATTERN_GAP)
+                attribute vec2 aLinePattern;
+            #endif
             #ifdef HAS_PATTERN_ANIM
-                attribute float aLinePatternAnimSpeed;
                 varying float vLinePatternAnimSpeed;
             #endif
 
             #ifdef HAS_PATTERN_GAP
-                attribute float aLinePatternGap;
                 varying float vLinePatternGap;
             #endif
 
@@ -212,12 +212,12 @@ void main() {
     }
 
     #ifdef HAS_LINE_DX
-        float myLineDx = aLineDx;
+        float myLineDx = aLineDxDy[0];
     #else
         float myLineDx = lineDx;
     #endif
     #ifdef HAS_LINE_DY
-        float myLineDy = aLineDy;
+        float myLineDy = aLineDxDy[1];
     #else
         float myLineDy = lineDy;
     #endif
@@ -264,11 +264,11 @@ void main() {
                 vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
                 vJoin = floor(aExtrude.z / 4.0);
                 #ifdef HAS_PATTERN_ANIM
-                    vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+                    vLinePatternAnimSpeed = aLinePattern[0] / 127.0;
                 #endif
 
                 #ifdef HAS_PATTERN_GAP
-                    vLinePatternGap = aLinePatternGap / 10.0;
+                    vLinePatternGap = aLinePattern[1] / 10.0;
                 #endif
             #endif
         #endif

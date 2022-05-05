@@ -397,7 +397,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 4,
             //
-            evaluate: (properties, _, geometry) => {
+            evaluate: (properties, geometry) => {
                 let color = textFillFn(map.getZoom(), properties);
                 if (isFunctionDefinition(color)) {
                     color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
@@ -415,7 +415,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_TEXT_SIZE',
             type: Uint8Array,
             width: 1,
-            evaluate: (properties, _, geometry) => {
+            evaluate: (properties, geometry) => {
                 let size = textSizeFn(map.getZoom(), properties) || DEFAULT_UNIFORMS['textSize'];
                 if (isFunctionDefinition(size)) {
                     size = this.evaluateInFnTypeConfig(size, geometry, map, properties);
@@ -496,7 +496,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_OPACITY',
             type: Uint8Array,
             width: 1,
-            evaluate: (properties, _, geometry) => {
+            evaluate: (properties, geometry) => {
                 let opacity = textOpacityFn(map.getZoom(), properties);
                 if (isFunctionDefinition(opacity)) {
                     opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);

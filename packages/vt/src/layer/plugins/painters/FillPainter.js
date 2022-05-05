@@ -143,7 +143,7 @@ class FillPainter extends BasicPainter {
                 width: 4,
                 define: 'HAS_COLOR',
                 //
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     let color = polygonFillFn(map.getZoom(), properties);
                     if (isFunctionDefinition(color)) {
                         color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
@@ -161,7 +161,7 @@ class FillPainter extends BasicPainter {
                 type: Uint8Array,
                 width: 1,
                 define: 'HAS_OPACITY',
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     let opacity = polygonOpacityFn(map.getZoom(), properties);
                     if (isFunctionDefinition(opacity)) {
                         opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);

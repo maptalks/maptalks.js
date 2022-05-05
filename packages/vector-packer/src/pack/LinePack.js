@@ -80,11 +80,7 @@ export default class LinePack extends VectorPack {
     getFormat() {
         const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const format = [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            }
+            ...this.getPositionFormat()
         ];
         if (this.options.center || this.iconAtlas) {
             //为了减少attribute，round，up和join标志数据整合在了extrude的第三位中
@@ -155,15 +151,15 @@ export default class LinePack extends VectorPack {
                 }
             );
         }
-        if (this.symbol['lineOffset']) {
-            format.push(
-                {
-                    type: Int8Array,
-                    width: 2,
-                    name: 'aExtrudeOffset'
-                }
-            );
-        }
+        // if (this.symbol['lineOffset']) {
+        //     format.push(
+        //         {
+        //             type: Int8Array,
+        //             width: 2,
+        //             name: 'aExtrudeOffset'
+        //         }
+        //     );
+        // }
         if (this.dasharrayFn) {
             format.push(
                 {
@@ -190,34 +186,27 @@ export default class LinePack extends VectorPack {
                 name: 'aTexInfo'
             });
         }
-        if (lineDxFn) {
+        if (lineDxFn || lineDyFn) {
             format.push({
                 type: Int8Array,
-                width: 1,
-                name: 'aLineDx'
+                width: 2,
+                name: 'aLineDxDy'
             });
         }
-        if (lineDyFn) {
+        if (linePatternAnimSpeedFn || linePatternGapFn) {
             format.push({
                 type: Int8Array,
-                width: 1,
-                name: 'aLineDy'
+                width: 2,
+                name: 'aLinePattern'
             });
         }
-        if (linePatternAnimSpeedFn) {
-            format.push({
-                type: Int8Array,
-                width: 1,
-                name: 'aLinePatternAnimSpeed'
-            });
-        }
-        if (linePatternGapFn) {
-            format.push({
-                type: Uint8Array,
-                width: 1,
-                name: 'aLinePatternGap'
-            });
-        }
+        // if (linePatternGapFn) {
+        //     format.push({
+        //         type: Uint8Array,
+        //         width: 1,
+        //         name: 'aLinePatternGap'
+        //     });
+        // }
         return format;
     }
 
@@ -732,11 +721,11 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addHalfVertex({ x, y }, extrudeX, extrudeY, round, up, dir, segment) {
+    addHalfVertex({ x, y, z }, extrudeX, extrudeY, round, up, dir, segment) {
         // scale down so that we can store longer distances while sacrificing precision.
         const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
 
-        this.fillData(this.data, x, y, extrudeX, extrudeY, round, up, linesofar);
+        this.fillData(this.data, x, y, z || 0, extrudeX, extrudeY, round, up, linesofar);
 
         const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
@@ -752,14 +741,16 @@ export default class LinePack extends VectorPack {
     }
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
-    fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
+    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar) {
         const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         if (this.options.center) {
-            data.aPosition.push(x, y, 0);
+            // data.aPosition.push(x, y, 0);
+            this.fillPosition(data, x, y, altitude);
         } else {
             x = (x << 1) + (round ? 1 : 0);
             y = (y << 1) + (up ? 1 : 0);
-            data.aPosition.push(x, y, 0);
+            this.fillPosition(data, x, y, altitude);
+            // data.aPosition.push(x, y, 0);
         }
 
         data.aExtrude.push(
@@ -822,19 +813,19 @@ export default class LinePack extends VectorPack {
         if (this.iconAtlas) {
             data.aTexInfo.push(...this.feaTexInfo);
         }
-        if (lineDxFn) {
-            data.aLineDx.push(this.feaLineDx);
+        if (lineDxFn || lineDyFn) {
+            data.aLineDxDy.push(this.feaLineDx || 0, this.feaLineDy || 0);
         }
-        if (lineDyFn) {
-            data.aLineDy.push(this.feaLineDy);
+        // if (lineDyFn) {
+        //     data.aLineDy.push(this.feaLineDy);
+        // }
+        if (linePatternAnimSpeedFn || linePatternGapFn) {
+            data.aLinePattern.push((this.feaPatternAnimSpeed || 0) * 127, (this.feaLinePatternGap || 0) * 10);
         }
-        if (linePatternAnimSpeedFn) {
-            data.aLinePatternAnimSpeed.push(this.feaPatternAnimSpeed * 127);
-        }
-        if (linePatternGapFn) {
-            // 0 - 25.5
-            data.aLinePatternGap.push(this.feaLinePatternGap * 10);
-        }
+        // if (linePatternGapFn) {
+        //     // 0 - 25.5
+        //     data.aLinePatternGap.push(this.feaLinePatternGap * 10);
+        // }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
 

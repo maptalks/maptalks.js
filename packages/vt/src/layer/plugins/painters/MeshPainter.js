@@ -271,7 +271,7 @@ class MeshPainter extends Painter {
                 type: Uint8Array,
                 width: 1,
                 symbolName: opacityName,
-                evaluate: (properties, _, geometry) => {
+                evaluate: (properties, geometry) => {
                     const polygonOpacity = opacityFn(map.getZoom(), properties);
                     u8[0] = polygonOpacity * 255;
                     if (u8[0] < 255) {

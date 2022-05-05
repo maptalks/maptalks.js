@@ -186,7 +186,8 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_WIDTH',
-            evaluate: (properties, value, geometry) => {
+            evaluate: (properties, geometry, arr, index) => {
+                const value = arr[index];
                 const markerTextFit = symbolDef['markerTextFit'];
                 //如果是markerTextFit，aMarkerWidth已经更新过了，直接返回原值
                 const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
@@ -207,7 +208,8 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_HEIGHT',
-            evaluate: (properties, value, geometry) => {
+            evaluate: (properties, geometry, arr, index) => {
+                const value = arr[index];
                 const markerTextFit = symbolDef['markerTextFit'];
                 const textFit = markerTextFitFn ? markerTextFitFn(map.getZoom(), properties) : markerTextFit;
                 if (textFit === 'both' || textFit === 'height') {
@@ -227,7 +229,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_DX',
-            evaluate: (properties, value, geometry) => {
+            evaluate: (properties, geometry) => {
                 let x = markerDxFn(map.getZoom(), properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
@@ -244,7 +246,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_MARKER_DY',
-            evaluate: (properties, value, geometry) => {
+            evaluate: (properties, geometry) => {
                 let x = markerDyFn(map.getZoom(), properties);
                 if (isFunctionDefinition(x)) {
                     x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
@@ -260,7 +262,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
             type: Uint8Array,
             width: 1,
             define: 'HAS_OPACITY',
-            evaluate: (properties, _, geometry) => {
+            evaluate: (properties, geometry) => {
                 let opacity = markerOpacityFn(map.getZoom(), properties);
                 if (isFunctionDefinition(opacity)) {
                     opacity = this.evaluateInFnTypeConfig(opacity, geometry, map, properties);
