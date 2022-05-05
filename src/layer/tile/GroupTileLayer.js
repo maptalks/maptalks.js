@@ -95,13 +95,13 @@ class GroupTileLayer extends TileLayer {
             if (!(tileLayer instanceof TileLayer)) {
                 return;
             }
-            if (this.layers.indexOf(tileLayer) === -1) {
+            if (this.layers.indexOf(tileLayer) === -1 && !this.layerMap[tileLayer.getId()]) {
                 this.layers.push(tileLayer);
             }
         });
         //layers change
         if (len !== this.layers.length) {
-            this._reset();
+            this._refresh();
             this._renderLayers();
         }
         return this;
@@ -116,6 +116,10 @@ class GroupTileLayer extends TileLayer {
         const len = this.layers.length;
         tileLayers.forEach(tileLayer => {
             if (!(tileLayer instanceof TileLayer)) {
+                //if tilelayer is id
+                tileLayer = this.layerMap[tileLayer];
+            }
+            if (!(tileLayer instanceof TileLayer)) {
                 return;
             }
             const index = this.layers.indexOf(tileLayer);
@@ -126,7 +130,7 @@ class GroupTileLayer extends TileLayer {
         });
         //layers change
         if (len !== this.layers.length) {
-            this._reset();
+            this._refresh();
             this._renderLayers();
         }
         return this;
@@ -141,7 +145,7 @@ class GroupTileLayer extends TileLayer {
             layer.off(EVENTS, this._onLayerShowHide, this);
         });
         this.layers = [];
-        this._reset();
+        this._refresh();
         this._renderLayers();
         return this;
     }
@@ -199,7 +203,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     onAdd() {
-        this._reset();
+        this._refresh();
         super.onAdd();
     }
 
@@ -236,7 +240,7 @@ class GroupTileLayer extends TileLayer {
         //listen tilelayer.remove() method fix #1629
         if (type === 'remove' && target) {
             this.layers.splice(this.layers.indexOf(target), 1);
-            this._reset();
+            this._refresh();
         }
         this._renderLayers();
         return this;
@@ -252,7 +256,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     // reset layerMap,_groupChildren,listen tilelayers events
-    _reset() {
+    _refresh() {
         const map = this.getMap();
         this._groupChildren = [];
         this.layerMap = {};
@@ -261,7 +265,9 @@ class GroupTileLayer extends TileLayer {
             if (layer.getChildLayer) {
                 this._groupChildren.push(layer);
             }
-            layer._bindMap(map);
+            if (!layer.getMap()) {
+                layer._bindMap(map);
+            }
             layer.on(EVENTS, this._onLayerShowHide, this);
         });
         return this;
