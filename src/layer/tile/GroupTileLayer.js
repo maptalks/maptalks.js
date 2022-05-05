@@ -125,6 +125,7 @@ class GroupTileLayer extends TileLayer {
             const index = this.layers.indexOf(tileLayer);
             if (index >= 0) {
                 this.layers.splice(index, 1);
+                tileLayer._doRemove();
                 tileLayer.off(EVENTS, this._onLayerShowHide, this);
             }
         });
@@ -240,6 +241,8 @@ class GroupTileLayer extends TileLayer {
         //listen tilelayer.remove() method fix #1629
         if (type === 'remove' && target) {
             this.layers.splice(this.layers.indexOf(target), 1);
+            target._doRemove();
+            target.off(EVENTS, this._onLayerShowHide, this);
             this._refresh();
         }
         this._renderLayers();
