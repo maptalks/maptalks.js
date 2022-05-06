@@ -23,7 +23,13 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 cb(err);
                 return;
             }
-            const tile = new VectorTile(new Pbf(response.data));
+            let tile;
+            try {
+                tile = new VectorTile(new Pbf(response.data));
+            } catch (err) {
+                cb(err.message, [], []);
+                return;
+            }
             const features = [];
             if (!tile.layers) {
                 cb(null, features, []);

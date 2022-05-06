@@ -590,10 +590,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.layer.isDefaultRender() && this._layerPlugins) {
             plugins = [];
             if (tileData) {
-                tileData.layers.forEach(info => {
-                    const pluginTypeName = ('plugin_' + info.type).trim();
-                    plugins.push(this._layerPlugins[info.layer][pluginTypeName].plugin);
-                });
+                if (tileData.layers) {
+                    tileData.layers.forEach(info => {
+                        const pluginTypeName = ('plugin_' + info.type).trim();
+                        plugins.push(this._layerPlugins[info.layer][pluginTypeName].plugin);
+                    });
+                }
             } else {
                 Object.keys(this._layerPlugins).forEach(layer => {
                     for (let i = 0; i < this._layerPlugins[layer].length; i++) {
