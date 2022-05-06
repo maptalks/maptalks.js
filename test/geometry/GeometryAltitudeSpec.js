@@ -22,7 +22,7 @@ describe('Geometry.Altitude', function () {
 
     describe('render geometry with altitude', function () {
         it('circle', function (done) {
-            var circle = new maptalks.Circle(map.getCenter(), 2, {
+            var circle = new maptalks.Circle(map.getCenter(), 10, {
                 properties: { altitude: 200 },
                 symbol: {
                     'polygonFill': '#f00'
@@ -32,7 +32,7 @@ describe('Geometry.Altitude', function () {
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -192);
+                expect(layer).to.be.painted(0, -162);
                 done();
             });
             map.addLayer(layer);
@@ -43,15 +43,15 @@ describe('Geometry.Altitude', function () {
                 properties: { altitude: 100 },
                 symbol: {
                     'markerType': 'ellipse',
-                    'markeraltitude': 6,
-                    'markerWidth': 6
+                    'markerHeight': 10,
+                    'markerWidth': 10
                 }
             });
             layer.addGeometry(marker);
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -93);
+                expect(layer).to.be.painted(0, -81);
                 done();
             });
             map.addLayer(layer);
@@ -155,7 +155,7 @@ describe('Geometry.Altitude', function () {
             layer.addGeometry(line);
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 1/* , [255, 0, 0] */); // vertex text
-                expect(layer).to.be.painted(20, -10, [0, 0, 0]);
+                expect(layer).to.be.painted(40, -10, [0, 0, 0]);
                 done();
             });
             map.addLayer(layer);
@@ -198,7 +198,7 @@ describe('Geometry.Altitude', function () {
                 });
                 layer.addGeometry(line);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(50, -18);
+                    expect(layer).to.be.painted(50, -16);
                     done();
                 });
                 map.addLayer(layer);
@@ -219,7 +219,7 @@ describe('Geometry.Altitude', function () {
                 });
                 layer.addGeometry(line);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(86, -35);
+                    expect(layer).to.be.painted(86, -32);
                     done();
                 });
                 map.addLayer(layer);

@@ -176,8 +176,6 @@ const events =
      * @property {Event} domEvent                 - dom event
      */
     'touchend ';
-const CLICK_TIME_THRESHOLD = 300;
-
 
 Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
@@ -191,6 +189,7 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _handleDOMEvent(e) {
+        const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
         // prevent default contextmenu
@@ -204,7 +203,7 @@ Map.include(/** @lends Map.prototype */ {
             preventDefault(e);
             const downTime = this._domMouseDownTime;
             const time = now();
-            if (time - downTime <= CLICK_TIME_THRESHOLD && !isRotating) {
+            if (time - downTime <= clickTimeThreshold && !isRotating) {
                 this._fireDOMEvent(this, e, 'dom:' + e.type);
             }
         } else {
@@ -227,7 +226,7 @@ Map.include(/** @lends Map.prototype */ {
                 const downTime = this._mouseDownTime;
                 delete this._mouseDownTime;
                 const time = now();
-                if (time - downTime > CLICK_TIME_THRESHOLD) {
+                if (time - downTime > clickTimeThreshold) {
                     if (type === 'click' || type === 'contextmenu') {
                         return;
                     }
@@ -242,7 +241,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         let mimicEvent;
         if (mimicClick) {
-            if (this._clickTime && (now() - this._clickTime <= CLICK_TIME_THRESHOLD)) {
+            if (this._clickTime && (now() - this._clickTime <= clickTimeThreshold)) {
                 delete this._clickTime;
                 mimicEvent = 'dblclick';
                 this._fireDOMEvent(this, e, 'dom:dblclick');
@@ -303,7 +302,7 @@ Map.include(/** @lends Map.prototype */ {
         let eventParam = {
             'domEvent': e
         };
-        if (type !== 'keypress') {
+        if (type !== 'keypress' && e.clientX !== undefined) {
             const actual = this._getActualEvent(e);
             if (actual) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);

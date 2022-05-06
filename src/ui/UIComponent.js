@@ -419,7 +419,7 @@ class UIComponent extends Eventable(Class) {
 
     _meterToPoint(center, altitude) {
         const map = this.getMap();
-        return map.distanceToPoint(altitude, 0, undefined, center).x * sign(altitude);
+        return map.altitudeToPoint(altitude, map._getResolution()).x * sign(altitude);
     }
 
     _autoPan() {
@@ -500,10 +500,15 @@ class UIComponent extends Eventable(Class) {
                 if (eventsToStop) {
                     off(map[key], eventsToStop, stopPropagation);
                 }
+                const uiComponent = map[key]._uiComponent;
+                //fire pre uicomponent(when it isVisible) hide event
+                if (uiComponent && uiComponent !== this && uiComponent.isVisible()) {
+                    uiComponent.fire('hide');
+                }
                 removeDomNode(map[key]);
                 //remove map bind events
-                if (map[key]._uiComponent && !this.hideDom) {
-                    map[key]._uiComponent._switchMapEvents('off');
+                if (uiComponent && !this.hideDom) {
+                    uiComponent._switchMapEvents('off');
                 }
                 delete map[key];
             }
