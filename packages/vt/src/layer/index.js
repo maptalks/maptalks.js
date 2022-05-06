@@ -1,5 +1,5 @@
 import { reshader } from '@maptalks/gl';
-import positionVert from './plugins/painters/glsl/position.vert';
+import positionVert from './plugins/painters/includes/position.vert';
 import { version } from '../../package.json';
 import VectorTileLayer from './layer/VectorTileLayer';
 import MapboxVectorTileLayer from './layer/MapboxVectorTileLayer';

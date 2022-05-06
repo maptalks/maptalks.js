@@ -144,7 +144,7 @@ module.exports = [{
         plugins: [
             json(),
             production ? glslMinify({
-                commons: []
+                commons: ['src/layer/plugins/painters/includes']
             }) : glsl(),
             nodeResolve({
                 mainFields: ['module', 'main'],
@@ -178,7 +178,7 @@ module.exports = [{
         plugins: [
             json(),
             production ? glslMinify({
-                commons: []
+                commons: ['src/layer/plugins/painters/includes']
             }) : glsl(),
             nodeResolve({
                 mainFields: ['module', 'main'],
