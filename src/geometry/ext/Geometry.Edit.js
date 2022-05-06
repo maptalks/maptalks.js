@@ -28,7 +28,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - editstart
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('editstart');
+        if (!this._getParent()) {
+            this.fire('editstart');
+        }
         return this;
     },
 
@@ -48,7 +50,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
              * @property {String} type - editend
              * @property {Geometry} target - the geometry fires the event
              */
-            this.fire('editend');
+            if (!this._getParent()) {
+                this.fire('editend');
+            }
         }
         return this;
     },
@@ -70,7 +74,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - redoedit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('redoedit');
+        if (!this._getParent()) {
+            this.fire('redoedit');
+        }
         return this;
     },
 
@@ -91,7 +97,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - undoedit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('undoedit');
+        if (!this._getParent()) {
+            this.fire('undoedit');
+        }
         return this;
     },
 
@@ -112,7 +120,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - canceledit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('canceledit');
+        if (!this._getParent()) {
+            this.fire('canceledit');
+        }
         return this;
     },
 
