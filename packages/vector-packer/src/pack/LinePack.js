@@ -82,10 +82,9 @@ export default class LinePack extends VectorPack {
         const format = [
             ...this.getPositionFormat()
         ];
-        if (this.options.center || this.iconAtlas) {
-            //为了减少attribute，round，up和join标志数据整合在了extrude的第三位中
-            //第三位是当前点距离aPos的凸起方向 aUp 和 pattern 的 aJoin 数据
-            //第一位： up, 第二位: round，第三位: join，具体逻辑在fillData方法中
+        if (this.iconAtlas) {
+            //为了减少attribute，round在etrudeX的第七位中，up在extrudeY的第七位中
+            //extrudeZ存放了join信息
             format.push({
                 type: Int8Array,
                 width: 3,
@@ -744,31 +743,36 @@ export default class LinePack extends VectorPack {
     //参数会影响LineExtrusionPack中的addLineVertex方法
     fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar) {
         const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
-        if (this.options.center) {
-            // data.aPosition.push(x, y, 0);
-            this.fillPosition(data, x, y, altitude);
-        } else {
-            x = (x << 1) + (round ? 1 : 0);
-            y = (y << 1) + (up ? 1 : 0);
-            this.fillPosition(data, x, y, altitude);
-            // data.aPosition.push(x, y, 0);
-        }
+        // debugger
+        // if (this.options.center) {
+        //     // data.aPosition.push(x, y, 0);
+        //     this.fillPosition(data, x, y, altitude);
+        // } else {
+        //     // x = (x << 1) + (round ? 1 : 0);
+        //     // y = (y << 1) + (up ? 1 : 0);
+        //     this.fillPosition(data, x, y, altitude);
+        //     // data.aPosition.push(x, y, 0);
+        // }
+        this.fillPosition(data, x, y, altitude);
+
+        let aExtrudeX = EXTRUDE_SCALE * extrudeX;
+        let aExtrudeY = EXTRUDE_SCALE * extrudeY;
+
+
+        aExtrudeX += (round << 6) * Math.sign(aExtrudeX);
+        aExtrudeY += (up << 6) * Math.sign(aExtrudeY);
 
         data.aExtrude.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
-            EXTRUDE_SCALE * extrudeX,
-            EXTRUDE_SCALE * extrudeY
+            aExtrudeX,
+            aExtrudeY
         );
-        if (this.options.center || this.iconAtlas) {
-            let v = 0;
-            if (this.options.center) {
-                v += round * 2 + up;
-            }
-            if (this.iconAtlas) {
-                v += 4 * (this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
-            }
-            data.aExtrude.push(v); //aUp
+
+        if (this.iconAtlas) {
+            const join = (this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
+            data.aExtrude.push(join);
         }
+
         data.aLinesofar.push(linesofar);
         if (lineWidthFn) {
             //乘以2是为了解决 #190

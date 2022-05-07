@@ -131,7 +131,6 @@ class LinePainter extends BasicPainter {
         // }
 
         if (ref === undefined) {
-            geometry.properties.hasUp = !isVectorTile;
             geometry.generateBuffers(this.regl);
         }
 
@@ -155,11 +154,6 @@ class LinePainter extends BasicPainter {
             defines['HAS_STROKE_COLOR'] = 1;
         }
         this.setMeshDefines(defines, geometry, symbolDef);
-        if (geometry.properties.hasUp) {
-            // vector tile 里， round和up是存在position里的
-            // 非vector tile，round和up是存在aExtrude的第三位的
-            defines['HAS_UP'] = 1;
-        }
         if (geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
         }

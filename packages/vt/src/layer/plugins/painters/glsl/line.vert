@@ -16,7 +16,8 @@
 // #define scale 63.0
 // EXTRUDE_SCALE = 1 / 127.0
 //0.0078740157
-#define EXTRUDE_SCALE 63.0;
+#define EXTRUDE_SCALE 63.0
+#define EXTRUDE_MOD 64.0
 #define MAX_LINE_DISTANCE 65535.0
 
 #ifdef HAS_ALTITUDE
@@ -26,7 +27,7 @@
     attribute vec3 aPosition;
 #endif
 
-#if defined(HAS_UP) || defined(HAS_PATTERN)
+#if defined(HAS_PATTERN)
     attribute vec3 aExtrude;
 #else
     attribute vec2 aExtrude;
@@ -150,21 +151,13 @@ varying vec3 vVertex;
 #include <vt_position_vert>
 
 void main() {
-    vec3 vertexPosition = unpackVTPosition();
-    vec3 position = vertexPosition;
-    #ifdef HAS_UP
-        float aUp = mod(aExtrude.z, 4.0);
-        // aUp = round * 2 + up;
-        float round = floor(aUp * 0.5);
-        float up = aUp - round * 2.0;
-        //transfer up from (0 to 1) to (-1 to 1)
-        vNormal = vec2(round, up * 2.0 - 1.0);
-    #else
-        position.xy = floor(position.xy * 0.5);
+    vec3 position = unpackVTPosition();
 
-        vNormal = vertexPosition.xy - 2.0 * position.xy;
-        vNormal.y = vNormal.y * 2.0 - 1.0;
-    #endif
+    float round = floor(abs(aExtrude.x) / EXTRUDE_MOD);
+    float up = floor(abs(aExtrude.y) / EXTRUDE_MOD);
+    //transfer up from (0 to 1) to (-1 to 1)
+    vNormal = vec2(round, up * 2.0 - 1.0);
+
 
     vec4 pos4 = vec4(position, 1.0);
     vec4 vertex = projViewModelMatrix * pos4;
@@ -195,7 +188,7 @@ void main() {
         vec2 offset = lineOffset * (vNormal.y * (aExtrude.xy - aExtrudeOffset) + aExtrudeOffset);
         vec2 dist = (outset * aExtrude.xy + offset) / EXTRUDE_SCALE;
     #else
-        vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
+        vec2 extrude = sign(aExtrude.xy) * mod(abs(aExtrude.xy), EXTRUDE_MOD) / EXTRUDE_SCALE;
         vec2 dist = outset * extrude;
     #endif
 
@@ -271,7 +264,7 @@ void main() {
 
             #ifdef HAS_PATTERN
                 vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
-                vJoin = floor(aExtrude.z / 4.0);
+                vJoin = aExtrude.z;
                 #ifdef HAS_PATTERN_ANIM
                     vLinePatternAnimSpeed = aLinePattern[0] / 127.0;
                 #endif
