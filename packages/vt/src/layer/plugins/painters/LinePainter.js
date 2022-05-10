@@ -283,6 +283,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'linePatternAnimSpeed',
                 type: Int8Array,
                 width: 2,
+                related: ['linePatternGap'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
                     let speed = aLinePatternAnimSpeedFn(map.getZoom(), properties);
@@ -302,6 +303,7 @@ class LinePainter extends BasicPainter {
                 symbolName: 'linePatternGap',
                 type: Int8Array,
                 width: 2,
+                related: ['linePatternAnimSpeed'],
                 define: 'HAS_LINE_PATTERN',
                 evaluate: (properties, geometry, arr, index) => {
                     let gap = aLinePatternGapFn(map.getZoom(), properties);

@@ -43,7 +43,7 @@ function prepareAttr(geometry, symbolDef, config) {
         aPickingId = geoProps.aPickingId = new geometry.data.aPickingId.constructor(geometry.data.aPickingId);
     }
 
-    const { attrName, symbolName, evaluate } = config;
+    const { attrName, symbolName, evaluate, related } = config;
     const aIndexPropName = (PREFIX + attrName + 'Index').trim();
     let arr = geometry.data[attrName];
     if (!arr) {
@@ -57,7 +57,7 @@ function prepareAttr(geometry, symbolDef, config) {
             updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
             return arr;
         }
-    } else if (!isFnTypeSymbol(symbolDef[symbolName])) {
+    } else if (!isFnTypeSymbol(symbolDef[symbolName]) && !hasRelatedFnTypeSymbol(related, symbolDef)) {
         //symbol不是fn-type，但存在attr，则删除arr和aIndex
         if (arr && arr.buffer && arr.buffer.destroy) {
             arr.buffer.destroy();
@@ -66,7 +66,9 @@ function prepareAttr(geometry, symbolDef, config) {
         removeFnTypePropArrs(geometry, attrName);
         return null;
     }
-    createZoomFnTypeIndexData(geometry, symbolDef, config);
+    if (isFnTypeSymbol(symbolDef[symbolName])) {
+        createZoomFnTypeIndexData(geometry, symbolDef, config);
+    }
     return arr;
 }
 
@@ -77,6 +79,13 @@ function prepareAttr(geometry, symbolDef, config) {
  * */
 function createZoomFnTypeIndexData(geometry, symbolDef, config) {
     const { attrName, symbolName } = config;
+    const geoProps = geometry.properties;
+    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
+    const attrPropName = (PREFIX + attrName).trim();
+    if (geoProps[aIndexPropName] && geoProps[attrPropName]) {
+        // 如果index已经存在说明已经在别的属性里创建过了，例如lineDx和lineDy共享了aLineDxDy时
+        return;
+    }
     const stopValues = getFnTypePropertyStopValues(symbolDef[symbolName].stops);
     const isIdentityFn = symbolDef[symbolName].type === 'identity';
     // symbol是identity类型，且属性支持 fn type 值
@@ -88,7 +97,6 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
         return;
     }
 
-    const geoProps = geometry.properties;
     const { features, aPickingId } = geoProps;
     const aIndex = createFnTypeFeatureIndex(features, aPickingId, symbolDef[symbolName].property, stopValues, hasZoomIdentity);
     if (!aIndex.length) {
@@ -97,8 +105,7 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
         return;
     }
     const arr = geometry.data[attrName];
-    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
-    const attrPropName = (PREFIX + attrName).trim();
+
     geoProps[aIndexPropName] = aIndex;
     geoProps[attrPropName] = arr.BYTES_PER_ELEMENT ? new arr.constructor(arr) : new config.type(arr.length);
 
@@ -352,6 +359,18 @@ function checkIfIdentityZoomDependent(config, fnDef, geometry) {
             continue;
         }
         if (isFunctionDefinition(v) && !interpolated(v).isZoomConstant) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function hasRelatedFnTypeSymbol(related, symbolDef) {
+    if (!Array.isArray(related)) {
+        return false;
+    }
+    for (let i = 0; i < related.length; i++) {
+        if (isFnTypeSymbol(symbolDef[related[i]])) {
             return true;
         }
     }
