@@ -2440,7 +2440,7 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     altitudeToPoint: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 0);
+        const DEFAULT_CENTER = new Coordinate(0, 40);
         return function (altitude = 0, res, paramCenter) {
             const p = this.distanceToPointAtRes(altitude, altitude, res, paramCenter || DEFAULT_CENTER);
             const heightFactor = this.options['heightFactor'];
