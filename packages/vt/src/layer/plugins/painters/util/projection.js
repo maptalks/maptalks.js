@@ -3,7 +3,7 @@ import { vec4 } from '@maptalks/gl';
 const v4 = [];
 
 /**
- * Project a tile coordinate to height coordinate
+ * Project a tile coordinate to screen coordinate
  * @param {Number[]} out - array to receive result
  * @param {Number[]} point - tile coordinate
  * @param {Number[]} matrix - projection matrix

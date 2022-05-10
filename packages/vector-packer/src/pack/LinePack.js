@@ -758,9 +758,8 @@ export default class LinePack extends VectorPack {
         let aExtrudeX = EXTRUDE_SCALE * extrudeX;
         let aExtrudeY = EXTRUDE_SCALE * extrudeY;
 
-
-        aExtrudeX += (round << 6) * Math.sign(aExtrudeX);
-        aExtrudeY += (up << 6) * Math.sign(aExtrudeY);
+        aExtrudeX += ((round ? 1 : 0) << 6) * (Math.sign(aExtrudeX) || 1);
+        aExtrudeY += ((up ? 1 : 0) << 6) * (Math.sign(aExtrudeY) || 1);
 
         data.aExtrude.push(
             // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
