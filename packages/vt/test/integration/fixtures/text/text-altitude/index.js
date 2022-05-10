@@ -1,4 +1,9 @@
-const data = require('../../data');
+const data = {
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5, 20000] }, properties: { type: 1 } }
+    ]
+};
 
 const style = [
     {
@@ -6,7 +11,6 @@ const style = [
             type: 'text',
             dataConfig: {
                 type: 'point',
-                altitudeProperty: 'height',
                 altitudeScale: 1,
                 defaultAltitude: 0
             },
@@ -22,7 +26,7 @@ const style = [
 
 module.exports = {
     style,
-    data: data.point,
+    data,
     view: {
         center: [0, 0],
         zoom: 7,
