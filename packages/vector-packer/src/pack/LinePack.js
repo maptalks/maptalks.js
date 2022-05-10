@@ -754,15 +754,15 @@ export default class LinePack extends VectorPack {
         //     // data.aPosition.push(x, y, 0);
         // }
         this.fillPosition(data, x, y, altitude);
-
         let aExtrudeX = EXTRUDE_SCALE * extrudeX;
+        // 牺牲一些extrude的精度 1/63，把round和up存在extrude中
+        // 用最后一位存round
+        aExtrudeX = (Math.sign(aExtrudeX) || 1) * (((Math.floor(Math.abs(aExtrudeX)) >> 1) << 1) + (+round));
         let aExtrudeY = EXTRUDE_SCALE * extrudeY;
-
-        aExtrudeX += ((round ? 1 : 0) << 6) * (Math.sign(aExtrudeX) || 1);
-        aExtrudeY += ((up ? 1 : 0) << 6) * (Math.sign(aExtrudeY) || 1);
+        // 用最后一位存up
+        aExtrudeY = (Math.sign(aExtrudeY) || 1) * (((Math.floor(Math.abs(aExtrudeY)) >> 1) << 1) + (+up));
 
         data.aExtrude.push(
-            // (direction + 2) * 4 + (round ? 1 : 0) * 2 + (up ? 1 : 0), //direction + 2把值从-1, 1 变成 1, 3
             aExtrudeX,
             aExtrudeY
         );

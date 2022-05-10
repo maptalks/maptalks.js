@@ -153,8 +153,9 @@ varying vec3 vVertex;
 void main() {
     vec3 position = unpackVTPosition();
 
-    float round = floor(abs(aExtrude.x) / EXTRUDE_MOD);
-    float up = floor(abs(aExtrude.y) / EXTRUDE_MOD);
+    // 牺牲了一些extrude的精度 (1/63)，把round和up存在extrude中
+    float round = mod(abs(aExtrude.x), 2.0);
+    float up = mod(abs(aExtrude.y), 2.0);
     //transfer up from (0 to 1) to (-1 to 1)
     vNormal = vec2(round, up * 2.0 - 1.0);
 
@@ -188,7 +189,7 @@ void main() {
         vec2 offset = lineOffset * (vNormal.y * (aExtrude.xy - aExtrudeOffset) + aExtrudeOffset);
         vec2 dist = (outset * aExtrude.xy + offset) / EXTRUDE_SCALE;
     #else
-        vec2 extrude = sign(aExtrude.xy) * mod(abs(aExtrude.xy), EXTRUDE_MOD) / EXTRUDE_SCALE;
+        vec2 extrude = aExtrude.xy / EXTRUDE_SCALE;
         vec2 dist = outset * extrude;
     #endif
 
