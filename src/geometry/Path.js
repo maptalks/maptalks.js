@@ -174,9 +174,16 @@ class Path extends Geometry {
         const isPolygon = !!this.getShell;
         if (!isPolygon && this.options['smoothness'] > 0) {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
-            const animCoords = coordinates.slice(0, this._animIdx + 3);
+            const animCoords = [], prjAnimCoords = [];
+            for (let i = 0; i <= this._animIdx; i++) {
+                animCoords.push(coordinates[i]);
+                prjAnimCoords.push(prjCoords[i]);
+            }
+            animCoords.push(targetCoord, targetCoord);
+            prjAnimCoords.push(lastCoord, lastCoord);
+            // const animCoords = coordinates.slice(0, this._animIdx + 3);
             this.setCoordinates(animCoords);
-            const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
+            // const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
             this._setPrjCoordinates(prjAnimCoords);
         } else {
             const animCoords = coordinates.slice(0, this._animIdx + 1);
