@@ -32,8 +32,8 @@ class LineGradientPainter extends LinePainter {
 
     createMesh(geo, transform) {
         const { geometry, symbolIndex, ref } = geo;
+        const symbolDef = this.getSymbolDef(symbolIndex);
         if (ref === undefined) {
-            const symbolDef = this.getSymbolDef(symbolIndex);
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
         }
@@ -78,7 +78,7 @@ class LineGradientPainter extends LinePainter {
         const defines = {
             'HAS_GRADIENT': 1
         };
-        this.setMeshDefines(defines, geometry);
+        this.setMeshDefines(defines, geometry, symbolDef);
         mesh.setDefines(defines);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;

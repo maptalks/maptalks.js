@@ -1,7 +1,7 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5, 20000] }, properties: { type: 1 } }
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [0.5, 0.5, 20000] }, properties: { type: 1, height: 20000 } }
     ]
 };
 
