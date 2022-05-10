@@ -32,7 +32,7 @@ describe('Geometry.Altitude', function () {
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -162);
+                expect(layer).to.be.painted(0, -219);
                 done();
             });
             map.addLayer(layer);
@@ -51,7 +51,7 @@ describe('Geometry.Altitude', function () {
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -81);
+                expect(layer).to.be.painted(0, -103);
                 done();
             });
             map.addLayer(layer);
@@ -219,7 +219,7 @@ describe('Geometry.Altitude', function () {
                 });
                 layer.addGeometry(line);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(86, -32);
+                    expect(layer).to.be.painted(86, -40);
                     done();
                 });
                 map.addLayer(layer);
