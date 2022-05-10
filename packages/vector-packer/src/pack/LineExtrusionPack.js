@@ -15,9 +15,10 @@ export default class LineExtrusionPack extends LinePack {
 
     getFormat() {
         const { lineColorFn, lineWidthFn } = this._fnTypes;
+        const positionCTOR = this.maxPosZ >= Math.pow(2, 15) ? Float32Array : Int16Array;
         const format = [
             {
-                type: Int16Array,
+                type: positionCTOR,
                 width: 3,
                 name: 'aPosition'
             },
@@ -86,8 +87,12 @@ export default class LineExtrusionPack extends LinePack {
         return super.placeVector(line);
     }
 
+    needAltitudeAttribute() {
+        return false;
+    }
+
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
+        const positionSize = 3;
         const prevCount = this.data.aPosition.length / positionSize;
 
         super._addLine(vertices, feature, join, cap, miterLimit, roundLimit);
@@ -183,7 +188,7 @@ export default class LineExtrusionPack extends LinePack {
         }
     }
 
-    fillData(data, x, y, extrudeX, extrudeY, round, up, linesofar) {
+    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar) {
         const generateTop = this.options['top'] !== false;
         const generateSide = this.options['side'] !== false;
 
