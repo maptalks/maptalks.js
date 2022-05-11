@@ -101,6 +101,7 @@ class GroupTileLayer extends TileLayer {
         });
         //layers change
         if (len !== this.layers.length) {
+            this._sortLayers();
             this._refresh();
             this._renderLayers();
         }
@@ -204,6 +205,7 @@ class GroupTileLayer extends TileLayer {
     }
 
     onAdd() {
+        this._sortLayers();
         this._refresh();
         super.onAdd();
     }
@@ -298,6 +300,12 @@ class GroupTileLayer extends TileLayer {
             } else {
                 ids[layerId] = 1;
             }
+        });
+    }
+
+    _sortLayers() {
+        this.layers.sort(function (a, b) {
+            return a.options.zIndex - b.options.zIndex;
         });
     }
 }
