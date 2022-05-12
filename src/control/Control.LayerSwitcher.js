@@ -14,11 +14,11 @@ import Control from './Control';
  * @instance
  */
 const options = {
-    'position' : 'top-right',
-    'baseTitle' : 'Base Layers',
-    'overlayTitle' : 'Layers',
-    'excludeLayers' : [],
-    'containerClass' : 'maptalks-layer-switcher'
+    'position': 'top-right',
+    'baseTitle': 'Base Layers',
+    'overlayTitle': 'Layers',
+    'excludeLayers': [],
+    'containerClass': 'maptalks-layer-switcher'
 };
 
 /**
@@ -92,7 +92,7 @@ class LayerSwitcher extends Control {
         if (base) {
             const baseLayers = base.layers || [base],
                 li = createEl('li', 'group'),
-                ul =  createEl('ul'),
+                ul = createEl('ul'),
                 label = createEl('label');
             label.innerHTML = this.options['baseTitle'];
             li.appendChild(label);
@@ -109,9 +109,15 @@ class LayerSwitcher extends Control {
         if (len) {
             const li = createEl('li', 'group'),
                 ul = createEl('ul'),
-                label = createEl('label');
+                label = createEl('label'),
+                input = createEl('input');
+            //checkbox for select/cancel all overlaylayers
+            input.type = 'checkbox';
+            input.checked = true;
             label.innerHTML = this.options['overlayTitle'];
+            li.appendChild(input);
             li.appendChild(label);
+
             for (let i = 0; i < len; i++) {
                 const layer = layers[i];
                 if (this._isExcluded(layer)) {
@@ -120,6 +126,19 @@ class LayerSwitcher extends Control {
             }
             li.appendChild(ul);
             elm.appendChild(li);
+            input.onchange = (e) => {
+                const checked = e.target.checked;
+                for (let i = 0, len = ul.childNodes.length; i < len; i++) {
+                    const childNode = ul.childNodes[i];
+                    const layer = childNode._layer, checkbox = childNode.childNodes[0];
+                    if (checkbox) {
+                        checkbox.checked = checked;
+                    }
+                    if (layer) {
+                        layer[checked ? 'show' : 'hide']();
+                    }
+                }
+            };
         }
     }
 
@@ -131,7 +150,7 @@ class LayerSwitcher extends Control {
 
     _renderLayer(layer, isBase) {
         const li = createEl('li', 'layer'),
-            label =  createEl('label'),
+            label = createEl('label'),
             input = createEl('input'),
             map = this.getMap();
         const visible = layer.options['visible'];
@@ -167,11 +186,12 @@ class LayerSwitcher extends Control {
             } else {
                 layer[e.target.checked ? 'show' : 'hide']();
             }
-            this.fire('layerchange', { target : layer });
+            this.fire('layerchange', { target: layer });
         };
         li.appendChild(input);
         label.innerHTML = layer.getId();
         li.appendChild(label);
+        li._layer = layer;
         return li;
     }
 }
