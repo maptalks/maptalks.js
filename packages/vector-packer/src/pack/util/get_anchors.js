@@ -4,6 +4,7 @@
 
 import Anchor from './Anchor';
 import checkMaxAngle from './check_max_angle';
+import { vec3 } from 'gl-matrix';
 
 export { getAnchors, getCenterAnchor };
 
@@ -77,7 +78,9 @@ function getAnchors(line,
     glyphSize,
     boxScale,
     overscaling,
-    tileExtent) {
+    tileExtent,
+    // 高度(centimeter转为瓦片空间坐标)
+    altitudeToTileScale) {
 
     // Resample a line to get anchor points for labels and check that each
     // potential label passes text-max-angle check and has enough froom to fit
@@ -106,11 +109,11 @@ function getAnchors(line,
         ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
-    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent);
+    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent, altitudeToTileScale);
 }
 
 
-function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent) {
+function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent, altitudeToTileScale) {
 
     const halfLabelLength = labelLength / 2;
     const lineLength = getLineLength(line);
@@ -144,6 +147,10 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                     markedDistance + halfLabelLength <= lineLength) {
                 const anchor = new Anchor(x, y, angle, i);
                 anchor.z = z;
+                // perp of [x - a.x, y - a.y]
+                anchor.axis = vec3.normalize([], [a.y - y, x - a.x, 0]);
+                anchor.angleR = 180 * Math.atan((z - (a.z || 0)) * altitudeToTileScale / a.dist(anchor)) / Math.PI;
+
                 anchor.line = line; //fuzhen 在anchor上增加了对line的引用，方便计算沿线偏移量
                 anchor._round();
 
@@ -162,7 +169,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
         // This has the most effect for short lines in overscaled tiles, since the
         // initial offset used in overscaled tiles is calculated to align labels with positions in
         // parent tiles instead of placing the label as close to the beginning as possible.
-        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent);
+        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent, altitudeToTileScale);
     }
 
     return anchors;

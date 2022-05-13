@@ -225,20 +225,22 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
     }
 
     if (isLinePlacement) {
-        const { aVertical, aSegment, aGlyphOffset } = geometry.data;
+        const { aVertical, aSegment, aGlyphOffset, aPitchRotation } = geometry.data;
         geometry.properties.aGlyphOffset = aGlyphOffset;
+        geometry.properties.aPitchRotation = aPitchRotation;
         geometry.properties.aSegment = aSegment;
         geometry.properties.aVertical = aVertical;
 
         delete geometry.data.aSegment;
         delete geometry.data.aVertical;
         delete geometry.data.aGlyphOffset;
+        delete geometry.data.aPitchRotation;
 
         geometry.data.aOffset = {
             usage: 'dynamic',
-            data: new Int16Array(aShape.length)
+            data: new Int16Array(aShape.length / 2 * 3)
         };
-        geometry.properties.aOffset = new Int16Array(aShape.length);
+        geometry.properties.aOffset = new Int16Array(aShape.length / 2 * 3);
     }
 
     if (enableCollision) {

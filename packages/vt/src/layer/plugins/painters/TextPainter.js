@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4, mat2, mat4, reshader } from '@maptalks/gl';
+import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -15,6 +15,7 @@ import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import { GLYPH_SIZE } from './Constant';
 import { TextUtil, PackUtil } from '@maptalks/vector-packer';
+import { getCentiMeterScale } from '../../../common/Util';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -54,8 +55,10 @@ const MAT2 = [];
 
 const SHAPE = [], OFFSET = [], AXIS_FACTOR = [1, -1];
 
-const INT16 = new Int16Array(2);
+const INT16 = new Int16Array(3);
 
+const TEMP_QUAT = [];
+const TEMP_MAT4 = [];
 
 const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
 
@@ -459,7 +462,7 @@ export default class TextPainter extends CollisionPainter {
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;
 
-        const { aShape, aOffset, aAnchor, aAltitude } = geometry.properties;
+        const { aShape, aOffset, aAnchor, aAltitude, aPitchRotation } = geometry.properties;
         const aTextSize = geometry.properties['aTextSize'];
 
         // const layer = this.layer;
@@ -567,7 +570,12 @@ export default class TextPainter extends CollisionPainter {
             }
 
             gl_Position.xy += vec2(textDx, textDy) * 2.0 / canvasSize * distance;
-         */
+        */
+        // const res = map.getResolution();
+        // const glScale = map.getGLScale();
+        // const glScale = map.getGLScale();
+        // centimeter to gl res
+        const zScale = getCentiMeterScale(map.getResolution(), map);
 
         //array to store current text's elements
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
@@ -575,8 +583,10 @@ export default class TextPainter extends CollisionPainter {
             const vertexStart = meshElements[j];
             let offset;
             if (!flip && j === start && !onlyOne) {
+                // 因为在updateNormal中已经计算过first_offset，这里就不再计算了
                 offset = FIRST_CHAROFFSET;
             } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne) {
+                // 因为在updateNormal中已经计算过last_offset，这里就不再计算了
                 offset = LAST_CHAROFFSET;
             } else {
                 offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
@@ -596,38 +606,59 @@ export default class TextPainter extends CollisionPainter {
             }
 
             const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
+            //一组文字的rotation都是一致的
+            // const xRotation = aPitchRotation[2 * vertexStart];
+            // const yRotation = aPitchRotation[2 * vertexStart + 1];
+            const axis = [aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0];
+            const angleR = -aPitchRotation[3 * vertexStart + 2];
+            // const quaterion = quat.fromEuler(TEMP_QUAT, xRotation, yRotation, zRotation * 180 / Math.PI);
+            // console.log(xRotation, yRotation);
+            // const quaterion = quat.identity(TEMP_QUAT);
+            // quat.rotateX(TEMP_QUAT, TEMP_QUAT, xRotation * Math.PI / 180);
+            // quat.rotateY(TEMP_QUAT, TEMP_QUAT, -yRotation * Math.PI / 180);
+            // const quaterion = quat.fromEuler(TEMP_QUAT, 0, -0, 0);
+
+            const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR * Math.PI / 180);
+            const rotMatrix = mat4.fromQuat(TEMP_MAT4, quaterion);
 
             for (let ii = 0; ii < 4; ii++) {
-                vec2.set(SHAPE, aShape[2 * (vertexStart + ii)] / 10, aShape[2 * (vertexStart + ii) + 1] / 10);
+                const idx = 2 * (vertexStart + ii);
+                vec2.set(SHAPE, aShape[idx] / 10, aShape[idx + 1] / 10);
                 vec2.scale(SHAPE, SHAPE, textSize / glyphSize);
                 vec2.transformMat2(SHAPE, SHAPE, shapeMatrix);
 
                 if (isPitchWithMap) {
                     vec2.multiply(SHAPE, SHAPE, AXIS_FACTOR);
                     vec2.add(OFFSET, SHAPE, offset);
+                    OFFSET[2] = 0;
+                    vec3.transformMat4(OFFSET, OFFSET, rotMatrix);
+                    // 把高度转换为厘米
+                    OFFSET[2] *= 1 / zScale;
                 } else {
                     vec2.multiply(OFFSET, offset, AXIS_FACTOR);
                     // vec2.set(OFFSET, 0, OFFSET[1], 0);
                     vec2.add(OFFSET, SHAPE, OFFSET);
                 }
 
-
+                //乘以十是为了提升shader中offset的精度
                 INT16[0] = OFFSET[0] * 10;
                 INT16[1] = OFFSET[1] * 10;
+                INT16[2] = OFFSET[2] * 10;
 
                 //*10 是为了保留小数点做的精度修正
-                if (aOffset[2 * (vertexStart + ii)] !== INT16[0] ||
-                    aOffset[2 * (vertexStart + ii) + 1] !== INT16[1]) {
+                const offsetIdx = 3 * (vertexStart + ii);
+                if (aOffset[offsetIdx] !== INT16[0] ||
+                    aOffset[offsetIdx + 1] !== INT16[1] ||
+                    aOffset[offsetIdx + 2] !== INT16[2]) {
                     aOffset.dirty = true;
-                    //乘以十是为了提升shader中offset的精度
-                    aOffset[2 * (vertexStart + ii)] = INT16[0];
-                    aOffset[2 * (vertexStart + ii) + 1] = INT16[1];
+                    aOffset[offsetIdx] = INT16[0];
+                    aOffset[offsetIdx + 1] = INT16[1];
+                    aOffset[offsetIdx + 2] = INT16[2];
                 }
 
 
             }
         }
-
         return visible;
     }
 
@@ -801,11 +832,14 @@ function resetOffset(aOffset, meshElements, start, end) {
         //every character has 4 vertice, and 6 indexes
         const vertexStart = meshElements[j];
         for (let ii = 0; ii < 4; ii++) {
-            if (aOffset[2 * (vertexStart + ii)] ||
-                aOffset[2 * (vertexStart + ii) + 1]) {
+            const idx = 3 * (vertexStart + ii);
+            if (aOffset[idx] ||
+                aOffset[idx + 1] ||
+                aOffset[idx + 2]) {
                 aOffset.dirty = true;
-                aOffset[2 * (vertexStart + ii)] = 0;
-                aOffset[2 * (vertexStart + ii) + 1] = 0;
+                aOffset[idx] = 0;
+                aOffset[idx + 1] = 0;
+                aOffset[idx + 2] = 0;
             }
         }
     }

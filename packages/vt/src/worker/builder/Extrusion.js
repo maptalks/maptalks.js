@@ -20,8 +20,10 @@ export function buildExtrudeFaces(
         topUVMode,
         sideUVMode,
         glScale,
+        // vScale用于将meter转为gl point值
+        // localScale用于将gl point转为瓦片内坐标
         localScale,
-        vScale //用于将meter转化为矢量瓦片内的坐标值
+        vScale
     },
     debugIndex
 ) {

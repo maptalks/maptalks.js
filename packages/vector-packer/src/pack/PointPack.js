@@ -514,7 +514,7 @@ export default class PointPack extends VectorPack {
                 this._fillPos(data, x, y, altitude, tl.x * 10, tl.y * 10,
                     tex.x, tex.y + tex.h);
                 if (isText) {
-                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical, anchor.axis, anchor.angleR);
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textHaloOpacity, textDx, textDy,
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
@@ -523,7 +523,7 @@ export default class PointPack extends VectorPack {
                 this._fillPos(data, x, y, altitude, tr.x * 10, tr.y * 10,
                     tex.x + tex.w, tex.y + tex.h);
                 if (isText) {
-                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical, anchor.axis, anchor.angleR);
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textHaloOpacity, textDx, textDy,
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
@@ -532,7 +532,7 @@ export default class PointPack extends VectorPack {
                 this._fillPos(data, x, y, altitude, bl.x * 10, bl.y * 10,
                     tex.x, tex.y);
                 if (isText) {
-                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical, anchor.axis, anchor.angleR);
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textHaloOpacity, textDx, textDy,
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
@@ -541,7 +541,7 @@ export default class PointPack extends VectorPack {
                 this._fillPos(data, x, y, altitude, br.x * 10, br.y * 10,
                     tex.x + tex.w, tex.y);
                 if (isText) {
-                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical);
+                    this._fillData(data, alongLine, textCount, quad.glyphOffset, anchor, isVertical, anchor.axis, anchor.angleR);
                 }
                 this._fillFnTypeData(data, textFill, textSize, textHaloFill, textHaloRadius, textHaloOpacity, textDx, textDy,
                     markerWidth, markerHeight, markerDx, markerDy, opacity, pitchAlign, rotateAlign, rotation,
@@ -576,10 +576,11 @@ export default class PointPack extends VectorPack {
      * @param {Number} texx - flip quad's tex coord x
      * @param {Number} texy - flip quad's tex coord y
      */
-    _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical) {
+    _fillData(data, alongLine, textCount, glyphOffset, anchor, vertical, axis, angleR) {
         data.aCount.push(textCount);
         if (alongLine) {
             data.aGlyphOffset.push(glyphOffset[0], glyphOffset[1]);
+            data.aPitchRotation.push(axis[0], axis[1], angleR);
             const startIndex = anchor.startIndex;
             data.aSegment.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             data.aVertical.push(vertical);
@@ -669,8 +670,8 @@ export default class PointPack extends VectorPack {
             DEFAULT_SPACING
         ) * scale;
         const EXTENT = this.options.EXTENT;
-        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing);
-        //TODO 还需要mergeLines
+        const altitudeToTileScale = this.options['altitudeToTileScale'];
+        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing, altitudeToTileScale);
         return anchors;
     }
 
@@ -705,6 +706,11 @@ export default class PointPack extends VectorPack {
                     type: Int16Array,
                     width: 2,
                     name: 'aGlyphOffset'
+                },
+                {
+                    type: Float32Array,
+                    width: 3,
+                    name: 'aPitchRotation'
                 },
                 //aSegment存放了anchor在line的片段序号
                 {

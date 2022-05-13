@@ -266,7 +266,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             layer.clearBackgroundCollisionIndex();
         }
         this._frameTime = timestamp;
-        this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
+        this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert centi-meter to gl point
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
         if (!parentContext || parentContext && parentContext.isFinalRender) {

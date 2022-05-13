@@ -7,7 +7,7 @@
 #endif
 
 attribute vec2 aTexCoord;
-attribute vec2 aOffset;
+attribute vec3 aOffset;
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
@@ -114,15 +114,18 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
 
-    vec2 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
+    vec3 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
     vec2 texCoord = aTexCoord;
 
     if (isPitchWithMap == 1.0) {
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        //offset.z已经被转成了厘米，所以不用再乘以scale
+        offset.xy *= tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        // gl_Position = projViewModelMatrix * vec4(position + vec3(offset.xy, 0.0), 1.0);
+        gl_Position = projViewModelMatrix * vec4(position + offset, 1.0);
 
     } else {
-        gl_Position.xy += offset * 2.0 / canvasSize * perspectiveRatio * projDistance;
+        gl_Position.xy += offset.xy * 2.0 / canvasSize * perspectiveRatio * projDistance;
 
     }
 
