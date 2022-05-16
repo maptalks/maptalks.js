@@ -4,7 +4,6 @@
 
 import Anchor from './Anchor';
 import checkMaxAngle from './check_max_angle';
-import { vec3 } from 'gl-matrix';
 
 export { getAnchors, getCenterAnchor };
 
@@ -80,6 +79,7 @@ function getAnchors(line,
     overscaling,
     tileExtent,
     // 高度(centimeter转为瓦片空间坐标)
+    is3DPitchText,
     altitudeToTileScale) {
 
     // Resample a line to get anchor points for labels and check that each
@@ -109,11 +109,11 @@ function getAnchors(line,
         ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
-    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent, altitudeToTileScale);
+    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent, is3DPitchText, altitudeToTileScale);
 }
 
 
-function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent, altitudeToTileScale) {
+function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent, is3DPitchText, altitudeToTileScale) {
 
     const halfLabelLength = labelLength / 2;
     const lineLength = getLineLength(line);
@@ -147,10 +147,12 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                     markedDistance + halfLabelLength <= lineLength) {
                 const anchor = new Anchor(x, y, angle, i);
                 anchor.z = z;
-                // perp of [x - a.x, y - a.y]
-                anchor.axis = [a.y - y, x - a.x];
-                // 0.9是个magic number，用来让文字旋转角度更准确
-                anchor.angleR = Math.atan((z - (a.z || 0)) * 0.90 * altitudeToTileScale / a.dist(anchor));
+                if (is3DPitchText) {
+                    // perp of [x - a.x, y - a.y]
+                    anchor.axis = [a.y - y, x - a.x];
+                    // 0.9是个magic number，用来让文字旋转角度更准确
+                    anchor.angleR = (z === a.z) ? 0 : Math.atan((z - (a.z || 0)) * 0.90 * altitudeToTileScale / a.dist(anchor));
+                }
 
                 anchor.line = line; //fuzhen 在anchor上增加了对line的引用，方便计算沿线偏移量
                 anchor._round();
@@ -170,7 +172,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
         // This has the most effect for short lines in overscaled tiles, since the
         // initial offset used in overscaled tiles is calculated to align labels with positions in
         // parent tiles instead of placing the label as close to the beginning as possible.
-        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent, altitudeToTileScale);
+        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent, is3DPitchText, altitudeToTileScale);
     }
 
     return anchors;

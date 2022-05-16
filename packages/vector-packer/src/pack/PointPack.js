@@ -7,6 +7,7 @@ import Color from 'color';
 import { isOut, isNil, wrap, isString } from './util/util';
 import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import { isFnTypeSymbol } from '../style/Util';
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
@@ -252,6 +253,10 @@ export default class PointPack extends VectorPack {
             });
         }
         return format;
+    }
+
+    _is3DPitchText() {
+        return this.hasMapPitchAlign;
     }
 
     _getTextFnTypeFormats() {
@@ -580,7 +585,9 @@ export default class PointPack extends VectorPack {
         data.aCount.push(textCount);
         if (alongLine) {
             data.aGlyphOffset.push(glyphOffset[0], glyphOffset[1]);
-            data.aPitchRotation.push(axis[0], axis[1], angleR);
+            if (this._is3DPitchText()) {
+                data.aPitchRotation.push(axis[0], axis[1], angleR);
+            }
             const startIndex = anchor.startIndex;
             data.aSegment.push(anchor.segment + startIndex, startIndex, anchor.line.length);
             data.aVertical.push(vertical);
@@ -671,7 +678,7 @@ export default class PointPack extends VectorPack {
         ) * scale;
         const EXTENT = this.options.EXTENT;
         const altitudeToTileScale = this.options['altitudeToTileScale'];
-        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing, altitudeToTileScale);
+        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing, this._is3DPitchText(), altitudeToTileScale);
         return anchors;
     }
 
@@ -685,7 +692,7 @@ export default class PointPack extends VectorPack {
     getPackSDFFormat(symbol) {
         if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
             //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
-            return [
+            const formats = [
                 ...this.getPositionFormat(),
                 {
                     type: Int16Array,
@@ -707,11 +714,6 @@ export default class PointPack extends VectorPack {
                     width: 2,
                     name: 'aGlyphOffset'
                 },
-                {
-                    type: Float32Array,
-                    width: 3,
-                    name: 'aPitchRotation'
-                },
                 //aSegment存放了anchor在line的片段序号
                 {
                     type: Uint16Array,
@@ -724,6 +726,14 @@ export default class PointPack extends VectorPack {
                     name: 'aVertical'
                 }
             ];
+            if (this._is3DPitchText()) {
+                formats.push({
+                    type: Float32Array,
+                    width: 3,
+                    name: 'aPitchRotation'
+                });
+            }
+            return formats;
         } else {
             return [
                 ...this.getPositionFormat(),

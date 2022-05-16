@@ -97,7 +97,6 @@ export default class VectorPack {
         // if (!this.options['center']) {
         //     this.options['center'] = [0, 0];
         // }
-        this.features = this._check(features);
         this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
             return [options.zoom];
@@ -112,6 +111,7 @@ export default class VectorPack {
             this.iconAtlas = options.atlas.iconAtlas;
             this.glyphAtlas = options.atlas.glyphAtlas;
         }
+        this.features = this._check(features);
     }
 
     needAltitudeAttribute() {
@@ -198,13 +198,26 @@ export default class VectorPack {
 
         this.maxPosZ = 0;
         if (!this.options['forceAltitudeAttribute']) {
+            const isLinePlacement = this.symbolDef['textPlacement'] === 'line';
             let maxZ = 0;
+            let hasMapPitchAlign = false;
+            const { textPitchAlignmentFn } = this._fnTypes;
+            if (!textPitchAlignmentFn && isLinePlacement && this.symbolDef['textPitchAlignment'] === 'map') {
+                hasMapPitchAlign = true;
+            }
             for (let i = 0; i < checked.length; i++) {
                 const altitude = getMaxAltitude(checked[i] && checked[i].geometry);
                 if (altitude > maxZ) {
                     maxZ = altitude;
                 }
+                if (isLinePlacement && !hasMapPitchAlign && textPitchAlignmentFn && checked[i].properties) {
+                    const pitchAlign = textPitchAlignmentFn(null, checked[i].properties);
+                    if (pitchAlign === 'map') {
+                        hasMapPitchAlign = pitchAlign;
+                    }
+                }
             }
+            this.hasMapPitchAlign = hasMapPitchAlign;
             this.maxPosZ = maxZ;
         }
 

@@ -4,7 +4,7 @@ import { projectPoint } from './projection';
 const V3_0 = [], V3_1 = [], V3_2 = [], V3_3 = [];
 const MIN = [], MAX = [];
 
-export function getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio) {
+export function getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio, is3DPitchText) {
     /**
      * 对应的glsl代码：
      * gl_Position = projViewModelMatrix * vec4(aPosition + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
@@ -21,10 +21,10 @@ export function getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, unif
     vec2.scale(bl, bl, scale);
     vec2.scale(br, br, scale);
 
-    vec3.set(V3_0, tl[0], tl[1], 0);
-    vec3.set(V3_1, tr[0], tr[1], 0);
-    vec3.set(V3_2, bl[0], bl[1], 0);
-    vec3.set(V3_3, br[0], br[1], 0);
+    vec3.set(V3_0, tl[0], tl[1], is3DPitchText ? tl[2] : 0);
+    vec3.set(V3_1, tr[0], tr[1], is3DPitchText ? tr[2] : 0);
+    vec3.set(V3_2, bl[0], bl[1], is3DPitchText ? bl[2] : 0);
+    vec3.set(V3_3, br[0], br[1], is3DPitchText ? br[2] : 0);
 
     vec3.add(V3_0, V3_0, anchor);
     vec3.add(V3_1, V3_1, anchor);

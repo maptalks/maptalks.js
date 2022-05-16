@@ -93,14 +93,23 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
         //   4.2 如果pitchWidthMap，和pos相加后，projectPoint后的计算结果
         //5. 将最终计算结果与dxdy相加
 
-        const { aOffset } = geoProps;
+        const { aOffset, aShape } = geoProps;
+        const is3DPitchText = aOffset.length !== aShape.length;
+        let tl, tr, bl, br;
         //除以10是因为赋值时, aOffset有精度修正
-        let tl = vec2.set(V2_0, aOffset[i * 2] / 10, aOffset[i * 2 + 1] / 10),
+        if (is3DPitchText) {
+            tl = vec3.set(V2_0, aOffset[i * 3] / 10, aOffset[i * 3 + 1] / 10, aOffset[i * 3 + 2] / 10),
+            tr = vec3.set(V2_1, aOffset[i * 3 + 3] / 10, aOffset[i * 3 + 4] / 10, aOffset[i * 3 + 5] / 10),
+            bl = vec3.set(V2_2, aOffset[i * 3 + 6] / 10, aOffset[i * 3 + 7] / 10, aOffset[i * 3 + 8] / 10),
+            br = vec3.set(V2_3, aOffset[i * 3 + 9] / 10, aOffset[i * 3 + 10] / 10, aOffset[i * 3 + 11] / 10);
+        } else {
+            tl = vec2.set(V2_0, aOffset[i * 2] / 10, aOffset[i * 2 + 1] / 10),
             tr = vec2.set(V2_1, aOffset[i * 2 + 2] / 10, aOffset[i * 2 + 3] / 10),
             bl = vec2.set(V2_2, aOffset[i * 2 + 4] / 10, aOffset[i * 2 + 5] / 10),
             br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
+        }
         if (pitchWithMap === 1) {
-            getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio);
+            getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio, getPitchPosition);
         } else {
             vec2.multiply(tl, tl, AXIS_FACTOR);
             vec2.multiply(tr, tr, AXIS_FACTOR);

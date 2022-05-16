@@ -6,7 +6,7 @@ import findPoleOfInaccessibility from './find_pole_of_inaccessibility';
 
 const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
 
-export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placement, spacing, altitudeToTileScale) {
+export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placement, spacing, is3DPitchText, altitudeToTileScale) {
     const { feature, size, symbol } = point;
     const glyphSize = size ? 24 : 0;
     const fontScale = size ? size[0] / glyphSize : 1;
@@ -28,6 +28,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
                 symbol['isIconText'] ? 1 : textBoxScale,
                 1, //bucket.overscaling,
                 EXTENT || Infinity,
+                is3DPitchText,
                 altitudeToTileScale
             );
             if (symbol['textPlacement'] && !symbol['isIconText']) {

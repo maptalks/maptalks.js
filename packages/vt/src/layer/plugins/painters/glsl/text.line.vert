@@ -7,7 +7,11 @@
 #endif
 
 attribute vec2 aTexCoord;
-attribute vec3 aOffset;
+#ifdef HAS_OFFSET_Z
+    attribute vec3 aOffset;
+#else
+    attribute vec2 aOffset;
+#endif
 #ifdef ENABLE_COLLISION
 attribute float aOpacity;
 #endif
@@ -113,8 +117,12 @@ void main() {
         0.5 + 0.5 * (1.0 - distanceRatio),
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
-
-    vec3 offset = aOffset / 10.0; //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
+    #ifdef HAS_OFFSET_Z
+        //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
+        vec3 offset = aOffset / 10.0;
+    #else
+        vec3 offset = vec3(aOffset / 10.0, 0.0);
+    #endif
     vec2 texCoord = aTexCoord;
 
     if (isPitchWithMap == 1.0) {

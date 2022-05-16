@@ -199,6 +199,9 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         if (geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
         }
+        if (geometry.properties.aOffset && geometry.properties.aShape && geometry.properties.aOffset.length !== geometry.properties.aShape.length) {
+            defines['HAS_OFFSET_Z'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.properties.symbolIndex = geometry.properties.symbolIndex;
     });
@@ -226,6 +229,7 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
 
     if (isLinePlacement) {
         const { aVertical, aSegment, aGlyphOffset, aPitchRotation } = geometry.data;
+        const is3DPitchText = !!aPitchRotation;
         geometry.properties.aGlyphOffset = aGlyphOffset;
         geometry.properties.aPitchRotation = aPitchRotation;
         geometry.properties.aSegment = aSegment;
@@ -236,11 +240,12 @@ function prepareGeometry(geometry, enableCollision, visibleInCollision) {
         delete geometry.data.aGlyphOffset;
         delete geometry.data.aPitchRotation;
 
+        const offsetLength = aShape.length / 2 * (is3DPitchText ? 3 : 2);
         geometry.data.aOffset = {
             usage: 'dynamic',
-            data: new Int16Array(aShape.length / 2 * 3)
+            data: new Int16Array(offsetLength)
         };
-        geometry.properties.aOffset = new Int16Array(aShape.length / 2 * 3);
+        geometry.properties.aOffset = new Int16Array(offsetLength);
     }
 
     if (enableCollision) {

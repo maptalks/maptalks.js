@@ -1206,6 +1206,7 @@ describe('update style specs', () => {
         ], { sceneConfig });
 
         let painted = false;
+        let finished = false;
         layer.once('canvasisdirty', () => {
             groupLayer.on('layerload', () => {
                 const canvas = groupLayer.getRenderer().canvas;
@@ -1217,8 +1218,9 @@ describe('update style specs', () => {
                         material.baseColorFactor = [1, 0, 0, 1];
                         layer.updateSymbol(1, { material });
                         painted = true;
-                    } else {
+                    } else if (!finished) {
                         assert.deepEqual(pixel, [78, 1, 1, 255]);
+                        finished = true;
                         done();
                     }
                 }

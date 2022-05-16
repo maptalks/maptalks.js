@@ -611,14 +611,23 @@ export default class TextPainter extends CollisionPainter {
             }
 
             const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
-            //这里假设一组文字的rotation是一致的，因为每个文字都单独计算高度和旋转度难度太高
-            vec3.set(TEMP_AXIS, aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0);
-            const axis = vec3.normalize(TEMP_AXIS, TEMP_AXIS);
-            const angleR = -aPitchRotation[3 * vertexStart + 2];
-            const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR);
-            mat4.fromTranslation(TEMP_MAT4, Z_AXIS_OFFSET);
-            mat4.fromQuat(TEMP_MAT4_1, quaterion);
-            const rotMatrix = mat4.multiply(TEMP_MAT4_1, TEMP_MAT4_1, TEMP_MAT4);
+
+            const is3DPitchText = aOffset.length > aShape.length;
+            let rotMatrix;
+            if (is3DPitchText) {
+                //这里假设一组文字的rotation是一致的，因为每个文字都单独计算高度和旋转度难度太高
+                vec3.set(TEMP_AXIS, aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0);
+                const axis = vec3.normalize(TEMP_AXIS, TEMP_AXIS);
+                const angleR = -aPitchRotation[3 * vertexStart + 2];
+                if (angleR) {
+                    // angleR为0时，则不用旋转
+                    const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR);
+                    mat4.fromTranslation(TEMP_MAT4, Z_AXIS_OFFSET);
+                    mat4.fromQuat(TEMP_MAT4_1, quaterion);
+                    rotMatrix = mat4.multiply(TEMP_MAT4_1, TEMP_MAT4_1, TEMP_MAT4);
+                }
+            }
+
 
             for (let ii = 0; ii < 4; ii++) {
                 const idx = 2 * (vertexStart + ii);
@@ -629,12 +638,16 @@ export default class TextPainter extends CollisionPainter {
                 if (isPitchWithMap) {
                     vec2.multiply(SHAPE, SHAPE, AXIS_FACTOR);
                     vec2.add(OFFSET, SHAPE, offset);
-                    OFFSET[2] = 0;
-                    vec3.transformMat4(OFFSET, OFFSET, rotMatrix);
-                    // 适量抬高一些，避免与道路的深度冲突
-                    // OFFSET[2] += 4;
-                    // 把高度转换为厘米
-                    OFFSET[2] /= zScale;
+                    if (is3DPitchText) {
+                        OFFSET[2] = 0;
+                        if (rotMatrix) {
+                            vec3.transformMat4(OFFSET, OFFSET, rotMatrix);
+                            // 适量抬高一些，避免与道路的深度冲突
+                            // OFFSET[2] += 4;
+                            // 把高度转换为厘米
+                            OFFSET[2] /= zScale;
+                        }
+                    }
                 } else {
                     vec2.multiply(OFFSET, offset, AXIS_FACTOR);
                     // vec2.set(OFFSET, 0, OFFSET[1], 0);
@@ -644,17 +657,21 @@ export default class TextPainter extends CollisionPainter {
                 //乘以十是为了提升shader中offset的精度
                 INT16[0] = OFFSET[0] * 10;
                 INT16[1] = OFFSET[1] * 10;
-                INT16[2] = OFFSET[2] * 10;
+                if (is3DPitchText) {
+                    INT16[2] = OFFSET[2] * 10;
+                }
 
                 //*10 是为了保留小数点做的精度修正
-                const offsetIdx = 3 * (vertexStart + ii);
+                const offsetIdx = (is3DPitchText ? 3 : 2) * (vertexStart + ii);
                 if (aOffset[offsetIdx] !== INT16[0] ||
                     aOffset[offsetIdx + 1] !== INT16[1] ||
-                    aOffset[offsetIdx + 2] !== INT16[2]) {
+                    is3DPitchText && aOffset[offsetIdx + 2] !== INT16[2]) {
                     aOffset.dirty = true;
                     aOffset[offsetIdx] = INT16[0];
                     aOffset[offsetIdx + 1] = INT16[1];
-                    aOffset[offsetIdx + 2] = INT16[2];
+                    if (is3DPitchText) {
+                        aOffset[offsetIdx + 2] = INT16[2];
+                    }
                 }
 
 
