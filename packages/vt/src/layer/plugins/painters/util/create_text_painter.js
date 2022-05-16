@@ -51,7 +51,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
     //避免重复创建属性数据
     if (!geometry.properties.aAnchor) {
         prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement, visibleInCollision);
-        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap } = geometry.data;
+        const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap, aAltitude } = geometry.data;
         if (aTextSize) {
             //for collision
             const keyName = (PREFIX + 'aTextSize').trim();
@@ -86,6 +86,10 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
             //for collision
             const keyName = (PREFIX + 'aOverlap').trim();
             geometry.properties.aOverlap = geometry.properties[keyName] || new aOverlap.constructor(aOverlap);
+        }
+        if (aAltitude) {
+            const keyName = (PREFIX + 'aAltitude').trim();
+            geometry.properties.aAltitude = geometry.properties[keyName] || new aAltitude.constructor(aAltitude);
         }
     }
 

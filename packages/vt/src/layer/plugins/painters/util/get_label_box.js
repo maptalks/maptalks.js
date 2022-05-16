@@ -2,6 +2,8 @@ import { vec2, vec3 } from '@maptalks/gl';
 import { clamp, isIconText } from '../../Util';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
 import { GLYPH_SIZE } from '../Constant';
+import { PackUtil } from '@maptalks/vector-packer';
+import { getCentiMeterScale } from '../../../../common/Util';
 
 const TEXT_BOX_MARGIN = 1;
 
@@ -109,7 +111,8 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             br = vec2.set(V2_3, aOffset[i * 2 + 6] / 10, aOffset[i * 2 + 7] / 10);
         }
         if (pitchWithMap === 1) {
-            getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio, getPitchPosition);
+            const altitudeScale = getCentiMeterScale(map.getResolution(), map);
+            getPitchPosition(out, anchor, tl, tr, bl, br, matrix, dxdy, uniforms, map, cameraDistance, perspectiveRatio, is3DPitchText, altitudeScale);
         } else {
             vec2.multiply(tl, tl, AXIS_FACTOR);
             vec2.multiply(tr, tr, AXIS_FACTOR);
@@ -128,6 +131,15 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
 
 export function getAnchor(out, mesh, i) {
     const positionSize = mesh.geometry.desc.positionSize;
-    const aAnchor = mesh.geometry.properties.aAnchor;
-    return vec3.set(out, aAnchor[i * positionSize], aAnchor[i * positionSize + 1], positionSize === 2 ? 0 : aAnchor[i * positionSize + 2]);
+    const { aAnchor, aAltitude } = mesh.geometry.properties;
+    const idx = i * positionSize;
+    if (aAltitude) {
+        return vec3.set(out, aAnchor[idx], aAnchor[idx + 1], aAltitude[i]);
+    } else {
+        if (positionSize === 3) {
+            return PackUtil.unpackPosition(out, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+        } else {
+            return vec3.set(out, aAnchor[idx], aAnchor[idx + 1], 0);
+        }
+    }
 }

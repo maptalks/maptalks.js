@@ -9,6 +9,7 @@
 attribute vec2 aTexCoord;
 #ifdef HAS_OFFSET_Z
     attribute vec3 aOffset;
+    uniform float altitudeScale;
 #else
     attribute vec2 aOffset;
 #endif
@@ -120,6 +121,8 @@ void main() {
     #ifdef HAS_OFFSET_Z
         //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
         vec3 offset = aOffset / 10.0;
+        // 把像素高度转换为厘米
+        offset[2] /= altitudeScale;
     #else
         vec3 offset = vec3(aOffset / 10.0, 0.0);
     #endif

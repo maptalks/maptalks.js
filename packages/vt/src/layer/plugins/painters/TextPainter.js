@@ -580,7 +580,6 @@ export default class TextPainter extends CollisionPainter {
         // const glScale = map.getGLScale();
         // const glScale = map.getGLScale();
         // centimeter to gl res
-        const zScale = getCentiMeterScale(map.getResolution(), map);
 
         //array to store current text's elements
         for (let j = start; j < end; j += BOX_ELEMENT_COUNT) {
@@ -642,10 +641,6 @@ export default class TextPainter extends CollisionPainter {
                         OFFSET[2] = 0;
                         if (rotMatrix) {
                             vec3.transformMat4(OFFSET, OFFSET, rotMatrix);
-                            // 适量抬高一些，避免与道路的深度冲突
-                            // OFFSET[2] += 4;
-                            // 把高度转换为厘米
-                            OFFSET[2] /= zScale;
                         }
                     }
                 } else {
@@ -812,7 +807,7 @@ export default class TextPainter extends CollisionPainter {
         //     angleSin, angleCos * pitchCos, -1.0 * angleCos * pitchSin,
         //     0.0, pitchSin, pitchCos
         // ];
-
+        const zScale = getCentiMeterScale(map.getResolution(), map);
         return {
             layerScale: this.layer.options['styleScale'] || 1,
             mapPitch: map.getPitch() * Math.PI / 180,
@@ -824,6 +819,7 @@ export default class TextPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE * (this.layer.options['textGamma'] || 1),
             resolution: map.getResolution(),
+            altitudeScale: zScale
             // planeMatrix
         };
     }
