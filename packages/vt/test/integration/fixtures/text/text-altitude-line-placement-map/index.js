@@ -7,7 +7,7 @@ const data = {
                 type: 'LineString',
                 coordinates: [
                     [1, 1, 0],
-                    [20, 20, 800000]
+                    [40, 40, 800000]
                 ]
             }
         }
