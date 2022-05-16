@@ -395,7 +395,7 @@ export default class BaseLayerWorker {
                 zoom,
                 debugIndex,
                 //把 altitude 转为瓦片坐标
-                altitudeToTileScale: 1 / glScale * zScale * extent / this.options['tileSize'][1]
+                altitudeToTileScale: zScale * extent / this.options['tileSize'][1] / glScale
             });
             // 如果同时定义了 marker 属性和text属性，textPlacement， textSpacing会被markerPlacement，markerSpacing代替
             const symbols = PointPack.splitPointSymbol(symbol);

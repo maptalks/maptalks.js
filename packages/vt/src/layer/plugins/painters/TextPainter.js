@@ -44,6 +44,9 @@ const shaderLineFilterN = function (mesh) {
 //label box 或 icon box 对应的element数量
 const BOX_ELEMENT_COUNT = 6;
 
+// 线有坡度且文字的pitchAlignment为map时，Z轴上的偏移量，以避免文字和线的深度冲突
+const Z_AXIS_OFFSET = [0, 0, 3];
+
 // temparary variables used later
 const PROJ_MATRIX = [], CHAR_OFFSET = [];
 
@@ -59,6 +62,8 @@ const INT16 = new Int16Array(3);
 
 const TEMP_QUAT = [];
 const TEMP_MAT4 = [];
+const TEMP_MAT4_1 = [];
+const TEMP_AXIS = [];
 
 const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
 
@@ -606,20 +611,14 @@ export default class TextPainter extends CollisionPainter {
             }
 
             const shapeMatrix = getShapeMatrix(MAT2, rotation, 0, uniforms['rotateWithMap'], uniforms['pitchWithMap']);
-            //一组文字的rotation都是一致的
-            // const xRotation = aPitchRotation[2 * vertexStart];
-            // const yRotation = aPitchRotation[2 * vertexStart + 1];
-            const axis = [aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0];
+            //这里假设一组文字的rotation是一致的，因为每个文字都单独计算高度和旋转度难度太高
+            vec3.set(TEMP_AXIS, aPitchRotation[3 * vertexStart], aPitchRotation[3 * vertexStart + 1], 0);
+            const axis = vec3.normalize(TEMP_AXIS, TEMP_AXIS);
             const angleR = -aPitchRotation[3 * vertexStart + 2];
-            // const quaterion = quat.fromEuler(TEMP_QUAT, xRotation, yRotation, zRotation * 180 / Math.PI);
-            // console.log(xRotation, yRotation);
-            // const quaterion = quat.identity(TEMP_QUAT);
-            // quat.rotateX(TEMP_QUAT, TEMP_QUAT, xRotation * Math.PI / 180);
-            // quat.rotateY(TEMP_QUAT, TEMP_QUAT, -yRotation * Math.PI / 180);
-            // const quaterion = quat.fromEuler(TEMP_QUAT, 0, -0, 0);
-
-            const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR * Math.PI / 180);
-            const rotMatrix = mat4.fromQuat(TEMP_MAT4, quaterion);
+            const quaterion = quat.setAxisAngle(TEMP_QUAT, axis, angleR);
+            mat4.fromTranslation(TEMP_MAT4, Z_AXIS_OFFSET);
+            mat4.fromQuat(TEMP_MAT4_1, quaterion);
+            const rotMatrix = mat4.multiply(TEMP_MAT4_1, TEMP_MAT4_1, TEMP_MAT4);
 
             for (let ii = 0; ii < 4; ii++) {
                 const idx = 2 * (vertexStart + ii);
@@ -632,8 +631,10 @@ export default class TextPainter extends CollisionPainter {
                     vec2.add(OFFSET, SHAPE, offset);
                     OFFSET[2] = 0;
                     vec3.transformMat4(OFFSET, OFFSET, rotMatrix);
+                    // 适量抬高一些，避免与道路的深度冲突
+                    // OFFSET[2] += 4;
                     // 把高度转换为厘米
-                    OFFSET[2] *= 1 / zScale;
+                    OFFSET[2] /= zScale;
                 } else {
                     vec2.multiply(OFFSET, offset, AXIS_FACTOR);
                     // vec2.set(OFFSET, 0, OFFSET[1], 0);

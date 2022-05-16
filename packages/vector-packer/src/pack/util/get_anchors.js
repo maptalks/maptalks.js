@@ -148,8 +148,9 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                 const anchor = new Anchor(x, y, angle, i);
                 anchor.z = z;
                 // perp of [x - a.x, y - a.y]
-                anchor.axis = vec3.normalize([], [a.y - y, x - a.x, 0]);
-                anchor.angleR = 180 * Math.atan((z - (a.z || 0)) * altitudeToTileScale / a.dist(anchor)) / Math.PI;
+                anchor.axis = [a.y - y, x - a.x];
+                // 0.9是个magic number，用来让文字旋转角度更准确
+                anchor.angleR = Math.atan((z - (a.z || 0)) * 0.90 * altitudeToTileScale / a.dist(anchor));
 
                 anchor.line = line; //fuzhen 在anchor上增加了对line的引用，方便计算沿线偏移量
                 anchor._round();
