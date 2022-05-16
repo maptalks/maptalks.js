@@ -9,8 +9,8 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 
-import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis } from './gl.es.js';
+import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis, InSightAnalysis } from './gl.es.js';
 
-export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis };
+export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, ViewshedAnalysis, FloodAnalysis, SkylineAnalysis, InSightAnalysis };
 import transcoders from '../src/transcoders';
 export { transcoders };

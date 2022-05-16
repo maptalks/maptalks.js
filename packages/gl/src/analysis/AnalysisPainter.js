@@ -52,6 +52,7 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_FLOODANALYSE'];
         delete this._shader.shaderDefines['HAS_VIEWSHED'];
         delete this._shader.shaderDefines['HAS_SKYLINE'];
+        delete this._shader.shaderDefines['HAS_INSIGHT'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             const defines = task.getDefines();

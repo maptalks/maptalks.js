@@ -3,6 +3,7 @@ import GroundPainter from './layer/GroundPainter';
 import ViewshedAnalysis from './analysis/ViewshedAnalysis';
 import FloodAnalysis from './analysis/FloodAnalysis';
 import SkylineAnalysis  from './analysis/SkylineAnalysis';
+import InSightAnalysis from './analysis/InSightAnalysis';
 import './light/MapLights.js';
 import './map/MapPostProcess.js';
 
@@ -14,6 +15,7 @@ export { GLContext } from '@maptalks/fusiongl';
 export { ViewshedAnalysis };
 export { FloodAnalysis };
 export { SkylineAnalysis };
+export { InSightAnalysis };
 
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
@@ -22,5 +24,6 @@ if (typeof window !== 'undefined') {
         window.maptalks.ViewshedAnalysis = ViewshedAnalysis;
         window.maptalks.FloodAnalysis = FloodAnalysis;
         window.maptalks.SkylineAnalysis = SkylineAnalysis;
+        window.maptalks.InSightAnalysis = InSightAnalysis;
     }
 }

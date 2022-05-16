@@ -18,6 +18,11 @@ varying vec2 vTexCoord;
     uniform vec4 viewshed_invisibleColor;
     uniform sampler2D viewshedMap;
 #endif
+#ifdef HAS_INSIGHT
+    uniform vec4 insight_visibleColor;
+    uniform vec4 insight_invisibleColor;
+    uniform sampler2D insightMap;
+#endif
 uniform sampler2D sceneMap;
 
 void main() {
@@ -43,6 +48,14 @@ void main() {
         vec4 skylineColor = texture2D(skylineMap, vTexCoord);
         if (skylineColor.r > 0.0 || skylineColor.g > 0.0 || skylineColor.b > 0.0) {
             glFragColor = skylineColor;
+        }
+    #endif
+    #ifdef HAS_INSIGHT
+        vec4 insightColor = texture2D(insightMap, vTexCoord);
+        if (insightColor.g > 0.0) {
+            glFragColor = insight_visibleColor;
+        } else if (insightColor.r > 0.0) {
+            glFragColor = insight_invisibleColor;
         }
     #endif
     #if __VERSION__ == 100

@@ -41,6 +41,7 @@ export { default as OutlinePass } from './outline/OutlinePass.js';
 export { default as ViewshedPass } from './analysis/ViewshedPass.js';
 export { default as AnalysisShader } from './analysis/AnalysisShader.js';
 export { default as FloodPass } from './analysis/FloodPass.js';
+export { default as InSightPass } from './analysis/InSightPass.js';
 export { default as QuadShader } from './shader/QuadShader.js';
 export { default as HeatmapShader } from './shader/HeatmapShader';
 export { default as SkyboxShader } from './skybox/SkyboxShader';
