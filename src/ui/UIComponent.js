@@ -150,7 +150,9 @@ class UIComponent extends Eventable(Class) {
          * @property {String} type - showstart
          * @property {ui.UIComponent} target - UIComponent
          */
-        this.fire('showstart');
+        if (!this._showBySymbolChange) {
+            this.fire('showstart');
+        }
         const container = this._getUIContainer();
         this._coordinate = coordinate;
         //when single will off map events
@@ -170,7 +172,9 @@ class UIComponent extends Eventable(Class) {
              * @property {String} type - showend
              * @property {ui.UIComponent} target - UIComponent
              */
-            this.fire('showend');
+            if (!this._showBySymbolChange) {
+                this.fire('showend');
+            }
             return this;
         }
 
@@ -236,8 +240,9 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
-
-        this.fire('showend');
+        if (!this._showBySymbolChange) {
+            this.fire('showend');
+        }
         return this;
     }
 
@@ -604,7 +609,9 @@ class UIComponent extends Eventable(Class) {
 
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
+            this._showBySymbolChange = true;
             this.show(param['target'].getCenter());
+            delete this._showBySymbolChange;
         }
     }
 
