@@ -79,7 +79,13 @@ describe('UI.InfoWindow', function () {
     });
 
     it('infowindow not repeat fire show event when geometry symbol change', function (done) {
-        var marker1 = new maptalks.Marker(map.getCenter());
+        var marker1 = new maptalks.Marker(map.getCenter(),{
+            symbol:{
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 40,
+            }
+        });
         marker1.addTo(layer);
         marker1.setInfoWindow({
             animationDuration: 0,
@@ -87,7 +93,13 @@ describe('UI.InfoWindow', function () {
             content: 'hello maptalks'
         });
 
-        var marker2 = new maptalks.Marker(map.getCenter().add(0.001,0));
+        var marker2 = new maptalks.Marker(map.getCenter().add(0.001,0),{
+            symbol:{
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 40,
+            }
+        });
         marker2.addTo(layer);
         marker2.setInfoWindow({
             animationDuration: 0,
