@@ -58,9 +58,10 @@ export default extend(/** @lends measurer.Identity */{
         return Math.abs(area / 2);
     },
 
-    locate : function (c, xDist, yDist) {
-        c = new Coordinate(c.x, c.y);
-        return this._locate(c, xDist, yDist);
+    locate : function (c, xDist, yDist, out) {
+        out = out || new Coordinate(0, 0);
+        out.set(c.x, c.y);
+        return this._locate(out, xDist, yDist);
     },
 
     /**

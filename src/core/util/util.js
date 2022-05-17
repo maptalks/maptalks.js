@@ -344,8 +344,10 @@ export function b64toBlob(b64Data, contentType) {
 
 /**
  * Compute degree bewteen 2 points.
- * @param  {Point} p1 point 1
- * @param  {Point} p2 point 2
+ * @param  {Number} x0
+ * @param  {Number} y0
+ * @param  {Number} x1
+ * @param  {Number} y1
  * @return {Number}    degree between 2 points
  * @memberOf Util
  */
