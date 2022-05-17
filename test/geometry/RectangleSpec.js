@@ -57,7 +57,7 @@ describe('Geometry.Rectangle', function () {
         var w = rect.getWidth();
         var h = rect.getHeight();
 
-        expect(nw).to.eql({ x: 0, y: 0 });
+        expect(nw).to.eql({ x: 0, y: 0, z: 0 });
         expect(w).to.eql(200);
         expect(h).to.eql(100);
     });
@@ -71,7 +71,7 @@ describe('Geometry.Rectangle', function () {
         var w = rect.getWidth();
         var h = rect.getHeight();
 
-        expect(nw).to.eql({ x: -180, y: 75 });
+        expect(nw).to.eql({ x: -180, y: 75, z: 0 });
         expect(w).to.eql(401);
         expect(h).to.eql(201);
     });

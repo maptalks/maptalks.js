@@ -57,11 +57,11 @@ describe('#MultiPoint', function () {
           }
         );
         var extent = multipoint.getExtent();
-        expect(extent.toArray()).to.be.eql([ { x: -0.131049, y: 51.498568 },
-      { x: -0.107049, y: 51.498568 },
-      { x: -0.107049, y: 51.493568 },
-      { x: -0.131049, y: 51.493568 },
-      { x: -0.131049, y: 51.498568 } ]);
+        expect(extent.toArray()).to.be.eql([ { x: -0.131049, y: 51.498568, z: 0 },
+      { x: -0.107049, y: 51.498568, z: 0 },
+      { x: -0.107049, y: 51.493568, z: 0 },
+      { x: -0.131049, y: 51.493568, z: 0 },
+      { x: -0.131049, y: 51.498568, z: 0 } ]);
     });
 
     it('getSize', function () {

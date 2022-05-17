@@ -104,14 +104,14 @@ describe('Geometry.MultiLineString', function () {
 
         var coords = [];
         coords[0] = [
-            { x: 1, y: 2 },
-            { x: 3, y: 4 },
-            { x: 4, y: 3 }
+            { x: 1, y: 2, z: 0 },
+            { x: 3, y: 4, z: 0 },
+            { x: 4, y: 3, z: 0 }
         ];
         coords[1] = [
-            { x: 5, y: 6 },
-            { x: 7, y: 8 },
-            { x: 6, y: 5 }
+            { x: 5, y: 6, z: 0 },
+            { x: 7, y: 8, z: 0 },
+            { x: 6, y: 5, z: 0 }
         ];
         mp.setCoordinates(coords);
 

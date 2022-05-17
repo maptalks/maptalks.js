@@ -84,9 +84,9 @@ describe('Geometry.LineString', function () {
 
     it('setCoordinates', function () {
         var path = [
-            { x: 0, y: 0 },
-            { x: 10, y: 10 },
-            { x: 20, y: 30 }
+            { x: 0, y: 0, z: 0 },
+            { x: 10, y: 10, z: 0 },
+            { x: 20, y: 30, z: 0 }
         ];
         var polyline = new maptalks.LineString([]);
         layer.addGeometry(polyline);
