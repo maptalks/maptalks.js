@@ -2416,15 +2416,16 @@ Map.include(/** @lends Map.prototype */{
      */
     distanceToPointAtRes: function () {
         const POINT = new Point(0, 0);
-        return function (xDist, yDist, res, paramCenter) {
+        const COORD = new Coordinate(0, 0);
+        return function (xDist, yDist, res, paramCenter, out) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
             const center = paramCenter || this.getCenter(),
-                target = projection.locate(center, xDist, yDist);
+                target = projection.locate(center, xDist, yDist, COORD);
             const p0 = this.coordToPointAtRes(center, res, POINT),
-                p1 = this.coordToPointAtRes(target, res);
+                p1 = this.coordToPointAtRes(target, res, out);
             p1._sub(p0)._abs();
             return p1;
         };
@@ -2436,19 +2437,21 @@ Map.include(/** @lends Map.prototype */{
      *
      * @param  {Number} altitude - the value of altitude,suche as: map.altitudeToPoint(100);
      * @param  {Number} res - target resolution
-     * @return {Point}
+     * @param  {Coordinate} [originCenter=null] - optional original coordinate for caculation
+     * @return {Number}
      * @function
      */
     altitudeToPoint: function () {
         const DEFAULT_CENTER = new Coordinate(0, 40);
-        return function (altitude = 0, res, paramCenter) {
-            const p = this.distanceToPointAtRes(altitude, altitude, res, paramCenter || DEFAULT_CENTER);
+        const POINT = new Point(0, 0);
+        return function (altitude = 0, res, originCenter) {
+            const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
                 p.x *= heightFactor;
                 p.y *= heightFactor;
             }
-            return p;
+            return p.x;
         };
     }(),
 
