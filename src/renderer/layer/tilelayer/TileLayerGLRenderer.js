@@ -72,7 +72,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     startZoomStencilTest() {
         const gl = this.gl;
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
+        gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
     }
 
     endZoomStencilTest() {
@@ -86,7 +86,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     resumeZoomStencilTest() {
         const gl = this.gl;
-        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
+        gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {
