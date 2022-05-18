@@ -29,6 +29,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
+    onDrawTileStart() {
+        const gl = this.gl;
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+    }
+
     drawTile(tileInfo, tileImage) {
         const map = this.getMap();
         if (!tileInfo || !map || !tileImage) {
@@ -55,38 +60,15 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
         }
+        const gl = this.gl;
+        gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
+
         this.drawGLImage(tileImage, x, y, w, h, scale, opacity, debugInfo);
         if (opacity < 1) {
             this.setToRedraw();
         } else {
             this.setCanvasUpdated();
         }
-    }
-
-    writeZoomStencil() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-    }
-
-    startZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-        gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
-    }
-
-    endZoomStencilTest() {
-        this.pauseZoomStencilTest();
-    }
-
-    pauseZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-    }
-
-    resumeZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {

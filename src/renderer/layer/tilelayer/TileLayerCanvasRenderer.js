@@ -75,6 +75,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker']) {
             this._tileImageWorkerConn = new TileWorkerConnection();
         }
+        this._compareTiles = compareTiles.bind(this);
     }
 
     getCurrentTileZoom() {
@@ -230,44 +231,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles };
         this.onDrawTileStart(context);
 
-        this._parentTiles.forEach(t => this._drawTileAndCache(t));
+        tiles.sort(this._compareTiles);
+        for (let i = 0, l = tiles.length; i < l; i++) {
+            this._drawTileAndCache(tiles[i]);
+        }
+
         this._childTiles.forEach(t => this._drawTile(t.info, t.image));
+        this._parentTiles.forEach(t => this._drawTile(t));
 
         placeholders.forEach(t => this._drawTile(t.info, t.image));
-
-        const layer = this.layer,
-            map = this.getMap();
-        if (layer._isPyramidMode() || !layer.options['cascadeTiles'] || map.getPitch() <= map.options['cascadePitches'][0]) {
-            tiles.forEach(t => this._drawTileAndCache(t));
-        } else {
-            //write current tiles and update stencil buffer to clip parent|child tiles with current tiles
-            this.writeZoomStencil();
-            let started = false;
-            for (let i = 0, l = tiles.length; i < l; i++) {
-                if (tiles[i].info.z !== this._tileZoom) {
-                    if (!started) {
-                        this.startZoomStencilTest();
-                        started = true;
-                    } else {
-                        this.resumeZoomStencilTest();
-                    }
-                } else if (started) {
-                    this.pauseZoomStencilTest();
-                }
-                this._drawTileAndCache(tiles[i]);
-            }
-            this.endZoomStencilTest();
-        }
 
         this.onDrawTileEnd(context);
 
     }
-
-    writeZoomStencil() { }
-    startZoomStencilTest() { }
-    endZoomStencilTest() { }
-    pauseZoomStencilTest() { }
-    resumeZoomStencilTest() { }
 
     onDrawTileStart() { }
     onDrawTileEnd() { }
@@ -800,3 +776,7 @@ function defaultPlaceholder(canvas) {
 }
 
 export default TileLayerCanvasRenderer;
+
+function compareTiles(a, b) {
+    return Math.abs(this._tileZoom - a.info.z) - Math.abs(this._tileZoom - b.info.z);
+}
