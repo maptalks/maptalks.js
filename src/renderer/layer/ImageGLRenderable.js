@@ -285,6 +285,7 @@ const ImageGLRenderable = Base => {
          */
         clearGLCanvas() {
             if (this.gl) {
+                this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             }
         }
