@@ -237,7 +237,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
 
         this._childTiles.forEach(t => this._drawTile(t.info, t.image));
-        this._parentTiles.forEach(t => this._drawTile(t));
+        this._parentTiles.forEach(t => this._drawTile(t.info, t.image));
 
         placeholders.forEach(t => this._drawTile(t.info, t.image));
 
@@ -569,7 +569,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             max = info.extent2d.getMax(),
             pmin = layer._project(map._pointToPrjAtRes(min, res, TEMP_POINT1), TEMP_POINT1),
             pmax = layer._project(map._pointToPrjAtRes(max, res, TEMP_POINT2), TEMP_POINT2);
-        const zoomDiff = 2;
+        const zoomDiff = 3;
         for (let i = 1; i < zoomDiff; i++) {
             this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
         }
