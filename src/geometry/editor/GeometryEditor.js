@@ -279,10 +279,6 @@ class GeometryEditor extends Eventable(Class) {
     _createCenterHandle() {
         const map = this.getMap();
         const symbol = this.options['centerHandleSymbol'];
-        if (this._geometry instanceof LineString) {
-            // fix overlap of line's centerHandle and newVertexHandle
-            symbol['markerDx'] = 5;
-        }
         let shadow;
         const cointainerPoint = map.coordToContainerPoint(this._geometry.getCenter());
         const handle = this.createHandle(cointainerPoint, {
@@ -1081,6 +1077,9 @@ class GeometryEditor extends Eventable(Class) {
                     newVertexHandles[ringIndex].push(createNewVertexHandle.call(this, i, ringIndex));
                 }
             }
+            if (newVertexHandles[ringIndex].length && geoToEdit.getCoordinates().length === 2) {
+                newVertexHandles[ringIndex][0].options.symbol['markerDx'] = 12;
+            }
         }
         this._addRefreshHook(() => {
             if (pauseRefresh) {
@@ -1089,6 +1088,13 @@ class GeometryEditor extends Eventable(Class) {
             for (const ringIndex in newVertexHandles) {
                 for (let i = newVertexHandles[ringIndex].length - 1; i >= 0; i--) {
                     newVertexHandles[ringIndex][i].refresh(ringIndex);
+                }
+            }
+            if (newVertexHandles[0].length && geoToEdit instanceof LineString) {
+                if (geoToEdit.getCoordinates().length === 2) {
+                    newVertexHandles[0][0].options.symbol['markerDx'] = 12;
+                } else if (geoToEdit.getCoordinates().length > 2) {
+                    newVertexHandles[0][0].options.symbol['markerDx'] = 0;
                 }
             }
             for (const ringIndex in vertexHandles) {
