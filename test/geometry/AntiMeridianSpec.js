@@ -8,14 +8,14 @@ describe('Geometry.AntiMeridian', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            zoom : 1,
-            center : [0, 0],
-            width : 300,
-            height : 300
+            zoom: 1,
+            center: [0, 0],
+            width: 300,
+            height: 300
         });
         container = setups.container;
         map = setups.map;
-        layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
         map.addLayer(layer);
     });
 
@@ -24,20 +24,26 @@ describe('Geometry.AntiMeridian', function () {
         REMOVE_CONTAINER(container);
     });
 
+    function getGeoOptions() {
+        return {
+            antiMeridian: true
+        }
+    }
+
     function genGeometries() {
         return [
             //a continuous anti-meridian line-string with a hole
             new maptalks.LineString(
                 [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                { arrowStyle:'classic', arrowPlacement : 'vertex-firstlast' }
+                { arrowStyle: 'classic', arrowPlacement: 'vertex-firstlast' }
             ),
             new maptalks.QuadBezierCurve(
                 [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                { arrowStyle:'classic' }
+                { arrowStyle: 'classic' }
             ),
             new maptalks.CubicBezierCurve(
                 [[179, 10], [-170, 10], [-169, -10], [179, -10]],
-                { arrowStyle:'classic' }
+                { arrowStyle: 'classic' }
             ),
             //a continuous anti-meridian polygon with a hole
             new maptalks.Polygon([
@@ -58,7 +64,7 @@ describe('Geometry.AntiMeridian', function () {
     describe('linestring on meridian', function () {
         it('linestring should continue to draw from [-170, 80] to [170, 80]', function () {
             map.setCenter([-170, 80]);
-            var line = new maptalks.LineString([[-170, 80], [170, 80]]);
+            var line = new maptalks.LineString([[-170, 80], [170, 80]], getGeoOptions());
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(2, 0);
             expect(layer).to.be.painted(-10, 0);
@@ -67,7 +73,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('linestring should draw a long line from [170, 80] to [-170, 80]', function () {
             map.setCenter([-170, 80]);
-            var line = new maptalks.LineString([[170, 80], [-170, 80]]);
+            var line = new maptalks.LineString([[170, 80], [-170, 80]], getGeoOptions());
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(-2, 0);
             expect(layer).to.be.painted(100, 0);
@@ -76,7 +82,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('linestring should continue to draw from [180, 80] to [180, -80]', function () {
             map.setCenter([180, 80]);
-            var line = new maptalks.LineString([[180, 80], [180, -80], [180, -60]]);
+            var line = new maptalks.LineString([[180, 80], [180, -80], [180, -60]], getGeoOptions());
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(0, 2);
             expect(layer).to.be.painted(0, -20);
@@ -85,7 +91,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('linestring should draw a long line from [180, -80] to [180, 80]', function () {
             map.setCenter([180, 80]);
-            var line = new maptalks.LineString([[180, -80], [180, -60], [180, 80]]);
+            var line = new maptalks.LineString([[180, -80], [180, -60], [180, 80]], getGeoOptions());
             layer.addGeometry(line);
             expect(layer).not.to.be.painted(0, -2);
             expect(layer).to.be.painted(0, 100);
@@ -96,7 +102,7 @@ describe('Geometry.AntiMeridian', function () {
     describe('polygon on meridian', function () {
         it('polygon should continue to draw from [170, 80] to [-170, 70]', function () {
             map.setCenter([-170, 80]);
-            var polygon = new maptalks.Polygon([[-170, 80], [170, 80], [170, 70]]);
+            var polygon = new maptalks.Polygon([[-170, 80], [170, 80], [170, 70]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(4, 0);
             expect(layer).to.be.painted(-10, 0);
@@ -105,7 +111,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('polygon should draw a big polygon from [170, 80] to [-170, 70]', function () {
             map.setCenter([-170, 80]);
-            var polygon = new maptalks.Polygon([[170, 80], [-170, 70], [-170, 80]]);
+            var polygon = new maptalks.Polygon([[170, 80], [-170, 70], [-170, 80]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(-2, 0);
             expect(layer).to.be.painted(100, 0);
@@ -114,7 +120,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('polygon should continue to draw from [180, 80] to [180, -80]', function () {
             map.setCenter([180, 80]);
-            var polygon = new maptalks.Polygon([[180, 80], [180, -80], [170, -80]]);
+            var polygon = new maptalks.Polygon([[180, 80], [180, -80], [170, -80]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(0, 2);
             expect(layer).to.be.painted(0, -20);
@@ -123,7 +129,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('polygon should draw a big polygon from [180, -80] to [180, 80]', function () {
             map.setCenter([180, 80]);
-            var polygon = new maptalks.Polygon([[180, -80], [180, 80], [170, 80]]);
+            var polygon = new maptalks.Polygon([[180, -80], [180, 80], [170, 80]], getGeoOptions());
             layer.addGeometry(polygon);
             expect(layer).not.to.be.painted(0, -2);
             expect(layer).to.be.painted(0, 100);
@@ -133,7 +139,7 @@ describe('Geometry.AntiMeridian', function () {
 
     describe('circle on meridian', function () {
         it('paint at [180, 85]', function () {
-            var circle = new maptalks.Circle([180, 85], 1000000);
+            var circle = new maptalks.Circle([180, 85], 1000000, getGeoOptions());
             map.setCenter([180, 85]);
             layer.addGeometry(circle);
             expect(layer).to.be.painted(-10, 0);
@@ -145,7 +151,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('paint at [-180, -85]', function () {
             map.setCenter([-180, -85]);
-            var circle = new maptalks.Circle([-180, -85], 1000000);
+            var circle = new maptalks.Circle([-180, -85], 1000000, getGeoOptions());
             layer.addGeometry(circle);
             expect(layer).to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -158,7 +164,7 @@ describe('Geometry.AntiMeridian', function () {
     describe('ellipse on meridian', function () {
         it('paint at [180, 85]', function () {
             map.setCenter([180, 85]);
-            var ellipse = new maptalks.Ellipse([180, 85], 2000000, 2000000);
+            var ellipse = new maptalks.Ellipse([180, 85], 2000000, 2000000, getGeoOptions());
             layer.addGeometry(ellipse);
             expect(layer).to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -169,7 +175,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('paint at [-180, -85]', function () {
             map.setCenter([-180, -85]);
-            var ellipse = new maptalks.Ellipse([-180, -85], 2000000, 2000000);
+            var ellipse = new maptalks.Ellipse([-180, -85], 2000000, 2000000, getGeoOptions());
             layer.addGeometry(ellipse);
             expect(layer).to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -183,7 +189,7 @@ describe('Geometry.AntiMeridian', function () {
     describe('sector on meridian', function () {
         it('paint at [180, 85]', function () {
             map.setCenter([180, 85]);
-            var sector = new maptalks.Sector([180, 85], 1000000, 0, 360);
+            var sector = new maptalks.Sector([180, 85], 1000000, 0, 360, getGeoOptions());
             layer.addGeometry(sector);
             expect(layer).to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -194,7 +200,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('paint at [-180, -85]', function () {
             map.setCenter([-180, -85]);
-            var sector = new maptalks.Sector([-180, -85], 1000000, 0, 360);
+            var sector = new maptalks.Sector([-180, -85], 1000000, 0, 360, getGeoOptions());
             layer.addGeometry(sector);
             expect(layer).to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -207,7 +213,7 @@ describe('Geometry.AntiMeridian', function () {
     describe('rectangle on meridian', function () {
         it('paint at [180, 90]', function () {
             map.setCenter([180, 85]);
-            var rectangle = new maptalks.Rectangle([180, 85], 1000000, 500000);
+            var rectangle = new maptalks.Rectangle([180, 85], 1000000, 500000, getGeoOptions());
             layer.addGeometry(rectangle);
             expect(layer).not.to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
@@ -218,7 +224,7 @@ describe('Geometry.AntiMeridian', function () {
 
         it('paint at [-180, -85]', function () {
             map.setCenter([-180, -80]);
-            var rectangle = new maptalks.Rectangle([-180, -80], 1000000, 500000);
+            var rectangle = new maptalks.Rectangle([-180, -80], 1000000, 500000, getGeoOptions());
             layer.addGeometry(rectangle);
             expect(layer).not.to.be.painted(-10, 0);
             expect(layer).to.be.painted(10, 0);
