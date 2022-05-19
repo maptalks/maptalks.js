@@ -222,7 +222,7 @@ class Rectangle extends Polygon {
         const prjs = projection.projectCoords([
             new Coordinate(this._coordinates.x, se.y),
             new Coordinate(se.x, this._coordinates.y)
-        ]);
+        ], this.options['antiMeridian']);
         return new Extent(prjs[0], prjs[1]);
     }
 

@@ -42,6 +42,7 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Boolean} [options.dragShadow=true]    - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
  * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
+ * @property {Boolean}  [options.antiMeridian=false]   - geometry's antiMeridian
  * @memberOf Geometry
  * @instance
  */

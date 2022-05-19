@@ -75,7 +75,7 @@ class Path extends Geometry {
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
 
-        const prjAnimCoords = projection.projectCoords(animCoords);
+        const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']);
 
         this._prjAniShowCenter = this._getPrjExtent().getCenter();
         this._aniShowCenter = projection.unproject(this._prjAniShowCenter);
@@ -321,7 +321,7 @@ class Path extends Geometry {
     _projectCoords(points) {
         const projection = this._getProjection();
         if (projection) {
-            return projection.projectCoords(points);
+            return projection.projectCoords(points, this.options['antiMeridian']);
         }
         return [];
     }
