@@ -231,13 +231,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles };
         this.onDrawTileStart(context);
 
+        this._childTiles.forEach(t => this._drawTile(t.info, t.image));
+        this._parentTiles.forEach(t => this._drawTile(t.info, t.image));
+
         tiles.sort(this._compareTiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
             this._drawTileAndCache(tiles[i]);
         }
-
-        this._childTiles.forEach(t => this._drawTile(t.info, t.image));
-        this._parentTiles.forEach(t => this._drawTile(t.info, t.image));
 
         placeholders.forEach(t => this._drawTile(t.info, t.image));
 
