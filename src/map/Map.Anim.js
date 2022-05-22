@@ -58,8 +58,8 @@ Map.include(/** @lends Map.prototype */{
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
-                    const from = new Coordinate(currView[p]).toFixed(7),
-                        to = new Coordinate(view[p]).toFixed(7);
+                    const from = new Coordinate(currView[p]),
+                        to = new Coordinate(view[p]);
                     if (!from.equals(to)) {
                         props['center'] = [from, to];
                     }
