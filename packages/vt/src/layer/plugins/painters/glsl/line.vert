@@ -102,8 +102,6 @@ varying float vGammaScale;
 
             attribute vec4 aTexInfo;
             varying vec4 vTexInfo;
-
-            varying float vJoin;
         #endif
 
         #ifdef HAS_DASHARRAY
@@ -244,7 +242,8 @@ void main() {
                     vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
                     vGradIndex = aGradIndex;
                 #else
-                    vLinesofar = aLinesofar / tileRatio * scale;
+                    vLinesofar = (aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio) / tileRatio * scale;
+                    // vLinesofar = (aLinesofar) / tileRatio * scale;
                 #endif
             #endif
 
@@ -265,7 +264,6 @@ void main() {
 
             #ifdef HAS_PATTERN
                 vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
-                vJoin = aExtrude.z;
                 #ifdef HAS_PATTERN_ANIM
                     vLinePatternAnimSpeed = aLinePattern[0] / 127.0;
                 #endif

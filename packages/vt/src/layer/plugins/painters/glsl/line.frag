@@ -150,10 +150,10 @@ void main() {
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
             float patternx = mod(linesofar / plusGapWidth, 1.0);
             float patterny = mod((flipY * vNormal.y + 1.0) / 2.0, 1.0);
-            vec2 uvStart = vTexInfo.xy;
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
             // color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
-            color = mix(texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny))), vec4(0.0), sign(vJoin));
+            // color = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
+            color = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
             float inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
             color *= inGap;
         }

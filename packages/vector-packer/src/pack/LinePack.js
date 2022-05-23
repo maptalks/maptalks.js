@@ -5,6 +5,7 @@ import Color from 'color';
 import { isNil, hasOwn } from '../style/Util';
 import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import Point from '@mapbox/point-geometry';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -42,6 +43,10 @@ const LINE_DISTANCE_SCALE = 1;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
 
+
+const TEMP_NORMAL_1 = new Point();
+const TEMP_NORMAL_2 = new Point();
+const TEMP_NORMAL_3 = new Point();
 /**
  * 线类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
  * 设计上能直接在worker中执行
@@ -84,7 +89,7 @@ export default class LinePack extends VectorPack {
         ];
         if (this.iconAtlas) {
             //为了减少attribute，round在etrudeX的第七位中，up在extrudeY的第七位中
-            //extrudeZ存放了join信息
+            //extrudeZ存放normal distance
             format.push({
                 type: Int8Array,
                 width: 3,
@@ -409,7 +414,7 @@ export default class LinePack extends VectorPack {
     }
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
-        const needExtraVertex = this._hasPattern() || hasDasharray(this.feaDash) || hasDasharray(this.symbol['lineDasharray']);
+        const hasPattern = this._hasPattern() || hasDasharray(this.feaDash) || hasDasharray(this.symbol['lineDasharray']);
         this.overscaling = 1;
         // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
@@ -459,7 +464,8 @@ export default class LinePack extends VectorPack {
         // const segment = this.segments.prepareSegment(len * 10, this.layoutVertexArray, this.indexArray);
         const segment = {
             vertexLength: 0,
-            primitiveLength: 0
+            primitiveLength: 0,
+            currentNormal: null
         };
 
         let currentVertex;
@@ -498,6 +504,7 @@ export default class LinePack extends VectorPack {
             // If we still don't have a previous normal, this is the beginning of a
             // non-closed line, so we're doing a straight "join".
             prevNormal = prevNormal || nextNormal;
+            segment.currentNormal = prevNormal;
 
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
@@ -533,7 +540,7 @@ export default class LinePack extends VectorPack {
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
             const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
 
-            if (!needExtraVertex && isSharpCorner && i > first) {
+            if (isSharpCorner && i > first) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
@@ -572,21 +579,27 @@ export default class LinePack extends VectorPack {
             // Calculate how far along the line the currentVertex is
             if (prevVertex) this.updateDistance(prevVertex, currentVertex);
 
-            if (i > first && i < len - 1 || isPolygon && i === len - 1) {
-                //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
-                if (needExtraVertex/* || prevVertex && isOut(prevVertex, EXTENT)*/) {
-                    //back不能超过normal的x或者y，否则会出现绘制错误
-                    const back = this.feaJoinPatternMode ? 0 : -prevNormal.mag() * cosHalfAngle;
-                    //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                    this.addCurrentVertex(currentVertex, prevNormal, back, back, segment);
-                    this._inLineJoin = 1;
-                }
-            }
+            // if (i > first && i < len - 1 || isPolygon && i === len - 1) {
+            //     //前一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
+            //     if (hasPattern/* || prevVertex && isOut(prevVertex, EXTENT)*/) {
+            //         //back不能超过normal的x或者y，否则会出现绘制错误
+            //         const back = this.feaJoinPatternMode ? 0 : -prevNormal.mag() * cosHalfAngle;
+            //         //为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+            //         this.addCurrentVertex(currentVertex, prevNormal, back, back, segment);
+            //         this._inLineJoin = 1;
+            //     }
+            // }
 
             if (currentJoin === 'miter') {
 
                 joinNormal._mult(miterLength);
                 this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+
+                if (hasPattern) {
+                    // mitter两边的normal distance值不同，所以需要增加一个新端点
+                    segment.currentNormal = nextNormal;
+                    this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                }
 
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
@@ -637,6 +650,7 @@ export default class LinePack extends VectorPack {
 
                 if (nextVertex) {
                     // Start next segment
+                    segment.currentNormal = nextNormal;
                     this.addCurrentVertex(currentVertex, nextNormal, -offsetA, -offsetB, segment);
                 }
 
@@ -665,7 +679,7 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if (!needExtraVertex && isSharpCorner && i < len - 1) {
+            if (isSharpCorner && i < len - 1) {
                 const nextSegmentLength = currentVertex.dist(nextVertex);
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
@@ -675,17 +689,17 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            // if ((needExtraVertex || nextVertex && isOut(nextVertex, EXTENT)) &&
-            if (i > first && i < len - 1 || isPolygon && i === first) {
-                if (needExtraVertex) {
-                    delete this._inLineJoin;
-                    //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
-                    //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
-                    //端点往前移动forward距离，以免新端点和lineJoin产生重叠
-                    const forward = this.feaJoinPatternMode ? 0 : nextNormal.mag() * cosHalfAngle;
-                    this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
-                }
-            }
+            // if ((hasPattern || nextVertex && isOut(nextVertex, EXTENT)) &&
+            // if (i > first && i < len - 1 || isPolygon && i === first) {
+            //     if (hasPattern) {
+            //         delete this._inLineJoin;
+            //         //1. 为了实现dasharray，需要在join前后添加两个新端点，以保证计算dasharray时，linesofar的值是正确的
+            //         //2. 后一个端点在瓦片外时，额外增加一个端点，以免因为join和端点共用aPosition，瓦片内的像素会当做超出瓦片而被discard
+            //         //端点往前移动forward距离，以免新端点和lineJoin产生重叠
+            //         const forward = this.feaJoinPatternMode ? 0 : nextNormal.mag() * cosHalfAngle;
+            //         this.addCurrentVertex(currentVertex, nextNormal, forward, forward, segment);
+            //     }
+            // }
         }
     }
 
@@ -706,10 +720,28 @@ export default class LinePack extends VectorPack {
         const leftY = normal.y - normal.x * endLeft;
         const rightX = -normal.x + normal.y * endRight;
         const rightY = -normal.y - normal.x * endRight;
+        let leftNormalDistance = 0;
+        let rightNormalDistance = 0;
+        if (this._prevVertex) {
+            TEMP_NORMAL_1.x = leftX;
+            TEMP_NORMAL_1.y = leftY;
+            TEMP_NORMAL_2.x = rightX;
+            TEMP_NORMAL_2.y = rightY;
+            const segLeftNormal = segment.currentNormal;
+            const segRightNormal = TEMP_NORMAL_3;
+            segRightNormal.x = segLeftNormal.x;
+            segRightNormal.y = segLeftNormal.y;
+            segRightNormal._mult(-1);
 
-        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment);
-        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment);
+            leftNormalDistance = getNormalDistance(segLeftNormal, TEMP_NORMAL_1);
+            rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_2);
+        }
 
+        this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
+        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
+        if (!this._prevVertex) {
+            this._prevVertex = p;
+        }
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate
@@ -721,11 +753,11 @@ export default class LinePack extends VectorPack {
         }
     }
 
-    addHalfVertex({ x, y, z }, extrudeX, extrudeY, round, up, dir, segment) {
+    addHalfVertex({ x, y, z }, extrudeX, extrudeY, round, up, dir, segment, normalDistance) {
         // scale down so that we can store longer distances while sacrificing precision.
         const linesofar = this.scaledDistance * LINE_DISTANCE_SCALE;
 
-        this.fillData(this.data, x, y, z || 0, extrudeX, extrudeY, round, up, linesofar);
+        this.fillData(this.data, x, y, z || 0, extrudeX, extrudeY, round, up, linesofar, normalDistance);
 
         const e = segment.vertexLength++;
         if (this.e1 >= 0 && this.e2 >= 0) {
@@ -741,7 +773,7 @@ export default class LinePack extends VectorPack {
     }
 
     //参数会影响LineExtrusionPack中的addLineVertex方法
-    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar) {
+    fillData(data, x, y, altitude, extrudeX, extrudeY, round, up, linesofar, normalDistance) {
         const { lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn, lineColorFn, lineOpacityFn, lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         // debugger
         // if (this.options.center) {
@@ -768,8 +800,7 @@ export default class LinePack extends VectorPack {
         );
 
         if (this.iconAtlas) {
-            const join = (this._inLineJoin && this.feaJoinPatternMode ? 1 : 0);
-            data.aExtrude.push(join);
+            data.aExtrude.push(EXTRUDE_SCALE * normalDistance);
         }
 
         data.aLinesofar.push(linesofar);
@@ -927,4 +958,17 @@ function hasFeatureDash(features, zoom, fn) {
         }
     }
     return false;
+}
+
+const TEMP_D_NORMAL = new Point(0, 0);
+
+function getNormalDistance(perp, normal) {
+    const x = perp.mag();
+    const z = normal.mag();
+    TEMP_D_NORMAL.x = normal.x;
+    TEMP_D_NORMAL.y = normal.y;
+    const angle = perp.angleTo(TEMP_D_NORMAL._unit());
+    // 正值时是顺时针，就是回退，反之则是前进
+    const sign = Math.sign(angle);
+    return sign * Math.sqrt(z * z - x * x);
 }
