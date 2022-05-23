@@ -27,7 +27,7 @@
     attribute vec3 aPosition;
 #endif
 
-#if defined(HAS_PATTERN)
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
     attribute vec3 aExtrude;
 #else
     attribute vec2 aExtrude;
@@ -238,11 +238,12 @@ void main() {
         #endif
 
             #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+                float linesofar = aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio;
                 #ifdef HAS_GRADIENT
-                    vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
+                    vLinesofar = linesofar / MAX_LINE_DISTANCE;
                     vGradIndex = aGradIndex;
                 #else
-                    vLinesofar = (aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio) / tileRatio * scale;
+                    vLinesofar = linesofar / tileRatio * scale;
                     // vLinesofar = (aLinesofar) / tileRatio * scale;
                 #endif
             #endif

@@ -61,16 +61,19 @@ export default class LinePack extends VectorPack {
         super(features, symbol, options);
         let hasFeaDash = false;
         const { lineDasharrayFn, lineDashColorFn } = this._fnTypes;
+        this.hasGradient = this.symbol['lineGradientProperty'];
         if (lineDasharrayFn) {
             hasFeaDash = hasFeatureDash(features, this.options.zoom, lineDasharrayFn);
             if (hasFeaDash) {
                 this.dasharrayFn = lineDasharrayFn;
             }
         }
-        if ((hasDasharray(this.symbol['lineDasharray']) || hasFeaDash) &&
+        this.hasDasharray = hasDasharray(this.symbol['lineDasharray']) || hasFeaDash;
+        if ((this.hasDasharray) &&
             lineDashColorFn) {
             this.dashColorFn = lineDashColorFn;
         }
+
     }
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs) {
@@ -87,7 +90,7 @@ export default class LinePack extends VectorPack {
         const format = [
             ...this.getPositionFormat()
         ];
-        if (this.iconAtlas) {
+        if (this.iconAtlas || this.hasDasharray || this.hasGradient) {
             //为了减少attribute，round在etrudeX的第七位中，up在extrudeY的第七位中
             //extrudeZ存放normal distance
             format.push({
