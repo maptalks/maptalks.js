@@ -134,7 +134,7 @@ const options = {
     'cascadePitches': [10, 60],
     'renderable': true,
 
-    'clickTimeThreshold': 280,
+    'clickTimeThreshold': 280
 };
 
 /**

@@ -183,7 +183,7 @@ describe('Geometry.Ellipse', function () {
         var p2 = new maptalks.Point(400 + 10 + 2, 300);
         expect(geometry.containsPoint(p2)).to.be.ok();
 
-        var p1 = new maptalks.Point(400, 300 + 5 + 5);
+        var p1 = new maptalks.Point(400, 300 + 5 + 6);
         expect(geometry.containsPoint(p1)).not.to.be.ok();
 
         var p2 = new maptalks.Point(400, 300 + 5 + 3);

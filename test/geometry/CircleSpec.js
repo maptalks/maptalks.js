@@ -182,7 +182,7 @@ describe('Geometry.Circle', function () {
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
-        var p1 = new maptalks.Point(400 + 20 + 6, 300);
+        var p1 = new maptalks.Point(400 + 20 + 7, 300);
         expect(geometry.containsPoint(p1)).not.to.be.ok();
 
         var p2 = new maptalks.Point(400 + 20 + 2, 300);

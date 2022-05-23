@@ -191,7 +191,7 @@ describe('Geometry.LineString', function () {
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
 
-    it('containsPoint', function () {
+    it('LineString.containsPoint', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
             symbol : [{
@@ -204,10 +204,10 @@ describe('Geometry.LineString', function () {
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp)).to.be.ok();
-        expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-5, 0), 0)).not.to.be.ok();
         // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
         expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 5), 0)).not.to.be.ok();
     });
 
     it('containsPoint with lineCap', function () {
