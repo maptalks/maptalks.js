@@ -532,8 +532,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!painter) {
             return false;
         }
-        if (isNil(t) && this._hitTestTolerance) {
-            t = this._hitTestTolerance();
+        t = t || 0;
+        if (this._hitTestTolerance) {
+            t += this._hitTestTolerance();
         }
         return painter.hitTest(containerPoint, t);
     }
