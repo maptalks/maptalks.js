@@ -94,7 +94,6 @@ const featureStyle = [
                     'lineOpacity': 1,
                     'linePatternAnimSpeed': 0,
                     'linePatternFile': null,
-                    'lineJoinPatternMode': 0,
                     'lineWidth': 3,
                     'visible': true
                 },

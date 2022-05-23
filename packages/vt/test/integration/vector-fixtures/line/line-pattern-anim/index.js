@@ -22,8 +22,7 @@ const line3 = new maptalks.LineString([[-1.5, -0.6], [1.5, -0.6]], {
         lineWidth: 8,
         lineColor: '#f00',
         linePatternFile: 'file://' + path.resolve(__dirname, '../../../resources/black.png'),
-        linePatternAnimSpeed: 0.001,
-        lineJoinPatternMode: 1
+        linePatternAnimSpeed: 0.001
     }
 });
 
@@ -32,8 +31,7 @@ const line4 = new maptalks.LineString([[-1.5, -0.9], [1.5, -0.9]], {
         lineWidth: 8,
         lineColor: '#f00',
         linePatternFile: 'file://' + path.resolve(__dirname, '../../../resources/black.png'),
-        linePatternAnimSpeed: 0,
-        lineJoinPatternMode: 1
+        linePatternAnimSpeed: 0
     }
 });
 
