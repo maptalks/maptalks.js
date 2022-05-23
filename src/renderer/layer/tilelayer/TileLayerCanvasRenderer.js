@@ -82,7 +82,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this._tileZoom;
     }
 
-    draw() {
+    draw(timestamp, context) {
         const map = this.getMap();
         if (!this.isDrawable()) {
             return;
@@ -94,11 +94,53 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 return;
             }
         }
+        let tileGrids;
+        let hasFreshTiles = false;
+        const frameTileGrids = this._frameTileGrids;
+        if (frameTileGrids && timestamp === frameTileGrids.timestamp) {
+            if (frameTileGrids.empty) {
+                return;
+            }
+            tileGrids = frameTileGrids;
+        } else {
+            tileGrids = this._getTilesInCurrentFrame();
+            if (!tileGrids) {
+                this._frameTileGrids = { empty: true, timestamp };
+                this.completeRender();
+                return;
+            }
+            hasFreshTiles = true;
+            this._frameTileGrids = tileGrids;
+            this._frameTileGrids.timestamp = timestamp;
+            if (tileGrids.loadingCount) {
+                this.loadTileQueue(tileGrids.tileQueue);
+            }
+        }
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = tileGrids;
+
+        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
+        if (!loadingCount) {
+            if (!loading) {
+                //redraw to remove parent tiles if any left in last paint
+                if (!map.isAnimating() && (this._parentTiles.length || this._childTiles.length)) {
+                    this._parentTiles = [];
+                    this._childTiles = [];
+                    this.setToRedraw();
+                }
+                this.completeRender();
+            }
+        }
+        if (hasFreshTiles) {
+            this._retireTiles();
+        }
+    }
+
+    _getTilesInCurrentFrame() {
+        const map = this.getMap();
         const layer = this.layer;
         const tileGrids = layer.getTiles().tileGrids;
         if (!tileGrids || !tileGrids.length) {
-            this.completeRender();
-            return;
+            return null;
         }
         const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
         if (count >= (this.tileCache.max / 2)) {
@@ -197,28 +239,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             childTiles.length = 0;
             this._childTiles.length = 0;
         }
-        this._drawTiles(tiles, parentTiles, childTiles, placeholders);
-        if (!loadingCount) {
-            if (!loading) {
-                //redraw to remove parent tiles if any left in last paint
-                if (!map.isAnimating() && (this._parentTiles.length || this._childTiles.length)) {
-                    this._parentTiles = [];
-                    this._childTiles = [];
-                    this.setToRedraw();
-                }
-                this.completeRender();
-            }
-        } else {
-            this.loadTileQueue(tileQueue);
-        }
-        this._retireTiles();
+        return {
+            childTiles, parentTiles, tiles, placeholders, loading, loadingCount, tileQueue
+        };
     }
 
     isTileCachedOrLoading(tileId) {
         return this.tileCache.get(tileId) || this.tilesInView[tileId] || this.tilesLoading[tileId];
     }
 
-    _drawTiles(tiles, parentTiles, childTiles, placeholders) {
+    _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext) {
         if (parentTiles.length) {
             //closer the latter (to draw on top)
             parentTiles.sort((t1, t2) => Math.abs(t2.info.z - this._tileZoom) - Math.abs(t1.info.z - this._tileZoom));
@@ -228,41 +258,48 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._childTiles = childTiles;
         }
 
-        const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles };
-        this.onDrawTileStart(context);
+        const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
+        this.onDrawTileStart(context, parentContext);
 
-        this._childTiles.forEach(t => this._drawTile(t.info, t.image));
-        this._parentTiles.forEach(t => this._drawTile(t.info, t.image));
+        if (this.layer.options['opacity'] === 1) {
+            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        }
 
         tiles.sort(this._compareTiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
-            this._drawTileAndCache(tiles[i]);
+            this._drawTileAndCache(tiles[i], parentContext);
         }
 
-        placeholders.forEach(t => this._drawTile(t.info, t.image));
+        if (this.layer.options['opacity'] < 1) {
+            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        }
 
-        this.onDrawTileEnd(context);
+        placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
+
+        this.onDrawTileEnd(context, parentContext);
 
     }
 
     onDrawTileStart() { }
     onDrawTileEnd() { }
 
-    _drawTile(info, image) {
+    _drawTile(info, image, parentContext) {
         if (image) {
-            this.drawTile(info, image);
+            this.drawTile(info, image, parentContext);
         }
     }
 
-    _drawTileAndCache(tile) {
+    _drawTileAndCache(tile, parentContext) {
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
-        this._drawTile(tile.info, tile.image);
+        this._drawTile(tile.info, tile.image, parentContext);
         this.tileCache.add(tile.info.id, tile);
     }
 
-    drawOnInteracting() {
-        this.draw();
+    drawOnInteracting(event, timestamp, context) {
+        this.draw(timestamp, context);
     }
 
     needToRedraw() {
