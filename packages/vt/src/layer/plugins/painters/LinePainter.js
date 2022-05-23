@@ -399,10 +399,6 @@ class LinePainter extends BasicPainter {
         ];
     }
 
-    _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
-        return super._isNeedRefreshStyle(oldSymbolDef, newSymbolDef) || oldSymbolDef['lineJoinPatternMode'] !== newSymbolDef['lineJoinPatternMode'];
-    }
-
     updateSceneConfig(config) {
         if (config.trailAnimation) {
             this.createShader(this._context);

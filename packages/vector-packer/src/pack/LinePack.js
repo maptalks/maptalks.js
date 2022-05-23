@@ -216,7 +216,7 @@ export default class LinePack extends VectorPack {
 
     placeVector(line) {
         const { lineJoinFn, lineCapFn, lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn,
-            lineColorFn, lineOpacityFn, lineJoinPatternModeFn,
+            lineColorFn, lineOpacityFn,
             lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const symbol = this.symbol,
             miterLimit = 2,
@@ -348,12 +348,6 @@ export default class LinePack extends VectorPack {
                 this.feaTexInfo[3] = displaySize[1] - 3;
             } else {
                 this.feaTexInfo[0] = this.feaTexInfo[1] = this.feaTexInfo[2] = this.feaTexInfo[3] = 0;
-            }
-            //feaJoinPatternMode为1时，把join部分用uvStart的像素代替
-            if (lineJoinPatternModeFn) {
-                this.feaJoinPatternMode = lineJoinPatternModeFn(this.options['zoom'], properties) || 0;
-            } else {
-                this.feaJoinPatternMode = symbol['lineJoinPatternMode'] || 0;
             }
         }
         if (lineDxFn) {

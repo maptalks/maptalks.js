@@ -307,11 +307,6 @@ export const LINE_SYMBOL = {
         default: 0,
         property: '_symbol_linePatternGap'
     },
-    lineJoinPatternMode: {
-        type: 'identity',
-        default: 0,
-        property: '_symbol_lineJoinPatternMode'
-    },
     lineOpacity: {
         type: 'identity',
         default: 1,
