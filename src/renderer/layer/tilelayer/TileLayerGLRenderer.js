@@ -5,6 +5,8 @@ import Point from '../../../geo/Point';
 
 const TILE_POINT = new Point(0, 0);
 
+const MESH_TO_TEST = { properties: {}};
+
 /**
  * @classdesc
  * Renderer class based on HTML5 WebGL for TileLayers
@@ -29,12 +31,34 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
-    onDrawTileStart() {
+    onDrawTileStart(context, parentContext) {
         const gl = this.gl;
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                const framebuffer = parentContext.renderTarget.getFramebuffer(fbo);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            }
+        }
     }
 
-    drawTile(tileInfo, tileImage) {
+    onDrawTileEnd(context, parentContext) {
+        const gl = this.gl;
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            }
+        }
+    }
+
+    drawTile(tileInfo, tileImage, parentContext) {
+        if (parentContext && parentContext.sceneFilter) {
+            if (!parentContext.sceneFilter(MESH_TO_TEST)) {
+                return;
+            }
+        }
         const map = this.getMap();
         if (!tileInfo || !map || !tileImage) {
             return;
