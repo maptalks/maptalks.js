@@ -27,7 +27,7 @@
     attribute vec3 aPosition;
 #endif
 
-#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
+#if defined(HAS_PATTERN) || defined(HAS_DASHARRAY)
     attribute vec3 aExtrude;
 #else
     attribute vec2 aExtrude;
@@ -238,11 +238,12 @@ void main() {
         #endif
 
             #if defined(HAS_PATTERN) || defined(HAS_DASHARRAY) || defined(HAS_GRADIENT)
-                float linesofar = aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio;
                 #ifdef HAS_GRADIENT
-                    vLinesofar = linesofar / MAX_LINE_DISTANCE;
+                    vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
                     vGradIndex = aGradIndex;
                 #else
+                    // /scale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
+                    float linesofar = aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio;
                     vLinesofar = linesofar / tileRatio * scale;
                     // vLinesofar = (aLinesofar) / tileRatio * scale;
                 #endif
