@@ -82,6 +82,7 @@ const TEMP_COORD = new Coordinate(0, 0);
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
+ * @property {Number} [options.geometryEventsTolerance=1]        - tolerance for geometry events
  * @memberOf Map
  * @instance
  */
@@ -135,6 +136,8 @@ const options = {
     'renderable': true,
 
     'clickTimeThreshold': 280,
+
+    'geometryEventsTolerance': 1
 };
 
 /**

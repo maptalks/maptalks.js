@@ -125,11 +125,24 @@ class VectorLayer extends OverlayLayer {
         if (imageData) {
             const r = map.getDevicePixelRatio();
             imageData.r = r;
-            const x = Math.round(cp.x * r),
-                y = Math.round(cp.y * r);
-            const idx = y * imageData.width * 4 + x * 4;
+            let hit = false;
+            for (let i = -tolerance; i <= tolerance; i++) {
+                for (let j = -tolerance; j <= tolerance; j++) {
+                    const x = Math.round((cp.x + i) * r),
+                        y = Math.round((cp.y + j) * r);
+                    const idx = y * imageData.width * 4 + x * 4;
+                    if (imageData.data[idx + 3] > 0) {
+                        hit = true;
+                        break;
+                    }
+                }
+                if (hit) {
+                    break;
+                }
+            }
+
             //空白的直接返回，避免下面的逻辑,假设有50%的概率不命中(要么命中,要么不命中)，可以节省大量的时间
-            if (imageData.data[idx + 3] === 0) {
+            if (!hit) {
                 return hits;
             }
         }

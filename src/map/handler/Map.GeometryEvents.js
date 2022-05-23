@@ -255,7 +255,8 @@ class MapGeometryEventsHandler extends Handler {
             'count': 1,
             'containerPoint': containerPoint,
             'onlyVisible': map.options['onlyVisibleGeometryEvents'],
-            'layers': layers
+            'layers': layers,
+            'tolerance': map.options['geometryEventsTolerance'] || 0
         };
         const callback = fireGeometryEvent.bind(this);
 
