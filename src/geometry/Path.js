@@ -399,7 +399,7 @@ class Path extends Geometry {
         } else {
             w = symbol['lineWidth'];
         }
-        return isNumber(w) ? w / 2 : 1.5;
+        return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
     _coords2Extent(coords, proj) {

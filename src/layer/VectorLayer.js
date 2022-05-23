@@ -25,6 +25,7 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Boolean} [options.roundPoint=false]  - round point before painting to improve performance, but will cause geometry shaking in animation
  * @property {Number} [options.altitude=0]           - layer altitude
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
+ * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
  * @memberOf VectorLayer
  * @instance
  */
@@ -41,7 +42,8 @@ const options = {
     'sortByDistanceToCamera': false,
     'roundPoint': false,
     'altitude': 0,
-    'clipBBoxBufferSize': 3
+    'clipBBoxBufferSize': 3,
+    'geometryEventTolerance': 1
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
@@ -117,12 +119,20 @@ class VectorLayer extends OverlayLayer {
 
     _hitGeos(geometries, cp, options = {}) {
         const filter = options['filter'],
-            tolerance = options['tolerance'],
             hits = [];
+        let tolerance = options['tolerance'] || 0;
         const map = this.getMap();
         const renderer = this.getRenderer();
         const imageData = renderer && renderer.getImageData && renderer.getImageData();
         if (imageData) {
+            if (!tolerance) {
+                for (let i = geometries.length - 1; i >= 0; i--) {
+                    const t = geometries[i]._hitTestTolerance();
+                    if (t > tolerance) {
+                        tolerance = t;
+                    }
+                }
+            }
             const r = map.getDevicePixelRatio();
             imageData.r = r;
             let hit = false;

@@ -1390,6 +1390,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return properties;
     }
 
+    _hitTestTolerance() {
+        const layer = this.getLayer();
+        return layer && layer.options['geometryEventTolerance'] || 0;
+    }
+
 
     //------------- altitude + layer.altitude -------------
     getAltitude() {
