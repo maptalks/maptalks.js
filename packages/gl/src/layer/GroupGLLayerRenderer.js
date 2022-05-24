@@ -290,7 +290,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return true;
         }
         const map = this.getMap();
-        if (map.isInteracting() && this._groundPainter && this._groundPainter.isEnable()) {
+        if (map.isInteracting() && (this._groundPainter && this._groundPainter.isEnable() || this._envPainter && this._envPainter.isEnable())) {
             return true;
         }
         if (this._weatherPainter && this._weatherPainter.isEnable()) {
@@ -350,6 +350,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     isBlank() {
         if (this._groundPainter && this._groundPainter.isEnable()) {
+            return false;
+        }
+        if (this._envPainter && this._envPainter.isEnable()) {
             return false;
         }
         const layers = this.layer.getLayers();
