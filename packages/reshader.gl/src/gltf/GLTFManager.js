@@ -1,9 +1,10 @@
 import * as GLTFHelper  from '../GLTFHelper.js';
 
 export default class GLTFManager {
-    constructor(regl) {
+    constructor(regl, requestor) {
         this.regl = regl;
         this.resourceMap = {};
+        this._requestor = requestor;
     }
 
     getGLTF(url) {
@@ -12,13 +13,12 @@ export default class GLTFManager {
 
     loginGLTF(url, gltf) {
         if (!this.resourceMap[url]) {
-            //传入载入好的gltf数据不需要再载入
-            this.resourceMap[url] = gltf ? this._exportGLTFResource(gltf, url) : this._loadGLTFModel(url).catch(e => {
-                return e;
-            });
-            this.resourceMap[url].refCount = 1;
-        } else {
-            this.resourceMap[url].refCount += 1;
+            this.resourceMap[url] = this._requestor(url);
+        } else if (this.resourceMap[url].then && gltf) {
+            this.resourceMap[url] = this._exportGLTFResource(gltf, url);
+        }
+        if (gltf) {
+            this.resourceMap[url].refCount = !this.resourceMap[url].refCount ? 1 : this.resourceMap[url].refCount + 1;
         }
     }
 
@@ -57,18 +57,5 @@ export default class GLTFManager {
             refCount: this.resourceMap[url] ? this.resourceMap[url].refCount : 0 //这里不能设置为0，由于是异步，会把前面累增的量重置为0
         };
         return resourceMap;
-    }
-
-    _loadData(url) {
-        return GLTFHelper.load(url).then(gltfData => {
-            return gltfData;
-        });
-    }
-
-    _loadGLTFModel(url) {
-        return this._loadData(url).then(data => {
-            this.resourceMap[url] = this._exportGLTFResource(data, url);
-            return this.resourceMap[url];
-        });
     }
 }
