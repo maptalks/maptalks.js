@@ -44,7 +44,9 @@ const LINE_DISTANCE_SCALE = 1;
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
 
 
-const TEMP_NORMAL = new Point();
+const TEMP_NORMAL_1 = new Point();
+const TEMP_NORMAL_2 = new Point();
+const TEMP_NORMAL_3 = new Point();
 /**
  * 线类型数据，负责输入feature和symbol后，生成能直接赋给shader的arraybuffer
  * 设计上能直接在worker中执行
@@ -717,14 +719,31 @@ export default class LinePack extends VectorPack {
         const rightX = -normal.x + normal.y * endRight;
         const rightY = -normal.y - normal.x * endRight;
         let leftNormalDistance = 0;
+        let rightNormalDistance = 0;
         if (segment.middleVertex) {
-            TEMP_NORMAL.x = leftX;
-            TEMP_NORMAL.y = leftY;
-            leftNormalDistance = getNormalDistance(segment.currentNormal, TEMP_NORMAL);
+            TEMP_NORMAL_1.x = leftX;
+            TEMP_NORMAL_1.y = leftY;
+            TEMP_NORMAL_2.x = rightX;
+            TEMP_NORMAL_2.y = rightY;
+            const segLeftNormal = segment.currentNormal;
+            // debugger
+            leftNormalDistance = getNormalDistance(segLeftNormal, TEMP_NORMAL_1);
+            if (endLeft === 0 && endRight === 0) {
+                // endLeft和endRight为0时，rightNormalDistance一定是-leftNormalDistance
+                // miter时能保证计算正确
+                rightNormalDistance = -leftNormalDistance;
+            } else {
+                // miter时 rightNormalDistance 的计算是错误的
+                const segRightNormal = TEMP_NORMAL_3;
+                segRightNormal.x = segLeftNormal.x;
+                segRightNormal.y = segLeftNormal.y;
+                segRightNormal._mult(-1);
+                rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_2);
+            }
         }
 
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
-        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, -leftNormalDistance);
+        this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate
