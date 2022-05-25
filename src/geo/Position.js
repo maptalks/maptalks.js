@@ -123,7 +123,7 @@ class Position {
      * @return {Coordinate|Point} copy
      */
     copy() {
-        return new this.constructor(this.x, this.y);
+        return new this.constructor(this.x, this.y, this.z);
     }
 
     //destructive add
@@ -273,7 +273,7 @@ class Position {
      * @return {Number[]} number array
      */
     toArray() {
-        return [this.x, this.y];
+        return [this.x, this.y, this.z];
     }
 
     /**
