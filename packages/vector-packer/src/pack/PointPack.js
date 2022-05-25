@@ -7,7 +7,6 @@ import Color from 'color';
 import { isOut, isNil, wrap, isString } from './util/util';
 import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
-import { isFnTypeSymbol } from '../style/Util';
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
