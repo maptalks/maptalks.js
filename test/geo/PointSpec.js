@@ -14,7 +14,7 @@ describe('#Point', function () {
         });
 
         it('can be created by a object with x,y', function () {
-            var c = new maptalks.Point({ x:0, y:0 });
+            var c = new maptalks.Point({ x: 0, y: 0 });
             expect(c.x).to.be.eql(0);
             expect(c.y).to.be.eql(0);
         });
@@ -163,14 +163,14 @@ describe('#Point', function () {
             var c = new maptalks.Point(-2, -3);
             var t = c.toJSON();
             expect(t).to.be.eql({
-                x : -2,
-                y : -3
+                x: -2,
+                y: -3
             });
         });
 
         it('can toArray', function () {
             var c1 = new maptalks.Point(2, 3);
-            expect(c1.toArray()).to.be.eql([2, 3]);
+            expect(c1.toArray()).to.be.eql([2, 3, 0]);
         });
     });
 });

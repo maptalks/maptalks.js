@@ -21,7 +21,7 @@ describe('#Sector', function () {
     it('setCoordinates', function () {
         var sector = new maptalks.Sector({ x: 0, y: 0 }, 1, 30, 60);
         sector.setCoordinates({ x: 180, y: -75 });
-        expect(sector.getCoordinates().toArray()).to.be.eql([180, -75]);
+        expect(sector.getCoordinates().toArray()).to.be.eql([180, -75, 0]);
     });
 
     it('getCenter', function () {
@@ -141,7 +141,7 @@ describe('#Sector', function () {
             evaluate();
             vector.remove();
             //canvas
-            layer = new maptalks.VectorLayer('canvas', { render:'canvas' });
+            layer = new maptalks.VectorLayer('canvas', { render: 'canvas' });
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();

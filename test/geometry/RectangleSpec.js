@@ -8,8 +8,8 @@ describe('Geometry.Rectangle', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 800,
-            height : 600
+            width: 800,
+            height: 600
         });
         container = setups.container;
         map = setups.map;
@@ -26,7 +26,7 @@ describe('Geometry.Rectangle', function () {
     it('setCoordinates', function () {
         var rect = new maptalks.Rectangle({ x: 0, y: 0 }, 200, 100);
         rect.setCoordinates([180, -70]);
-        expect(rect.getCoordinates().toArray()).to.be.eql([180, -70]);
+        expect(rect.getCoordinates().toArray()).to.be.eql([180, -70, 0]);
     });
 
     it('getCenter', function () {
@@ -141,7 +141,7 @@ describe('Geometry.Rectangle', function () {
             };
 
             var vector = new maptalks.Rectangle(center, 100, 200, {
-                symbol : symbol
+                symbol: symbol
             });
 
             var layer = new maptalks.VectorLayer('svg');
@@ -192,7 +192,7 @@ describe('Geometry.Rectangle', function () {
             evaluate();
             vector.remove();
             //canvas
-            layer = new maptalks.VectorLayer('canvas', { render:'canvas' });
+            layer = new maptalks.VectorLayer('canvas', { render: 'canvas' });
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
@@ -262,14 +262,14 @@ describe('Geometry.Rectangle', function () {
 
         function createMap(fullExtent) {
             imap = new maptalks.Map(div, {
-                center:     [0, 0],
-                zoom:  4,
-                spatialReference : {
-                  projection : 'identity',
-                  resolutions : [
-                    32, 16, 8, 4, 2, 1
-                  ],
-                  fullExtent : fullExtent
+                center: [0, 0],
+                zoom: 4,
+                spatialReference: {
+                    projection: 'identity',
+                    resolutions: [
+                        32, 16, 8, 4, 2, 1
+                    ],
+                    fullExtent: fullExtent
                 }
             });
             ilayer = new maptalks.VectorLayer('id');
@@ -286,17 +286,17 @@ describe('Geometry.Rectangle', function () {
 
             var rectangle = new maptalks.Rectangle([0, 0], 100, 500).addTo(ilayer);
             expect(rectangle.getExtent().toJSON()).to.be.eql({
-                xmin : 0,
-                xmax : 100,
-                ymin : -500,
-                ymax : 0
+                xmin: 0,
+                xmax: 100,
+                ymin: -500,
+                ymax: 0
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
-                [0, 0],
-                [100, 0],
-                [100, -500],
-                [0, -500],
-                [0, 0]
+                [0, 0, 0],
+                [100, 0, 0],
+                [100, -500, 0],
+                [0, -500, 0],
+                [0, 0, 0]
             ]);
         });
 
@@ -310,17 +310,17 @@ describe('Geometry.Rectangle', function () {
 
             var rectangle = new maptalks.Rectangle([0, 0], 100, 500).addTo(ilayer);
             expect(rectangle.getExtent().toJSON()).to.be.eql({
-                xmin : 0,
-                xmax : 100,
-                ymin : 0,
-                ymax : 500
+                xmin: 0,
+                xmax: 100,
+                ymin: 0,
+                ymax: 500
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
-                [0, 0],
-                [100, 0],
-                [100, 500],
-                [0, 500],
-                [0, 0]
+                [0, 0, 0],
+                [100, 0, 0],
+                [100, 500, 0],
+                [0, 500, 0],
+                [0, 0, 0]
             ]);
         })
     });

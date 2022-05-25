@@ -446,7 +446,7 @@ describe('Map.Spec', function () {
             });
             var newCenter = map.getCenter().toArray();
             newCenter[1] = Math.round(newCenter[1]);
-            expect(newCenter).to.be.eql([3, 6]);
+            expect(newCenter).to.be.eql([3, 6, 0]);
         });
     });
 
@@ -543,7 +543,7 @@ describe('Map.Spec', function () {
         it('fire resize when dom\'s size is changed', function (done) {
             map.on('resize', function (param) {
                 expect(param).to.be.ok();
-                expect(map.getViewPoint().toArray()).to.be.eql([0, 0]);
+                expect(map.getViewPoint().toArray()).to.be.eql([0, 0, 0]);
                 expect(map.getCenter().x).to.be.approx(center.x);
                 expect(map.getCenter().y).to.be.approx(center.y);
                 done();

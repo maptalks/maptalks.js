@@ -34,12 +34,12 @@ describe('TileLayer with Offset Specs', function () {
     it('tiles with dynamic offset', function () {
         createMap(16, 80, 1);
         var tile = new maptalks.TileLayer('tile', {
-            offset:  function (z) {
-              //实时计算wgs84和gcj02瓦片的偏移量
-              var center = map.getCenter();
-              var c = maptalks.CRSTransform.transform(center.toArray(), 'WGS84', 'GCJ02');
-              var offset = map.coordToPoint(center, z).sub(map.coordToPoint(new maptalks.Coordinate(c), z));
-              return offset._round().toArray();
+            offset: function (z) {
+                //实时计算wgs84和gcj02瓦片的偏移量
+                var center = map.getCenter();
+                var c = maptalks.CRSTransform.transform(center.toArray(), 'WGS84', 'GCJ02');
+                var offset = map.coordToPoint(center, z).sub(map.coordToPoint(new maptalks.Coordinate(c), z));
+                return offset._round().toArray();
             },
             renderer: 'canvas',
             urlTemplate: '#'
@@ -47,7 +47,7 @@ describe('TileLayer with Offset Specs', function () {
         var tiles = tile.getTiles();
         expect(tiles.tileGrids.length).to.be.eql(1);
         expect(tiles.tileGrids[0].tiles.length).to.be.eql(37);
-        expect(tile._getTileOffset(tiles.tileGrids[0].tiles[0].z)).to.be.eql([-207, 109]);
+        expect(tile._getTileOffset(tiles.tileGrids[0].tiles[0].z)).to.be.eql([-207, 109, 0]);
         // console.log(tiles.tileGrids[0].tiles[0]);
 
     });
