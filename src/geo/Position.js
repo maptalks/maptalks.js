@@ -273,7 +273,7 @@ class Position {
      * @return {Number[]} number array
      */
     toArray() {
-        return [this.x, this.y, this.z];
+        return [this.x, this.y];
     }
 
     /**
