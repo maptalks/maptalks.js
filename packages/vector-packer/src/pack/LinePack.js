@@ -108,7 +108,7 @@ export default class LinePack extends VectorPack {
         format.push(
             //当前点距离起点的距离
             {
-                type: Uint16Array,
+                type: this.options.positionType || Uint16Array,
                 width: 1,
                 name: 'aLinesofar'
             }
