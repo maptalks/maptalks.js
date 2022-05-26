@@ -8,8 +8,8 @@ describe('Geometry.Ellipse', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 800,
-            height : 600
+            width: 800,
+            height: 600
         });
         container = setups.container;
         map = setups.map;
@@ -133,7 +133,7 @@ describe('Geometry.Ellipse', function () {
             evaluate();
             vector.remove();
             //canvas
-            layer = new maptalks.VectorLayer('canvas', { render:'canvas' });
+            layer = new maptalks.VectorLayer('canvas', { render: 'canvas' });
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
@@ -173,7 +173,7 @@ describe('Geometry.Ellipse', function () {
                 'lineWidth': 6
             }
         });
-        layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
         map.addLayer(layer);
         layer.addGeometry(geometry);
 

@@ -34,12 +34,12 @@ describe('TileLayer with Offset Specs', function () {
     it('tiles with dynamic offset', function () {
         createMap(16, 80, 1);
         var tile = new maptalks.TileLayer('tile', {
-            offset:  function (z) {
-              //实时计算wgs84和gcj02瓦片的偏移量
-              var center = map.getCenter();
-              var c = maptalks.CRSTransform.transform(center.toArray(), 'WGS84', 'GCJ02');
-              var offset = map.coordToPoint(center, z).sub(map.coordToPoint(new maptalks.Coordinate(c), z));
-              return offset._round().toArray();
+            offset: function (z) {
+                //实时计算wgs84和gcj02瓦片的偏移量
+                var center = map.getCenter();
+                var c = maptalks.CRSTransform.transform(center.toArray(), 'WGS84', 'GCJ02');
+                var offset = map.coordToPoint(center, z).sub(map.coordToPoint(new maptalks.Coordinate(c), z));
+                return offset._round().toArray();
             },
             renderer: 'canvas',
             urlTemplate: '#'

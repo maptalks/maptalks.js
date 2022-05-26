@@ -8,8 +8,8 @@ describe('Geometry.Marker', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 300,
-            height : 200
+            width: 300,
+            height: 200
         });
         container = setups.container;
         map = setups.map;
@@ -37,7 +37,7 @@ describe('Geometry.Marker', function () {
     it('getExtent', function () {
         var marker = new maptalks.Marker({ x: 0, y: 0 });
 
-        expect(marker.getExtent().toJSON()).to.be.eql({ xmin : 0, xmax : 0, ymin : 0, ymax : 0 });
+        expect(marker.getExtent().toJSON()).to.be.eql({ xmin: 0, xmax: 0, ymin: 0, ymax: 0 });
 
     });
 
@@ -100,7 +100,7 @@ describe('Geometry.Marker', function () {
     describe('symbol', function () {
 
         beforeEach(function () {
-            layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+            layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
             map.addLayer(layer);
         });
 
@@ -127,9 +127,9 @@ describe('Geometry.Marker', function () {
         it('can be text', function () {
             var marker = new maptalks.Marker(center, {
                 symbol: {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000'
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000'
                 }
             });
 
@@ -146,11 +146,11 @@ describe('Geometry.Marker', function () {
                     symbol: {
                         markerType: types[i],
                         markerLineDasharray: [20, 10, 5, 5, 5, 10],
-                        markerWidth : 10,
-                        markerHeight : 20
+                        markerWidth: 10,
+                        markerHeight: 20
                     }
                 });
-                var layer = new maptalks.VectorLayer('id' + i, { 'drawImmediate' : true }).addTo(map);
+                var layer = new maptalks.VectorLayer('id' + i, { 'drawImmediate': true }).addTo(map);
                 layer.addGeometry(marker);
                 if (types[i] === 'rectangle') {
                     expect(layer).to.be.painted(1, 1);
@@ -163,18 +163,18 @@ describe('Geometry.Marker', function () {
         });
 
         it('can be vector with undefined size', function (done) {
-                var marker = new maptalks.Marker(center, {
-                    symbol: {
-                        markerType: 'ellipse'
-                    }
-                });
-                layer.once('layerload', function () {
-                    expect(layer).to.be.painted(0, 0);
-                    done();
-                });
-                layer.addGeometry(marker);
-                expect(marker.getSize().toArray()).to.be.eql([12, 12]);
+            var marker = new maptalks.Marker(center, {
+                symbol: {
+                    markerType: 'ellipse'
+                }
             });
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, 0);
+                done();
+            });
+            layer.addGeometry(marker);
+            expect(marker.getSize().toArray()).to.be.eql([12, 12]);
+        });
 
         context('image marker with alignment', function () {
             it('bottom-right', function (done) {
@@ -183,8 +183,8 @@ describe('Geometry.Marker', function () {
                         markerFile: 'images/control/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
-                        markerHorizontalAlignment : 'right',
-                        markerVerticalAlignment : 'bottom',
+                        markerHorizontalAlignment: 'right',
+                        markerVerticalAlignment: 'bottom',
                     }
                 });
                 layer.once('layerload', function () {
@@ -202,8 +202,8 @@ describe('Geometry.Marker', function () {
                         markerFile: 'images/control/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
-                        markerHorizontalAlignment : 'left',
-                        markerVerticalAlignment : 'top',
+                        markerHorizontalAlignment: 'left',
+                        markerVerticalAlignment: 'top',
                     }
                 });
                 layer.once('layerload', function () {
@@ -221,8 +221,8 @@ describe('Geometry.Marker', function () {
                         markerFile: 'images/control/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
-                        markerHorizontalAlignment : 'middle',
-                        markerVerticalAlignment : 'middle'
+                        markerHorizontalAlignment: 'middle',
+                        markerVerticalAlignment: 'middle'
                     }
                 });
                 layer.once('layerload', function () {
@@ -237,21 +237,21 @@ describe('Geometry.Marker', function () {
 
             it('multiple symbols with different alignments', function (done) {
                 var marker = new maptalks.Label('■■■■■■■■■', center, {
-                  'textSymbol': {
-                    'textFaceName': 'monospace',
-                    'textFill' : '#fff',
-                    'textLineSpacing': 1,
-                    'textHorizontalAlignment': 'right',
-                    'textDx': 15
-                  },
-                  'boxStyle' : {
-                    'padding' : [6, 2],
-                    'symbol' : {
-                      'markerType' : 'square',
-                      'markerFill' : '#000',
-                      'markerLineColor' : '#b4b3b3'
+                    'textSymbol': {
+                        'textFaceName': 'monospace',
+                        'textFill': '#fff',
+                        'textLineSpacing': 1,
+                        'textHorizontalAlignment': 'right',
+                        'textDx': 15
+                    },
+                    'boxStyle': {
+                        'padding': [6, 2],
+                        'symbol': {
+                            'markerType': 'square',
+                            'markerFill': '#000',
+                            'markerLineColor': '#b4b3b3'
+                        }
                     }
-                  }
                 });
                 layer.once('layerload', function () {
                     expect(layer).to.be.painted(11, 0, [0, 0, 0, 255]);
@@ -268,10 +268,10 @@ describe('Geometry.Marker', function () {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
                         markerType: 'ellipse',
-                        markerWidth : 10,
-                        markerHeight : 20,
-                        markerHorizontalAlignment : 'right',
-                        markerVerticalAlignment : 'bottom',
+                        markerWidth: 10,
+                        markerHeight: 20,
+                        markerHorizontalAlignment: 'right',
+                        markerVerticalAlignment: 'bottom',
                     }
                 });
                 layer.once('layerload', function () {
@@ -291,10 +291,10 @@ describe('Geometry.Marker', function () {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
                         markerType: 'pin',
-                        markerWidth : 10,
-                        markerHeight : 20,
-                        markerHorizontalAlignment : 'right',
-                        markerVerticalAlignment : 'bottom',
+                        markerWidth: 10,
+                        markerHeight: 20,
+                        markerHorizontalAlignment: 'right',
+                        markerVerticalAlignment: 'bottom',
                     }
                 });
                 layer.once('layerload', function () {
@@ -310,10 +310,10 @@ describe('Geometry.Marker', function () {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
                         markerType: 'rectangle',
-                        markerWidth : 10,
-                        markerHeight : 20,
-                        'markerVerticalAlignment' : 'middle',
-                        'markerHorizontalAlignment' : 'middle'
+                        markerWidth: 10,
+                        markerHeight: 20,
+                        'markerVerticalAlignment': 'middle',
+                        'markerHorizontalAlignment': 'middle'
                     }
                 });
                 layer.once('layerload', function () {
@@ -335,25 +335,25 @@ describe('Geometry.Marker', function () {
             var marker = new maptalks.Marker(center);
             marker.on('symbolchange', spy);
             marker.setSymbol({
-                'markerType' : 'ellipse',
+                'markerType': 'ellipse',
                 'markerLineColor': '#ff0000',
                 'markerFill': '#ffffff',
                 'markerFillOpacity': 0.6,
-                'markerHeight' : 8,
-                'markerWidth' : 8
+                'markerHeight': 8,
+                'markerWidth': 8
             });
 
             expect(spy.called).to.be.ok();
         });
 
         it('unsuppored markerType', function () {
-            var layer = new maptalks.VectorLayer('vector', { 'drawImmediate' : true });
+            var layer = new maptalks.VectorLayer('vector', { 'drawImmediate': true });
             map.addLayer(layer);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol:{
-                    'markerType' : 'unsupported',
-                    'markerWidth':20,
-                    'markerHeight':30
+                symbol: {
+                    'markerType': 'unsupported',
+                    'markerWidth': 20,
+                    'markerHeight': 30
                 }
             });
             expect(function () {
@@ -370,10 +370,10 @@ describe('Geometry.Marker', function () {
                     done();
                 });
                 e.target.setSymbol({
-                    'markerType' : 'ellipse',
-                    'markerFill' : '#0f0',
-                    'markerWidth' : 20,
-                    'markerHeight' : 20
+                    'markerType': 'ellipse',
+                    'markerFill': '#0f0',
+                    'markerWidth': 20,
+                    'markerHeight': 20
                 });
             });
             layer.once('layerload', function () {
@@ -384,8 +384,8 @@ describe('Geometry.Marker', function () {
 
         it('change marker file by updateSymbol', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerFile' : 'resources/tile-256.png'
+                symbol: {
+                    'markerFile': 'resources/tile-256.png'
                 }
             });
             var layer = new maptalks.VectorLayer('vector', [marker]);
@@ -397,7 +397,7 @@ describe('Geometry.Marker', function () {
                     done();
                 });
                 marker.updateSymbol({
-                    'markerFile' : 'resources/pattern.png'
+                    'markerFile': 'resources/pattern.png'
                 });
             });
             layer.addTo(map);
@@ -421,11 +421,11 @@ describe('Geometry.Marker', function () {
 
         var geometry = new maptalks.Marker(center, {
             symbol: {
-                markerFile : 'images/control/infownd-close-hover.png',
-                markerHeight : 30,
-                markerWidth : 22,
-                dx : 0,
-                dy : 0
+                markerFile: 'images/control/infownd-close-hover.png',
+                markerHeight: 30,
+                markerWidth: 22,
+                dx: 0,
+                dy: 0
             }
         });
         layer = new maptalks.VectorLayer('id');
@@ -446,7 +446,7 @@ describe('Geometry.Marker', function () {
     it('get image marker\'s extent', function (done) {
         var geometry = new maptalks.Marker(map.getExtent().getMin().substract(1E-7, 0), {
             symbol: {
-                markerFile : 'images/control/infownd-close-hover.png'
+                markerFile: 'images/control/infownd-close-hover.png'
             }
         });
         layer = new maptalks.VectorLayer('id').addGeometry(geometry);
@@ -459,14 +459,14 @@ describe('Geometry.Marker', function () {
 
     it('vector marker size with shadowBlur', function () {
         var marker = new maptalks.Marker(map.getCenter(), {
-            symbol : {
-                markerType : 'ellipse',
-                markerWidth : 40,
-                markerHeight : 40,
+            symbol: {
+                markerType: 'ellipse',
+                markerWidth: 40,
+                markerHeight: 40,
                 shadowBlur: 20
             }
         });
-        var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+        var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
         layer.addGeometry([marker]);
         var size = marker.getSize();
         expect(size.width).to.be.above(60);
@@ -482,13 +482,13 @@ describe('Geometry.Marker', function () {
         it('vector marker\'s size changes with zoom', function (done) {
             map.config('zoomAnimation', false);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : { stops: [[7, 8], [14, 20]] },
-                    markerHeight : { stops: [[7, 8], [14, 20]] }
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: { stops: [[7, 8], [14, 20]] },
+                    markerHeight: { stops: [[7, 8], [14, 20]] }
                 }
             });
-            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
             layer.addGeometry([marker]);
             expect(layer).to.be.painted(10, 0);
             map.setZoom(7);
@@ -503,17 +503,17 @@ describe('Geometry.Marker', function () {
         it('vector marker\'s dx, dy with zoom', function (done) {
             map.config('zoomAnimation', false);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    markerType : 'ellipse',
-                    markerWidth : 10,
-                    markerHeight : 10,
-                    markerDx : { stops: [[7, 8], [14, 20]] },
-                    markerDy : { stops: [[7, 8], [14, 20]] },
+                symbol: {
+                    markerType: 'ellipse',
+                    markerWidth: 10,
+                    markerHeight: 10,
+                    markerDx: { stops: [[7, 8], [14, 20]] },
+                    markerDy: { stops: [[7, 8], [14, 20]] },
 
-                    shadowBlur : 2
+                    shadowBlur: 2
                 }
             });
-            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
             layer.addGeometry([marker]);
             expect(layer).to.be.painted(21, 21);
             map.setZoom(7);
@@ -527,13 +527,13 @@ describe('Geometry.Marker', function () {
         it('text marker\'s size changes with zoom', function (done) {
             map.config('zoomAnimation', false);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : { stops: [[7, 8], [14, 20]] },
-                    textFill : '#000'
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: { stops: [[7, 8], [14, 20]] },
+                    textFill: '#000'
                 }
             });
-            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
             layer.addGeometry([marker]);
             expect(layer).to.be.painted(52, 0);
             map.setZoom(7);
@@ -555,15 +555,15 @@ describe('Geometry.Marker', function () {
         it('text dx dy changes with zoom', function (done) {
             map.config('zoomAnimation', false);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000',
-                    textDx : { stops: [[7, 8], [14, 20]] },
-                    textDy : { stops: [[7, 8], [14, 20]] }
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000',
+                    textDx: { stops: [[7, 8], [14, 20]] },
+                    textDy: { stops: [[7, 8], [14, 20]] }
                 }
             });
-            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
             layer.addGeometry([marker]);
             expect(layer).to.be.painted(72, 20);
             map.setZoom(7);
@@ -585,24 +585,24 @@ describe('Geometry.Marker', function () {
         it('text marker redraws when properties updated', function () {
             map.config('zoomAnimation', false);
             var marker = new maptalks.Marker(map.getCenter(), {
-                properties : {
-                    text : '■■■■■■■■■'
+                properties: {
+                    text: '■■■■■■■■■'
                 },
-                symbol : {
-                    textName : '{text}',
-                    textSize : { stops: [[7, 8], [14, 20]] },
-                    textFill : '#000'
+                symbol: {
+                    textName: '{text}',
+                    textSize: { stops: [[7, 8], [14, 20]] },
+                    textFill: '#000'
                 }
             });
-            var layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer('id', { 'drawImmediate': true }).addTo(map);
             layer.addGeometry([marker]);
             expect(layer).to.be.painted(52, 0);
             marker.setProperties({
-                text : '1'
+                text: '1'
             });
             expect(layer).not.to.be.painted(52, 0);
             marker.config('properties', {
-                text : '■■■■■■■■■'
+                text: '■■■■■■■■■'
             });
             expect(layer).to.be.painted(52, 0);
         });
@@ -613,7 +613,7 @@ describe('Geometry.Marker', function () {
                 return;
             }
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
+                symbol: {
                     'markerType': 'path',
                     'markerPath': [{
                         'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
@@ -621,8 +621,8 @@ describe('Geometry.Marker', function () {
                     }],
                     'markerPathWidth': 16,
                     'markerPathHeight': 23,
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
+                    'markerWidth': 8,
+                    'markerHeight': 20,
                     'markerFill': {
                         type: 'identity',
                         property: 'color'
@@ -650,11 +650,11 @@ describe('Geometry.Marker', function () {
     describe('marker rotation', function () {
         it('rotate image marker', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerFile' : 'resources/tile.png',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
+                symbol: {
+                    'markerFile': 'resources/tile.png',
+                    'markerWidth': 8,
+                    'markerHeight': 20,
+                    'markerRotation': 45
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
@@ -673,13 +673,13 @@ describe('Geometry.Marker', function () {
             }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerFile' : 'resources/tile.png',
-                    'markerWidth'  : 10,
-                    'markerHeight' : 20,
-                    'markerRotation' : {
-                        property : '{bearing}',
-                        type : 'identity'
+                symbol: {
+                    'markerFile': 'resources/tile.png',
+                    'markerWidth': 10,
+                    'markerHeight': 20,
+                    'markerRotation': {
+                        property: '{bearing}',
+                        type: 'identity'
                     }
                 }
             });
@@ -694,11 +694,11 @@ describe('Geometry.Marker', function () {
 
         it('rotate vector marker', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    'markerType' : 'bar',
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
+                symbol: {
+                    'markerType': 'bar',
+                    'markerWidth': 8,
+                    'markerHeight': 20,
+                    'markerRotation': 45
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
@@ -717,7 +717,7 @@ describe('Geometry.Marker', function () {
                 return;
             }
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
+                symbol: {
                     'markerType': 'path',
                     'markerPath': [{
                         'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
@@ -725,9 +725,9 @@ describe('Geometry.Marker', function () {
                     }],
                     'markerPathWidth': 16,
                     'markerPathHeight': 23,
-                    'markerWidth'  : 8,
-                    'markerHeight' : 20,
-                    'markerRotation' : 45
+                    'markerWidth': 8,
+                    'markerHeight': 20,
+                    'markerRotation': 45
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
@@ -745,11 +745,11 @@ describe('Geometry.Marker', function () {
                 return;
             }
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000',
-                    textRotation : 45
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000',
+                    textRotation: 45
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
@@ -768,13 +768,13 @@ describe('Geometry.Marker', function () {
             }
             map.setBearing(45);
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000',
-                    textRotation : {
-                        type : 'identity',
-                        property : '{bearing}'
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000',
+                    textRotation: {
+                        type: 'identity',
+                        property: '{bearing}'
                     }
                 }
             });
@@ -789,13 +789,13 @@ describe('Geometry.Marker', function () {
 
         it('rotate text marker with dx dy', function (done) {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000',
-                    textRotation : 45,
-                    textDx : 50,
-                    textDy : 50
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000',
+                    textRotation: 45,
+                    textDx: 50,
+                    textDy: 50
                 }
             });
             var layer = new maptalks.VectorLayer('vector', marker);
@@ -815,17 +815,17 @@ describe('Geometry.Marker', function () {
 
         it('rotate text marker outline', function () {
             var marker = new maptalks.Marker(map.getCenter(), {
-                symbol : {
-                    textName : '■■■■■■■■■',
-                    textSize : 20,
-                    textFill : '#000',
-                    textRotation : 45,
-                    textDx : 50,
-                    textDy : 50
+                symbol: {
+                    textName: '■■■■■■■■■',
+                    textSize: 20,
+                    textFill: '#000',
+                    textRotation: 45,
+                    textDx: 50,
+                    textDy: 50
                 }
             });
-            var layer = new maptalks.VectorLayer('vector', marker, { 'drawImmediate' : true }).addTo(map);
-            var outline = marker.getOutline().updateSymbol({ markerFill : '#0f0' }).addTo(layer);
+            var layer = new maptalks.VectorLayer('vector', marker, { 'drawImmediate': true }).addTo(map);
+            var outline = marker.getOutline().updateSymbol({ markerFill: '#0f0' }).addTo(layer);
             // expect(layer).to.not.be.painted();
             expect(layer).to.be.painted(50, -10, [0, 255, 0]);
         });
