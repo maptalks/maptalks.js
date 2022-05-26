@@ -25,7 +25,7 @@ describe('Geometry.Circle', function () {
     it('setCoordinates', function () {
         var circle = new maptalks.Circle({ x: 0, y: 0 }, 1);
         circle.setCoordinates({ x: 1, y: 1 });
-        expect(circle.getCoordinates().toArray()).to.be.eql([1, 1, 0]);
+        expect(circle.getCoordinates().toArray()).to.be.eql([1, 1]);
     });
 
     it('getCenter', function () {

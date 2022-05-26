@@ -65,7 +65,7 @@ describe('Geometry.InfoWindow', function () {
         marker.openInfoWindow();
         var w = marker.getInfoWindow();
         var position = w._getViewPoint();
-        expect(position.round().toArray()).to.be.eql([633, 25, 0]);
+        expect(position.round().toArray()).to.be.eql([633, 25]);
     });
 
     it('custom infowindow position', function () {
@@ -84,9 +84,9 @@ describe('Geometry.InfoWindow', function () {
         var w = marker.getInfoWindow();
         var position = w.getPosition();
         if (maptalks.Browser.ie) {
-            expect(position.round().toArray()).to.be.eql([433, -86, 0]);
+            expect(position.round().toArray()).to.be.eql([433, -86]);
         } else {
-            expect(position.round().toArray()).to.be.eql([433, -109, 0]);
+            expect(position.round().toArray()).to.be.eql([433, -109]);
         }
     });
 
@@ -104,7 +104,7 @@ describe('Geometry.InfoWindow', function () {
         setTimeout(function () {
             var w = marker.getInfoWindow();
             var position = w._getViewPoint();
-            expect(position.round().toArray()).to.be.eql([400, 300, 0]);
+            expect(position.round().toArray()).to.be.eql([400, 300]);
             done();
         }, 2);
     });
@@ -123,7 +123,7 @@ describe('Geometry.InfoWindow', function () {
         setTimeout(function () {
             var w = marker.getInfoWindow();
             var position = w._getViewPoint();
-            expect(position.round().toArray()).to.be.eql([400, 300, 0]);
+            expect(position.round().toArray()).to.be.eql([400, 300]);
             done();
         }, 2);
     });

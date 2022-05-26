@@ -26,7 +26,7 @@ describe('Geometry.Ellipse', function () {
         var ellipse = new maptalks.Ellipse({ x: 0, y: 0 }, 1, 1);
 
         ellipse.setCoordinates({ x: -180, y: -75 });
-        expect(ellipse.getCoordinates().toArray()).to.be.eql([-180, -75, 0]);
+        expect(ellipse.getCoordinates().toArray()).to.be.eql([-180, -75]);
     });
 
     it('getCenter', function () {

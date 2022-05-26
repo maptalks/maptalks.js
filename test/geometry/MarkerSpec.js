@@ -26,12 +26,12 @@ describe('Geometry.Marker', function () {
     it('setCoordinates', function () {
         var marker = new maptalks.Marker([0, 0]);
         marker.setCoordinates([1, 1]);
-        expect(marker.getCoordinates().toArray()).to.be.eql([1, 1, 0]);
+        expect(marker.getCoordinates().toArray()).to.be.eql([1, 1]);
     });
 
     it('getCenter', function () {
         var marker = new maptalks.Marker({ x: 0, y: 0 });
-        expect(marker.getCenter().toArray()).to.be.eql([0, 0, 0]);
+        expect(marker.getCenter().toArray()).to.be.eql([0, 0]);
     });
 
     it('getExtent', function () {
@@ -843,7 +843,7 @@ describe('Geometry.Marker', function () {
             var marker = new maptalks.Marker(map.getCenter());
             marker.rotate(10, map.getCenter().sub(1, 1));
             var newCoords = marker.getCoordinates().toArray();
-            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579005, 0]);
+            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579005]);
         });
     });
 });

@@ -89,7 +89,7 @@ describe('Coordinate', function () {
 
         it('can toArray', function () {
             var c1 = new maptalks.Coordinate(new maptalks.Coordinate(2, 3));
-            expect(c1.toArray()).to.be.eql([2, 3, 0]);
+            expect(c1.toArray()).to.be.eql([2, 3]);
         });
 
         it('can toJSON', function () {

@@ -170,7 +170,7 @@ describe('#Point', function () {
 
         it('can toArray', function () {
             var c1 = new maptalks.Point(2, 3);
-            expect(c1.toArray()).to.be.eql([2, 3, 0]);
+            expect(c1.toArray()).to.be.eql([2, 3]);
         });
     });
 });

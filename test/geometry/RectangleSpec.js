@@ -26,7 +26,7 @@ describe('Geometry.Rectangle', function () {
     it('setCoordinates', function () {
         var rect = new maptalks.Rectangle({ x: 0, y: 0 }, 200, 100);
         rect.setCoordinates([180, -70]);
-        expect(rect.getCoordinates().toArray()).to.be.eql([180, -70, 0]);
+        expect(rect.getCoordinates().toArray()).to.be.eql([180, -70]);
     });
 
     it('getCenter', function () {
@@ -57,7 +57,7 @@ describe('Geometry.Rectangle', function () {
         var w = rect.getWidth();
         var h = rect.getHeight();
 
-        expect(nw).to.eql({ x: 0, y: 0, z: 0 });
+        expect(nw).to.eql({ x: 0, y: 0, z: undefined });
         expect(w).to.eql(200);
         expect(h).to.eql(100);
     });
@@ -71,7 +71,7 @@ describe('Geometry.Rectangle', function () {
         var w = rect.getWidth();
         var h = rect.getHeight();
 
-        expect(nw).to.eql({ x: -180, y: 75, z: 0 });
+        expect(nw).to.eql({ x: -180, y: 75, z: undefined });
         expect(w).to.eql(401);
         expect(h).to.eql(201);
     });
@@ -292,11 +292,11 @@ describe('Geometry.Rectangle', function () {
                 ymax: 0
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
-                [0, 0, 0],
+                [0, 0],
                 [100, 0, 0],
                 [100, -500, 0],
                 [0, -500, 0],
-                [0, 0, 0]
+                [0, 0]
             ]);
         });
 
@@ -316,11 +316,11 @@ describe('Geometry.Rectangle', function () {
                 ymax: 500
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
-                [0, 0, 0],
+                [0, 0],
                 [100, 0, 0],
                 [100, 500, 0],
                 [0, 500, 0],
-                [0, 0, 0]
+                [0, 0]
             ]);
         })
     });

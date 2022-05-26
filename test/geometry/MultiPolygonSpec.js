@@ -36,7 +36,7 @@ describe('Geometry.MultiPolygon', function () {
             ]
         ];
         mp.setCoordinates(coords);
-        expect(mp.getCenter().toArray()).to.be.eql([5, 5, 0]);
+        expect(mp.getCenter().toArray()).to.be.eql([5, 5]);
     });
 
     it('getCenterInExtent', function () {

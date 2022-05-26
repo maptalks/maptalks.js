@@ -26,7 +26,7 @@ describe('#MultiPoint', function () {
 
     it('getCenter', function () {
         var points = new maptalks.MultiPoint([[0, 0], [1, 1], [2, 2]]);
-        expect(points.getCenter().toArray()).to.eql([1, 1, 0]);
+        expect(points.getCenter().toArray()).to.eql([1, 1]);
     });
 
     it('getExtent', function () {
@@ -57,11 +57,11 @@ describe('#MultiPoint', function () {
             }
         );
         var extent = multipoint.getExtent();
-        expect(extent.toArray()).to.be.eql([{ x: -0.131049, y: 51.498568, z: 0 },
-        { x: -0.107049, y: 51.498568, z: 0 },
-        { x: -0.107049, y: 51.493568, z: 0 },
-        { x: -0.131049, y: 51.493568, z: 0 },
-        { x: -0.131049, y: 51.498568, z: 0 }]);
+        expect(extent.toArray()).to.be.eql([{ x: -0.131049, y: 51.498568, z: undefined },
+        { x: -0.107049, y: 51.498568, z: undefined },
+        { x: -0.107049, y: 51.493568, z: undefined },
+        { x: -0.131049, y: 51.493568, z: undefined },
+        { x: -0.131049, y: 51.498568, z: undefined }]);
     });
 
     it('getSize', function () {
