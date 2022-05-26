@@ -1,4 +1,4 @@
-import { isNil } from '../core/util/common';
+import { isNil, isNumber } from '../core/util/common';
 
 /**
  * Abstract parent class for Point and Coordinate
@@ -20,15 +20,15 @@ class Position {
             /**
              * @property z {Number} - z value, it's a pure property and doesn't take part in caculation for now.
              */
-            this.z = +(z || 0);
+            this.z = z;
         } else if (!isNil(x.x) && !isNil(x.y)) {
             this.x = +(x.x);
             this.y = +(x.y);
-            this.z = +(x.z || 0);
+            this.z = x.z;
         } else if (Array.isArray(x)) {
             this.x = +(x[0]);
             this.y = +(x[1]);
-            this.z = +(x[2] || 0);
+            this.z = x[2];
         }
         if (this._isNaN()) {
             throw new Error('Position is NaN');
@@ -273,7 +273,10 @@ class Position {
      * @return {Number[]} number array
      */
     toArray() {
-        return [this.x, this.y, this.z];
+        if (isNumber(this.z)) {
+            return [this.x, this.y, this.z];
+        }
+        return [this.x, this.y];
     }
 
     /**
