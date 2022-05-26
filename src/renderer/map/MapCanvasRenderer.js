@@ -906,7 +906,6 @@ class MapCanvasRenderer extends MapRenderer {
         if (this._hitDetectFrame) {
             cancelAnimFrame(this._hitDetectFrame);
         }
-        console.log(param);
         this._hitDetectFrame = requestAnimFrame(() => {
             this.hitDetect(param['containerPoint']);
         });
