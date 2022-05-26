@@ -121,15 +121,15 @@ describe('update style specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        group.on('layerload', () => {
+        map.on('renderend', () => {
             count++;
-            if (count === 3) {
+            if (count === 8) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.setId('newId');
                 group.removeLayer('newId');
-            } else if (count === 4) {
+            } else if (count === 9) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[0] === 0);
@@ -1063,7 +1063,7 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, new Uint8ClampedArray([13, 11, 52, 255]));
+                    assert.deepEqual(pixel, new Uint8ClampedArray([14, 11, 52, 255]));
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });
