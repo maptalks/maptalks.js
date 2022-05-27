@@ -2446,6 +2446,9 @@ Map.include(/** @lends Map.prototype */{
         const POINT = new Point(0, 0);
         return function (altitude = 0, res, originCenter) {
             const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
+            if (altitude < 0 && p.x > 0) {
+                p.x = -p.x;
+            }
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
                 p.x *= heightFactor;
