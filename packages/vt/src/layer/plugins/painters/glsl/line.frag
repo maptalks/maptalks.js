@@ -153,7 +153,7 @@ void main() {
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
             // color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
             // color = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
-            color = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
+            color *= texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
             float inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
             color *= inGap;
         }
