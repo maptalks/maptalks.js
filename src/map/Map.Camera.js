@@ -451,7 +451,7 @@ Map.include(/** @lends Map.prototype */{
         // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         let farZ = cameraCenterDistance;
-        let y = 4 * cameraCenterDistance;
+        let y = (this.options['cameraInfiniteFar'] ? 10 : 4) * cameraCenterDistance;
         if (pitch > 0) {
             pitch = pitch * Math.PI / 180;
             if (2 / Math.PI - pitch > fov / 2) {
