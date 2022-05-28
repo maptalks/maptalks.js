@@ -4,7 +4,7 @@ import { SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
 import { extend, isNumber, hasOwn, getCentiMeterScale } from '../../common/Util';
-import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL } from './util/symbols';
+import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL, SYMBOL_PREFIX, LINE_GRADIENT_PROP_KEY } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
@@ -43,7 +43,7 @@ import convertToPainterFeatures from '../renderer/utils/convert_to_painter_featu
 // };
 
 let meshUID = 1;
-const prefix = '_symbol_';
+const prefix = (SYMBOL_PREFIX + '').trim();
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
 
@@ -127,12 +127,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const isDefaultRender = !renderMode || renderMode === 'default';
         const context = this._preparePaintContext();
         let polygonOffset = 0;
-        if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
-            this.painter.startFrame(context);
-            this.painter.addMesh(this.meshes, null, { bloom: 1 });
-            this.painter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset++;
-            this.painter.render(context);
+        if (this.layer.options['meshRenderOrder'] === 0) {
+            this._renderMeshes(context, polygonOffset, renderMode);
         }
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
@@ -141,6 +137,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._linePainter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
             this._linePainter.render(context);
+        }
+
+        if (this.layer.options['meshRenderOrder'] === 1) {
+            this._renderMeshes(context, polygonOffset, renderMode);
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
@@ -160,6 +160,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (isDefaultRender || parentContext && parentContext.isFinalRender) {
             this.completeRender();
             this.layer.fire('canvasisdirty');
+        }
+    }
+
+    _renderMeshes(context, polygonOffset, renderMode) {
+        const isDefaultRender = !renderMode || renderMode === 'default';
+        if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
+            this.painter.startFrame(context);
+            this.painter.addMesh(this.meshes, null, { bloom: 1 });
+            this.painter.prepareRender(context);
+            context.polygonOffsetIndex = polygonOffset++;
+            this.painter.render(context);
         }
     }
 
@@ -1388,9 +1399,11 @@ function hasTextSymbol({ properties }) {
     return properties[keyName];
 }
 
+const lineWidthName = (prefix + 'lineWidth').trim();
+const lineGradientPropertyName = (LINE_GRADIENT_PROP_KEY + '').trim();
+
 function hasLineSymbol(fea) {
-    const lineWidthName = (prefix + 'lineWidth').trim();
-    return fea.type === 2 || (fea.type === 3 && !!fea.properties[lineWidthName]);
+    return fea.type === 2 && !fea.properties[lineGradientPropertyName] || (fea.type === 3 && !!fea.properties[lineWidthName]);
 }
 
 function dashLength(dash) {

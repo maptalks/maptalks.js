@@ -3,10 +3,6 @@ import { reshader } from '@maptalks/gl';
 import { extend, getUniqueIds } from '../Util';
 
 export default class BasicPainter extends Painter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
-    }
-
 
     createGeometry(glData, features) {
         if (!glData.data) {

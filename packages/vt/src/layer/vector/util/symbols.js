@@ -274,7 +274,7 @@ export const LINE_SYMBOL = {
     },
     lineColor: {
         type: 'identity',
-        default: [1, 0, 0, 1],
+        default: [1, 1, 1, 1],
         property: '_symbol_lineColor'
     },
     lineStrokeColor: {
@@ -333,3 +333,7 @@ export const LINE_SYMBOL = {
         property: '_symbol_lineDashColor'
     }
 };
+
+export const SYMBOL_PREFIX = '_symbol_';
+
+export const LINE_GRADIENT_PROP_KEY = '_line_gradient_property';

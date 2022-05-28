@@ -1,6 +1,7 @@
 import { extend, hasOwn } from '../../../common/Util';
 import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
+import { LINE_GRADIENT_PROP_KEY } from './symbols';
 
 const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
@@ -53,6 +54,14 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']();
+    let lineGradientProperty = symbol['lineGradientProperty'];
+    if (lineGradientProperty) {
+        properties[LINE_GRADIENT_PROP_KEY] = properties[lineGradientProperty];
+        properties['mapbox_clip_start'] = 0;
+        properties['mapbox_clip_end'] = 1;
+        delete properties[lineGradientProperty];
+    }
+    delete symbol['lineGradientProperty'];
     const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0][keyName] : currentFeature[keyName]) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
@@ -86,6 +95,9 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 properties[keyName] = symbol[p];
             }
         }
+    }
+    if (lineGradientProperty) {
+        symbol['lineGradientProperty'] = lineGradientProperty;
     }
     const pickingId = currentFeature ? currentFeature.id : kidGen.pickingId++;
     const feature = {
