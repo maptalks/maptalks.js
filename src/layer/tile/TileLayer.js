@@ -1,4 +1,14 @@
-import { IS_NODE, isNil, isNumber, isArrayHasData, isFunction, isInteger, toRadian, isString } from '../../core/util';
+import {
+    IS_NODE,
+    isNil,
+    isNumber,
+    isArrayHasData,
+    isFunction,
+    isInteger,
+    toRadian,
+    isString,
+    extend
+} from '../../core/util';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -72,6 +82,7 @@ class TileHashset {
  * @property {Number}              [options.zoomOffset=0]           - offset from map's zoom to tile's zoom
  * @property {Number}              [options.tileRetryCount=0]       - retry count of tiles
  * @property {String}              [options.errorUrl=null]       - image to replace when encountering error on loading tile image
+ * @property {Object}              [options.customTags=null]    - custom tag values in urlTemplate, e.g. { foo: 'bar' } for http://path/to/{z}/{x}/{y}?foo={foo}
  * @property {Boolean}             [options.decodeImageInWorker=false]  - decode image in worker, for better performance if the server support
  * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
  * @property {Object}              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
@@ -680,6 +691,9 @@ class TileLayer extends Layer {
         };
         if (this.options.token) {
             data.token = this.options.token;
+        }
+        if (this.options.customTags) {
+            extend(data, this.options.customTags);
         }
         return urlTemplate.replace(URL_PATTERN, function (str, key) {
             let value = data[key];
