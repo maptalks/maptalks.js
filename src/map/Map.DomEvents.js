@@ -302,9 +302,9 @@ Map.include(/** @lends Map.prototype */ {
         let eventParam = {
             'domEvent': e
         };
-        if (type !== 'keypress' && e.clientX !== undefined) {
+        if (type !== 'keypress') {
             const actual = this._getActualEvent(e);
-            if (actual) {
+            if (actual && actual.clientX !== undefined) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam = extend(eventParam, {
                     'containerPoint': containerPoint,
