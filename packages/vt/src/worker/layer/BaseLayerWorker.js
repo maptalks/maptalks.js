@@ -1,6 +1,6 @@
-import { extend, getIndexArrayType, compileStyle, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
+import { extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, FilterUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -533,7 +533,7 @@ export default class BaseLayerWorker {
                 style.filter = ['==', '$id', style.id];
             }
         });
-        const pluginConfigs = compileStyle(style);
+        const pluginConfigs = FilterUtil.compileStyle(style);
         for (let i = 0; i < style.length; i++) {
             if (pluginConfigs[i].filter) {
                 // filter.value 是为方便studio，定义的对象结构
@@ -544,7 +544,7 @@ export default class BaseLayerWorker {
         }
 
         const featurePlugins = [];
-        const compiledFeatureStyle = compileStyle(featureStyle);
+        const compiledFeatureStyle = FilterUtil.compileStyle(featureStyle);
         for (let i = 0; i < featureStyle.length; i++) {
             compiledFeatureStyle[i].type = 1;
             // 定义def，是为了与默认样式相区分(默认样式的filter没有def)

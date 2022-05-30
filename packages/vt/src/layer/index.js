@@ -10,8 +10,7 @@ import PointLayer from './vector/PointLayer';
 import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
 import initialize from './initialize';
-import { PackUtil, SYMBOLS_NEED_REBUILD_IN_VT,  SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
-import * as VTUtil from '../common/Util';
+import { PackUtil, FilterUtil, SYMBOLS_NEED_REBUILD_IN_VT,  SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 
 reshader.ShaderLib.register('vt_position_vert', positionVert);
 
@@ -34,5 +33,5 @@ export {
     PackUtil,
     SYMBOLS_NEED_REBUILD_IN_VT,
     SYMBOLS_NEED_REBUILD_IN_VECTOR,
-    VTUtil
+    FilterUtil
 };

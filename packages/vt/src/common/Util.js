@@ -1,7 +1,5 @@
-import { createFilter } from '@maptalks/feature-filter';
 import { isFunctionDefinition } from '@maptalks/function-type';
-import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
-const { isExpressionFilter } = expression;
+
 
 let id = 0;
 export function uid() {
@@ -186,16 +184,6 @@ export function getPosArrayType(max) {
     return Float32Array;
 }
 
-export function compileStyle(styles) {
-    styles = styles.map(s => {
-        const style = extend({}, s);
-        if (style.filter && style.filter.value) {
-            style.filter = style.filter.value;
-        }
-        return style;
-    });
-    return compile(styles);
-}
 
 export function isFnTypeSymbol(v) {
     return isFunctionDefinition(v) && v.property;
@@ -205,54 +193,7 @@ export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-const EVALUATION_PARAM = {};
 
-export function compile(styles) {
-    if (!Array.isArray(styles)) {
-        return compile([styles]);
-    }
-    const compiled = [];
-    for (let i = 0; i < styles.length; i++) {
-        let filter;
-        if (styles[i]['filter'] === true) {
-            filter = function () { return true; };
-        } else {
-            filter = compileFilterFn(styles[i].filter);
-        }
-        compiled.push(extend({}, styles[i], {
-            filter: filter
-        }));
-    }
-    return compiled;
-}
-
-function compileFilterFn(filterValue) {
-    if (filterValue === true) {
-        return function () { return true; };
-    }
-    if (filterValue && filterValue.condition) {
-        const filterFn = compileFilterFn(filterValue.condition);
-        if (isNil(filterValue.layer)) {
-            return filterFn;
-        }
-        const check = feature => {
-            return feature.layer === filterValue.layer;
-        };
-        return feature => {
-            return check(feature) && filterFn(feature);
-        };
-    }
-    if (isExpressionFilter(filterValue)) {
-        let expression = createExpressionFilter(filterValue);
-        expression = expression && expression.filter;
-        const filterFn = feature => {
-            return expression && expression(EVALUATION_PARAM, feature);
-        };
-        return filterFn;
-    } else {
-        return createFilter(filterValue);
-    }
-}
 
 export function getCentiMeterScale(res, map) {
     let p;

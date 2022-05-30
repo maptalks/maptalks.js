@@ -7,11 +7,11 @@ import { RGBAImage, AlphaImage } from '../Image';
 import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
 import { loadFunctionTypes, interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { createFilter } from '@maptalks/feature-filter';
 import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
 import { packPosition/*, unpackPosition*/ } from './util/pack_position';
+import { compileFilter } from '../style/Filter';
 
 const interpolatedSymbols = {
     'lineWidth': 1,
@@ -230,7 +230,7 @@ export default class VectorPack {
                 if (!orders[i]) {
                     continue;
                 }
-                orderFilters.push(createFilter(orders[i]));
+                orderFilters.push(compileFilter(orders[i]));
             }
             checked = checked.sort((a, b) => {
                 const l = orderFilters.length;
