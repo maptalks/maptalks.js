@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { toJSON } from '../../../common/Util';
+import { uid, toJSON } from '../../../common/Util';
 import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 
 // GeoJSONVectorLayer caches data in memory, should use a dedicated worker.
@@ -12,7 +12,7 @@ export default class WorkerConnection extends maptalks.worker.Actor {
         const mapId = layer.getMap().id;
         this._layer = layer;
         this._mapId = mapId;
-        this._workerLayerId = 'vt_' + maptalks.Util.UID();
+        this._workerLayerId = 'vt_' + uid();
         const type = layer.getJSONType();
         this._isDedicated = dedicatedLayers.indexOf(type) >= 0;
         this._dedicatedVTWorkers = {};
