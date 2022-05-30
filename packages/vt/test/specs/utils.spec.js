@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { PackUtil, Util } = require('../../dist/maptalks.vt.js');
+const { PackUtil, VTUtil } = require('../../dist/maptalks.vt.js');
 
 describe('util specs', () => {
     it('rtl text conversion', () => {
@@ -100,7 +100,7 @@ describe('pack position', () => {
 
 describe('compile filter specs', () => {
     it('normal filter', () => {
-        const compiled = Util.compileStyle([
+        const compiled = VTUtil.compileStyle([
             {
                 filter: ['==', 'foo', 'bar'],
                 symbol: {
@@ -119,7 +119,7 @@ describe('compile filter specs', () => {
     });
 
     it('filter with condition and layer', () => {
-        const compiled = Util.compileStyle([
+        const compiled = VTUtil.compileStyle([
             {
                 filter: {
                     condition: ['==', 'foo', 'bar'],
@@ -149,7 +149,7 @@ describe('compile filter specs', () => {
     });
 
     it('filter with true condition', () => {
-        const compiled = Util.compileStyle([
+        const compiled = VTUtil.compileStyle([
             {
                 filter: {
                     condition: true,
