@@ -5,6 +5,7 @@ import { LINE_GRADIENT_PROP_KEY } from './symbols';
 
 const POINT = new maptalks.Point(0, 0);
 export const ID_PROP = '_vector3dlayer_id';
+const GRADIENT_PROP_KEY = (LINE_GRADIENT_PROP_KEY + '').trim();
 
 //需要解决精度问题
 // currentFeature 是geometry已经存在的feature，则沿用老的kid
@@ -56,7 +57,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     const symbol = geo['_getInternalSymbol']();
     let lineGradientProperty = symbol['lineGradientProperty'];
     if (lineGradientProperty) {
-        properties[LINE_GRADIENT_PROP_KEY] = properties[lineGradientProperty];
+        properties[GRADIENT_PROP_KEY] = properties[lineGradientProperty];
         properties['mapbox_clip_start'] = 0;
         properties['mapbox_clip_end'] = 1;
         delete properties[lineGradientProperty];
