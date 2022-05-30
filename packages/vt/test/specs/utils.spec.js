@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { PackUtil } = require('../../dist/maptalks.vt.js');
+const { PackUtil, Util } = require('../../dist/maptalks.vt.js');
 
 describe('util specs', () => {
     it('rtl text conversion', () => {
@@ -95,6 +95,87 @@ describe('pack position', () => {
         const unpacked = PackUtil.unpackPosition([], ...packed);
 
         assert.deepEqual(coord, unpacked);
+    });
+});
+
+describe('compile filter specs', () => {
+    it('normal filter', () => {
+        const compiled = Util.compileStyle([
+            {
+                filter: ['==', 'foo', 'bar'],
+                symbol: {
+                    foo: 'bar'
+                }
+            }
+        ]);
+
+        const feature = {
+            layer: 'layer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(compiled[0].filter(feature));
+    });
+
+    it('filter with condition and layer', () => {
+        const compiled = Util.compileStyle([
+            {
+                filter: {
+                    condition: ['==', 'foo', 'bar'],
+                    layer: 'layer'
+                },
+                symbol: {
+                    foo: 'bar'
+                }
+            }
+        ]);
+
+        const feature = {
+            layer: 'layer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(compiled[0].filter(feature));
+
+        const falseFeature = {
+            layer: 'falseLayer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(!compiled[0].filter(falseFeature));
+    });
+
+    it('filter with true condition', () => {
+        const compiled = Util.compileStyle([
+            {
+                filter: {
+                    condition: true,
+                    layer: 'layer'
+                },
+                symbol: {
+                    foo: 'bar'
+                }
+            }
+        ]);
+
+        const feature = {
+            layer: 'layer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(compiled[0].filter(feature));
+
+        const falseFeature = {
+            layer: 'falseLayer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(!compiled[0].filter(falseFeature));
     });
 });
 

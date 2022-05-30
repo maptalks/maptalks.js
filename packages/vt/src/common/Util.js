@@ -217,22 +217,41 @@ export function compile(styles) {
         if (styles[i]['filter'] === true) {
             filter = function () { return true; };
         } else {
-            if (isExpressionFilter(styles[i]['filter'])) {
-                let expression = createExpressionFilter(styles[i]['filter']);
-                expression = expression && expression.filter;
-                const filterFn = feature => {
-                    return expression && expression(EVALUATION_PARAM, feature);
-                };
-                filter = filterFn;
-            } else {
-                filter = createFilter(styles[i]['filter']);
-            }
+            filter = compileFilterFn(styles[i].filter);
         }
         compiled.push(extend({}, styles[i], {
             filter: filter
         }));
     }
     return compiled;
+}
+
+function compileFilterFn(filterValue) {
+    if (filterValue === true) {
+        return function () { return true; };
+    }
+    if (filterValue && filterValue.condition) {
+        const filterFn = compileFilterFn(filterValue.condition);
+        if (isNil(filterValue.layer)) {
+            return filterFn;
+        }
+        const check = feature => {
+            return feature.layer === filterValue.layer;
+        };
+        return feature => {
+            return check(feature) && filterFn(feature);
+        };
+    }
+    if (isExpressionFilter(filterValue)) {
+        let expression = createExpressionFilter(filterValue);
+        expression = expression && expression.filter;
+        const filterFn = feature => {
+            return expression && expression(EVALUATION_PARAM, feature);
+        };
+        return filterFn;
+    } else {
+        return createFilter(filterValue);
+    }
 }
 
 export function getCentiMeterScale(res, map) {

@@ -11,6 +11,7 @@ import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
 import initialize from './initialize';
 import { PackUtil, SYMBOLS_NEED_REBUILD_IN_VT,  SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
+import * as Util from '../common/Util';
 
 reshader.ShaderLib.register('vt_position_vert', positionVert);
 
@@ -32,5 +33,6 @@ export {
     PolygonLayer,
     PackUtil,
     SYMBOLS_NEED_REBUILD_IN_VT,
-    SYMBOLS_NEED_REBUILD_IN_VECTOR
+    SYMBOLS_NEED_REBUILD_IN_VECTOR,
+    Util
 };
