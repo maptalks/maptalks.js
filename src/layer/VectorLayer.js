@@ -25,6 +25,7 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Boolean} [options.roundPoint=false]  - round point before painting to improve performance, but will cause geometry shaking in animation
  * @property {Number} [options.altitude=0]           - layer altitude
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
+ * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
  * @memberOf VectorLayer
  * @instance
  */
@@ -41,7 +42,8 @@ const options = {
     'sortByDistanceToCamera': false,
     'roundPoint': false,
     'altitude': 0,
-    'clipBBoxBufferSize': 3
+    'clipBBoxBufferSize': 3,
+    'geometryEventTolerance': 1
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
@@ -117,19 +119,42 @@ class VectorLayer extends OverlayLayer {
 
     _hitGeos(geometries, cp, options = {}) {
         const filter = options['filter'],
-            tolerance = options['tolerance'],
             hits = [];
+        const tolerance = options['tolerance'];
         const map = this.getMap();
         const renderer = this.getRenderer();
         const imageData = renderer && renderer.getImageData && renderer.getImageData();
         if (imageData) {
+            let hitTolerance = 0;
+            for (let i = geometries.length - 1; i >= 0; i--) {
+                const t = geometries[i]._hitTestTolerance() + (tolerance || 0);
+                if (t > hitTolerance) {
+                    hitTolerance = t;
+                }
+            }
+
             const r = map.getDevicePixelRatio();
             imageData.r = r;
-            const x = Math.round(cp.x * r),
-                y = Math.round(cp.y * r);
-            const idx = y * imageData.width * 4 + x * 4;
+            let hit = false;
+            const cpx = cp.x - hitTolerance;
+            const cpy = cp.y - hitTolerance;
+            for (let i = -hitTolerance; i <= hitTolerance; i++) {
+                for (let j = -hitTolerance; j <= hitTolerance; j++) {
+                    const x = Math.round((cpx + i) * r),
+                        y = Math.round((cpy + j) * r);
+                    const idx = y * imageData.width * 4 + x * 4;
+                    if (imageData.data[idx + 3] > 0) {
+                        hit = true;
+                        break;
+                    }
+                }
+                if (hit) {
+                    break;
+                }
+            }
+
             //空白的直接返回，避免下面的逻辑,假设有50%的概率不命中(要么命中,要么不命中)，可以节省大量的时间
-            if (imageData.data[idx + 3] === 0) {
+            if (!hit) {
                 return hits;
             }
         }

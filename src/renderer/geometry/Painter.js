@@ -908,7 +908,7 @@ class Painter extends Class {
     _meterToPoint(center, altitude) {
         const map = this.getMap();
         const glRes = map.getGLRes();
-        return map.altitudeToPoint(altitude, glRes).x * sign(altitude);
+        return map.altitudeToPoint(altitude, glRes) * sign(altitude);
     }
 
     _verifyProjection() {

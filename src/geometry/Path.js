@@ -75,7 +75,7 @@ class Path extends Geometry {
         const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
 
-        const prjAnimCoords = projection.projectCoords(animCoords);
+        const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']);
 
         this._prjAniShowCenter = this._getPrjExtent().getCenter();
         this._aniShowCenter = projection.unproject(this._prjAniShowCenter);
@@ -174,9 +174,16 @@ class Path extends Geometry {
         const isPolygon = !!this.getShell;
         if (!isPolygon && this.options['smoothness'] > 0) {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
-            const animCoords = coordinates.slice(0, this._animIdx + 3);
+            const animCoords = [], prjAnimCoords = [];
+            for (let i = 0; i <= this._animIdx; i++) {
+                animCoords.push(coordinates[i]);
+                prjAnimCoords.push(prjCoords[i]);
+            }
+            animCoords.push(targetCoord, targetCoord);
+            prjAnimCoords.push(lastCoord, lastCoord);
+            // const animCoords = coordinates.slice(0, this._animIdx + 3);
             this.setCoordinates(animCoords);
-            const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
+            // const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
             this._setPrjCoordinates(prjAnimCoords);
         } else {
             const animCoords = coordinates.slice(0, this._animIdx + 1);
@@ -314,7 +321,7 @@ class Path extends Geometry {
     _projectCoords(points) {
         const projection = this._getProjection();
         if (projection) {
-            return projection.projectCoords(points);
+            return projection.projectCoords(points, this.options['antiMeridian']);
         }
         return [];
     }
@@ -392,7 +399,7 @@ class Path extends Geometry {
         } else {
             w = symbol['lineWidth'];
         }
-        return isNumber(w) ? w / 2 : 1.5;
+        return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
     _coords2Extent(coords, proj) {

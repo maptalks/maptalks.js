@@ -446,6 +446,10 @@ class MapCanvasRenderer extends MapRenderer {
         let cursor = 'default';
         const limit = map.options['hitDetectLimit'] || 0;
         let counter = 0;
+        if (point && point._round) {
+            // map size is decimal,containerPoint.x/containerPoint.y is decimal
+            point._round();
+        }
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             // 此处如果未开启，无需执行后面判断

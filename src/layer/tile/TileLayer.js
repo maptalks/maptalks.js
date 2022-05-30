@@ -194,12 +194,16 @@ class TileLayer extends Layer {
 
     getTiles(z, parentLayer) {
         this._coordCache = {};
-        const sr = this.getSpatialReference();
-        if (!this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid()) {
+        if (this._isPyramidMode()) {
             return this._getPyramidTiles(z, parentLayer);
         } else {
             return this._getCascadeTiles(z, parentLayer);
         }
+    }
+
+    _isPyramidMode() {
+        const sr = this.getSpatialReference();
+        return !this._disablePyramid && !this._hasOwnSR && this.options['pyramidMode'] && sr && sr.isPyramid();
     }
 
     _getTileFullExtent() {

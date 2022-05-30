@@ -38,30 +38,30 @@ describe('#MultiPoint', function () {
 
     it('getExtent, #1596', function () {
         var multipoint = new maptalks.MultiPoint(
-          [
-            [-0.131049, 51.498568],
-            [-0.107049, 51.498568],
-            [-0.107049, 51.493568],
-            [-0.131049, 51.493568],
-            [-0.131049, 51.498568]
-          ],
-          {
-            visible: true,
-            editable: true,
-            cursor: "pointer",
-            shadowBlur: 0,
-            shadowColor: "black",
-            draggable: false,
-            dragShadow: false, // display a shadow during dragging
-            drawOnAxis: null // force dragging stick on a axis, can be: x, y
-          }
+            [
+                [-0.131049, 51.498568],
+                [-0.107049, 51.498568],
+                [-0.107049, 51.493568],
+                [-0.131049, 51.493568],
+                [-0.131049, 51.498568]
+            ],
+            {
+                visible: true,
+                editable: true,
+                cursor: "pointer",
+                shadowBlur: 0,
+                shadowColor: "black",
+                draggable: false,
+                dragShadow: false, // display a shadow during dragging
+                drawOnAxis: null // force dragging stick on a axis, can be: x, y
+            }
         );
         var extent = multipoint.getExtent();
-        expect(extent.toArray()).to.be.eql([ { x: -0.131049, y: 51.498568 },
-      { x: -0.107049, y: 51.498568 },
-      { x: -0.107049, y: 51.493568 },
-      { x: -0.131049, y: 51.493568 },
-      { x: -0.131049, y: 51.498568 } ]);
+        expect(extent.toArray()).to.be.eql([{ x: -0.131049, y: 51.498568, z: undefined },
+        { x: -0.107049, y: 51.498568, z: undefined },
+        { x: -0.107049, y: 51.493568, z: undefined },
+        { x: -0.131049, y: 51.493568, z: undefined },
+        { x: -0.131049, y: 51.498568, z: undefined }]);
     });
 
     it('getSize', function () {

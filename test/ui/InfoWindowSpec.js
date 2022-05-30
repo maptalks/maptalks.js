@@ -77,4 +77,58 @@ describe('UI.InfoWindow', function () {
             done();
         }, 100);
     });
+
+    it('infowindow not repeat fire show event when geometry symbol change', function (done) {
+        var marker1 = new maptalks.Marker(map.getCenter(),{
+            symbol:{
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 40,
+            }
+        });
+        marker1.addTo(layer);
+        marker1.setInfoWindow({
+            animationDuration: 0,
+            title: 'hello maptalks',
+            content: 'hello maptalks'
+        });
+
+        var marker2 = new maptalks.Marker(map.getCenter().add(0.001,0),{
+            symbol:{
+                'markerType': 'ellipse',
+                'markerWidth': 40,
+                'markerHeight': 40,
+            }
+        });
+        marker2.addTo(layer);
+        marker2.setInfoWindow({
+            animationDuration: 0,
+            title: 'hello maptalks',
+            content: 'hello maptalks'
+        });
+        [marker1, marker2].forEach(function(marker) {
+            marker.getInfoWindow().on('showstart', function(e) {
+                var ownver = e.target.getOwner();
+                if (!ownver._orignalSymbol) {
+                    ownver._orignalSymbol = ownver.getSymbol();
+                }
+                 //The show event should not be triggered,otherwise error:Maximum call stack size exceeded
+                e.target.getOwner().setSymbol();
+            })
+            marker.getInfoWindow().on('hide',function(e) {
+                var ownver = e.target.getOwner();
+                  //The show event should not be triggered,otherwise error:Maximum call stack size exceeded
+                ownver.setSymbol(ownver._orignalSymbol);
+            })
+        });
+        //fire show events
+        marker1.openInfoWindow();
+        setTimeout(function(){
+           marker2.openInfoWindow();
+           setTimeout(function(){
+               done();
+           },100)
+        },100)
+
+    });
 });

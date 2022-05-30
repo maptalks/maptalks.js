@@ -9,8 +9,8 @@ describe('Geometry.Circle', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 800,
-            height : 600
+            width: 800,
+            height: 600
         });
         container = setups.container;
         map = setups.map;
@@ -120,7 +120,7 @@ describe('Geometry.Circle', function () {
             evaluate();
             vector.remove();
             //canvas
-            layer = new maptalks.VectorLayer('canvas', { render:'canvas' });
+            layer = new maptalks.VectorLayer('canvas', { render: 'canvas' });
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();
@@ -174,15 +174,15 @@ describe('Geometry.Circle', function () {
         var geometry = new maptalks.Circle(center, 20, {
             symbol: {
                 'lineWidth': 6,
-                'lineOpacity' : 0,
-                'polygonOpacity' : 0
+                'lineOpacity': 0,
+                'polygonOpacity': 0
             }
         });
-        layer = new maptalks.VectorLayer('id', { 'drawImmediate' : true });
+        layer = new maptalks.VectorLayer('id', { 'drawImmediate': true });
         map.addLayer(layer);
         layer.addGeometry(geometry);
 
-        var p1 = new maptalks.Point(400 + 20 + 6, 300);
+        var p1 = new maptalks.Point(400 + 20 + 7, 300);
         expect(geometry.containsPoint(p1)).not.to.be.ok();
 
         var p2 = new maptalks.Point(400 + 20 + 2, 300);
@@ -195,11 +195,11 @@ describe('Geometry.Circle', function () {
     it('redraw when map is pitched', function (done) {
         var circle = new maptalks.Circle(center, 20, {
             symbol: {
-                'polygonFill' : '#f00',
+                'polygonFill': '#f00',
                 'lineWidth': 6
             }
         });
-        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate': true });
         layer.once('layerload', function () {
             expect(layer).to.be.painted();
             layer.once('layerload', function () {
@@ -216,11 +216,11 @@ describe('Geometry.Circle', function () {
         map.setPitch(60);
         var circle = new maptalks.Circle(center, 20, {
             symbol: {
-                'polygonFill' : '#f00',
+                'polygonFill': '#f00',
                 'lineWidth': 6
             }
         });
-        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate' : true });
+        layer = new maptalks.VectorLayer('id', circle, { 'drawImmediate': true });
         layer.once('layerload', function () {
             expect(layer).to.be.painted();
             layer.once('layerload', function () {

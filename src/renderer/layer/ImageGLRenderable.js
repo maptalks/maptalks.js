@@ -1,4 +1,4 @@
-import { IS_NODE, extend, isInteger, log2 } from '../../core/util';
+import { IS_NODE, extend, isInteger, log2, isNil } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
@@ -71,7 +71,14 @@ const ImageGLRenderable = Base => {
             }
             const gl = this.gl;
             this.loadTexture(image);
-
+            const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+            if (inGroup) {
+                let layerOpacity = this.layer && this.layer.options['opacity'];
+                if (isNil(layerOpacity)) {
+                    layerOpacity = 1;
+                }
+                opacity *= layerOpacity;
+            }
             v3[0] = x || 0;
             v3[1] = y || 0;
             const uMatrix = mat4.identity(arr16);
@@ -278,6 +285,7 @@ const ImageGLRenderable = Base => {
          */
         clearGLCanvas() {
             if (this.gl) {
+                this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
             }
         }

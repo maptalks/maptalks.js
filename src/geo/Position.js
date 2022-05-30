@@ -1,4 +1,4 @@
-import { isNil } from '../core/util/common';
+import { isNil, isNumber } from '../core/util/common';
 
 /**
  * Abstract parent class for Point and Coordinate
@@ -7,7 +7,7 @@ import { isNil } from '../core/util/common';
  */
 class Position {
 
-    constructor(x, y) {
+    constructor(x, y, z) {
         if (!isNil(x) && !isNil(y)) {
             /**
              * @property x {Number} - x value
@@ -17,12 +17,18 @@ class Position {
              * @property y {Number} - y value
              */
             this.y = +(y);
+            /**
+             * @property z {Number} - z value, it's a pure property and doesn't take part in caculation for now.
+             */
+            this.z = z;
         } else if (!isNil(x.x) && !isNil(x.y)) {
             this.x = +(x.x);
             this.y = +(x.y);
+            this.z = x.z;
         } else if (Array.isArray(x)) {
             this.x = +(x[0]);
             this.y = +(x[1]);
+            this.z = x[2];
         }
         if (this._isNaN()) {
             throw new Error('Position is NaN');
@@ -35,9 +41,10 @@ class Position {
      * @params {Number} y - y value
      * @return {Coordinate|Point} this
      */
-    set(x, y) {
+    set(x, y, z) {
         this.x = x;
         this.y = y;
+        this.z = z || 0;
         return this;
     }
 
@@ -116,7 +123,7 @@ class Position {
      * @return {Coordinate|Point} copy
      */
     copy() {
-        return new this.constructor(this.x, this.y);
+        return new this.constructor(this.x, this.y, this.z);
     }
 
     //destructive add
@@ -266,6 +273,9 @@ class Position {
      * @return {Number[]} number array
      */
     toArray() {
+        if (isNumber(this.z)) {
+            return [this.x, this.y, this.z];
+        }
         return [this.x, this.y];
     }
 

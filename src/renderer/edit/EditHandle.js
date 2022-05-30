@@ -20,8 +20,6 @@ export default class EditHandle extends Eventable(Class) {
         const lineWidth = symbol['markerLineWidth'] || 1;
         this.w = symbol['markerWidth'] + lineWidth;
         this.h = symbol['markerHeight'] + lineWidth;
-        this.dx = symbol['markerDx'] || 0;
-        this.dy = symbol['markerDy'] || 0;
         this.opacity = isNil(symbol['opacity']) ? 1 : symbol['opacity'];
         this.map = map;
         this.events = options.events;
@@ -84,6 +82,9 @@ export default class EditHandle extends Eventable(Class) {
         if (!this._img) {
             return false;
         }
+        const symbol = this.options['symbol'];
+        const dx = symbol['markerDx'] || 0;
+        const dy = symbol['markerDy'] || 0;
         const map = this.map;
         const { x, y } = this._point;
         const w = this.w;
@@ -91,7 +92,7 @@ export default class EditHandle extends Eventable(Class) {
         if (x + w > 0 && x < map.width && y + h > 0 && y < map.height) {
             const dpr = map.getDevicePixelRatio();
             ctx.globalAlpha = this.opacity;
-            ctx.drawImage(this._img, Math.round((x + this.dx) * dpr) + this.dx, Math.round((y  + this.dy) * dpr), Math.round(w * dpr), Math.round(h * dpr));
+            ctx.drawImage(this._img, Math.round((x + dx) * dpr), Math.round((y  + dy) * dpr), Math.round(w * dpr), Math.round(h * dpr));
             return true;
         }
         return false;
@@ -113,10 +114,13 @@ export default class EditHandle extends Eventable(Class) {
     }
 
     hitTest(p) {
+        const symbol = this.options['symbol'];
+        const dx = symbol['markerDx'] || 0;
+        const dy = symbol['markerDy'] || 0;
         const w = this.w;
         const h = this.h;
-        const x = this._point.x + this.dx;
-        const y = this._point.y + this.dy;
+        const x = this._point.x + dx;
+        const y = this._point.y + dy;
         return p.x >= x && p.x <= x + w && p.y >= y && p.y <= y + h;
     }
 

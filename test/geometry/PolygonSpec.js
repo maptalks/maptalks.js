@@ -94,15 +94,15 @@ describe('Geometry.Polygon', function () {
 
     it('getCoordinates', function () {
         var rings = [
-            { x: 20, y: 0 },
-            { x: 20, y: 10 },
-            { x: 0, y: 10 },
-            { x: 0, y: 0 }
+            { x: 20, y: 0, z: 0 },
+            { x: 20, y: 10, z: 0 },
+            { x: 0, y: 10, z: 0 },
+            { x: 0, y: 0, z: 0 }
         ];
         var holes = [
-            { x: 1, y: 1 },
-            { x: 3, y: 2 },
-            { x: 2, y: 3 }
+            { x: 1, y: 1, z: 0 },
+            { x: 3, y: 2, z: 0 },
+            { x: 2, y: 3, z: 0 }
         ];
         var polygon = new maptalks.Polygon([rings, holes]);
 
@@ -114,15 +114,15 @@ describe('Geometry.Polygon', function () {
 
     it('setCoordinates', function () {
         var rings = [
-            { x: 20, y: 0 },
-            { x: 20, y: 10 },
-            { x: 0, y: 10 },
-            { x: 0, y: 0 }
+            { x: 20, y: 0, z: 0 },
+            { x: 20, y: 10, z: 0 },
+            { x: 0, y: 10, z: 0 },
+            { x: 0, y: 0, z: 0 }
         ];
         var holes = [
-            { x: 1, y: 1 },
-            { x: 3, y: 2 },
-            { x: 2, y: 3 }
+            { x: 1, y: 1, z: 0 },
+            { x: 3, y: 2, z: 0 },
+            { x: 2, y: 3, z: 0 }
         ];
         var polygon = new maptalks.Polygon([[]]);
         polygon.setCoordinates([rings, holes]);

@@ -48,9 +48,10 @@ class Sphere {
         return 0.5 * Math.abs(b);
     }
 
-    locate(c, xDist, yDist) {
-        c = new Coordinate(c.x, c.y);
-        return this._locate(c, xDist, yDist);
+    locate(c, xDist, yDist, out) {
+        out = out || new Coordinate(0, 0);
+        out.set(c.x, c.y);
+        return this._locate(out, xDist, yDist);
     }
 
     _locate(c, xDist, yDist) {
@@ -272,6 +273,7 @@ export const BaiduSphere = extend(/** @lends measurer.BaiduSphere */{
      * @param  {Coordinate} c     - source coordinate
      * @param  {Number} xDist              - x-axis distance
      * @param  {Number} yDist              - y-axis distance
+     * @param  {Point} [out=null]          - optional object to receive result
      * @return {Coordinate}
      */
     locate() {

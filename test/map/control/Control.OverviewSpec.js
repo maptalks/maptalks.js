@@ -11,15 +11,15 @@ describe('Control.Overview', function () {
         document.body.appendChild(container);
         var option = {
             zoom: 17,
-            zoomAnimationDuration : 20,
+            zoomAnimationDuration: 20,
             center: center,
-            overviewControl : true
+            overviewControl: true
         };
         map = new maptalks.Map(container, option);
         tile = new maptalks.TileLayer('tile', {
-            renderer : 'canvas',
-            fadeAnimation : false,
-            urlTemplate : '#'
+            renderer: 'canvas',
+            fadeAnimation: false,
+            urlTemplate: '#'
         });
 
     });
@@ -81,7 +81,7 @@ describe('Control.Overview', function () {
         var overview = new maptalks.control.Overview();
         overview.addTo(map);
         map.setSpatialReference({
-            projection : 'baidu'
+            projection: 'baidu'
         });
         expect(overview._overview.options.spatialReference.projection).to.be.eql('baidu');
     });
@@ -99,7 +99,7 @@ describe('Control.Overview', function () {
 
     it('maximize and minimize overview', function () {
         var overview = new maptalks.control.Overview({
-            maximize : false
+            maximize: false
         });
         overview.addTo(map);
         expect(overview._overview).not.to.be.ok();
@@ -111,7 +111,7 @@ describe('Control.Overview', function () {
 
     it('maximize overview', function () {
         var overview = new maptalks.control.Overview({
-            maximize : false
+            maximize: false
         });
         overview.addTo(map);
         expect(overview._overview).not.to.be.ok();
@@ -124,15 +124,15 @@ describe('Control.Overview', function () {
     it('overview base groupLayer visible', function () {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
-                visible : false,
-                urlTemplate : '#'
+                visible: false,
+                urlTemplate: '#'
             }),
             new maptalks.TileLayer('tile2', {
-                visible : false,
-                urlTemplate : '#'
+                visible: false,
+                urlTemplate: '#'
             })
         ], {
-            renderer : 'canvas'
+            renderer: 'canvas'
         });
         map.setBaseLayer(group);
         var overview = new maptalks.control.Overview();

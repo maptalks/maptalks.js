@@ -16,21 +16,21 @@ export default /** @lends projection.Common */ {
      * @return {Coordinate}
      * @function projection.Common.project
      */
-    project() {},
+    project() { },
     /**
      * Unproject a projected coordinate to a geographical coordinate (2d coordinate)
      * @param  {Coordinate} p - coordinate to project
      * @return {Coordinate}
      * @function projection.Common.unproject
      */
-    unproject() {},
+    unproject() { },
     /**
      * Project a group of geographical coordinates to projected coordinates.
      * @param  {Coordinate[]|Coordinate[][]|Coordinate[][][]} coordinates - coordinates to project
      * @return {Coordinate[]|Coordinate[][]|Coordinate[][][]}
      * @function projection.Common.projectCoords
      */
-    projectCoords(coordinates) {
+    projectCoords(coordinates, antiMeridian) {
         if (!coordinates) {
             return [];
         }
@@ -44,8 +44,9 @@ export default /** @lends projection.Common */ {
             return forEachCoord(coordinates, this.project, this);
         }
         if (Array.isArray(coordinates[0])) {
-            return coordinates.map(coords => this.projectCoords(coords));
+            return coordinates.map(coords => this.projectCoords(coords, antiMeridian));
         } else {
+            const antiMeridianEnable = antiMeridian !== false;
             const circum = this.getCircum();
             const extent = this.getSphereExtent(),
                 sx = extent.sx,
@@ -58,7 +59,7 @@ export default /** @lends projection.Common */ {
                 dx = current.x - pre.x;
                 dy = current.y - pre.y;
                 p = this.project(current);
-                if (Math.abs(dx) > 180) {
+                if (Math.abs(dx) > 180 && antiMeridianEnable) {
                     if (wrapX === undefined) {
                         wrapX = current.x > pre.x;
                     }
@@ -67,7 +68,7 @@ export default /** @lends projection.Common */ {
                         current._add(-360 * sign(dx), 0);
                     }
                 }
-                if (Math.abs(dy) > 90) {
+                if (Math.abs(dy) > 90 && antiMeridianEnable) {
                     if (wrapY === undefined) {
                         wrapY = current.y < pre.y;
                     }
@@ -142,8 +143,8 @@ export default /** @lends projection.Common */ {
         if (!this.circum && this.isSphere()) {
             const extent = this.getSphereExtent();
             this.circum = {
-                x : extent.getWidth(),
-                y : extent.getHeight()
+                x: extent.getWidth(),
+                y: extent.getHeight()
             };
         }
         return this.circum;

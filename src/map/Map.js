@@ -82,6 +82,7 @@ const TEMP_COORD = new Coordinate(0, 0);
  * @property {String} [options.renderer=canvas]                 - renderer type. Don't change it if you are not sure about it. About renderer, see [TODO]{@link tutorial.renderer}.
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
+ * @property {Boolean} [options.cameraInfiniteFar=false]           - Increase camera far plane to infinite. Enable this option may reduce map's performance.
  * @memberOf Map
  * @instance
  */
@@ -134,7 +135,7 @@ const options = {
     'cascadePitches': [10, 60],
     'renderable': true,
 
-    'clickTimeThreshold': 280,
+    'clickTimeThreshold': 280
 };
 
 /**
@@ -2416,15 +2417,16 @@ Map.include(/** @lends Map.prototype */{
      */
     distanceToPointAtRes: function () {
         const POINT = new Point(0, 0);
-        return function (xDist, yDist, res, paramCenter) {
+        const COORD = new Coordinate(0, 0);
+        return function (xDist, yDist, res, paramCenter, out) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
             const center = paramCenter || this.getCenter(),
-                target = projection.locate(center, xDist, yDist);
+                target = projection.locate(center, xDist, yDist, COORD);
             const p0 = this.coordToPointAtRes(center, res, POINT),
-                p1 = this.coordToPointAtRes(target, res);
+                p1 = this.coordToPointAtRes(target, res, out);
             p1._sub(p0)._abs();
             return p1;
         };
@@ -2436,19 +2438,24 @@ Map.include(/** @lends Map.prototype */{
      *
      * @param  {Number} altitude - the value of altitude,suche as: map.altitudeToPoint(100);
      * @param  {Number} res - target resolution
-     * @return {Point}
+     * @param  {Coordinate} [originCenter=null] - optional original coordinate for caculation
+     * @return {Number}
      * @function
      */
     altitudeToPoint: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 0);
-        return function (altitude = 0, res, paramCenter) {
-            const p = this.distanceToPointAtRes(altitude, altitude, res, paramCenter || DEFAULT_CENTER);
+        const DEFAULT_CENTER = new Coordinate(0, 40);
+        const POINT = new Point(0, 0);
+        return function (altitude = 0, res, originCenter) {
+            const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
+            if (altitude < 0 && p.x > 0) {
+                p.x = -p.x;
+            }
             const heightFactor = this.options['heightFactor'];
             if (heightFactor && heightFactor !== 1) {
                 p.x *= heightFactor;
                 p.y *= heightFactor;
             }
-            return p;
+            return p.x;
         };
     }(),
 
