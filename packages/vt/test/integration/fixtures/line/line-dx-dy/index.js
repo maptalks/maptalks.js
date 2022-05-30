@@ -18,6 +18,7 @@ const style = [
         },
         filter: ['==', 'type', 1],
         symbol: {
+            lineColor: '#000',
             lineWidth: 12
         }
     },
@@ -31,6 +32,7 @@ const style = [
             }
         },
         symbol: {
+            lineColor: '#000',
             lineWidth: 12,
             lineDx: 20,
             lineDy: 30

@@ -16,6 +16,7 @@ const style = [
             }
         },
         symbol: {
+            lineColor: '#000',
             lineWidth: 12,
             lineOpacity: 0.6
         }

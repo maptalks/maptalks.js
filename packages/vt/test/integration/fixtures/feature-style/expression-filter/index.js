@@ -19,6 +19,7 @@ const style = [
         },
         filter: ['==', ['get', 'type'], 1],
         symbol: {
+            lineColor: '#000',
             lineWidth: 12,
             lineJoin: 'miter'
         }
@@ -34,6 +35,7 @@ const style = [
         },
         filter: ['==', ['get', 'type'], 2],
         symbol: {
+            lineColor: '#000',
             lineWidth: 12,
             lineJoin: 'round'
         }
@@ -49,6 +51,7 @@ const style = [
         },
         filter: ['==', ['get', 'type'], 3],
         symbol: {
+            lineColor: '#000',
             lineWidth: 12,
             lineJoin: 'bevel'
         }

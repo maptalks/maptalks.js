@@ -910,6 +910,7 @@ describe('vector layers update style specs', () => {
         const ring = [[center.x, center.y - 0.5], [center.x, center.y + 0.5], [center.x + 0.5, center.y + 0.5], [center.x + 0.5, center.y - 0.5], [center.x, center.y - 0.5]];
         const polygon = new maptalks.Polygon([ring], {
             symbol: {
+                lineColor: '#000',
                 lineWidth: 6,
                 polygonFill: '#f00'
             }
@@ -932,13 +933,13 @@ describe('vector layers update style specs', () => {
         let removed = false;
         group.on('layerload', () => {
             if (count >= 1 && !removed) {
-                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2 + 5, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 polygon.remove();
                 removed = true;
             } else if (outlined) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                const pixel = readPixel(renderer.canvas, x / 2 + 5, y / 2);
                 assert(pixel[3] === 0);
                 done();
             } else if (removed) {
