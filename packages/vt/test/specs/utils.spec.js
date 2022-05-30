@@ -177,6 +177,37 @@ describe('compile filter specs', () => {
         };
         assert(!compiled[0].filter(falseFeature));
     });
+
+
+    it('filter with group condition', () => {
+        const compiled = FilterUtil.compileStyle([
+            {
+                filter: {
+                    condition: [{ condition: true, layer: 'layer' }],
+                    type: 'any'
+                },
+                symbol: {
+                    foo: 'bar'
+                }
+            }
+        ]);
+
+        const feature = {
+            layer: 'layer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(compiled[0].filter(feature));
+
+        const falseFeature = {
+            layer: 'falseLayer',
+            properties: {
+                foo: 'bar'
+            }
+        };
+        assert(!compiled[0].filter(falseFeature));
+    });
 });
 
 function reverseStr(s) {

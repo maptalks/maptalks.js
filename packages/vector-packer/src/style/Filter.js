@@ -40,6 +40,21 @@ export function compileFilter(filterValue) {
         return function () { return true; };
     }
     if (filterValue && filterValue.condition) {
+        if (filterValue.type === 'any') {
+            const conditions = filterValue.condition;
+            const filterFns = [];
+            for (let i = 0; i < conditions.length; i++) {
+                filterFns.push(compileFilter(conditions[i]));
+            }
+            return feature => {
+                for (let i = 0; i < filterFns.length; i++) {
+                    if (filterFns[i](feature)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+        }
         const filterFn = compileFilter(filterValue.condition);
         if (isNil(filterValue.layer)) {
             return filterFn;
