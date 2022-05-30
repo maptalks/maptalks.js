@@ -69,6 +69,8 @@ const TEMP_COORD = new Coordinate(0, 0);
  * @property {Boolean} [options.scrollWheelZoom=true]                   - whether to allow map to zoom by scroll wheel events.
  * @property {Boolean} [options.geometryEvents=true]                    - enable/disable firing geometry events
  * @property {Number}  [options.clickTimeThreshold=280]                 - time threshold between mousedown(touchstart) and mouseup(touchend) to determine if it's a click event
+ * @property {Number} [options.minMovingEventThreshold]                 - move event trigger threshold
+ * @property {Number} [options.longPressTimeThreshold]                  - long press event trigger threshold
  *
  * @property {Boolean}        [options.control=true]                    - whether allow map to add controls.
  * @property {Boolean|Object} [options.attribution=true]                - whether to display the attribution control on the map. if true, attribution display maptalks info; if object, you can specify positon or your base content, and both;
@@ -135,7 +137,11 @@ const options = {
     'cascadePitches': [10, 60],
     'renderable': true,
 
-    'clickTimeThreshold': 280
+    'clickTimeThreshold': 280,
+
+    'minMovingEventThreshold': 5,
+
+    'longPressTimeThreshold': 500
 };
 
 /**
