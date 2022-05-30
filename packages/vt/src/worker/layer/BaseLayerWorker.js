@@ -502,7 +502,7 @@ export default class BaseLayerWorker {
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
             // 并识别哪些feature归类到默认样式
             if ((!filter.def || filter.def === 'default') && !tags[i] ||
-                (filter.def === true || (filter.condition !== undefined || Array.isArray(filter.def)) && filter(features[i]))) {
+                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i]))) {
                 tags[i] = 1;
                 const fea = extend({}, features[i]);
                 fea[keyName] = i;

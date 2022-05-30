@@ -540,7 +540,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (filter !== undefined &&
                 filter !== 'default' &&
                 filter !== true &&
-                !Array.isArray(filter)) {
+                !Array.isArray(filter) &&
+                filter.condition === undefined) {
                 throw new Error(`Invalid filter at ${i} : ${JSON.stringify(filter)}`);
             }
             const dataConfig = styles[i].renderPlugin.dataConfig;
