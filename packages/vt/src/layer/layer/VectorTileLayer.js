@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, compileStyle, isNil, isString, hasOwn } from '../../common/Util';
+import { extend, isNil, isString, hasOwn } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
@@ -598,12 +598,12 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._isOnly2D;
     }
 
-    getCompiledStyle() {
-        return {
-            style: this._compiledStyles || [],
-            featureStyle: this._compiledFeatureStyles || []
-        };
-    }
+    // getCompiledStyle() {
+    //     return {
+    //         style: this._compiledStyles || [],
+    //         featureStyle: this._compiledFeatureStyles || []
+    //     };
+    // }
 
     /**
      * Identify the data on the given container point
@@ -695,12 +695,12 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _compileStyle() {
-        if (this._vtStyle) {
-            this._compiledStyles = compileStyle(this._vtStyle);
-        }
-        if (this._featureStyle) {
-            this._compiledFeatureStyles = compileStyle(this._featureStyle);
-        }
+        // if (this._vtStyle) {
+        //     this._compiledStyles = compileStyle(this._vtStyle);
+        // }
+        // if (this._featureStyle) {
+        //     this._compiledFeatureStyles = compileStyle(this._featureStyle);
+        // }
 
     }
 
