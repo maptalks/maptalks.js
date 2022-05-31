@@ -369,7 +369,8 @@ export default class BaseLayerWorker {
 
     }
 
-    _createTileGeometry(features, pluginConfig, context) {
+    _createTileGeometry(tileFeatures, pluginConfig, context) {
+        let features = cloneFeaAndAppendCustomTags(tileFeatures, pluginConfig);
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize[0];
@@ -767,4 +768,30 @@ function hasFnTypeKeys(symbol) {
         }
     }
     return 0;
+}
+
+function cloneFeaAndAppendCustomTags(features, pluginConfig) {
+    const customProperties = pluginConfig.customProperties;
+    if (customProperties) {
+        for (let i = 0; i < customProperties.length; i++) {
+            customProperties[i].fn = FilterUtil.compileFilter(customProperties[i].filter);
+        }
+    }
+    for (let i = 0; i < features.length; i++) {
+        // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
+        features[i] = extend({}, features[i]);
+        if (customProperties) {
+            for (let j = 0; j < customProperties.length; j++) {
+                if (customProperties[j].fn(features[i])) {
+                    if (features[i].geojson) {
+                        // geojson数据的properties是存在geojson-vt index里的，customTags会改变原值，所以需要复制一份
+                        features[i].properties = extend({}, features[i].properties);
+                    }
+                    extend(features[i].properties, customProperties[j].properties);
+                    break;
+                }
+            }
+        }
+    }
+    return features;
 }

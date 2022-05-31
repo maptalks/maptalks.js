@@ -168,7 +168,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 id: feature.id,
                 geometry: feature.geometry,
                 properties: feature.tags,
-                extent: this.options.extent
+                extent: this.options.extent,
+                geojson: true
             });
         }
 
