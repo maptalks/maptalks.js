@@ -92,9 +92,10 @@ class StandardShader extends MeshShader {
         if (extraUniforms) {
             uniforms.push(...extraUniforms);
         }
+        const vertSource = config.vert || vert;
         const fragSource = config.frag || frag;
         super({
-            vert,
+            vert: vertSource,
             frag: fragSource,
             uniforms,
             extraCommandProps,
