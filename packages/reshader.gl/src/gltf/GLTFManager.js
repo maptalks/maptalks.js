@@ -1,21 +1,29 @@
 import * as GLTFHelper  from '../GLTFHelper.js';
 
 export default class GLTFManager {
-    constructor(regl) {
+    constructor(regl, requestor) {
         this.regl = regl;
         this.resourceMap = {};
+        this._requestor = requestor;
     }
 
     getGLTF(url) {
         return this.resourceMap[url];
     }
 
-    loginGLTF(url, gltf) {
+    loginGLTF(url) {
         if (!this.resourceMap[url]) {
-            //传入载入好的gltf数据不需要再载入
-            this.resourceMap[url] = gltf ? this._exportGLTFResource(gltf, url) : this._loadGLTFModel(url).catch(e => {
-                return e;
-            });
+            if (this._requestor) {
+                this.resourceMap[url] = this._requestor(url).then(gltf => {
+                    const gltfpack = this._exportGLTFResource(gltf, url);
+                    this.resourceMap[url] = gltfpack;
+                    return gltfpack;
+                });
+            } else {
+                this.resourceMap[url] = this._loadGLTFModel(url).catch(e => {
+                    return e;
+                });
+            }
             this.resourceMap[url].refCount = 1;
         } else {
             this.resourceMap[url].refCount += 1;
