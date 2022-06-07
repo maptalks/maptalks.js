@@ -251,6 +251,7 @@ class Painter {
         const isEnableBloom = !!context.bloom;
         meshes.forEach(mesh => {
             const bloom = this.isBloom(mesh) && isEnableBloom;
+            mesh.bloom = bloom;
             const defines = mesh.defines || {};
             if (!!defines['HAS_BLOOM'] !== bloom) {
                 if (bloom) {

@@ -224,10 +224,6 @@ function createPainterPlugin(type, Painter) {
                         redraw = true;
                     }
                 }
-                meshes.forEach(m => {
-                    const bloomValue = +(!!bloom && painter.isBloom(m));
-                    m.bloom = bloomValue;
-                });
 
                 painter.addMesh(meshes, progress, context);
                 this._frameCache[key] = 1;

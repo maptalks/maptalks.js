@@ -1202,6 +1202,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.painter = this.createPainter();
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
+        this._defineSymbolBloom(markerSymbol, 'markerBloom');
+        this._defineSymbolBloom(markerSymbol, 'textBloom');
         this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, this.layer.options.sceneConfig, 0);
         this._markerPainter.setTextShaderDefines({
             'REVERSE_MAP_ROTATION_ON_PITCH': 1
@@ -1209,11 +1211,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);
+        this._defineSymbolBloom(lineSymbol, 'lineBloom');
         this._linePainter = new LinePainter(this.regl, this.layer, lineSymbol, this.layer.options.sceneConfig, 0);
 
         if (this.layer.getGeometries()) {
             this.onGeometryAdd(this.layer.getGeometries());
         }
+    }
+
+    _defineSymbolBloom(symbol, key) {
+        const layer = this.layer;
+        Object.defineProperty(symbol, key, {
+            enumerable: true,
+            get: function () {
+                return layer && layer.options['enableBloom'];
+            }
+        });
     }
 
     createPainter() {
