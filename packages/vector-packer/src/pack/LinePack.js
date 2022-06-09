@@ -745,6 +745,10 @@ export default class LinePack extends VectorPack {
 
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
+
+        if (!this.prevVertex || !p.equals(this.prevVertex)) {
+            this.prevVertex = p;
+        }
         // There is a maximum "distance along the line" that we can store in the buffers.
         // When we get close to the distance, reset it to zero and add the vertex again with
         // a distance of zero. The max distance is determined by the number of bits we allocate

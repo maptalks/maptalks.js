@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, FilterUtil } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, FilterUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -481,6 +481,14 @@ export default class BaseLayerWorker {
             return parseSymbolAndGenPromises(features, symbol, options, CirclePack);
             // const pack = new CirclePack(features, symbol, options);
             // return pack.load();
+        } else if (type === 'round-tube') {
+            const options = extend({}, dataConfig, {
+                EXTENT: extent,
+                zoom,
+                debugIndex,
+                radialSegments: dataConfig.radialSegments || 8
+            });
+            return parseSymbolAndGenPromises(features, symbol, options, RoundTubePack);
         }
         return Promise.resolve([]);
     }

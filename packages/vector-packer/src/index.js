@@ -6,6 +6,7 @@ export { default as NativeLinePack } from './pack/NativeLinePack';
 export { default as NativePointPack } from './pack/NativePointPack';
 export { default as PolygonPack } from './pack/PolygonPack';
 export { default as CirclePack } from './pack/CirclePack';
+export { default as RoundTubePack } from './pack/RoundTubePack';
 export { default as GlyphRequestor } from './GlyphRequestor';
 export { default as IconRequestor } from './IconRequestor';
 export { default as LRUCache } from './LRUCache';

@@ -18,6 +18,8 @@ import StandardPainter from './painters/pbr/StandardPainter';
 // import ClothPainter from './painters/pbr/ClothPainter';
 // import SubsurfacePainter from './painters/pbr/SubsurfacePainter';
 
+import TubePainter from './painters/TubePainter';
+
 import GLTFPhongPainter from './painters/GLTFPhongPainter';
 import GLTFStandardPainter from './painters/GLTFStandardPainter';
 import HeatmapPainter from './painters/HeatmapPainter';
@@ -61,6 +63,9 @@ WireframePlugin.registerAt(VectorTileLayer);
 const LitPlugin = createPainterPlugin('lit', StandardPainter);
 LitPlugin.registerAt(VectorTileLayer);
 
+const TubePlugin = createPainterPlugin('tube', TubePainter);
+TubePlugin.registerAt(VectorTileLayer);
+
 /*const ClothPlugin = createPainterPlugin('cloth', ClothPainter);
 ClothPlugin.registerAt(VectorTileLayer);*/
 
@@ -85,6 +90,7 @@ Vector3DLayer.registerPainter('fill', FillPainter);
 Vector3DLayer.registerPainter('line', LinePainter);
 Vector3DLayer.registerPainter('line-gradient', LineGradientPainter);
 Vector3DLayer.registerPainter('water', WaterPainter);
+Vector3DLayer.registerPainter('tube', TubePainter);
 
 export {
     LinePlugin,
@@ -113,6 +119,7 @@ export {
 
     //pbr plugins
     LitPlugin,
+    TubePlugin,
     // ClothPlugin,
     // SubsurfacePlugin,
 
