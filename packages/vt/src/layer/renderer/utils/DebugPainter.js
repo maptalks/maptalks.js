@@ -1,3 +1,5 @@
+const textWidth = 512, textHeight = 64;
+
 class DebugPainter {
     constructor(regl, map, color) {
         this._regl = regl;
@@ -9,26 +11,18 @@ class DebugPainter {
         if (!this._command) {
             this._init();
         }
-        const textWidth = 512, textHeight = 64;
+
         if (!this._data) {
-            this._data = this._regl.buffer(new Uint16Array([
-                0, 0,
-                0, extent,
-                0, extent,
-                extent, extent,
-                extent, extent,
-                extent, 0,
-                extent, 0,
-                0, 0
-            ]));
+            this._data = this._regl.buffer(getDebugData(extent));
             const scale = extent / tileSize;
-            this._textData = this._regl.buffer(new Uint16Array([
-                0, extent - textHeight * scale,
-                0, extent,
-                textWidth * scale, extent - textHeight * scale,
-                textWidth * scale, extent
-            ]));
+            this._textData = this._regl.buffer(getTextData(extent, scale));
         }
+        if (extent !== this._extent) {
+            const scale = extent / tileSize;
+            this._data(getDebugData(extent));
+            this._textData(getTextData(extent, scale));
+        }
+        this._extent = extent;
         let image = this._debugInfoCanvas;
         if (!image) {
             const dpr = this._map.getDevicePixelRatio() > 1 ? 2 : 1;
@@ -184,3 +178,25 @@ class DebugPainter {
 }
 
 export default DebugPainter;
+
+function getDebugData(extent) {
+    return new Uint16Array([
+        0, 0,
+        0, extent,
+        0, extent,
+        extent, extent,
+        extent, extent,
+        extent, 0,
+        extent, 0,
+        0, 0
+    ]);
+}
+
+function getTextData(extent, scale) {
+    return new Uint16Array([
+        0, extent - textHeight * scale,
+        0, extent,
+        textWidth * scale, extent - textHeight * scale,
+        textWidth * scale, extent
+    ]);
+}

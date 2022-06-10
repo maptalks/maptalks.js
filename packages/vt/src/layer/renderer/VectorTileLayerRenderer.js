@@ -471,6 +471,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
             const tileData = i === 0 ? data : copyTileData(data);
+            tileInfo.extent = tileData && tileData.extent;
             this._tileQueue.push({ tileData, tileInfo });
         }
         this.layer.fire('datareceived', { url });
@@ -749,11 +750,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 const transform = info.transform;
                 const extent = this.tilesInView[p].image.extent;
                 const renderTarget = parentContext && parentContext.renderTarget;
-                if (transform && extent) this._debugPainter.draw(
-                    this.getDebugInfo(info.id), mat4.multiply(mat, projViewMatrix, transform),
-                    this.layer.getTileSize().width, extent,
-                    renderTarget && renderTarget.fbo
-                );
+                if (transform && extent) {
+                    const debugInfo = this.getDebugInfo(info.id);
+                    const matrix = mat4.multiply(mat, projViewMatrix, transform);
+                    const tileSize = this.layer.getTileSize().width;
+                    this._debugPainter.draw(
+                        debugInfo, matrix,
+                        tileSize, extent,
+                        renderTarget && renderTarget.fbo
+                    );
+                }
             }
         }
     }
@@ -836,11 +842,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _addTileStencil(tileInfo, ref) {
-        const EXTENT = this._EXTENT;
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
         tileInfo.stencilRef = ref;
-        this._stencilRenderer.add(ref, EXTENT, tileTransform);
+        this._stencilRenderer.add(ref, tileInfo.extent, tileTransform);
     }
 
     onDrawTileStart(context) {
@@ -868,7 +873,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileData.cache) return;
         const tileCache = tileData.cache;
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
 
         const pluginData = [];
@@ -923,12 +928,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!tileCache) {
             tileCache = tileData.cache = {};
         }
-        if (!this._EXTENT) {
-            //vector tile 的 extent (8192)
-            this._EXTENT = tileData.extent;
-        }
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
-        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z);
+        const tileTransform = tileInfo.transform = tileInfo.transform || this.calculateTileMatrix(tilePoint, tileInfo.z, tileData.extent);
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
         const pluginData = [];
         pushIn(pluginData, tileData.data);
@@ -1379,8 +1380,7 @@ VectorTileLayerRenderer.include({
         const v0 = new Array(3);
         const v1 = new Array(3);
         const v2 = new Array(3);
-        return function (point, z) {
-            const EXTENT = this._EXTENT;
+        return function (point, z, EXTENT) {
             const glScale = this.getTileGLScale(z);
             const tilePos = point;
             const tileSize = this.layer.getTileSize();
