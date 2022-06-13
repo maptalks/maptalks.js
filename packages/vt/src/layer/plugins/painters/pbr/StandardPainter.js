@@ -4,8 +4,6 @@ import MeshPainter from '../MeshPainter';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
-const EMPTY_ARRAY = [];
-
 class StandardPainter extends MeshPainter {
     constructor(...args) {
         super(...args);
@@ -101,21 +99,6 @@ class StandardPainter extends MeshPainter {
             this.material.set('uvOffset', offset);
         }
         this._previousSSR = isSsr;
-    }
-
-    getShadowMeshes() {
-        if (!this.isVisible()) {
-            return EMPTY_ARRAY;
-        }
-        this.shadowCount = this.scene.getMeshes().length;
-        const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
-        for (let i = 0; i < meshes.length; i++) {
-            const mesh = meshes[i];
-            if (mesh.material !== this.material) {
-                mesh.setMaterial(this.material);
-            }
-        }
-        return meshes;
     }
 
     updateSceneConfig(config) {
@@ -376,6 +359,7 @@ class StandardPainter extends MeshPainter {
         } else {
             delete defines['HAS_IBL_LIGHTING'];
         }
+        defines['OUTPUT_NORMAL'] = 1;
         return defines;
     }
 

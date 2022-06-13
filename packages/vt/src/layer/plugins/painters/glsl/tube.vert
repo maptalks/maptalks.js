@@ -16,7 +16,7 @@ uniform vec2 centiMeterToLocal;
     attribute vec3 aPosition;
 #endif
 
-attribute vec3 aTubeNormal;
+attribute vec4 aTubeNormal;
 
 // lineWidth单位是厘米
 #ifdef HAS_LINE_WIDTH
@@ -35,10 +35,29 @@ attribute vec3 aTubeNormal;
     uniform mat4 modelMatrix;
 
     #if defined(HAS_PATTERN)
+        uniform float resolution;
+        uniform float tileResolution;
+        // extent / tileSize
+        uniform float tileRatio;
+
         attribute float aLinesofar;
         varying highp float vLinesofar;
-        #if defined(HAS_PATTERN_ANIM) || defined(HAS_PATTERN_GAP)
-            attribute vec2 aLinePattern;
+
+        attribute vec4 aTexInfo;
+        varying vec4 vTexInfo;
+
+        varying float vNormalY;
+        varying float vPatternHeight;
+
+        attribute float aNormalDistance;
+
+        #if defined(HAS_PATTERN_ANIM)
+            attribute float aLinePatternAnimSpeed;
+            varying float vLinePatternAnimSpeed;
+        #endif
+        #if defined(HAS_PATTERN_GAP)
+            attribute float aLinePatternGap;
+            varying float vLinePatternGap;
         #endif
     #endif
 
@@ -57,14 +76,19 @@ attribute vec3 aTubeNormal;
     varying vec3 vModelVertex;
 #endif
 
+#if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+    #include <vsm_shadow_vert>
+#endif
+
 void main() {
-    float myLineWidth = lineWidth;
-    vec3 tubeNormal = aTubeNormal / EXTRUDE_SCALE;
+    float myLineWidth = lineWidth * 100.0;
+    float halfwidth = myLineWidth / 2.0;
+    vec3 tubeNormal = aTubeNormal.xyz / EXTRUDE_SCALE;
     vec3 position = unpackVTPosition();
     vec4 localVertex = vec4(position, 1.0);
-    localVertex.xy += tubeNormal.xy * myLineWidth * centiMeterToLocal;
+    localVertex.xy += tubeNormal.xy * halfwidth * centiMeterToLocal;
     // localVertex.z单位本身就是厘米，所以无需转换
-    localVertex.z += tubeNormal.z * myLineWidth;
+    localVertex.z += tubeNormal.z * halfwidth;
     gl_Position = projViewModelMatrix * localVertex;
     // gl_Position = projViewModelMatrix * vec4(position, 1.0);
 
@@ -83,6 +107,24 @@ void main() {
 
         #ifdef HAS_COLOR
             vColor = aColor / 255.0;
+        #endif
+
+        #ifdef HAS_PATTERN
+
+            // /scale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
+            float scale = tileResolution / resolution;
+            float linesofar = aLinesofar - halfwidth * centiMeterToLocal.y * aNormalDistance / EXTRUDE_SCALE;
+            // float linesofar = aLinesofar;
+            vLinesofar = linesofar / tileRatio * scale;
+            vTexInfo = vec4(aTexInfo.xy, aTexInfo.zw + 1.0);
+            vPatternHeight = myLineWidth * centiMeterToLocal.x / tileRatio * scale;
+            vNormalY = aTubeNormal.w / EXTRUDE_SCALE;
+            #if defined(HAS_PATTERN_ANIM)
+                vLinePatternAnimSpeed = aLinePatternAnimSpeed / 127.0;
+            #endif
+            #if defined(HAS_PATTERN_GAP)
+                vLinePatternGap = aLinePatternGap / 10.0;
+            #endif
         #endif
     #endif
 }

@@ -11,6 +11,8 @@ const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 const EMPTY_UV_OFFSET = [0, 0];
 
+const EMPTY_ARRAY = [];
+
 //一个三维mesh绘制的通用painter，负责mesh的create, add 和 delete, 负责fn-type的更新
 class MeshPainter extends Painter {
 
@@ -145,6 +147,20 @@ class MeshPainter extends Painter {
         return mesh;
     }
 
+    getShadowMeshes() {
+        if (!this.isVisible()) {
+            return EMPTY_ARRAY;
+        }
+        this.shadowCount = this.scene.getMeshes().length;
+        const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            if (mesh.material !== this.material) {
+                mesh.setMaterial(this.material);
+            }
+        }
+        return meshes;
+    }
 
     getUVOffsetAnim() {
         const symbol = this.getSymbols()[0];

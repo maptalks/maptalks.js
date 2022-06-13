@@ -26,6 +26,18 @@ class TubePainter extends BasicPainter {
         return false;
     }
 
+    supportRenderMode(mode) {
+        if (this.isAnimating()) {
+            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+        } else {
+            return mode === 'taa' || mode === 'fxaa';
+        }
+    }
+
+    isAnimating() {
+        return false;
+    }
+
     isBloom(mesh) {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
         return !!symbol['lineBloom'];
@@ -37,8 +49,6 @@ class TubePainter extends BasicPainter {
         }
         const map = this.getMap();
         const { geometry, symbolIndex, ref } = geo;
-        console.log(geometry.data);
-        console.log(geometry.elements);
         const symbolDef = this.getSymbolDef(symbolIndex);
         if (ref === undefined) {
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
@@ -47,12 +57,16 @@ class TubePainter extends BasicPainter {
 
         const symbol = this.getSymbol(symbolIndex);
         const uniforms = {
+            tileResolution: geometry.properties.tileResolution,
+            tileRatio: geometry.properties.tileRatio,
         };
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
+        setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
+        setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
 
         const iconAtlas = geometry.properties.iconAtlas;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
@@ -77,7 +91,8 @@ class TubePainter extends BasicPainter {
         mesh.setLocalTransform(transform);
 
         const defines = {
-            'IS_LINE_EXTRUSION': 1
+            'IS_LINE_EXTRUSION': 1,
+            // 'HAS_COLOR': 1
         };
         if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;
@@ -114,8 +129,25 @@ class TubePainter extends BasicPainter {
             this.shader.dispose();
             this.createShader(context);
         }
+        // const hasShadow = !!context.shadow;
         super.paint(context);
+        // if (this.shadowCount !== undefined && hasShadow) {
+        //     const count = this.scene.getMeshes().length;
+        //     if (this.shadowCount !== count) {
+        //         this.setToRedraw();
+        //     }
+        // }
+        // delete this.shadowCount;
     }
+
+    // getShadowMeshes() {
+    //     if (!this.isVisible()) {
+    //         return EMPTY_ARRAY;
+    //     }
+    //     const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+    //     this.shadowCount = meshes.length;
+    //     return meshes;
+    // }
 
     init(context) {
         this.getMap().on('updatelights', this._onUpdatelights, this);
@@ -197,6 +229,22 @@ class TubePainter extends BasicPainter {
         const depthRange = this.sceneConfig.depthRange;
         return {
             viewport,
+            stencil: {
+                enable: true,
+                func: {
+                    cmp: () => {
+                        return '<=';
+                    },
+                    ref: (context, props) => {
+                        return props.level;
+                    }
+                },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
             cull: {
                 enable: () => {
                     return !!this.sceneConfig.cullFace;
@@ -215,7 +263,7 @@ class TubePainter extends BasicPainter {
                 equation: 'add'
             },
             polygonOffset: {
-                enable: false,
+                enable: true,
                 offset: this.getPolygonOffset()
             }
         };
@@ -228,6 +276,9 @@ class TubePainter extends BasicPainter {
             viewMatrix = map.viewMatrix;
         uniforms.projViewMatrix = projViewMatrix;
         uniforms.viewMatrix = viewMatrix;
+        uniforms.resolution = map.getResolution();
+        uniforms.currentTime = this.layer.getRenderer().getFrameTimestamp() || 0;
+
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
@@ -345,6 +396,7 @@ class TubePainter extends BasicPainter {
         } else {
             delete defines['HAS_IBL_LIGHTING'];
         }
+        // defines['OUTPUT_NORMAL'] = 1;
         return defines;
     }
 
@@ -357,6 +409,17 @@ class TubePainter extends BasicPainter {
         this.shader.shaderDefines = defines;
 
     }
+
+
+    delete() {
+        super.delete();
+        this.disposeIBLTextures();
+        if (this.shader) {
+            this.shader.dispose();
+            delete this.shader;
+        }
+    }
+
 }
 
 export default TubePainter;

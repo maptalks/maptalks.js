@@ -422,6 +422,7 @@ export default class LinePack extends VectorPack {
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
+        this.prevVertex = null;
 
         if (!!this.symbol['lineGradientProperty'] && !!feature.properties &&
             hasOwn(feature.properties, 'mapbox_clip_start') &&

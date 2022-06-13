@@ -45,7 +45,6 @@ uniform lowp float lineBlur;
 
 
     varying vec4 vTexInfo;
-    varying float vJoin;
     vec2 computeUV(vec2 texCoord) {
         vec2 uv = mod(texCoord, 1.0);
         vec2 uvStart = vTexInfo.xy;

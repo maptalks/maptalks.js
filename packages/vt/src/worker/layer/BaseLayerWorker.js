@@ -484,6 +484,7 @@ export default class BaseLayerWorker {
         } else if (type === 'round-tube') {
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
+                requestor: this.fetchIconGlyphs.bind(this),
                 zoom,
                 debugIndex,
                 radialSegments: dataConfig.radialSegments || 8
