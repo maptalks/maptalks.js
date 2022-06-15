@@ -2,6 +2,7 @@ import LinePack from './LinePack';
 import { EXTRUDE_SCALE } from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
 import Point from '@mapbox/point-geometry';
+import { getAltitudeToLocal } from '../style/Util';
 
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
@@ -99,11 +100,26 @@ export default class RoundTubePack extends LinePack {
 
         const segments = this.options.radialSegments / 2;
 
-        const factor = up ? 1 : -1;
-        TEMP_EXTRUDE.x = extrudeX * factor;
-        TEMP_EXTRUDE.y = extrudeY * factor;
-        const { x: dirx, y: diry } = TEMP_EXTRUDE._perp();
-        const radialOffsets = getRadialVertexes(1, segments, dirx, diry, 0, extrudeX, extrudeY, up);
+        // const factor = up ? 1 : -1;
+        // TEMP_EXTRUDE.x = extrudeX * factor;
+        // TEMP_EXTRUDE.y = extrudeY * factor;
+        // const { x: dirx, y: diry } = TEMP_EXTRUDE._perp();
+        // const dirz = normal.z;
+
+        // const factor = 1;//up ? 1 : -1;
+        // TEMP_EXTRUDE.x = normal.x * factor;
+        // TEMP_EXTRUDE.y = normal.y * factor;
+        // const { x: dirx, y: diry } = TEMP_EXTRUDE._perp()._mult(-1);
+
+        // const dz = this.prevVertex ? z - this.prevVertex.z : 0;
+        // *100 是因为zScale是把厘米转为glres point，所以要把米转为厘米
+        // const altitudeToLocal = getAltitudeToLocal(this.options);
+        // console.log(segment.dir);
+        // console.log(dirx, diry, normal.z);
+        const { x: dirx, y: diry, z: dirz } = segment.dir;
+        // console.log(dirx, diry, dirz);
+        // console.log(segment.dir.x, segment.dir.y, segment.dir.z);
+        const radialOffsets = getRadialVertexes(1, segments, dirx, diry, dirz, extrudeX, extrudeY, up);
 
         if (this.prevVertex) {
             const positionSize = this.needAltitudeAttribute() ? 2 : 3;
@@ -189,7 +205,6 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
 
     vec3.set(Q, dirX, dirY, dirZ);
     vec3.set(U, normalX, normalY, 0);
-    const joinRadius = vec3.len(U);
 
     // The cross product of two vectors is perpendicular to both, so to find V:
     vec3.cross(V, Q, U);
@@ -202,15 +217,15 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
         radialOffsets[segments] = [];
     }
     const offsets = radialOffsets[segments];
-    const factor = -1;//up ? 1 : -1;
+    const factor = 1;//up ? 1 : -1;
     for (var i = 0; i < segments; i++) {
-        const θ = Math.PI * i / segments - Math.PI / 2;  // theta
+        const θ = Math.PI * i / segments;  // theta
         const middle = 0;
         // 因为join处的radius不为1，但join变为圆管时，垂直radius仍然是1，否则无法对齐，只有水平的radius为joinRadius
         // r就是radius的比例，在垂直时为1，水平时为joinRadius
         // normalY是y方向的normal值，垂直方向为0，水平方向为1
         const normalY = (1 - Math.abs(θ - middle) / (Math.PI / 2));
-        const r = (1 - normalY) * (joinRadius - 1) + 1;
+        const r = 1;//(1 - normalY) * (joinRadius - 1) + 1;
         const dx = r * factor * radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
         const dy = r * factor * radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
         const dz = r * factor * radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);

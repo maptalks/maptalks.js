@@ -2,10 +2,11 @@
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
 import Color from 'color';
-import { isNil, hasOwn } from '../style/Util';
+import { isNil, hasOwn, getAltitudeToLocal } from '../style/Util';
 import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
+import Point3 from './point3/Point3';
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -413,6 +414,11 @@ export default class LinePack extends VectorPack {
 
     _addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
         const hasPattern = this._hasPattern() || hasDasharray(this.feaDash) || hasDasharray(this.symbol['lineDasharray']);
+
+        const isTube = this.options['isTube'];
+        if (isTube) {
+            vertices = vertices.map(v => new Point3(v));
+        }
         this.overscaling = 1;
         // const tileRatio = this.options.tileRatio;
         //TODO overscaling的含义？
@@ -499,6 +505,11 @@ export default class LinePack extends VectorPack {
             // there is no next vertex, pretend that the line is continuing straight,
             // meaning that we are just using the previous normal.
             nextNormal = nextVertex ? nextVertex.sub(currentVertex)._unit()._perp() : prevNormal;
+            if (prevVertex) {
+                segment.dir = currentVertex.sub(prevVertex)._unit();
+            } else {
+                segment.dir = nextVertex.sub(currentVertex)._unit();
+            }
 
             // If we still don't have a previous normal, this is the beginning of a
             // non-closed line, so we're doing a straight "join".
@@ -539,10 +550,11 @@ export default class LinePack extends VectorPack {
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
             const lineTurnsLeft = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0;
 
-            if (isSharpCorner && i > first) {
+            if (!isTube && isSharpCorner && i > first) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
+                    newPrevVertex.z = currentVertex.z;
                     this.updateDistance(prevVertex, newPrevVertex);
                     this.addCurrentVertex(newPrevVertex, prevNormal, 0, 0, segment);
                     prevVertex = newPrevVertex;
@@ -562,7 +574,7 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if (currentJoin === 'miter' && miterLength > miterLimit) {
+            if (currentJoin === 'miter' && miterLength > miterLimit && !isTube) {
                 currentJoin = 'bevel';
             }
 
@@ -591,16 +603,20 @@ export default class LinePack extends VectorPack {
             // }
 
             if (currentJoin === 'miter') {
-
-                joinNormal._mult(miterLength);
-                this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
-
-                if (hasPattern) {
-                    // mitter两边的normal distance值不同，所以需要增加一个新端点
-                    segment.currentNormal = nextNormal;
+                if (isTube) {
+                    this.addCurrentVertex(currentVertex, prevNormal, 0, 0, segment);
+                    segment.dir = nextVertex.sub(currentVertex)._unit();
+                    this.addCurrentVertex(currentVertex, nextNormal, 0, 0, segment);
+                } else {
+                    joinNormal._mult(miterLength);
                     this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
-                }
 
+                    if (hasPattern) {
+                        // mitter两边的normal distance值不同，所以需要增加一个新端点
+                        segment.currentNormal = nextNormal;
+                        this.addCurrentVertex(currentVertex, joinNormal, 0, 0, segment);
+                    }
+                }
             } else if (currentJoin === 'flipbevel') {
                 // miter is too big, flip the direction to make a beveled join
 
@@ -679,10 +695,11 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if (isSharpCorner && i < len - 1) {
+            if (!isSharpCorner && isSharpCorner && i < len - 1) {
                 const nextSegmentLength = currentVertex.dist(nextVertex);
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+                    newCurrentVertex.z = currentVertex.z;
                     this.updateDistance(currentVertex, newCurrentVertex);
                     this.addCurrentVertex(newCurrentVertex, nextNormal, 0, 0, segment);
                     currentVertex = newCurrentVertex;
@@ -743,7 +760,6 @@ export default class LinePack extends VectorPack {
                 rightNormalDistance = getNormalDistance(segRightNormal, TEMP_NORMAL_2);
             }
         }
-
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
 
@@ -912,7 +928,15 @@ export default class LinePack extends VectorPack {
     }
 
     updateDistance(prev, next) {
-        this.distance += prev.dist(next);
+        if (this.options['isTube']) {
+            const d = prev.dist(next);
+            const altitudeToLocal = getAltitudeToLocal(this.options);
+            const dz = altitudeToLocal * (next.z - prev.z);
+            this.distance += Math.sqrt(d * d + dz * dz);
+        } else {
+            this.distance += prev.dist(next);
+        }
+
         this.updateScaledDistance();
     }
 

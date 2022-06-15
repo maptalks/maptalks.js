@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { uid, toJSON } from '../../../common/Util';
+import { extend, uid, toJSON } from '../../../common/Util';
 import { IconRequestor, GlyphRequestor } from '@maptalks/vector-packer';
 
 // GeoJSONVectorLayer caches data in memory, should use a dedicated worker.
@@ -123,16 +123,14 @@ export default class WorkerConnection extends maptalks.worker.Actor {
 
     //send(layerId, command, data, buffers, callback, workerId)
     loadTile(context, cb) {
+        const params = extend({}, context);
+        params.tileInfo = toJSON(context.tileInfo);
         const layerId = this._workerLayerId;
         const data = {
             mapId: this._mapId,
             layerId,
             command: 'loadTile',
-            params: {
-                tileInfo: toJSON(context.tileInfo),
-                glScale: context.glScale,
-                zScale: context.zScale
-            }
+            params
         };
         const { x, y } = context.tileInfo;
         const length = this.workers.length;

@@ -149,3 +149,10 @@ export function evaluate(prop, properties, zoom) {
 export function isFnTypeSymbol(v) {
     return v && isFunctionDefinition(v) && v.property;
 }
+
+export function getAltitudeToLocal(options) {
+    const { pointAtTileRes, tileRatio } = options;
+    // zScale是用厘米转换成 glres point
+    const altitudeToLocal = pointAtTileRes * tileRatio;
+    return altitudeToLocal;
+}

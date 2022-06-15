@@ -366,6 +366,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
         if (!cached) {
+            const pointAtTileRes = this.getTilePointAtTileRes(tileInfo.z);
             const glScale = this.getTileGLScale(tileInfo.z);
             this._requestingMVT[url] = {
                 keys: {},
@@ -373,7 +374,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tiles: [tileInfo]
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
-            this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale }, this._onReceiveMVTData.bind(this, url));
+            this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale, pointAtTileRes }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;
@@ -385,6 +386,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const map = this.getMap();
         const sr = this.layer.getSpatialReference();
         return sr.getResolution(z) / map.getGLRes();
+    }
+
+    getTilePointAtTileRes(z) {
+        const map = this.getMap();
+        const sr = this.layer.getSpatialReference();
+        // / 10000是为了转换成厘米
+        return map.distanceToPointAtRes(100, 100, sr.getResolution(z)).x / 10000;
     }
 
     _onReceiveMVTData(url, err, data) {

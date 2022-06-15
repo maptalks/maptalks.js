@@ -9,8 +9,6 @@ import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
-const EMPTY_ARRAY = [];
-
 class TubePainter extends BasicPainter {
 
     needToRedraw() {
@@ -56,9 +54,10 @@ class TubePainter extends BasicPainter {
         }
 
         const symbol = this.getSymbol(symbolIndex);
+        const { tileResolution, tileRatio } = geometry.properties;
         const uniforms = {
-            tileResolution: geometry.properties.tileResolution,
-            tileRatio: geometry.properties.tileRatio,
+            tileResolution,
+            tileRatio,
         };
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
@@ -86,13 +85,13 @@ class TubePainter extends BasicPainter {
             castShadow: false,
             picking: true
         });
-        const centiMeterToLocal = map.distanceToPointAtRes(100, 100, geometry.properties.tileResolution)._multi(8192 / 512 / 10000).toArray();
+        // 10000 是100米转厘米
+        const centiMeterToLocal = map.distanceToPointAtRes(100, 100, geometry.properties.tileResolution)._multi(tileRatio / 10000).toArray();
         mesh.setUniform('centiMeterToLocal', centiMeterToLocal);
         mesh.setLocalTransform(transform);
 
         const defines = {
-            'IS_LINE_EXTRUSION': 1,
-            // 'HAS_COLOR': 1
+            'IS_LINE_EXTRUSION': 1
         };
         if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;

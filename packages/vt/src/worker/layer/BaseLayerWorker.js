@@ -193,13 +193,14 @@ export default class BaseLayerWorker {
         this.upload('fetchIconGlyphs', { icons, glyphs }, null, cb);
     }
 
-    _createTileData(layers, features, { glScale, zScale, tileInfo }) {
+    _createTileData(layers, features, context) {
         if (!features.length) {
             return Promise.resolve({
                 data: null,
                 buffers: []
             });
         }
+        const { glScale, tileInfo } = context;
         const useDefault = !this.options.style.style.length && !this.options.style.featureStyle.length;
         let pluginConfigs = this.pluginConfig.slice(0);
         if (useDefault) {
@@ -259,7 +260,7 @@ export default class BaseLayerWorker {
             });
 
             buffers.push(targetData[typeIndex].styledFeatures.buffer);
-            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, tilePoint, glScale, zScale, zoom });
+            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, zoom, tilePoint, ...context });
             if (useDefault) {
                 promise = promise.then(tileData => {
                     if (!tileData) {
@@ -374,7 +375,7 @@ export default class BaseLayerWorker {
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize[0];
-        const { extent, glScale, zScale, zoom, tilePoint } = context;
+        const { extent, glScale, zScale, zoom, tilePoint, pointAtTileRes } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         const debugIndex = this.options.debugTile && this.options.debugTile.index;
@@ -487,7 +488,10 @@ export default class BaseLayerWorker {
                 requestor: this.fetchIconGlyphs.bind(this),
                 zoom,
                 debugIndex,
-                radialSegments: dataConfig.radialSegments || 8
+                radialSegments: dataConfig.radialSegments || 8,
+                pointAtTileRes,
+                tileRatio,
+                isTube: true
             });
             return parseSymbolAndGenPromises(features, symbol, options, RoundTubePack);
         }

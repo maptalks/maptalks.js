@@ -107,6 +107,8 @@ void main() {
 
         #ifdef HAS_COLOR
             vColor = aColor / 255.0;
+            // 检查up的方向是否正确
+            // vColor = vec4(aTubeNormal.w / EXTRUDE_SCALE, 0.0, 0.0, 1.0);
         #endif
 
         #ifdef HAS_PATTERN
