@@ -86,6 +86,7 @@ class LinePainter extends BasicPainter {
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
+        setUniformFromSymbol(uniforms, 'linePatterGapColor', symbol, 'linePatterGapColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineStrokeColor', symbol, 'lineStrokeColor', [0, 0, 0, 0], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineDasharray', symbol, 'lineDasharray', [0, 0, 0, 0], dasharray => {
             let lineDasharray;

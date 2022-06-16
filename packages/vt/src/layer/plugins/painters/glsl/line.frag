@@ -42,7 +42,7 @@ uniform lowp float lineBlur;
     #else
         uniform float linePatternGap;
     #endif
-
+    uniform vec4 linePatterGapColor;
 
     varying vec4 vTexInfo;
     vec2 computeUV(vec2 texCoord) {
@@ -152,9 +152,11 @@ void main() {
             //vJoin为1时，说明joinPatternMode为1，则把join部分用uvStart的像素代替
             // color = texture2D(linePatternFile, computeUV(vec2(patternx, patterny)));
             // color = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
-            color *= texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
+            vec4 patternColor = texture2D(linePatternFile, computeUV(vec2(patternx * (1.0 + myGap), patterny)));
+            // patternnx
             float inGap = clamp(sign(1.0 / (1.0 + myGap) - patternx) + 0.000001, 0.0, 1.0);
-            color *= inGap;
+            patternColor = mix(linePatterGapColor, patternColor, inGap);
+            color *= patternColor;
         }
     #endif
 
