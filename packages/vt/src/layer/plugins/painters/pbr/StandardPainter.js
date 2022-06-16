@@ -359,7 +359,7 @@ class StandardPainter extends MeshPainter {
         } else {
             delete defines['HAS_IBL_LIGHTING'];
         }
-        defines['OUTPUT_NORMAL'] = 1;
+        // defines['OUTPUT_NORMAL'] = 1;
         return defines;
     }
 

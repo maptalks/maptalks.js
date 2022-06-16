@@ -173,8 +173,7 @@ function createPainterPlugin(type, Painter) {
                 tileCache,
                 tileInfo,
                 tileZoom,
-                sceneConfig,
-                bloom
+                sceneConfig
             } = context;
             const painter = this.painter;
             if (!painter) {

@@ -695,7 +695,7 @@ export default class LinePack extends VectorPack {
                 }
             }
 
-            if (!isSharpCorner && isSharpCorner && i < len - 1) {
+            if (!isTube && isSharpCorner && i < len - 1) {
                 const nextSegmentLength = currentVertex.dist(nextVertex);
                 if (nextSegmentLength > 2 * sharpCornerOffset) {
                     const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());

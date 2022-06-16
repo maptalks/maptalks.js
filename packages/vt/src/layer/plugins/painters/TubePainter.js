@@ -90,7 +90,7 @@ class TubePainter extends BasicPainter {
             picking: true
         });
         // 10000 是100米转厘米
-        const centiMeterToLocal = map.distanceToPointAtRes(100, 100, geometry.properties.tileResolution)._multi(tileRatio / 10000).toArray();
+        const centiMeterToLocal = map.distanceToPointAtRes(100, 100, geometry.properties.tileResolution)['_multi'](tileRatio / 10000).toArray();
         mesh.setUniform('centiMeterToLocal', centiMeterToLocal);
         mesh.setLocalTransform(transform);
 

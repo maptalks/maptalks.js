@@ -168,7 +168,7 @@ export default class RoundTubePack extends LinePack {
                 data.aTexInfo.push(...this.feaTexInfo);
             }
             if (lineWidthFn) {
-                //乘以2是为了解决 #190
+                // convert to centi-meter
                 data.aLineWidth.push(Math.round(this.feaLineWidth * 100));
             }
             if (lineColorFn) {
