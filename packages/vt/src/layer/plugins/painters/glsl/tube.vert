@@ -81,7 +81,12 @@ attribute vec4 aTubeNormal;
 #endif
 
 void main() {
-    float myLineWidth = lineWidth * 100.0;
+    #ifdef HAS_LINE_WIDTH
+        float myLineWidth = aLineWidth;
+    #else
+        float myLineWidth = lineWidth * 100.0;
+    #endif
+
     float halfwidth = myLineWidth / 2.0;
     vec3 tubeNormal = aTubeNormal.xyz / EXTRUDE_SCALE;
     vec3 position = unpackVTPosition();

@@ -1,17 +1,18 @@
 import LinePack from './LinePack';
 import { EXTRUDE_SCALE } from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
-import Point from '@mapbox/point-geometry';
-import { getAltitudeToLocal } from '../style/Util';
-
+import { extend } from '../style/Util';
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
 // value. This lets us store longer distances while sacrificing precision.
 const LINE_DISTANCE_SCALE = 1;
-const TEMP_EXTRUDE = new Point();
 
 export default class RoundTubePack extends LinePack {
     constructor(features, symbol, options) {
+        symbol = extend({}, symbol);
+        // fix lineJoin and lineCap
+        symbol['lineJoin'] = 'miter';
+        symbol['lineCap'] = 'butt';
         super(features, symbol, options);
         if (this.options.radialSegments % 2 === 1) {
             this.options.radialSegments--;
@@ -51,7 +52,7 @@ export default class RoundTubePack extends LinePack {
         if (lineWidthFn) {
             format.push(
                 {
-                    type: Uint8Array,
+                    type: Uint16Array,
                     width: 1,
                     name: 'aLineWidth'
                 }
@@ -168,7 +169,7 @@ export default class RoundTubePack extends LinePack {
             }
             if (lineWidthFn) {
                 //乘以2是为了解决 #190
-                data.aLineWidth.push(Math.round(this.feaLineWidth * 2));
+                data.aLineWidth.push(Math.round(this.feaLineWidth * 100));
             }
             if (lineColorFn) {
                 data.aColor.push(...this.feaColor);

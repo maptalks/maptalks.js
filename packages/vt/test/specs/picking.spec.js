@@ -684,6 +684,69 @@ describe('picking specs', () => {
         });
     });
 
+    context('should pick a tube', () => {
+        it('should pick a tube', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [
+                                [13.417135053741617, 52.52956625878565, 0],
+                                [13.417226248848124, 52.52956625878565, 1],
+                            ]
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'tube',
+                        dataConfig: {
+                            type: 'round-tube'
+                        }
+                    },
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                const expected = {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'LineString',
+                            'coordinates': [
+                                [13.417135053741617, 52.52956625878565, 0],
+                                [13.417226248848124, 52.52956625878565, 1]
+                            ]
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                    'symbol': {
+                        'lineColor': '#f00',
+                        'lineWidth': 20
+                    }
+                };
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+                done();
+            });
+            layer.addTo(map);
+        });
+    });
+
     context('vector layer\'s picking', () => {
         it('should pick point in PointLayer', done => {
             const options = {

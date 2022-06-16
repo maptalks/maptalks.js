@@ -62,11 +62,14 @@ class TubePainter extends BasicPainter {
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'linePatterGapColor', symbol, 'linePatterGapColor', [1, 1, 1, 1], createColorSetter(this.colorCache));
+        setUniformFromSymbol(uniforms, 'linePatternGapColor', symbol, 'linePatternGapColor', [1, 1, 1, 1], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
         setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
+        setUniformFromSymbol(uniforms, 'metallicFactor', symbol, 'metallicFactor', 0);
+        setUniformFromSymbol(uniforms, 'roughnessFactor', symbol, 'roughnessFactor', 0.4);
+        setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', [1, 1]);
 
         const iconAtlas = geometry.properties.iconAtlas;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
