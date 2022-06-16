@@ -12,16 +12,7 @@ const { getPBRUniforms } = reshader.pbr.PBRUtils;
 class TubePainter extends BasicPainter {
 
     needToRedraw() {
-        if (this._hasPatternAnim) {
-            return true;
-        }
-        const symbols = this.getSymbols();
-        for (let i = 0; i < symbols.length; i++) {
-            if (symbols[i]['linePatternAnimSpeed']) {
-                return true;
-            }
-        }
-        return false;
+        return this.isAnimating();
     }
 
     supportRenderMode(mode) {
@@ -33,6 +24,15 @@ class TubePainter extends BasicPainter {
     }
 
     isAnimating() {
+        if (this._hasPatternAnim) {
+            return true;
+        }
+        const symbols = this.getSymbols();
+        for (let i = 0; i < symbols.length; i++) {
+            if (symbols[i]['linePatternAnimSpeed']) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -62,6 +62,7 @@ class TubePainter extends BasicPainter {
 
         // 为了支持和linePattern合成，把默认lineColor设为白色
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
+        setUniformFromSymbol(uniforms, 'linePatterGapColor', symbol, 'linePatterGapColor', [1, 1, 1, 1], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
