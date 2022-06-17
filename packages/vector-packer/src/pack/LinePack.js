@@ -424,7 +424,6 @@ export default class LinePack extends VectorPack {
         //TODO overscaling的含义？
         const EXTENT = this.options.EXTENT;
 
-
         this.distance = 0;
         this.scaledDistance = 0;
         this.totalDistance = 0;
@@ -442,7 +441,20 @@ export default class LinePack extends VectorPack {
                 this.totalDistance += vertices[i].dist(vertices[i + 1]);
             }
             this.updateScaledDistance();
-        }
+        }/* else if (!!feature.properties &&
+            hasOwn(feature.properties, 'mapbox_clip_start') &&
+            hasOwn(feature.properties, 'mapbox_clip_end')) {
+
+            this.clipStart = +feature.properties['mapbox_clip_start'];
+            this.clipEnd = +feature.properties['mapbox_clip_end'];
+
+            for (let i = 0; i < vertices.length - 1; i++) {
+                this.totalDistance += vertices[i].dist(vertices[i + 1]);
+            }
+            this.updateClipStartDistance();
+            this.totalDistance = 0;
+            this.updateScaledDistance();
+        }*/
 
         const isPolygon = feature.type === 3; //POLYGON
 
@@ -949,6 +961,10 @@ export default class LinePack extends VectorPack {
             (this.clipStart + (this.clipEnd - this.clipStart) * this.distance / this.totalDistance)  * (MAX_LINE_DISTANCE - 1) :
             this.distance;
     }
+
+    // updateClipStartDistance() {
+    //     this.distance = this.clipStart * this.totalDistance / (this.clipEnd - this.clipStart);
+    // }
 }
 
 function isOutSegment(p0, p1, EXTENT) {
