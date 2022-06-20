@@ -234,8 +234,8 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
 
         // offsets[i] = offsets[i] || [];
         // vec4.set(offsets[i], dx, dy, dz, normalY * (up ? -1 : 1));
-
-        addTubeNormalVertexs(U, V, offsets, radius, θ, normalY * (up ? -1 : 1));
+        offsets[i] = offsets[i] || [];
+        addTubeNormalVertexs(U, V, offsets[i], radius, θ, normalY * (up ? -1 : 1));
     }
     return offsets;
 }
