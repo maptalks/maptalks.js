@@ -28,8 +28,8 @@ class PhongShader extends MeshShader {
             uniforms.push(...extraUniforms);
         }
         super({
-            vert: phongVert,
-            frag: phongFrag,
+            vert: config.vert || phongVert,
+            frag: config.frag || phongFrag,
             uniforms,
             defines: config.defines || {},
             extraCommandProps: config.extraCommandProps || {}
