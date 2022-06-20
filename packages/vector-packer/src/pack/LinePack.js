@@ -263,7 +263,7 @@ export default class LinePack extends VectorPack {
             }
             this.feaLineHeight = lineHeight;
         } else {
-            this.feaLineHeight = symbol['lineHeight'];
+            this.feaLineHeight = symbol['lineHeight'] || this.feaLineWidth;
         }
         if (lineStrokeWidthFn) {
             // {
