@@ -1,6 +1,6 @@
 import { extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, FilterUtil } from '@maptalks/vector-packer';
+import { PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -494,6 +494,18 @@ export default class BaseLayerWorker {
                 isTube: true
             });
             return parseSymbolAndGenPromises(features, symbol, options, RoundTubePack);
+        } else if (type === 'square-tube') {
+            const options = extend({}, dataConfig, {
+                EXTENT: extent,
+                requestor: this.fetchIconGlyphs.bind(this),
+                zoom,
+                debugIndex,
+                radialSegments: 4,
+                pointAtTileRes,
+                tileRatio,
+                isTube: true
+            });
+            return parseSymbolAndGenPromises(features, symbol, options, SquareTubePack);
         }
         return Promise.resolve([]);
     }

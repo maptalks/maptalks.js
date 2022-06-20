@@ -1,11 +1,7 @@
 import LinePack from './LinePack';
-import { EXTRUDE_SCALE } from './LinePack';
+import { EXTRUDE_SCALE, LINE_DISTANCE_SCALE } from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
 import { extend } from '../style/Util';
-// We don't have enough bits for the line distance as we'd like to have, so
-// use this value to scale the line distance (in tile units) down to a smaller
-// value. This lets us store longer distances while sacrificing precision.
-const LINE_DISTANCE_SCALE = 1;
 
 export default class RoundTubePack extends LinePack {
     constructor(features, symbol, options) {
@@ -123,36 +119,41 @@ export default class RoundTubePack extends LinePack {
         const radialOffsets = getRadialVertexes(1, segments, dirx, diry, dirz, extrudeX, extrudeY, up);
 
         if (this.prevVertex) {
-            const positionSize = this.needAltitudeAttribute() ? 2 : 3;
-            const currentOffset = this.data.aPosition.length / positionSize;
-            for (let i = 0; i < segments; i++) {
-                // d-------b
-                // |       |
-                // c-------a
-                const a = i + currentOffset;
-                const c = i + currentOffset - segments * 2;
-                let b, d;
-                if (i === segments - 1 && up) {
-                    // 如果是up是最后一个点
-                    // b是该圆圈中的第一个点
-                    // d是上一个圆圈的第一个点
-                    // - segments * 2 + 1 就是用圆圈的最后一个点的序号找到圆圈第一个点的序号
-                    b = i + currentOffset - segments * 2 + 1;
-                    d = i + currentOffset - segments * 2 - segments * 2 + 1;
-                } else {
-                    // b是圆圈上下一个点
-                    // d是上一个圆圈对应的下一个点
-                    // 如果up为false，且最后一个点，则b是up上第一个点，但序号仍然是 i + currentOffset + 1
-                    b = i + currentOffset + 1;
-                    d = i + currentOffset + 1 - segments * 2;
-                }
-                // 因为LinePack.addElements中会加入 ths.offset，所以这里要减去this.offset
-                super.addElements(a - this.offset, b - this.offset, c - this.offset);
-                super.addElements(c - this.offset, b - this.offset, d - this.offset);
-            }
+            this.fillTubeElements(up);
         }
 
         this.fillData(this.data, x, y, z || 0, radialOffsets, up, linesofar, normalDistance);
+    }
+
+    fillTubeElements(up) {
+        const segments = this.options.radialSegments / 2;
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
+        const currentOffset = this.data.aPosition.length / positionSize;
+        for (let i = 0; i < segments; i++) {
+            // d-------b
+            // |       |
+            // c-------a
+            const a = i + currentOffset;
+            const c = i + currentOffset - segments * 2;
+            let b, d;
+            if (i === segments - 1 && up) {
+                // 如果是up是最后一个点
+                // b是该圆圈中的第一个点
+                // d是上一个圆圈的第一个点
+                // - segments * 2 + 1 就是用圆圈的最后一个点的序号找到圆圈第一个点的序号
+                b = i + currentOffset - segments * 2 + 1;
+                d = i + currentOffset - segments * 2 - segments * 2 + 1;
+            } else {
+                // b是圆圈上下一个点
+                // d是上一个圆圈对应的下一个点
+                // 如果up为false，且最后一个点，则b是up上第一个点，但序号仍然是 i + currentOffset + 1
+                b = i + currentOffset + 1;
+                d = i + currentOffset + 1 - segments * 2;
+            }
+            // 因为LinePack.addElements中会加入 ths.offset，所以这里要减去this.offset
+            super.addElements(a - this.offset, b - this.offset, c - this.offset);
+            super.addElements(c - this.offset, b - this.offset, d - this.offset);
+        }
     }
 
     fillData(data, x, y, altitude, radialOffsets, up, linesofar, normalDistance) {
@@ -218,7 +219,7 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
         radialOffsets[segments] = [];
     }
     const offsets = radialOffsets[segments];
-    const factor = 1;//up ? 1 : -1;
+    // const factor = 1;//up ? 1 : -1;
     for (var i = 0; i < segments; i++) {
         const θ = Math.PI * i / segments;  // theta
         const middle = 0;
@@ -226,13 +227,25 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
         // r就是radius的比例，在垂直时为1，水平时为joinRadius
         // normalY是y方向的normal值，垂直方向为0，水平方向为1
         const normalY = (1 - Math.abs(θ - middle) / (Math.PI / 2));
-        const r = 1;//(1 - normalY) * (joinRadius - 1) + 1;
-        const dx = r * factor * radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
-        const dy = r * factor * radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
-        const dz = r * factor * radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);
+        // const r = 1;//(1 - normalY) * (joinRadius - 1) + 1;
+        // const dx = r * factor * radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
+        // const dy = r * factor * radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
+        // const dz = r * factor * radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);
 
-        offsets[i] = offsets[i] || [];
-        vec4.set(offsets[i], dx, dy, dz, normalY * (up ? -1 : 1));
+        // offsets[i] = offsets[i] || [];
+        // vec4.set(offsets[i], dx, dy, dz, normalY * (up ? -1 : 1));
+
+        addTubeNormalVertexs(U, V, offsets, radius, θ, normalY * (up ? -1 : 1));
     }
+    return offsets;
+}
+
+
+export function addTubeNormalVertexs(U, V, offsets, radius, θ, up) {
+    const dx = radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
+    const dy = radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
+    const dz = radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);
+
+    vec4.set(offsets, dx, dy, dz, up);
     return offsets;
 }

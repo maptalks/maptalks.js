@@ -97,6 +97,9 @@ class TubePainter extends BasicPainter {
         const defines = {
             'IS_LINE_EXTRUSION': 1
         };
+        if (this.dataConfig.type === 'square-tube') {
+            defines['IS_SQUARE_TUBE'] = 1;
+        }
         if (iconAtlas) {
             defines['HAS_PATTERN'] = 1;
         }

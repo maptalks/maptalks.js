@@ -39,7 +39,7 @@ const LINE_DISTANCE_BUFFER_BITS = 16;
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
 // value. This lets us store longer distances while sacrificing precision.
-const LINE_DISTANCE_SCALE = 1;
+export const LINE_DISTANCE_SCALE = 1;
 
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
@@ -219,7 +219,7 @@ export default class LinePack extends VectorPack {
     }
 
     placeVector(line) {
-        const { lineJoinFn, lineCapFn, lineWidthFn, lineStrokeWidthFn, lineStrokeColorFn,
+        const { lineJoinFn, lineCapFn, lineWidthFn, lineHeightFn, lineStrokeWidthFn, lineStrokeColorFn,
             lineColorFn, lineOpacityFn,
             lineDxFn, lineDyFn, linePatternAnimSpeedFn, linePatternGapFn } = this._fnTypes;
         const symbol = this.symbol,
@@ -255,6 +255,15 @@ export default class LinePack extends VectorPack {
             this.feaLineWidth = lineWidth;
         } else {
             this.feaLineWidth = symbol['lineWidth'];
+        }
+        if (lineHeightFn) {
+            let lineHeight = lineHeightFn(this.options['zoom'], properties);
+            if (isNil(lineHeight)) {
+                lineHeight = this.feaLineWidth;
+            }
+            this.feaLineHeight = lineHeight;
+        } else {
+            this.feaLineHeight = symbol['lineHeight'];
         }
         if (lineStrokeWidthFn) {
             // {
