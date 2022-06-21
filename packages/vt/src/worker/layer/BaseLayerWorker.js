@@ -482,30 +482,19 @@ export default class BaseLayerWorker {
             return parseSymbolAndGenPromises(features, symbol, options, CirclePack);
             // const pack = new CirclePack(features, symbol, options);
             // return pack.load();
-        } else if (type === 'round-tube') {
+        } else if (type === 'round-tube' || type === 'square-tube') {
+            const clazz = type === 'round-tube' ? RoundTubePack : SquareTubePack;
             const options = extend({}, dataConfig, {
                 EXTENT: extent,
                 requestor: this.fetchIconGlyphs.bind(this),
                 zoom,
                 debugIndex,
-                radialSegments: dataConfig.radialSegments || 8,
+                radialSegments: type === 'round-tube' ? (dataConfig.radialSegments || 8) : 4,
                 pointAtTileRes,
                 tileRatio,
                 isTube: true
             });
-            return parseSymbolAndGenPromises(features, symbol, options, RoundTubePack);
-        } else if (type === 'square-tube') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
-                requestor: this.fetchIconGlyphs.bind(this),
-                zoom,
-                debugIndex,
-                radialSegments: 4,
-                pointAtTileRes,
-                tileRatio,
-                isTube: true
-            });
-            return parseSymbolAndGenPromises(features, symbol, options, SquareTubePack);
+            return parseSymbolAndGenPromises(features, symbol, options, clazz);
         }
         return Promise.resolve([]);
     }

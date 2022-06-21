@@ -84,7 +84,7 @@ void main() {
     #ifdef HAS_LINE_WIDTH
         float myLineWidth = aLineWidth;
     #else
-        float myLineWidth = lineWidth * 100.0;
+        float myLineWidth = lineWidth;
     #endif
 
     float halfwidth = myLineWidth / 2.0;

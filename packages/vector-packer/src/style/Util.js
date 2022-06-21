@@ -156,3 +156,13 @@ export function getAltitudeToLocal(options) {
     const altitudeToLocal = pointAtTileRes * tileRatio;
     return altitudeToLocal;
 }
+
+export function getTubeSizeScale(metric) {
+    if (metric === 'centimeter' || metric === 'cm') {
+        return 1;
+    } else if (metric === 'millimeter' || metric === 'mm') {
+        return 0.1;
+    } else {
+        return 100;
+    }
+}

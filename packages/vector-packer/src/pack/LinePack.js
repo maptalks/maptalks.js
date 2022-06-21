@@ -252,18 +252,18 @@ export default class LinePack extends VectorPack {
             if (isNil(lineWidth)) {
                 lineWidth = 4;
             }
-            this.feaLineWidth = lineWidth;
+            this.feaLineWidth = +lineWidth;
         } else {
-            this.feaLineWidth = symbol['lineWidth'];
+            this.feaLineWidth = +symbol['lineWidth'];
         }
         if (lineHeightFn) {
             let lineHeight = lineHeightFn(this.options['zoom'], properties);
             if (isNil(lineHeight)) {
                 lineHeight = this.feaLineWidth;
             }
-            this.feaLineHeight = lineHeight;
+            this.feaLineHeight = +lineHeight;
         } else {
-            this.feaLineHeight = symbol['lineHeight'] || this.feaLineWidth;
+            this.feaLineHeight = +symbol['lineHeight'] || this.feaLineWidth;
         }
         if (lineStrokeWidthFn) {
             // {

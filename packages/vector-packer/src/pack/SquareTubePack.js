@@ -1,6 +1,6 @@
 import { addTubeNormalVertexs, default as RoundTubePack } from './RoundTubePack';
 import { LINE_DISTANCE_SCALE } from './LinePack';
-import { vec2, vec3, vec4 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 
 export default class SquareTubePack extends RoundTubePack {
     addHalfVertex(currentVertex, extrudeX, extrudeY, round, up, dir, segment, normalDistance) {

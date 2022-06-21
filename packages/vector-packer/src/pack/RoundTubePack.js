@@ -1,7 +1,7 @@
 import LinePack from './LinePack';
 import { EXTRUDE_SCALE, LINE_DISTANCE_SCALE } from './LinePack';
 import { vec3, vec4 } from 'gl-matrix';
-import { extend } from '../style/Util';
+import { extend, getTubeSizeScale } from '../style/Util';
 
 export default class RoundTubePack extends LinePack {
     constructor(features, symbol, options) {
@@ -169,8 +169,13 @@ export default class RoundTubePack extends LinePack {
                 data.aTexInfo.push(...this.feaTexInfo);
             }
             if (lineWidthFn) {
+                const scale = getTubeSizeScale(this.options.metric);
+                let size = this.feaLineWidth * scale;
+                if (isNaN(size)) {
+                    size = 0;
+                }
                 // convert to centi-meter
-                data.aLineWidth.push(Math.round(this.feaLineWidth * 100));
+                data.aLineWidth.push(Math.round(size));
             }
             if (lineColorFn) {
                 data.aColor.push(...this.feaColor);

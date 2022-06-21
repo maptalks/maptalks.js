@@ -1,4 +1,5 @@
 import Color from 'color';
+import { StyleUtil } from '@maptalks/vector-packer';
 import { reshader, mat4, mat3 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar, isNil } from '../Util';
@@ -63,7 +64,10 @@ class TubePainter extends BasicPainter {
         // 为了支持和linePattern合成，把默认lineColor设为白色
         setUniformFromSymbol(uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'linePatternGapColor', symbol, 'linePatternGapColor', [1, 1, 1, 1], createColorSetter(this.colorCache));
-        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2);
+        setUniformFromSymbol(uniforms, 'lineWidth', symbol, 'lineWidth', 2, v => {
+            const scale = StyleUtil.getTubeSizeScale(this.dataConfig.metric);
+            return scale * v;
+        });
         setUniformFromSymbol(uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
         setUniformFromSymbol(uniforms, 'linePatternAnimSpeed', symbol, 'linePatternAnimSpeed', 0);
         setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
