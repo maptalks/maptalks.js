@@ -335,6 +335,10 @@ export function getEventContainerPoint(ev, dom) {
     if (!ev) {
         ev = window.event;
     }
+    if (!ev.clientX) {
+        ev = ev.touches[0] || ev.changedTouches[0];
+    }
+
     let domPos = dom.__position;
     if (!domPos) {
         domPos = computeDomPosition(dom);
