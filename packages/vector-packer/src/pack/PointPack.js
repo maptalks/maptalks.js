@@ -40,6 +40,9 @@ const IDX_PROP = '__index';
 export default class PointPack extends VectorPack {
 
     static needMerge(symbolDef) {
+        if (!symbolDef) {
+            return false;
+        }
         return symbolDef['mergeOnProperty'] && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line');
     }
 
