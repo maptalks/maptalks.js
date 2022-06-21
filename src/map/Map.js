@@ -2459,6 +2459,15 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
+    pointToAltitude: function () {
+        const DEFAULT_CENTER = new Coordinate(0, 40);
+        const POINT = new Point(0, 0);
+        return function (point = 0, res, originCenter) {
+            const altitude = this.pointAtResToDistance(point, res, originCenter || DEFAULT_CENTER, POINT);
+            return altitude;
+        };
+    }(),
+
 
     /**
      * Converts pixel size to geographical distance.
@@ -2509,13 +2518,15 @@ Map.include(/** @lends Map.prototype */{
      */
     pointAtResToDistance: function () {
         const POINT = new Point(0, 0);
+        const PRJ_COORD = new Coordinate(0, 0);
         const COORD = new Coordinate(0, 0);
-        return function (dx, dy, res) {
+        return function (dx, dy, res, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
                 return null;
             }
-            const c = this._prjToPointAtRes(this._getPrjCenter(), res, POINT);
+            const prjCoord = projection.project(paramCenter, PRJ_COORD) || this._getPrjCenter();
+            const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD);
             return projection.measureLength(this.getCenter(), target);
