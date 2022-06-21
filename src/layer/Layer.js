@@ -11,8 +11,8 @@ import Browser from '../core/Browser';
 /**
  * @property {Object}  [options=null] - base options of layer.
  * @property {String}  [options.attribution= null] - the attribution of this layer, you can specify company or other information of this layer.
- * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
- * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Number}  [options.minZoom=null] - the minimum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Number}  [options.maxZoom=null] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
  * @property {Number}  [options.zIndex=undefined] - z index of the layer
