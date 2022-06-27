@@ -240,6 +240,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             layer.off('idchange', this._onLayerIDChange, this);
         });
         this._layerMap = {};
+        this.clearAnalysis();
         super.onRemove();
     }
 
@@ -322,7 +323,21 @@ export default class GroupGLLayer extends maptalks.Layer {
             const index = this._analysisTaskList.indexOf(analysis);
             if (index > -1) {
                 this._analysisTaskList.splice(index, 1);
+                analysis.remove();
             }
+        }
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
+    clearAnalysis() {
+        if (this._analysisTaskList) {
+            this._analysisTaskList.forEach(analysis => {
+                analysis.remove();
+            });
+            this._analysisTaskList = [];
         }
         const renderer = this.getRenderer();
         if (renderer) {

@@ -1,5 +1,7 @@
 import * as reshader from '@maptalks/reshader.gl';
+import AnalysisShader from './AnalysisShader.js';
 import { extend } from '../layer/util/util.js';
+import { Util } from 'maptalks';
 
 class AnalysisPainter {
     constructor(regl, layer, config) {
@@ -32,7 +34,7 @@ class AnalysisPainter {
             }),
             depth: true
         });
-        this._shader = new reshader.AnalysisShader(viewport);
+        this._shader = new AnalysisShader(viewport);
     }
 
     getMap() {
@@ -53,6 +55,8 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_VIEWSHED'];
         delete this._shader.shaderDefines['HAS_SKYLINE'];
         delete this._shader.shaderDefines['HAS_INSIGHT'];
+        delete this._shader.shaderDefines['HAS_CUT'];
+        delete this._shader.shaderDefines['HAS_EXCAVATE'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             const defines = task.getDefines();
@@ -74,8 +78,8 @@ class AnalysisPainter {
     }
 
     _resize() {
-        const map = this._layer.getMap();
-        const width = map.width, height = map.height;
+        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
+        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

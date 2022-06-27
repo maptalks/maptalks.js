@@ -843,7 +843,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 context.renderTarget = renderTarget;
             }
         }
-        // this._renderAnalysis(context, renderTarget);
         if (this._renderMode !== 'noAa') {
 
             this._shadowContext = this._prepareShadowContext(context);
