@@ -9,7 +9,7 @@ const DEFAULT_COLOR = [1, 1, 1];
 const DEFAULT_EXTENT = {
     min:[-800, -800, 0],
     max:[800, 800, 1000]
-}, DEFAULT_ZOOM = 16.685648411389433;
+}, DEFAULT_ZOOM = 16.685648411389433, extent = {min: [], max: []};
 const Y_UP_TO_Z_UP = mat4.fromRotationTranslation([], quat.fromEuler([], 90, 0, 0), [0, 0, 0]);
 
 class RainPainer {
@@ -67,6 +67,10 @@ class RainPainer {
                 }
             },
         });
+        this._createScene();
+    }
+
+    _createScene() {
         const emptyTexture = this._regl.texture({ width: 2, height: 2});
         this._mesh = this._createRain();
         if (!this._mesh) {
@@ -244,12 +248,14 @@ class RainPainer {
         if (!rainConfig) {
             return;
         }
+        if (!this._mesh) {
+            this._createScene();
+        }
         //更改雨量大小，需要重新创建mesh
         if (rainConfig.density !== this._rainDensity) {
             const rainMap = this._mesh.material.get('rainMap');
             this._mesh.geometry.dispose();
             this._mesh.dispose();
-            this._mesh.material.dispose();
             this._scene.clear();
             this._mesh = this._createRain();
             this._mesh.material.set('rainMap', rainMap);
@@ -291,13 +297,9 @@ class RainPainer {
         const map = this.getMap();
         const zoom = map.getZoom();
         const ratio = DEFAULT_ZOOM - zoom;
-        DEFAULT_EXTENT.max[0] *= Math.pow(2, ratio);
-        DEFAULT_EXTENT.max[1] *= Math.pow(2, ratio);
-        DEFAULT_EXTENT.max[2] *= Math.pow(2, ratio);
-        DEFAULT_EXTENT.min[0] *= Math.pow(2, ratio);
-        DEFAULT_EXTENT.min[1] *= Math.pow(2, ratio);
-        DEFAULT_EXTENT.min[2] *= Math.pow(2, ratio);
-        return DEFAULT_EXTENT;
+        vec3.scale(extent.min, DEFAULT_EXTENT.min, Math.pow(2, ratio));
+        vec3.scale(extent.max, DEFAULT_EXTENT.max, Math.pow(2, ratio));
+        return extent;
     }
 }
 
