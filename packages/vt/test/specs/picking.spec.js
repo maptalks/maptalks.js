@@ -7,6 +7,7 @@ const {
     GeoJSONVectorTileLayer,
     PointLayer,
     LineStringLayer,
+    VectorTileLayer,
     PolygonLayer
 } = require('../../dist/maptalks.vt.js');
 const {
@@ -1061,5 +1062,28 @@ describe('picking specs', () => {
             onDirty();
         });
         group.addTo(map);
+    });
+
+    it('should return geographic coordinates in pick', done => {
+        map = new maptalks.Map(container, {
+            center: [0, 0],
+            zoom: 5
+        });
+        const layer = new VectorTileLayer('vt', {
+            urlTemplate: 'http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt',
+            spatialReference: 'preset-vt-3857',
+            pickingGeometry: true
+        });
+        const expected = [[[-0.0054931640625,0],[0,2.816857733037722],[2.8125,2.816857733037722],[2.8125,0],[2.8125,0],[-0.0054931640625,0]]];
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 5) {
+                const picked = layer.identifyAtPoint(new maptalks.Point(map.width / 2, map.height / 2));
+                assert.deepEqual(picked[0].data.feature.geometry, expected);
+                done();
+            }
+        });
+        layer.addTo(map);
     });
 });

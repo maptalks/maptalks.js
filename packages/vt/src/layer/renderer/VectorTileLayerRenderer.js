@@ -479,6 +479,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
             const tileData = i === 0 ? data : copyTileData(data);
+            for (let j = 0; j < tileData.data.length; j++) {
+                const features = tileData.data[j].features;
+                for (const p in features) {
+                    const feature = features[p];
+                    feature.tile = tileInfo;
+                }
+            }
             tileInfo.extent = tileData && tileData.extent;
             this._tileQueue.push({ tileData, tileInfo });
         }

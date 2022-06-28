@@ -5,6 +5,9 @@ import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
 
+const TMP_POINT = new maptalks.Point(0, 0);
+const TMP_COORD = new maptalks.Coordinate(0, 0);
+
 const defaultOptions = {
     renderer: 'gl',
     altitudeProperty: 'altitude',
@@ -639,7 +642,57 @@ class VectorTileLayer extends maptalks.TileLayer {
             return [];
         }
         const dpr = map.getDevicePixelRatio();
-        return renderer.pick(point.x * dpr, point.y * dpr, options);
+        const results = renderer.pick(point.x * dpr, point.y * dpr, options);
+        if (this.getJSONType() !== 'GeoJSONVectorTileLayer') {
+            // 将瓦片坐标转成经纬度坐标
+            return this._convertPickedCoordinates(results);
+        } else {
+            return results;
+        }
+    }
+
+    _convertPickedCoordinates(picks) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return picks;
+        }
+        const tileConfig = this['_getTileConfig']();
+        const sr = this.getSpatialReference();
+        for (let i = 0; i < picks.length; i++) {
+            let pick = picks[i];
+            if (!pick || !pick.data) {
+                continue;
+            }
+            const { tile } = pick.data;
+            const { x, y, z, extent } = tile;
+            const res = sr.getResolution(z);
+            const nw = tileConfig.getTilePointNW(x, y, res);
+            const geometry = pick.data.feature && pick.data.feature.geometry;
+            if (geometry) {
+                pick.data = extend({}, pick.data);
+                pick.data.feature = extend({}, pick.data.feature);
+                pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
+            }
+        }
+        return picks;
+    }
+
+    _convertGeometryCoords(geometry, nw, extent, res) {
+        const tileSize = this.options.tileSize[0];
+        const tileScale = extent / tileSize;
+        const map = this.getMap();
+        const coords = [];
+        for (let i = 0; i < geometry.length; i++) {
+            if (Array.isArray(geometry[i])) {
+                coords.push(this._convertGeometryCoords(geometry[i], nw, extent, res));
+            } else {
+                TMP_POINT.x = nw.x + geometry[i].x / tileScale;
+                TMP_POINT.y = nw.y - geometry[i].y / tileScale;
+                map.pointAtResToCoord(TMP_POINT, res, TMP_COORD);
+                coords.push(TMP_COORD.toArray());
+            }
+        }
+        return coords;
     }
 
     /**
