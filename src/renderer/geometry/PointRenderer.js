@@ -83,7 +83,7 @@ const PolyRenderer = {
             points = [];
             rotations = [];
             const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes),
-                isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
+                isSplitted = vertice.length > 0 && Array.isArray(vertice[0]);
             if (isSplitted) {
                 //anti-meridian splitted
                 let ring;
@@ -121,8 +121,13 @@ const PolyRenderer = {
             const previous = l > 1 ? l - 2 : l - 1;
             rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
         } else {
-            const pcenter = this._getProjection().project(this.getCenter());
-            points = [map._prjToPointAtRes(pcenter, glRes)];
+            const center = this.getCenter();
+            if (!center) {
+                points = [];
+            } else {
+                const pcenter = this._getProjection().project(center);
+                points = [map._prjToPointAtRes(pcenter, glRes)];
+            }
         }
         return [points, rotations];
     }
