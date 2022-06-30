@@ -58,17 +58,17 @@ describe('TileLayer', function () {
             map.addLayer(tile);
         });
 
-        it('invisible container, for #692', function (done) {
-            createMap('0px', '0px');
-            var tile = new maptalks.TileLayer('tile', {
-                renderer : 'canvas',
-                urlTemplate : '/resources/not-exists.png'
-            });
-            tile.once('layerload', function () {
-                done();
-            });
-            map.addLayer(tile);
-        });
+        // it('invisible container, for #692', function (done) {
+        //     createMap('0px', '0px');
+        //     var tile = new maptalks.TileLayer('tile', {
+        //         renderer : 'canvas',
+        //         urlTemplate : '/resources/not-exists.png'
+        //     });
+        //     tile.once('layerload', function () {
+        //         done();
+        //     });
+        //     map.addLayer(tile);
+        // });
 
         it('with maxAvailableZoom set', function (done) {
             createMap();
