@@ -120,7 +120,43 @@ vec2 rotateUV(vec2 uv, float rotation) {
     );
 }
 
+#ifdef PICKING_MODE
+    #include <fbo_picking_vert>
+#endif
+
 void main() {
+    mat4 localPositionMatrix = getPositionMatrix();
+
+    #ifdef IS_LINE_EXTRUSION
+        vec3 linePosition = getLineExtrudePosition(aPosition);
+        //linePixelScale = tileRatio * resolution / tileResolution
+        vec4 localVertex = getPosition(linePosition);
+    #else
+        vec4 localVertex = getPosition(aPosition);
+    #endif
+    vModelVertex = (modelMatrix * localVertex).xyz;
+
+    vec4 position = localPositionMatrix * localVertex;
+    vec4 viewVertex = modelViewMatrix * position;
+    vViewVertex = viewVertex;
+    // gl_Position = projMatrix * modelViewMatrix * localVertex;
+    mat4 jitteredProjection = projMatrix;
+    jitteredProjection[2].xy += halton.xy / outSize.xy;
+    gl_Position = jitteredProjection * viewVertex;
+    // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
+
+    #ifdef PICKING_MODE
+        float alpha = 1.0;
+        #if defined(HAS_COLOR)
+            alpha *= aColor.a;
+        #endif
+        #if defined(HAS_COLOR0)
+            alpha *= aColor0.a;
+        #endif
+
+        fbo_picking_setData(gl_Position.w, alpha != 0.0);
+    #else
+
     #if defined(HAS_MAP)
         vec2 TexCoord = getTexcoord(aTexCoord);
         #ifdef HAS_RANDOM_TEX
@@ -143,7 +179,6 @@ void main() {
 
     #endif
 
-    mat4 localPositionMatrix = getPositionMatrix();
 
     #if defined(HAS_TANGENT) || defined(HAS_NORMAL)
         mat3 positionNormalMatrix = mat3(localPositionMatrix);
@@ -169,17 +204,6 @@ void main() {
         vModelNormal = vec3(0.0);
     #endif
 
-
-    #ifdef IS_LINE_EXTRUSION
-        vec3 linePosition = getLineExtrudePosition(aPosition);
-        //linePixelScale = tileRatio * resolution / tileResolution
-        vec4 localVertex = getPosition(linePosition);
-    #else
-        vec4 localVertex = getPosition(aPosition);
-    #endif
-    vModelVertex = (modelMatrix * localVertex).xyz;
-
-
     #if defined(HAS_TANGENT)
         vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
     #endif
@@ -193,15 +217,6 @@ void main() {
             vViewTangent = vec4(ssrNormalMatrix * localTangent.xyz, localTangent.w);
         #endif
     #endif
-
-    vec4 position = localPositionMatrix * localVertex;
-    vec4 viewVertex = modelViewMatrix * position;
-    vViewVertex = viewVertex;
-    // gl_Position = projMatrix * modelViewMatrix * localVertex;
-    mat4 jitteredProjection = projMatrix;
-    jitteredProjection[2].xy += halton.xy / outSize.xy;
-    gl_Position = jitteredProjection * viewVertex;
-    // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
 
     #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
@@ -224,4 +239,8 @@ void main() {
         vTangentViewPos = TBN * cameraPosition;
         vTangentFragPos = TBN * vModelVertex;
     #endif
+
+    //#ifdef PICKING_MODE的endif
+    #endif
+
 }
