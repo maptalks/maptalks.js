@@ -7,6 +7,11 @@ attribute vec3 aPosition;
     uniform vec2 uvOffset;
     attribute vec2 aTexCoord;
     varying vec2 vTexCoord;
+
+    #ifdef HAS_I3S_UVREGION
+        attribute vec4 uvRegion;
+        varying vec4 vUvRegion;
+    #endif
 #endif
 #if defined(HAS_COLOR)
     attribute vec4 aColor;
@@ -118,5 +123,9 @@ void main()
     #endif
     #ifdef HAS_HEATMAP
         heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
+    #endif
+
+    #ifdef HAS_I3S_UVREGION
+        vUvRegion = uvRegion / 65535.0;
     #endif
 }
