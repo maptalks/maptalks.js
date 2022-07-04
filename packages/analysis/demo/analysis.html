@@ -2,7 +2,8 @@
 <html>
 <head>
   <title>dayanta</title>
-  <script type="text/javascript" src="js/maptalks.min.js"></script>
+  <!-- <script type="text/javascript" src="js/maptalks.js"></script> -->
+  <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.js"></script>
   <!-- <script type="text/javascript" src="https://unpkg.com/@maptalks/gl/dist/maptalksgl.js"></script> -->
   <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl-dev.js"></script>
   <script type="text/javascript" src="js/transcoders.draco.js"></script>
@@ -16,12 +17,19 @@
         width: 100%;
     }
     #map { width: 100%; height: 100%; background-color: rgb(250, 246, 246) }
+    #controlPanel {width: 100%;height: 50px;position: absolute;left: 0px;top: 0px;}
+    .btn {width:120px;height:30px}
   </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="controlPanel">
+    <input class="btn" type="button" id="draw" value="绘制"/>
+    <input class="btn" type="button" id="end" value="停止绘制"/>
+    <input class="btn" type="button" id="raise" value="拉高"/>
+</div>
 <script>
-    let task = null, insightAnalysis = null;
+    let task = null, insightAnalysis = null, skylineAnalysis, lookPoint, eyePos;
     var map = new maptalks.Map("map", {
         center: [108.9605239272878, 34.21955775963946],
         zoom : 15,
@@ -52,8 +60,16 @@
         const extent = layer.getExtent(e.index);
         map.fitExtent(extent, 0, { animation: false });
         const center = map.getCenter();
-
-        // const skylineAnalysis = new maptalks.SkylineAnalysis({
+        // lookPoint = [center.x, center.y, 20];
+        // eyePos = [center.x + 0.002, center.y + 0.002, 30];
+        // insightAnalysis = new maptalks.InSightAnalysis({
+        //     lookPoint,
+        //     eyePos,
+        //     visibleColor: [0, 1, 0, 1],
+        //     invisibleColor: [1, 0, 0, 1]
+        // });
+        // insightAnalysis.addTo(groupLayer);
+        // skylineAnalysis = new maptalks.SkylineAnalysis({
         //     lineColor: [1.0, 0.2, 0.0],
         //     lineWidth: 1.8
         // });
@@ -64,18 +80,18 @@
         //     });
         // }, 10 * 1000);
 
-        // const cutAnalysis = new maptalks.CutAnalysis({
-        //     position: [center.x, center.y, 0],
-        //     rotation: [45, 90, 45],
-        //     scale: [1, 1, 1]
-        // });
-        // cutAnalysis.addTo(groupLayer);
+        const cutAnalysis = new maptalks.CutAnalysis({
+            position: [center.x, center.y, 0],
+            rotation: [45, 90, 0],
+            scale: [1, 1, 1]
+        });
+        cutAnalysis.addTo(groupLayer);
 
-        // const eyePos = [center.x + 0.01, center.y, 0];
+        // const eyePos = [center.x + 0.003, center.y, 50];
         // const lookPoint = [center.x, center.y, 0];
         // const verticalAngle = 30;
         // const horizontalAngle = 20;
-        // const viewshedAnalysis = new maptalks.analysis.ViewshedAnalysis({
+        // const viewshedAnalysis = new maptalks.ViewshedAnalysis({
         //     eyePos,
         //     lookPoint,
         //     verticalAngle,
@@ -84,7 +100,15 @@
         // viewshedAnalysis.addTo(groupLayer);
 
         // const floodAnalysis = new maptalks.FloodAnalysis({
-        //     waterHeight: 20,
+        //     boundary: [
+        //         [108.95925700055773, 34.22064649376412],
+        //         [108.95817923237632, 34.22026546100173],
+        //         [108.95785642878468, 34.219345566925455],
+        //         [108.95894989374756, 34.21800084205469],
+        //         [108.96093526619302, 34.21845831108945],
+        //         [108.96090704356277, 34.22004222028525]
+        //     ],
+        //     waterHeight: 40,
         //     waterColor: [0.1, 0.5, 0.6]
         // });
         // floodAnalysis.addTo(groupLayer);
@@ -147,6 +171,14 @@
     };
     map.setLights(lights);
     const groupLayer = new maptalks.GroupGLLayer('g', [layer], { sceneConfig }).addTo(map);
+    // map.on('dom:click', e => {
+    //     const identifyData = e.coordinate ? groupLayer.identify(e.coordinate, { layers: [layer], orderByCamera: true })[0] : groupLayer.identifyAtPoint(e.containerPoint, { layers: [layer], orderByCamera: true})[0];
+    //     const point = identifyData && identifyData.point;
+    //     console.log(point);
+    // });
+    document.getElementById('draw').onclick = function() {
+        insightAnalysis.update('lookPoint', [lookPoint[0], lookPoint[1], 100]);
+    }
 </script>
 </body>
 </html>

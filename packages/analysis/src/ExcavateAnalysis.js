@@ -1,10 +1,7 @@
-import { reshader, mat4 } from '@maptalks/gl';
-import * as maptalks from 'maptalks';
-import { coordinateToWorld } from './common/Util';
+import { reshader } from '@maptalks/gl';
+import { defined } from './common/Util';
 import Analysis from './Analysis';
 import ExcavatePass from './pass/ExcavatePass';
-import ExcavateExtentPass from './pass/ExcaveteExtentPass';
-import earcut from 'earcut';
 
 export default class ExcavateAnalysis extends Analysis {
     constructor(options) {
@@ -24,51 +21,52 @@ export default class ExcavateAnalysis extends Analysis {
             }, this);
         }
         const map = this.layer.getMap();
+        const { extentMap, extentInWorld, extentPolygon } = this._calExtent(this.options.boundary);
         this._renderOptions = {};
-        const extent = this._calExtent(this.options.boundary);
-        const { extentMap, extentInWorld, extentPolygon } = this._renderExtentMap(extent);
+        this._renderOptions['height'] = map.altitudeToPoint(this.options['height'] || 0, map.getGLRes());
         this._renderOptions['extent'] = extentInWorld;
         this._renderOptions['extentPolygon'] = extentPolygon;
         this._renderOptions['extentMap'] = extentMap;
-        this._renderOptions['groundTexture'] = this._createGroundTexture();
+        this._renderOptions['groundTexture'] = this._createGroundTexture(this.options['textureUrl']);
+        this._renderOptions['hasTexture'] = defined(this.options['textureUrl']) ? 1 : 0;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         return this;
     }
 
-    _createGroundTexture() {
-        const textureUrl = this.options['textureUrl'];
-        const image = new Image();
-        image.src = textureUrl;
+    _createGroundTexture(textureUrl) {
         const regl = this.regl;
         const texture = regl.texture({width: 2, height: 2});
-        image.onload = function() {
-            this._renderOptions['groundTexture'] = regl.texture(image);
-        }.bind(this);
+        if (textureUrl) {
+            const image = new Image();
+            image.src = textureUrl;
+            image.onload = function() {
+                this._renderOptions['groundTexture'] = regl.texture(image);
+                const renderer = this.layer.getRenderer();
+                renderer.setToRedraw();
+            }.bind(this);
+        }
         return texture;
     }
 
-    _calExtent(bound) {
-        const map = this.layer.getMap();
-        const layer = map.getLayer('v') || new maptalks.VectorLayer('v').addTo(map);
-        const polygon = new maptalks.Polygon(bound, {
-            symbol: {
-                polygonOpacity: 0.2
-            }
-        }).addTo(layer);
-        const extent = polygon.getExtent();
-        layer.remove();
-        return extent;
-    }
-
     update(name, value) {
-        if (name === 'eyePos' || name === 'lookPoint') {
+        if (name === 'boundary') {
+            const { extentMap, extentInWorld, extentPolygon } = this._calExtent(value);
+            this._renderOptions['extent'] = extentInWorld;
+            this._renderOptions['extentPolygon'] = extentPolygon;
+            this._renderOptions['extentMap'] = extentMap;
+        } else if (name === 'textureUrl') {
+            this._renderOptions['groundTexture'] = this._createGroundTexture(value);
+            this._renderOptions['hasTexture'] = defined(value) ? 1 : 0;
+        } else if (name === 'height') {
             const map = this.layer.getMap();
-            this._renderOptions[name] = coordinateToWorld(map, value);
+            this._renderOptions['height'] = map.altitudeToPoint(value || 0, map.getGLRes());
         } else {
             this._renderOptions[name] = value;
         }
         super.update(name, value);
     }
+
+    getVolume() {}
 
     _setExcavatePass(renderer) {
         const viewport = this._viewport = {
@@ -87,60 +85,6 @@ export default class ExcavateAnalysis extends Analysis {
         renderer.setToRedraw();
     }
 
-    _renderExtentMap(extent) {
-        const map = this.layer.getMap();
-        const precenter = map.getCenter();
-        const prezoom = map.getZoom();
-        const prepitch = map.getPitch();
-        const prebearing = map.getBearing();
-        const zoom = map.getFitZoom(extent);
-        const center = extent.getCenter();
-        map.setZoom(zoom);
-        map.setCenter(center);
-        map.setPitch(0);
-        map.setBearing(0);
-        const mapExtent = map.getExtent();
-        this._pvMatrix = mat4.copy([], map.projViewMatrix);
-        const pointMin = coordinateToWorld(map, [mapExtent.xmin, mapExtent.ymin]);
-        const pointMax = coordinateToWorld(map, [mapExtent.xmax, mapExtent.ymax]);
-        const extentInWorld = [pointMin[0], pointMin[1], pointMax[0], pointMax[1]];
-        const extentPointMin = coordinateToWorld(map, [extent.xmin, extent.ymin]);
-        const extentPointMax = coordinateToWorld(map, [extent.xmax, extent.ymax]);
-        const extentPolygon = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
-        map.setZoom(prezoom);
-        map.setCenter(precenter);
-        map.setPitch(prepitch);
-        map.setPitch(prebearing);
-
-        const extentRenderer = new reshader.Renderer(this.regl);
-        this._extentMeshes = this._createBoundaryMesh(this.options['boundary']);
-        this._extentPass = this._extentPass || new ExcavateExtentPass(extentRenderer, this._viewport);
-        const extentMap = this._extentPass.render(this._extentMeshes, this._pvMatrix);
-        return { extentMap, extentInWorld, extentPolygon };
-    }
-
-    _createBoundaryMesh(boundary) {
-        const pos = [];
-        const map = this.layer.getMap();
-        for (let i = 0; i < boundary.length; i++) {
-            const point = coordinateToWorld(map, boundary[i]);
-            pos.push(point[0]);
-            pos.push(point[1]);
-            pos.push(0);
-        }
-        const triangles = earcut(pos, null, 3);
-        const geometry = new reshader.Geometry({
-            POSITION: pos
-        },
-        triangles,
-        0,
-        {
-            positionAttribute: 'POSITION'
-        });
-        const mesh = new reshader.Mesh(geometry);
-        return [mesh];
-    }
-
     renderAnalysis(meshes) {
         const uniforms = {};
         this._extentPass.render(this._extentMeshes, this._pvMatrix);
@@ -157,8 +101,8 @@ export default class ExcavateAnalysis extends Analysis {
 
     remove() {
         super.remove();
-        if (this._insightPass) {
-            this._insightPass.dispose();
+        if (this._pass) {
+            this._pass.dispose();
         }
     }
 }

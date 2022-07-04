@@ -52,11 +52,7 @@ export default class FloodPass {
     }
 
     //渲染深度贴图
-    _renderScene(scene, config) {
-        const uniforms = {
-            projViewMatrix: config.projViewMatrix,
-            flood_waterHeight: config.waterHeight
-        };
+    _renderScene(scene, uniforms) {
         this.renderer.clear({
             color : [0, 0, 0, 1],
             depth : 1,

@@ -870,19 +870,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _renderAnalysis(tex) {
-        let toAnalyseMeshes = [];
-        this.forEachRenderer(renderer => {
-            if (!renderer.getAnalysisMeshes) {
-                return;
-            }
-            const meshes = renderer.getAnalysisMeshes();
-            if (Array.isArray(meshes)) {
-                for (let i = 0; i < meshes.length; i++) {
-                    toAnalyseMeshes.push(meshes[i]);
-                }
-            }
+        const layers = this.layer.getLayers().filter(layer => {
+            return layer.isVisible();
         });
-        return this._analysisPainter.paint(tex, toAnalyseMeshes);
+        return this._analysisPainter.paint(tex, layers);
     }
 
     _updateIncludesState(context) {

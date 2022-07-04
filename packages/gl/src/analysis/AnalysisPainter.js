@@ -41,8 +41,8 @@ class AnalysisPainter {
         return this._layer && this._layer.getMap();
     }
 
-    paint(tex, meshes) {
-        if (!meshes || !meshes.length) {
+    paint(tex, layers) {
+        if (!layers && layers.length) {
             return tex;
         }
         this._resize();
@@ -63,10 +63,11 @@ class AnalysisPainter {
             extend(this._shader.shaderDefines, defines);
             const map = this.getMap();
             const width = map.width, height = map.height;
+            const toAanalysisMeshes = this._getToAnalysisMeshes(layers, task.getExcludeLayers());
             if (!task.isEnable()) {
                 continue;
             }
-            const analysisUniforms = task.renderAnalysis(meshes, width, height);
+            const analysisUniforms = task.renderAnalysis(toAanalysisMeshes, width, height);
             if (analysisUniforms) {
                 extend(uniforms, analysisUniforms);
             }
@@ -75,6 +76,21 @@ class AnalysisPainter {
         this._shader.setDefines(this._shader.shaderDefines);
         this.renderer.render(this._shader, uniforms, null, this._fbo);
         return this._fbo;
+    }
+
+    _getToAnalysisMeshes(layers, excludeLayers) {
+        const toAnalysisLayers = layers.filter(layer => {
+            return excludeLayers.indexOf(layer.getId()) < 0;
+        });
+        let toAnalysisMeshes = [];
+        for (let i = 0; i < toAnalysisLayers.length; i++) {
+            const renderder = toAnalysisLayers[i].getRenderer();
+            if (renderder && renderder.getAnalysisMeshes) {
+                const meshes = renderder.getAnalysisMeshes();
+                toAnalysisMeshes = toAnalysisMeshes.concat(meshes);
+            }
+        }
+        return toAnalysisMeshes;
     }
 
     _resize() {

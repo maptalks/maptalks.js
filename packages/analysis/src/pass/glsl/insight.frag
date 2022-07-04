@@ -15,10 +15,14 @@ void main() {
     vec4 rgbaDepth = texture2D(depthMap, shadowCoord.xy);
     float depth = unpack(rgbaDepth); // Retrieve the z-value from R
     if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 && shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 && shadowCoord.z <= 1.0) {
-        if (shadowCoord.z <= depth + 0.002) {
+        if (depth <0.001) {
             gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);//可视区,green
         } else {
-            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);//不可视区,red
+            if (shadowCoord.z <= depth + 0.002) {
+                gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);//可视区,green
+            } else {
+                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);//不可视区,red
+            }
         }
     } else {
         gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);//非视野范围,blue

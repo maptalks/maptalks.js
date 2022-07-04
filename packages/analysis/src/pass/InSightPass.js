@@ -1,10 +1,5 @@
 import { mat4 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
-// import MeshShader from '../shader/MeshShader';
-// import Scene from '../Scene';
-// import Geometry from '../Geometry';
-// import Mesh from '../Mesh';
-// import Material from '../Material';
 import depthVert from './glsl/depth.vert';
 import depthFrag from './glsl/depth.frag';
 import vert from './glsl/insight.vert';
@@ -120,13 +115,25 @@ export default class InSightPass {
 
     _updateHelperGeometry(eyePos, lookPoint) {
         if(this._helperGeometry) {
+            this._helperGeometry.dispose();
+            this._helperMesh.dispose();
             helperPos[0] = eyePos[0];
             helperPos[1] = eyePos[1];
             helperPos[2] = eyePos[2];
             helperPos[3] = lookPoint[0];
             helperPos[4] = lookPoint[1];
             helperPos[5] = lookPoint[2];
-            this._helperGeometry.updateData('POSITION', helperPos);
+            this._helperGeometry = new reshader.Geometry({
+                POSITION: helperPos
+            },
+            helperIndices,
+            0,
+            {
+                //绘制类型，例如 triangle strip, line等，根据gltf中primitive的mode来判断，默认是triangles
+                primitive : 'lines',
+                positionAttribute: 'POSITION'
+            });
+            this._helperMesh = new reshader.Mesh(this._helperGeometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1]}));
         }
     }
 
@@ -201,25 +208,5 @@ export default class InSightPass {
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
             this._depthFBO.resize(width, height);
         }
-    }
-
-    _getRotateZAngle(angle, vec) {
-      if (vec === 0) {
-        return Math.PI;
-      } else if (vec > 0) {
-        return angle;
-      } else {
-        return -angle;
-      }
-    }
-
-    _getRotateYAngle(angle, vec) {
-      if (vec === 0) {
-        return 0;
-      } else if (vec > 0) {
-        return angle + Math.PI;
-      } else {
-        return -angle + Math.PI;
-      }
     }
 }

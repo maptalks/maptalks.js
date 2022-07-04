@@ -96,6 +96,10 @@ export default class SkylineAnalysis extends Analysis {
             return url;
         }
     }
+    update(name, value) {
+        this._renderOptions[name] = value;
+        super.update(name, value);
+    }
 
     _createGround(regl) {
         const planeGeo = new reshader.Plane();

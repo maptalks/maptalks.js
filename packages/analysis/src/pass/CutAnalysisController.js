@@ -320,14 +320,14 @@ export default class CutAnalysisController {
             positionAttribute: 'POSITION'
         });
         const uniforms = Util.extend({}, phongUniforms, {
-            polygonFill: [0.0, 0.8, 0.8, 0.2]
+            polygonFill: [0.0, 0.0, 0.0, 0.01]
         });
         this._pickHelperMesh = new reshader.Mesh(pickGeometry, new reshader.PhongMaterial(uniforms));
         this._pickHelperMesh.setUniform('uPickingId', 12);
         const modelMatrix = mat4.identity([]);
         const rotate = quat.fromEuler([], 0, 0, 0);
         this._pickHelperMesh.originRotation = [0, 0, 0];
-        mat4.fromRotationTranslationScale(modelMatrix, rotate, this._position, [2, 2, 2]);
+        mat4.fromRotationTranslationScale(modelMatrix, rotate, this._position, [0.8, 0.8, 0.8]);
         this._pickHelperMesh.originTranslation = this._position;
         this._pickHelperMesh.localTransform = modelMatrix;
         this._pickHelperMesh.transparent = true;
@@ -381,7 +381,7 @@ export default class CutAnalysisController {
             geometries.forEach((g, index) => {
                 const materialInfo = g.materialInfo || {};
                 if (index === 6) {
-                    materialInfo.polygonFill = [1.0, 1.0, 1.0, 0.01];
+                    materialInfo.polygonFill = [1.0, 1.0, 1.0, 0.1];
                 } else {
                     materialInfo.polygonFill = [1.0, 1.0, 1.0, 1.0];
                 }
@@ -397,7 +397,7 @@ export default class CutAnalysisController {
                 mesh.nodeMatrix = g.nodeMatrix;
                 mesh.originTransform = mat4.copy([], mesh.localTransform);
                 if (index === 6) {
-                    mesh.originOpacity = 0.01;
+                    mesh.originOpacity = 0.1;
                 } else {
                     mesh.originOpacity = 1.0;
                 }
@@ -428,7 +428,9 @@ export default class CutAnalysisController {
         );
     }
 
-    dispose() {}
+    dispose() {
+        this.pickingFBO.dispose();
+    }
 }
 
 function createGLTFMesh(modelName) {

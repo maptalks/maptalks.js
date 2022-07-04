@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>水淹分析</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:100%;height:100%;background-color: black;}
+    #controlPanel {width: 100%;height: 50px;position: absolute;left: 0px;top: 0px;}
+    .btn {width:120px;height:30px}
+  </style>
+  <!-- <link rel="stylesheet" href="https://unpkg.com/maptalks/dist/maptalks.css"> -->
+  <!-- <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.js"></script> -->
+  <script type="text/javascript" src="js/maptalks.js"></script>
+  <!-- <script type="text/javascript" src="https://unpkg.com/@maptalks/gl/dist/maptalksgl.js"></script> -->
+  <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl-dev.js"></script>
+  <script type="text/javascript" src="./js/maptalks.terrain-dev.js"></script>
+  <script type="text/javascript" src="../dist/maptalks.analysis-dev.js"></script>
+  <body>
+    <div id="map" class="container"></div>
+    <div id="controlPanel">
+        <input class="btn" type="button" id="draw" value="绘制"/>
+        <input class="btn" type="button" id="end" value="停止绘制"/>
+        <input class="btn" type="button" id="clear" value="清除"/>
+    </div>
+    <script>
+        const map = new maptalks.Map('map', {
+            center: [91.14478,29.658272],
+            zoomControl: true,
+            zoom: 12,
+            pitch: 45,
+            // spatialReference:{
+            //     projection:'EPSG:4326'
+            // },
+            spatialReference:{
+                projection:'EPSG:3857' //for mapbox
+            },
+        });
+        const sceneConfig = {
+        "environment": {
+            "enable": false,
+            "mode": 0,
+            "level": 0,
+            "brightness": 1
+        },
+        "shadow": {
+            "type": "esm",
+            "enable": false,
+            "quality": "high",
+            "opacity": 0.5,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "blurOffset": 1
+        },
+        "postProcess": {
+            enable: true,
+            antialias: { enable: true },
+            ssr: { enable: true },
+            bloom: { enable: true },
+            outline: { enable: true }
+        },
+        ground: {
+            enable: true,
+            renderPlugin: {
+                type: "fill"
+            },
+            symbol: {
+                polygonFill: [
+                    0.3,
+                    0.3,
+                    0.3,
+                    0.0,
+                ],
+                polygonOpacity: 0.8,
+            }
+        }
+    };
+
+    //光照设置
+    const lights = {
+      //环境光
+      ambient: {
+        color: [1, 1, 1],
+        exposure: 1.5
+      },
+      //有向光
+      directional: {
+        color : [1, 1, 1],
+        direction : [1, 1, -1],
+      }
+    };
+    map.setLights(lights);
+    const center = map.getCenter();
+    const terrainLayer = new maptalks.TerrainLayer('terrain', {
+        // tileSystem : [1, -1, -180, 90],
+        maxAvailableZoom: 12,
+        // opacity: 0.6,
+        // debug: true,
+        //天地图服务
+        // type: 'tianditu',
+        // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=8d01c39a7595da62e1a32a1e109584a3',
+        // terrainUrlTemplate: 'https://t{s}.tianditu.gov.cn/mapservice/swdx?T=elv_c&tk=8d01c39a7595da62e1a32a1e109584a3&x={x}&y={y}&l={z}', //天地图地形服务
+        //cesium服务
+        // type: 'cesium',
+        // accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZTJkNzU4YS0xZGFkLTRhMmYtYTRlYy0wMDZlNWQ3MjA3ZTgiLCJpZCI6OTYyOCwiaWF0IjoxNjUwNDMyNTgyfQ.qFOMTJmJ4V_IMHbNh9AH1lkZeWoApuTg5tlgcuhZrHU',
+        // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=f3dd44f4f222f25c2fdeba995c43ab83',
+        // terrainUrlTemplate: 'https://assets.cesium.com/1/{z}/{x}/{y}.terrain',
+        //mapbox服务
+        type: 'mapbox',
+        accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
+        urlTemplate: 'https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        terrainUrlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}',
+        subdomains:['0', '1', '2', '3', '4', '5', '6']
+    });
+    const groupLayer = new maptalks.GroupGLLayer('g', [terrainLayer], { sceneConfig }).addTo(map);
+    const floodAnalysis = new maptalks.FloodAnalysis({
+        boundary: [[91.06621721469963, 29.750666501207466],
+        [91.02892475390709, 29.705298214275178],
+        [91.04344250050292, 29.59764099334311],
+        [91.11351421386007, 29.627558843694757],
+        [91.14112402035886, 29.712310012049215],
+        [91.1364614977414, 29.764105762952656]],
+        waterHeight: 4000,
+        waterColor: [0.1, 0.5, 0.6]
+    });
+    floodAnalysis.addTo(groupLayer);
+    var vlayer = new maptalks.VectorLayer('vector', { enableAltitude : true }).addTo(map);
+    let move = false;
+    let altitudes = [], coordinates = [];
+    let first = true;
+    var drawTool = new maptalks.DrawTool({
+        mode: 'LineString',
+        symbol: {
+            lineColor: '#f00'
+        }
+    }).addTo(map).disable();
+    drawTool.on('mousemove', e => {
+        const identifyData = groupLayer.identify(e.coordinate)[0];
+        const coordinate = identifyData && identifyData.point;
+        if (!coordinate) {
+            return;
+        }
+        if (first) {
+            coordinates.push([coordinate.x, coordinate.y]);
+            altitudes.push(coordinate.z);
+        } else {
+            coordinates[coordinates.length - 1] = [coordinate.x, coordinate.y];
+            altitudes[altitudes.length - 1] = coordinate.z;
+        }
+        e.geometry.setProperties({
+            altitude: altitudes
+        });
+        e.geometry.setCoordinates(coordinates);
+        first = false;
+    });
+    drawTool.on('drawvertex', e => {
+        const identifyData = groupLayer.identify(e.coordinate)[0];
+        const coordinate = identifyData && identifyData.point;
+        if (first) {
+            coordinates.push([coordinate.x, coordinate.y]);
+            altitudes.push(coordinate.z);
+            first = false;
+        } else {
+            coordinates[coordinates.length - 1] = [coordinate.x, coordinate.y];
+            altitudes[altitudes.length - 1] = coordinate.z;
+            first = true;
+        }
+        e.geometry.setProperties({
+            altitude: altitudes
+        });
+        e.geometry.setCoordinates(coordinates);
+    });
+    drawTool.on('drawstart', e => {
+        const identifyData = groupLayer.identify(e.coordinate)[0];
+        const coordinate = identifyData && identifyData.point;
+        coordinates.push([coordinate.x, coordinate.y]);
+        altitudes.push(coordinate.z);
+        e.geometry.setProperties({
+            altitude: altitudes
+        });
+        e.geometry.setCoordinates(coordinates);
+        first = true;
+    });
+    drawTool.on('drawend', function (param) {
+        const geometry = param.geometry;
+        coordinates.push(coordinates[0]);
+        altitudes.push(altitudes[0]);
+        new maptalks.LineString(coordinates, {
+            symbol: {
+                lineColor: '#f00'
+            },
+            properties: {
+                altitude: altitudes
+            }
+        }).addTo(vlayer);
+        floodAnalysis.update('boundary', coordinates);
+        coordinates = [];
+        altitudes = [];
+    });
+    document.getElementById('draw').onclick = function() {
+        move = true;
+        drawTool.enable();
+    }
+    document.getElementById('end').onclick = function() {
+        move = false;
+        drawTool.disable();
+    }
+
+    document.getElementById('clear').onclick = function() {
+        vlayer.clear();
+    }
+    </script>
+  </body>
+</html>

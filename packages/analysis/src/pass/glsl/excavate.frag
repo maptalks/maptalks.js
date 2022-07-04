@@ -3,7 +3,10 @@ uniform vec4 extent;
 uniform vec4 extentPolygon;
 uniform sampler2D extentMap;
 uniform sampler2D groundTexture;
+uniform sampler2D u_image;
+uniform float hasTexture;
 varying vec4 vWorldPosition;
+varying vec2 v_texCoord;
 void main() {
     float width = extent.z - extent.x;
     float height = extent.y - extent.w;
@@ -15,9 +18,13 @@ void main() {
     vec2 uvInExtentPolygon = vec2((vWorldPosition.x - extentPolygon.x) / widthPolygon, 1.0 - (vWorldPosition.y - extentPolygon.w) / heightPolygon);
     vec4 groundColor = texture2D(groundTexture, uvInExtentPolygon);
     if (extentColor.r > 0.0) {
-        gl_FragColor = groundColor;
+        if (hasTexture == 1.0) {
+            gl_FragColor = groundColor;
+        } else {
+            gl_FragColor = texture2D(u_image, v_texCoord);
+        }
         // discard;
     } else {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        gl_FragColor = texture2D(u_image, v_texCoord);
     }
 }

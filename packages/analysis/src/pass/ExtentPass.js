@@ -1,12 +1,9 @@
-import { mat4 } from 'gl-matrix';
-import { reshader } from '@maptalks/gl';
-import vert from './glsl/excavate.vert';
-import frag from './glsl/excavate.frag';
-import { Util } from 'maptalks';
+import { reshader, mat4 } from '@maptalks/gl';
+import * as maptalks from 'maptalks';
+import vert from './glsl/excavateExtent.vert';
+import frag from './glsl/excavateExtent.frag';
 
-const clearColor = [0, 0, 0, 1];
-
-export default class ExcavatePass {
+export default class ExtentPass {
     constructor(renderer, viewport) {
         this.renderer = renderer;
         this._viewport = viewport;
@@ -14,6 +11,16 @@ export default class ExcavatePass {
     }
 
     _init() {
+        this._fbo = this.renderer.regl.framebuffer({
+            color: this.renderer.regl.texture({
+                width: 1,
+                height: 1,
+                wrap: 'clamp',
+                mag : 'linear',
+                min : 'linear'
+            }),
+            depth: true
+        });
         this._shader = new reshader.MeshShader({
             vert,
             frag,
@@ -30,27 +37,20 @@ export default class ExcavatePass {
                 viewport: this._viewport,
             }
         });
-        this._fbo = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
-                width: 1,
-                height: 1,
-                wrap: 'clamp',
-                mag : 'linear',
-                min : 'linear'
-            }),
-            depth: true
-        });
         this._scene = new reshader.Scene();
     }
 
-    render(meshes, uniforms) {
-        this.resize();
+    render(meshes, projViewMatrix) {
+        this._resize();
         this.renderer.clear({
-            color : clearColor,
+            color : [0, 0, 0, 1],
             depth : 1,
             framebuffer : this._fbo
         });
         this._scene.setMeshes(meshes);
+        const uniforms = {
+            projViewMatrix
+        };
         this.renderer.render(
             this._shader,
             uniforms,
@@ -60,18 +60,9 @@ export default class ExcavatePass {
         return this._fbo;
     }
 
-    dispose() {
-        if (this._fbo) {
-            this._fbo.destroy();
-        }
-        if (this._shader) {
-            this._shader.dispose();
-        }
-    }
-
-    resize() {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+    _resize() {
+        const width = maptalks.Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
+        const height = maptalks.Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

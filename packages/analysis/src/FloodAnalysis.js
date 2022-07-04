@@ -4,7 +4,7 @@ import FloodPass from './pass/FloodPass';
 import { altitudeToDistance } from './common/Util';
 
 const DEFAULT_WATER_COLOR = [0.1451, 0.2588, 0.4863];
-
+const VEC4 = [0, 0, 0, 0];
 export default class FloodAnalysis extends Analysis {
     constructor(options) {
         super(options);
@@ -14,10 +14,7 @@ export default class FloodAnalysis extends Analysis {
     addTo(layer) {
         super.addTo(layer);
         const renderer = this.layer.getRenderer();
-        const map = this.layer.getMap();
-        this._renderOptions = {};
-        this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.waterHeight);
-        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+        this.regl = renderer.regl;
         if (renderer) {
             this._setViewshedPass(renderer);
         } else {
@@ -25,11 +22,24 @@ export default class FloodAnalysis extends Analysis {
                 this._setViewshedPass(e.renderer);
             }, this);
         }
+        const map = this.layer.getMap();
+        this._renderOptions = {};
+        this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.waterHeight);
+        this._renderOptions['extent'] = VEC4;
+        this._renderOptions['extentMap'] = renderer.regl.texture({width: 2, height: 2});
+        this._renderOptions['hasExtent'] = 0;
+        if (this.options.boundary) {
+            const { extentMap, extentInWorld } = this._calExtent(this.options.boundary);
+            this._renderOptions['extent'] = extentInWorld;
+            this._renderOptions['extentMap'] = extentMap;
+            this._renderOptions['hasExtent'] = 1;
+        }
+        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         return this;
     }
 
     _setViewshedPass(renderer) {
-        const viewport = {
+        const viewport = this._viewport = {
             x : 0,
             y : 0,
             width : () => {
@@ -40,12 +50,28 @@ export default class FloodAnalysis extends Analysis {
             }
         };
         const floodRenderer = new reshader.Renderer(renderer.regl);
-        this._pass = new FloodPass(floodRenderer, viewport) || this._pass;
+        this._pass = this._pass || new FloodPass(floodRenderer, viewport);
         this.layer.addAnalysis(this);
+    }
+
+    update(name, value) {
+        if (name === 'boundary') {
+            const { extentMap, extentInWorld, extentPolygon } = this._calExtent(value);
+            this._renderOptions['extent'] = extentInWorld;
+            this._renderOptions['extentPolygon'] = extentPolygon;
+            this._renderOptions['extentMap'] = extentMap;
+        }else if (name === 'waterHeight') {
+            const map = this.layer.getMap();
+            this._renderOptions['waterHeight'] = map.altitudeToPoint(value || 0, map.getGLRes());
+        } else {
+            this._renderOptions[name] = value;
+        }
+        super.update(name, value);
     }
 
     renderAnalysis(meshes) {
         const uniforms = {};
+        this._extentPass.render(this._extentMeshes, this._pvMatrix);
         uniforms['flood_waterColor'] = this.options['waterColor'] || DEFAULT_WATER_COLOR;
         uniforms['floodMap'] = this._pass.render(meshes, this._renderOptions);
         return uniforms;
