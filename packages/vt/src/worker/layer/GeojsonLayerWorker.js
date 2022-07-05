@@ -44,7 +44,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         }
         const options = {
             maxZoom: 24,  // max zoom to preserve detail on; can't be higher than 24
-            tolerance: this.options.extent / this.options.tileSize[0] * 1, // simplification tolerance (higher means simpler)
+            tolerance: this.options.simplifyTolerance, // simplification tolerance (higher means simpler)
             extent: this.options.extent, // tile extent (both width and height)
             buffer: this.options.tileBuffer || 64,      // tile buffer on each side
             hasAltitude: !!this.options.hasAltitude,

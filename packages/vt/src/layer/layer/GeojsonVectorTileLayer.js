@@ -9,7 +9,8 @@ const options = {
     features: 'id',
     tileBuffer: 64,
     extent: 8192,
-    pyramidMode: 1
+    pyramidMode: 1,
+    simplifyTolerance: 3
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
@@ -33,6 +34,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.tileBuffer = this.options.tileBuffer;
         options.extent = this.options.extent;
         options.hasAltitude = this.options.enableAltitude;
+        options.simplifyTolerance = this.options.simplifyTolerance;
         return options;
     }
 
