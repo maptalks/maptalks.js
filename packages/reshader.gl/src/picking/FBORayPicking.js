@@ -252,8 +252,22 @@ export default class FBORayPicking {
             return false;
         }).map(id => meshes[id]);
 
-        const pickingAttr = meshes[0].geometry.desc.pickingIdAttribute;
-        if (meshIds.length && shader === this._shader1 && (meshes[0].getUniform('uPickingId') !== undefined || meshes[0].geometry.data[pickingAttr])) {
+        let firstMesh;
+        for (let i = 0; i < pickedMeshes.length; i++) {
+            if (pickedMeshes[i] && pickedMeshes[i].geometry) {
+                firstMesh = pickedMeshes[i];
+                break;
+            }
+        }
+        if (!firstMesh) {
+            return {
+                pickingId: null,
+                meshId: null,
+                point: null
+            };
+        }
+        const pickingAttr = firstMesh.geometry.desc.pickingIdAttribute;
+        if (meshIds.length && shader === this._shader1 && (firstMesh.getUniform('uPickingId') !== undefined || firstMesh.geometry.data[pickingAttr])) {
             pickingIds = this._getPickingId(px, py, width, height, pixels, pickedMeshes, uniforms);
         }
 
