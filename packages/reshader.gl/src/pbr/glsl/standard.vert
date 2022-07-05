@@ -10,6 +10,11 @@ attribute vec3 aPosition;
     uniform vec2 uvScale;
     uniform vec2 uvOffset;
     uniform float uvRotation;
+
+    #ifdef HAS_I3S_UVREGION
+        attribute vec4 uvRegion;
+        varying vec4 vUvRegion;
+    #endif
 #endif
 
 vec3 Vertex;
@@ -175,6 +180,10 @@ void main() {
                 texCoord = rotateUV(texCoord, uvRotation);
             }
             vTexCoord = mod(origin, 1.0) + texCoord + uvOffset;
+        #endif
+
+        #ifdef HAS_I3S_UVREGION
+            vUvRegion = uvRegion / 65535.0;
         #endif
 
     #endif
