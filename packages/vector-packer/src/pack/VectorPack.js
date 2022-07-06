@@ -115,7 +115,9 @@ export default class VectorPack {
     }
 
     needAltitudeAttribute() {
-        return this.options['forceAltitudeAttribute'] || this.maxPosZ >= Math.pow(2, 17);
+        // 只有当positionType为Int16Array时，才适用默认的packPosition逻辑
+        // 如果positionType是Float32时，就必须添加aAltitude属性
+        return this.options['forceAltitudeAttribute'] || this.maxPosZ >= Math.pow(2, 17) || this.options.positionType === Float32Array;
     }
 
     getPositionFormat() {
