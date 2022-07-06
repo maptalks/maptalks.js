@@ -128,7 +128,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const context = this._preparePaintContext();
         let polygonOffset = 0;
         if (this.layer.options['meshRenderOrder'] === 0) {
-            this._renderMeshes(context, polygonOffset, renderMode);
+            this._renderMeshes(context, polygonOffset++, renderMode);
         }
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
@@ -140,7 +140,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (this.layer.options['meshRenderOrder'] === 1) {
-            this._renderMeshes(context, polygonOffset, renderMode);
+            this._renderMeshes(context, polygonOffset++, renderMode);
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
