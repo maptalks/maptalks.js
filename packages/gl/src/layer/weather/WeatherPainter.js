@@ -179,8 +179,7 @@ class WeatherPainter {
     }
 
     _resize() {
-        const map = this.getMap();
-        const width = map.width, height = map.height;
+        const width = this._width(), height =this._height();
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

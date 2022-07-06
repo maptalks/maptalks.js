@@ -305,4 +305,32 @@ describe('api of analysis', () => {
             }, 100);
         });
     });
+
+    //依赖maptalks核心库的map.pointToAltitude方法
+    // it('calculate volume for excavate analysis', (done) => {
+    //     const gltflayer = new maptalks.GLTFLayer('gltf');
+    //     const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    //     const marker = new maptalks.GLTFMarker(center, {
+    //         symbol : {
+    //             url : modelUrl,
+    //             scale: [5, 5, 5]
+    //         }
+    //     }).addTo(gltflayer);
+    //     marker.on('load', () => {
+    //         const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
+    //             [-0.0013518333435058594, 0.00009655952453613281],
+    //             [-0.0004184246063232422, -0.0005686283111288049],
+    //             [0.0005471706390380859, 0.00006437301638584358],
+    //             [0.0005042552947998047, 0.0006651878356649377]];
+    //         const excavateAnalysis = new maptalks.ExcavateAnalysis({
+    //             boundary,
+    //             textureUrl: './resources/ground.jpg'
+    //         });
+    //         excavateAnalysis.addTo(gllayer);
+    //         setTimeout(function() {
+    //             const volume = excavateAnalysis.getVolume();
+    //             done();
+    //         }, 500);
+    //     });
+    // });
 });

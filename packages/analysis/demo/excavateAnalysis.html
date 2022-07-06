@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,7 +20,8 @@
   <body>
     <div id="map" class="container"></div>
     <div id="controlPanel">
-        <input class="btn" type="button" id="update" value="更新"/>
+        <input class="btn" type="button" id="update" value="更新范围"/>
+        <input class="btn" type="button" id="volume" value="挖方体积"/>
     </div>
     <script>
         const map = new maptalks.Map('map', {
@@ -94,6 +95,17 @@
     };
     map.setLights(lights);
     const center = map.getCenter();
+    // const gltflayer = new maptalks.GLTFLayer('gltf');
+    // var gltfMarker = new maptalks.GLTFMarker(map.getCenter(), {
+    //     symbol : {
+    //         url: 'gltf/manhattan/scene.gltf',
+    //         scale: [10, 10, 10]
+    //     },
+    //     properties: {
+    //         num: 100
+    //     }
+    // });
+    // gltflayer.addGeometry([gltfMarker]);
     const terrainLayer = new maptalks.TerrainLayer('terrain', {
         tileSystem : [1, -1, -180, 90],
         maxAvailableZoom: 12,
@@ -135,6 +147,15 @@
         [91.13654025390623, 29.54617712084961],
         [91.0579193432617, 29.56368658129883]]);
     };
+
+    document.getElementById('volume').onclick = function() {
+        const volume = excavateAnalysis.getVolume();
+        console.log(volume);
+    }
+    map.on('click', e => {
+       const height1 = terrainLayer.identifyAtPoint(e.containerPoint);
+       console.log(height1);
+    });
     </script>
   </body>
 </html>

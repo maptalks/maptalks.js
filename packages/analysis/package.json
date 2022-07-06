@@ -31,7 +31,9 @@
     "@babel/core": "^7.15.0",
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gl": "0.71.0",
+    "@maptalks/3dtiles": "^0.15.3",
+    "@maptalks/gl": "^0.72.0",
+    "@maptalks/gltf-layer": "0.33.5",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
@@ -48,9 +50,7 @@
     "mocha": "^5.2.0",
     "pixelmatch": "^4.0.2",
     "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^7.0.2",
-    "@maptalks/gltf-layer": "0.33.5",
-    "@maptalks/3dtiles": "^0.15.3"
+    "rollup-plugin-terser": "^7.0.2"
   },
   "dependencies": {
     "@maptalks/gltf-loader": "^0.27.1",

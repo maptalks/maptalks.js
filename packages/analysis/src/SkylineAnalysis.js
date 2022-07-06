@@ -115,9 +115,6 @@ export default class SkylineAnalysis extends Analysis {
 
     remove() {
         super.remove();
-        if (this._fbo) {
-            this._fbo.destroy();
-        }
         if (this._pass) {
             this._pass.dispose();
         }

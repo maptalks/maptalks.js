@@ -10,7 +10,6 @@ void main()
 {
     mat4 localPositionMatrix = getPositionMatrix();
     gl_Position = projViewMatrix * modelMatrix * localPositionMatrix * getPosition(aPosition);
-    gl_PointSize = pointSize;
     //传入gl_Position的depth值
     fbo_picking_setData(gl_Position.w, true);
 }
