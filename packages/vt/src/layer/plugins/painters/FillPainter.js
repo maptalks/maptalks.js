@@ -103,6 +103,9 @@ class FillPainter extends BasicPainter {
         if (iconAtlas && geometry.data.aTexInfo) {
             defines['HAS_PATTERN'] = 1;
         }
+        if (geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }

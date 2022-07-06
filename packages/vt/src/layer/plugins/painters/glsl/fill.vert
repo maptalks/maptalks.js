@@ -1,5 +1,10 @@
 #define SHADER_NAME FILL
-attribute vec3 aPosition;
+#ifdef HAS_ALTITUDE
+    attribute vec2 aPosition;
+    attribute float aAltitude;
+#else
+    attribute vec3 aPosition;
+#endif
 
 #ifdef HAS_COLOR
     attribute vec4 aColor;
@@ -62,8 +67,11 @@ uniform mat4 projViewModelMatrix;
     #include <vsm_shadow_vert>
 #endif
 
+#include <vt_position_vert>
+
 void main() {
-    vec4 localVertex = vec4(aPosition, 1.);
+    vec3 position = unpackVTPosition();
+    vec4 localVertex = vec4(position, 1.);
     gl_Position = projViewModelMatrix * localVertex;
 
     // #ifndef ENABLE_TILE_STENCIL
@@ -75,9 +83,9 @@ void main() {
             //瓦片左上角对应的纹理偏移量
             vec2 centerOffset = mod((tilePoint) * tileScale * vec2(1.0, -1.0) / patternSize, 1.0);
             // centerOffset.y = 1.0 - centerOffset.y;
-            vTexCoord = centerOffset + computeUV(aPosition.xy * tileScale / tileRatio, patternSize);
+            vTexCoord = centerOffset + computeUV(position.xy * tileScale / tileRatio, patternSize);
         #else
-            vec4 position = modelMatrix * vec4(aPosition, 1.);
+            vec4 position = modelMatrix * vec4(position, 1.);
             // vec2 centerOffset = mod(tilePoint * glScale / patternSize * vec2(1.0, -1.0), 1.0);
             //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
             vTexCoord = computeUV(position.xy, patternSize);

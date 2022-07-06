@@ -28,11 +28,7 @@ export default class PolygonPack extends VectorPack {
 
     getFormat() {
         const format = [
-            {
-                type: Int16Array,
-                width: 3,
-                name: 'aPosition'
-            }
+            ...this.getPositionFormat()
         ];
         const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
         if (this.iconAtlas) {
@@ -143,7 +139,6 @@ export default class PolygonPack extends VectorPack {
         const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
 
-        const altitude = this.getAltitude(properties);
         const uvStart = [0, 0];
         const uvSize = [0, 0];
         if (hasUV) {
@@ -172,7 +167,7 @@ export default class PolygonPack extends VectorPack {
 
             for (let ii = 0; ii < polygon.length; ii++) {
                 let ring = polygon[ii];
-                if (this.options.EXTENT !== Infinity) {
+                if (this.options.EXTENT !== Infinity && this.maxPosZ === 0) {
                     ring = clipPolygon(ring, BOUNDS);
                 }
                 if (ring.length === 0) {
@@ -180,14 +175,12 @@ export default class PolygonPack extends VectorPack {
                 }
                 //TODO 这里应该用ring signed来判断是否是hole
                 if (ii !== 0) {
-                    holeIndices.push(flattened.length / 2);
+                    holeIndices.push(flattened.length / 3);
                 }
 
                 const lineIndex = this.lineElements.length;
 
-                this.data.aPosition.push(
-                    ring[0].x, ring[0].y, altitude
-                );
+                this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z);
                 if (hasUV) {
                     this.data.aTexInfo.push(...uvStart, ...uvSize);
                 }
@@ -208,11 +201,10 @@ export default class PolygonPack extends VectorPack {
 
                 flattened.push(ring[0].x);
                 flattened.push(ring[0].y);
+                flattened.push(ring[0].z);
 
                 for (let i = 1; i < ring.length; i++) {
-                    this.data.aPosition.push(
-                        ring[i].x, ring[i].y, altitude
-                    );
+                    this.fillPosition(this.data, ring[i].x, ring[i].y, ring[i].z);
                     if (hasUV) {
                         this.data.aTexInfo.push(...uvStart, ...uvSize);
                     }
@@ -232,9 +224,10 @@ export default class PolygonPack extends VectorPack {
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);
                     flattened.push(ring[i].x);
                     flattened.push(ring[i].y);
+                    flattened.push(ring[i].z);
                 }
             }
-            const indices = earcut(flattened, holeIndices);
+            const indices = earcut(flattened, holeIndices, 3);
 
             for (let i = 0; i < indices.length; i += 3) {
                 this.addElements(
