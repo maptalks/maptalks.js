@@ -173,7 +173,10 @@ class GeometryDragHandler extends Handler {
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
-
+        const visualHeight = map._getVisualHeight(map.options['maxVisualPitch']);
+        if (e.containerPoint.y < map.height - visualHeight) {
+            return;
+        }
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
