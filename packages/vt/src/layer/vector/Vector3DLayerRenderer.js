@@ -211,7 +211,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     //     this.painter.updateSymbol(this.painterSymbol, this.painterSymbol);
     // }
 
-    _getFeaturesToRender() {
+    // maptalks/issues#75
+    // 两个featureMap是为额外的限定条件，只有包含在这两个featureMap中的feature才会加入。
+    // 例如LineStringLayer中，某个line是数组类型symbol，但其中一个只定义了marker样式，没有定义lineWidth
+    _getFeaturesToRender(featureMap1, featureMap2) {
+        featureMap1 = featureMap1 || featureMap2;
+        if (featureMap1 === featureMap2) {
+            featureMap2 = null;
+        }
         const features = [];
         const center = [0, 0, 0, 0];
         //为了解决UglifyJS对 feature[KEY_IDX] 不正确的mangle
@@ -230,6 +237,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 // count = count++;
                 for (let i = 0; i < feature.length; i++) {
                     const fea = feature[i];
+                    const kid = fea[KEY_IDX_NAME];
+                    if (featureMap1 && !featureMap1[kid]) {
+                        if (!featureMap2 || featureMap2 && !featureMap2[kid]) {
+                            continue;
+                        }
+                    }
                     if (!fea.visible) {
                         this._showHideUpdated = true;
                     }
@@ -240,6 +253,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             } else {
                 if (!feature.visible) {
                     this._showHideUpdated = true;
+                }
+                const kid = feature[KEY_IDX_NAME];
+                if (featureMap1 && !featureMap1[kid]) {
+                    if (!featureMap2 || featureMap2 && !featureMap2[kid]) {
+                        continue;
+                    }
                 }
                 this._addCoordsToCenter(feature.geometry, center);
                 // feature[KEY_IDX_NAME] = count++;
@@ -455,7 +474,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             return;
         }
 
-        const  { features, center } = this._getFeaturesToRender();
+        const  { features, center } = this._getFeaturesToRender(this._markerFeatures, this._textFeatures);
 
         const markerFeatures = [];
         const textFeatures = [];
@@ -801,7 +820,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             return;
         }
-        const { features, center } = this._getFeaturesToRender();
+        const { features, center } = this._getFeaturesToRender(this._lineFeatures);
         if (!features.length) {
             return;
         }
@@ -1239,6 +1258,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const attributes = layer.options.glOptions || {
             alpha: true,
             depth: true,
+            stencil: true,
             antialias: false
             // premultipliedAlpha : false
         };
@@ -1416,7 +1436,7 @@ const lineWidthName = (prefix + 'lineWidth').trim();
 const lineGradientPropertyName = (LINE_GRADIENT_PROP_KEY + '').trim();
 
 function hasLineSymbol(fea) {
-    return fea.type === 2 && !fea.properties[lineGradientPropertyName] || (fea.type === 3 && !!fea.properties[lineWidthName]);
+    return fea.type === 2 && !fea.properties[lineGradientPropertyName] && (fea.properties[lineWidthName] !== undefined) || (fea.type === 3 && (fea.properties[lineWidthName] !== undefined));
 }
 
 function dashLength(dash) {

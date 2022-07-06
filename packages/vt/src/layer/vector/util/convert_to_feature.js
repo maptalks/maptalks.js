@@ -55,14 +55,6 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']();
-    let lineGradientProperty = symbol['lineGradientProperty'];
-    if (lineGradientProperty) {
-        properties[GRADIENT_PROP_KEY] = properties[lineGradientProperty];
-        properties['mapbox_clip_start'] = 0;
-        properties['mapbox_clip_end'] = 1;
-        delete properties[lineGradientProperty];
-    }
-    delete symbol['lineGradientProperty'];
     const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0][keyName] : currentFeature[keyName]) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
@@ -70,11 +62,15 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         const len = symbol.length;
         for (let i = 0; i < len; i++) {
             const props = i === len - 1 ? properties : extend({}, properties);
+            const lineGradientProperty = fillGradientProperties(symbol[i], props);
             for (const p in symbol[i]) {
                 if (hasOwn(symbol[i], p)) {
                     const keyName = ('_symbol_' + p).trim();
                     props[keyName] = symbol[i][p];
                 }
+            }
+            if (lineGradientProperty) {
+                symbol[i]['lineGradientProperty'] = lineGradientProperty;
             }
             const pickingId = (currentFeature && currentFeature[i]) ? currentFeature[i][keyName] : kidGen.pickingId++;
             const fea = {
@@ -90,16 +86,18 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
         return features;
     } else {
+        const lineGradientProperty = fillGradientProperties(symbol, properties);
         for (const p in symbol) {
             if (hasOwn(symbol, p)) {
                 const keyName = ('_symbol_' + p).trim();
                 properties[keyName] = symbol[p];
             }
         }
+        if (lineGradientProperty) {
+            symbol['lineGradientProperty'] = lineGradientProperty;
+        }
     }
-    if (lineGradientProperty) {
-        symbol['lineGradientProperty'] = lineGradientProperty;
-    }
+
     const pickingId = currentFeature ? currentFeature.id : kidGen.pickingId++;
     const feature = {
         type,
@@ -111,4 +109,15 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     };
     feature[keyName] = pickingId;
     return feature;
+}
+
+function fillGradientProperties(symbol, props) {
+    const lineGradientProperty = symbol['lineGradientProperty'];
+    if (lineGradientProperty) {
+        props[GRADIENT_PROP_KEY] = props[lineGradientProperty];
+        props['mapbox_clip_start'] = 0;
+        props['mapbox_clip_end'] = 1;
+        delete props[lineGradientProperty];
+    }
+    return lineGradientProperty;
 }
