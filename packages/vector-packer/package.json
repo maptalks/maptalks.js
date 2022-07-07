@@ -29,7 +29,7 @@
     "@maptalks/function-type": "^1.2.3",
     "@maptalks/tbn-packer": "^1.2.8",
     "color": "^3.0.0",
-    "earcut": "^2.2.1",
+    "earcut": "^2.2.4",
     "gl-matrix": "^2.6.1",
     "quickselect": "^1.0.0",
     "tinyqueue": "^1.1.0"
