@@ -790,11 +790,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         walker++;
                     }
                     const length = walker - startIndex;
+                    const positionSize = mesh.geometry.desc.positionSize;
                     if (EMPTY_POSITION.length !== length * 3) {
-                        EMPTY_POSITION = new Float32Array(length * 3);
+                        EMPTY_POSITION = new Float32Array(length * positionSize);
                         EMPTY_POSITION.fill(-Infinity, 0);
                     }
-                    mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * 3);
+                    mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * positionSize);
                 } else {
                     const count = packData[i].data.featureIds.length;
                     const datas = packData[i].data.data;
@@ -1025,7 +1026,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         for (const p in this._dirtyTargetsInCurrentFrame) {
             const target = this._dirtyTargetsInCurrentFrame[p];
             const kid = this._getFeaKeyId(target);
-
             if (!this._isCreatingMarkerMesh && (this._markerFeatures[kid] || this._textFeatures[kid])) {
                 const partial = this._updateMarkerMesh(target);
                 updated = updated || partial;
