@@ -197,6 +197,102 @@ describe('update style specs', () => {
         });
     });
 
+    context('renderStyle methods', () => {
+        it('should can addRenderStyle', done => {
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.addRenderStyle(1, {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                });
+            }, true);
+        });
+
+        it('should can updateRenderStyle', done => {
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.updateRenderStyle(0, {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                });
+            }, true);
+        });
+
+        it('should can removeRenderStyle', done => {
+            const style = [
+                {
+                    filter: {
+                        title: '所有数据',
+                        value: ['==', 'type', 1]
+                    },
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 },
+                },
+                {
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                }
+            ];
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.removeRenderStyle(0);
+            }, true, style);
+        });
+
+        it('should can updateRenderStyleByName', done => {
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.updateRenderStyleByName('lineStyle', {
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                });
+            }, true);
+        });
+
+        it('should can removeRenderStyle', done => {
+            const style = [
+                {
+                    name: 'lineStyle',
+                    filter: {
+                        title: '所有数据',
+                        value: ['==', 'type', 1]
+                    },
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 },
+                },
+                {
+                    name: 'backStyle',
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: { type: 'line' },
+                    },
+                    symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                }
+            ];
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.removeRenderStyleByName('lineStyle');
+            }, true, style);
+        });
+
+    });
+
     it('should can updateSymbol', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.updateSymbol(0, {
@@ -1583,6 +1679,7 @@ describe('update style specs', () => {
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount) {
         style = style || [
             {
+                name: 'lineStyle',
                 filter: {
                     title: '所有数据',
                     value: ['==', 'type', 1]

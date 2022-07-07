@@ -129,27 +129,30 @@ class VectorTileLayer extends maptalks.TileLayer {
                         style: json
                     }
                 }
-                this.setStyle(styleJSON);
                 this.options['style'] = url;
+                this._setStyle(styleJSON);
             });
             return this;
         }
         this.options['style'] = style;
-        if (style && (style['$root'] || style['$iconset'])) {
+        this._setStyle(style);
+        return this;
+    }
+
+    _setStyle(style) {
+        this._pathRoot = null;
+        if (style && style['$root']) {
             let root = style['$root'];
-            let iconset = style['$iconset'];
             if (root && root[root.length - 1] === '/') {
                 root = root.substring(0, root.length - 1);
             }
-            if (iconset && iconset[iconset.length - 1] === '/') {
-                iconset = iconset.substring(0, iconset.length - 1);
-            }
+            this._pathRoot = root;
             this._replacer = function replacer(match) {
                 if (match === '{$root}') {
                     return root;
-                } else if (match === '{$iconset}') {
+                }/* else if (match === '{$iconset}') {
                     return iconset;
-                }
+                }*/
                 return null;
             };
         }
@@ -158,7 +161,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (Array.isArray(style)) {
             style = { style };
         } else if (style.renderPlugin) {
-            style = { style: style };
+            style = { style: [style] };
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
@@ -196,7 +199,6 @@ class VectorTileLayer extends maptalks.TileLayer {
             'style': this.getStyle(),
             'computedStyle': this.getComputedStyle()
         });
-        return this;
     }
 
     /**
@@ -560,6 +562,204 @@ class VectorTileLayer extends maptalks.TileLayer {
             return null;
         }
         return JSON.parse(JSON.stringify(this.options.style));
+    }
+
+    /**
+     * 在指定位置添加一个新的style，例如：
+     *
+     * layer.addStyle(0, {
+     *   filter: true,
+     *   renderPlugin,
+     *   symbol
+     * });
+     * @param {Number} index - 序号，值-1时添加到最后
+     * @param {Object} style - style定义
+     * @returns this
+     */
+    addRenderStyle(index, style) {
+        let styles = this._vtStyle;
+        if (!styles) {
+            styles = [style];
+        } else {
+            if (index < 0 || index >= styles.length) {
+                styles.push(style);
+            } else {
+                styles.splice(index, 0, style);
+            }
+        }
+        this._setStyle({
+            $root: this._pathRoot,
+            style: styles,
+            featureStyle: this._originFeatureStyle
+        });
+        return this;
+    }
+
+    /**
+     * 更新指定位置的style，例如：
+     *
+     * layer.updateStyle(1, {
+     *   filter: true,
+     *   renderPlugin,
+     *   symbol
+     * });
+     * @param {Number|String} index - 序号
+     * @param {Object} style - style定义
+     * @returns this
+     */
+    updateRenderStyle(index, style) {
+        let styles = this._vtStyle;
+        if (!styles || index < 0 || index >= styles.length) {
+            return this;
+        }
+        styles.splice(index, 1, style);
+        this._setStyle({
+            $root: this._pathRoot,
+            style: styles,
+            featureStyle: this._originFeatureStyle
+        });
+        return this;
+    }
+
+    updateRenderStyleByName(name, style) {
+        const index = this._getStyleIndex(name);
+        return this.updateRenderStyle(index, style);
+    }
+
+    /**
+     * 删除指定位置的style
+     * @param index - 序号
+     * @returns this
+     */
+    removeRenderStyle(index) {
+        let styles = this._vtStyle;
+        if (!styles || index < 0 || index >= styles.length) {
+            return this;
+        }
+        styles.splice(index, 1);
+        this._setStyle({
+            $root: this._pathRoot,
+            style: styles,
+            featureStyle: this._originFeatureStyle
+        });
+        return this;
+    }
+
+    removeRenderStyleByName(name) {
+        const index = this._getStyleIndex(name);
+        return this.removeRenderStyle(index);
+    }
+
+    /**
+     * 添加一个新的Feature Style，例如：
+     *
+     * layer.addFeatureStyle({
+     *   id: 10,
+     *   style: [
+     *     {
+     *       filter: true,
+     *       renderPlugin,
+     *       symbol
+     *     }
+     *   ]
+     * });
+     * @param {Object} feature style - feature style定义
+     * @returns this
+     */
+    addFeatureStyle(featureStyle) {
+        if (!featureStyle) {
+            return this;
+        }
+        const id = featureStyle.id;
+        this.updateFeatureStyleById(id, featureStyle.style);
+        return this;
+    }
+
+    /**
+     * 更新指定feature id的Feature Style，如果该id的feature style不存在，则添加一个，例如：
+     *
+     * layer.updateFeatureStyle({
+     *     id: 10
+     *     style: [
+     *       {
+     *         filter: true,
+     *         renderPlugin,
+     *         symbol
+     *       }
+     *     ]);
+     * @param {String|Number} id - feature id
+     * @param {Object} feature style - feature style定义
+     * @returns this
+     */
+    updateFeatureStyleById(featureStyle) {
+        if (!featureStyle) {
+            return this;
+        }
+        const id = featureStyle.id;
+        if (isNil(id)) {
+            return this;
+        }
+        const index = this.getFeatureStyleIndex(id);
+        const featureStyles = this._originFeatureStyle;
+        if (index < 0) {
+            featureStyles.push(featureStyle);
+        } else {
+            featureStyles[index] = featureStyle;
+        }
+        this._setStyle({
+            $root: this._pathRoot,
+            style: this._vtStyle,
+            featureStyle
+        });
+        return this;
+    }
+
+    /**
+     * 删除指定feature id的feature style
+     * @param id - feature id
+     * @returns this
+     */
+    removeFeatureStyleById(id) {
+        const index = this.getFeatureStyleIndex(id);
+        if (index < 0) {
+            return this;
+        }
+        const featureStyles = this._originFeatureStyle.splice(index, 1);
+        this._setStyle({
+            $root: this._pathRoot,
+            style: this._vtStyle,
+            featureStyle: featureStyles
+        });
+        return this;
+    }
+
+    getFeatureStyleIndex(id) {
+        if (isNil(id)) {
+            return -1;
+        }
+        const featureStyles = this._originFeatureStyle;
+        if (!featureStyles) {
+            return -1;
+        }
+        for (let i = 0; i < featureStyles.length; i++) {
+            if (featureStyles[i].id === id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    _getStyleIndex(name) {
+        const styles = this._vtStyle;
+        if (!styles) {
+            return -1;
+        }
+        for (let i = 0; i < styles.length; i++) {
+            if (styles[i].name === name) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     getGroundConfig() {
