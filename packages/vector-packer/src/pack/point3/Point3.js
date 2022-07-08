@@ -2,7 +2,7 @@ export default class Point3 {
     constructor(point) {
         this.x = point.x;
         this.y = point.y;
-        this.z = point.z;
+        this.z = point.z || 0;
     }
 
     clone() { return new Point3(this); }
