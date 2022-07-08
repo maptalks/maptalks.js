@@ -344,7 +344,7 @@ const GLTFMixin = Base =>
             const symbols = this.getSymbols();
             this._loaded = 0;
             for (let i = 0; i < symbols.length; i++) {
-                const url = symbols[i].url;
+                const url = symbols[i].url || 'pyramid';
                 this._gltfManager.loginGLTF(url);
                 const gltfRes = this._gltfManager.getGLTF(url);
                 if (gltfRes.then) {
@@ -398,8 +398,12 @@ const GLTFMixin = Base =>
 
         delete(/* context */) {
             super.delete();
-            const url = this.getSymbols()[0].url;
-            this._gltfManager.logoutGLTF(url);
+            const symbols = this.getSymbols();
+            for (let i = 0; i < symbols.length; i++) {
+                const url = symbols[i].url || 'pyramid';
+                this._gltfManager.logoutGLTF(url);
+            }
+
         }
 
         _getGLTFMatrix(out, t, r, s) {
