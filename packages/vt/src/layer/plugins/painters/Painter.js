@@ -173,8 +173,8 @@ class Painter {
                         props.feaIdPickingMap = pickingIdMap;
                         props.feaPickingIdMap = idPickingMap;
                     }
+                    this.postCreateGeometry(geo, geometries);
                 }
-                this.postCreateGeometry(geo, geometries);
                 // null 也需要push，保证ref指向的顺序是正确的
                 geometries.push(geo);
             }
@@ -221,10 +221,11 @@ class Painter {
             if (!geometries[i]) {
                 continue;
             }
-            const mesh = this.createMesh(geometries[i], transform, params, context);
+            let mesh = this.createMesh(geometries[i], transform, params, context);
             if (Array.isArray(mesh)) {
+                mesh = mesh.filter(m => !!m);
                 meshes.push(...mesh);
-            } else {
+            } else if (mesh) {
                 meshes.push(mesh);
             }
 

@@ -37,6 +37,8 @@ const GLTFMixin = Base =>
             this._ready = false;
             this.scene.sortFunction = this.sortByCommandKey;
             this._gltfMeshInfos = [];
+            this._gltfManager = new reshader.GLTFManager(regl);
+            this._initGLTF();
         }
 
         isAnimating() {
@@ -54,10 +56,6 @@ const GLTFMixin = Base =>
         }
 
         createGeometry(glData, features) {
-            this._initGLTF();
-            if (!this._ready) {
-                return null;
-            }
             // 无论多少个symbol，gltf插件的数据只会来源于glData中的第一条数据
             const { data, positionSize } = glData;
             const geometry = {
@@ -77,6 +75,9 @@ const GLTFMixin = Base =>
         }
 
         createMesh(geo, transform, { tileTranslationMatrix, tileExtent }) {
+            if (!this._ready) {
+                return null;
+            }
             const map = this.getMap();
             const { geometry } = geo;
             const { positionSize, features } = geometry;
@@ -340,36 +341,38 @@ const GLTFMixin = Base =>
                 return;
             }
             this._gltfPack = [];
-            const renderer = this.layer.getRenderer();
             const symbols = this.getSymbols();
             this._loaded = 0;
             for (let i = 0; i < symbols.length; i++) {
-                const symbol = symbols[i];
-                const url = symbol.url;
-                if (renderer.isCachePlaced(url)) {
-                    continue;
-                }
-                const cacheItem = renderer.fetchCache(url);
-                if (cacheItem) {
-                    this._gltfPack[i] = [cacheItem];
-                    this._gltfMeshInfos[i] = cacheItem.getMeshesInfo();
-                    this._loaded++;
-                    renderer.addToCache(url);
-                } else {
-                    renderer.placeCache(url);
-                    reshader.GLTFHelper.load(url).then(gltfData => {
-                        const pack = reshader.GLTFHelper.exportGLTFPack(gltfData, this.regl);
+                const url = symbols[i].url;
+                this._gltfManager.loginGLTF(url);
+                const gltfRes = this._gltfManager.getGLTF(url);
+                if (gltfRes.then) {
+                    gltfRes.then(gltfData => {
+                        if (!gltfData.gltfPack) {
+                            this._loaded++;
+                            if (this._loaded >= symbols.length) {
+                                this._ready = true;
+                                this.setToRedraw(true);
+                            }
+                            return;
+                        }
+                        const { gltfPack: pack } = gltfData;
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();
-                        renderer.addToCache(url, pack, pack => {
-                            pack.dispose();
-                        });
                         this._loaded++;
                         if (this._loaded >= symbols.length) {
                             this._ready = true;
                         }
                         this.setToRedraw(true);
                     });
+                } else {
+                    const { gltfPack: pack } = gltfRes;
+                    if (pack) {
+                        this._gltfPack[i] = [pack];
+                        this._gltfMeshInfos[i] = pack.getMeshesInfo();
+                        this._loaded++;
+                    }
                 }
             }
             if (this._loaded >= symbols.length) {
@@ -396,27 +399,7 @@ const GLTFMixin = Base =>
         delete(/* context */) {
             super.delete();
             const url = this.getSymbols()[0].url;
-            const renderer = this.layer.getRenderer();
-            renderer.removeCache(url);
-            if (this._gltfMeshInfos) {
-                for (let i = 0; i < this._gltfMeshInfos.length; i++) {
-                    const meshInfos = this._gltfMeshInfos[i];
-                    for (let j = 0; j < meshInfos.length; j++) {
-                        const info = meshInfos[i];
-                        const { geometry, materialInfo } = info;
-                        if (geometry) {
-                            geometry.dispose();
-                        }
-                        if (materialInfo) {
-                            for (const p in materialInfo) {
-                                if (materialInfo[p] && materialInfo[p].destroy) {
-                                    materialInfo[p].destroy();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            this._gltfManager.logoutGLTF(url);
         }
 
         _getGLTFMatrix(out, t, r, s) {
