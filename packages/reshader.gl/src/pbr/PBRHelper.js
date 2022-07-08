@@ -372,19 +372,19 @@ function createPrefilterCube(regl, fromCubeMap, rgbmRange, SIZE, sampleSize, rou
     return { prefilterMap, prefilterMipmap: mipmap };
 }
 
-const quadVertices = [
+const quadVertices = new Int8Array([
     // positions     // texture Coords
     -1.0,  1.0, 0.0,
     -1.0, -1.0, 0.0,
     1.0,  1.0, 0.0,
     1.0, -1.0, 0.0,
-];
-const quadTexcoords = [
+]);
+const quadTexcoords = new Int8Array([
     0.0, 1.0,
     0.0, 0.0,
     1.0, 1.0,
     1.0, 0.0,
-];
+]);
 
 export function generateDFGLUT(regl, size, sampleSize, roughnessLevels) {
     size = size || 256;
