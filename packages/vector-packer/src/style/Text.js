@@ -15,7 +15,8 @@ export function getSDFFont(textFaceName, textStyle, textWeight) {
 
 }
 
-const contentExpRe = /\{([\w_]+)\}/g;
+// 匹配{foo} 或 {foo|bar}
+const contentExpRe = /\{[\w-]+\}|\{(?:[\w-]+\|)+[\w-]+\}/g;
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
@@ -30,8 +31,19 @@ export function resolveText(str, props) {
     if (!isString(str)) {
         return str;
     }
-    return str.replace(contentExpRe, function (str, key) {
+    return str.replace(contentExpRe, function (key) {
         if (!props) {
+            return '';
+        }
+        key = key.substring(1, key.length - 1);
+        if (key.indexOf('|') > 0) {
+            const keys = key.split('|');
+            for (let i = 0; i < keys.length; i++) {
+                const value = props[keys[i]];
+                if (!isNil(value)) {
+                    return value;
+                }
+            }
             return '';
         }
         const value = props[key];
