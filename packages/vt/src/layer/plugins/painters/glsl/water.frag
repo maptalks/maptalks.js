@@ -12,10 +12,48 @@ uniform float contrast;
 #endif
 
 #if defined(HAS_IBL_LIGHTING)
-    uniform vec3 hdrHsv;
-    uniform samplerCube specularPBR;
+    uniform vec3 hdrHSV;
+    uniform samplerCube prefilterMap;
+    uniform sampler2D brdfLUT;
     uniform float rgbmRange;
+    uniform mat3 uEnvironmentTransform;
     uniform vec3 diffuseSPH[9];
+
+    vec3 computeDiffuseSPH(const in vec3 normal) {
+        vec3 n = uEnvironmentTransform * normal;
+
+        float x = n.x;
+        float y = n.y;
+        float z = n.z;
+        vec3 result = (
+            diffuseSPH[0] +
+
+            diffuseSPH[1] * x +
+            diffuseSPH[2] * y +
+            diffuseSPH[3] * z +
+
+            diffuseSPH[4] * z * x +
+            diffuseSPH[5] * y * z +
+            diffuseSPH[6] * y * x +
+            diffuseSPH[7] * (3.0 * z * z - 1.0) +
+            diffuseSPH[8] * (x*x - y*y)
+          );
+        if (length(hdrHSV) > 0.0) {
+            result = hsv_apply(result, hdrHSV);
+        }
+        return max(result, vec3(0.0));
+    }
+
+    vec3 integrateBRDF(const in vec3 specular, const in float roughness, const in float NoV, const in float f90) {
+        vec4 rgba = texture2D(brdfLUT, vec2(NoV, roughness));
+        float b = (rgba[3] * 65280.0 + rgba[2] * 255.0);
+        float a = (rgba[1] * 65280.0 + rgba[0] * 255.0);
+        const float div = 1.0 / 65535.0;
+        return (specular * a + b * f90) * div;
+
+        // vec4 rgba = texture2D(brdfLUT, vec2(NoV, roughness));
+        // return (specular * rgba.x + rgba.y * f90);
+    }
 #else
     uniform vec3 ambientColor;
 #endif
@@ -352,15 +390,6 @@ const float ssrHeightFadeEnd = 500000.0;
 const float waterDiffusion = 0.775;
 const float waterSeeColorMod = 0.8;
 
-vec3 getSpecularColor(in vec3 n, in vec3 v) {
-    #ifdef HAS_IBL_LIGHTING
-        vec3 R = reflect(-v, n);
-        return decodeRGBM(textureCube(specularPBR, R), rgbmRange);
-    #else
-        return ambientColor;
-    #endif
-}
-
 PBRShadingWater shadingInfo;
 
 vec3 brdfSpecularWater(in PBRShadingWater props, float roughness, vec3 F0, float F0Max) {
@@ -381,6 +410,26 @@ vec3 getSkyGradientColor(in float cosTheta, in vec3 horizon, in vec3 zenit) {
     return mix(zenit, horizon, exponent);
 }
 
+vec3 getSkyColor(in vec3 n, in vec3 v, in float upDotV, in float roughness) {
+    #ifdef HAS_IBL_LIGHTING
+        vec3 R = reflect(-v, n);
+        vec4 prefilteredColor = textureCube(prefilterMap, uEnvironmentTransform * R);
+        float factor = clamp(1.0 + dot(R, n), 0.0, 1.0);
+        prefilteredColor *= factor * factor;
+        vec3 specular = decodeRGBM(prefilteredColor, rgbmRange);
+        vec3 diffuse = computeDiffuseSPH(n);
+        float f90 = clamp(50.0 * waterBaseColor.g, 0.0, 1.0);
+        vec3 brdf = integrateBRDF(waterBaseColor.rgb, roughness, dot(n, v), f90);
+        return specular * brdf + diffuse;
+    #else
+        vec3 skyHorizon = linearizeGamma(skyColor);
+        vec3 skyZenit = linearizeGamma(skyZenitColor);
+        vec3 skyColor = getSkyGradientColor(upDotV, skyHorizon, skyZenit );
+        return skyColor;
+    #endif
+}
+
+
 vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightIntensity, in vec3 localUp, in float shadow, float foamIntensity, vec3 positionView) {
     float reflectionHit = 0.;
     vec3 seaWaterColor = linearizeGamma(color);
@@ -392,9 +441,7 @@ vec3 renderPixel(in vec3 n, in vec3 v, in vec3 l, vec3 color, in vec3 lightInten
     shadingInfo.VdotH = clamp(dot(v, h), 0.0, 1.0);
     shadingInfo.LdotH = clamp(dot(l, h), 0.0, 1.0);
     float upDotV = max(dot(localUp, v), 0.0);
-    vec3 skyHorizon = linearizeGamma(skyColor);
-    vec3 skyZenit = linearizeGamma(skyZenitColor);
-    vec3 skyColor = getSkyGradientColor(upDotV, skyHorizon, skyZenit );
+    vec3 skyColor = getSkyColor(n, v, upDotV, roughness);
     float upDotL = max(dot(localUp, l), 0.0);
     float daytimeMod = 0.1 + upDotL * 0.9;
     skyColor *= daytimeMod;

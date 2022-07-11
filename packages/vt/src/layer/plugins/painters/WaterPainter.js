@@ -1,9 +1,11 @@
 import BasicPainter from './BasicPainter';
-import { reshader, mat3, mat4, GroundPainter } from '@maptalks/gl';
+import { reshader, mat3, mat4, vec2, vec4, GroundPainter } from '@maptalks/gl';
 import waterVert from './glsl/water.vert';
 import waterFrag from './glsl/water.frag';
 import pickingVert from './glsl/fill.picking.vert';
 import { extend } from '../Util';
+
+const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
 const DEFAULT_DIR_LIGHT = {
     color: [2.0303, 2.0280, 2.0280],
@@ -207,7 +209,7 @@ class WaterPainter extends BasicPainter {
 
     _createShader(context) {
         const canvas = this.canvas;
-
+        const uEnvironmentTransform = [];
         const uniforms = [
             {
                 name: 'projViewModelMatrix',
@@ -235,6 +237,14 @@ class WaterPainter extends BasicPainter {
                 type: 'function',
                 fn: (context, props) => {
                     return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);
+                }
+            },
+            {
+                name: 'uEnvironmentTransform',
+                type: 'function',
+                fn: (_, props) => {
+                    const orientation = props['environmentOrientation'] || 0;
+                    return mat3.fromRotation(uEnvironmentTransform, Math.PI * orientation / 180);
                 }
             }
         ];
@@ -337,39 +347,26 @@ class WaterPainter extends BasicPainter {
         return true;
     }
 
-    getUniformValues(map, context) {
-        const canvas = this.canvas;
+    getUniformValues(map) {
         const uniforms = {
-            projMatrix: map.projMatrix,
             projViewMatrix: map.projViewMatrix,
-            viewMatrix: map.viewMatrix,
-            outSize: [canvas.width, canvas.height],
-            halton: [0, 0]
         };
-        this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
 
     _getWaterUniform(map, context) {
-        const { iblTexes } = this.getIBLRes();
-        const projViewMatrix = map.projViewMatrix;
+        const { iblTexes, dfgLUT } = this.getIBLRes();
+        const uniforms = getPBRUniforms(map, iblTexes, dfgLUT, context && context.ssr, context && context.jitter);
         const lightManager = map.getLightManager();
         let directionalLight = lightManager && lightManager.getDirectionalLight() || {};
         const ambientLight = lightManager && lightManager.getAmbientLight() || {};
         const symbol = this.getSymbol(SYMBOL_INDEX);
         const waterDir = this._waterDir = this._waterDir || [];
-        const uniforms = {
-            hdrHsv: ambientLight.hsv || [0, 0, 0],
-            specularPBR: iblTexes && iblTexes.prefilterMap,
-            rgbmRange: iblTexes && iblTexes.rgbmRange,
+        const waveParams = this._waveParams = this._waveParams || [];
+        vec4.set(waveParams, 0.0900, symbol.uvScale || 3, 0.0300, -0.5);
+        const waterUniforms = {
             ambientColor: ambientLight.color || [0.2, 0.2, 0.2],
-            outSize: [this.canvas.width, this.canvas.height],
-            // uniform vec3 diffuseSPH[9];
-
-            projMatrix: map.projMatrix,
-            projViewMatrix,
             viewMatrix: map.viewMatrix,
-            cameraNearFar: [map.cameraNear, map.cameraFar],
 
             lightDirection: directionalLight.direction || DEFAULT_DIR_LIGHT.direction,
             lightColor: directionalLight.color || DEFAULT_DIR_LIGHT.color,
@@ -378,13 +375,14 @@ class WaterPainter extends BasicPainter {
             normalTexture: this._normalTex || this._emptyTex,
             heightTexture: this._pertTex || this._emptyTex,
             //[波动强度, 法线贴图的repeat次数, 水流的强度, 水流动的偏移量]
-            waveParams: [0.0900, symbol.uvScale || 3, 0.0300, -0.5],
+            waveParams,
             waterDir: getWaterDirVector(waterDir, symbol.waterDirection || 0),
             waterBaseColor: symbol.waterBaseColor || [0.1451, 0.2588, 0.4863, 1],
 
             contrast: symbol.contrast || 1,
             hsv: symbol.hsv || EMPTY_HSV
         };
+        extend(uniforms, waterUniforms);
         this.setIncludeUniformValues(uniforms, context);
         if (context && context.ssr && context.ssr.renderUniforms) {
             extend(uniforms, context.ssr.renderUniforms);
