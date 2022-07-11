@@ -156,11 +156,11 @@ export default class PolygonPack extends VectorPack {
                 uvSize[1] = image.displaySize[1] - 3;
             }
         }
-
+        const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
-            const triangleIndex = this.data.aPosition.length / 3;
+            const triangleIndex = this.data.aPosition.length / positionSize;
 
             const flattened = [];
             const holeIndices = [];
@@ -180,7 +180,7 @@ export default class PolygonPack extends VectorPack {
 
                 const lineIndex = this.lineElements.length;
 
-                this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z);
+                this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z || 0);
                 if (hasUV) {
                     this.data.aTexInfo.push(...uvStart, ...uvSize);
                 }
@@ -201,10 +201,10 @@ export default class PolygonPack extends VectorPack {
 
                 flattened.push(ring[0].x);
                 flattened.push(ring[0].y);
-                flattened.push(ring[0].z);
+                flattened.push(ring[0].z || 0);
 
                 for (let i = 1; i < ring.length; i++) {
-                    this.fillPosition(this.data, ring[i].x, ring[i].y, ring[i].z);
+                    this.fillPosition(this.data, ring[i].x, ring[i].y, ring[i].z || 0);
                     if (hasUV) {
                         this.data.aTexInfo.push(...uvStart, ...uvSize);
                     }
@@ -224,7 +224,7 @@ export default class PolygonPack extends VectorPack {
                     this.addLineElements(lineIndex + i - 1, lineIndex + i);
                     flattened.push(ring[i].x);
                     flattened.push(ring[i].y);
-                    flattened.push(ring[i].z);
+                    flattened.push(ring[i].z || 0);
                 }
             }
             const indices = earcut(flattened, holeIndices, 3);

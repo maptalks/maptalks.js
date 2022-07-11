@@ -343,7 +343,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
 
             const posMatrix = mat4.identity([]);
-            //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
             // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
