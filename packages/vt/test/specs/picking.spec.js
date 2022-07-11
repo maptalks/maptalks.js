@@ -46,6 +46,10 @@ describe('picking specs', () => {
                     delete result[i].data.symbol;
                 }
             }
+            for (let i = 0; i < result.length; i++) {
+                // ignore tiles
+                delete result[i].data.tile;
+            }
             if (typeof expected === 'object') {
                 assert.deepEqual(result, expected, JSON.stringify(result));
             } else if (typeof expected === 'number') {
@@ -487,6 +491,7 @@ describe('picking specs', () => {
                         'markerOpacity': 0.5
                     }
                 };
+                delete redPoint[0].data.tile;
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -546,6 +551,7 @@ describe('picking specs', () => {
                         'lineColor': '#f00'
                     }
                 };
+                delete redPoint[0].data.tile;
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -608,6 +614,7 @@ describe('picking specs', () => {
                         'lineWidth': 20
                     }
                 };
+                delete redPoint[0].data.tile;
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -678,6 +685,7 @@ describe('picking specs', () => {
                         'polygonOpacity': 1
                     }
                 };
+                delete redPoint[0].data.tile;
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -741,6 +749,7 @@ describe('picking specs', () => {
                         'lineWidth': 20
                     }
                 };
+                delete redPoint[0].data.tile;
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
