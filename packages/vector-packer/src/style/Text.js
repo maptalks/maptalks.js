@@ -16,7 +16,8 @@ export function getSDFFont(textFaceName, textStyle, textWeight) {
 }
 
 // 匹配{foo} 或 {foo|bar}
-const contentExpRe = /\{[\w-]+\}|\{(?:[\w-]+\|)+[\w-]+\}/g;
+// 思路： 一个变量名foo后接着0个或多个形式为 |foo 的|与变量名的组合体
+const contentExpRe = /\{[\w-]+(?:\|[\w-]+)*\}/g;
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
