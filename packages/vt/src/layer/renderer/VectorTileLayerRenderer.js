@@ -356,6 +356,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return !!(this._vtCurrentTiles && this._vtCurrentTiles[mesh.properties.tile.id]);
     }
 
+    isTileNearCamera(mesh) {
+        return Math.abs(this.getCurrentTileZoom() - mesh.properties.tile.z) <= 1;
+    }
+
     isBackTile(id) {
         return !!(this._vtBgTiles && this._vtBgTiles[id]);
     }

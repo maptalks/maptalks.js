@@ -20,7 +20,7 @@ import { getCentiMeterScale } from '../../../common/Util';
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
+    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && symbol['textPlacement'] !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
@@ -32,7 +32,7 @@ const shaderFilterN = function (mesh) {
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
+    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && symbol['textPlacement'] === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
@@ -260,8 +260,8 @@ export default class TextPainter extends CollisionPainter {
             if (!this.isMeshIterable(mesh)) {
                 continue;
             }
-            const isForeground = renderer.isForeground(mesh);
-            if (this.shouldIgnoreBackground() && !isForeground) {
+            const isNearCamera = renderer.isTileNearCamera(mesh);
+            if (!isNearCamera) {
                 continue;
             }
             const geometry = mesh.geometry;
@@ -338,17 +338,6 @@ export default class TextPainter extends CollisionPainter {
         //pitch不跟随map时，需要根据屏幕位置实时计算各文字的位置和旋转角度并更新aOffset和aRotation
         //pitch跟随map时，根据line在tile内的坐标计算offset和rotation，只需要计算更新一次
         //aNormal在两种情况都要实时计算更新
-        const layer = this.layer;
-        const renderer = layer.getRenderer();
-        const isForeground = renderer.isForeground(mesh);
-        if (this.shouldIgnoreBackground() && !isForeground) {
-            return;
-        }
-        // if (!this.sceneConfig['showOnZoomingOut'] && this.shouldLimitBox(isForeground)) {
-        //     geometry.setElements([]);
-        //     return;
-        // }
-
         let line = geometryProps.line;
         if (!line) {
             return;
