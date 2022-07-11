@@ -160,16 +160,6 @@ void main() {
         }
     #endif
 
-    #ifdef HAS_STROKE_COLOR
-        vec4 strokeColor = vStrokeColor / 255.0;
-    #else
-        vec4 strokeColor = lineStrokeColor;
-    #endif
-    strokeColor = mix(color, strokeColor, sign(vWidth.t));
-    // color *= alpha;
-    // 后半部分只有 dist <= vWidth.t 时才有值，没有设置lineStrokeWidth时，后半部分永远为0
-    color = strokeColor * alpha + max(sign(vWidth.t - dist), 0.0) * color * (1.0 - alpha);
-
     #ifdef HAS_DASHARRAY
         #ifdef HAS_DASHARRAY_ATTR
             vec4 dasharray = vDasharray;
@@ -198,8 +188,18 @@ void main() {
         float secondDashAlpha = dashAntialias(secondDashMod, dasharray[2]);
 
         float dashAlpha = firstDashAlpha * firstInDash + secondDashAlpha * secondInDash;
-        color = color * (1.0 - dashAlpha) + alpha * dashColor * dashAlpha;
+        color = color * (1.0 - dashAlpha) + dashColor * dashAlpha;
     #endif
+
+    #ifdef HAS_STROKE_COLOR
+        vec4 strokeColor = vStrokeColor / 255.0;
+    #else
+        vec4 strokeColor = lineStrokeColor;
+    #endif
+    strokeColor = mix(color, strokeColor, sign(vWidth.t));
+    // color *= alpha;
+    // 后半部分只有 dist <= vWidth.t 时才有值，没有设置lineStrokeWidth时，后半部分永远为0
+    color = strokeColor * alpha + max(sign(vWidth.t - dist), 0.0) * color * (1.0 - alpha);
 
     #ifdef HAS_TRAIL
         float trailMod = mod(linesofar - currentTime * trailSpeed * 0.1, trailCircle);
