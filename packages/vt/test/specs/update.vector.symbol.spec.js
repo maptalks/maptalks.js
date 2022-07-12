@@ -712,7 +712,7 @@ describe('vector layers symbol update specs', () => {
             } else if (updated && count >= 3) {
                 const pixel = readPixel(renderer.canvas, x, y);
                 //中心点往外40，能读到像素了
-                assert.deepEqual(pixel, [0, 86, 169, 95]);
+                assert.deepEqual(pixel, [0, 171, 84, 191]);
                 assert(!partialUpdate);
                 done();
             }
@@ -757,7 +757,7 @@ describe('vector layers symbol update specs', () => {
         group.on('layerload', () => {
             if (count >= 1 && !updated) {
                 const pixel = readPixel(renderer.canvas, x, y);
-                assert.deepEqual(pixel, [0, 86, 169, 95]);
+                assert.deepEqual(pixel, [0, 171, 84, 191]);
                 polygon.updateSymbol([
                     null,
                     {
@@ -769,7 +769,7 @@ describe('vector layers symbol update specs', () => {
             } else if (updated && count >= 3) {
                 const pixel = readPixel(renderer.canvas, x, y);
                 //中心点往外40，能读到像素了
-                assert.deepEqual(pixel, [169, 86, 0, 95]);
+                assert.deepEqual(pixel, [84, 171, 0, 191]);
                 assert(partialUpdate);
                 done();
             }

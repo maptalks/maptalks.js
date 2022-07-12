@@ -1,5 +1,5 @@
 import BasicPainter from './BasicPainter';
-import { reshader, mat3, mat4, vec2, vec4, GroundPainter } from '@maptalks/gl';
+import { reshader, mat3, mat4, vec4, GroundPainter } from '@maptalks/gl';
 import waterVert from './glsl/water.vert';
 import waterFrag from './glsl/water.frag';
 import pickingVert from './glsl/fill.picking.vert';

@@ -61,7 +61,7 @@ uniform float tileExtent;
 // #ifndef ENABLE_TILE_STENCIL
 //     varying vec2 vPosition;
 // #endif
-uniform lowp float blendSrcIsOne;
+// uniform lowp float blendSrcIsOne;
 
 void main() {
     // #ifndef ENABLE_TILE_STENCIL
@@ -88,9 +88,10 @@ void main() {
     #endif
 
     #ifdef HAS_OPACITY
-        gl_FragColor = color * vOpacity;
+        gl_FragColor = vec4(color.rgb, color.a * vOpacity);
     #else
-        gl_FragColor = color * polygonOpacity;
+        // gl_FragColor = vec4(color.rgb, color.a * polygonOpacity);
+        gl_FragColor = vec4(color.rgb, color.a * polygonOpacity);
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
@@ -98,8 +99,8 @@ void main() {
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 
-    if (blendSrcIsOne == 1.0) {
-        gl_FragColor *= gl_FragColor.a;
-    }
+    // if (blendSrcIsOne == 1.0) {
+    //     gl_FragColor *= gl_FragColor.a;
+    // }
     // gl_FragColor = vec4(vUVScale, 0.0, 1.0);
 }

@@ -315,10 +315,11 @@ class FillPainter extends BasicPainter {
 
     getUniformValues(map, context) {
         const projViewMatrix = map.projViewMatrix;
+        // const blendSrc = this.sceneConfig.blendSrc;
         const uniforms = {
             projViewMatrix,
             glScale: 1 / map.getGLScale(),
-            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
+            // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;

@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { extend } from '../../common/Util';
+import { isNil, extend } from '../../common/Util';
 
 const defaultOptions = {
     picking: true,
@@ -36,6 +36,9 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         super(...args);
         if (!this.options.sceneConfig) {
             this.options.sceneConfig = {};
+        }
+        if (isNil(this.options.sceneConfig.blendSrc)) {
+            this.options.sceneConfig.blendSrc = 'one';
         }
     }
 
