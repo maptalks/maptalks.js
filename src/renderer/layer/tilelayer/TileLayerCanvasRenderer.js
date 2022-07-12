@@ -182,6 +182,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     if (cached) {
                         if (cached.image && this.getTileOpacity(cached.image) < 1) {
                             tileLoading = loading = true;
+                            this.setToRedraw();
                         }
                         tiles.push(cached);
                     } else {
