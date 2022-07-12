@@ -85,7 +85,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
             features.push(fea);
         }
         return features;
-    } else {
+    } else if (symbol) {
         const lineGradientProperty = fillGradientProperties(symbol, properties);
         for (const p in symbol) {
             if (hasOwn(symbol, p)) {
