@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, hasOwn } = require('./util');
 const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
 
 const DEFAULT_VIEW = {
     center: [0, 0],
@@ -70,7 +71,18 @@ describe('vector 3d integration specs', () => {
                     done();
                 });
             });
-            layer.addTo(map);
+            if (style.options && style.options.enableBloom) {
+                const sceneConfig = {
+                    postProcess: {
+                        enable: true,
+                        bloom: { enable: true }
+                    }
+                };
+                const groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });
+                groupLayer.addTo(map);
+            } else {
+                layer.addTo(map);
+            }
         };
     };
 
