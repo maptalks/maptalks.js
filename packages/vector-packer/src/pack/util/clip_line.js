@@ -26,6 +26,7 @@ function clipLine(lines, x1, y1, x2, y2) {
     for (let l = 0; l < lines.length; l++) {
         const line = lines[l];
         let clippedLine;
+        let clipped = false;
 
         for (let i = 0; i < line.length - 1; i++) {
             let p0 = line[i];
@@ -81,13 +82,17 @@ function clipLine(lines, x1, y1, x2, y2) {
             }
 
             if (!clippedLine || !p0.equals(clippedLine[clippedLine.length - 1])) {
+                if (clippedLines.length) {
+                    clippedLines[clippedLines.length - 1].clipped = clipped;
+                }
                 clippedLine = [p0];
                 clippedLines.push(clippedLine);
             }
-
+            if (p1 !== line[i + 1]) {
+                clipped = true;
+            }
             clippedLine.push(p1);
         }
     }
-
     return clippedLines;
 }

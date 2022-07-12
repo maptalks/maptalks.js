@@ -226,7 +226,7 @@ export default class LinePack extends VectorPack {
             miterLimit = 2,
             roundLimit = 1.05;
         const feature = line.feature,
-            isPolygon = feature.type === 3; //POLYGON
+            isPolygon = false;//feature.type === 3; //POLYGON
         const properties = feature.properties;
         const elements = this.elements;
         if (isPolygon) {
@@ -396,16 +396,33 @@ export default class LinePack extends VectorPack {
             this.feaLinePatternGap = gap;
         }
         const extent = this.options.EXTENT;
-        //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
         let lines = feature.geometry;
-        if (extent !== Infinity && feature.type !== 3) {
-            lines = clipLine(feature.geometry, -1, -1, extent + 1, extent + 1);
+        if (extent !== Infinity) {
+            lines = [];
+            const ring = [];
+            for (let i = 0; i < feature.geometry.length; i++) {
+                ring[0] = feature.geometry[i];
+                //增加1个像素，因为要避免lineJoin刚好处于边界时的构造错误
+                const segs = clipLine(ring, -1, -1, extent + 1, extent + 1);
+                if (feature.type === 3 && segs.length > 1) {
+                    // 第一段第一个坐标与最后一段最后一个坐标相同时，说明是多边形被切分后的第一段和最后一段，则把这两个线段做合并，并删除最后一段
+                    const firstseg = segs[0];
+                    const lastseg = segs[segs.length - 1];
+                    if (firstseg[0].equals(lastseg[lastseg.length - 1])) {
+                        segs[0] = lastseg.concat(firstseg.slice(1));
+                        segs.length = segs.length - 1;
+                    }
+                }
+                lines.push(...segs);
+            }
+
         }
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         for (let i = 0; i < lines.length; i++) {
             //element offset when calling this.addElements in _addLine
             this.offset = this.data.aPosition.length / positionSize;
             const line = lines[i];
+            // 把polygon clip后的边框当作line来渲染
             this._addLine(line, feature, join, cap, miterLimit, roundLimit);
             if (isPolygon) {
                 this._filterPolygonEdges(elements);
@@ -465,7 +482,8 @@ export default class LinePack extends VectorPack {
             this.updateScaledDistance();
         }*/
 
-        const isPolygon = feature.type === 3; //POLYGON
+        // 被剪切过的Polygon当作普通line来处理，clipped是在clip_line中判定的
+        const isPolygon = feature.type === 3 && !vertices.clipped; //POLYGON
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
