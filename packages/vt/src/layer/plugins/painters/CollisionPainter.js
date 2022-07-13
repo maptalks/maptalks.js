@@ -14,7 +14,7 @@ import CollisionGroup from './CollisionGroup';
 
 const DEFAULT_SCENE_CONFIG = {
     collision: false,
-    fading: true,
+    fading: false,
     fadingDuration: 16 * 14,
     fadeInDelay: 600,
     fadeOutDelay: 100
