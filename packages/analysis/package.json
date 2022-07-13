@@ -9,11 +9,11 @@
   },
   "main": "dist/maptalks.analysis.js",
   "browser": "dist/maptalks.analysis.js",
-  "module": "dist/maptalks.analysis.es.js",
-  "jsnext:main": "dist/maptalks.analysis.es.js",
+  "module": "dist/maptalks.analysis.mjs",
+  "jsnext:main": "dist/maptalks.analysis.mjs",
   "files": [
     "dist/maptalks.analysis.js",
-    "dist/maptalks.analysis.es.js"
+    "dist/maptalks.analysis.mjs"
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",
