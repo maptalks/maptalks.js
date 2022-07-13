@@ -2525,7 +2525,7 @@ Map.include(/** @lends Map.prototype */{
             if (!projection) {
                 return null;
             }
-            const prjCoord = projection.project(paramCenter, PRJ_COORD) || this._getPrjCenter();
+            const prjCoord = paramCenter ?  projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
             const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD);
