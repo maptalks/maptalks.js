@@ -2529,7 +2529,7 @@ Map.include(/** @lends Map.prototype */{
             const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD);
-            return projection.measureLength(paramCenter, target);
+            return projection.measureLength(paramCenter || this.getCenter(), target);
         };
     }(),
 
