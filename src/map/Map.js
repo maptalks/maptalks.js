@@ -2463,7 +2463,7 @@ Map.include(/** @lends Map.prototype */{
         const DEFAULT_CENTER = new Coordinate(0, 40);
         const POINT = new Point(0, 0);
         return function (point = 0, res, originCenter) {
-            const altitude = this.pointAtResToDistance(point, res, originCenter || DEFAULT_CENTER, POINT);
+            const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER, POINT);
             return altitude;
         };
     }(),
@@ -2529,7 +2529,7 @@ Map.include(/** @lends Map.prototype */{
             const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD);
-            return projection.measureLength(this.getCenter(), target);
+            return projection.measureLength(paramCenter, target);
         };
     }(),
 
