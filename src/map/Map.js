@@ -2459,7 +2459,7 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
-    pointToAltitude: function () {
+    pointAtResToAltitude: function () {
         const DEFAULT_CENTER = new Coordinate(0, 40);
         const POINT = new Point(0, 0);
         return function (point = 0, res, originCenter) {
