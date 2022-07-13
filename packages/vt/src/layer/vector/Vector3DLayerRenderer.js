@@ -133,7 +133,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
             this._linePainter.startFrame(context);
-            this._linePainter.addMesh(this._lineMeshes, null, { bloom: 1 });
+            this._linePainter.addMesh(this._lineMeshes, null, { bloom: this._parentContext.bloom });
             this._linePainter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
             this._linePainter.render(context);
@@ -148,7 +148,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 layer.clearCollisionIndex();
             }
             this._markerPainter.startFrame(context);
-            this._markerPainter.addMesh(this._markerMeshes, null, { bloom: 1 });
+            this._markerPainter.addMesh(this._markerMeshes, null, { bloom: this._parentContext.bloom });
             this._markerPainter.prepareRender(context);
             if (layer.options.collision) {
                 this._markerPainter.updateCollision(context);
@@ -167,7 +167,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const isDefaultRender = !renderMode || renderMode === 'default';
         if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
             this.painter.startFrame(context);
-            this.painter.addMesh(this.meshes, null, { bloom: 1 });
+            this.painter.addMesh(this.meshes, null, { bloom: context && context.bloom });
             this.painter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
             this.painter.render(context);
