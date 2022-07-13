@@ -760,6 +760,59 @@ describe('update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can outline styled features', done => {
+        const featureStyle = [
+            {
+                id: 0,
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style: {
+                featureStyle
+            }
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+
+        });
+        group.on('layerload', () => {
+            if (count === 1) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.outlineFeatures([0]);
+            } else if (count === 2) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                layer.cancelOutline();
+            } else if (count === 3) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] === 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
 
     it('should can update markerAllowOverlap', done => {
         const style = [

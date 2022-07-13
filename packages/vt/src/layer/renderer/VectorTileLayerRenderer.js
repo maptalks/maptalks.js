@@ -4,7 +4,7 @@ import WorkerConnection from './worker/WorkerConnection';
 import { EMPTY_VECTOR_TILE } from '../core/Constant';
 import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
-import { extend, pushIn, getCentiMeterScale } from '../../common/Util';
+import { extend, pushIn, getCentiMeterScale, isNil } from '../../common/Util';
 import convertToPainterFeatures from './utils/convert_to_painter_features';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
@@ -1305,6 +1305,20 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.setToRedraw();
     }
 
+    outlineFeatures(featureIds) {
+        if (!featureIds) {
+            return;
+        }
+        if (!Array.isArray(featureIds)) {
+            featureIds = [featureIds];
+        }
+        if (!this._outline) {
+            this._outline = [];
+        }
+        this._outline.push(['paintOutline', [null, featureIds]]);
+        this.setToRedraw();
+    }
+
     outlineBatch(idx) {
         if (!this._outline) {
             this._outline = [];
@@ -1326,12 +1340,24 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     paintOutline(fbo, idx, featureIds) {
-        const pluginIdx = idx;
-        const plugins = this._getFramePlugins();
-        if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
+        if (!isNil(idx)) {
+            const pluginIdx = idx;
+            const plugins = this._getFramePlugins();
+            if (!plugins[pluginIdx] || plugins[pluginIdx].painter && !plugins[pluginIdx].painter.isVisible()) {
+                return;
+            }
+            plugins[pluginIdx].outline(fbo, featureIds);
             return;
         }
-        plugins[pluginIdx].outline(fbo, featureIds);
+        const feaPlugins = this.featurePlugins;
+        for (let i = 0; i < featureIds.length; i++) {
+            const feaId = featureIds[i];
+            for (let j = 0; j < feaPlugins.length; j++) {
+                if (feaPlugins[j].style && feaPlugins[j].style.id === feaId) {
+                    feaPlugins[j].outline(fbo, [feaId]);
+                }
+            }
+        }
     }
 
     paintBatchOutline(fbo, idx) {
