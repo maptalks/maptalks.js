@@ -2461,9 +2461,8 @@ Map.include(/** @lends Map.prototype */{
 
     pointAtResToAltitude: function () {
         const DEFAULT_CENTER = new Coordinate(0, 40);
-        const POINT = new Point(0, 0);
         return function (point = 0, res, originCenter) {
-            const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER, POINT);
+            const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER);
             return altitude;
         };
     }(),
