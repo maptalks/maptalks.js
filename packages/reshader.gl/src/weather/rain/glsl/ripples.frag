@@ -6,6 +6,7 @@
 precision mediump float;
 #include <gl2_frag>
 varying vec2 vTexCoord;
+uniform float rippleRadius;
 uniform float time;
 
 vec3 hash3( vec2 p ) {
@@ -36,8 +37,9 @@ float noise( in vec2 x) {
 
 void main() {
     vec2 uv = vTexCoord;
-    float f = noise( 24.0*uv) * smoothstep(0.0,0.2, sin(uv.x*3.151592) * sin(uv.y * 3.141592));
-    vec3 normal = vec3(-dFdx(f), -dFdy(f), 0.0);
+    float radius = 24.0 / (rippleRadius * 0.01);
+    float f = noise( radius * uv) * smoothstep(0.0, 0.4, sin(uv.x*3.151592) * sin(uv.y * 3.141592));
+    vec3 normal = vec3(-dFdx(f), -dFdy(f), -dFdy(f));
     glFragColor = vec4(normal, 1.0 );
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

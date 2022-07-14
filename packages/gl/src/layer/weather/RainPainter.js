@@ -7,8 +7,8 @@ const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [];
 const DEFAULT_COLOR = [1, 1, 1];
 const DEFAULT_EXTENT = {
-    min:[-800, -800, 0],
-    max:[800, 800, 1000]
+    min:[-1200, -1200, 0],
+    max:[1200, 1200, 1000]
 }, DEFAULT_ZOOM = 16.685648411389433, extent = {min: [], max: []};
 const Y_UP_TO_Z_UP = mat4.fromRotationTranslation([], quat.fromEuler([], 90, 0, 0), [0, 0, 0]);
 
@@ -103,14 +103,15 @@ class RainPainer {
         const uvs = [];
         const indices = [];
 
+        const rainSize = rainConfig.rainSize || 1;
         for (let i = 0; i < rainDensity; i++) {
             const pos = {};
             pos.x = Math.random() * (box.max[0] - box.min[0]) + box.min[0];
             pos.y = Math.random() * (box.max[2] - box.min[2]) + box.min[2];
             pos.z = Math.random() * (box.max[1] - box.min[1]) + box.min[1];
             //雨滴的高宽比3:1
-            const height = (box.max[2] - box.min[2]) / 25;
-            const width = height / 5;
+            const height = ((box.max[2] - box.min[2]) / 37.5) * rainSize;
+            const width = height / 3;
 
             vertices.push(
                 pos.x + width,
@@ -212,7 +213,8 @@ class RainPainer {
         uniforms['projMatrix'] = map.projMatrix;
         uniforms['viewMatrix'] = map.viewMatrix;
         uniforms['cameraPosition'] = map.cameraPosition;
-        const time = this._timer.getElapsedTime() / 2 % 1;
+        const speed = rainConfig.speed || 1.0;
+        const time = this._timer.getElapsedTime() / (2 / speed) % 1;
         uniforms['time'] = time;
         this._mesh.material.set('diffuse', rainConfig.color || DEFAULT_COLOR);
         this._mesh.material.set('opacity', rainConfig.opacity || 1);

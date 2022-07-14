@@ -127,10 +127,14 @@ class WeatherPainter {
 
     _renderRainRipples() {
         const map = this.getMap();
+        const weatherConfig = this._layer.getWeatherConfig();
+        const rippleRadius = weatherConfig.rain.rippleRadius || 24;
         const options = {};
         options['projMatrix'] = map.projMatrix;
         options['viewMatrix'] = map.viewMatrix;
         options['time'] = this._getTimeSpan() / 1000;
+        options['rippleRadius'] = rippleRadius;
+
         const ripplesMap = this._rainRipplesPass.render(map, options);
         return ripplesMap;
     }

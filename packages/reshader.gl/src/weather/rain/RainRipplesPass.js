@@ -122,7 +122,8 @@ export default class RainRipplePass {
         const uniforms = {
             projMatrix: options.projMatrix,
             viewMatrix: options.viewMatrix,
-            time: options.time
+            time: options.time,
+            rippleRadius: options.rippleRadius
         };
         this.renderer.render(
             this._shader,
