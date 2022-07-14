@@ -2518,7 +2518,8 @@ Map.include(/** @lends Map.prototype */{
     pointAtResToDistance: function () {
         const POINT = new Point(0, 0);
         const PRJ_COORD = new Coordinate(0, 0);
-        const COORD = new Coordinate(0, 0);
+        const COORD0 = new Coordinate(0, 0);
+        const COORD1 = new Coordinate(0, 0);
         return function (dx, dy, res, paramCenter) {
             const projection = this.getProjection();
             if (!projection) {
@@ -2527,8 +2528,9 @@ Map.include(/** @lends Map.prototype */{
             const prjCoord = paramCenter ?  projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
             const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
-            const target = this.pointAtResToCoord(c, res, COORD);
-            return projection.measureLength(paramCenter || this.getCenter(), target);
+            const target = this.pointAtResToCoord(c, res, COORD0);
+            const src = paramCenter ? paramCenter : projection.unproject(prjCoord, COORD1);
+            return projection.measureLength(src, target);
         };
     }(),
 
