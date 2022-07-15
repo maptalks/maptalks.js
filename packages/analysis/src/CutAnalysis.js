@@ -38,6 +38,15 @@ export default class CutAnalysis extends Analysis {
         super.update(name, value);
     }
 
+    reset() {
+        if (this._pass) {
+            const postion = this._renderOptions['position'];
+            const rotation = this._renderOptions['rotation']
+            const scale = this._renderOptions['scale']
+            this._pass._resetController(postion, rotation, scale);
+        }
+    }
+
     _setCutPass(renderer) {
         const viewport = {
             x : 0,

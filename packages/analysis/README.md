@@ -97,6 +97,7 @@ viewshedAnalysis.addTo(groupLayer);
 
     #### Method : isEnbale()
     _whether the analysis task is enable_
+    > returns : <br>
     Boolean: true or false
 
   * ### Class : FloodAnalysis`(inherited from maptalks.Eventable)`
@@ -105,6 +106,7 @@ viewshedAnalysis.addTo(groupLayer);
     #### Method : new FloodAnalysis(options) 
     | Parameter | Type | Default | Description|
     | ------------- |---------- |-------------|--------- |
+    | `boundary`      | Array<Array> |  | the coordinate rings of flood boundary |
     | `waterColor`      | Array | [0.1451, 0.2588, 0.4863] | the color of water |
     | `waterHeight`   | Array | null | the depth of water|
 
@@ -136,6 +138,7 @@ viewshedAnalysis.addTo(groupLayer);
 
     #### Method : isEnbale()
     _whether the analysis task is enable_
+    > returns : <br>
     Boolean: true or false
 
   * ### Class : SkylineAnalysis`(inherited from maptalks.Eventable)`
@@ -182,6 +185,7 @@ viewshedAnalysis.addTo(groupLayer);
 
     #### Method : isEnbale()
     _whether the analysis task is enable_
+    > returns : <br>
     Boolean: true or false
 
   * ### Class : InsightAnalysis`(inherited from maptalks.Eventable)`
@@ -221,6 +225,7 @@ viewshedAnalysis.addTo(groupLayer);
 
     #### Method : isEnbale()
     _whether the analysis task is enable_
+    > returns : <br>
     Boolean: true or false
 
   * ### Class : CutAnalysis`(inherited from maptalks.Eventable)`
@@ -257,8 +262,57 @@ viewshedAnalysis.addTo(groupLayer);
 
     #### Method : disable()
     _disable the analysis task, when disable the analysis task, it will be not available_
+    > returns : <br>
     CutAnalysis: return this
 
     #### Method : isEnbale()
     _whether the analysis task is enable_
+    > returns : <br>
+    Boolean: true or false
+
+    ### Method : reset()
+    _reset cutanalysis's initial state_
+    > returns : <br>
+    CutAnalysis: return this
+
+  * ### Class : ExcavateAnalysis`(inherited from maptalks.Eventable)`
+    > ExcavateAnalysis's constructor.
+    
+    #### Method : new ExcavateAnalysis(options) 
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `boundary`      | Array<Array> |  | the coordinate rings of excavate boundary |
+    | `textureUrl`   | String | | the excavate texture's url |
+    | `height`   | Number |  | excavate height |
+
+    #### Method : addTo(groupgllayer)
+    _add excavate analysis to groupgllayer_
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `groupgllayer`      | maptalks.GroupGLLayer |  | a groupgllayer to add |
+    > returns : <br>
+    ExcavateAnalysis: this
+
+    #### Method : remove()
+    _remove the excavate analysis from groupgllayer_
+
+    #### Method : update(name, value)
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `name`      | String |  | name of property |
+    | `value`      | Any |  | value of property |
+
+    #### Method : enable()
+    _enable the analysis task_
+    > returns : <br>
+    ExcavateAnalysis: return this
+
+    #### Method : disable()
+    _disable the analysis task, when disable the analysis task, it will be not available_
+    > returns : <br>
+    ExcavateAnalysis: return this
+
+    #### Method : isEnbale()
+    _whether the analysis task is enable_
+    > returns : <br>
     Boolean: true or false

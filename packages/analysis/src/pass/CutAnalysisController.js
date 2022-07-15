@@ -1,4 +1,4 @@
-import { mat4, quat, vec3 } from 'gl-matrix';
+import { mat4, quat, vec3, vec2 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
 import partsModels from '../common/parts';
 import * as gltf from '@maptalks/gltf-loader';
@@ -18,7 +18,7 @@ const helperIndices = [
     3, 1, 0, 0, 2, 3
 ];
 const internalScale = [0.1, 0.1, 0.1];
-const QUAT = [], SCALE = [], TRANS = [], EMPTY_VEC = [], MAT = [];
+const QUAT = [], SCALE = [], TRANS = [], EMPTY_VEC = [], MAT1 = [], MAT2 = [], START = [], END = [];
 const zDir = [0, -1, 0];
 const phongUniforms = {
     'lightAmbient': [1.0, 1.0, 1.0],
@@ -58,6 +58,14 @@ export default class CutAnalysisController {
         map.on('zooming moving dragrotating', this._viewchanging, this);
     }
 
+    unregistEvents() {
+        const map = this.map;
+        map.off('dom:mousemove', this._mousemoveHandle, this);
+        map.off('dom:mousedown', this._mousedownHandle, this);
+        map.off('dom:mouseup', this._mouseupHandle, this);
+        map.off('zooming moving dragrotating', this._viewchanging, this);
+    }
+
     _mousemoveHandle(e) {
         this.currentMousePosition = {
             x: e.containerPoint.x,
@@ -71,13 +79,13 @@ export default class CutAnalysisController {
                 const zTrans = mat4.getTranslation(TRANS, zMesh.localTransform);
                 this._transformPlaneHelper(true, zTrans, [(this._rotation[0]) * Math.PI / 180, (this._rotation[1]) * Math.PI / 180, this._rotation[2] * Math.PI / 180 ]);
             } else if (this._task === 'y-rotate') {
-                const yMesh = meshes[4]; // 绕z轴旋转的mesh
+                const yMesh = meshes[4]; // 绕y轴旋转的mesh
                 const yTrans = mat4.getTranslation(TRANS, yMesh.localTransform);
-                this._transformPlaneHelper(true, yTrans, [0, 0, 0]);
-            } else if (this._task === 'x-rotate') {
-                const xMesh = meshes[7]; // 绕x轴旋转的mesh
+                this._transformPlaneHelper(true, yTrans, [(90 * Math.PI / 180), 0, -this._rotation[2]]);
+            } else if (this._task === 'z-rotate') {
+                const xMesh = meshes[7]; // 绕z轴旋转的mesh
                 const xTrans = mat4.getTranslation(TRANS, xMesh.localTransform);
-                this._transformPlaneHelper(true, xTrans, [(this._rotation[0]) * Math.PI / 180, (this._rotation[1]) * Math.PI / 180, this._rotation[2] * Math.PI / 180 ]);
+                this._transformPlaneHelper(true, xTrans, [0, 0, 0]);
             }
         } else {
             this._transformPlaneHelper(false);
@@ -104,6 +112,7 @@ export default class CutAnalysisController {
                 return;
             }
             const deltaTranslate = [0, 0, 0];
+            let deltaAngle = 0;
             if (this._task === 'z-translate') {
                 deltaTranslate[0] = planeInteract.point[0] - lastPlaneInteract.point[0];
                 deltaTranslate[1] = planeInteract.point[1] - lastPlaneInteract.point[1];
@@ -114,6 +123,9 @@ export default class CutAnalysisController {
                 const k = Math.sign(distance) * Math.sqrt(Math.pow(distance, 2) / (Math.pow(zDirection[0], 2) + Math.pow(zDirection[1], 2) + Math.pow(zDirection[2], 2)));//(distance / a的平方 + b的平方 + c的平方))a,b,c为垂直平面的方向向量
                 const zTranslate = vec3.set(EMPTY_VEC, zDirection[0] * k, zDirection[1] * k, zDirection[2] * k);
                 this._transformZ(zTranslate);
+            } else if (this._task === 'y-rotate' || this._task === 'z-rotate') {
+                deltaAngle = this._calAngle(planeInteract.point, lastPlaneInteract.point, this._task);
+                this._rotate(deltaAngle, this._task);
             }
         }
         this.lastMousePosition = mousePosition;
@@ -121,14 +133,47 @@ export default class CutAnalysisController {
         this.lastPickingMeshId = this.currentPickingObject.meshId;
     }
 
+    _calAngle(to, from, task) {
+        const center = this._position;
+        let startDirection, endDirection ;
+        if (task === 'y-rotate') {
+            startDirection = vec2.set(START, from[0] - center[0], from[2] - center[2]);
+            endDirection = vec2.set(END, to[0] - center[0], to[2] - center[2]);
+           
+        } else if (task === 'z-rotate') {
+            startDirection = vec2.set(START, from[0] - center[0], from[1] - center[1]);
+            endDirection = vec2.set(END, to[0] - center[0], to[1] - center[1]);
+        }
+        const startAngle = Math.atan2(startDirection[1], startDirection[0]);
+        const endAngle = Math.atan2(endDirection[1], endDirection[0]);
+        return ((endAngle - startAngle) / Math.PI) * 180;
+    }
+
     _transformZ(zTranslate) {
         vec3.add(this._position, this._position, zTranslate);
+        this._updateMeshesLocalMatrix();
+    }
+
+    _rotate(deltaAngle, task) {
+        if (task === 'y-rotate') {
+            this._rotation[1] -= deltaAngle;
+        } else if (task === 'z-rotate') {
+            this._rotation[2] += deltaAngle;
+        }
+        this._updateMeshesLocalMatrix();
+    }
+
+    _updateMeshesLocalMatrix() {
         const modelMatrix = this.updateMatrix();
         mat4.scale(modelMatrix, modelMatrix, internalScale);
         const meshes = this.getCntrollerMeshes();
         for (let i = 0; i < meshes.length; i++) {
             const zMesh = meshes[i];
             let matrix = modelMatrix;
+            if (i === 7 || i === 8) {
+                matrix = this.updateMatrixExcept(0);
+                mat4.scale(matrix, matrix, internalScale);
+            }
             mat4.multiply(zMesh.localTransform, matrix, zMesh.nodeMatrix);
         }
     }
@@ -168,7 +213,7 @@ export default class CutAnalysisController {
         } else if (pickingIdConnection[4].indexOf(pickingId) > -1) {
             this._task = 'y-rotate';
         } else if (pickingIdConnection[7].indexOf(pickingId) > -1) {
-            this._task = 'x-rotate';
+            this._task = 'z-rotate';
         }
     }
 
@@ -295,13 +340,26 @@ export default class CutAnalysisController {
         quat.rotateZ(r, r, rotation[2] * Math.PI / 180);
         quat.rotateX(r, r, rotation[0] * Math.PI / 180);
         quat.rotateY(r, r, rotation[1] * Math.PI / 180);
-        const modelMatrix = mat4.fromRotationTranslationScale(MAT, r, translation, scale);
+        const modelMatrix = mat4.fromRotationTranslationScale(MAT1, r, translation, scale);
+        return modelMatrix;
+    }
+
+    updateMatrixExcept() {
+        const rotation = vec3.copy([], this._rotation);
+        rotation[0] = 0;
+        const translation = this._position;
+        const scale = this._scale;
+        const r = quat.identity(QUAT);
+        quat.rotateZ(r, r, rotation[2] * Math.PI / 180);
+        quat.rotateX(r, r, rotation[0] * Math.PI / 180);
+        quat.rotateY(r, r, rotation[1] * Math.PI / 180);
+        const modelMatrix = mat4.fromRotationTranslationScale(MAT2, r, translation, scale);
         return modelMatrix;
     }
 
     _getZDirction() {
         const rotation = this._rotation;
-        const matrix = mat4.identity(MAT);
+        const matrix = mat4.identity([]);
         mat4.rotateZ(matrix, matrix, rotation[2] * Math.PI / 180);
         mat4.rotateX(matrix, matrix, rotation[0] * Math.PI / 180);
         mat4.rotateY(matrix, matrix, rotation[1] * Math.PI / 180);
@@ -320,14 +378,14 @@ export default class CutAnalysisController {
             positionAttribute: 'POSITION'
         });
         const uniforms = Util.extend({}, phongUniforms, {
-            polygonFill: [0.0, 0.0, 0.0, 0.01]
+            polygonFill: [0.0, 0.0, 0.0, 0.001]
         });
         this._pickHelperMesh = new reshader.Mesh(pickGeometry, new reshader.PhongMaterial(uniforms));
         this._pickHelperMesh.setUniform('uPickingId', 12);
         const modelMatrix = mat4.identity([]);
         const rotate = quat.fromEuler([], 0, 0, 0);
         this._pickHelperMesh.originRotation = [0, 0, 0];
-        mat4.fromRotationTranslationScale(modelMatrix, rotate, this._position, [0.8, 0.8, 0.8]);
+        mat4.fromRotationTranslationScale(modelMatrix, rotate, this._position, [3, 3, 3]);
         this._pickHelperMesh.originTranslation = this._position;
         this._pickHelperMesh.localTransform = modelMatrix;
         this._pickHelperMesh.transparent = true;
@@ -393,9 +451,15 @@ export default class CutAnalysisController {
                 defines.HAS_HELPERPARTS = 1;
                 defines.HAS_PICKING_ID = 2;
                 mesh.setDefines(defines);
-                mat4.multiply(mesh.localTransform, modelMatrix, g.nodeMatrix);
                 mesh.nodeMatrix = g.nodeMatrix;
                 mesh.originTransform = mat4.copy([], mesh.localTransform);
+                if (index === 7 || index === 8) {
+                    const matrix = this.updateMatrixExcept(0);
+                    mat4.scale(matrix, matrix, internalScale);
+                    mat4.multiply(mesh.localTransform, matrix, mesh.nodeMatrix);
+                } else {
+                    mat4.multiply(mesh.localTransform, modelMatrix, mesh.nodeMatrix);
+                }
                 if (index === 6) {
                     mesh.originOpacity = 0.1;
                 } else {
@@ -428,8 +492,26 @@ export default class CutAnalysisController {
         );
     }
 
+    _remove() {
+        this.unregistEvents();
+        this.dispose();
+    }
+
     dispose() {
-        this.pickingFBO.dispose();
+        const meshes = this.getAllMeshes();
+        meshes.forEach(mesh => {
+            mesh.geometry.dispose();
+            mesh.dispose();
+        });
+        if (this.pickingFBO) {
+            this.pickingFBO.dispose();
+        }
+    }
+
+    resize(width, height) {
+        if (this.pickingFBO.width !== width || this.pickingFBO.height !== height) {
+            this.pickingFBO.resize(width, height);
+        }
     }
 }
 

@@ -125,6 +125,14 @@ export default class CutPass {
         this.controller = new CutAnalysisController(map, this.renderer, position, rotation, scale);
     }
 
+    _resetController(position, rotation, scale) {
+        if (this.controller) {
+            this.controller.updateTRS(position, rotation, scale);
+            this.controller._updateMeshesLocalMatrix();
+            this.controller._setToRedraw();
+        }
+    }
+
     render(meshes, config) {
         this._resize();
         this.renderer.clear({
@@ -246,6 +254,9 @@ export default class CutPass {
         if (this._cutShader) {
             this._cutShader.dispose();
         }
+        if (this.controller) {
+            this.controller._remove();
+        }
     }
 
     _resize() {
@@ -256,6 +267,9 @@ export default class CutPass {
         }
         if (this._meshesFBO && (this._meshesFBO.width !== width || this._meshesFBO.height !== height)) {
             this._meshesFBO.resize(width, height);
+        }
+        if (this.controller) {
+            this.controller.resize(width, height);
         }
     }
 }
