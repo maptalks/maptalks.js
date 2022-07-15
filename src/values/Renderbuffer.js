@@ -40,5 +40,10 @@ include(GLContext.prototype, {
     renderbufferStorage(target, internalFormat, width, height) {
         this._checkAndRestore();
         return this._gl.renderbufferStorage(target, internalFormat, width, height);
+    },
+
+    renderbufferStorageMultisample(target, samples, internalFormat, width, height) {
+        this._checkAndRestore();
+        return this._gl.renderbufferStorageMultisample(target, samples, internalFormat, width, height);
     }
 });

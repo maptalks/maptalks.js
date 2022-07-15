@@ -61,5 +61,10 @@ include(GLContext.prototype, {
     readPixels(x, y, width, height, format, type, pixels) {
         this._checkAndRestore();
         return this._gl.readPixels(x, y, width, height, format, type, pixels);
+    },
+
+    blitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter) {
+        this._checkAndRestore();
+        return this._gl.blitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
     }
 });
