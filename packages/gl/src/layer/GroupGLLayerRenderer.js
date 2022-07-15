@@ -829,8 +829,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             context['jitter'] = this._jitter;
             const enableBloom = config.bloom && config.bloom.enable;
             if (enableBloom && ssrMode) {
+                context['bloom'] = 1;
                 context['sceneFilter'] = noPostFilter;
             } else if (enableBloom) {
+                context['bloom'] = 1;
                 context['sceneFilter'] = noBloomFilter;
             } else if (ssrMode) {
                 context['sceneFilter'] = noSsrFilter;
