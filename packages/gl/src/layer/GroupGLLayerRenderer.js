@@ -119,7 +119,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         // 解决因TAA jitter偏转，造成的ssr图形与taa图形的空白缝隙问题
         // #1545 SSR_ONE_FRAME模式里，建筑透明时，ssr后画会造成建筑后的ssr图形丢失，改为永远在每帧的开始，都绘制ssr图形
         if (ssrMode) {
-            this._postProcessor.drawSSR(this._depthTex, this._targetFBO);
+            this._postProcessor.drawSSR(this._blitDepthTex(), this._targetFBO);
         }
 
 
@@ -162,7 +162,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             delete this._fxaaAfterTaaDrawCount;
         }
 
-        // let tex = this._fxaaFBO ? this._fxaaFBO.color[0] : this._targetFBO.color[0];
+        // let tex = this._fxaaFBO ? this._getFBOColor(this._fxaaFBO) : this._getFBOColor(this._targetFBO);
 
         // bloom的绘制放在ssr之前，更新深度缓冲，避免ssr绘制时，深度值不正确
         const enableBloom = config.bloom && config.bloom.enable;
@@ -172,7 +172,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         // ssr如果放到noAa之后，ssr图形会遮住noAa中的图形
         if (ssrMode === SSR_IN_ONE_FRAME) {
-            this._postProcessor.drawSSR(this._depthTex, this._targetFBO, true);
+            this._postProcessor.drawSSR(this._blitDepthTex(), this._targetFBO, true);
         }
 
         // noAa的绘制放在bloom后，避免noAa的数据覆盖了bloom效果
@@ -273,6 +273,86 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             fbo.resize(width, height);
         }
         return fbo;
+    }
+
+    _getFBOColor(fbo) {
+        if (this._isUseMultiSample()) {
+            const blitFBO = this._getBlitFBO(fbo);
+            if (blitFBO.width !== fbo.width || blitFBO.height !== fbo.height) {
+                blitFBO.resize(fbo.width, fbo.height);
+            } else {
+                this.regl.clear({
+                    color: [0, 0, 0, 0],
+                    fbo: blitFBO
+                });
+            }
+            blitFBO.blit(fbo, );
+            return blitFBO.color[0];
+        } else {
+            return fbo.color[0];
+        }
+    }
+
+    _blitDepthTex() {
+        if (this._depthTex.subimage) {
+            return this._depthTex;
+        }
+        const { width, height } = this._depthTex;
+        // multi sampled depth stencil renderbuffer
+        if (!this._blitDepthFBO) {
+            const regl = this.regl;
+            const depthStencilTexture = regl.texture({
+                min: 'nearest',
+                mag: 'nearest',
+                mipmap: false,
+                type: 'depth stencil',
+                width,
+                height,
+                format: 'depth stencil'
+            });
+            const rb = regl.renderbuffer({
+                width,
+                height,
+                format: 'rgba4'
+            });
+            const info = {
+                depthStencil: depthStencilTexture,
+                colors: [rb],
+                colorFormat: 'rgba4',
+                width,
+                height
+            };
+            this._blitDepthFBO = regl.framebuffer(info);
+        }
+        if (this._blitDepthFBO.width !== width || this._blitDepthFBO.height !== height) {
+            this._blitDepthFBO.resize(width, height);
+        }
+        this.regl.clear({
+            color: [0, 0, 0, 0],
+            depth: 1,
+            fbo: this._blitDepthFBO
+        });
+        this._blitDepthFBO.blit(this._targetFBO, 0x00000100, 'nearest');
+        return this._blitDepthFBO.depthStencil;
+    }
+
+    _getBlitFBO(fbo) {
+        if (!this._blitFBOs) {
+            this._blitFBOs = [];
+        }
+        if (!fbo._blitFBO) {
+            const info = this._createSimpleFBOInfo(true);
+            const blitFbo = this.regl.framebuffer(info);
+            this._blitFBOs.push(blitFbo);
+            fbo._blitFBO = blitFbo;
+        }
+        return fbo._blitFBO;
+    }
+
+    _isUseMultiSample() {
+        const regl = this.regl;
+        const isWebGL2 = regl.limits['version'].indexOf('WebGL 2.0') === 0;
+        return isWebGL2 && this.layer.options.antialias;
     }
 
     hasRenderTarget() {
@@ -598,6 +678,18 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (this._postFBO) {
                 this._postFBO.destroy();
                 delete this._postFBO;
+            }
+            if (this._blitDepthFBO) {
+                this._blitDepthFBO.destroy();
+                delete this._blitDepthFBO;
+            }
+            if (this._blitFBOs) {
+                for (let i = 0; i < this._blitFBOs.length; i++) {
+                    if (this._blitFBOs[i]) {
+                        this._blitFBOs[i].destroy();
+                    }
+                }
+                delete this._blitFBOs;
             }
         }
     }
@@ -994,25 +1086,37 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _createSimpleFBOInfo() {
+    _createSimpleFBOInfo(forceTexture) {
         const width = this.canvas.width, height = this.canvas.height;
         const regl = this.regl;
-        const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
-        const color = regl.texture({
-            min: 'nearest',
-            mag: 'nearest',
-            type,
-            width,
-            height
-        });
+        const useMultiSamples = this._isUseMultiSample();
+        let color;
+        if (!forceTexture && useMultiSamples) {
+            color = regl.renderbuffer({
+                width,
+                height,
+                samples: this.layer.options['multiSamples'],
+                format: 'rgba8'
+            });
+        } else {
+            const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+            color = regl.texture({
+                min: 'nearest',
+                mag: 'nearest',
+                type,
+                width,
+                height
+            });
+        }
         const fboInfo = {
             width,
             height,
             colors: [color],
             // stencil: true,
             // colorCount,
-            colorFormat: 'rgba'
+            colorFormat: useMultiSamples ? 'rgba8' : 'rgba'
         };
+
         return fboInfo;
     }
 
@@ -1020,27 +1124,39 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const { width, height } = this.canvas;
         const regl = this.regl;
         const fboInfo = this._createSimpleFBOInfo();
+        const useMultiSamples = this._isUseMultiSample();
         const enableDepthTex = regl.hasExtension('WEBGL_depth_texture');
-        //depth(stencil) buffer 是可以共享的
-        if (enableDepthTex) {
-            const depthStencilTexture = depthTex || regl.texture({
-                min: 'nearest',
-                mag: 'nearest',
-                mipmap: false,
-                type: 'depth stencil',
-                width,
-                height,
-                format: 'depth stencil'
-            });
-            fboInfo.depthStencil = depthStencilTexture;
-        } else {
+        if (useMultiSamples) {
             const renderbuffer = depthTex || regl.renderbuffer({
                 width,
                 height,
-                format: 'depth stencil'
+                format: 'depth24 stencil8',
+                samples: this.layer.options['multiSamples']
             });
             fboInfo.depthStencil = renderbuffer;
+        } else {
+            //depth(stencil) buffer 是可以共享的
+            if (enableDepthTex) {
+                const depthStencilTexture = depthTex || regl.texture({
+                    min: 'nearest',
+                    mag: 'nearest',
+                    mipmap: false,
+                    type: 'depth stencil',
+                    width,
+                    height,
+                    format: 'depth stencil'
+                });
+                fboInfo.depthStencil = depthStencilTexture;
+            } else {
+                const renderbuffer = depthTex || regl.renderbuffer({
+                    width,
+                    height,
+                    format: 'depth stencil'
+                });
+                fboInfo.depthStencil = renderbuffer;
+            }
         }
+
         return fboInfo;
     }
 
@@ -1064,7 +1180,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (needClear) {
                 this.layer.fire('taastart');
             }
-            const { outputTex, redraw } = this._postProcessor.taa(this._taaFBO.color[0], this._depthTex, {
+            const { outputTex, redraw } = this._postProcessor.taa(this._getFBOColor(this._taaFBO), this._blitDepthTex(), {
                 projMatrix: map.projMatrix,
                 needClear
             });
@@ -1107,6 +1223,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (hasPost) {
             if (!postFBO) {
                 const info = this._createSimpleFBOInfo();
+                if (this._isUseMultiSample()) {
+                    info.depthStencil = this.regl.renderbuffer({
+                        width: this.canvas.width,
+                        height: this.canvas.height,
+                        samples: this.layer.options['multiSamples'],
+                        format: 'depth24 stencil8'
+                    });
+                }
                 postFBO = this._postFBO = this.regl.framebuffer(info);
             }
             const { width, height } = this.canvas;
@@ -1121,9 +1245,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
 
-        let tex = this._targetFBO.color[0];
-        const noAaTex = this._noaaDrawCount && this._noAaFBO.color[0];
-        const pointTex = this._pointDrawCount && this._pointFBO.color[0];
+        let tex = this._getFBOColor(this._targetFBO);
+        const noAaTex = this._noaaDrawCount && this._getFBOColor(this._noAaFBO);
+        const pointTex = this._pointDrawCount && this._getFBOColor(this._pointFBO);
 
         // const enableFXAA = config.antialias && config.antialias.enable && (config.antialias.fxaa || config.antialias.fxaa === undefined);
         this._postProcessor.fxaa(
@@ -1133,7 +1257,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             !bloomPainted && noAaTex,
             !bloomPainted && pointTex,
             taaTex,
-            this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._fxaaFBO.color[0],
+            this._fxaaAfterTaaDrawCount && this._fxaaFBO && this._getFBOColor(this._fxaaFBO),
             enableAntialias,//+(!hasPost && enableAntialias),
             // +!!enableFXAA,
             // 1,
@@ -1149,13 +1273,13 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         );
 
         if (postFBO) {
-            tex = postFBO.color[0];
+            tex = this._getFBOColor(postFBO);
         }
 
         if (enableSSAO && (this._fxaaAfterTaaDrawCount || this._taaDrawCount || this._fxaaDrawCount)) {
             //TODO 合成时，SSAO可能会被fxaaFBO上的像素遮住
             //generate ssao texture for the next frame
-            tex = this._postProcessor.ssao(tex, this._depthTex, {
+            tex = this._postProcessor.ssao(tex, this._blitDepthTex(), {
                 projMatrix: map.projMatrix,
                 cameraNear: map.cameraNear,
                 cameraFar: map.cameraFar,
@@ -1174,7 +1298,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (enableSSR) {
-            this._postProcessor.genSsrMipmap(tex, this._depthTex);
+            this._postProcessor.genSsrMipmap(tex, this._blitDepthTex());
             if (this._needUpdateSSR) {
                 const needRetireFrames = this._needRetireFrames;
                 this.setToRedraw();

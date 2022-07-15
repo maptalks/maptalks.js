@@ -35,7 +35,8 @@ export default class PostProcess {
         if (!this._bloomPass) {
             this._bloomPass = new reshader.BloomPass(this._regl);
         }
-        const bloomTex = this._bloomFBO.color[0];
+        const renderer = this._layer.getRenderer();
+        const bloomTex = renderer._getFBOColor(this._bloomFBO);
         return this._bloomPass.render(curTex, bloomTex, threshold, bloomFactor, bloomRadius, noAaTex, pointTex, enableAA);
     }
 
@@ -259,8 +260,9 @@ export default class PostProcess {
         }
         this._copyFBOSize[0] = fbo.width;
         this._copyFBOSize[1] = fbo.height;
+        const renderer = this._layer.getRenderer();
         this._renderer.render(this._copyShader, {
-            texture: fbo.color && fbo.color[0] || fbo,
+            texture: fbo.color && renderer._getFBOColor(fbo) || fbo,
             size: this._copyFBOSize,
             enableSharpen: +(!!enableSharpen),
             sharpFactor,
@@ -273,7 +275,8 @@ export default class PostProcess {
         if (!this._postProcessShader) {
             this._postProcessShader = new reshader.PostProcessShader();
         }
-        const source = src || fbo.color[0];
+        const renderer = this._layer.getRenderer();
+        const source = src || renderer._getFBOColor(fbo);
         uniforms['resolution'] = vec2.set(RESOLUTION, source.width, source.height);
         uniforms['textureSource'] = source;
         uniforms['timeGrain'] = performance.now();
@@ -315,13 +318,24 @@ export default class PostProcess {
     _createFBOInfo(depthTex, colorFormat) {
         const { width, height } = this._layer.getRenderer().canvas;
         const regl = this._regl;
-        const color = regl.texture({
-            min: 'nearest',
-            mag: 'nearest',
-            format: colorFormat || 'rgba',
-            width,
-            height
-        });
+        const renderer = this._layer.getRenderer();
+        let color;
+        if (renderer._isUseMultiSample()) {
+            color = regl.renderbuffer({
+                width,
+                height,
+                samples: this._layer.options['multiSamples'],
+                format: 'rgba8'
+            });
+        } else {
+            color = regl.texture({
+                min: 'nearest',
+                mag: 'nearest',
+                format: colorFormat || 'rgba',
+                width,
+                height
+            });
+        }
         const fboInfo = {
             width,
             height,

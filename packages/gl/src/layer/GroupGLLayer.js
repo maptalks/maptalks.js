@@ -5,7 +5,7 @@ import { isNil } from './util/util.js';
 
 const options = {
     renderer : 'gl',
-    antialias : false,
+    antialias : true,
     extensions : [
 
     ],
@@ -33,7 +33,8 @@ const options = {
     forceRenderOnMoving : true,
     forceRenderOnRotating : true,
     viewMoveThreshold: 100,
-    geometryEvents: true
+    geometryEvents: true,
+    multiSamples: 4
 };
 
 export default class GroupGLLayer extends maptalks.Layer {
