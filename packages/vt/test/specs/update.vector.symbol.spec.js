@@ -60,7 +60,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -113,7 +113,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -192,7 +192,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -256,7 +256,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -310,7 +310,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -364,7 +364,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -414,7 +414,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -464,7 +464,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -529,7 +529,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -586,7 +586,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -634,7 +634,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -682,7 +682,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -742,7 +742,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -800,7 +800,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -852,7 +852,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -907,7 +907,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
@@ -957,7 +957,7 @@ describe('vector layers symbol update specs', () => {
                 outline: { enable: true }
             }
         };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const group = new GroupGLLayer('group', [layer], { sceneConfig, antialias: false });
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width / 2, y = renderer.canvas.height / 2;
