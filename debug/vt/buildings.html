@@ -488,7 +488,7 @@
     };
     // layer1.addTo(map);
     // map.addLayer(layer);
-    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.2, antialias: false, sceneConfig }).addTo(map);
+    var groupLayer = new maptalks.GroupGLLayer('group', [layer/*, layer1*/], { jitterRatio: 0.2, antialias: true, sceneConfig }).addTo(map);
 
     function updateCubeLight() {
       lights.ambient.resource.url = './resources/venice_sunset_2k.hdr';
