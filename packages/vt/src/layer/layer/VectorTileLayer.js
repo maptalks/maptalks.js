@@ -409,6 +409,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._updateSymbol(0, idx, symbol);
     }
 
+    updateSymbolByName(name, symbol) {
+        const index = this._getStyleIndex(name);
+        if (index < 0) {
+            return this;
+        }
+        return this._updateSymbol(0, index, symbol);
+    }
+
     updateFeatureSymbol(idx, feaStyleIdx, symbol) {
         return this._updateSymbol(1, idx, symbol, feaStyleIdx);
     }
@@ -769,7 +777,8 @@ class VectorTileLayer extends maptalks.TileLayer {
                 return i;
             }
         }
-        return -1;
+        const error = `No style defined with name: ${name}`;
+        throw new Error(error);
     }
 
     getGroundConfig() {

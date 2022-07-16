@@ -302,6 +302,15 @@ describe('update style specs', () => {
         });
     });
 
+    it('should can updateSymbolByName', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbolByName('lineStyle', {
+                lineColor: '#0f0'
+            });
+            assert(layer.options.style[0].symbol.lineColor === '#0f0');
+        });
+    });
+
     it('should can update multiple symbol', done => {
         const style = [
             {
