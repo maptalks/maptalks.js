@@ -249,7 +249,7 @@ class Position {
         if (!(c instanceof this.constructor)) {
             return false;
         }
-        return this.x === c.x && this.y === c.y;
+        return this.x === c.x && this.y === c.y && this.z === c.z;
     }
 
     /**
