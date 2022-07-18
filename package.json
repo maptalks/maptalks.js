@@ -95,5 +95,8 @@
     "sinon": "^3.2.1",
     "uglify-js": "^3.3.28",
     "zlib": "^1.0.5"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.3.2"
   }
 }
