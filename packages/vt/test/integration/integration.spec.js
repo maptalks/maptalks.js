@@ -96,7 +96,13 @@ describe('vector tile integration specs', () => {
                     map.getRenderer().setToRedraw();
                 }
             });
-            layer.addTo(map);
+            if (style.groupSceneConfig) {
+                const group = new GroupGLLayer('group', [layer], { sceneConfig: style.groupSceneConfig });
+                group.addTo(map);
+            } else {
+                layer.addTo(map);
+            }
+
         };
     };
 

@@ -28,7 +28,12 @@ const NO_COLLISION = { collides: 0, boxes: [] };
 export default class CollisionPainter extends BasicPainter {
 
     supportRenderMode(mode) {
-        return mode === 'point';
+        const renderToPointRenderTarget = this.sceneConfig.renderToPointRenderTarget;
+        if (renderToPointRenderTarget || renderToPointRenderTarget === undefined) {
+            return mode === 'point';
+        } else {
+            return mode === 'fxaa' || mode === 'fxaaAfterTaa';
+        }
     }
 
     startMeshCollision(mesh) {
