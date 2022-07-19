@@ -98,20 +98,21 @@ class RainPainer {
         const box = this._getFixExtent();
         // const box = DEFAULT_EXTENT;
         const rainDensity = this._rainDensity = rainConfig.density;
+        
+        const rainWidth = this._rainWidth = rainConfig.rainWidth || 1;
+        const rainHeight = this._rainHeight = rainConfig.rainHeight || 1;
         const vertices = [];
         const normals = [];
         const uvs = [];
         const indices = [];
-
-        const rainSize = rainConfig.rainSize || 1;
         for (let i = 0; i < rainDensity; i++) {
             const pos = {};
             pos.x = Math.random() * (box.max[0] - box.min[0]) + box.min[0];
             pos.y = Math.random() * (box.max[2] - box.min[2]) + box.min[2];
             pos.z = Math.random() * (box.max[1] - box.min[1]) + box.min[1];
             //雨滴的高宽比3:1
-            const height = ((box.max[2] - box.min[2]) / 37.5) * rainSize;
-            const width = height / 3;
+            const height = ((box.max[2] - box.min[2]) / 37.5) * rainHeight;
+            const width = (height / 3) * rainWidth;
 
             vertices.push(
                 pos.x + width,
@@ -232,7 +233,8 @@ class RainPainer {
         const scale = vec3.multiply(v3, DEFALUT_SCALE, v3);
         const transformat = mat4.identity(TEMP_MAT);
         const config = this._getRainConfig();
-        mat4.fromRotationTranslationScale(transformat, quat.fromEuler(TEMP_ROTATE, config.windDirectionX, config.windDirectionY, 0), [center.x, center.y, 0], scale);
+        const bearing = map.getBearing();
+        mat4.fromRotationTranslationScale(transformat, quat.fromEuler(TEMP_ROTATE, config.windDirectionX || 0, config.windDirectionY || 0, -bearing + 90), [center.x, center.y, 0], scale);
         mat4.multiply(transformat, transformat, Y_UP_TO_Z_UP);
         mesh.setLocalTransform(transformat);
     }
@@ -254,7 +256,7 @@ class RainPainer {
             this._createScene();
         }
         //更改雨量大小，需要重新创建mesh
-        if (rainConfig.density !== this._rainDensity) {
+        if (rainConfig.density !== this._rainDensity || rainConfig.rainWidth !== this._rainWidth || rainConfig.rainHeight !== this._rainHeight) {
             const rainMap = this._mesh.material.get('rainMap');
             this._mesh.geometry.dispose();
             this._mesh.dispose();

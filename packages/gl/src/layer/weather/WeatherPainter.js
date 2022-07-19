@@ -101,7 +101,7 @@ class WeatherPainter {
             delete this._weatherShader.shaderDefines['HAS_FOG'];
         }
         this._weatherShader.setDefines(this._weatherShader.shaderDefines);
-        uniforms['mixFactorMap'] = this._renderMixFactor(meshes);
+        uniforms['mixFactorMap'] = this._renderMixFactor(meshes) || this.EMPTY_TEXTURE;
         uniforms['sceneMap'] = tex;
         uniforms['time'] = this._getTimeSpan() / 1000;
         uniforms['resolution'] = vec2.set(RESOLUTION, this._fbo.width, this._fbo.height);
@@ -116,6 +116,9 @@ class WeatherPainter {
         const ratio = Math.pow(2, DEFAULT_ZOOM - zoom);
         const config = this._layer.getWeatherConfig();
         const fogConfig = config.fog;
+        if (!fogConfig) {
+            return;
+        }
         const start = fogConfig.start || 0.1, end = fogConfig.end || 100;
         options['projMatrix'] = map.projMatrix;
         options['viewMatrix'] = map.viewMatrix;

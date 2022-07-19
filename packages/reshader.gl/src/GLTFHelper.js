@@ -30,7 +30,7 @@ export function exportGLTFPack(gltf, regl) {
     return gltfpack;
 }
 
-function loadGLTF(root, options) {
+export function loadGLTF(root, options) {
     const loader = new gltf.GLTFLoader(root, options);
     return loader.load();
 }

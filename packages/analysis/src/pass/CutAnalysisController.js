@@ -1,7 +1,6 @@
 import { mat4, quat, vec3, vec2 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
 import partsModels from '../common/parts';
-import * as gltf from '@maptalks/gltf-loader';
 import { Util } from 'maptalks';
 import { defined } from '../common/Util';
 import pickingVert from './glsl/picking.vert';
@@ -516,8 +515,7 @@ export default class CutAnalysisController {
 }
 
 function createGLTFMesh(modelName) {
-    const loader = new gltf.GLTFLoader('', partsModels[modelName]);
-    return loader.load().then(gltf => {
+    return reshader.GLTFHelper.loadGLTF('', partsModels[modelName]).then(gltf => {
         return gltf;
     });
 }
