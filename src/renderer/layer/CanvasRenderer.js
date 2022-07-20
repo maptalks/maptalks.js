@@ -318,7 +318,7 @@ class CanvasRenderer extends Class {
         }
         const imageData = this.getImageData && this.getImageData();
         if (imageData) {
-            const x = r * point.x, y = r * point.y;
+            const x = Math.round(r * point.x), y = Math.round(r * point.y);
             const idx = y * imageData.width * 4 + x * 4;
             //索引下标从0开始需要-1
             return imageData.data[idx + 3] > 0;
