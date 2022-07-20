@@ -123,6 +123,7 @@ export default class OutlinePass {
         }
         if (this._fbo) {
             this._fbo.destroy();
+            delete this._fbo;
         }
     }
 

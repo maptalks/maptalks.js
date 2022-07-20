@@ -18,11 +18,14 @@ export function altitudeToDistance(map, z) {
     return map.altitudeToPoint(z || 0, map.getGLRes());
 }
 
-export function coordinateToWorld(map, coordinate) {
-    if (!map || !coordinate) {
+const COORD = new maptalks.Coordinate(0, 0);
+
+export function coordinateToWorld(map, x, y, z) {
+    if (!map) {
         return null;
     }
-    const p = map.coordinateToPointAtRes(new maptalks.Coordinate(coordinate[0], coordinate[1]), map.getGLRes());
-    const height = altitudeToDistance(map, coordinate[2]);
+    COORD.set(x, y);
+    const p = map.coordinateToPointAtRes(COORD, map.getGLRes());
+    const height = altitudeToDistance(map, z);
     return [p.x, p.y, height];
 }

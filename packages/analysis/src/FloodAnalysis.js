@@ -11,23 +11,14 @@ export default class FloodAnalysis extends Analysis {
         this.type = 'floodAnalysis';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
-        const renderer = this.layer.getRenderer();
-        this.regl = renderer.regl;
-        if (renderer) {
-            this._setViewshedPass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setViewshedPass(e.renderer);
-            }, this);
-        }
+    _prepareRenderOptions(renderer) {
         const map = this.layer.getMap();
         this._renderOptions = {};
         this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.waterHeight);
         this._renderOptions['extent'] = VEC4;
         this._renderOptions['extentMap'] = renderer.regl.texture({width: 2, height: 2});
         this._renderOptions['hasExtent'] = 0;
+        this._renderOptions['type'] = 1.0;
         if (this.options.boundary) {
             const { extentMap, extentInWorld } = this._calExtent(this.options.boundary);
             this._renderOptions['extent'] = extentInWorld;
@@ -35,10 +26,9 @@ export default class FloodAnalysis extends Analysis {
             this._renderOptions['hasExtent'] = 1;
         }
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
-        return this;
     }
 
-    _setViewshedPass(renderer) {
+    _setPass(renderer) {
         const viewport = this._viewport = {
             x : 0,
             y : 0,
@@ -49,6 +39,7 @@ export default class FloodAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions(renderer);
         const floodRenderer = new reshader.Renderer(renderer.regl);
         this._pass = this._pass || new FloodPass(floodRenderer, viewport);
         this.layer.addAnalysis(this);
@@ -77,13 +68,6 @@ export default class FloodAnalysis extends Analysis {
         uniforms['flood_waterColor'] = this.options['waterColor'] || DEFAULT_WATER_COLOR;
         uniforms['floodMap'] = this._pass.render(meshes, this._renderOptions);
         return uniforms;
-    }
-
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
     }
 
     getDefines() {

@@ -96,7 +96,7 @@ varying vec3 vFragPos;
   #include <vsm_shadow_frag>
 #endif
 
-
+#include <highlight_frag>
 
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
@@ -219,6 +219,8 @@ void main() {
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
     #endif
+
+    glFragColor = highlight_blendColor(glFragColor);
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

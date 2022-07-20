@@ -1,4 +1,4 @@
-import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
 
@@ -8,6 +8,10 @@ const UNIFORM_TYPE = {
 };
 
 let uid = 0;
+
+const activeVarsCache = {};
+
+const COMMAND_CACHE_KEY = '__maptalks_shader_cache';
 
 class Shader {
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
@@ -159,7 +163,11 @@ class Shader {
         }
     }
 
-    getActiveVars(regl, vert, frag) {
+    getActiveVars(regl, vert, frag, hash) {
+        const cacheKey = hash;
+        if (activeVarsCache[cacheKey]) {
+            return activeVarsCache[cacheKey];
+        }
         const gl = regl['_gl'];
         const program = gl.createProgram();
 
@@ -207,10 +215,12 @@ class Shader {
         gl.deleteProgram(program);
         gl.deleteShader(vertShader);
         gl.deleteShader(fragShader);
-        return {
+
+        activeVarsCache[cacheKey] = {
             activeUniforms,
             activeAttributes
         };
+        return activeVarsCache[cacheKey];
     }
 
     createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO) {
@@ -220,7 +230,20 @@ class Shader {
         const vert = this.getVersion(regl, vertSource) + vertSource;
         const fragSource = this._insertDefines(this.frag, defines);
         const frag = this.getVersion(regl, fragSource) + fragSource;
-        const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag);
+        const vHash = hashCode(vert);
+        const fHash = hashCode(frag);
+        const hash = vHash + '_' + fHash;
+        const commandHash = `${hash}_${+isNumber(elements)}_${+isInstanced}_${+disableVAO}`;
+        let COMMAND_CACHE = regl[COMMAND_CACHE_KEY];
+        if (!COMMAND_CACHE) {
+            COMMAND_CACHE = regl[COMMAND_CACHE_KEY] = {};
+        }
+        if (COMMAND_CACHE[commandHash]) {
+            COMMAND_CACHE[commandHash].ref++;
+            return COMMAND_CACHE[commandHash].command;
+        }
+        const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag, hash);
+
         const attributes = {};
         activeAttributes.forEach((p, idx) => {
             const name = p.name;
@@ -275,6 +298,9 @@ class Shader {
         const reglCommand = regl(command);
         activeAttributes.key = activeAttributes.map(attr => attr.name).join();
         reglCommand.activeAttributes = activeAttributes;
+        COMMAND_CACHE[commandHash] = { command: reglCommand, ref: 1 };
+        reglCommand.hash = commandHash;
+        reglCommand.commandCache = COMMAND_CACHE;
         return reglCommand;
     }
 
@@ -284,9 +310,20 @@ class Shader {
             if (!command) {
                 continue;
             }
-            if (command.destroy && !command[KEY_DISPOSED]) {
-                command[KEY_DISPOSED] = true;
-                command.destroy();
+            const hash = command.hash;
+            const COMMAND_CACHE = command.commandCache;
+            if (COMMAND_CACHE[hash]) {
+                COMMAND_CACHE[hash].ref--;
+            }
+            if (!COMMAND_CACHE[hash] || COMMAND_CACHE[hash].ref <= 0) {
+                if (command.destroy && !command[KEY_DISPOSED]) {
+                    command[KEY_DISPOSED] = true;
+                    command.destroy();
+                }
+                if (COMMAND_CACHE[hash]) {
+                    delete COMMAND_CACHE[hash];
+                }
+                delete command.commandCache;
             }
         }
         this.commands = {};

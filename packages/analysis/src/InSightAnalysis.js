@@ -9,37 +9,27 @@ export default class InSightAnalysis extends Analysis {
         this.type = 'insight';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
-        const renderer = this.layer.getRenderer();
-        const map = this.layer.getMap();
-        this._renderOptions = {};
-        this._renderOptions['eyePos'] = coordinateToWorld(map, this.options.eyePos);
-        this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
-        this._renderOptions['visibleColor'] = this.options.visibleColor;
-        this._renderOptions['invisibleColor'] = this.options.invisibleColor;
-        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
-        if (renderer) {
-            this._setInSightPass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setInSightPass(e.renderer);
-            }, this);
-        }
-        return this;
-    }
-
     update(name, value) {
         if (name === 'eyePos' || name === 'lookPoint') {
             const map = this.layer.getMap();
-            this._renderOptions[name] = coordinateToWorld(map, value);
+            this._renderOptions[name] = coordinateToWorld(map, ...value);
         } else {
             this._renderOptions[name] = value;
         }
         super.update(name, value);
     }
 
-    _setInSightPass(renderer) {
+    _prepareRenderOptions() {
+        const map = this.layer.getMap();
+        this._renderOptions = {};
+        this._renderOptions['eyePos'] = coordinateToWorld(map, ...this.options.eyePos);
+        this._renderOptions['lookPoint'] = coordinateToWorld(map, ...this.options.lookPoint);
+        this._renderOptions['visibleColor'] = this.options.visibleColor;
+        this._renderOptions['invisibleColor'] = this.options.invisibleColor;
+        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+    }
+
+    _setPass(renderer) {
         const viewport = {
             x : 0,
             y : 0,
@@ -50,6 +40,7 @@ export default class InSightAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions();
         const insightRenderer = new reshader.Renderer(renderer.regl);
         this._pass = this._pass || new InSightPass(insightRenderer, viewport);
         this.layer.addAnalysis(this);
@@ -69,12 +60,5 @@ export default class InSightAnalysis extends Analysis {
         return {
             HAS_INSIGHT: 1
         };
-    }
-
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
     }
 }

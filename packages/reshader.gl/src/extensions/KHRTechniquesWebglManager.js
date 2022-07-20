@@ -2,7 +2,7 @@
 // https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Archived/KHR_techniques_webgl
 
 import MeshShader from '../shader/MeshShader';
-import { extend } from '../common/Util';
+import { extend, hashCode } from '../common/Util';
 import { getPrimitive, getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat, getUniqueREGLBuffer } from '../common/REGLHelper';
 import Material from '../Material';
 import Geometry from '../Geometry';
@@ -302,21 +302,6 @@ export default class KHRTechniquesWebglManager {
         }
         this._khrShaders = {};
     }
-}
-
-function hashCode(s) {
-    let hash = 0;
-    const strlen = s && s.length || 0;
-    if (!strlen) {
-        return hash;
-    }
-    let c;
-    for (let i = 0; i < strlen; i++) {
-        c = s.charCodeAt(i);
-        hash = ((hash << 5) - hash) + c;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
 }
 
 function checkFrag(fragCode) {

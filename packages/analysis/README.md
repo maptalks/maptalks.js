@@ -328,7 +328,7 @@ viewshedAnalysis.addTo(groupLayer);
     | `cutLineColor`   | Array | [0, 1, 0, 1] | color array |
 
     #### Method : addTo(groupgllayer)
-    _add excavate analysis to groupgllayer_
+    _add crosscut analysis to groupgllayer_
     | Parameter | Type | Default | Description|
     | ------------- |---------- |-------------|--------- |
     | `groupgllayer`      | maptalks.GroupGLLayer |  | a groupgllayer to add |
@@ -336,7 +336,7 @@ viewshedAnalysis.addTo(groupLayer);
     CrossCutAnalysis: this
 
     #### Method : remove()
-    _remove the excavate analysis from groupgllayer_
+    _remove the crosscut analysis from groupgllayer_
 
     #### Method : update(name, value)
     | Parameter | Type | Default | Description|
@@ -350,6 +350,47 @@ viewshedAnalysis.addTo(groupLayer);
     | `count`      | Number |  | the count of cut times |
     > returns : <br>
     Array<Object>: [{distance: [], point: [longitude, latitude, altitude] }
+
+    #### Method : enable()
+    _enable the analysis task_
+    > returns : <br>
+    CrossCutAnalysis: return this
+
+    #### Method : disable()
+    _disable the analysis task, when disable the analysis task, it will be not available_
+    > returns : <br>
+    CrossCutAnalysis: return this
+
+    #### Method : isEnbale()
+    _whether the analysis task is enable_
+    > returns : <br>
+    Boolean: true or false
+
+    * ### Class : HeightLimitAnalysis`(inherited from maptalks.Eventable)`
+    > HeightLimitAnalysis's constructor.
+    
+    #### Method : new HeightLimitAnalysis(options) 
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `limitHeight`      | Number |  | the limited height of analysis |
+    | `limitColor`   | Array | | limited meshes will be rendered by limitedColor |
+
+    #### Method : addTo(groupgllayer)
+    _add limit analysis to groupgllayer_
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `groupgllayer`      | maptalks.GroupGLLayer |  | a groupgllayer to add |
+    > returns : <br>
+    HeightLimitAnalysis: this
+
+    #### Method : remove()
+    _remove the limit analysis from groupgllayer_
+
+    #### Method : update(name, value)
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `name`      | String |  | name of property |
+    | `value`      | Any |  | value of property |
 
     #### Method : enable()
     _enable the analysis task_

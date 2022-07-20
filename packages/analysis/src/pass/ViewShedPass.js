@@ -23,7 +23,7 @@ const helperIndices = [
     3, 4,
     4, 1
 ];
-const MAT = [], QUAT = [], VEC3 = [];
+const MAT = [], QUAT = [], VEC3 = [], v1 = [1, 0, 0], NORMAL = [];
 const clearColor = [0, 0, 0, 1];
 export default class ViewshedPass {
     constructor(renderer, viewport) {
@@ -123,10 +123,10 @@ export default class ViewshedPass {
         //计算辅助线框的矩阵
         const modelMatrix = mat4.identity(MAT);
         const vector = vec3.set(VEC3, lookPoint[0] - eyePos[0], lookPoint[1] - eyePos[1], lookPoint[2] - eyePos[2]);
-        const angle =  Math.acos(vector[0] / distance);
-        const angleZ = this._getRotateZAngle(angle, vector[1]);
-        const angleY = this._getRotateYAngle(angle, vector[2]);
-        const rotation = quat.fromEuler(QUAT, 0, (angleY / Math.PI) * 180, (angleZ / Math.PI) * 180);
+        const normal = this._calNormal(NORMAL, v1, vector);
+        let angle = vec3.angle(v1, vector);
+        angle = vector[1] >= 0 ? angle : Math.PI * 2 - angle;
+        const rotation = quat.setAxisAngle(QUAT, normal, angle);
         const halfHorizontalAngle = (horizontalAngle * Math.PI) / (2 * 180);
         const halfVerticalAngle = (verticalAngle * Math.PI) / (2 * 180);
         mat4.fromRotationTranslationScale(modelMatrix, rotation, eyePos, [distance, distance * Math.tan(halfHorizontalAngle), distance * Math.tan(halfVerticalAngle)]);
@@ -137,6 +137,18 @@ export default class ViewshedPass {
         this._renderDepth(this._scene, projViewMatrixFromViewpoint);
         this._renderViewshedMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
         return this._fbo;
+    }
+
+    _calNormal(out, v1, v2) {
+        if (v1[0] === 0 && v2[0] === 0) {
+            return vec3.set(out, 1, 0, 0);
+        } else if (v1[1] === 0 && v2[1] === 0) {
+            return vec3.set(out, 0, 1, 0);
+        } else {
+            const y = (v1[2] * v2[0] - v2[2] * v1[0]) / (v1[0] * v2[1] - v2[0] * v1[1]);
+            const x = ((v1[2] - v2[2]) + (v1[1] - v2[1]) * y) / (v1[0] - v2[0]);
+            return vec3.set(out, x, y, 1);
+        }
     }
 
     //渲染深度贴图
@@ -175,8 +187,9 @@ export default class ViewshedPass {
     //根据视点位置，方向，垂直角，水平角构建矩阵
     _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle) {
         const aspect =  verticalAngle / horizontalAngle;
-        const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
-        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance);
+        let distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
+        distance = distance < 1 ? 1 : distance;
+        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1, distance);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return projViewMatrix;
@@ -210,25 +223,5 @@ export default class ViewshedPass {
         if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
             this._depthFBO.resize(width, height);
         }
-    }
-
-    _getRotateZAngle(angle, vec) {
-      if (vec === 0) {
-        return Math.PI;
-      } else if (vec > 0) {
-        return angle;
-      } else {
-        return -angle;
-      }
-    }
-
-    _getRotateYAngle(angle, vec) {
-      if (vec === 0) {
-        return 0;
-      } else if (vec > 0) {
-        return angle + Math.PI;
-      } else {
-        return -angle + Math.PI;
-      }
     }
 }

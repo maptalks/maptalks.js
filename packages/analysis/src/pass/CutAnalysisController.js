@@ -503,7 +503,7 @@ export default class CutAnalysisController {
             mesh.dispose();
         });
         if (this.pickingFBO) {
-            this.pickingFBO.dispose();
+            this.pickingFBO.destroy();
         }
     }
 

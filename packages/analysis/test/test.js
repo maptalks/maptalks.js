@@ -76,7 +76,7 @@ function uint8ArrayEqual(a, b) {
 describe('add analysis', () => {
     it('add ViewShedAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -105,11 +105,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add FloodAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -132,12 +133,13 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
 
     it('add SkylineAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -160,11 +162,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add InSightAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -189,11 +192,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add CutAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -217,11 +221,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add ExcavateAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -249,13 +254,42 @@ describe('add analysis', () => {
                 done();
             }, 500);
         });
+        gllayer.addTo(map);
+    });
+
+    it('add HeightLimitAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const heightLimitAnalysis = new maptalks.HeightLimitAnalysis({
+                limitHeight: 20,
+                limitColor: [0.1, 0.5, 0.6]
+            });
+            heightLimitAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const renderer = gltflayer.getRenderer();
+                const meshes = renderer.getAnalysisMeshes();
+                const tempMap = heightLimitAnalysis.exportAnalysisMap(meshes);
+                const index = (height / 2) * width * 4 + (width / 2) * 4;
+                const arr = tempMap.slice(index, index + 16);
+                expect(uint8ArrayEqual(arr, [0, 0, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255]));
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
     });
 });
 
 describe('api of analysis', () => {
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -280,11 +314,12 @@ describe('api of analysis', () => {
             viewshedAnalysis.update('horizontalAngle', 30);
             done();
         }, 500);
+        gllayer.addTo(map);
     });
 
     it('export result image by skylineAanalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -304,6 +339,54 @@ describe('api of analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
+    });
+
+    it('remove skylineAnalysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                skylineAnalysis.remove();
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('enable and disable analysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            skylineAnalysis.disable();
+            setTimeout(function() {
+                skylineAnalysis.enable();
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
     });
 
     //依赖maptalks核心库的map.pointToAltitude方法

@@ -9,25 +9,15 @@ export default class SkylineAnalysis extends Analysis {
         this.type = 'skyline';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
+    _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
         this._renderOptions['lineColor'] = this.options.lineColor;
         this._renderOptions['lineWidth'] = this.options.lineWidth;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
-        const renderer = this.layer.getRenderer();
-        if (renderer) {
-            this._setSkylinePass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setSkylinePass(e.renderer);
-            }, this);
-        }
-        return this;
     }
 
-    _setSkylinePass(renderer) {
+    _setPass(renderer) {
         const viewport = {
             x : 0,
             y : 0,
@@ -38,6 +28,7 @@ export default class SkylineAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions();
         this.renderer = new reshader.Renderer(renderer.regl);
         this._pass = new OutlinePass(this.renderer, viewport) || this._pass;
         this.layer.addAnalysis(this);
@@ -45,7 +36,7 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     renderAnalysis(meshes) {
-        this._ground = this._ground || this._createGround();
+        this._ground = this._ground || this._createGround(this.renderer.regl);
         const map = this.layer.getMap();
         this._transformGround(map);
         const uniforms = {};
@@ -53,7 +44,7 @@ export default class SkylineAnalysis extends Analysis {
         this.renderer.clear({
             color : [0, 0, 0, 1],
             depth : 1,
-            framebuffer : this._fbo
+        framebuffer : this._fbo
         });
         this._fbo = this._pass.render(skylineMeshes, this._renderOptions);
         uniforms['skylineMap'] = this._fbo;
@@ -115,11 +106,9 @@ export default class SkylineAnalysis extends Analysis {
 
     remove() {
         super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
         if (this._ground) {
             this._ground.geometry.dispose();
+            this._ground.dispose();
             delete this._ground;
         }
     }
