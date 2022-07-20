@@ -30,6 +30,11 @@ varying vec2 vTexCoord;
 #ifdef HAS_EXCAVATE
     uniform sampler2D excavateMap;
 #endif
+
+#ifdef HAS_CROSSCUT
+    uniform sampler2D crosscutMap;
+    uniform vec4 cutLineColor;
+#endif
 uniform sampler2D sceneMap;
 
 void main() {
@@ -82,6 +87,12 @@ void main() {
           glFragColor = sceneColor;
         }  else {
           glFragColor = excavateColor;
+        }
+    #endif
+    #ifdef HAS_CROSSCUT
+        vec4 crosscutColor = texture2D(crosscutMap, vTexCoord);
+        if (crosscutColor.r > 0.0) {
+            glFragColor = vec4(mix(cutLineColor.rgb, glFragColor.rgb, 0.99), glFragColor.a);
         }
     #endif
     #if __VERSION__ == 100

@@ -316,3 +316,52 @@ viewshedAnalysis.addTo(groupLayer);
     _whether the analysis task is enable_
     > returns : <br>
     Boolean: true or false
+
+  * ### Class : CrossCutAnalysis`(inherited from maptalks.Eventable)`
+    > CrossCutAnalysis's constructor.
+    
+    #### Method : new CrossCutAnalysis(options) 
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `cutLine`      | Array<Array> |  | the coordinate rings of cross cut line |
+    | `textureUrl`   | String | | the excavate texture's url |
+    | `cutLineColor`   | Array | [0, 1, 0, 1] | color array |
+
+    #### Method : addTo(groupgllayer)
+    _add excavate analysis to groupgllayer_
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `groupgllayer`      | maptalks.GroupGLLayer |  | a groupgllayer to add |
+    > returns : <br>
+    CrossCutAnalysis: this
+
+    #### Method : remove()
+    _remove the excavate analysis from groupgllayer_
+
+    #### Method : update(name, value)
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `name`      | String |  | name of property |
+    | `value`      | Any |  | value of property |
+
+    #### Method : getAltitudes(count)
+    | Parameter | Type | Default | Description|
+    | ------------- |---------- |-------------|--------- |
+    | `count`      | Number |  | the count of cut times |
+    > returns : <br>
+    Array<Object>: [{distance: [], point: [longitude, latitude, altitude] }
+
+    #### Method : enable()
+    _enable the analysis task_
+    > returns : <br>
+    CrossCutAnalysis: return this
+
+    #### Method : disable()
+    _disable the analysis task, when disable the analysis task, it will be not available_
+    > returns : <br>
+    CrossCutAnalysis: return this
+
+    #### Method : isEnbale()
+    _whether the analysis task is enable_
+    > returns : <br>
+    Boolean: true or false

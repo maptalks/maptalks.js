@@ -52,6 +52,10 @@
     "rollup-plugin-terser": "^5.3.1"
   },
   "dependencies": {
+    "@turf/along": "^6.5.0",
+    "@turf/helpers": "^6.5.0",
+    "@turf/buffer": "^6.5.0",
+    "@turf/distance": "^6.5.0",
     "earcut": "^2.2.3"
   }
 }

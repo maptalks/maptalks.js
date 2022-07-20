@@ -57,6 +57,7 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_INSIGHT'];
         delete this._shader.shaderDefines['HAS_CUT'];
         delete this._shader.shaderDefines['HAS_EXCAVATE'];
+        delete this._shader.shaderDefines['HAS_CROSSCUT'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             const defines = task.getDefines();
