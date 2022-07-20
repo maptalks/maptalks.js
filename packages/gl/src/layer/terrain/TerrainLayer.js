@@ -7,7 +7,8 @@ const options = {
     'forceRenderOnRotating': true,
     'opacity': 1.0,
     'exaggeration': 1.0,
-    'renderer': 'gl'
+    'renderer': 'gl',
+    'pyramidMode': 1
 };
 
 export default class TerrainLayer extends maptalks.TileLayer {
@@ -25,7 +26,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const renderer = this.getRenderer();
         if (renderer) {
             const worldPos = map.coordinateToPoint(coordinate);
-             return renderer._queryAltitide(tileIndex, worldPos);
+             return renderer._queryAltitide(tileIndex, worldPos, zoom);
         }
     }
 
@@ -62,6 +63,14 @@ export default class TerrainLayer extends maptalks.TileLayer {
     //     return null;
     // }
 }
+
+TerrainLayer.include({
+    '_getTileId': (x, y, z) => {
+        // always assume terrain layer is pyramid mode
+        const row = Math.sqrt(Math.pow(4, z));
+        return (z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y;
+    }
+})
 
 TerrainLayer.mergeOptions(options);
 TerrainLayer.registerJSONType('TerrainLayer');

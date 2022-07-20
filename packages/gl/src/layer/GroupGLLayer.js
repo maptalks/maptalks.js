@@ -437,6 +437,13 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
+    queryAltitide(coord) {
+        if (this._terrainLayer) {
+            return this._terrainLayer.queryAltitide(coord);
+        }
+        return null;
+    }
+
 }
 
 GroupGLLayer.mergeOptions(options);

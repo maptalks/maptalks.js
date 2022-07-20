@@ -1,5 +1,10 @@
 import * as maptalks from 'maptalks';
+import { vec3 } from 'gl-matrix';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
+
+const V0 = [];
+const V1 = [];
+const V2 = [];
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -14,6 +19,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     isDrawable() {
         return true;
     }
+
+    drawTile() {}
 
     loadTile(tile) {
         const type = this.layer.options.type;
@@ -37,22 +44,20 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             if (err) {
                 console.warn(err);
             }
-            this.onTileLoad(tile, res);
+            this.onTileLoad(res, tile);
             this.setToRedraw();
         });
         return {};
     }
 
-    _queryAltitide(tileIndex, worldPos) {
-        const tileId = this.layer['_getTileId'](tileIndex.x, tileIndex.y, tileIndex.z);
+    _queryAltitide(tileIndex, worldPos, z) {
+        const tileId = this.layer['_getTileId'](tileIndex.x, tileIndex.y, z);
         const terrainData = this.tileCache.get(tileId);
         if (terrainData) {
-            const extent2d = terrainData.extent2d;
+            const extent2d = terrainData.info.extent2d;
             const x = worldPos.x - extent2d.xmin;
             const y = worldPos.y - extent2d.ymin;
-            const { A, B, C} = this._findInTrinagle(terrainData.data, x, y);
-            const exaggeration = this.layer.options['exaggeration'] || 1;
-            return (A[2] + B[2] + C[2]) * 50 / (3 * exaggeration);
+            return this._findInTrinagle(terrainData.image, x, y);
         } else {
             console.warn('terrain data has not been loaded');
         }
@@ -70,25 +75,37 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
 
     _findInTrinagle(terrainData, x, y) {
+        const exaggeration = this.layer.options['exaggeration'] || 1;
         const positions = terrainData.positions;
         const triangles = terrainData.triangles;
-        const P = [x, y];
-        for (let i = 0; i < triangles.length / 3; i++) {
+        let x0, x1, x2, y0, y1, y2;
+        const count = triangles.length / 3;
+        for (let i = 0; i < count; i++) {
             const aIndex = triangles[i * 3], bIndex = triangles[i * 3 + 1], cIndex = triangles[i * 3 + 2];
-            const A = [positions[aIndex * 3], -positions[aIndex * 3 + 1], positions[aIndex * 3 + 2]];
-            const B = [positions[bIndex * 3], -positions[bIndex * 3 + 1], positions[bIndex * 3 + 2]];
-            const C = [positions[cIndex * 3], -positions[cIndex * 3 + 1], positions[cIndex * 3 + 2]];
+            if (x < positions[aIndex * 3] && x < positions[bIndex * 3] && x < positions[cIndex * 3] || x > positions[aIndex * 3] && x > positions[bIndex * 3] && x > positions[cIndex * 3] ||
+                y < -positions[aIndex * 3 + 1] && y < -positions[bIndex * 3 + 1] && y < -positions[cIndex * 3 + 1] || y > -positions[aIndex * 3 + 1] && y > -positions[bIndex * 3 + 1] && y > -positions[cIndex * 3 + 1]) {
+                continue;
+            }
+            y0 = -positions[aIndex * 3 + 1];
+            y1 = -positions[bIndex * 3 + 1];
+            y2 = -positions[cIndex * 3 + 1];
+            x0 = positions[aIndex * 3];
+            x1 = positions[bIndex * 3];
+            x2 = positions[cIndex * 3];
+            const A = vec3.set(V0, x0, y0, positions[aIndex * 3 + 2]);
+            const B = vec3.set(V1, x1, y1, positions[bIndex * 3 + 2]);
+            const C = vec3.set(V2, x2, y2, positions[cIndex * 3 + 2]);
             const SABC = this._calTriangleArae(A[0], A[1], B[0], B[1], C[0], C[1]);
-            const SPAC = this._calTriangleArae(P[0], P[1], A[0], A[1], C[0], C[1]);
-            const SPAB = this._calTriangleArae(P[0], P[1], A[0], A[1], B[0], B[1]);
-            const SPBC = this._calTriangleArae(P[0], P[1], B[0], B[1], C[0], C[1]);
+            const SPAC = this._calTriangleArae(x, y, A[0], A[1], C[0], C[1]);
+            const SPAB = this._calTriangleArae(x, y, A[0], A[1], B[0], B[1]);
+            const SPBC = this._calTriangleArae(x, y, B[0], B[1], C[0], C[1]);
             if (SPAC + SPAB + SPBC - SABC > 0.0001) {
                 continue;
             } else {
-                A[1] = -A[1];
-                B[1] = -B[1];
-                C[1] = -C[1];
-                return { A, B, C};
+                // A[1] = -A[1];
+                // B[1] = -B[1];
+                // C[1] = -C[1];
+                return (A[2] + B[2] + C[2]) * 50 / 3 * exaggeration;
             }
         }
     }
