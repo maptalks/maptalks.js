@@ -14,3 +14,7 @@ import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext } from './gl.es.
 export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext };
 import transcoders from '../src/transcoders';
 export { transcoders };
+
+import * as maptalks from 'maptalks';
+import chunk from './worker.js';
+maptalks.registerWorkerAdapter('@maptalks/terrain', chunk);

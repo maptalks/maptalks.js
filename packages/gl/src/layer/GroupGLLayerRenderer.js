@@ -596,6 +596,13 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 fn(renderer, layer);
             }
         }
+        const terrainLayer = this.layer._terrainLayer;
+        if (terrainLayer) {
+            const renderer = terrainLayer.getRenderer();
+            if (renderer) {
+                fn(renderer, terrainLayer);
+            }
+        }
     }
 
     _createGLContext(canvas, options) {
@@ -1317,6 +1324,15 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
         this.layer.fire('postprocessend');
+    }
+
+    queryAltitide(x, y) {
+        return 0;
+    }
+
+    queryAltitudeMap(out, width, height, minx, miny, maxx, maxy) {
+        out.fill(0);
+        return out;
     }
 }
 

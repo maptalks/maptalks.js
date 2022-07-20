@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from 'gl-matrix';
 import { isNil } from './util/util.js';
+import TerrainLayer from './terrain/TerrainLayer';
 
 const options = {
     renderer : 'gl',
@@ -217,6 +218,9 @@ export default class GroupGLLayer extends maptalks.Layer {
         this.layers.forEach(layer => {
             this._prepareLayer(layer);
         });
+        if (this.options['terrain']) {
+            this.setTerrain(this.options['terrain']);
+        }
         super.onLoadEnd();
     }
 
@@ -420,6 +424,19 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         return result;
     }
+
+
+    setTerrain(info) {
+        this.options['terrain'] = info;
+        if (!this.getRenderer()) {
+            return this;
+        }
+        this._terrainInfo = info;
+        this._terrainLayer = new TerrainLayer('__terrain_in_group', info);
+        this._prepareLayer(this._terrainLayer);
+        return this;
+    }
+
 }
 
 GroupGLLayer.mergeOptions(options);

@@ -12,7 +12,8 @@
   },
   "globals": {
     "importScripts": true,
-    "globalThis": true
+    "globalThis": true,
+    "Zlib": true
   },
   "rules": {
   }

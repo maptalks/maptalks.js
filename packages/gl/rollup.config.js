@@ -1,5 +1,6 @@
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
+const replace = require('@rollup/plugin-replace');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
@@ -50,7 +51,70 @@ const configPlugins = [
     commonjs()
 ];
 
+const pluginsWorker = production ? [
+terser({
+    module: true,
+    mangle: {
+        properties: {
+            'regex': /^_/,
+            'keep_quoted': true,
+            'reserved': ['on', 'once', 'off'],
+        }
+    },
+    output: {
+        beautify: false,
+        comments: '/^!/'
+    }
+})] : [];
+
+function transformBackQuote() {
+    return {
+        renderChunk(code) {
+            // if (/\.js/.test(id) === false) return null;
+            // var transformedCode = 'const code = `' + code.replace(/`/g, '\\`') + '`';
+            code = code.substring('export default '.length)
+                .replace(/\\/g, '\\\\')
+                .replace(/`/g, '\\`')
+                .replace(/\$\{/g, '${e}');
+            var transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
+            transformedCode += 'export default code';
+            return {
+                code: transformedCode,
+                map: { mappings: '' }
+            };
+        }
+    };
+}
+
 module.exports = [
+    {
+        input: 'src/layer/terrain/worker/index.js',
+        external: ['maptalks'],
+        plugins: [
+            nodeResolve({
+                mainFields: ['module', 'main'],
+            }),
+            commonjs(),
+            replace({
+              // 'this.exports = this.exports || {}': '',
+              '(function (exports) {': 'function (exports) {',
+              '})(this.exports = this.exports || {});': '}',
+              'Object.defineProperty(exports, \'__esModule\', { value: true });': '',
+              preventAssignment: false,
+              delimiters: ['', '']
+            }),
+        ].concat(pluginsWorker).concat([transformBackQuote()]),
+        output: {
+            strict: false,
+            format: 'iife',
+            name: 'exports',
+            globals: ['exports'],
+            extend: true,
+            file: 'build/worker.js',
+            banner: `export default `,
+            // footer: ``
+        }
+    },
     {
         input: 'src/index.js',
         plugins: configPlugins.concat(plugins),
