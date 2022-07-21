@@ -37,12 +37,16 @@ class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean} return false to cease frame loop
      */
     renderFrame(framestamp) {
-        if (!this.map || !this.map.options['renderable']) {
+        const map = this.map;
+        if (!map || !map.options['renderable']) {
             return false;
+        }
+        //not render anything when map container is hide
+        if (map.options['stopRenderOnOffscreen'] && this._containerIsOffscreen()) {
+            return true;
         }
         this._updateDomPosition(framestamp);
         delete this._isViewChanged;
-        const map = this.map;
         map._fireEvent('framestart');
         this.updateMapDOM();
         map.clearCollisionIndex();
@@ -961,6 +965,15 @@ class MapCanvasRenderer extends MapRenderer {
             this.context.drawImage(this.topLayer, 0, 0);
         }
         this.map.fire('drawtopsend');
+    }
+
+    _containerIsOffscreen() {
+        const container = this.map.getContainer();
+        if (!container || !container.style || container.style.display === 'none') {
+            return true;
+        }
+        const minSize = Math.min(container.clientWidth, container.clientHeight);
+        return minSize <= 0;
     }
 
 }
