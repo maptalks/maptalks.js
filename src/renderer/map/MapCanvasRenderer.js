@@ -40,10 +40,6 @@ class MapCanvasRenderer extends MapRenderer {
         if (!this.map || !this.map.options['renderable']) {
             return false;
         }
-        //not render anything when map container is hide
-        if (this._containerIsHide()) {
-            return true;
-        }
         this._updateDomPosition(framestamp);
         delete this._isViewChanged;
         const map = this.map;
@@ -967,19 +963,6 @@ class MapCanvasRenderer extends MapRenderer {
         this.map.fire('drawtopsend');
     }
 
-    //map container is Hide
-    _containerIsHide() {
-        const map = this.map;
-        if (!map) {
-            return true;
-        }
-        const container = map.getContainer();
-        if (!container || !container.style || container.style.display === 'none') {
-            return true;
-        }
-        const minSize = Math.min(container.clientWidth, container.clientHeight);
-        return minSize <= 0;
-    }
 }
 
 Map.registerRenderer('canvas', MapCanvasRenderer);
