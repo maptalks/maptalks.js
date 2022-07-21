@@ -83,7 +83,7 @@ const TEMP_COORD = new Coordinate(0, 0);
  * @property {Number} [options.devicePixelRatio=null]           - device pixel ratio to override device's default one
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @property {Boolean} [options.cameraInfiniteFar=false]           - Increase camera far plane to infinite. Enable this option may reduce map's performance.
- * @property {Boolean} [options.stopRenderOnOffscreen=false]           - whether to stop map rendering when container is offscreen
+ * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
  * @memberOf Map
  * @instance
  */
