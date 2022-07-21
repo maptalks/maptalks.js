@@ -11,7 +11,8 @@ describe('TileLayer', function () {
         document.body.appendChild(container);
         var option = {
             zoom: 17,
-            center: center
+            center: center,
+            stopRenderOnOffscreen: false
         };
         map = new maptalks.Map(container, option);
     }
