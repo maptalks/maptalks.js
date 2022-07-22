@@ -26,7 +26,7 @@ const options = {
         'markerWidth': 24,
         'markerHeight': 34
     },
-    'hitTestForEvent' : false
+    'hitTestForEvent': false
 };
 
 /**
@@ -68,14 +68,14 @@ class Marker extends CenterMixin(Geometry) {
         const anchor = this.getMap().coordToContainerPoint(coord);
         return new Marker(coord, {
             'symbol': {
-                'markerType' : 'square',
-                'markerWidth' : extent.getWidth(),
-                'markerHeight' : extent.getHeight(),
+                'markerType': 'square',
+                'markerWidth': extent.getWidth(),
+                'markerHeight': extent.getHeight(),
                 'markerLineWidth': 1,
                 'markerLineColor': '6b707b',
-                'markerFill' : 'rgba(0, 0, 0, 0)',
-                'markerDx' : extent.xmin - (anchor.x - extent.getWidth() / 2),
-                'markerDy' : extent.ymin - (anchor.y - extent.getHeight() / 2)
+                'markerFill': 'rgba(0, 0, 0, 0)',
+                'markerDx': extent.xmin - (anchor.x - extent.getWidth() / 2),
+                'markerDy': extent.ymin - (anchor.y - extent.getHeight() / 2)
             }
         });
     }
@@ -147,7 +147,7 @@ class Marker extends CenterMixin(Geometry) {
         const resources = renderer && renderer.resources;
         const textDesc = this.getTextDesc();
         if (Array.isArray(symbol)) {
-            TEMP_EXTENT.set(0, 0, 0, 0);
+            TEMP_EXTENT.set(Infinity, Infinity, -Infinity, -Infinity);
             for (let i = 0; i < symbol.length; i++) {
                 if (!symbol[i]) {
                     continue;
