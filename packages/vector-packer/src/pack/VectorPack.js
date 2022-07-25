@@ -11,7 +11,7 @@ import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
 import { packPosition/*, unpackPosition*/ } from './util/pack_position';
-import { compileFilter } from '../style/Filter';
+import { compileFilter, isExpression, createExpression } from '../style/Filter';
 
 const interpolatedSymbols = {
     'lineWidth': 1,
@@ -62,7 +62,23 @@ export default class VectorPack {
     static genFnTypes(symbolDef) {
         const fnTypes = {};
         for (const p in symbolDef) {
-            if (isFnTypeSymbol(symbolDef[p])) {
+            if (isExpression(symbolDef[p])) {
+                const fn0KeyName = (p + '_Fn_0').trim();
+                const fnKeyName = (p + 'Fn').trim();
+                fnTypes[fn0KeyName] = createExpression(symbolDef[p]);
+                const params = {};
+                const feature = {};
+                const featureState = {};
+                const canonical = null;
+                const availableImages = [];
+
+                fnTypes[fnKeyName] = (zoom, properties) => {
+                    params.zoom = zoom;
+                    feature.properties = properties;
+                    const v = fnTypes[fn0KeyName].evaluateWithoutErrorHandling(params, feature, featureState, canonical, availableImages);
+                    return v;
+                };
+            } else if (isFnTypeSymbol(symbolDef[p])) {
                 const fn0KeyName = (p + '_Fn_0').trim();
                 const fnKeyName = (p + 'Fn').trim();
                 if (interpolatedSymbols[p]) {

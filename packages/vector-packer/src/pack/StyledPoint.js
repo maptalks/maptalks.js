@@ -267,7 +267,7 @@ export default class StyledPoint {
         }
 
         if (hasText) {
-            const textName = textNameFn ? textNameFn(null, properties) : symbol['textName'];
+            const textName = textNameFn ? textNameFn(this.options.zoom, properties) : symbol['textName'];
             if (textName || textName === 0) {
                 const textFaceName = textFaceNameFn ? textFaceNameFn(null, properties) : symbol['textFaceName'];
                 const textStyle = textStyleFn ? textStyleFn(null, properties) : symbol['textStyle'];

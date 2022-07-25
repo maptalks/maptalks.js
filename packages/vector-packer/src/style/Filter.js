@@ -1,7 +1,7 @@
 import { createFilter } from '@maptalks/feature-filter';
 import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
 import { extend, isNil } from './Util';
-const { isExpressionFilter } = expression;
+const { isExpressionFilter, isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
 
 export function compileStyle(styles) {
     styles = styles.map(s => {
@@ -76,4 +76,22 @@ export function compileFilter(filterValue) {
     } else {
         return createFilter(filterValue);
     }
+}
+
+const spec = {
+    "type": "string",
+    "property-type": "data-driven",
+    "expression": { "parameters": ["zoom", "feature"] }
+};
+
+export function createExpression(expr) {
+    const result = createMapboxExpression(expr, spec);
+    if (result.result !== 'success') {
+        throw new Error(`Invalid maplibre spec expression: ${JSON.stringify(expr)} (${result.value})`);
+    }
+    return result.value;
+}
+
+export function isExpression(expr) {
+    return isMapboxExpression(expr);
 }
