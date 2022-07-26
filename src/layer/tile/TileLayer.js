@@ -1112,7 +1112,7 @@ class TileLayer extends Layer {
     _getTileOffset(z) {
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset(z);
+            offset = offset.call(this, z);
         }
         return offset;
     }
