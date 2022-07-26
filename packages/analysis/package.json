@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/analysis",
-  "version": "0.73.3",
+  "version": "0.73.4",
   "description": "a plugin to excute many analysis tasks",
   "license": "UNLICENSED",
   "repository": {
@@ -31,7 +31,7 @@
     "@babel/core": "^7.15.0",
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gl": "^0.73.3",
+    "@maptalks/gl": "^0.73.4",
     "@maptalks/gltf-layer": "0.33.5",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
@@ -53,9 +53,9 @@
   },
   "dependencies": {
     "@turf/along": "^6.5.0",
-    "@turf/helpers": "^6.5.0",
     "@turf/buffer": "^6.5.0",
     "@turf/distance": "^6.5.0",
+    "@turf/helpers": "^6.5.0",
     "earcut": "^2.2.3"
   }
 }
