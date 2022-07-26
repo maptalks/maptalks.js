@@ -28,7 +28,8 @@ const plugins = production ? [terser({
     mangle: {
         properties: {
             'regex' : /^_/,
-            'keep_quoted' : true
+            'keep_quoted' : true,
+            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame'],
         }
     },
     output : {

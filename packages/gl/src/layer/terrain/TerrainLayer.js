@@ -1,6 +1,9 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 
+const COORD0 = new maptalks.Coordinate(0, 0);
+const POINT0 = new maptalks.Point(0, 0);
+
 const options = {
     'forceRenderOnMoving': true,
     'forceRenderOnZooming': true,
@@ -9,6 +12,7 @@ const options = {
     'exaggeration': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1
+    'terrainTileSize': 256
 };
 
 export default class TerrainLayer extends maptalks.TileLayer {
@@ -21,11 +25,11 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const repeatWorld = this.options['repeatWorld'];
         const config = this._getTileConfig();
         const projection = map.getProjection();
-        const projCoord = projection.projectCoords(coordinate);
+        const projCoord = projection.project(coordinate, COORD0);
         const tileIndex = config.getTileIndex(projCoord, res, repeatWorld);
         const renderer = this.getRenderer();
         if (renderer) {
-            const worldPos = map.coordinateToPoint(coordinate);
+            const worldPos = map.coordinateToPoint(coordinate, null, POINT0);
              return renderer._queryAltitide(tileIndex, worldPos, zoom);
         }
     }

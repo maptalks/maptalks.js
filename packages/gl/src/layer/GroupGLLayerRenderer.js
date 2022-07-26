@@ -9,6 +9,7 @@ import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
+import TerrainLayer from './terrain/TerrainLayer';
 
 const EMPTY_COLOR = [0, 0, 0, 0];
 
@@ -32,6 +33,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onAdd() {
         super.onAdd();
         this.prepareCanvas();
+        const terrainInfo = this.layer.getTerrain();
+        if (terrainInfo) {
+            this._setupTerrainLayers();
+        }
     }
 
     updateSceneConfig() {
@@ -45,6 +50,11 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._weatherPainter.update();
         }
         this.setToRedraw();
+    }
+
+    resetTerrain() {
+        // 更新terrain信息
+        // 重置所有图层
     }
 
     render(...args) {
@@ -1333,6 +1343,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     queryAltitudeMap(out, width, height, minx, miny, maxx, maxy) {
         out.fill(0);
         return out;
+    }
+
+    _setupTerrainLayers() {
+        // 遍历所有的图层，把相邻且sr一致的TileLayer/VectorTileLayer组织在一起
     }
 }
 

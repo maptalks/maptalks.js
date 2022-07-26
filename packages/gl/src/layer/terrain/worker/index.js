@@ -337,7 +337,7 @@ function fetchTerrain(url, exaggeration, type, callback) {
             }
             if (terrain.then) {
                 terrain.then(imgBitmap => {
-                    const terrainData = bitMapToHeights(imgBitmap, exaggeration);
+                    const terrainData = mapboxBitMapToHeights(imgBitmap, exaggeration);
                     self.postMessage({callback, data: terrainData }, res.transferables);
                 })
             } else {
@@ -349,18 +349,22 @@ function fetchTerrain(url, exaggeration, type, callback) {
         self.postMessage({callback, error: e});
     });
 }
-function bitMapToHeights(imgBitmap, exaggeration) {
-    offscreenCanvas.width = imgBitmap.width;
-    offscreenCanvas.height = imgBitmap.height;
-    offscreenCanvasContext.drawImage(imgBitmap, 0, 0, imgBitmap.width, imgBitmap.height);
-    const terrainWidth = terrainStructure.width + 1;
-    const imgData = offscreenCanvasContext.getImageData(0, 0, 520, 520).data;
+function mapboxBitMapToHeights(imgBitmap, exaggeration) {
+    const { width, height } = imgBitmap;
+    // const pow = Math.floor(Math.log(width) / Math.log(2));
+    // width = height = Math.pow(2, pow) + 1;
+
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+    offscreenCanvasContext.drawImage(imgBitmap, 0, 0, width, height);
+    const terrainWidth = width;
+    const imgData = offscreenCanvasContext.getImageData(0, 0, width, height).data;
     const heights = new Float32Array(terrainWidth * terrainWidth);
     for (let i = 0; i < terrainWidth; i++) {
         for (let j = 0; j < terrainWidth; j++) {
             const index = i + j * terrainWidth;
             let height = 0;
-            const stride = 8;
+            const stride = 1;
             let nullCount = 0;
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {
@@ -374,17 +378,20 @@ function bitMapToHeights(imgBitmap, exaggeration) {
                     if (A === 0) {
                         nullCount += 1;
                     } else {
-                        height += -10000 + + ((R * 256 * 256 + G * 256 + B) * 0.1);
+                        height += -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1);
                     }
                 }
             }
-            height = height / (stride * stride - nullCount);
-            heights[index] = height * exaggeration;
+            const count = (stride * stride - nullCount);
+            height = height / (count || 1);
+            heights[index] = height;
         }
     }
-    const terrainData = createMartiniData(heights, terrainWidth);
-    offscreenCanvasContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-    return terrainData;
+    // debugger
+    // const terrainData = createMartiniData(heights, terrainWidth);
+    // offscreenCanvasContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    return { data: heights, /*terrainData, */width, height };
+
 }
 
 function createMartiniData(heights, width) {
