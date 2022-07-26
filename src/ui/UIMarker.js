@@ -1,4 +1,4 @@
-import { isString, flash, isNil, extend, isFunction } from '../core/util';
+import { isString, flash, isNil, extend, isFunction, isNumber } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -263,6 +263,10 @@ class UIMarker extends Handlerable(UIComponent) {
 
     // for infowindow
     getAltitude() {
+        const coordinates = this.getCoordinates() || {};
+        if (isNumber(coordinates.z)) {
+            return coordinates.z;
+        }
         return this.options.altitude || 0;
     }
 
