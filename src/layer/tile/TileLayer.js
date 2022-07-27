@@ -1114,7 +1114,10 @@ class TileLayer extends Layer {
         if (isFunction(offset)) {
             offset = offset.call(this, z);
         }
-        return offset;
+        if (isNumber(offset)) {
+            return [offset, offset];
+        }
+        return offset || [0, 0];
     }
 
     _getTileId(x, y, zoom, id) {
