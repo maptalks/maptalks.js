@@ -239,7 +239,7 @@ export default class BaseLayerWorker {
                 targetData[typeIndex] = null;
                 continue;
             }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(pluginConfig.type, pluginConfig.filter, features, feaTags, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -504,7 +504,7 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(styleType, filter, features, tags) {
+    _filterFeatures(zoom, styleType, filter, features, tags) {
         const keyName = (KEY_IDX + '').trim();
         const indexes = [];
         const filtered = [];
@@ -517,7 +517,7 @@ export default class BaseLayerWorker {
             //filter.def没有定义，或者为default时，说明其实默认样式，feature之前没有其他样式时的应用样式
             // 并识别哪些feature归类到默认样式
             if ((!filter.def || filter.def === 'default') && !tags[i] ||
-                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i]))) {
+                (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i], zoom))) {
                 tags[i] = 1;
                 const fea = extend({}, features[i]);
                 fea[keyName] = i;

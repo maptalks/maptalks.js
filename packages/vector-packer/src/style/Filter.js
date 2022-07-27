@@ -62,14 +62,15 @@ export function compileFilter(filterValue) {
         const check = feature => {
             return feature.layer === filterValue.layer;
         };
-        return feature => {
-            return check(feature) && filterFn(feature);
+        return (feature, zoom) => {
+            return check(feature) && filterFn(feature, zoom);
         };
     }
     if (isExpressionFilter(filterValue)) {
         let expression = createExpressionFilter(filterValue);
         expression = expression && expression.filter;
-        const filterFn = feature => {
+        const filterFn = (feature, zoom) => {
+            EVALUATION_PARAM.zoom = zoom;
             return expression && expression(EVALUATION_PARAM, feature);
         };
         return filterFn;
