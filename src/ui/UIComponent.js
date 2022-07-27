@@ -1,4 +1,4 @@
-import { extend, isFunction, sign } from '../core/util';
+import { extend, isFunction, isNumber, sign } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -411,13 +411,15 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getViewPoint() {
-        let alt = 0;
-        if (this._owner && this._owner.getAltitude) {
-            const altitude = this._owner.getAltitude();
-            if (altitude > 0) {
-                alt = this._meterToPoint(this._coordinate, altitude);
-            }
+        let altitude = 0;
+        //后期有了地形后，拿到的数据会带altitude，这里适配下,以后点击地图拿到的数据应该带海拔的（lng,lat,alt）
+        const coordinates = this._coordinate || {};
+        if (isNumber(coordinates.z)) {
+            altitude = coordinates.z;
+        } else if (this._owner && this._owner.getAltitude) {
+            altitude = this._owner.getAltitude() || 0;
         }
+        const alt = this._meterToPoint(this._coordinate, altitude);
         return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)
             ._add(this.options['dx'], this.options['dy']);
     }
