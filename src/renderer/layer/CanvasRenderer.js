@@ -771,7 +771,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (!isSVG(url[0]) && Browser.decodeImageInWorker) {
+            if (!isSVG(url[0]) && Browser.decodeImageInWorker && (renderer === 'gl' || !Browser.safari)) {
                 const uri = getAbsoluteURL(url[0]);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
