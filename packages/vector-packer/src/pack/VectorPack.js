@@ -44,6 +44,11 @@ export const KEY_IDX = '__fea_idx';
 
 const TEMP_PACK_POS = [];
 
+const params = {};
+const feature = {};
+const featureState = {};
+const availableImages = [];
+
 /**
  * abstract class for all vector packs
  */
@@ -66,16 +71,10 @@ export default class VectorPack {
                 const fn0KeyName = (p + '_Fn_0').trim();
                 const fnKeyName = (p + 'Fn').trim();
                 fnTypes[fn0KeyName] = createExpression(symbolDef[p]);
-                const params = {};
-                const feature = {};
-                const featureState = {};
-                const canonical = null;
-                const availableImages = [];
-
                 fnTypes[fnKeyName] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;
-                    const v = fnTypes[fn0KeyName].evaluateWithoutErrorHandling(params, feature, featureState, canonical, availableImages);
+                    const v = fnTypes[fn0KeyName].evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
                     return v;
                 };
             } else if (isFnTypeSymbol(symbolDef[p])) {

@@ -14,7 +14,7 @@ import { projectPoint } from './util/projection';
 import { getShapeMatrix } from './util/box_util';
 import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTextFnTypeConfig, isLabelCollides, getLabelEntryKey } from './util/create_text_painter';
 import { GLYPH_SIZE } from './Constant';
-import { TextUtil, PackUtil } from '@maptalks/vector-packer';
+import { TextUtil, PackUtil, FilterUtil } from '@maptalks/vector-packer';
 import { getCentiMeterScale } from '../../../common/Util';
 
 const shaderFilter0 = function (mesh) {
@@ -67,6 +67,11 @@ const TEMP_AXIS = [];
 
 const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
 
+const params = {};
+const feature = {};
+const featureState = {};
+const availableImages = [];
+
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
         super(regl, layer, symbol, sceneConfig, pluginIndex);
@@ -101,7 +106,15 @@ export default class TextPainter extends CollisionPainter {
         this._textNameFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
-            if (isFunctionDefinition(symbolDef['textName'])) {
+            if (FilterUtil.isExpression(symbolDef['textName'])) {
+                const expression = FilterUtil.createExpression(symbolDef['textName']);
+                this._textNameFn[i] = (zoom, properties) => {
+                    params.zoom = zoom;
+                    feature.properties = properties;
+                    const v = expression.evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                    return v;
+                };
+            } else if (isFunctionDefinition(symbolDef['textName'])) {
                 this._textNameFn[i] = interpolated(symbolDef['textName']);
             }
         }
@@ -428,7 +441,8 @@ export default class TextPainter extends CollisionPainter {
                     const properties = feature.properties || {};
                     properties['$layer'] = feature.layer;
                     properties['$type'] = feature.type;
-                    const textName = this._textNameFn[i] ? this._textNameFn[i](null, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
+                    const { symbolIndex } = mesh.properties;
+                    const textName = symbolIndex && this._textNameFn[symbolIndex.index] ? this._textNameFn[symbolIndex.index](mesh.properties.z, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
                     const label = TextUtil.resolveText(textName, properties);
                     delete properties['$layer'];
                     delete properties['$type'];

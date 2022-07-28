@@ -139,6 +139,67 @@ describe('update style specs', () => {
         group.addTo(map);
     });
 
+    it('fuzhenn/maptalks-designer#877, unique placement for expression textName', done => {
+        const point = {
+            type: 'FeatureCollection',
+            features: [
+                { type: 'Feature', id: 0, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1, title: '■■■' } }
+            ]
+        };
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 2]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: true, uniquePlacement: true }
+                },
+                symbol: { textName: ['get', 'title'], textSize: 10, textFill: '#f00' }
+            },
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: true, uniquePlacement: true }
+                },
+                symbol: { textName: ['get', 'title'], textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        map.on('renderend', () => {
+            count++;
+            if (count === 8) {
+                map.zoomIn();
+            } else if (count === 16) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[0] === 255);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can be added after removed', done => {
         const geo = maptalks.GeoJSON.toGeometry(polygon);
         geo[0].setSymbol({
