@@ -50,6 +50,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         // main tile grid is the last one (draws on top)
         this['_tileZoom'] = tileGrids[1]['zoom'];
 
+        // tileGrids[0] 是地形瓦片
         const tileGrid = tileGrids[1];
         const allTiles = tileGrid['tiles'];
 
@@ -57,34 +58,40 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         for (let i = 0, l = allTiles.length; i < l; i++) {
             const tile = allTiles[i];
             const tileId = tile['id'];
-            const cached = this._getCachedTerrainTile(tileId);
-            if (cached) {
-                tiles.push(cached);
-            }
-            for (let j = 0; j < gridCount; j++) {
-                const tile = tileGrids[j].tiles[i],
-                tileId = tile['id'];
-            }
-
-            //load tile in cache at first if it has.
-            let tileLoading = false;
-            if (this._isLoadingTile(tileId)) {
-                tileLoading = loading = true;
-                this.tilesLoading[tileId].current = true;
+            let terrainData = this._getCachedTerrainTile(tileId);
+            if (isTerrainComplete(terrainData)) {
+                tiles.push(terrainData);
+                continue;
             } else {
-                const cached = this._getCachedTile(tileId);
-                if (cached) {
-                    tiles.push(cached);
-                } else {
+                terrainData = {
+                    skins: []
+                };
+            }
+            for (let j = 1; j < gridCount; j++) {
+                const tile = tileGrids[j].tiles[i];
+                const tileId = tile['id'];
+                let tileLoading = false;
+                if (this._isLoadingTile(tileId)) {
                     tileLoading = loading = true;
-                    const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
-                    if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                        loadingCount++;
-                        const key = tileId;
-                        tileQueue[key] = tile;
+                    this.tilesLoading[tileId].current = true;
+                } else {
+                    const cached = this._getCachedTile(tileId);
+                    if (cached) {
+                        tiles.push(cached);
+                    } else {
+                        tileLoading = loading = true;
+                        const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
+                        if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
+                            loadingCount++;
+                            const key = tileId;
+                            tileQueue[key] = tile;
+                        }
                     }
                 }
             }
+
+            //load tile in cache at first if it has.
+
             if (!tileLoading) continue;
             if (checkedTiles[tileId]) {
                 continue;
@@ -356,3 +363,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 }
 
 export default TerrainLayerRenderer;
+
+function isTerrainComplete(tile, tilesCount) {
+    if (!tile || !tile.terrain || tile.skins.length < tilesCount) {
+        return false;
+    }
+    for (let i = 0; i < tile.skins.length; i++) {
+        if (!tile.skins[i]) {
+            return false;
+        }
+    }
+    return true;
+}
