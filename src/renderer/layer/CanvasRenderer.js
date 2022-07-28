@@ -39,7 +39,7 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
-        if (Browser.decodeImageInWorker) {
+        if (Browser.decodeImageInWorker && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
             this._resWorkerConn = new ResourceWorkerConnection();
         }
         this.setToRedraw();
@@ -771,7 +771,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (!isSVG(url[0]) && Browser.decodeImageInWorker) {
+            if (!isSVG(url[0]) && me._resWorkerConn) {
                 const uri = getAbsoluteURL(url[0]);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
@@ -860,7 +860,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && !img.close && Browser.imageBitMap) {
+        if (img && !img.close && Browser.imageBitMap && !Browser.safari) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
