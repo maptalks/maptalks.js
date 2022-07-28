@@ -860,7 +860,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && !img.close && Browser.imageBitMap) {
+        if (img && !img.close && Browser.imageBitMap && !Browser.safari) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
