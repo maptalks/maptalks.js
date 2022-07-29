@@ -50,10 +50,10 @@ class Coordinate extends Position {
         for (let i = 0, len = coordinates.length; i < len; i++) {
             const child = coordinates[i];
             if (Array.isArray(child)) {
-                if (isNumber(child[0])) {
-                    result.push(new Coordinate(child));
-                } else {
+                if (Array.isArray(child[0])) {
                     result.push(Coordinate.toCoordinates(child));
+                } else {
+                    result.push(new Coordinate(child));
                 }
             } else if (child instanceof Coordinate) {
                 result.push(child);
