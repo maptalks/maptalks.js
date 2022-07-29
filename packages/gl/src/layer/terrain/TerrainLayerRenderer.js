@@ -11,135 +11,9 @@ const POINT1 = new maptalks.Point(0, 0);
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
-    draw(...args) {
-        super.draw(...args);
-    }
-
-    drawOnInteracting(...args) {
-        super.draw(...args);
-    }
-
-    isDrawable() {
-        return true;
-    }
-
-    _getTilesInCurrentFrame() {
-        const map = this.getMap();
-        const layer = this.layer;
-        const tileGrids = layer.getTiles().tileGrids;
-        if (!tileGrids || !tileGrids.length) {
-            return null;
-        }
-        const count = tileGrids.reduce((acc, curr) => acc + (curr && curr.tiles && curr.tiles.length || 0), 0);
-        if (count >= (this.tileCache.max / 2)) {
-            this.tileCache.setMaxSize(count * 2 + 1);
-        }
-        let loadingCount = 0;
-        let loading = false;
-        const checkedTiles = {};
-        const tiles = [],
-            parentTiles = [], parentKeys = {},
-            childTiles = [], childKeys = {};
-        //visit all the tiles
-        const tileQueue = {};
-        const preLoadingCount = this['_markTiles'](),
-            loadingLimit = this['_getLoadLimit']();
-
-        const gridCount = tileGrids.length;
-
-        // main tile grid is the last one (draws on top)
-        this['_tileZoom'] = tileGrids[1]['zoom'];
-
-        // tileGrids[0] 是地形瓦片
-        const tileGrid = tileGrids[1];
-        const allTiles = tileGrid['tiles'];
-
-
-        for (let i = 0, l = allTiles.length; i < l; i++) {
-            const tile = allTiles[i];
-            const tileId = tile['id'];
-            let terrainData = this._getCachedTerrainTile(tileId);
-            if (isTerrainComplete(terrainData)) {
-                tiles.push(terrainData);
-                continue;
-            } else {
-                terrainData = {
-                    skins: []
-                };
-            }
-            for (let j = 1; j < gridCount; j++) {
-                const tile = tileGrids[j].tiles[i];
-                const tileId = tile['id'];
-                let tileLoading = false;
-                if (this._isLoadingTile(tileId)) {
-                    tileLoading = loading = true;
-                    this.tilesLoading[tileId].current = true;
-                } else {
-                    const cached = this._getCachedTile(tileId);
-                    if (cached) {
-                        tiles.push(cached);
-                    } else {
-                        tileLoading = loading = true;
-                        const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
-                        if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
-                            loadingCount++;
-                            const key = tileId;
-                            tileQueue[key] = tile;
-                        }
-                    }
-                }
-            }
-
-            //load tile in cache at first if it has.
-
-            if (!tileLoading) continue;
-            if (checkedTiles[tileId]) {
-                continue;
-            }
-
-            checkedTiles[tileId] = 1;
-
-            const parentTile = this._findParentTile(tile);
-            if (parentTile) {
-                const parentId = parentTile.info.id;
-                if (parentKeys[parentId] === undefined) {
-                    parentKeys[parentId] = parentTiles.length;
-                    parentTiles.push(parentTile);
-                }/* else {
-                    //replace with parentTile of above tiles
-                    parentTiles[parentKeys[parentId]] = parentTile;
-                } */
-            } else if (!parentTiles.length) {
-                const children = this._findChildTiles(tile);
-                if (children.length) {
-                    children.forEach(c => {
-                        if (!childKeys[c.info.id]) {
-                            childTiles.push(c);
-                            childKeys[c.info.id] = 1;
-                        }
-                    });
-                }
-            }
-        }
-
-
-        if (parentTiles.length) {
-            childTiles.length = 0;
-            this._childTiles.length = 0;
-        }
-        return {
-            childTiles, parentTiles, tiles, placeholders, loading, loadingCount, tileQueue
-        };
-    }
-
-    _getCachedTerrainTile(tileId) {
-        return this._terrainCache.get(tileId);
-    }
-
-    drawTile() {}
-
     loadTile(tile) {
-        const type = this.layer.options.type;
+        const layer = this.layer.getLayers()[0];
+        const type = layer.options.type;
         let x, y, z;
         if (type === 'cesium') {
             x = tile.x;
@@ -156,14 +30,16 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         } else if (type === 'cesium') {
             terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
         }
+        const terrainData = {};
         this.workerConn.fetchTerrain(terrainUrl, this.layer.options, (err, res) => {
             if (err) {
                 console.warn(err);
             }
-            this.onTileLoad(res, tile);
+            maptalks.Util.extend(terrainData, res);
+            this.onTileLoad(terrainData, tile);
             this.setToRedraw();
         });
-        return {};
+        return terrainData;
     }
 
     _queryAltitide(tileIndex, worldPos, z) {
@@ -374,4 +250,9 @@ function isTerrainComplete(tile, tilesCount) {
         }
     }
     return true;
+}
+
+function getTileId(x, y, z) {
+    const row = Math.sqrt(Math.pow(4, z));
+    return (z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y;
 }

@@ -11,8 +11,8 @@ const options = {
     'opacity': 1.0,
     'exaggeration': 1.0,
     'renderer': 'gl',
-    'pyramidMode': 1
-    'terrainTileSize': 256
+    'pyramidMode': 1,
+    'terrainTileSize': 128
 };
 
 export default class TerrainLayer extends maptalks.TileLayer {
