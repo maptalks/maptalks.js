@@ -11,17 +11,7 @@ export default class FloodAnalysis extends Analysis {
         this.type = 'floodAnalysis';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
-        const renderer = this.layer.getRenderer();
-        this.regl = renderer.regl;
-        if (renderer) {
-            this._setViewshedPass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setViewshedPass(e.renderer);
-            }, this);
-        }
+    _prepareRenderOptions(renderer) {
         const map = this.layer.getMap();
         this._renderOptions = {};
         this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.waterHeight);
@@ -35,10 +25,9 @@ export default class FloodAnalysis extends Analysis {
             this._renderOptions['hasExtent'] = 1;
         }
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
-        return this;
     }
 
-    _setViewshedPass(renderer) {
+    _setPass(renderer) {
         const viewport = this._viewport = {
             x : 0,
             y : 0,
@@ -49,6 +38,7 @@ export default class FloodAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions(renderer);
         const floodRenderer = new reshader.Renderer(renderer.regl);
         this._pass = this._pass || new FloodPass(floodRenderer, viewport);
         this.layer.addAnalysis(this);

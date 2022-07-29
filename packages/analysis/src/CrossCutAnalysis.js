@@ -14,17 +14,7 @@ export default class CrossCutAnalysis extends Analysis {
         this.type = 'crosscutAnalysis';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
-        const renderer = this.layer.getRenderer();
-        this.regl = renderer.regl;
-        if (renderer) {
-            this._setViewshedPass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setViewshedPass(e.renderer);
-            }, this);
-        }
+    _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
         const { extentMap, extentInWorld } = this._createLine(this.options.cutLine);
@@ -32,7 +22,6 @@ export default class CrossCutAnalysis extends Analysis {
         this._renderOptions['extentMap'] = extentMap;
         this._renderOptions['projMatrix'] = map.projMatrix;
         this._renderOptions['viewMatrix'] = map.viewMatrix;
-        return this;
     }
 
     getAltitudes(count) {
@@ -65,6 +54,8 @@ export default class CrossCutAnalysis extends Analysis {
             const altitude = map.pointAtResToAltitude(pickedPoint[2], map.getGLRes());
             const coordinate = map.pointAtResToCoordinate(new maptalks.Point(pickedPoint[0], pickedPoint[1]), map.getGLRes());
             return new maptalks.Coordinate(coordinate.x, coordinate.y, altitude);
+        } else {
+            return coordinate;
         }
     }
 
@@ -75,7 +66,7 @@ export default class CrossCutAnalysis extends Analysis {
         return this._calExtent(buffered.geometry.coordinates[0]);
     }
 
-    _setViewshedPass(renderer) {
+    _setPass(renderer) {
         const viewport = this._viewport = {
             x : 0,
             y : 0,
@@ -86,6 +77,7 @@ export default class CrossCutAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions(renderer);
         const crosscutRenderer = new reshader.Renderer(renderer.regl);
         this._pass = this._pass || new CrossCutPass(crosscutRenderer, viewport);
         this.layer.addAnalysis(this);

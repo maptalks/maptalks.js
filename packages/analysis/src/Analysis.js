@@ -12,7 +12,29 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
     }
 
     addTo(layer) {
-        this.layer = layer;
+        const map = layer.getMap();
+        if (map) {
+            this.layer = layer;
+            this._setAnalysisPass();
+        } else {
+            layer.once('add', () => {
+                this.addTo(layer);
+            }, this);
+        }
+        return this;
+    }
+
+    _setAnalysisPass() {
+        const renderer = this.layer.getRenderer();
+        if (renderer) {
+            this.regl = renderer.regl;
+            this._setPass(renderer);
+        } else {
+            this.layer.once('renderercreate', e => {
+                this.regl = e.renderer.regl;
+                this._setPass(e.renderer);
+            }, this);
+        }
     }
 
     enable() {

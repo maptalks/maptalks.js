@@ -11,30 +11,6 @@ export default class ExcavateAnalysis extends Analysis {
         this.type = 'excavate';
     }
 
-    addTo(layer) {
-        super.addTo(layer);
-        const renderer = this.layer.getRenderer();
-        this.regl = renderer.regl;
-        if (renderer) {
-            this._setExcavatePass(renderer);
-        } else {
-            this.layer.once('renderercreate', e => {
-                this._setExcavatePass(e.renderer);
-            }, this);
-        }
-        const map = this.layer.getMap();
-        const { extentMap, extentInWorld, extentPolygon } = this._calExtent(this.options.boundary);
-        this._renderOptions = {};
-        this._renderOptions['height'] = map.altitudeToPoint(this.options['height'] || 0, map.getGLRes());
-        this._renderOptions['extent'] = extentInWorld;
-        this._renderOptions['extentPolygon'] = extentPolygon;
-        this._renderOptions['extentMap'] = extentMap;
-        this._renderOptions['groundTexture'] = this._createGroundTexture(this.options['textureUrl']);
-        this._renderOptions['hasTexture'] = defined(this.options['textureUrl']) ? 1 : 0;
-        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
-        return this;
-    }
-
     _createGroundTexture(textureUrl) {
         const regl = this.regl;
         const texture = regl.texture({width: 2, height: 2});
@@ -182,7 +158,20 @@ export default class ExcavateAnalysis extends Analysis {
         }
     }
 
-    _setExcavatePass(renderer) {
+    _prepareRenderOptions() {
+        const map = this.layer.getMap();
+        const { extentMap, extentInWorld, extentPolygon } = this._calExtent(this.options.boundary);
+        this._renderOptions = {};
+        this._renderOptions['height'] = map.altitudeToPoint(this.options['height'] || 0, map.getGLRes());
+        this._renderOptions['extent'] = extentInWorld;
+        this._renderOptions['extentPolygon'] = extentPolygon;
+        this._renderOptions['extentMap'] = extentMap;
+        this._renderOptions['groundTexture'] = this._createGroundTexture(this.options['textureUrl']);
+        this._renderOptions['hasTexture'] = defined(this.options['textureUrl']) ? 1 : 0;
+        this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+    }
+
+    _setPass(renderer) {
         const viewport = this._viewport = {
             x : 0,
             y : 0,
@@ -193,6 +182,7 @@ export default class ExcavateAnalysis extends Analysis {
                 return renderer.canvas ? renderer.canvas.height : 1;
             }
         };
+        this._prepareRenderOptions();
         const excavateRenderer = new reshader.Renderer(renderer.regl);
         this._pass = this._pass || new ExcavatePass(excavateRenderer, viewport);
         this.layer.addAnalysis(this);
