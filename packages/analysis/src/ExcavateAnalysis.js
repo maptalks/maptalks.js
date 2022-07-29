@@ -85,7 +85,7 @@ export default class ExcavateAnalysis extends Analysis {
         const picked = this._pick(x, y, matrix);
         const pickedPoint = picked && picked.point;
         if (pickedPoint) {
-            const altitude = map.pointToAltitude(pickedPoint[2], map.getGLRes());
+            const altitude = map.pointAtResToAltitude(pickedPoint[2], map.getGLRes());
             return altitude;
         }
         return 0;
@@ -252,9 +252,6 @@ export default class ExcavateAnalysis extends Analysis {
 
     remove() {
         super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
         if (this.pickingFBO) {
             this.pickingFBO.destroy();
         }

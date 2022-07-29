@@ -70,11 +70,4 @@ export default class InSightAnalysis extends Analysis {
             HAS_INSIGHT: 1
         };
     }
-
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
-    }
 }

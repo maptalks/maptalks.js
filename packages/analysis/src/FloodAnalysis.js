@@ -79,13 +79,6 @@ export default class FloodAnalysis extends Analysis {
         return uniforms;
     }
 
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
-    }
-
     getDefines() {
         return {
             HAS_FLOODANALYSE: 1

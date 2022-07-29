@@ -306,6 +306,51 @@ describe('api of analysis', () => {
         });
     });
 
+    it('remove skylineAnalysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                skylineAnalysis.remove();
+                done();
+            }, 100);
+        });
+    });
+
+    it('enable and disable analysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            skylineAnalysis.disable();
+            setTimeout(function() {
+                skylineAnalysis.enable();
+                done();
+            }, 100);
+        });
+    });
+
     //依赖maptalks核心库的map.pointToAltitude方法
     // it('calculate volume for excavate analysis', (done) => {
     //     const gltflayer = new maptalks.GLTFLayer('gltf');

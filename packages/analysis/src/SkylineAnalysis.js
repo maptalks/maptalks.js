@@ -45,7 +45,7 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     renderAnalysis(meshes) {
-        this._ground = this._ground || this._createGround();
+        this._ground = this._ground || this._createGround(this.renderer.regl);
         const map = this.layer.getMap();
         this._transformGround(map);
         const uniforms = {};
@@ -115,9 +115,6 @@ export default class SkylineAnalysis extends Analysis {
 
     remove() {
         super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
         if (this._ground) {
             this._ground.geometry.dispose();
             delete this._ground;

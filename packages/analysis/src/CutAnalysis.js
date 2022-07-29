@@ -82,11 +82,4 @@ export default class CutAnalysis extends Analysis {
             HAS_CUT: 1
         };
     }
-
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
-    }
 }

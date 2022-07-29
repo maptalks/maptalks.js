@@ -110,13 +110,6 @@ export default class CrossCutAnalysis extends Analysis {
         return uniforms;
     }
 
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
-    }
-
     getDefines() {
         return {
             HAS_CROSSCUT: 1

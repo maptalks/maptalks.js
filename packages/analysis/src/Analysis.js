@@ -36,7 +36,14 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
     }
 
     remove() {
-        delete this.layer;
+        if (this.layer) {
+            const layer = this.layer;
+            delete this.layer;
+            layer.removeAnalysis(this);
+            if (this._pass) {
+                this._pass.dispose();
+            }
+        }
     }
 
     update(name, value) {

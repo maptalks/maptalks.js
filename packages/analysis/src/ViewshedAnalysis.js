@@ -72,12 +72,5 @@ export default class ViewshedAnalysis extends Analysis {
             HAS_VIEWSHED: 1
         };
     }
-
-    remove() {
-        super.remove();
-        if (this._pass) {
-            this._pass.dispose();
-        }
-    }
 }
 
