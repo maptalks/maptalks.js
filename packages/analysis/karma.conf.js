@@ -6,7 +6,7 @@ module.exports = function (config) {
         basePath: '.',
         client: {
             mocha: {
-                timeout : 6000
+                timeout : 10000
             }
         },
         files: [

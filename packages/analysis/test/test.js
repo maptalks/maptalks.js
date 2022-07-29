@@ -76,7 +76,7 @@ function uint8ArrayEqual(a, b) {
 describe('add analysis', () => {
     it('add ViewShedAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -105,11 +105,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add FloodAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -132,12 +133,13 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
 
     it('add SkylineAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -160,11 +162,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add InSightAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -189,11 +192,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add CutAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -217,11 +221,12 @@ describe('add analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('add ExcavateAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -249,13 +254,14 @@ describe('add analysis', () => {
                 done();
             }, 500);
         });
+        gllayer.addTo(map);
     });
 });
 
 describe('api of analysis', () => {
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -273,6 +279,7 @@ describe('api of analysis', () => {
             horizontalAngle
         });
         viewshedAnalysis.addTo(gllayer);
+        gllayer.addTo(map);
         setTimeout(() => {
             viewshedAnalysis.update('eyePos', [center.x - 0.01, center.y + 0.01, 10]);
             viewshedAnalysis.update('lookPoint', [center.x + 0.01, center.y - 0.01, 0]);
@@ -280,11 +287,12 @@ describe('api of analysis', () => {
             viewshedAnalysis.update('horizontalAngle', 30);
             done();
         }, 500);
+
     });
 
     it('export result image by skylineAanalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -304,11 +312,12 @@ describe('api of analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('remove skylineAnalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -326,11 +335,12 @@ describe('api of analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     it('enable and disable analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFMarker(center, {
             symbol : {
                 url : modelUrl,
@@ -349,6 +359,7 @@ describe('api of analysis', () => {
                 done();
             }, 100);
         });
+        gllayer.addTo(map);
     });
 
     //依赖maptalks核心库的map.pointToAltitude方法
