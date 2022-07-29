@@ -354,6 +354,108 @@ describe('update style specs', () => {
 
     });
 
+    context('featureStyle methods', () => {
+        it('should can addFeatureStyle', done => {
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.addFeatureStyle({
+                    id: 0,
+                    style: [
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                        }
+                    ]
+                });
+            }, true, null, 1);
+        });
+
+        it('should can updateFeatureStyle', done => {
+            const style = {
+                style: [
+                    {
+                        name: 'lineStyle',
+                        filter: {
+                            title: '所有数据',
+                            value: ['==', 'type', 1]
+                        },
+                        renderPlugin: {
+                            type: 'line',
+                            dataConfig: { type: 'line' },
+                        },
+                        symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                    }
+                ],
+                featureStyle: [
+                    {
+                        id: 0,
+                        style: [
+                            {
+                                renderPlugin: {
+                                    type: 'line',
+                                    dataConfig: { type: 'line' },
+                                },
+                                symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                            }
+                        ]
+                    }
+                ]
+            }
+            assertChangeStyle(done, [0, 255, 0, 255], layer => {
+                layer.updateFeatureStyleById({
+                    id: 0,
+                    style: [
+                        {
+                            renderPlugin: {
+                                type: 'line',
+                                dataConfig: { type: 'line' },
+                            },
+                            symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                        }
+                    ]
+                });
+            }, true, style, 1);
+        });
+
+        it('should can removeFeatureStyleById', done => {
+            const style = {
+                style: [
+                    {
+                        name: 'lineStyle',
+                        filter: {
+                            title: '所有数据',
+                            value: ['==', 'type', 1]
+                        },
+                        renderPlugin: {
+                            type: 'line',
+                            dataConfig: { type: 'line' },
+                        },
+                        symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
+                    }
+                ],
+                featureStyle: [
+                    {
+                        id: 0,
+                        style: [
+                            {
+                                renderPlugin: {
+                                    type: 'line',
+                                    dataConfig: { type: 'line' },
+                                },
+                                symbol: { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 }
+                            }
+                        ]
+                    }
+                ]
+            }
+            assertChangeStyle(done, [255, 0, 0, 255], layer => {
+                layer.removeFeatureStyleById(0);
+            }, true, style, 1);
+        });
+    });
+
     it('should can updateSymbol', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
             layer.updateSymbol(0, {

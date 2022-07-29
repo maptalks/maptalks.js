@@ -688,8 +688,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!featureStyle) {
             return this;
         }
-        const id = featureStyle.id;
-        this.updateFeatureStyleById(id, featureStyle.style);
+        this.updateFeatureStyleById(featureStyle);
         return this;
     }
 
@@ -718,7 +717,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             return this;
         }
         const index = this.getFeatureStyleIndex(id);
-        const featureStyles = this._originFeatureStyle;
+        const featureStyles = this._originFeatureStyle || [];
         if (index < 0) {
             featureStyles.push(featureStyle);
         } else {
@@ -727,7 +726,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         this._setStyle({
             $root: this._pathRoot,
             style: this._vtStyle,
-            featureStyle
+            featureStyle: featureStyles
         });
         return this;
     }
