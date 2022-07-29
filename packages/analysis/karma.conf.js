@@ -10,9 +10,9 @@ module.exports = function (config) {
             }
         },
         files: [
-            'node_modules/maptalks/dist/maptalks.js',
-            'node_modules/@maptalks/gl/dist/maptalksgl.js',
-            'node_modules/@maptalks/gltf-layer/dist/maptalks.gltf.js',
+            '../../node_modules/maptalks/dist/maptalks.js',
+            './node_modules/@maptalks/gl/dist/maptalksgl.js',
+            '../../node_modules/@maptalks/gltf-layer/dist/maptalks.gltf.js',
             pkg.main,
             'test/**/*.js',
             {
