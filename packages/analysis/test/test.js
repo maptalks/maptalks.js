@@ -279,7 +279,6 @@ describe('api of analysis', () => {
             horizontalAngle
         });
         viewshedAnalysis.addTo(gllayer);
-        gllayer.addTo(map);
         setTimeout(() => {
             viewshedAnalysis.update('eyePos', [center.x - 0.01, center.y + 0.01, 10]);
             viewshedAnalysis.update('lookPoint', [center.x + 0.01, center.y - 0.01, 0]);
@@ -287,7 +286,7 @@ describe('api of analysis', () => {
             viewshedAnalysis.update('horizontalAngle', 30);
             done();
         }, 500);
-
+        gllayer.addTo(map);
     });
 
     it('export result image by skylineAanalysis', done => {
