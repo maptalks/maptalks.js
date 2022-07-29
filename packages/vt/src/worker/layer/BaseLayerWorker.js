@@ -116,7 +116,6 @@ export default class BaseLayerWorker {
     }
 
     _onTileLoad(context, cb, url, layers, features, props) {
-        // debugger
         this._createTileData(layers, features, context).then(data => {
             if (data.canceled) {
                 cb(null, { canceled: true });
@@ -371,7 +370,7 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(tileFeatures, pluginConfig, context) {
-        let features = cloneFeaAndAppendCustomTags(tileFeatures, pluginConfig);
+        let features = cloneFeaAndAppendCustomTags(tileFeatures, context.tileInfo.z, pluginConfig);
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize[0];
@@ -784,7 +783,7 @@ function hasFnTypeKeys(symbol) {
     return 0;
 }
 
-function cloneFeaAndAppendCustomTags(features, pluginConfig) {
+function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig) {
     const customProperties = pluginConfig.customProperties;
     if (customProperties) {
         for (let i = 0; i < customProperties.length; i++) {
@@ -796,7 +795,7 @@ function cloneFeaAndAppendCustomTags(features, pluginConfig) {
         features[i] = extend({}, features[i]);
         if (customProperties) {
             for (let j = 0; j < customProperties.length; j++) {
-                if (customProperties[j].fn(features[i])) {
+                if (customProperties[j].fn(features[i], zoom)) {
                     if (features[i].geojson) {
                         // geojson数据的properties是存在geojson-vt index里的，customTags会改变原值，所以需要复制一份
                         features[i].properties = extend({}, features[i].properties);

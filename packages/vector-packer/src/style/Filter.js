@@ -46,9 +46,9 @@ export function compileFilter(filterValue) {
             for (let i = 0; i < conditions.length; i++) {
                 filterFns.push(compileFilter(conditions[i]));
             }
-            return feature => {
+            return (feature, zoom) => {
                 for (let i = 0; i < filterFns.length; i++) {
-                    if (filterFns[i](feature)) {
+                    if (filterFns[i](feature, zoom)) {
                         return true;
                     }
                 }

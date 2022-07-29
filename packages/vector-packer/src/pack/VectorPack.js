@@ -74,7 +74,12 @@ export default class VectorPack {
                 fnTypes[fnKeyName] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;
-                    const v = fnTypes[fn0KeyName].evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                    let v;
+                    try {
+                        v = fnTypes[fn0KeyName].evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                    } catch (err) {
+                        return null;
+                    }
                     return v;
                 };
             } else if (isFnTypeSymbol(symbolDef[p])) {
