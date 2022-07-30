@@ -24,6 +24,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._styleCounter = 0;
         this._requestingMVT = {};
         this._tileQueue = [];
+        this._plugins = {};
+        this._featurePlugins = {};
     }
 
     getTileLevelValue(tileInfo, currentTileZoom) {
@@ -48,8 +50,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
                 if (err) throw new Error(err);
                 this._needRetire = true;
-                this.clear();
-                this._clearPlugin();
+                // this.clear();
+                // this._clearPlugin();
                 this._initPlugins();
                 this.setToRedraw();
                 this.layer.fire('refreshstyle');
@@ -75,7 +77,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     updateSceneConfig(type, idx, sceneConfig) {
-        const plugins = type === 0 ? this.plugins : this.featurePlugins;
+        const plugins = type === 0 ? this._getStylePlugins() : this._getFeaturePlugins();
         if (!plugins || !plugins[idx]) {
             return;
         }
@@ -90,7 +92,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     updateDataConfig(type, idx, dataConfig, old) {
-        const plugins = type === 0 ? this.plugins : this.featurePlugins;
+        const plugins = type === 0 ? this._getStylePlugins() : this._getFeaturePlugins();
         if (!plugins || !plugins[idx]) {
             return;
         }
@@ -103,7 +105,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     updateSymbol(type, idx, symbol) {
-        const plugins = type === 0 ? this.plugins : this.featurePlugins;
+        const plugins = type === 0 ? this._getStylePlugins() : this._getFeaturePlugins();
         if (!plugins || !plugins[idx]) {
             return false;
         }
@@ -252,10 +254,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        if (!this.plugins) {
+        let plugins = this._plugins[this._styleCounter];
+        if (!plugins) {
             this._initPlugins();
+            plugins = this._getStylePlugins();
         }
-        if (!layer.isDefaultRender() && (!this.plugins.length && !this.featurePlugins.length)) {
+        const featurePlugins = this._getFeaturePlugins();
+        if (!layer.isDefaultRender() && (!plugins.length && !featurePlugins.length)) {
             this.completeRender();
             return;
         }
@@ -427,10 +432,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
 
-        if (data.style !== this._styleCounter) {
-            //返回的是上一个style的tileData
-            return;
-        }
+        // if (data.style !== this._styleCounter) {
+        //     //返回的是上一个style的tileData
+        //     return;
+        // }
         let needCompile = false;
         //restore features for plugin data
         const features = data.features;
@@ -492,6 +497,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
             }
             tileInfo.extent = tileData && tileData.extent;
+            tileData.styleCounter = data.style;
             this._tileQueue.push({ tileData, tileInfo });
         }
         this.layer.fire('datareceived', { url });
@@ -594,11 +600,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         } else {
             const allStyles = layer._getComputedStyle();
             const styles = layer._getTargetStyle(styleType, allStyles);
+            const plugins = this._getStylePlugins();
             style = styles[i];
             if (!style.renderPlugin) {
                 isUpdated = true;
                 const { plugin, symbol, renderPlugin } = this._getDefaultRenderPlugin(data.type);
-                this.plugins[i] = plugin;
+                plugins[i] = plugin;
                 style.symbol = symbol;
                 style.renderPlugin = renderPlugin;
             }
@@ -607,7 +614,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _getFramePlugins(tileData) {
-        let plugins = this.plugins || [];
+        const styleCounter = tileData && tileData.styleCounter;
+        let plugins = this._getStylePlugins(styleCounter) || [];
         if (this.layer.isDefaultRender() && this._layerPlugins) {
             plugins = [];
             if (tileData) {
@@ -625,10 +633,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 });
             }
         }
-
-        if (this.featurePlugins && this.featurePlugins.length) {
+        const featurePlugins = this._getFeaturePlugins(styleCounter);
+        if (featurePlugins && featurePlugins.length) {
             plugins = plugins.slice();
-            pushIn(plugins, this.featurePlugins);
+            pushIn(plugins, featurePlugins);
         }
 
         return plugins;
@@ -644,13 +652,34 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
             return plugins;
         }
-        return this.plugins;
+        const plugins = [];
+        for (const p in this._plugins) {
+            plugins.push(...this._plugins[p])
+        }
+        for (const p in this._featurePlugins) {
+            plugins.push(...this._featurePlugins[p]);
+        }
+        return plugins;
+    }
+
+    _getStylePlugins(styleCounter) {
+        if (isNil(styleCounter)) {
+            styleCounter = this._styleCounter;
+        }
+        return this._plugins[styleCounter] || EMPTY_ARRAY;
+    }
+
+    _getFeaturePlugins(styleCounter) {
+        if (isNil(styleCounter)) {
+            styleCounter = this._styleCounter;
+        }
+        return this._featurePlugins[styleCounter] || EMPTY_ARRAY;
     }
 
     _startFrame(timestamp) {
         const useDefault = this.layer.isDefaultRender() && this._layerPlugins;
         const parentContext = this._parentContext;
-        const plugins = this._getFramePlugins();
+        const plugins = this._getAllPlugins();
         plugins.forEach((plugin, idx) => {
             if (!plugin) {
                 return;
@@ -682,7 +711,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const mode = parentContext.renderMode;
         const targetFBO = parentContext && parentContext.renderTarget && parentContext.renderTarget.fbo;
         const cameraPosition = this.getMap().cameraPosition;
-        const plugins = this._getFramePlugins();
+        const plugins = this._getAllPlugins();
 
         if (this.layer.options.collision) {
             //按照plugin顺序更新collision索引
@@ -1107,10 +1136,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _clearPlugin() {
-        this._getFramePlugins().forEach(plugin => {
+        this._getAllPlugins().forEach(plugin => {
             plugin.remove();
         });
-        this.plugins = [];
+        this.plugins = {};
     }
 
     hitDetect(point) {
@@ -1135,6 +1164,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 throw new Error('invalid plugin type for style at ' + idx);
             }
             const plugin = this._createRenderPlugin(config);
+            plugin.styleCounter = this._styleCounter;
             plugin.style = style;
             return plugin;
         });
@@ -1149,11 +1179,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             const plugin = this._createRenderPlugin(config);
             plugin.style = featureStyle;
+            plugin.styleCounter = this._styleCounter;
             featurePlugins.push(plugin);
             return plugin;
         });
-        this.plugins = plugins;
-        this.featurePlugins = featurePlugins;
+        const styleCounter = this._styleCounter;
+        this._plugins[styleCounter] = plugins;
+        this._featurePlugins[styleCounter] = featurePlugins;
         this.layer.fire('pluginsinited');
         return plugins;
     }
