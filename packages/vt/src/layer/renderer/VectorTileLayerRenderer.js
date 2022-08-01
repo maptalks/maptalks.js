@@ -47,6 +47,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (this._workerConn) {
             this._styleCounter++;
+            this._preservePrevTiles();
             this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
                 if (err) throw new Error(err);
                 this._needRetire = true;
@@ -59,6 +60,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         } else {
             this._initPlugins();
         }
+    }
+
+    _preservePrevTiles() {
+        this._prevTilesInView = this.tilesInView;
+        for (const p in this._prevTilesInView) {
+            const tile = this._prevTilesInView[p];
+            if (tile && tile.info) {
+                this.tileCache.getAndRemove(tile.info.id);
+            }
+        }
+        this.tilesInView = {};
+        this.tilesLoading = {};
+
     }
 
     updateOptions(conf) {
@@ -362,7 +376,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isTileNearCamera(mesh) {
-        return Math.abs(this.getCurrentTileZoom() - mesh.properties.tile.z) <= 1;
+        const gap = this.getCurrentTileZoom() - mesh.properties.tile.z;
+        return gap >= 0 && gap <= 1;
     }
 
     isBackTile(id) {
