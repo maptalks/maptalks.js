@@ -48,7 +48,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this._workerConn) {
             this._styleCounter++;
             this._preservePrevTiles();
-            this._workerConn.updateStyle(this.layer._getComputedStyle(), err => {
+            const style = this.layer._getComputedStyle();
+            style.styleCounter = this._styleCounter;
+            this._workerConn.updateStyle(style, err => {
                 if (err) throw new Error(err);
                 this._needRetire = true;
                 // this.clear();
@@ -259,14 +261,49 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, context) {
         if (this._prevTilesInView) {
-            for (const p in this._prevTilesInView) {
-                const tile = this._prevTilesInView[p];
-                if (!this.tileCache.has(tile.id)) {
-                    this['_drawTile'](tile.info, tile.image, context);
+            if (!Object.keys(this._prevTilesInView).length) {
+                this._deletePrevPlugins();
+                delete this._prevTilesInView;
+            } else {
+                for (const p in this._prevTilesInView) {
+                    const tile = this._prevTilesInView[p];
+                    if (!this.tileCache.has(tile.id)) {
+                        this['_drawTile'](tile.info, tile.image, context);
+                    }
                 }
             }
         }
         super['_drawTiles'](tiles, parentTiles, childTiles, placeholders, context);
+    }
+
+    _deletePrevPlugins() {
+        const styleCounter = this._styleCounter;
+        const retired = [];
+        const retiredFeaPlulgin = [];
+        for (const p in this._plugins) {
+            if (+p !== styleCounter) {
+                retired.push(p);
+                const oldPlugins = this._getStylePlugins(p);
+                oldPlugins.forEach(plugin => {
+                    plugin.remove();
+                });
+            }
+        }
+        for (const p in this._featurePlugins) {
+            if (+p !== styleCounter) {
+                retiredFeaPlulgin.push(p);
+                const oldFeaturePlugins = this._getFeaturePlugins(p);
+                oldFeaturePlugins.forEach(plugin => {
+                    plugin.remove();
+                });
+            }
+        }
+        for (let i = 0; i < retired.length; i++) {
+            delete this._plugins[retired[i]];
+        }
+        for (let i = 0; i < retiredFeaPlulgin.length; i++) {
+            delete this._featurePlugins[retiredFeaPlulgin[i]];
+        }
     }
 
     draw(timestamp, parentContext) {
@@ -408,7 +445,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tiles: [tileInfo]
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
-            this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale, pointAtTileRes }, this._onReceiveMVTData.bind(this, url));
+            this._workerConn.loadTile({ tileInfo, glScale, zScale: this._zScale, pointAtTileRes, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;

@@ -15,15 +15,15 @@ export default class BaseLayerWorker {
         this.upload = upload;
         this._compileStyle(options.style);
         this.requests = {};
-        this._styleCounter = 0;
         this._cache = tileCache;
+        this._styleCounter = 0;
         this.loadings = tileLoading;
     }
 
     updateStyle(style, cb) {
         this.options.style = style;
+        this._styleCounter = style.styleCounter;
         this._compileStyle(style);
-        this._styleCounter++;
         cb();
     }
 
@@ -121,7 +121,7 @@ export default class BaseLayerWorker {
                 cb(null, { canceled: true });
                 return;
             }
-            data.data.style = this._styleCounter;
+            data.data.style = context.styleCounter;
             if (props) {
                 extend(data.data, props);
             }
@@ -219,7 +219,7 @@ export default class BaseLayerWorker {
             buffers = [];
         const feaTags = {};
         const promises = [
-            Promise.resolve(this._styleCounter)
+            Promise.resolve(context.styleCounter)
         ];
         let currentType = 0;
         let typeIndex = -1;
