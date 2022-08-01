@@ -8,6 +8,7 @@ const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
 const outputFile = 'dist/maptalks.vt.js';//(production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
+const reserves = ['on', 'once', 'off', '_drawTiles'];
 const plugins = production ? [
     terser({
         module: true,
@@ -15,7 +16,7 @@ const plugins = production ? [
             properties: {
                 'regex': /^_/,
                 'keep_quoted': true,
-                'reserved': ['on', 'once', 'off'],
+                'reserved': reserves,
             }
         },
         output: {
@@ -31,7 +32,7 @@ const pluginsWorker = production ? [
             properties: {
                 'regex': /^_/,
                 'keep_quoted': true,
-                'reserved': ['on', 'once', 'off'],
+                'reserved': reserves,
             }
         },
         output: {

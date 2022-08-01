@@ -257,6 +257,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return result;
     }
 
+    _drawTiles(tiles, parentTiles, childTiles, placeholders, context) {
+        if (this._prevTilesInView) {
+            for (const p in this._prevTilesInView) {
+                const tile = this._prevTilesInView[p];
+                if (!this.tileCache.has(tile.id)) {
+                    this['_drawTile'](tile.info, tile.image, context);
+                }
+            }
+        }
+        super['_drawTiles'](tiles, parentTiles, childTiles, placeholders, context);
+    }
+
     draw(timestamp, parentContext) {
         if (this._currentTimestamp !== timestamp) {
             this._needRetire = false;
@@ -1075,7 +1087,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
         if (tile.image && !tile.image._empty) {
-            const plugins = this._getAllPlugins();
+            const styleCounter = tile.image && tile.image.style;
+            const plugins = this._getStylePlugins(styleCounter);
             if (plugins) {
                 plugins.forEach((plugin, idx) => {
                     if (!plugin) {
@@ -1426,6 +1439,25 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         // 不retire的话，taa的图层不会更新，fuzhenn/maptalks-studio#1112
         this._needRetire = true;
         return super.setZIndex.apply(this, arguments);
+    }
+
+    onTileLoad(tileImage, tileInfo) {
+        this._retirePrevTile(tileImage, tileInfo);
+        super.onTileLoad(tileImage, tileInfo);
+    }
+
+    onTileError(tileImage, tileInfo) {
+        this._retirePrevTile(tileImage, tileInfo);
+        super.onTileError(tileImage, tileInfo);
+    }
+
+    _retirePrevTile(tileImage, tileInfo) {
+        const { id } = tileInfo;
+        if (this._prevTilesInView && this._prevTilesInView[id]) {
+            const oldTile = this._prevTilesInView[id];
+            this.deleteTile(oldTile);
+            delete this._prevTilesInView[id];
+        }
     }
 }
 
