@@ -1,4 +1,4 @@
-import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn } from '../common/Util.js';
+import { extend, isString, isFunction, isNumber, isSupportVAO, hasOwn, hashCode } from '../common/Util.js';
 import ShaderLib from '../shaderlib/ShaderLib.js';
 import { KEY_DISPOSED } from '../common/Constants.js';
 
@@ -8,6 +8,8 @@ const UNIFORM_TYPE = {
 };
 
 let uid = 0;
+
+const activeVarsCache = {};
 
 class Shader {
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
@@ -160,6 +162,12 @@ class Shader {
     }
 
     getActiveVars(regl, vert, frag) {
+        const vHash = hashCode(vert);
+        const fHash = hashCode(frag);
+        const cacheKey = vHash + '_' + fHash;
+        if (activeVarsCache[cacheKey]) {
+            return activeVarsCache[cacheKey];
+        }
         const gl = regl['_gl'];
         const program = gl.createProgram();
 
@@ -207,10 +215,12 @@ class Shader {
         gl.deleteProgram(program);
         gl.deleteShader(vertShader);
         gl.deleteShader(fragShader);
-        return {
+
+        activeVarsCache[cacheKey] = {
             activeUniforms,
             activeAttributes
         };
+        return activeVarsCache[cacheKey];
     }
 
     createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO) {
