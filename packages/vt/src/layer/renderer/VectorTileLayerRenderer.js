@@ -260,6 +260,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, context) {
+        super['_drawTiles'](tiles, parentTiles, childTiles, placeholders, context);
         if (this._prevTilesInView) {
             if (!Object.keys(this._prevTilesInView).length) {
                 this._deletePrevPlugins();
@@ -273,7 +274,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
             }
         }
-        super['_drawTiles'](tiles, parentTiles, childTiles, placeholders, context);
     }
 
     _deletePrevPlugins() {
@@ -401,7 +401,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     getShadowMeshes() {
         const meshes = [];
-        const plugins = this._getFramePlugins();
+        const plugins = this._getAllPlugins();
         plugins.forEach((plugin, idx) => {
             if (!plugin) {
                 return;
@@ -1031,6 +1031,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 this.setToRedraw();
             }
         });
+        if (tileData && tileData.style === this._styleCounter) {
+            this._retirePrevTile(tileInfo);
+        }
         this.setCanvasUpdated();
     }
 
@@ -1479,16 +1482,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     onTileLoad(tileImage, tileInfo) {
-        this._retirePrevTile(tileImage, tileInfo);
+        if (tileImage._empty) {
+            this._retirePrevTile(tileInfo);
+        }
         super.onTileLoad(tileImage, tileInfo);
     }
 
     onTileError(tileImage, tileInfo) {
-        this._retirePrevTile(tileImage, tileInfo);
+        this._retirePrevTile(tileInfo);
         super.onTileError(tileImage, tileInfo);
     }
 
-    _retirePrevTile(tileImage, tileInfo) {
+    _retirePrevTile(tileInfo) {
         const { id } = tileInfo;
         if (this._prevTilesInView && this._prevTilesInView[id]) {
             const oldTile = this._prevTilesInView[id];
