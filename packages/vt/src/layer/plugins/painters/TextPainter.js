@@ -111,7 +111,13 @@ export default class TextPainter extends CollisionPainter {
                 this._textNameFn[i] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;
-                    const v = expression.evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                    let v;
+                    try {
+                        v = expression.evaluateWithoutErrorHandling(params, feature, featureState, null, availableImages);
+                    } catch (err) {
+                        v = null;
+                    }
+
                     return v;
                 };
             } else if (isFunctionDefinition(symbolDef['textName'])) {
