@@ -107,7 +107,7 @@ export default class TextPainter extends CollisionPainter {
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
             if (FilterUtil.isExpression(symbolDef['textName'])) {
-                const expression = FilterUtil.createExpression(symbolDef['textName']);
+                const expression = FilterUtil.createExpression(symbolDef['textName'], 'string');
                 this._textNameFn[i] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;

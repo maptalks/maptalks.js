@@ -11,33 +11,8 @@ import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
 import { getHeightValue } from './util/util';
 import StyledVector from './StyledVector';
 import { packPosition/*, unpackPosition*/ } from './util/pack_position';
-import { compileFilter, isExpression, createExpression } from '../style/Filter';
+import { compileFilter, isExpression, createExpression, getExpressionType, isInterpolated } from '../style/Filter';
 
-const interpolatedSymbols = {
-    'lineWidth': 1,
-    'lineStrokeWidth': 1,
-    'lineDx': 1,
-    'lineDy': 1,
-    'lineOpacity': 1,
-    'linePatternAnimSpeed': 1,
-    'markerWidth': 1,
-    'markerHeight': 1,
-    'markerDx': 1,
-    'markerDy': 1,
-    'markerSpacing': 1,
-    'markerOpacity': 1,
-    'markerRotation': 1,
-    'textWrapWidth': 1,
-    'textSpacing': 1,
-    'textSize': 1,
-    'textHaloRadius': 1,
-    'textHaloOpacity': 1,
-    'textDx': 1,
-    'textDy': 1,
-    'textOpacity': 1,
-    'textRotation': 1,
-    'polygonOpacity': 1
-};
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -70,7 +45,8 @@ export default class VectorPack {
             if (isExpression(symbolDef[p])) {
                 const fn0KeyName = (p + '_Fn_0').trim();
                 const fnKeyName = (p + 'Fn').trim();
-                fnTypes[fn0KeyName] = createExpression(symbolDef[p]);
+                const type = getExpressionType(p);
+                fnTypes[fn0KeyName] = createExpression(symbolDef[p], type);
                 fnTypes[fnKeyName] = (zoom, properties) => {
                     params.zoom = zoom;
                     feature.properties = properties;
@@ -85,7 +61,7 @@ export default class VectorPack {
             } else if (isFnTypeSymbol(symbolDef[p])) {
                 const fn0KeyName = (p + '_Fn_0').trim();
                 const fnKeyName = (p + 'Fn').trim();
-                if (interpolatedSymbols[p]) {
+                if (isInterpolated(p)) {
                     fnTypes[fn0KeyName] = interpolated(symbolDef[p]);
                     fnTypes[fnKeyName] = (zoom, properties) => {
                         const v = fnTypes[fn0KeyName](zoom, properties);
@@ -123,7 +99,7 @@ export default class VectorPack {
         });
         this.styledVectors = [];
         this.properties = {};
-        this._fnTypes = VectorPack.genFnTypes(this.symbolDef);
+        this._fnTypes = options.fnTypes || VectorPack.genFnTypes(this.symbolDef);
         if (isFnTypeSymbol(this.symbolDef['visible'])) {
             this._visibleFn = interpolated(this.symbolDef['visible']);
         }

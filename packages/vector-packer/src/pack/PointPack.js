@@ -39,16 +39,33 @@ const IDX_PROP = '__index';
  */
 export default class PointPack extends VectorPack {
 
-    static needMerge(symbolDef) {
+    static needMerge(symbolDef, fnTypes, zoom) {
         if (!symbolDef) {
             return false;
         }
-        return symbolDef['mergeOnProperty'] && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line');
+        let isLinePlacement = symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line';
+        if (!isLinePlacement) {
+            if (fnTypes['textPlacementFn']) {
+                isLinePlacement = fnTypes['textPlacementFn'](zoom) === 'line';
+            }
+            if (fnTypes['markerPlacementFn']) {
+                isLinePlacement = fnTypes['markerPlacementFn'](zoom) === 'line';
+            }
+        }
+        return symbolDef['mergeOnProperty'] && isLinePlacement;
     }
 
-    static mergeLineFeatures(features, symbolDef, zoom) {
+    static mergeLineFeatures(features, symbolDef, fnTypes, zoom) {
         const keyName = (IDX_PROP + '').trim();
-        const merging = getFeauresToMerge(features, symbolDef, zoom);
+        let textPlacement = symbolDef['textPlacement'];
+        let markerPlacement = symbolDef['markerPlacement'];
+        if (fnTypes['textPlacementFn']) {
+            textPlacement = fnTypes['textPlacementFn'](zoom);
+        }
+        if (fnTypes['markerPlacementFn']) {
+            markerPlacement = fnTypes['markerPlacementFn'](zoom);
+        }
+        const merging = getFeauresToMerge(features, symbolDef, markerPlacement, textPlacement, zoom);
         if (merging.length) {
             const result = [];
             for (let i = 0; i < merging.length; i++) {
@@ -170,6 +187,10 @@ export default class PointPack extends VectorPack {
 
     constructor(features, symbol, options) {
         super(features, symbol, options);
+        this._textPlacement = symbol['textPlacement'];
+        if (this._fnTypes['textPlacementFn']) {
+            this._textPlacement = this._fnTypes['textPlacementFn'](this.options.zoom);
+        }
     }
 
     createStyledVector(feature, symbol, fnTypes, options, iconReqs, glyphReqs) {
@@ -196,7 +217,7 @@ export default class PointPack extends VectorPack {
                 fontGlphy[text.charCodeAt(i)] = 1;
                 //TODO mapbox-gl 这里对 vertical 字符做了特殊处理
             }
-            if (symbol['textPlacement'] === 'line') {
+            if (this._textPlacement === 'line') {
                 //isCharsCompact是指英文等字符需要适当缩小间隔，让文字更紧凑
                 //但placement为line时，为解决intel gpu的崩溃问题需开启stencil，所以不能缩小间隔，否则会出现文字的削边问题
                 glyphReqs.options = { isCharsCompact: false };
@@ -387,7 +408,7 @@ export default class PointPack extends VectorPack {
         const symbol = point.symbol;
         const properties = point.feature.properties;
         // const size = point.size;
-        const alongLine = symbol['textPlacement'] === 'line' && !symbol['isIconText'];
+        const alongLine = this._textPlacement === 'line' && !symbol['isIconText'];
         const isText = symbol['textName'] !== undefined;
         const isVertical = isText && alongLine && allowsVerticalWritingMode(point.getIconAndGlyph().glyph.text) ? 1 : 0;
         const { textFillFn, textSizeFn, textHaloFillFn, textHaloRadiusFn, textHaloOpacityFn, textDxFn, textDyFn,
@@ -688,11 +709,11 @@ export default class PointPack extends VectorPack {
         if (this._fnTypes.markerPlacementFn) {
             return this._fnTypes.markerPlacementFn(this.options['zoom'], point.feature.properties);
         }
-        return symbol.markerPlacement || symbol.textPlacement;
+        return symbol.markerPlacement || this._textPlacement;
     }
 
     getPackSDFFormat(symbol) {
-        if (symbol['textPlacement'] === 'line' && !symbol['isIconText']) {
+        if (this._textPlacement === 'line' && !symbol['isIconText']) {
             //position, shape0, textcoord0, shape1, textcoord1, size, color, opacity, offset, rotation
             const formats = [
                 ...this.getPositionFormat(),
@@ -776,14 +797,14 @@ export default class PointPack extends VectorPack {
 
 }
 
-function getFeauresToMerge(features, symbolDef, zoom) {
+function getFeauresToMerge(features, symbolDef, markerPlacement, textPlacement, zoom) {
     const keyName = (IDX_PROP + '').trim();
     const fnTypes = VectorPack.genFnTypes(symbolDef);
     const { mergeOnPropertyFn } = fnTypes;
-    if (!symbolDef['mergeOnProperty'] || symbolDef['textPlacement'] !== 'line' && symbolDef['markerPlacement'] !== 'line') {
+    if (!symbolDef['mergeOnProperty'] || textPlacement !== 'line' && markerPlacement !== 'line') {
         return [];
     }
-    if (isString(symbolDef['mergeOnProperty']) && (symbolDef['textPlacement'] === 'line' || symbolDef['markerPlacement'] === 'line')) {
+    if (isString(symbolDef['mergeOnProperty']) && (textPlacement === 'line' || markerPlacement === 'line')) {
         return [{ features: features, property: symbolDef['mergeOnProperty'] }];
     }
     const result = [];
@@ -794,9 +815,9 @@ function getFeauresToMerge(features, symbolDef, zoom) {
         const properties = features[i].properties = features[i].properties || {};
         properties['$layer'] = features[i].layer;
         properties['$type'] = features[i].type;
-        let placement = symbolDef['markerPlacement'];
+        let placement = markerPlacement;
         if (placement !== 'line') {
-            placement = symbolDef['textPlacement'];
+            placement = textPlacement;
         }
         const property = mergeOnPropertyFn ? mergeOnPropertyFn(zoom, properties) : symbolDef['mergeOnProperty'];
         if (placement !== 'line' || isNil(property)) {

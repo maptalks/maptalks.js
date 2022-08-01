@@ -56,7 +56,10 @@ export default class CirclePack extends VectorPack {
         return anchors;
     }
 
-    _getPlacement(symbol) {
+    _getPlacement(point, symbol) {
+        if (this._fnTypes.markerPlacementFn) {
+            return this._fnTypes.markerPlacementFn(this.options['zoom'], point.feature.properties);
+        }
         return symbol.markerPlacement;
     }
 }

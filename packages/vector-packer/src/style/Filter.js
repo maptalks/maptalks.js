@@ -80,12 +80,13 @@ export function compileFilter(filterValue) {
 }
 
 const spec = {
-    "type": "string",
+    "type": "number",
     "property-type": "data-driven",
     "expression": { "parameters": ["zoom", "feature"] }
 };
 
-export function createExpression(expr) {
+export function createExpression(expr, type) {
+    spec.type = type || 'number';
     const result = createMapboxExpression(expr, spec);
     if (result.result !== 'success') {
         throw new Error(`Invalid maplibre spec expression: ${JSON.stringify(expr)} (${result.value})`);
@@ -95,4 +96,44 @@ export function createExpression(expr) {
 
 export function isExpression(expr) {
     return isMapboxExpression(expr);
+}
+
+const interpolatedSymbols = {
+    'lineWidth': 1,
+    'lineStrokeWidth': 1,
+    'lineDx': 1,
+    'lineDy': 1,
+    'lineOpacity': 1,
+    'linePatternAnimSpeed': 1,
+    'markerWidth': 1,
+    'markerHeight': 1,
+    'markerDx': 1,
+    'markerDy': 1,
+    'markerSpacing': 1,
+    'markerOpacity': 1,
+    'markerRotation': 1,
+    'textWrapWidth': 1,
+    'textSpacing': 1,
+    'textSize': 1,
+    'textHaloRadius': 1,
+    'textHaloOpacity': 1,
+    'textDx': 1,
+    'textDy': 1,
+    'textOpacity': 1,
+    'textRotation': 1,
+    'polygonOpacity': 1
+};
+
+export function isInterpolated(p) {
+    return interpolatedSymbols[p];
+}
+
+export function getExpressionType(p) {
+    if (p === 'textName' || p === 'textPlacement' || p === 'markerPlacement' || p === 'markerFile') {
+        return 'string';
+    } else if (isInterpolated(p)) {
+        return 'number';
+    } else {
+        return 'color';
+    }
 }
