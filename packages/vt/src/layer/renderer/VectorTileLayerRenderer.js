@@ -66,11 +66,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _preservePrevTiles() {
         this._prevTilesInView = this.tilesInView;
+        const tileCache = this.tileCache;
         for (const p in this._prevTilesInView) {
             const tile = this._prevTilesInView[p];
             if (tile && tile.info) {
-                this.tileCache.getAndRemove(tile.info.id);
+                tileCache.getAndRemove(tile.info.id);
             }
+        }
+        const keys = tileCache.keys();
+        for (let i = 0; i < keys.length; i++) {
+            tileCache.remove(keys[i]);
         }
         this.tilesInView = {};
         this.tilesLoading = {};
