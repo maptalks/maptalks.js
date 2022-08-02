@@ -59,6 +59,8 @@ class StandardPainter extends MeshPainter {
         if (context.states && context.states.includesChanged) {
             this.shader.dispose();
             delete this.shader;
+            this._updateDepthShader.dispose();
+            delete this._updateDepthShader;
             this._createShader(context);
         }
         let isSsr = !!context.ssr && this.getSymbols()[0].ssr;
@@ -111,13 +113,6 @@ class StandardPainter extends MeshPainter {
         super.delete();
         this.disposeIBLTextures();
         this.material.dispose();
-        if (this._depthShader) {
-            this._depthShader.dispose();
-        }
-        if (this.shader) {
-            this.shader.dispose();
-            delete this.shader;
-        }
         if (this._updateDepthShader) {
             this._updateDepthShader.dispose();
             delete this._updateDepthShader;
