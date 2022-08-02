@@ -65,6 +65,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _preservePrevTiles() {
+        if (this._prevTilesInView) {
+            for (const p in this._prevTilesInView) {
+                const tile = this._prevTilesInView[p];
+                if (tile) {
+                    this.deleteTile(tile);
+                }
+            }
+        }
         this._prevTilesInView = this.tilesInView;
         const tileCache = this.tileCache;
         for (const p in this._prevTilesInView) {
@@ -73,13 +81,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache.getAndRemove(tile.info.id);
             }
         }
-        const keys = tileCache.keys();
-        for (let i = 0; i < keys.length; i++) {
-            tileCache.remove(keys[i]);
-        }
+        tileCache.reset();
         this.tilesInView = {};
         this.tilesLoading = {};
-
+        this['_parentTiles'] = [];
+        this['_childTiles'] = [];
     }
 
     updateOptions(conf) {
@@ -501,10 +507,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return;
         }
 
-        // if (data.style !== this._styleCounter) {
-        //     //返回的是上一个style的tileData
-        //     return;
-        // }
+        if (data.style !== this._styleCounter) {
+            //返回的是上一个style的tileData
+            return;
+        }
         let needCompile = false;
         //restore features for plugin data
         const features = data.features;
@@ -566,7 +572,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
             }
             tileInfo.extent = tileData && tileData.extent;
-            tileData.styleCounter = data.style;
             this._tileQueue.push({ tileData, tileInfo });
         }
         this.layer.fire('datareceived', { url });
@@ -683,7 +688,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _getFramePlugins(tileData) {
-        const styleCounter = tileData && tileData.styleCounter;
+        const styleCounter = tileData && tileData.style;
         let plugins = this._getStylePlugins(styleCounter) || [];
         if (this.layer.isDefaultRender() && this._layerPlugins) {
             plugins = [];
@@ -1101,6 +1106,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const queue = this._tileQueue;
         while (queue.length && count < limit) {
             const { tileData, tileInfo } = queue.shift();
+            if (tileData.style !== this._styleCounter) {
+                continue;
+            }
             this.onTileLoad(tileData, tileInfo);
             this._createOneTile(tileInfo, tileData);
             count++;
