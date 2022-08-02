@@ -313,7 +313,7 @@ describe('update style specs', () => {
 
         it('should can updateRenderStyleByName', done => {
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
-                layer.updateRenderStyleByName('lineStyle', {
+                layer.updateRenderStyle('lineStyle', {
                     filter: true,
                     renderPlugin: {
                         type: 'line',
@@ -348,7 +348,7 @@ describe('update style specs', () => {
                 }
             ];
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
-                layer.removeRenderStyleByName('lineStyle');
+                layer.removeRenderStyle('lineStyle');
             }, true, style);
         });
 
@@ -357,7 +357,7 @@ describe('update style specs', () => {
     context('featureStyle methods', () => {
         it('should can addFeatureStyle', done => {
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
-                layer.addFeatureStyle({
+                layer.updateFeatureStyle({
                     id: 0,
                     style: [
                         {
@@ -404,7 +404,7 @@ describe('update style specs', () => {
                 ]
             }
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
-                layer.updateFeatureStyleById({
+                layer.updateFeatureStyle({
                     id: 0,
                     style: [
                         {
@@ -419,7 +419,7 @@ describe('update style specs', () => {
             }, true, style, 1);
         });
 
-        it('should can removeFeatureStyleById', done => {
+        it('should can removeFeatureStyle', done => {
             const style = {
                 style: [
                     {
@@ -451,7 +451,7 @@ describe('update style specs', () => {
                 ]
             }
             assertChangeStyle(done, [255, 0, 0, 255], layer => {
-                layer.removeFeatureStyleById(0);
+                layer.removeFeatureStyle(0);
             }, true, style, 1);
         });
     });
@@ -465,9 +465,9 @@ describe('update style specs', () => {
         });
     });
 
-    it('should can updateSymbolByName', done => {
+    it('should can updateSymbol by name', done => {
         assertChangeStyle(done, [0, 255, 0, 255], layer => {
-            layer.updateSymbolByName('lineStyle', {
+            layer.updateSymbol('lineStyle', {
                 lineColor: '#0f0'
             });
             assert(layer.options.style[0].symbol.lineColor === '#0f0');

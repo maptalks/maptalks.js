@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, isNil, isString, hasOwn } from '../../common/Util';
+import { extend, isNil, isString, hasOwn, equalsArray } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
@@ -406,15 +406,10 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     updateSymbol(idx, symbol) {
-        return this._updateSymbol(0, idx, symbol);
-    }
-
-    updateSymbolByName(name, symbol) {
-        const index = this._getStyleIndex(name);
-        if (index < 0) {
-            return this;
+        if (isString(idx)) {
+            idx = this._getStyleIndex(idx);
         }
-        return this._updateSymbol(0, index, symbol);
+        return this._updateSymbol(0, idx, symbol);
     }
 
     updateFeatureSymbol(idx, feaStyleIdx, symbol) {
@@ -583,6 +578,21 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     /**
+     * 获取style定义
+     *
+     * @param {Number|String} index/name - 序号或者style的name
+     * @returns Object
+     **/
+    getRenderStyle(index) {
+        if (isString(index)) {
+            // by name
+            index = this._getStyleIndex(index);
+        }
+        let styles = this._vtStyle;
+        return styles && styles[index];
+    }
+
+    /**
      * 在指定位置添加一个新的style，例如：
      *
      * layer.addStyle(0, {
@@ -621,11 +631,15 @@ class VectorTileLayer extends maptalks.TileLayer {
      *   renderPlugin,
      *   symbol
      * });
-     * @param {Number|String} index - 序号
+     * @param {Number|String} index/name - 序号或者style的name
      * @param {Object} style - style定义
      * @returns this
      */
     updateRenderStyle(index, style) {
+        if (isString(index)) {
+            // by name
+            index = this._getStyleIndex(index);
+        }
         let styles = this._vtStyle;
         if (!styles || index < 0 || index >= styles.length) {
             return this;
@@ -639,17 +653,16 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    updateRenderStyleByName(name, style) {
-        const index = this._getStyleIndex(name);
-        return this.updateRenderStyle(index, style);
-    }
-
     /**
      * 删除指定位置的style
-     * @param index - 序号
+     * @param {Number|String} index/name - 序号或者style的name
      * @returns this
      */
     removeRenderStyle(index) {
+        if (isString(index)) {
+            // by name
+            index = this._getStyleIndex(index);
+        }
         let styles = this._vtStyle;
         if (!styles || index < 0 || index >= styles.length) {
             return this;
@@ -663,33 +676,17 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    removeRenderStyleByName(name) {
-        const index = this._getStyleIndex(name);
-        return this.removeRenderStyle(index);
-    }
-
     /**
-     * 添加一个新的Feature Style，例如：
-     *
-     * layer.addFeatureStyle({
-     *   id: 10,
-     *   style: [
-     *     {
-     *       filter: true,
-     *       renderPlugin,
-     *       symbol
-     *     }
-     *   ]
-     * });
-     * @param {Object} feature style - feature style定义
-     * @returns this
-     */
-    addFeatureStyle(featureStyle) {
-        if (!featureStyle) {
-            return this;
+     * 根据feature id或者FeatureStyle定义
+     * @param {String|Number|String[]|Number[]} id - feature id 或者 一组feature id
+     * @returns Object
+     **/
+    getFeatureStyle(id) {
+        const idx = this.getFeatureStyleIndex(id);
+        if (idx < 0) {
+            return null;
         }
-        this.updateFeatureStyleById(featureStyle);
-        return this;
+        return this._originFeatureStyle[idx];
     }
 
     /**
@@ -708,7 +705,7 @@ class VectorTileLayer extends maptalks.TileLayer {
      * @param {Object} feature style - feature style定义
      * @returns this
      */
-    updateFeatureStyleById(featureStyle) {
+    updateFeatureStyle(featureStyle) {
         if (!featureStyle) {
             return this;
         }
@@ -736,7 +733,7 @@ class VectorTileLayer extends maptalks.TileLayer {
      * @param id - feature id
      * @returns this
      */
-    removeFeatureStyleById(id) {
+    removeFeatureStyle(id) {
         const index = this.getFeatureStyleIndex(id);
         if (index < 0) {
             return this;
@@ -758,8 +755,11 @@ class VectorTileLayer extends maptalks.TileLayer {
         if (!featureStyles) {
             return -1;
         }
+        const isArr = Array.isArray(id);
         for (let i = 0; i < featureStyles.length; i++) {
-            if (featureStyles[i].id === id) {
+            if (isArr) {
+                return Array.isArray(featureStyles[i].id) && equalsArray(id, featureStyles[i].id);
+            } else if (featureStyles[i].id === id) {
                 return i;
             }
         }

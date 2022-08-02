@@ -205,3 +205,18 @@ export function getCentiMeterScale(res, map) {
     // to centimeter
     return p / 100 / 100;
 }
+
+export function equalsArray(self, array) {
+    if (!self || !array)
+        return false;
+
+    if (self.length != array.length)
+        return false;
+
+    for (let i = 0, l = self.length; i < l; i++) {
+        if (self[i] !== array[i]) {
+            return false;
+        }
+    }
+    return true;
+}
