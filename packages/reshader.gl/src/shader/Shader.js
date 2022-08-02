@@ -11,6 +11,8 @@ let uid = 0;
 
 const activeVarsCache = {};
 
+const COMMAND_CACHE = {};
+
 class Shader {
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
         this.vert = vert;
@@ -161,10 +163,8 @@ class Shader {
         }
     }
 
-    getActiveVars(regl, vert, frag) {
-        const vHash = hashCode(vert);
-        const fHash = hashCode(frag);
-        const cacheKey = vHash + '_' + fHash;
+    getActiveVars(regl, vert, frag, hash) {
+        const cacheKey = hash;
         if (activeVarsCache[cacheKey]) {
             return activeVarsCache[cacheKey];
         }
@@ -230,7 +230,15 @@ class Shader {
         const vert = this.getVersion(regl, vertSource) + vertSource;
         const fragSource = this._insertDefines(this.frag, defines);
         const frag = this.getVersion(regl, fragSource) + fragSource;
-        const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag);
+        const vHash = hashCode(vert);
+        const fHash = hashCode(frag);
+        const hash = vHash + '_' + fHash;
+        const commandHash = `${hash}_${+isNumber(elements)}_${+isInstanced}_${+disableVAO}`;
+        if (COMMAND_CACHE[commandHash]) {
+            COMMAND_CACHE[commandHash].ref++;
+            return COMMAND_CACHE[commandHash].command;
+        }
+        const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag, hash);
         const attributes = {};
         activeAttributes.forEach((p, idx) => {
             const name = p.name;
@@ -285,6 +293,8 @@ class Shader {
         const reglCommand = regl(command);
         activeAttributes.key = activeAttributes.map(attr => attr.name).join();
         reglCommand.activeAttributes = activeAttributes;
+        COMMAND_CACHE[commandHash] = { command: reglCommand, ref: 1 };
+        reglCommand.hash = commandHash;
         return reglCommand;
     }
 
@@ -294,9 +304,18 @@ class Shader {
             if (!command) {
                 continue;
             }
-            if (command.destroy && !command[KEY_DISPOSED]) {
-                command[KEY_DISPOSED] = true;
-                command.destroy();
+            const hash = command.hash;
+            if (COMMAND_CACHE[hash]) {
+                COMMAND_CACHE[hash].ref--;
+            }
+            if (!COMMAND_CACHE[hash] || COMMAND_CACHE[hash].ref <= 0) {
+                if (command.destroy && !command[KEY_DISPOSED]) {
+                    command[KEY_DISPOSED] = true;
+                    command.destroy();
+                }
+                if (COMMAND_CACHE[hash]) {
+                    delete COMMAND_CACHE[hash];
+                }
             }
         }
         this.commands = {};
