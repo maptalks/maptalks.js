@@ -237,10 +237,10 @@ describe('update style specs', () => {
                     symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
                 }
             ]);
-        }, true);
+        }, true, null, 0, 3);
     });
 
-    it('should can setStyle with missed filter', done => {
+    it('should can set style with missed filter', done => {
         assertChangeStyle(done, [0, 0, 0, 0], layer => {
             layer.setStyle([
                 {
@@ -462,7 +462,7 @@ describe('update style specs', () => {
                 lineColor: '#0f0'
             });
             assert(layer.options.style[0].symbol.lineColor === '#0f0');
-        });
+        }, false, null, 0, 2);
     });
 
     it('should can updateSymbol by name', done => {
@@ -471,7 +471,7 @@ describe('update style specs', () => {
                 lineColor: '#0f0'
             });
             assert(layer.options.style[0].symbol.lineColor === '#0f0');
-        });
+        }, false, null, 0, 2);
     });
 
     it('should can update multiple symbol', done => {
@@ -501,7 +501,7 @@ describe('update style specs', () => {
                 lineOpacity: 1
             }]);
             assert(layer.options.style[0].symbol[1].lineColor === '#0f0');
-        }, false, style);
+        }, false, style, 0, 2);
     });
 
     it('should can update line visible', done => {
@@ -1683,7 +1683,7 @@ describe('update style specs', () => {
                     ]
                 }
             ]
-        });
+        }, 0, 2);
     });
 
     it('should can update feature symbol 2', done => {
@@ -1714,7 +1714,7 @@ describe('update style specs', () => {
                     ]
                 }
             ]
-        });
+        }, 0, 2);
     });
 
     it('should can update feature sceneConfig', done => {
@@ -1755,7 +1755,7 @@ describe('update style specs', () => {
                     ]
                 }
             ]
-        });
+        }, 0, 2);
     });
 
     it('should can update feature dataConfig', done => {
@@ -1901,7 +1901,7 @@ describe('update style specs', () => {
     });
 
 
-    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount) {
+    function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [
             {
                 name: 'lineStyle',
@@ -1922,6 +1922,7 @@ describe('update style specs', () => {
             meshLimitPerFrame: 1000
         });
         renderCount = renderCount || 0;
+        doneRenderCount = doneRenderCount || 3;
         let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();
@@ -1940,7 +1941,7 @@ describe('update style specs', () => {
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 changeFun(layer);
-            } else if (count === renderCount + 2) {
+            } else if (count === renderCount + doneRenderCount) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //变成绿色
                 assert.deepEqual(pixel, expectedColor);

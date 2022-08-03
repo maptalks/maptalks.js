@@ -1462,7 +1462,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugins[pluginIdx].outline(fbo, featureIds);
             return;
         }
-        const feaPlugins = this.featurePlugins;
+        const feaPlugins = this._getFramePlugins();
         for (let i = 0; i < featureIds.length; i++) {
             const feaId = featureIds[i];
             for (let j = 0; j < feaPlugins.length; j++) {
