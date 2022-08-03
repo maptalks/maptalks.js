@@ -128,8 +128,34 @@ export function isInterpolated(p) {
     return interpolatedSymbols[p];
 }
 
+const STRING_TYPES = {
+    'markerPlacement': 1,
+    'markerFile': 1,
+    'mergeOnProperty': 1,
+    'markerTextFit': 1,
+    'markerType': 1,
+    'markerHorizontalAlignment': 1,
+    'markerVerticalAlignment': 1,
+    'markerRotationAlignment': 1,
+    'markerPitchAlignment': 1,
+    'markerFillPatternFile': 1,
+    'markerLinePatternFile': 1,
+    'textName': 1,
+    'textPlacement': 1,
+    'textFaceName': 1,
+    'textStyle': 1,
+    'textHorizontalAlignment': 1,
+    'textVerticalAlignment': 1,
+    'textRotationAlignment': 1,
+    'textPitchAlignment': 1,
+    'lineJoin': 1,
+    'lineCap': 1,
+    'linePatternFile': 1,
+    'polygonPatternFile': 1
+};
+
 export function getExpressionType(p) {
-    if (p === 'textName' || p === 'textPlacement' || p === 'markerPlacement' || p === 'markerFile') {
+    if (STRING_TYPES[p]) {
         return 'string';
     } else if (isInterpolated(p)) {
         return 'number';
