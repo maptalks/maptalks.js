@@ -67,6 +67,7 @@ export default class IconRequestor {
                 height = this.size[1];
                 ctx.canvas.width = width;
                 ctx.canvas.height = height;
+                ctx.imageSmoothingEnabled = false;
                 ctx.drawImage(this, 0, 0, width, height);
                 const data = ctx.getImageData(0, 0, width, height).data;
                 self._addCache(this.url, data, width, height);
