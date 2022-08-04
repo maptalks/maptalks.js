@@ -4,8 +4,7 @@ import { buildExtrudeFaces } from './Extrusion';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
-import Color from 'color';
-import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
+import { PACK_TEX_SIZE, StyleUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom, debugIndex) {
     if (dataConfig.top === undefined) {
@@ -149,7 +148,6 @@ const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const fnTypes = {};
     if (isFnTypeSymbol(symbol['polygonFill'])) {
-        const colorCache = {};
         const colorFn = piecewiseConstant(symbol.polygonFill);
         const aColor = new Uint8Array(feaIndexes.length * 4);
         for (let i = 0; i < feaIndexes.length; i++) {
@@ -160,17 +158,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             let color = colorFn(zoom, properties);
             delete properties['$layer'];
             delete properties['$type'];
-            if (!Array.isArray(color)) {
-                color = colorCache[color] = colorCache[color] || Color(color).array();
-            }
-            if (Array.isArray(color)) {
-                for (let i = 0; i < color.length; i++) {
-                    ARR0[i] = color[i] * 255;
-                }
-                if (color.length === 3) {
-                    ARR0[3] = 255;
-                }
-            }
+            color = StyleUtil.normalizeColor(color);
             aColor[i * 4] = ARR0[0];
             aColor[i * 4 + 1] = ARR0[1];
             aColor[i * 4 + 2] = ARR0[2];

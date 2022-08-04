@@ -3,8 +3,7 @@ import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
 import { getIndexArrayType } from './util/array';
-import Color from 'color';
-import { isNil } from '../style/Util';
+import { isNil, normalizeColor } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
@@ -104,14 +103,7 @@ export default class PolygonPack extends VectorPack {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 dynFill = [0, 0, 0, 0];
             } else {
-                if (!Array.isArray(dynFill)) {
-                    dynFill = Color(dynFill).array();
-                } else {
-                    dynFill = dynFill.map(c => c * 255);
-                }
-                if (dynFill.length === 3) {
-                    dynFill.push(255);
-                }
+                dynFill = normalizeColor(dynFill);
             }
 
         }

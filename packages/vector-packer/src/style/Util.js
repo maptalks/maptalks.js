@@ -1,4 +1,5 @@
 import { isFunctionDefinition } from '@maptalks/function-type';
+import Color from 'color';
 
 export function now() {
     return Date.now();
@@ -165,4 +166,19 @@ export function getTubeSizeScale(metric) {
     } else {
         return 100;
     }
+}
+
+const colorCache = {};
+
+export function normalizeColor(color) {
+    if (!Array.isArray(color)) {
+        const key = color;
+        color = colorCache[key] = colorCache[key] || Color(color).array();
+    } else {
+        color = color.map(c => c * 255);
+    }
+    if (color.length === 3) {
+        color.push(255);
+    }
+    return color;
 }

@@ -3,10 +3,10 @@ import StyledPoint from './StyledPoint';
 import { getPointAnchors } from './util/get_point_anchors.js';
 import { getGlyphQuads, getIconQuads, getEmptyIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
-import Color from 'color';
 import { isOut, isNil, wrap, isString } from './util/util';
 import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import { normalizeColor } from '../style/Util';
 
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
@@ -436,14 +436,7 @@ export default class PointPack extends VectorPack {
                     // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                     textFill = [0, 0, 0, 0];
                 } else {
-                    if (!Array.isArray(textFill)) {
-                        textFill = Color(textFill).array();
-                    } else {
-                        textFill = textFill.map(c => c * 255);
-                    }
-                    if (textFill.length === 3) {
-                        textFill.push(255);
-                    }
+                    textFill = normalizeColor(textFill);
                 }
             }
             if (textSizeFn) {
@@ -454,14 +447,7 @@ export default class PointPack extends VectorPack {
             }
             if (textHaloFillFn) {
                 textHaloFill = textHaloFillFn(null, properties);
-                if (!Array.isArray(textHaloFill)) {
-                    textHaloFill = Color(textHaloFill).array();
-                } else {
-                    textHaloFill = textHaloFill.map(c => c * 255);
-                }
-                if (textHaloFill.length === 3) {
-                    textHaloFill.push(255);
-                }
+                textHaloFill = normalizeColor(textHaloFill);
             }
             if (textHaloRadiusFn) {
                 textHaloRadius = textHaloRadiusFn(null, properties);

@@ -1,8 +1,7 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
-import Color from 'color';
-import { isNil, hasOwn, getAltitudeToLocal } from '../style/Util';
+import { isNil, hasOwn, getAltitudeToLocal, normalizeColor } from '../style/Util';
 import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
@@ -287,14 +286,7 @@ export default class LinePack extends VectorPack {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaColor = [0, 0, 0, 0];
             } else {
-                if (!Array.isArray(this.feaColor)) {
-                    this.feaColor = Color(this.feaColor).array();
-                } else {
-                    this.feaColor = this.feaColor.map(c => c * 255);
-                }
-                if (this.feaColor.length === 3) {
-                    this.feaColor.push(255);
-                }
+                this.feaColor = normalizeColor(this.feaColor);
             }
         }
         if (lineStrokeColorFn) {
@@ -303,14 +295,7 @@ export default class LinePack extends VectorPack {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaStrokeColor = [0, 0, 0, 0];
             } else {
-                if (!Array.isArray(this.feaStrokeColor)) {
-                    this.feaStrokeColor = Color(this.feaStrokeColor).array();
-                } else {
-                    this.feaStrokeColor = this.feaStrokeColor.map(c => c * 255);
-                }
-                if (this.feaStrokeColor.length === 3) {
-                    this.feaStrokeColor.push(255);
-                }
+                this.feaStrokeColor = normalizeColor(this.feaStrokeColor);
             }
         }
         if (lineOpacityFn) {
@@ -336,14 +321,7 @@ export default class LinePack extends VectorPack {
         }
         if (this.dashColorFn) {
             let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
-            if (!Array.isArray(dashColor)) {
-                dashColor = Color(dashColor).array();
-            } else {
-                dashColor = dashColor.map(c => c * 255);
-            }
-            if (dashColor.length === 3) {
-                dashColor.push(255);
-            }
+            dashColor = normalizeColor(dashColor);
             this.feaDashColor = dashColor;
         }
 

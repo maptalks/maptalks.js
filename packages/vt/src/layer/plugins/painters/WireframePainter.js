@@ -1,4 +1,3 @@
-// import Color from 'color';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
