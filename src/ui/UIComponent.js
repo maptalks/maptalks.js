@@ -593,6 +593,7 @@ class UIComponent extends Eventable(Class) {
             'zooming rotate pitch': this.onEvent,
             'zoomend': this.onZoomEnd,
             'moving': this.onMoving,
+            'moveend': this.onMoving,
             'resize': this.onResize
         };
     }
