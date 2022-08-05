@@ -86,6 +86,8 @@ uniform float layerScale;
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vOpacity;
+
+    #include <highlight_vert>
 #else
     #include <fbo_picking_vert>
 #endif
@@ -179,6 +181,8 @@ void main() {
         #ifdef HAS_OPACITY
             vOpacity *= aColorOpacity / 255.0;
         #endif
+
+        highlight_setVarying();
     #else
         #ifdef ENABLE_COLLISION
             bool visible = aOpacity == 255.0;

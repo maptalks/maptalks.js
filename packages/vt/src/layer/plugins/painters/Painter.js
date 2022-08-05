@@ -14,7 +14,7 @@ const TEX_CACHE_KEY = '__gl_textures';
 const MAT = [];
 
 const EMPTY_ARRAY = [];
-
+const COLOR = [];
 const level0Filter = mesh => {
     return mesh.getUniform('level') === 0;
 };
@@ -967,66 +967,83 @@ class Painter {
         return fn(map.getZoom(), properties);
     }
 
-    highlight(ids) {
-        this._highlighted = ids;
+    highlight(highlights) {
+        this._highlighted = highlights;
+        this._highlightTimestamp = this.layer.getRenderer().getFrameTimestamp();
+        this.setToRedraw(true);
     }
 
-    _prepareFeatureIds(geometry, featureIds) {
+    _prepareFeatureIds(geometry, glData) {
+        const { featureIds, feaIdIndiceMap } = glData;
         geometry.properties.aFeaIds = featureIds;
         const featureIdSet = new Set();
         for (let i = 0, l = featureIds.length; i < l; i++) {
             featureIdSet.add(featureIds[i]);
         }
         geometry.properties.featureIdSet = featureIdSet;
+        geometry.properties.feaIdIndiceMap = feaIdIndiceMap;
     }
 
     _highlightMesh(mesh) {
-        const { highlighted, featureIdSet, aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
+        const { highlightTimestamp, featureIdSet, aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
         if (!this._highlighted) {
-            if (highlighted) {
+            if (highlightTimestamp) {
                 //TODD remove
-                delete mesh.geometry.properties.highlighted;
+                delete mesh.geometry.properties.highlightTimestamp;
             }
             return;
         }
-        if (highlighted === this._highlighted) {
+        if (this._highlightTimestamp === highlightTimestamp) {
             return;
         }
         let { aHighlightColor } = mesh.geometry.properties;
+        if (aHighlightColor) {
+            aHighlightColor.fill(0);
+        }
         let hasColor = false;
-        for (let i = 0; i < highlighted.length; i++) {
-            const id = highlighted[i].id;
+        const highlighted = this._highlighted;
+        const ids = Object.keys(this._highlighted);
+        for (let i = 0; i < ids.length; i++) {
+            const id = highlighted[ids[i]].id;
             if (featureIdSet.has(id)) {
                 // update attribute data
-                let { color, opacity, /*bloom*/ } = highlighted[i];
+                let { color, opacity, /*bloom*/ } = highlighted[id];
                 if (color) {
                     if (!hasColor) {
                         if (!aHighlightColor) {
                             aHighlightColor = new Uint8Array(aFeaIds.length * 4);
                         }
-                        aHighlightColor.fill(255);
                         hasColor = true;
                     }
-                    const normalizedColor = StyleUtil.normalizeColor(color);
+                    const normalizedColor = StyleUtil.normalizeColor(COLOR, color);
                     opacity = opacity || 1;
                     normalizedColor[3] *= opacity;
 
-                    const [ start, end ] = feaIdIndiceMap[id];
-                    vec4.set(aHighlightColor.subarray(start, end), ...normalizedColor);
+                    const [start, end] = feaIdIndiceMap[id];
+                    const count = end - start;
+                    for (let k = 0; k < count; k++) {
+                        const idx = (start + k) * 4;
+                        vec4.set(aHighlightColor.subarray(idx, idx + 4), ...normalizedColor);
+                    }
                 }
 
             }
         }
         const defines = mesh.defines;
         if (hasColor) {
-            mesh.geometry.data.aHighlightColor = aHighlightColor;
+            if (!mesh.geometry.data.aHighlightColor) {
+                mesh.geometry.data.aHighlightColor = aHighlightColor;
+                mesh.geometry.generateBuffers(this.regl);
+            } else {
+                mesh.geometry.updateData('aHighlightColor', aHighlightColor);
+            }
+            mesh.geometry.properties.aHighlightColor = aHighlightColor;
             defines['HAS_HIGHLIGHT_COLOR'] = 1;
-            mesh.geometry.generateBuffers(this.regl);
         } else {
             delete defines['HAS_HIGHLIGHT_COLOR'];
         }
         mesh.defines = defines;
-        mesh.geometry.properties.highlighted = this._highlighted;
+        mesh.geometry.properties.highlightTimestamp = this._highlightTimestamp;
     }
 }
 

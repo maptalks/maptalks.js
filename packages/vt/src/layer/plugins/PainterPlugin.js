@@ -469,9 +469,9 @@ function createPainterPlugin(type, Painter) {
             return painter && painter.needPolygonOffset();
         },
 
-        highlight(ids) {
+        highlight(highlights) {
             const painter = this.painter;
-            return painter && painter.highlight(ids);
+            return painter && painter.highlight(highlights);
         }
     });
 

@@ -111,12 +111,12 @@ export function generateFeatureIndex(featureIds) {
     const index = {};
     for (let i = 0, l = featureIds.length; i < l; i++) {
         if (i === l - 1) {
-            index[current] = [start, i];
+            index[current] = [start, l];
         } else if (featureIds[i] !== current) {
-            end = i - 1;
+            end = i;
             index[current] = [start, end];
             start = i;
-            current = featureIds[i]
+            current = featureIds[i];
         }
     }
     return index;

@@ -135,6 +135,8 @@ varying float vGammaScale;
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         #include <vsm_shadow_vert>
     #endif
+
+    #include <highlight_vert>
 #else
     #include <fbo_picking_vert>
 #endif
@@ -287,6 +289,8 @@ void main() {
         #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
             shadow_computeShadowPars(localVertex);
         #endif
+
+        highlight_setVarying();
     #else
         fbo_picking_setData(projDistance, true);
     #endif

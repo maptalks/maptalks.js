@@ -51,6 +51,8 @@ precision mediump float;
     uniform vec4 polygonFill;
 #endif
 
+#include <highlight_frag>
+
 #ifdef HAS_OPACITY
     varying float vOpacity;
 #else
@@ -98,6 +100,8 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 
     // if (blendSrcIsOne == 1.0) {
     //     gl_FragColor *= gl_FragColor.a;

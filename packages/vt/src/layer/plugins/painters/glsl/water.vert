@@ -18,6 +18,8 @@ varying mat3 vTbnMatrix;
     varying vec4 vViewVertex;
 #endif
 
+#include <highlight_vert>
+
 mat3 getTBNMatrix(in vec3 n) {
     vec3 t = normalize(cross(n, vec3(0.0, 1.0, 0.0)));
     //变量名直接用b时，会造成混淆错误
@@ -48,4 +50,6 @@ void main(void) {
     #if defined(HAS_SHADOWING)
         shadow_computeShadowPars(localVertex);
     #endif
+
+    highlight_setVarying();
 }

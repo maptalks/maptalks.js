@@ -6,8 +6,10 @@ import { getIndexArrayType } from './util/array';
 import { isNil, normalizeColor } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
 import { isFunctionDefinition } from '@maptalks/function-type';
+import { vec4 } from 'gl-matrix';
 
 const EARCUT_MAX_RINGS = 500;
+const DYNCOLOR = [];
 
 export default class PolygonPack extends VectorPack {
 
@@ -98,12 +100,12 @@ export default class PolygonPack extends VectorPack {
         const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
         const properties = feature.properties;
         if (polygonFillFn) {
-            dynFill = polygonFillFn(this.options['zoom'], properties) || [255, 255, 255, 255];
+            dynFill = polygonFillFn(this.options['zoom'], properties) || vec4.set(DYNCOLOR, 255, 255, 255, 255);
             if (isFunctionDefinition(dynFill)) {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
-                dynFill = [0, 0, 0, 0];
+                dynFill = vec4.set(DYNCOLOR, 0, 0, 0, 0);
             } else {
-                dynFill = normalizeColor(dynFill);
+                dynFill = normalizeColor(DYNCOLOR, dynFill);
             }
 
         }

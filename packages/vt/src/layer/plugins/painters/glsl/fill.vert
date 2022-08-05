@@ -68,6 +68,7 @@ uniform mat4 projViewModelMatrix;
 #endif
 
 #include <vt_position_vert>
+#include <highlight_vert>
 
 void main() {
     vec3 myPosition = unpackVTPosition();
@@ -102,6 +103,8 @@ void main() {
     #ifdef HAS_COLOR
         vColor = aColor / 255.0;
     #endif
+
+    highlight_setVarying();
 
     #ifdef HAS_OPACITY
         vOpacity = aOpacity / 255.0;

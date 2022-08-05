@@ -436,7 +436,7 @@ export default class PointPack extends VectorPack {
                     // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                     textFill = [0, 0, 0, 0];
                 } else {
-                    textFill = normalizeColor(textFill);
+                    textFill = normalizeColor([], textFill);
                 }
             }
             if (textSizeFn) {
@@ -447,7 +447,7 @@ export default class PointPack extends VectorPack {
             }
             if (textHaloFillFn) {
                 textHaloFill = textHaloFillFn(null, properties);
-                textHaloFill = normalizeColor(textHaloFill);
+                textHaloFill = normalizeColor([], textHaloFill);
             }
             if (textHaloRadiusFn) {
                 textHaloRadius = textHaloRadiusFn(null, properties);

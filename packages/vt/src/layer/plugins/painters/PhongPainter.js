@@ -23,7 +23,7 @@ class PhongPainter extends MeshPainter {
         }
         const geometry = new reshader.Geometry(data, glData.indices);
         extend(geometry.properties, glData.properties);
-        this._prepareFeatureIds(geometry, glData.featureIds);
+        this._prepareFeatureIds(geometry, glData);
         return {
             geometry,
             symbolIndex: { index: 0 }

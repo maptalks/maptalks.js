@@ -170,15 +170,20 @@ export function getTubeSizeScale(metric) {
 
 const colorCache = {};
 
-export function normalizeColor(color) {
+export function normalizeColor(out, color) {
     if (!Array.isArray(color)) {
         const key = color;
         color = colorCache[key] = colorCache[key] || Color(color).array();
+        for (let i = 0; i < color.length; i++) {
+            out[i] = color[i];
+        }
     } else {
-        color = color.map(c => c * 255);
+        for (let i = 0; i < color.length; i++) {
+            out[i] = color[i] * 255;
+        }
     }
-    if (color.length === 3) {
-        color.push(255);
+    if (out.length === 3) {
+        out.push(255);
     }
-    return color;
+    return out;
 }

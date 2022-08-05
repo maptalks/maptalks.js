@@ -48,7 +48,7 @@ class StandardPainter extends MeshPainter {
             uv0Attribute: 'aTexCoord0'
         });
         extend(geometry.properties, glData.properties);
-        this._prepareFeatureIds(geometry, glData.featureIds);
+        this._prepareFeatureIds(geometry, glData);
         return {
             geometry,
             symbolIndex: { index: 0 }
@@ -170,7 +170,12 @@ class StandardPainter extends MeshPainter {
                 }
             ],
             extraCommandProps: {
-                viewport: this.pickingViewport
+                viewport: this.pickingViewport,
+                depth: {
+                    enable: true,
+                    range: this.sceneConfig.depthRange || [0, 1],
+                    func: this.sceneConfig.depthFunc || '<='
+                }
             }
         };
         this.picking = [new reshader.FBORayPicking(this.renderer, pickingConfig, this.layer.getRenderer().pickingFBO)];

@@ -91,6 +91,8 @@ uniform float layerScale;
         attribute float aTextHaloOpacity;
         varying float vTextHaloOpacity;
     #endif
+
+    #include <highlight_vert>
 #else
     //picking模式的逻辑
     #include <fbo_picking_vert>
@@ -213,6 +215,8 @@ void main() {
         #ifdef HAS_TEXT_HALO_OPACITY
             vTextHaloOpacity = aTextHaloOpacity;
         #endif
+
+        highlight_setVarying();
     #else
         //picking模式的逻辑
         #ifdef ENABLE_COLLISION

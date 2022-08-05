@@ -128,7 +128,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         data.buffers.push(fnTypes.aOpacity.buffer);
     }
 
-    data.data.feaIdIndiceMap = PackUtil.generateFeatureIndex(data.data.featureIds, data.data.indices);
+    data.data.feaIdIndiceMap = PackUtil.generateFeatureIndex(data.data.featureIds);
     return data;
 }
 
@@ -152,6 +152,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
     if (isFnTypeSymbol(symbol['polygonFill'])) {
         const colorFn = piecewiseConstant(symbol.polygonFill);
         const aColor = new Uint8Array(feaIndexes.length * 4);
+        aColor.fill(255);
         for (let i = 0; i < feaIndexes.length; i++) {
             const feature = features[feaIndexes[i]];
             const properties = feature.properties || {};
@@ -160,7 +161,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             let color = colorFn(zoom, properties);
             delete properties['$layer'];
             delete properties['$type'];
-            color = StyleUtil.normalizeColor(color);
+            StyleUtil.normalizeColor(ARR0, color);
             aColor[i * 4] = ARR0[0];
             aColor[i * 4 + 1] = ARR0[1];
             aColor[i * 4 + 2] = ARR0[2];
@@ -171,6 +172,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
     if (isFnTypeSymbol(symbol['polygonOpacity'])) {
         const opacityFn = interpolated(symbol.polygonOpacity);
         const aOpacity = new Uint8Array(feaIndexes.length);
+        aOpacity.fill(255);
         for (let i = 0; i < feaIndexes.length; i++) {
             const feature = features[feaIndexes[i]];
             const properties = feature.properties || {};

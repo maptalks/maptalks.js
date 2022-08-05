@@ -36,6 +36,8 @@ varying float vGradIndex;
     uniform float currentTime;
 #endif
 
+#include <highlight_frag>
+
 void main() {
         //当position的x, y超出tileExtent时，丢弃该片元
     #ifndef ENABLE_TILE_STENCIL
@@ -72,4 +74,6 @@ void main() {
         float shadowCoeff = shadow_computeShadow();
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 }

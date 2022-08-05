@@ -16,6 +16,8 @@ uniform lowp float lineBlur;
     uniform lowp vec4 lineColor;
 #endif
 
+#include <highlight_frag>
+
 #ifdef HAS_STROKE_COLOR
     varying vec4 vStrokeColor;
 #else
@@ -226,4 +228,6 @@ void main() {
     }
 
     gl_FragColor *= perspectiveAlpha;
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 }

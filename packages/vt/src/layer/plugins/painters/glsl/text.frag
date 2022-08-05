@@ -39,6 +39,8 @@ varying float vOpacity;
     uniform highp float textHaloRadius;
 #endif
 
+#include <highlight_frag>
+
 void main() {
     #ifdef HAS_TEXT_FILL
         vec4 myTextFill = vTextFill;
@@ -79,4 +81,6 @@ void main() {
     // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
     gl_FragColor = color * (alpha * textOpacity * vOpacity);
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 }

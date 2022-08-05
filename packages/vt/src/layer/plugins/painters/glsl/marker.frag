@@ -7,6 +7,8 @@ uniform sampler2D iconTex;
 uniform lowp float markerOpacity;
 uniform lowp float blendSrcIsOne;
 
+#include <highlight_frag>
+
 varying vec2 vTexCoord;
 varying float vOpacity;
 
@@ -37,6 +39,8 @@ void main() {
     }
 
     glFragColor = fragColor;
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

@@ -1515,19 +1515,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
-    highlight(ids) {
+    highlight(highlights) {
         if (!this._highlighted) {
-            this._highlighted = [];
+            this._highlighted = {};
         }
-        if (Array.isArray(ids)) {
-            for (let i = 0; i < ids.length; i++) {
-                if (this._highlighted.indexOf(ids[i]) >= 0) {
-                    continue;
-                }
+        if (Array.isArray(highlights)) {
+            for (let i = 0; i < highlights.length; i++) {
+                this._highlighted[highlights[i].id] = highlights[i].id;
             }
-            this._highlighted.push(...ids);
         } else {
-            this._highlighted.push(ids);
+            this._highlighted[highlights.id] = highlights;
         }
 
         const plugins = this._getFramePlugins();
@@ -1540,7 +1537,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         delete this._highlighted;
         const plugins = this._getFramePlugins();
         plugins.forEach(plugin => {
-            plugin.highlight([]);
+            plugin.highlight({});
         });
     }
 }

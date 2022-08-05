@@ -29,6 +29,8 @@ void toTangentFrame(const highp vec4 q, out highp vec3 n) {
         vec3( 2.0,  2.0, -2.0) * q.y * q.wzy;
 }
 
+#include <highlight_vert>
+
 void main()
 {
     #ifdef HAS_NORMAL
@@ -47,4 +49,6 @@ void main()
         vExtrusionOpacity = aExtrusionOpacity;
     #endif
     vPosition = aPosition.xy;
+
+    highlight_setVarying();
 }

@@ -43,6 +43,8 @@ uniform float opacity;
 uniform float tileExtent;
 varying vec2 vPosition;
 
+#include <highlight_frag>
+
 void main()
 {
     //当position的x, y超出tileExtent时，丢弃该片元
@@ -89,4 +91,5 @@ void main()
         gl_FragColor *= alpha;
     #endif
 
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 }

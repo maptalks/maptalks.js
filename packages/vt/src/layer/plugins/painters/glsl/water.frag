@@ -11,6 +11,8 @@ uniform float contrast;
     #include <vsm_shadow_frag>
 #endif
 
+#include <highlight_frag>
+
 #if defined(HAS_IBL_LIGHTING)
     uniform vec3 hdrHSV;
     uniform samplerCube prefilterMap;
@@ -512,4 +514,6 @@ void main() {
     if (length(hsv) > 0.0) {
         gl_FragColor = hsv_apply(gl_FragColor, hsv);
     }
+
+    gl_FragColor = highlight_blendColor(gl_FragColor);
 }

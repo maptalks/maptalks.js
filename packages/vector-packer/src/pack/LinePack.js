@@ -286,7 +286,7 @@ export default class LinePack extends VectorPack {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaColor = [0, 0, 0, 0];
             } else {
-                this.feaColor = normalizeColor(this.feaColor);
+                this.feaColor = normalizeColor([], this.feaColor);
             }
         }
         if (lineStrokeColorFn) {
@@ -295,7 +295,7 @@ export default class LinePack extends VectorPack {
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaStrokeColor = [0, 0, 0, 0];
             } else {
-                this.feaStrokeColor = normalizeColor(this.feaStrokeColor);
+                this.feaStrokeColor = normalizeColor([], this.feaStrokeColor);
             }
         }
         if (lineOpacityFn) {
@@ -321,7 +321,7 @@ export default class LinePack extends VectorPack {
         }
         if (this.dashColorFn) {
             let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
-            dashColor = normalizeColor(dashColor);
+            dashColor = normalizeColor([], dashColor);
             this.feaDashColor = dashColor;
         }
 

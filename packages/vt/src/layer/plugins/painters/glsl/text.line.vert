@@ -79,6 +79,8 @@ uniform float layerScale;
         attribute float aTextHaloOpacity;
         varying float vTextHaloOpacity;
     #endif
+
+    #include <highlight_vert>
 #else
     #include <fbo_picking_vert>
 #endif
@@ -179,6 +181,8 @@ void main() {
         #ifdef HAS_TEXT_HALO_OPACITY
             vTextHaloOpacity = aTextHaloOpacity;
         #endif
+
+        highlight_setVarying();
     #else
         #ifdef ENABLE_COLLISION
             bool visible = aOpacity == 255.0;
