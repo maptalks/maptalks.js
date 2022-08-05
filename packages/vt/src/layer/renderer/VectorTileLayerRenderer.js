@@ -437,7 +437,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     isTileNearCamera(mesh) {
         const gap = this.getCurrentTileZoom() - mesh.properties.tile.z;
-        return gap >= 0 && gap <= 1;
+        return gap <= 1;
     }
 
     isBackTile(id) {

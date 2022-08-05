@@ -38,7 +38,9 @@ const shaderLineFilter0 = function (mesh) {
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
     const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line';
+    const z = mesh.properties.tile.z;
+    const currentZoom = renderer.getCurrentTileZoom();
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line' && z < currentZoom;
 };
 
 //label box 或 icon box 对应的element数量
@@ -281,6 +283,11 @@ export default class TextPainter extends CollisionPainter {
             }
             const isNearCamera = renderer.isTileNearCamera(mesh);
             if (!isNearCamera) {
+                const { visElemts } = mesh.geometry.properties;
+                if (visElemts) {
+                    visElemts.count = 0;
+                }
+                mesh.geometry.setElements(visElemts, 0);
                 continue;
             }
             const geometry = mesh.geometry;
