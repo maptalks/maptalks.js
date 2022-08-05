@@ -996,11 +996,15 @@ class Painter {
         if (this._highlightTimestamp === highlightTimestamp) {
             return;
         }
-        let { aHighlightColor } = mesh.geometry.properties;
+        let { aHighlightColor, aHighlightOpacity } = mesh.geometry.properties;
         if (aHighlightColor) {
             aHighlightColor.fill(0);
         }
+        if (aHighlightOpacity) {
+            aHighlightOpacity.fill(255);
+        }
         let hasColor = false;
+        let hasOpacity = false;
         const highlighted = this._highlighted;
         const ids = Object.keys(this._highlighted);
         for (let i = 0; i < ids.length; i++) {
@@ -1016,14 +1020,29 @@ class Painter {
                         hasColor = true;
                     }
                     const normalizedColor = StyleUtil.normalizeColor(COLOR, color);
-                    opacity = opacity || 1;
-                    normalizedColor[3] *= opacity;
 
                     const [start, end] = feaIdIndiceMap[id];
                     const count = end - start;
                     for (let k = 0; k < count; k++) {
                         const idx = (start + k) * 4;
                         vec4.set(aHighlightColor.subarray(idx, idx + 4), ...normalizedColor);
+                    }
+                }
+                opacity = isNil(opacity) ? 1 : opacity;
+                if (opacity < 1) {
+                    if (!hasOpacity) {
+                        if (!aHighlightOpacity) {
+                            aHighlightOpacity = new Uint8Array(aFeaIds.length);
+                            aHighlightOpacity.fill(255);
+                        }
+                        hasOpacity = true;
+                    }
+
+                    const [start, end] = feaIdIndiceMap[id];
+                    const count = end - start;
+                    for (let k = 0; k < count; k++) {
+                        const idx = start + k;
+                        aHighlightOpacity[idx] = opacity * 255;
                     }
                 }
 
@@ -1041,6 +1060,18 @@ class Painter {
             defines['HAS_HIGHLIGHT_COLOR'] = 1;
         } else {
             delete defines['HAS_HIGHLIGHT_COLOR'];
+        }
+        if (hasOpacity) {
+            if (!mesh.geometry.data.aHighlightOpacity) {
+                mesh.geometry.data.aHighlightOpacity = aHighlightOpacity;
+                mesh.geometry.generateBuffers(this.regl);
+            } else {
+                mesh.geometry.updateData('aHighlightOpacity', aHighlightOpacity);
+            }
+            mesh.geometry.properties.aHighlightOpacity = aHighlightOpacity;
+            defines['HAS_HIGHLIGHT_OPACITY'] = 1;
+        } else {
+            delete defines['HAS_HIGHLIGHT_OPACITY'];
         }
         mesh.defines = defines;
         mesh.geometry.properties.highlightTimestamp = this._highlightTimestamp;
