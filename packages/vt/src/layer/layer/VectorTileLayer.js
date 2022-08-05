@@ -277,6 +277,24 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
+    highlight(ids) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.highlight(ids);
+        return this;
+    }
+
+    cancelHighlight() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.cancelHighlight();
+        return this;
+    }
+
     _parseStylePath() {
         maptalks.Util.convertStylePath(this._vtStyle, this._replacer);
         maptalks.Util.convertStylePath(this._featureStyle, this._replacer);

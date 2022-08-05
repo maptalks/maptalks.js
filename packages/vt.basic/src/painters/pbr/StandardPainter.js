@@ -50,6 +50,7 @@ class StandardPainter extends MeshPainter {
             uv0Attribute: 'aTexCoord0'
         });
         extend(geometry.properties, glData.properties);
+        geometry.properties.feaIdIndiceMap = glData.feaIdIndiceMap;
         return {
             geometry,
             symbolIndex: { index: 0 }

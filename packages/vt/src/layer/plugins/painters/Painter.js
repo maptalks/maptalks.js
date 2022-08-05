@@ -1,6 +1,6 @@
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, vec4 } from '@maptalks/gl';
 import StencilHelper from './StencilHelper';
-import { SYMBOLS_NEED_REBUILD_IN_VT } from '@maptalks/vector-packer';
+import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil } from '@maptalks/vector-packer';
 import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
@@ -262,6 +262,7 @@ class Painter {
                 }
                 mesh.setDefines(defines);
             }
+            this._highlightMesh(mesh);
         });
 
         this.scene.addMesh(meshes);
@@ -964,6 +965,68 @@ class Painter {
             fn = fnCaches[key] = isPiecewiseConstant ? piecewiseConstant(v) : interpolated(v);
         }
         return fn(map.getZoom(), properties);
+    }
+
+    highlight(ids) {
+        this._highlighted = ids;
+    }
+
+    _prepareFeatureIds(geometry, featureIds) {
+        geometry.properties.aFeaIds = featureIds;
+        const featureIdSet = new Set();
+        for (let i = 0, l = featureIds.length; i < l; i++) {
+            featureIdSet.add(featureIds[i]);
+        }
+        geometry.properties.featureIdSet = featureIdSet;
+    }
+
+    _highlightMesh(mesh) {
+        const { highlighted, featureIdSet, aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
+        if (!this._highlighted) {
+            if (highlighted) {
+                //TODD remove
+                delete mesh.geometry.properties.highlighted;
+            }
+            return;
+        }
+        if (highlighted === this._highlighted) {
+            return;
+        }
+        let { aHighlightColor } = mesh.geometry.properties;
+        let hasColor = false;
+        for (let i = 0; i < highlighted.length; i++) {
+            const id = highlighted[i].id;
+            if (featureIdSet.has(id)) {
+                // update attribute data
+                let { color, opacity, /*bloom*/ } = highlighted[i];
+                if (color) {
+                    if (!hasColor) {
+                        if (!aHighlightColor) {
+                            aHighlightColor = new Uint8Array(aFeaIds.length * 4);
+                        }
+                        aHighlightColor.fill(255);
+                        hasColor = true;
+                    }
+                    const normalizedColor = StyleUtil.normalizeColor(color);
+                    opacity = opacity || 1;
+                    normalizedColor[3] *= opacity;
+
+                    const [ start, end ] = feaIdIndiceMap[id];
+                    vec4.set(aHighlightColor.subarray(start, end), ...normalizedColor);
+                }
+
+            }
+        }
+        const defines = mesh.defines;
+        if (hasColor) {
+            mesh.geometry.data.aHighlightColor = aHighlightColor;
+            defines['HAS_HIGHLIGHT_COLOR'] = 1;
+            mesh.geometry.generateBuffers(this.regl);
+        } else {
+            delete defines['HAS_HIGHLIGHT_COLOR'];
+        }
+        mesh.defines = defines;
+        mesh.geometry.properties.highlighted = this._highlighted;
     }
 }
 

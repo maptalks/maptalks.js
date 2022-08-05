@@ -100,3 +100,24 @@ export function wrap(n, min, max) {
     const w = ((n - min) % d + d) % d + min;
     return w;
 }
+
+
+export function generateFeatureIndex(featureIds) {
+    if (!featureIds || !featureIds.length) {
+        return {};
+    }
+    let start = 0, end = -1;
+    let current = featureIds[0];
+    const index = {};
+    for (let i = 0, l = featureIds.length; i < l; i++) {
+        if (i === l - 1) {
+            index[current] = [start, i];
+        } else if (featureIds[i] !== current) {
+            end = i - 1;
+            index[current] = [start, end];
+            start = i;
+            current = featureIds[i]
+        }
+    }
+    return index;
+}

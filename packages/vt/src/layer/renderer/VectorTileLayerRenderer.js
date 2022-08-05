@@ -1514,6 +1514,35 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             delete this._prevTilesInView[id];
         }
     }
+
+    highlight(ids) {
+        if (!this._highlighted) {
+            this._highlighted = [];
+        }
+        if (Array.isArray(ids)) {
+            for (let i = 0; i < ids.length; i++) {
+                if (this._highlighted.indexOf(ids[i]) >= 0) {
+                    continue;
+                }
+            }
+            this._highlighted.push(...ids);
+        } else {
+            this._highlighted.push(ids);
+        }
+
+        const plugins = this._getFramePlugins();
+        plugins.forEach(plugin => {
+            plugin.highlight(this._highlighted);
+        });
+    }
+
+    cancelHighlight() {
+        delete this._highlighted;
+        const plugins = this._getFramePlugins();
+        plugins.forEach(plugin => {
+            plugin.highlight([]);
+        });
+    }
 }
 
 VectorTileLayerRenderer.include({

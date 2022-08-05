@@ -4,7 +4,7 @@ import { buildExtrudeFaces } from './Extrusion';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
-import { PACK_TEX_SIZE, StyleUtil } from '@maptalks/vector-packer';
+import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom, debugIndex) {
     if (dataConfig.top === undefined) {
@@ -127,6 +127,8 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         data.data.data.aOpacity = fnTypes.aOpacity;
         data.buffers.push(fnTypes.aOpacity.buffer);
     }
+
+    data.data.feaIdIndiceMap = PackUtil.generateFeatureIndex(data.data.featureIds, data.data.indices);
     return data;
 }
 

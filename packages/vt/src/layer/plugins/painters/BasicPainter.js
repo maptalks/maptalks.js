@@ -34,6 +34,8 @@ export default class BasicPainter extends Painter {
         // aPickingId 中存放的是 KEY_IDX 的值，Vector3DLayer中如果一个feature有多个symbol，feature.id相同但pickingId不同
         // aFeaIds 存放的是 feature.id
         geometry.properties.aFeaIds = glData.featureIds;
+        this._prepareFeatureIds(geometry, glData.featureIds);
+
         // collideIds 用于碰撞检测，同一个数据的多symbol会生成多个mesh，不同的mesh中元素的collideId相同时，则认为共享一个检测结果
         // collideIds 优先用 aFeaIds，没有 aFeaIds 时，则用 aPickingId
         // 但 markerPlacement 为 line 时，iconPainter会重新生成 collideIds 和 uniqueCollideIds
@@ -96,7 +98,9 @@ export default class BasicPainter extends Painter {
             } else {
                 data = new Uint8ClampedArray(iconAtlas.data);
             }
-            debug.getContext('2d').putImageData(
+            const ctx = debug.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.putImageData(
                 new ImageData(data, iconAtlas.width, iconAtlas.height),
                 0,
                 0

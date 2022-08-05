@@ -48,6 +48,7 @@ class StandardPainter extends MeshPainter {
             uv0Attribute: 'aTexCoord0'
         });
         extend(geometry.properties, glData.properties);
+        this._prepareFeatureIds(geometry, glData.featureIds);
         return {
             geometry,
             symbolIndex: { index: 0 }
