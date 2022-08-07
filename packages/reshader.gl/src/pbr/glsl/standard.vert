@@ -57,6 +57,8 @@ varying vec3 vModelVertex;
     varying vec4 vColor;
 #endif
 
+#include <highlight_vert>
+
 #if defined(HAS_COLOR0)
     #if COLOR0_SIZE == 3
         attribute vec3 aColor0;
@@ -230,6 +232,8 @@ void main() {
     #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
     #endif
+
+    highlight_setVarying();
 
     #if defined(HAS_COLOR0)
         vColor0 = aColor0 / 255.0;
