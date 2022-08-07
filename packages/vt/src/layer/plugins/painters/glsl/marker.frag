@@ -40,7 +40,7 @@ void main() {
 
     glFragColor = fragColor;
 
-    gl_FragColor = highlight_blendColor(gl_FragColor);
+    glFragColor = highlight_blendColor(glFragColor);
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
