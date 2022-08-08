@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { isNil, isNumber, sign, removeFromArray, UID } from '../../core/util';
+import { isNil, isNumber, sign, removeFromArray, UID, isFunction } from '../../core/util';
 import { lowerSymbolOpacity } from '../../core/util/style';
 import Class from '../../core/Class';
 import Eventable from '../../core/Eventable';
@@ -918,6 +918,11 @@ class GeometryEditor extends Eventable(Class) {
         }
 
         function moveVertexHandle(handleConatainerPoint, index, ringIndex = 0) {
+            //for adsorption effect
+            const adsorbent = me._geometry.adsorbent;
+            if (adsorbent && isFunction(adsorbent)) {
+                handleConatainerPoint = me._geometry.adsorbent(handleConatainerPoint) || handleConatainerPoint;
+            }
             const vertice = getVertexPrjCoordinates(ringIndex);
             const nVertex = map._containerPointToPrj(handleConatainerPoint.sub(getDxDy()));
             const pVertex = vertice[index];
