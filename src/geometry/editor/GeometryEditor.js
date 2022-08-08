@@ -919,9 +919,9 @@ class GeometryEditor extends Eventable(Class) {
 
         function moveVertexHandle(handleConatainerPoint, index, ringIndex = 0) {
             //for adsorption effect
-            const adsorbent = me._geometry.adsorbent;
-            if (adsorbent && isFunction(adsorbent)) {
-                handleConatainerPoint = me._geometry.adsorbent(handleConatainerPoint) || handleConatainerPoint;
+            const adsorb = me._geometry.adsorb;
+            if (adsorb && isFunction(adsorb)) {
+                handleConatainerPoint = me._geometry.adsorb(handleConatainerPoint) || handleConatainerPoint;
             }
             const vertice = getVertexPrjCoordinates(ringIndex);
             const nVertex = map._containerPointToPrj(handleConatainerPoint.sub(getDxDy()));

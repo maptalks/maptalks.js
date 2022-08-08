@@ -376,10 +376,10 @@ class DrawTool extends MapTool {
             this._createGeometry(event);
         } else {
             let prjCoord = this.getMap()._pointToPrj(event['point2d']);
-            const adsorbent = this._geometry.adsorbent;
+            const adsorb = this._geometry.adsorb;
             //for adsorption effect
-            if (adsorbent && isFunction(adsorbent)) {
-                const containerPoint = this._geometry.adsorbent(event.containerPoint) || event.containerPoint;
+            if (adsorb && isFunction(adsorb)) {
+                const containerPoint = this._geometry.adsorb(event.containerPoint) || event.containerPoint;
                 prjCoord = this.getMap()._containerPointToPrj(containerPoint);
             }
             if (!isNil(this._historyPointer)) {
@@ -470,8 +470,8 @@ class DrawTool extends MapTool {
             return;
         }
         let prjCoord = this.getMap()._pointToPrj(event['point2d']);
-        if (this._geometry.adsorbent) {
-            containerPoint = this._geometry.adsorbent(containerPoint) || containerPoint;
+        if (this._geometry.adsorb) {
+            containerPoint = this._geometry.adsorb(containerPoint) || containerPoint;
             prjCoord = map._containerPointToPrj(containerPoint);
         }
         const projection = map.getProjection();
