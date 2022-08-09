@@ -64,6 +64,18 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
             layer.removeAnalysis(this);
             if (this._pass) {
                 this._pass.dispose();
+                delete this._pass;
+            }
+            if (this._extentPass) {
+                this._extentPass.dispose();
+                delete this._extentPass;
+            }
+            if (this._extentMeshes) {
+                this._extentMeshes.forEach(mesh => {
+                    mesh.geometry.dispose();
+                    mesh.dispose();
+                });
+                delete this._extentMeshes;
             }
         }
     }

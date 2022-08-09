@@ -44,7 +44,7 @@ export default class SkylineAnalysis extends Analysis {
         this.renderer.clear({
             color : [0, 0, 0, 1],
             depth : 1,
-            framebuffer : this._fbo
+        framebuffer : this._fbo
         });
         this._fbo = this._pass.render(skylineMeshes, this._renderOptions);
         uniforms['skylineMap'] = this._fbo;
@@ -108,6 +108,7 @@ export default class SkylineAnalysis extends Analysis {
         super.remove();
         if (this._ground) {
             this._ground.geometry.dispose();
+            this._ground.dispose();
             delete this._ground;
         }
     }

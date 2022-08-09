@@ -244,6 +244,11 @@ export default class ExcavateAnalysis extends Analysis {
         super.remove();
         if (this.pickingFBO) {
             this.pickingFBO.destroy();
+            delete this.pickingFBO;
+        }
+        if (this._picking) {
+            this._picking.dispose();
+            delete this._picking;
         }
     }
 }
