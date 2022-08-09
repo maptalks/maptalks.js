@@ -58,7 +58,7 @@ export default class HeatmapPainter extends BasicPainter {
         return mesh;
     }
 
-    callRenderer(uniforms, context) {
+    callRenderer(shader, uniforms, context) {
         const fbo = this.getRenderFBO(context);
         this._process.render(this.scene, uniforms, fbo);
     }

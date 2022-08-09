@@ -343,7 +343,7 @@ class Painter {
             //1. render current tile level's meshes
             this.shader.filter = context.sceneFilter ? [this.level0Filter, context.sceneFilter] : this.level0Filter;
         }
-        this.callRenderer(uniforms, context);
+        this.callRenderer(this.shader, uniforms, context);
     }
 
     callBackgroundTileShader(uniforms, context) {
@@ -353,10 +353,10 @@ class Painter {
             this.shader.filter = context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
         }
         this.scene.getMeshes().sort(sortByLevel);
-        this.callRenderer(uniforms, context);
+        this.callRenderer(this.shader, uniforms, context);
     }
 
-    callRenderer(uniforms, context) {
+    callRenderer(shader, uniforms, context) {
         const meshes = this.scene.getMeshes();
         const renderMeshes = [];
         meshes.forEach(mesh => {
@@ -366,7 +366,7 @@ class Painter {
             renderMeshes.push(mesh);
         });
         this.scene.setMeshes(renderMeshes);
-        this.renderer.render(this.shader, uniforms, this.scene, this.getRenderFBO(context));
+        this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
         this.scene.setMeshes(meshes);
     }
 

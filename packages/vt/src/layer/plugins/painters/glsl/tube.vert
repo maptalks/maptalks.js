@@ -80,6 +80,8 @@ attribute vec4 aTubeNormal;
     #include <vsm_shadow_vert>
 #endif
 
+#include <highlight_vert>
+
 void main() {
     #ifdef HAS_LINE_WIDTH
         float myLineWidth = aLineWidth;
@@ -133,5 +135,7 @@ void main() {
                 vLinePatternGap = aLinePatternGap / 10.0;
             #endif
         #endif
+
+        highlight_setVarying();
     #endif
 }

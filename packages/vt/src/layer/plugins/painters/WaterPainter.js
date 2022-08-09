@@ -35,6 +35,9 @@ class WaterPainter extends BasicPainter {
     }
 
     needToRedraw() {
+        if (super.needToRedraw()) {
+            return true;
+        }
         const symbol = this.getSymbol(SYMBOL_INDEX);
         return symbol.animation;
     }

@@ -39,6 +39,9 @@ class LinePainter extends BasicPainter {
     }
 
     needToRedraw() {
+        if (super.needToRedraw()) {
+            return true;
+        }
         if (this._hasPatternAnim) {
             return true;
         }

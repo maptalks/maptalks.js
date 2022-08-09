@@ -1,0 +1,367 @@
+const assert = require('assert');
+const { readPixel } = require('../common/Util');
+const maptalks = require('maptalks');
+const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { GroupGLLayer } = require('@maptalks/gl');
+
+
+const DEFAULT_VIEW = {
+    center: [0, 0],
+    zoom: 6,
+    pitch: 0,
+    bearing: 0,
+    attribution: false,
+    lights: {
+        ambient: {
+            color: [0.1, 0.1, 0.1]
+        },
+        directional: {
+            color: [0.1, 0.1, 0.1],
+            direction: [1, 0, -1],
+        }
+    }
+};
+
+const line = {
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', id: 0, geometry: { type: 'LineString', coordinates: [[-1, 0], [1, 0]] }, properties: { type: 1 } }
+    ]
+};
+
+const point = {
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', id: 0, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
+    ]
+};
+
+const polygon = {
+    type: 'FeatureCollection',
+    features: [
+        {
+            type: 'Feature',
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [-1., 1.0],
+                        [1., 1.0],
+                        [1., -1.0],
+                        [-1., -1],
+                        [-1., 1]
+                    ]
+                ]
+            },
+            properties: {
+                levels: 3000
+            }
+        }
+    ]
+};
+
+describe('highlight specs', () => {
+    let container, map;
+    before(() => {
+        container = document.createElement('div');
+        container.style.width = '128px';
+        container.style.height = '128px';
+        document.body.appendChild(container);
+        // const canvas = document.createElement('canvas');
+        // canvas.id = 'debug';
+        // canvas.width = 128;
+        // canvas.height = 128;
+        // canvas.style.width = '128px';
+        // canvas.style.height = '128px';
+        // document.body.appendChild(canvas);
+    });
+
+    beforeEach(() => {
+        map = new maptalks.Map(container, DEFAULT_VIEW);
+    });
+
+    afterEach(() => {
+        map.remove();
+    });
+
+    it('should can highlight icon', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'icon',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { markerType: 'ellipse', markerVerticalAlignment: 'middle', markerWidth: 20, markerHeight: 20, markerFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight text', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2 - 50, y / 2);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight line', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' }
+                },
+                symbol: { lineWidth: 10, lineColor: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2 - 50, y / 2);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight polygon', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2 - 50, y / 2);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight lit', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'lit',
+                    dataConfig: { type: '3d-extrusion' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [125, 15, 15, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2 - 50, y / 2);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight tube', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'tube',
+                    dataConfig: { type: 'round-tube' }
+                },
+                symbol: { lineWidth: 50, lineColor: '#f00' }
+            }
+        ];
+        map.setZoom(18);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let rendered = false;
+        let ended = false;
+        group.on('layerload', () => {
+            let pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+            //开始是红色
+            if (!rendered) {
+                if (pixel[0] > 0) {
+                    layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+                    rendered = true;
+                }
+            } else if (!ended) {
+                ended = true;
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2, y / 2 - 60);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+});

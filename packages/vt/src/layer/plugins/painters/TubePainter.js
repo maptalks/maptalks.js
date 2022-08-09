@@ -13,7 +13,7 @@ const { getPBRUniforms } = reshader.pbr.PBRUtils;
 class TubePainter extends BasicPainter {
 
     needToRedraw() {
-        return this.isAnimating();
+        return super.needToRedraw() || this.isAnimating();
     }
 
     supportRenderMode(mode) {
