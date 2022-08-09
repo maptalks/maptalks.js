@@ -12,7 +12,7 @@ export default class CutAnalysis extends Analysis {
     update(name, value) {
         if (name === 'eyePos' || name === 'lookPoint') {
             const map = this.layer.getMap();
-            this._renderOptions[name] = coordinateToWorld(map, value);
+            this._renderOptions[name] = coordinateToWorld(map, ...value);
         } else {
             this._renderOptions[name] = value;
         }
@@ -31,7 +31,7 @@ export default class CutAnalysis extends Analysis {
     _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
-        this._renderOptions['position'] = coordinateToWorld(map, this.options.position);
+        this._renderOptions['position'] = coordinateToWorld(map, ...this.options.position);
         this._renderOptions['rotation'] = this.options.rotation || [0, 0, 0];
         this._renderOptions['scale'] = this.options.scale || [1, 1, 1];
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;

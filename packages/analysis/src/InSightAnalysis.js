@@ -12,7 +12,7 @@ export default class InSightAnalysis extends Analysis {
     update(name, value) {
         if (name === 'eyePos' || name === 'lookPoint') {
             const map = this.layer.getMap();
-            this._renderOptions[name] = coordinateToWorld(map, value);
+            this._renderOptions[name] = coordinateToWorld(map, ...value);
         } else {
             this._renderOptions[name] = value;
         }
@@ -22,8 +22,8 @@ export default class InSightAnalysis extends Analysis {
     _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
-        this._renderOptions['eyePos'] = coordinateToWorld(map, this.options.eyePos);
-        this._renderOptions['lookPoint'] = coordinateToWorld(map, this.options.lookPoint);
+        this._renderOptions['eyePos'] = coordinateToWorld(map, ...this.options.eyePos);
+        this._renderOptions['lookPoint'] = coordinateToWorld(map, ...this.options.lookPoint);
         this._renderOptions['visibleColor'] = this.options.visibleColor;
         this._renderOptions['invisibleColor'] = this.options.invisibleColor;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;

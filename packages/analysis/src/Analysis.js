@@ -1,5 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { Class, Eventable, Handlerable, VectorLayer, Polygon } from 'maptalks';
+import { Class, Eventable, Handlerable, Polygon } from 'maptalks';
 import ExtentPass from './pass/ExtentPass';
 import { coordinateToWorld } from './common/Util';
 import earcut from 'earcut';
@@ -121,15 +121,12 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
     }
 
     _calExtent(bound) {
-        const map = this.layer.getMap();
-        const layer = map.getLayer('v') || new VectorLayer('v').addTo(map);
         const polygon = new Polygon(bound, {
             symbol: {
                 polygonOpacity: 0.2
             }
-        }).addTo(layer);
+        });
         const extent = polygon.getExtent();
-        layer.remove();
         return this._renderExtentMap(extent, bound);
     }
 
@@ -146,21 +143,23 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         map.setPitch(0);
         map.setBearing(0);
         const mapExtent = map.getExtent();
-        this._pvMatrix = mat4.copy([], map.projViewMatrix);
-        const pointMin = coordinateToWorld(map, [mapExtent.xmin, mapExtent.ymin]);
-        const pointMax = coordinateToWorld(map, [mapExtent.xmax, mapExtent.ymax]);
+        this._pvMatrix = this._pvMatrix || [];
+        mat4.copy(this._pvMatrix, map.projViewMatrix);
+        const pointMin = coordinateToWorld(map, mapExtent.xmin, mapExtent.ymin);
+        const pointMax = coordinateToWorld(map, mapExtent.xmax, mapExtent.ymax);
         const extentInWorld = [pointMin[0], pointMin[1], pointMax[0], pointMax[1]];
-        const extentPointMin = coordinateToWorld(map, [extent.xmin, extent.ymin]);
-        const extentPointMax = coordinateToWorld(map, [extent.xmax, extent.ymax]);
+        const extentPointMin = coordinateToWorld(map, extent.xmin, extent.ymin);
+        const extentPointMax = coordinateToWorld(map, extent.xmax, extent.ymax);
         const extentPolygon = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
         map.setZoom(prezoom);
         map.setCenter(precenter);
         map.setPitch(prepitch);
         map.setBearing(prebearing);
-
-        const extentRenderer = new reshader.Renderer(this.regl);
         this._extentMeshes = this._createBoundaryMesh(boundary);
-        this._extentPass = this._extentPass || new ExtentPass(extentRenderer, this._viewport);
+        if (!this._extentPass) {
+            const extentRenderer = new reshader.Renderer(this.regl);
+            this._extentPass = new ExtentPass(extentRenderer, this._viewport);
+        }
         const extentMap = this._extentPass.render(this._extentMeshes, this._pvMatrix);
         return { extentMap, extentInWorld, extentPolygon };
     }
@@ -170,21 +169,26 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         const pos = [];
         const map = this.layer.getMap();
         for (let i = 0; i < boundary.length; i++) {
-            const point = coordinateToWorld(map, boundary[i]);
+            const point = coordinateToWorld(map, ...boundary[i]);
             pos.push(point[0]);
             pos.push(point[1]);
             pos.push(0);
         }
         const triangles = earcut(pos, null, 3);
-        const geometry = new reshader.Geometry({
-            POSITION: pos
-        },
-        triangles,
-        0,
-        {
-            positionAttribute: 'POSITION'
-        });
-        const mesh = new reshader.Mesh(geometry);
-        return [mesh];
+        if (this._extentMeshes) {
+            this._extentMeshes.geometry.updateData('POSITION', pos);
+        } else {
+            const geometry = new reshader.Geometry({
+                POSITION: pos
+            },
+            triangles,
+            0,
+            {
+                positionAttribute: 'POSITION'
+            });
+            const mesh = new reshader.Mesh(geometry);
+            this._extentMeshes = [mesh];
+        }
+        return this._extentMeshes;
     }
 }

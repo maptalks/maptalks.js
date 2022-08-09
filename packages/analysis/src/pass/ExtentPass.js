@@ -3,6 +3,8 @@ import * as maptalks from 'maptalks';
 import vert from './glsl/excavateExtent.vert';
 import frag from './glsl/excavateExtent.frag';
 
+const EMPTY_COLOR = [0, 0, 0, 1];
+
 export default class ExtentPass {
     constructor(renderer, viewport) {
         this.renderer = renderer;
@@ -43,7 +45,7 @@ export default class ExtentPass {
     render(meshes, projViewMatrix) {
         this._resize();
         this.renderer.clear({
-            color : [0, 0, 0, 1],
+            color : EMPTY_COLOR,
             depth : 1,
             framebuffer : this._fbo
         });
@@ -65,6 +67,17 @@ export default class ExtentPass {
         const height = maptalks.Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
+        }
+    }
+
+    dispose() {
+        if (this._fbo) {
+            this._fbo.destroy();
+            delete this._fbo;
+        }
+        if (this._shader) {
+            this._shader.dispose();
+            delete this._shader;
         }
     }
 }
