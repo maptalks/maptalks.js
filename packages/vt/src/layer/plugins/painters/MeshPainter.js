@@ -96,7 +96,7 @@ class MeshPainter extends Painter {
         mesh.setLocalTransform(transform);
 
         //没有高度或level >= 3的瓦片mesh不产生阴影
-        if (geometry.properties.maxAltitude <= 0 || mesh.getUniform('level') >= 3) {
+        if (geometry.properties.maxAltitude <= 0 || mesh.properties.level >= 3) {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
@@ -152,7 +152,7 @@ class MeshPainter extends Painter {
             return EMPTY_ARRAY;
         }
         this.shadowCount = this.scene.getMeshes().length;
-        const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+        const meshes = this.scene.getMeshes().filter(m => m.properties.level === 0);
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
             if (mesh.material !== this.material) {

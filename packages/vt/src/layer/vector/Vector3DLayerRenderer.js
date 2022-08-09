@@ -352,7 +352,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const meshes = painter.createMeshes(geometries, posMatrix, { tilePoint: [center[0], center[1]] });
             for (let i = 0; i < meshes.length; i++) {
                 const mesh = meshes[i];
-                mesh.setUniform('level', 0);
+                mesh.properties.level = 0;
                 const defines = mesh.defines;
                 //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
                 defines['ENABLE_TILE_STENCIL'] = 1;
@@ -531,7 +531,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             const meshes = this._markerPainter.createMeshes(geometries, posMatrix);
             for (let i = 0; i < meshes.length; i++) {
                 meshes[i].geometry.properties.originElements = meshes[i].geometry.properties.elements.slice();
-                meshes[i].setUniform('level', 0);
+                meshes[i].properties.level = 0;
                 meshes[i].material.set('flipY', 1);
                 meshes[i].properties.meshKey = meshUID++;
             }

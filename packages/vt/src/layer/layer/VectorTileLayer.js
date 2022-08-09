@@ -286,12 +286,21 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    cancelHighlight() {
+    cancelHighlight(ids) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return this;
         }
-        renderer.cancelHighlight();
+        renderer.cancelHighlight(ids);
+        return this;
+    }
+
+    cancelAllHighlight() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.cancelAllHighlight();
         return this;
     }
 

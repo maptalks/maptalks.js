@@ -930,7 +930,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!filter) {
             return meshes.length > 0;
         }
-        return meshes.filter(filter).length > 0;
+        // 还要检查是否存在 hlBloomMesh
+        return meshes.filter(mesh => filter(mesh) || mesh.properties.hlBloomMesh && filter(mesh.properties.hlBloomMesh)).length > 0;
     }
 
     _drawTileStencil(fbo) {
@@ -1533,11 +1534,25 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    cancelHighlight() {
+    cancelHighlight(ids) {
+        if (Array.isArray(ids)) {
+            for (let i = 0; i < ids.length; i++) {
+                delete this._highlighted[ids[i]];
+            }
+        } else {
+            delete this._highlighted[ids];
+        }
+        const plugins = this._getFramePlugins();
+        plugins.forEach(plugin => {
+            plugin.highlight(this._highlighted);
+        });
+    }
+
+    cancelAllHighlight() {
         delete this._highlighted;
         const plugins = this._getFramePlugins();
         plugins.forEach(plugin => {
-            plugin.highlight({});
+            plugin.cancelAllHighlight();
         });
     }
 }

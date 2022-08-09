@@ -16,11 +16,11 @@ const MAT = [];
 const EMPTY_ARRAY = [];
 const COLOR = [];
 const level0Filter = mesh => {
-    return mesh.getUniform('level') === 0;
+    return mesh.properties.level === 0;
 };
 
 const levelNFilter = mesh => {
-    return mesh.getUniform('level') > 0;
+    return mesh.properties.level > 0;
 };
 
 class Painter {
@@ -169,6 +169,7 @@ class Painter {
                     const props = geo.geometry.properties;
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
+                    props.elements = props.elements || geo.geometry.elements;
                     if (hasFeaIds) {
                         props.feaIdPickingMap = pickingIdMap;
                         props.feaPickingIdMap = idPickingMap;
@@ -356,7 +357,17 @@ class Painter {
     }
 
     callRenderer(uniforms, context) {
+        const meshes = this.scene.getMeshes();
+        const renderMeshes = [];
+        meshes.forEach(mesh => {
+            if (mesh.properties.hlBloomMesh && context.bloom) {
+                renderMeshes.push(mesh.properties.hlBloomMesh);
+            }
+            renderMeshes.push(mesh);
+        });
+        this.scene.setMeshes(renderMeshes);
         this.renderer.render(this.shader, uniforms, this.scene, this.getRenderFBO(context));
+        this.scene.setMeshes(meshes);
     }
 
     getRenderFBO(context) {
@@ -473,6 +484,7 @@ class Painter {
                     meshes[i].material.dispose();
                 }
                 meshes[i].dispose();
+                this._deleteBloomMesh(meshes[i]);
             }
         } else {
             if (!meshes.isValid()) {
@@ -485,6 +497,20 @@ class Painter {
                 meshes.material.dispose();
             }
             meshes.dispose();
+            this._deleteBloomMesh(meshes);
+        }
+    }
+
+    _deleteBloomMesh(mesh) {
+        if (!mesh) {
+            return;
+        }
+        const { hlBloomMesh } = mesh.properties;
+        if (hlBloomMesh) {
+            const hlGeo = hlBloomMesh.geometry;
+            hlGeo.dispose();
+            hlBloomMesh.dispose();
+            delete mesh.properties.hlBloomMesh;
         }
     }
 
@@ -744,7 +770,7 @@ class Painter {
         const stencils = meshes.map(mesh => {
             return {
                 transform: mesh.localTransform,
-                level: mesh.getUniform('level'),
+                level: mesh.properties.level,
                 mesh
             };
         }).sort(this._compareStencil);
@@ -973,29 +999,42 @@ class Painter {
         this.setToRedraw(true);
     }
 
+    cancelAllHighlight() {
+        this._highlighted = null;
+        this._highlightTimestamp = this.layer.getRenderer().getFrameTimestamp();
+        this.setToRedraw(true);
+    }
+
     _prepareFeatureIds(geometry, glData) {
-        const { featureIds, feaIdIndiceMap } = glData;
+        const { featureIds, feaIdAttrMap, feaIdIndiceMap } = glData;
         geometry.properties.aFeaIds = featureIds;
         const featureIdSet = new Set();
         for (let i = 0, l = featureIds.length; i < l; i++) {
             featureIdSet.add(featureIds[i]);
         }
         geometry.properties.featureIdSet = featureIdSet;
+        geometry.properties.feaIdAttrMap = feaIdAttrMap;
         geometry.properties.feaIdIndiceMap = feaIdIndiceMap;
     }
 
     _highlightMesh(mesh) {
-        const { highlightTimestamp, featureIdSet, aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
+        const { highlightTimestamp } = mesh.properties;
         if (!this._highlighted) {
             if (highlightTimestamp) {
                 //TODD remove
-                delete mesh.geometry.properties.highlightTimestamp;
+                const defines = mesh.defines;
+                delete defines['HAS_HIGHLIGHT_COLOR'];
+                delete defines['HAS_HIGHLIGHT_OPACITY'];
+                mesh.setDefines(defines);
+                delete mesh.properties.highlightTimestamp;
+                this._deleteBloomMesh(mesh);
             }
             return;
         }
         if (this._highlightTimestamp === highlightTimestamp) {
             return;
         }
+        const { featureIdSet, aFeaIds, feaIdAttrMap, feaIdIndiceMap } = mesh.geometry.properties;
         let { aHighlightColor, aHighlightOpacity } = mesh.geometry.properties;
         if (aHighlightColor) {
             aHighlightColor.fill(0);
@@ -1007,11 +1046,12 @@ class Painter {
         let hasOpacity = false;
         const highlighted = this._highlighted;
         const ids = Object.keys(this._highlighted);
+        const hlElements = [];
         for (let i = 0; i < ids.length; i++) {
             const id = highlighted[ids[i]].id;
             if (featureIdSet.has(id)) {
                 // update attribute data
-                let { color, opacity, /*bloom*/ } = highlighted[id];
+                let { color, opacity, bloom } = highlighted[id];
                 if (color) {
                     if (!hasColor) {
                         if (!aHighlightColor) {
@@ -1021,13 +1061,14 @@ class Painter {
                     }
                     const normalizedColor = StyleUtil.normalizeColor(COLOR, color);
 
-                    const [start, end] = feaIdIndiceMap[id];
+                    const [start, end] = feaIdAttrMap[id];
                     const count = end - start;
                     for (let k = 0; k < count; k++) {
                         const idx = (start + k) * 4;
                         vec4.set(aHighlightColor.subarray(idx, idx + 4), ...normalizedColor);
                     }
                 }
+
                 opacity = isNil(opacity) ? 1 : opacity;
                 if (opacity < 1) {
                     if (!hasOpacity) {
@@ -1038,7 +1079,7 @@ class Painter {
                         hasOpacity = true;
                     }
 
-                    const [start, end] = feaIdIndiceMap[id];
+                    const [start, end] = feaIdAttrMap[id];
                     const count = end - start;
                     for (let k = 0; k < count; k++) {
                         const idx = start + k;
@@ -1046,8 +1087,17 @@ class Painter {
                     }
                 }
 
+                if (bloom) {
+                    const indices = feaIdIndiceMap[id];
+                    if (indices) {
+                        for (let j = 0; j < indices.length; j++) {
+                            hlElements.push(indices[j]);
+                        }
+                    }
+                }
             }
         }
+
         const defines = mesh.defines;
         if (hasColor) {
             if (!mesh.geometry.data.aHighlightColor) {
@@ -1058,7 +1108,8 @@ class Painter {
             }
             mesh.geometry.properties.aHighlightColor = aHighlightColor;
             defines['HAS_HIGHLIGHT_COLOR'] = 1;
-        } else {
+        } else if (defines['HAS_HIGHLIGHT_COLOR']) {
+            mesh.geometry.updateData('aHighlightColor', aHighlightColor);
             delete defines['HAS_HIGHLIGHT_COLOR'];
         }
         if (hasOpacity) {
@@ -1070,11 +1121,50 @@ class Painter {
             }
             mesh.geometry.properties.aHighlightOpacity = aHighlightOpacity;
             defines['HAS_HIGHLIGHT_OPACITY'] = 1;
-        } else {
+        } else if (defines['HAS_HIGHLIGHT_OPACITY']) {
+            mesh.geometry.updateData('aHighlightOpacity', aHighlightOpacity);
             delete defines['HAS_HIGHLIGHT_OPACITY'];
         }
-        mesh.defines = defines;
-        mesh.geometry.properties.highlightTimestamp = this._highlightTimestamp;
+        mesh.setDefines(defines);
+        mesh.properties.highlightTimestamp = this._highlightTimestamp;
+
+        let hlBloomMesh = mesh.properties.hlBloomMesh;
+        if (hlElements.length) {
+            if (!hlBloomMesh) {
+                const geo = new reshader.Geometry(mesh.geometry.data, hlElements, 0, mesh.geometry.desc);
+                const material = mesh.material;
+                hlBloomMesh = new reshader.Mesh(geo, material, mesh.config);
+                const uniforms = mesh.uniforms;
+                for (const p in uniforms) {
+                    Object.defineProperty(hlBloomMesh.uniforms, p, {
+                        enumerable: true,
+                        get: function () {
+                            return mesh.getUniform(p);
+                        }
+                    });
+                }
+
+                const defines = extend({}, mesh.defines);
+                defines['HAS_BLOOM'] = 1;
+                const localTransform = mat4.copy([], mesh.localTransform);
+                const positionMatrix = mat4.copy([], mesh.positionMatrix);
+                hlBloomMesh.setLocalTransform(localTransform);
+                hlBloomMesh.setPositionMatrix(positionMatrix);
+                extend(hlBloomMesh.properties, mesh.properties);
+                extend(geo.properties, mesh.geometry.properties);
+                hlBloomMesh.setDefines(defines);
+                hlBloomMesh.bloom = 1;
+            } else {
+                const localTransform = mat4.copy(hlBloomMesh.localTransform, mesh.localTransform);
+                const positionMatrix = mat4.copy(hlBloomMesh.positionMatrix, mesh.positionMatrix);
+                hlBloomMesh.setLocalTransform(localTransform);
+                hlBloomMesh.setPositionMatrix(positionMatrix);
+                mesh.properties.hlBloomMesh.geometry.setElements(hlElements);
+            }
+            mesh.properties.hlBloomMesh = hlBloomMesh;
+        } else if (hlBloomMesh) {
+            this._deleteBloomMesh(mesh);
+        }
     }
 }
 

@@ -821,7 +821,6 @@ export default class CollisionPainter extends BasicPainter {
             //需要更新zoom meshes 的level，让他们改为在background阶段绘制
             const level = (tileInfo.z - tileZoom) > 0 ? 2 * (tileInfo.z - tileZoom) - 1 : 2 * (tileZoom - tileInfo.z);
             mesh.properties.level = level;
-            mesh.setUniform('level', level);
             if (renderer.isForeground(mesh) ||
                 mesh._fadeOutStartTime && (timestamp - mesh._fadeOutStartTime > fadeOutDelay + fadingDuration)) {
                 delete mesh._fadeOutStartTime;
@@ -1086,7 +1085,7 @@ function getUniqueKey(key, scale) {
 }
 
 function sortByLevel(m0, m1) {
-    const r = m1.uniforms['level'] - m0.uniforms['level'];
+    const r = m1.properties['level'] - m0.properties['level'];
     if (r === 0) {
         return m0.properties.meshKey - m1.properties.meshKey;
     } else {

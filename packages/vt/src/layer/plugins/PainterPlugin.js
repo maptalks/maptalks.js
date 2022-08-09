@@ -204,7 +204,6 @@ function createPainterPlugin(type, Painter) {
                 // 保留一些有用的信息
                 m.properties.tile = tileInfo;
                 m.properties.level = level;
-                m.setUniform('level', level);
             });
 
             let redraw = false;
@@ -472,6 +471,11 @@ function createPainterPlugin(type, Painter) {
         highlight(highlights) {
             const painter = this.painter;
             return painter && painter.highlight(highlights);
+        },
+
+        cancelAllHighlight() {
+            const painter = this.painter;
+            return painter && painter.cancelAllHighlight();
         }
     });
 

@@ -121,3 +121,16 @@ export function generateFeatureIndex(featureIds) {
     }
     return index;
 }
+
+export function generateFeatureIndiceIndex(featureIds, indices) {
+    const indiceIndex = {};
+    for (let i = 0; i < indices.length; i++) {
+        const idx = indices[i];
+        const id = featureIds[idx];
+        if (!indiceIndex[id]) {
+            indiceIndex[id] = [];
+        }
+        indiceIndex[id].push(idx);
+    }
+    return indiceIndex;
+}

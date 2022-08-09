@@ -876,7 +876,7 @@ function resetOffset(aOffset, meshElements, start, end) {
 }
 
 function sortByLevel(m0, m1) {
-    const r = m0.uniforms['level'] - m1.uniforms['level'];
+    const r = m0.properties['level'] - m1.properties['level'];
     if (r === 0) {
         return m0.properties.meshKey - m1.properties.meshKey;
     } else {

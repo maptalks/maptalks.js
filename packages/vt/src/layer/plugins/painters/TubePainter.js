@@ -154,7 +154,7 @@ class TubePainter extends BasicPainter {
     //     if (!this.isVisible()) {
     //         return EMPTY_ARRAY;
     //     }
-    //     const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+    //     const meshes = this.scene.getMeshes().filter(m => m.properties.level === 0);
     //     this.shadowCount = meshes.length;
     //     return meshes;
     // }

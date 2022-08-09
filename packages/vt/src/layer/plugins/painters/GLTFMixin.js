@@ -280,7 +280,7 @@ const GLTFMixin = Base =>
                 return EMPTY_ARRAY;
             }
             this.shadowCount = this.scene.getMeshes().length;
-            const meshes = this.scene.getMeshes().filter(m => m.getUniform('level') === 0);
+            const meshes = this.scene.getMeshes().filter(m => m.properties.level === 0);
             return meshes;
         }
 
