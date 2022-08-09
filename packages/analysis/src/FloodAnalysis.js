@@ -18,6 +18,7 @@ export default class FloodAnalysis extends Analysis {
         this._renderOptions['extent'] = VEC4;
         this._renderOptions['extentMap'] = renderer.regl.texture({width: 2, height: 2});
         this._renderOptions['hasExtent'] = 0;
+        this._renderOptions['type'] = 1.0;
         if (this.options.boundary) {
             const { extentMap, extentInWorld } = this._calExtent(this.options.boundary);
             this._renderOptions['extent'] = extentInWorld;

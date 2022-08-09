@@ -256,6 +256,34 @@ describe('add analysis', () => {
         });
         gllayer.addTo(map);
     });
+
+    it('add HeightLimitAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const heightLimitAnalysis = new maptalks.HeightLimitAnalysis({
+                limitHeight: 20,
+                limitColor: [0.1, 0.5, 0.6]
+            });
+            heightLimitAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const renderer = gltflayer.getRenderer();
+                const meshes = renderer.getAnalysisMeshes();
+                const tempMap = heightLimitAnalysis.exportAnalysisMap(meshes);
+                const index = (height / 2) * width * 4 + (width / 2) * 4;
+                const arr = tempMap.slice(index, index + 16);
+                expect(uint8ArrayEqual(arr, [0, 0, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255]));
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
 });
 
 describe('api of analysis', () => {
