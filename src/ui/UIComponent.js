@@ -652,9 +652,13 @@ class UIComponent extends Eventable(Class) {
     }
 
     _updatePosition() {
+        if (!this.getMap()) {
+            return this;
+        }
         // update position in the next frame to sync with layers
         const renderer = this.getMap()._getRenderer();
         renderer.callInNextFrame(this._setPosition.bind(this));
+        return this;
     }
 
     _setPosition() {
