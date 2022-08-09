@@ -34,7 +34,7 @@ uniform vec2 outSize;
 
 uniform mat4 projViewMatrix;
 // uniform mat4 projViewModelMatrix;
-
+#include <highlight_vert>
 #include <get_output>
 #include <heatmap_render_vert>
 #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
@@ -128,4 +128,6 @@ void main()
     #ifdef HAS_I3S_UVREGION
         vUvRegion = uvRegion / 65535.0;
     #endif
+
+    highlight_setVarying();
 }
