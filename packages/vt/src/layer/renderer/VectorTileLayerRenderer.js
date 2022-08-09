@@ -1522,7 +1522,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (Array.isArray(highlights)) {
             for (let i = 0; i < highlights.length; i++) {
-                this._highlighted[highlights[i].id] = highlights[i].id;
+                this._highlighted[highlights[i].id] = highlights[i];
             }
         } else {
             this._highlighted[highlights.id] = highlights;

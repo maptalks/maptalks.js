@@ -119,7 +119,7 @@ describe('highlight specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+                layer.highlight([{ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 }]);
             } else if (count === 5) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
@@ -359,6 +359,153 @@ describe('highlight specs', () => {
                 assert(pixel[1] > 10);
                 pixel = readPixel(renderer.canvas, x / 2, y / 2 - 60);
                 assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can cancelHighlight', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                layer.cancelHighlight(0);
+
+            } else if (count === 6) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can cancelHighlight with array', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                layer.cancelHighlight([0]);
+
+            } else if (count === 6) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can cancelAllHighlight', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+            } else if (count === 5) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                layer.cancelAllHighlight();
+
+            } else if (count === 6) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
                 done();
             }
         });
