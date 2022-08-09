@@ -602,7 +602,7 @@ class UIComponent extends Eventable(Class) {
         const events = {};
         if (this._owner && (this._owner instanceof Geometry)) {
             events.positionchange = this.onGeometryPositionChange;
-            events.symbolchange = this.onGeometryPositionChange;
+            events.symbolchange = this._updatePosition;
         }
         if (this.getOwnerEvents) {
             extend(events, this.getOwnerEvents());
@@ -652,9 +652,13 @@ class UIComponent extends Eventable(Class) {
     }
 
     _updatePosition() {
+        if (!this.getMap()) {
+            return this;
+        }
         // update position in the next frame to sync with layers
         const renderer = this.getMap()._getRenderer();
         renderer.callInNextFrame(this._setPosition.bind(this));
+        return this;
     }
 
     _setPosition() {
