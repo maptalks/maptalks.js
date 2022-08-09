@@ -123,6 +123,9 @@ export function generateFeatureIndex(featureIds) {
 }
 
 export function generateFeatureIndiceIndex(featureIds, indices) {
+    if (!indices) {
+        return null;
+    }
     const indiceIndex = {};
     for (let i = 0; i < indices.length; i++) {
         const idx = indices[i];
