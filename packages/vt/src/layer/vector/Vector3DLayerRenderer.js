@@ -284,6 +284,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             center[0] /= center[3];
             center[1] /= center[3];
         }
+        if (isNaN(center[0]) || isNaN(center[1])) {
+            throw new Error(`invalid geometry coordinates for ${this.layer.getJSONType()}`);
+        }
         return {
             features,
             center
@@ -371,21 +374,27 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _addCoordsToCenter(geometry, center) {
         for (let i = 0; i < geometry.length; i++) {
-            if (isNumber(geometry[i][0])) {
-                center[0] += geometry[i][0];
-                center[1] += geometry[i][1];
-                center[3] += 1;
+            if (!Array.isArray(geometry[i][0])) {
+                if (!isNaN(+geometry[i][0]) && !isNaN(+geometry[i][1])) {
+                    center[0] += geometry[i][0];
+                    center[1] += geometry[i][1];
+                    center[3] += 1;
+                }
             } else {
                 for (let ii = 0; ii < geometry[i].length; ii++) {
-                    if (isNumber(geometry[i][ii][0])) {
-                        center[0] += geometry[i][ii][0];
-                        center[1] += geometry[i][ii][1];
-                        center[3] += 1;
+                    if (!Array.isArray(geometry[i][ii][0])) {
+                        if (!isNaN(+geometry[i][ii][0]) && !isNaN(+geometry[i][ii][1])) {
+                            center[0] += geometry[i][ii][0];
+                            center[1] += geometry[i][ii][1];
+                            center[3] += 1;
+                        }
                     } else {
                         for (let iii = 0; iii < geometry[i][ii].length; iii++) {
-                            center[0] += geometry[i][ii][iii][0];
-                            center[1] += geometry[i][ii][iii][1];
-                            center[3] += 1;
+                            if (!isNaN(+geometry[i][ii][iii][0]) && !isNaN(+geometry[i][ii][iii][1])) {
+                                center[0] += geometry[i][ii][iii][0];
+                                center[1] += geometry[i][ii][iii][1];
+                                center[3] += 1;
+                            }
                         }
                     }
                 }
