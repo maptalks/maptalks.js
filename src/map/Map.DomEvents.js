@@ -347,13 +347,30 @@ Map.include(/** @lends Map.prototype */ {
         }
         const eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
-    }
+    },
 
     // _onKeyPress(e) {
     //     if (!this.isRemoved() && e.keyCode === 48 && e.ctrlKey) {
     //         this.setBearing(0);
     //     }
     // }
+
+    // Extract _ geteventparams is reused in other plug-ins,such as maptalks.three plugin
+    _getEventParams(e) {
+        const map = this;
+        const eventParam = {
+            'domEvent': e
+        };
+        const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
+        if (actual) {
+            const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+            eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
+            eventParam['containerPoint'] = containerPoint;
+            eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
+            eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
+        }
+        return eventParam;
+    }
 });
 
 Map.addOnLoadHook('_registerDomEvents');
