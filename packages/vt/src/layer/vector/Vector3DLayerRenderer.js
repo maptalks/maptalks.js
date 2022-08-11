@@ -3,7 +3,7 @@ import { createREGL, reshader, mat4, vec3 } from '@maptalks/gl';
 import { SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 import { convertToFeature, ID_PROP } from './util/convert_to_feature';
 import { IconRequestor, GlyphRequestor, PointPack, LinePack, StyledPoint, VectorPack, StyledVector } from '@maptalks/vector-packer';
-import { extend, isNumber, hasOwn, getCentiMeterScale } from '../../common/Util';
+import { extend, hasOwn, getCentiMeterScale } from '../../common/Util';
 import { MARKER_SYMBOL, TEXT_SYMBOL, LINE_SYMBOL, SYMBOL_PREFIX, LINE_GRADIENT_PROP_KEY } from './util/symbols';
 import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
