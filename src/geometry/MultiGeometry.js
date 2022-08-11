@@ -77,6 +77,12 @@ class MultiGeometry extends GeometryCollection {
             'coordinates': coordinates
         };
     }
+
+    _toJSON(options) {
+        return {
+            'feature': this.toGeoJSON(options)
+        };
+    }
 }
 
 export default MultiGeometry;

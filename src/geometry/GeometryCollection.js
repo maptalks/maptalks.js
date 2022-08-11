@@ -410,12 +410,19 @@ class GeometryCollection extends Geometry {
     _toJSON(options) {
         //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
         const feature = {
-            'type': 'GeometryCollection',
-            'geometries': this.getGeometries().filter(geo => {
-                return geo && geo._toJSON;
-            }).map(geo => {
-                return geo._toJSON();
-            })
+            'type': 'Feature',
+            'geometry': {
+                'type': 'GeometryCollection',
+                'geometries': this.getGeometries().filter(geo => {
+                    return geo && geo._toJSON;
+                }).map(geo => {
+                    const json = geo._toJSON();
+                    if (json.subType) {
+                        return json;
+                    }
+                    return geo._exportGeoJSONGeometry();
+                })
+            }
         };
         options.feature = feature;
         return options;
