@@ -116,25 +116,25 @@ module.exports = [
             // footer: ``
         }
     },
+    // {
+    //     input: 'src/index.js',
+    //     plugins: configPlugins.concat(plugins),
+    //     external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+    //     output: {
+    //         'sourcemap': production ? false : 'inline',
+    //         'format': 'es',
+    //         'globals' : {
+    //             'maptalks' : 'maptalks'
+    //         },
+    //         'file': 'build/gl.es.js'
+    //     }
+    // },
     {
         input: 'src/index.js',
-        plugins: configPlugins.concat(plugins),
-        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
-        output: {
-            'sourcemap': production ? false : 'inline',
-            'format': 'es',
-            'globals' : {
-                'maptalks' : 'maptalks'
-            },
-            'file': 'build/gl.es.js'
-        }
-    },
-    {
-        input: 'build/index.js',
         plugins: configPlugins,
         external : ['maptalks'],
         output: {
-            'sourcemap': false,
+            'sourcemap': production ? false : 'inline',
             'format': 'umd',
             'name': 'maptalksgl',
             'globals' : {
@@ -145,11 +145,11 @@ module.exports = [
             'file': outputFile
         },
         watch: {
-            include: ['build/**/*.js', '../reshader.gl/dist/*.mjs']
+            include: ['src/**/*.js', '../reshader.gl/dist/*.mjs']
         }
     },
     {
-        input: 'build/index.js',
+        input: 'src/index.js',
         plugins: configPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
