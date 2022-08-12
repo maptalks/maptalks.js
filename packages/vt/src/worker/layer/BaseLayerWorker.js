@@ -1,4 +1,4 @@
-import { extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
+import { isNil, extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
 import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
@@ -209,6 +209,11 @@ export default class BaseLayerWorker {
         if (this.featurePlugins) {
             pushIn(pluginConfigs, this.featurePlugins);
         }
+
+        for (let i = 0; i < pluginConfigs.length; i++) {
+            cloneFeaAndAppendCustomTags(features, context.tileInfo.z, pluginConfigs[i]);
+        }
+
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
             tilePoint = { x: tileInfo.extent2d.xmin * glScale, y: tileInfo.extent2d.ymax * glScale },
@@ -370,7 +375,8 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(tileFeatures, pluginConfig, context) {
-        let features = cloneFeaAndAppendCustomTags(tileFeatures, context.tileInfo.z, pluginConfig);
+        // let features = cloneFeaAndAppendCustomTags(tileFeatures, context.tileInfo.z, pluginConfig);
+        let features = tileFeatures;
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize[0];
@@ -798,21 +804,56 @@ function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig) {
             customProperties[i].fn = FilterUtil.compileFilter(customProperties[i].filter);
         }
     }
-    for (let i = 0; i < features.length; i++) {
-        // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
-        features[i] = extend({}, features[i]);
-        if (customProperties) {
-            for (let j = 0; j < customProperties.length; j++) {
-                if (customProperties[j].fn(features[i], zoom)) {
-                    if (features[i].geojson) {
-                        // geojson数据的properties是存在geojson-vt index里的，customTags会改变原值，所以需要复制一份
-                        features[i].properties = extend({}, features[i].properties);
+
+    if (!customProperties || !customProperties.length) {
+        for (let i = 0; i < features.length; i++) {
+            // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
+            features[i] = extend({}, features[i]);
+        }
+        return features;
+    }
+    const dupKey = '__customDups';
+    const additionalFeas = [];
+
+    for (let j = 0; j < customProperties.length; j++) {
+        for (let i = 0, l = features.length; i < l; i++) {
+            if (j === 0) {
+                // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
+                features[i] = extend({}, features[i]);
+            }
+            if (customProperties[j].fn(features[i], zoom)) {
+                if (j === 0 && features[i].geojson) {
+                    // geojson数据的properties是存在geojson-vt index里的，customTags会改变原值，所以需要复制一份
+                    features[i].properties = extend({}, features[i].properties);
+                }
+                for (const p in customProperties[j].properties) {
+                    const v = customProperties[j].properties[p];
+                    if (isNil(v)) {
+                        continue;
                     }
-                    extend(features[i].properties, customProperties[j].properties);
-                    break;
+                    if (!isNil(features[i].properties[p])) {
+                        const fea = extend({}, features[i]);
+                        fea.properties = extend({}, fea.properties);
+                        fea.properties[p] = v;
+                        additionalFeas.push(fea);
+                    } else {
+                        features[i].properties[p] = v;
+                    }
                 }
             }
         }
     }
+
+
+    if (additionalFeas.length) {
+        for (let i = 0, l = features.length; i < l; i++) {
+            if (features[i].properties[dupKey]) {
+                delete features[i].properties[dupKey];
+            }
+        }
+        pushIn(features, additionalFeas);
+
+    }
+
     return features;
 }
