@@ -1438,6 +1438,104 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can remove text marker with markerTextFit, maptalks/issues#113', done => {
+        //// GroupGLLayer
+        const sceneConfig = {
+          postProcess: {
+            enable: true,
+            antialias: { enable: false } // 关闭抗锯齿，文字更清楚
+          }
+        };
+        const groupLayer = new GroupGLLayer('groupLayer', [], { sceneConfig });
+        groupLayer.addTo(map);
+
+        //// PointLayer
+        let pointLayer = new PointLayer('pointLayer', {
+          sceneConfig: {
+            depthFunc: '<=',
+            renderToPointRenderTarget: false
+          }
+        }).addTo(groupLayer);
+        let center = map.getCenter();
+
+        // redMarker
+        let redMarkers = [];
+        const redMarker = new maptalks.Marker(
+          center,
+          {
+            symbol: [
+              {
+                markerType: 'square',
+                markerVerticalAlignment: 'middle',
+                markerFill: '#f00',
+                markerOpacity: 0.7,
+                markerTextFit: 'both',
+                markerTextFitPadding: [3, 3, 3, 3],
+
+                textName: 'MARKER的文字',
+                textFaceName: '微软雅黑, monospace',
+                textSize: 16,
+                textFill: '#000'
+              },
+            ]
+          }
+        );
+        redMarkers.push(redMarker);
+
+        // blueMarker
+        let blueMarkers = [];
+        const blueMarker = new maptalks.Marker(
+          center.add(0, 0.1),
+          {
+            symbol: [
+              {
+                markerType: 'square',
+                markerVerticalAlignment: 'middle',
+                markerFill: '#00f',
+                markerOpacity: 0.7,
+                markerTextFit: 'both',
+                markerTextFitPadding: [3, 3, 3, 3],
+
+                textName: 'MARKER的文字',
+                textFaceName: '微软雅黑, monospace',
+                textSize: 16,
+                textFill: '#000'
+              },
+            ]
+          }
+        );
+        blueMarkers.push(blueMarker);
+
+        let redMarkerShown = false;
+        function toggleRed(){
+          if(redMarkerShown){
+            redMarkerShown = false;
+            pointLayer.removeGeometry(redMarkers);
+          }else{
+            redMarkerShown = true;
+            pointLayer.addGeometry(redMarkers);
+          }
+        }
+        let blueMarkerShown = false;
+        function toggleBlue(){
+          if(blueMarkerShown){
+            blueMarkerShown = false;
+            pointLayer.removeGeometry(blueMarkers);
+          }else{
+            blueMarkerShown = true;
+            pointLayer.addGeometry(blueMarkers);
+          }
+        }
+        // 同时存在两组marker时，移除任一组都会报错；只有一组marker时不会报错
+        toggleRed();
+        toggleBlue();
+
+        setTimeout(() => {
+            toggleRed();
+            done();
+        }, 300);
+    });
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

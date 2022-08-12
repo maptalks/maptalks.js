@@ -631,6 +631,7 @@ function fillTextFitData(map, iconGeometry) {
     }
 }
 
+const DEFAULT_PADDING = [0, 0, 0, 0];
 export function updateMarkerFitSize(map, iconGeometry) {
     const textGeometry = iconGeometry.properties.textGeo;
     if (!textGeometry) {
@@ -655,7 +656,7 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSizeFn = textProps._textSizeFn;
         }
     }
-    const padding = markerSymbol['markerTextFitPadding'] || [0, 0, 0, 0];
+    const padding = markerSymbol['markerTextFitPadding'] || DEFAULT_PADDING;
     let paddingFn;
     if (isFunctionDefinition(padding)) {
         if (!props._paddingFn) {
@@ -690,10 +691,10 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSize = fn(zoom, properties);
         }
         textSize /=  GLYPH_SIZE;
-        let fitPadding = (paddingFn ? paddingFn(zoom, properties) : padding);
+        let fitPadding = paddingFn && paddingFn(zoom, properties) || DEFAULT_PADDING;
         if (isFunctionDefinition(fitPadding)) {
             const fn = properties.fitPaddingFn = properties.fitPaddingFn || piecewiseConstant(fitPadding);
-            fitPadding = fn(zoom, properties);
+            fitPadding = fn(zoom, properties) || DEFAULT_PADDING;
         }
         let aPadOffsetX, aPadOffsetY;
         if (fitPadding[0] !== fitPadding[2] || fitPadding[1] !== fitPadding[3]) {
