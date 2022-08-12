@@ -44,22 +44,8 @@ export default class IconRequestor {
             const ctx = self.ctx;
             let width, height;
             try {
-                const ratio = this.width / this.height;
-                if (this.size[0]) {
-                    width = this.size[0];
-                } else {
-                    width = this.width;
-                }
-                if (this.size[1]) {
-                    height = this.size[1];
-                    if (!this.size[0]) {
-                        width = height * ratio;
-                    }
-                } else if (this.size[0]) {
-                    height = width / ratio;
-                } else {
-                    height = this.height;
-                }
+                width = this.width;
+                height = this.height;
                 this.size[0] = width;
                 this.size[1] = height;
                 self._ensureMaxSize(null, this.size);
