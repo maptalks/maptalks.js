@@ -2,6 +2,8 @@ const path = require('path');
 const assert = require('assert');
 const data = require('../integration/fixtures/data');
 const maptalks = require('maptalks');
+const startServer = require('./server.js');
+const PORT = 4398;
 
 const {
     GeoJSONVectorTileLayer,
@@ -22,13 +24,19 @@ const DEFAULT_VIEW = {
 };
 const ICON_PATH = 'file://' + path.resolve(__dirname, '../integration/resources/plane-min.png');
 describe('picking specs', () => {
-    let map, container;
-    before(() => {
+    let map, container, server;
+    before(done => {
         container = document.createElement('div');
         container.style.width = '128px';
         container.style.height = '128px';
         document.body.appendChild(container);
+        server = startServer(PORT, done);
     });
+
+    after(() => {
+        server.close();
+    });
+
     afterEach(() => {
         map.remove();
     });
@@ -1079,7 +1087,7 @@ describe('picking specs', () => {
             zoom: 5
         });
         const layer = new VectorTileLayer('vt', {
-            urlTemplate: 'http://tile.maptalks.com/test/planet-single/{z}/{x}/{y}.mvt',
+            urlTemplate: 'http://localhost:4398/vt/{z}/{x}/{y}.mvt',
             spatialReference: 'preset-vt-3857',
             pickingGeometry: true
         });
