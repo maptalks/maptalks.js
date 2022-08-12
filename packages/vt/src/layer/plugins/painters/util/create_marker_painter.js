@@ -691,11 +691,12 @@ export function updateMarkerFitSize(map, iconGeometry) {
             textSize = fn(zoom, properties);
         }
         textSize /=  GLYPH_SIZE;
-        let fitPadding = paddingFn && paddingFn(zoom, properties) || DEFAULT_PADDING;
+        let fitPadding = paddingFn && paddingFn(zoom, properties) || padding;
         if (isFunctionDefinition(fitPadding)) {
             const fn = properties.fitPaddingFn = properties.fitPaddingFn || piecewiseConstant(fitPadding);
-            fitPadding = fn(zoom, properties) || DEFAULT_PADDING;
+            fitPadding = fn(zoom, properties);
         }
+        fitPadding = fitPadding || DEFAULT_PADDING;
         let aPadOffsetX, aPadOffsetY;
         if (fitPadding[0] !== fitPadding[2] || fitPadding[1] !== fitPadding[3]) {
             aPadOffsetX = props.aPadOffsetX;
