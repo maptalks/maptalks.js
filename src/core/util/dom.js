@@ -6,7 +6,7 @@
  * @name DomUtil
  */
 
-import Browser from  '../Browser';
+import Browser from '../Browser';
 import { IS_NODE } from './env';
 import { isString, isNil } from './common';
 import { splitWords } from './strings';
@@ -165,6 +165,7 @@ export function addDomEvent(obj, typeArr, handler, context) {
         }
         const hit = listensDomEvent(obj, type, handler);
         if (hit >= 0) {
+            console.warn(obj, `find '${type}' handler:`, handler, ' The old listener function will be removed');
             removeDomEvent(obj, type, handler);
         }
         obj['Z__' + type].push({
