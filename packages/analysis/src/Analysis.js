@@ -77,6 +77,10 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
                 });
                 delete this._extentMeshes;
             }
+            if (this._picking) {
+                this._picking.dispose();
+                delete this._picking;
+            }
         }
     }
 
@@ -176,7 +180,7 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         }
         const triangles = earcut(pos, null, 3);
         if (this._extentMeshes) {
-            this._extentMeshes.geometry.updateData('POSITION', pos);
+            this._extentMeshes[0].geometry.updateData('POSITION', pos);
         } else {
             const geometry = new reshader.Geometry({
                 POSITION: pos

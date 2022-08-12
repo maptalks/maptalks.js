@@ -417,3 +417,32 @@ describe('api of analysis', () => {
     //     });
     // });
 });
+
+describe('bugs', () => {
+    it('update boundary for crosscut analysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const crosscutAnalysis = new maptalks.CrossCutAnalysis({
+                cutLine: [[ -0.000847, 0.000815],
+                [-0.001351, 0.0000965],
+                [-0.000418, -0.000568]],
+                cutLineColor: [0.0, 1.0, 0.0, 1.0]
+              }).addTo(gllayer);
+            crosscutAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                crosscutAnalysis.update('cutLine', [[ -0.00084, 0.00082],
+                [-0.001355, 0.0000960],
+                [-0.00042, -0.00057]]);
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    })
+});
