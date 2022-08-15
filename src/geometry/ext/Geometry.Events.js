@@ -1,4 +1,4 @@
-import { preventDefault, stopPropagation, getEventContainerPoint } from '../../core/util/dom';
+import { preventDefault, stopPropagation } from '../../core/util/dom';
 import Geometry from '../Geometry';
 
 Geometry.include(/** @lends Geometry.prototype */ {
@@ -8,7 +8,8 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @private
      */
     _onEvent: function (event, type) {
-        if (!this.getMap()) {
+        const map = this.getMap();
+        if (!map) {
             return;
         }
         const eventType = type || this._getEventTypeToFire(event);
@@ -16,7 +17,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             stopPropagation(event);
             preventDefault(event);
         }
-        const params = this._getEventParams(event);
+        const params = map._getEventParams(event);
         this._fireEvent(eventType, params);
     },
 
@@ -37,19 +38,19 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @return {Object}
      * @private
      */
-    _getEventParams: function (e) {
-        const map = this.getMap();
-        const eventParam = {
-            'domEvent': e
-        };
-        const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches  && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
-        if (actual) {
-            const containerPoint = getEventContainerPoint(actual, map._containerDOM);
-            eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
-            eventParam['containerPoint'] = containerPoint;
-            eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
-            eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
-        }
-        return eventParam;
-    }
+    // _getEventParams: function (e) {
+    //     const map = this.getMap();
+    //     const eventParam = {
+    //         'domEvent': e
+    //     };
+    //     const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
+    //     if (actual) {
+    //         const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+    //         eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
+    //         eventParam['containerPoint'] = containerPoint;
+    //         eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
+    //         eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
+    //     }
+    //     return eventParam;
+    // }
 });
