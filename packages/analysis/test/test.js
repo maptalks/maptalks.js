@@ -444,5 +444,39 @@ describe('bugs', () => {
             }, 500);
         });
         gllayer.addTo(map);
-    })
+    });
+
+    it('add more than one analysis task, and then disable one of this', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            //skyline analysis
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            //viewshed analysis
+            const eyePos = [center.x + 0.01, center.y, 0];
+            const lookPoint = [center.x, center.y, 0];
+            const verticalAngle = 30;
+            const horizontalAngle = 20;
+            const viewshedAnalysis = new maptalks.ViewshedAnalysis({
+                eyePos,
+                lookPoint,
+                verticalAngle,
+                horizontalAngle
+            });
+            viewshedAnalysis.addTo(gllayer);
+            skylineAnalysis.disable();
+            done();
+        });
+        gllayer.addTo(map);
+    });
 });

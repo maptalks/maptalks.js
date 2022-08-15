@@ -60,14 +60,14 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_CROSSCUT'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
+            if (!task.isEnable()) {
+                continue;
+            }
             const defines = task.getDefines();
             extend(this._shader.shaderDefines, defines);
             const map = this.getMap();
             const width = map.width, height = map.height;
             const toAanalysisMeshes = this._getToAnalysisMeshes(layers, task.getExcludeLayers());
-            if (!task.isEnable()) {
-                continue;
-            }
             const analysisUniforms = task.renderAnalysis(toAanalysisMeshes, width, height);
             if (analysisUniforms) {
                 extend(uniforms, analysisUniforms);
