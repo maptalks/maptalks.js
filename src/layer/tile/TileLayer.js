@@ -137,7 +137,9 @@ const options = {
 
     'pyramidMode': 1,
 
-    'decodeImageInWorker': false
+    'decodeImageInWorker': false,
+
+    'tileLimitPerFrame': 0
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;

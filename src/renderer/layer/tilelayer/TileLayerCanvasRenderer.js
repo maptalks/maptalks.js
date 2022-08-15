@@ -71,6 +71,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.tilesLoading = {};
         this._parentTiles = [];
         this._childTiles = [];
+        this._tileQueue = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
         if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
             this._tileImageWorkerConn = new TileWorkerConnection();
@@ -93,6 +94,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this.completeRender();
                 return;
             }
+        }
+        if (!context || context && context.isFinalRender) {
+            // maptalks/issues#10
+            // 如果consumeTileQueue方法在每个renderMode都会调用，但多边形只在fxaa mode下才会绘制。
+            // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
+            // 改为consumeTileQueue只在finalRender时调用即解决问题
+            this._consumeTileQueue();
         }
         let tileGrids;
         let hasFreshTiles = false;
@@ -305,6 +313,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     needToRedraw() {
         const map = this.getMap();
+        if (this._tileQueue.length) {
+            return true;
+        }
         if (map.getPitch()) {
             return super.needToRedraw();
         }
@@ -456,6 +467,30 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onTileLoad(tileImage, tileInfo) {
+        this._tileQueue.push({ tileInfo: tileInfo, tileData: tileImage });
+    }
+
+    _consumeTileQueue() {
+        let count = 0;
+        const limit = this.layer.options['tileLimitPerFrame'];
+        const queue = this._tileQueue;
+        /* eslint-disable no-unmodified-loop-condition */
+        while (queue.length && (limit <= 0 || count < limit)) {
+            const { tileData, tileInfo } = queue.shift();
+            if (!this.checkTileInQueue(tileData, tileInfo)) {
+                continue;
+            }
+            this.tileOnBoard(tileData, tileInfo);
+            count++;
+        }
+        /* eslint-enable no-unmodified-loop-condition */
+    }
+
+    checkTileInQueue() {
+        return true;
+    }
+
+    tileOnBoard(tileImage, tileInfo) {
         if (!this.layer) {
             return;
         }
