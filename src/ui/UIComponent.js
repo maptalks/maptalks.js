@@ -489,7 +489,6 @@ class UIComponent extends Eventable(Class) {
         container.appendChild(dom);
         if (dom.getBoundingClientRect) {
             const rect = dom.getBoundingClientRect();
-            console.log(rect.width, rect.height);
             this._size = new Size(rect.width, rect.height);
         } else {
             this._size = new Size(dom.clientWidth, dom.clientHeight);
