@@ -454,10 +454,14 @@ class UIComponent extends Eventable(Class) {
         } else if ((containerPoint.x + domWidth) > mapWidth) {
             left = -((containerPoint.x + domWidth) - mapWidth) - margin;
         }
-        if (containerPoint.y < 0) {
-            top = -(containerPoint.y) + margin;
+        if (containerPoint.y - domHeight < 0) {
+            top = Math.abs(containerPoint.y - domHeight) + margin;
         } else if (containerPoint.y + domHeight > mapHeight) {
             top = (mapHeight - (containerPoint.y + domHeight)) - margin;
+        }
+        //if dom width > map width
+        if (domWidth >= mapWidth) {
+            left = mapWidth / 2 - containerPoint0.x;
         }
 
         if (top !== 0 || left !== 0) {
@@ -478,12 +482,17 @@ class UIComponent extends Eventable(Class) {
     _measureSize(dom) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
-        dom.style.left = -99999 + 'px';
+        // dom.style.left = -99999 + 'px';
         const anchor = dom.style.bottom ? 'bottom' : 'top';
-        dom.style[anchor] = -99999 + 'px';
+        // dom.style[anchor] = -99999 + 'px';
         dom.style.display = '';
         container.appendChild(dom);
-        this._size = new Size(dom.clientWidth, dom.clientHeight);
+        if (dom.getBoundingClientRect) {
+            const rect = dom.getBoundingClientRect();
+            this._size = new Size(rect.width, rect.height);
+        } else {
+            this._size = new Size(dom.clientWidth, dom.clientHeight);
+        }
         dom.style.display = 'none';
         dom.style.left = '0px';
         dom.style[anchor] = '0px';
