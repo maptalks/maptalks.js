@@ -389,6 +389,7 @@ class GeometryCollection extends Geometry {
         return result;
     }
 
+    //for toGeoJSON
     _exportGeoJSONGeometry() {
         const children = [];
         if (!this.isEmpty()) {
@@ -404,6 +405,27 @@ class GeometryCollection extends Geometry {
             'type': 'GeometryCollection',
             'geometries': children
         };
+    }
+    //for toJSON
+    _toJSON(options) {
+        //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
+        const feature = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'GeometryCollection',
+                'geometries': this.getGeometries().filter(geo => {
+                    return geo && geo._toJSON;
+                }).map(geo => {
+                    const json = geo._toJSON();
+                    if (json.subType) {
+                        return json;
+                    }
+                    return geo._exportGeoJSONGeometry();
+                })
+            }
+        };
+        options.feature = feature;
+        return options;
     }
 
     _clearProjection() {
@@ -513,6 +535,13 @@ class GeometryCollection extends Geometry {
         }
         return true;
     }
+
+    // copy() {
+    //     const geometries = this.getGeometries().map(geo => {
+    //         return geo.copy();
+    //     });
+    //     return new GeometryCollection(geometries, extend({}, this.options));
+    // }
 }
 
 GeometryCollection.registerJSONType('GeometryCollection');
