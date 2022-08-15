@@ -49,6 +49,7 @@ const Eventable = Base =>
                 if (l > 0) {
                     for (let i = 0; i < l; i++) {
                         if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
+                            console.warn(this, `find '${eventsOn}' handler:`, handler, ' The old listener function will be removed');
                             return this;
                         }
                     }
