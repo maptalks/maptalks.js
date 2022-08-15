@@ -499,7 +499,9 @@ class LinePainter extends BasicPainter {
                 op: {
                     fail: 'keep',
                     zfail: 'keep',
-                    zpass: 'replace'
+                    zpass: () => {
+                        return stencil ? 'zero' : 'replace';
+                    }
                 }
             },
             depth: {
