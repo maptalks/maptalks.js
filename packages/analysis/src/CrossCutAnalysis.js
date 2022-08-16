@@ -43,8 +43,8 @@ export default class CrossCutAnalysis extends Analysis {
         }
         const map = this.layer.getMap();
         const dpr = map.getDevicePixelRatio();
+        const { projViewMatrix, projMatrix, viewMatrix } = this._prepareProjViewMatrixFromOrtho(lineCoords);
         for (let i = 0; i < lineCoords.length; i++) {
-            const { projViewMatrix, projMatrix, viewMatrix } = this._prepareProjViewMatrixFromOrtho(lineCoords);
             const point = this._getScreenPoint(lineCoords[i], lineCoords);
             const x = point.x * dpr, y = point.y * dpr;
             const pickedPoint = this._pick(x, y, projViewMatrix, projMatrix, viewMatrix);
@@ -134,7 +134,7 @@ export default class CrossCutAnalysis extends Analysis {
         return { precenter, prezoom, prepitch, prebearing };
     }
 
-    _getScreenPoint(coordinate, ) {
+    _getScreenPoint(coordinate) {
         const { precenter, prezoom, prepitch, prebearing } = this._setMapInOrthoState();
         const map = this.layer.getMap();
         const point =  map.coordinateToContainerPoint(new maptalks.Coordinate(coordinate));
@@ -179,6 +179,7 @@ export default class CrossCutAnalysis extends Analysis {
     }
 
     update(name, value) {
+        super.update(name, value);
         if (name === 'cutLine') {
             const { extentMap, extentInWorld } = this._createLine(value);
             this._renderOptions['extent'] = extentInWorld;
@@ -186,10 +187,10 @@ export default class CrossCutAnalysis extends Analysis {
             const line = new maptalks.LineString(this.options.cutLine)
             this._lineExtent = line.getExtent();
             this._needRefreshPicking = true;
+            delete this._matrix;
         } else {
             this._renderOptions[name] = value;
         }
-        super.update(name, value);
     }
 
     renderAnalysis(meshes) {

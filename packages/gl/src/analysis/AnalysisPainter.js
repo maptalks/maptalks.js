@@ -58,6 +58,7 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_CUT'];
         delete this._shader.shaderDefines['HAS_EXCAVATE'];
         delete this._shader.shaderDefines['HAS_CROSSCUT'];
+        delete this._shader.shaderDefines['HAS_HEIGHTLIMIT'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
             if (!task.isEnable()) {

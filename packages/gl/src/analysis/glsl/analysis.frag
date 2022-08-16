@@ -30,10 +30,13 @@ varying vec2 vTexCoord;
 #ifdef HAS_EXCAVATE
     uniform sampler2D excavateMap;
 #endif
-
 #ifdef HAS_CROSSCUT
     uniform sampler2D crosscutMap;
     uniform vec4 cutLineColor;
+#endif
+#ifdef HAS_HEIGHTLIMIT
+    uniform vec3 limitColor;
+    uniform sampler2D heightLimitMap;
 #endif
 uniform sampler2D sceneMap;
 
@@ -93,6 +96,12 @@ void main() {
         vec4 crosscutColor = texture2D(crosscutMap, vTexCoord);
         if (crosscutColor.r > 0.0) {
             glFragColor = vec4(mix(cutLineColor.rgb, glFragColor.rgb, 0.99), glFragColor.a);
+        }
+    #endif
+    #ifdef HAS_HEIGHTLIMIT
+        vec4 heightLimitColor = texture2D(heightLimitMap, vTexCoord);
+        if (heightLimitColor.r > 0.0) {
+            glFragColor = vec4(mix(limitColor, glFragColor.rgb, 0.6), glFragColor.a);
         }
     #endif
     #if __VERSION__ == 100
