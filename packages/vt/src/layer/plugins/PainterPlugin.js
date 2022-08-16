@@ -110,6 +110,7 @@ function createPainterPlugin(type, Painter) {
                     return { retire };
                 }
                 const data = glData;
+                // 目前只有native-line和wireframe会用到
                 if (this.painter.colorSymbol) {
                     for (let i = 0; i < glData.length; i++) {
                         const colors = this._generateColorArray(features, glData[i].data.aPickingId, glData[i].indices, glData[i].data.aPosition, glData[i].positionSize);
