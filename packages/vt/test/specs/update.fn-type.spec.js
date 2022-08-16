@@ -82,6 +82,29 @@ describe('update function type style specs', () => {
         });
     });
 
+    it('property function type to property function type', done => {
+        const symbol = { lineColor: {
+            type: 'categorical',
+            property: 'type',
+            stops: [
+                [1, '#f00'],
+                [2, '#f00'],
+            ]
+        }, lineWidth: 8, lineOpacity: 1 };
+        assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 255, 0, 255], layer => {
+            layer.updateSymbol(0, {
+                lineColor: {
+                    type: 'categorical',
+                    property: 'type',
+                    stops: [
+                        [1, '#0f0'],
+                        [2, '#f00'],
+                    ]
+                }
+            });
+        });
+    });
+
     it('normal to property-zoom function type', done => {
         const symbol = { lineColor: '#f00', lineWidth: 8, lineOpacity: 1 };
         assertChangeStyle(done, symbol, [255, 0, 0, 255], [0, 0, 255, 255], layer => {
