@@ -159,3 +159,16 @@ export function getUniqueIds(ids) {
     return result;
 
 }
+
+export function isArray(arr) {
+    return Array.isArray(arr) ||
+    arr.constructor === Float32Array ||
+    arr.constructor === Float64Array ||
+    arr.constructor === Uint8Array ||
+    arr.constructor === Int8Array ||
+    arr.constructor === Uint16Array ||
+    arr.constructor === Int16Array ||
+    arr.constructor === Uint32Array ||
+    arr.constructor === Int32Array ||
+    arr.constructor === Uint8ClampedArray;
+}

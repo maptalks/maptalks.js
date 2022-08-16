@@ -1,4 +1,4 @@
-import { fillArray } from '../../Util';
+import { fillArray, isArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { StyleUtil } from '@maptalks/vector-packer';
 
@@ -43,8 +43,7 @@ function prepareAttr(geometry, symbolDef, config) {
         aPickingId = geoProps.aPickingId = new geometry.data.aPickingId.constructor(geometry.data.aPickingId);
     }
 
-    const { attrName, symbolName, evaluate, related } = config;
-    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
+    const { attrName, symbolName, related } = config;
     let arr = geometry.data[attrName];
     if (!arr) {
         if (!isFnTypeSymbol(symbolDef[symbolName])) {
@@ -52,9 +51,7 @@ function prepareAttr(geometry, symbolDef, config) {
         } else {
             //symbol是fn-type，但arr不存在，则创建
             arr = geometry.data[attrName] = new config.type(config.width * aPickingId.length);
-            createZoomFnTypeIndexData(geometry, symbolDef, config);
-            const aIndex = geometry.properties[aIndexPropName];
-            updateFnTypeAttrib(attrName, geometry, aIndex, evaluate);
+            updateAttrValue(arr, geometry, symbolDef, config);
             return arr;
         }
     } else if (!isFnTypeSymbol(symbolDef[symbolName]) && !hasRelatedFnTypeSymbol(related, symbolDef)) {
@@ -69,6 +66,16 @@ function prepareAttr(geometry, symbolDef, config) {
     if (isFnTypeSymbol(symbolDef[symbolName])) {
         createZoomFnTypeIndexData(geometry, symbolDef, config);
     }
+    return arr;
+}
+
+function updateAttrValue(arr, geometry, symbolDef, config) {
+    const { attrName } = config;
+    const aIndexPropName = (PREFIX + attrName + 'Index').trim();
+    //symbol是fn-type，但arr不存在，则创建
+    createZoomFnTypeIndexData(geometry, symbolDef, config);
+    const aIndex = geometry.properties[aIndexPropName];
+    updateFnTypeAttrib(geometry, aIndex, config);
     return arr;
 }
 
@@ -152,18 +159,18 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
                 continue;
             }
             //fn-type的二级stops与zoom有关，更新数据
-            updateFnTypeAttrib(attrName, geometry, aIndex, config.evaluate);
+            updateFnTypeAttrib(geometry, aIndex, config);
             continue;
         }
         // debugger
         //symbol有变化，需要删除原有的arr重新生成
-        if (geometry.data[attrName]) {
-            const arr = geometry.data[attrName];
-            if (arr && arr.buffer && arr.buffer.destroy) {
-                arr.buffer.destroy();
-            }
-            delete geometry.data[attrName];
-        }
+        // if (geometry.data[attrName]) {
+        //     const arr = geometry.data[attrName];
+        //     if (arr && arr.buffer && arr.buffer.destroy) {
+        //         arr.buffer.destroy();
+        //     }
+        //     delete geometry.data[attrName];
+        // }
         // debugger
         const arr = prepareAttr(geometry, symbolDef, config);
         const define = config.define;
@@ -179,7 +186,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
         } else {
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
-            updateFnTypeAttrib(attrName, geometry, aIndex, config.evaluate);
+            updateFnTypeAttrib(geometry, aIndex, config);
             if (define) {
                 const defines = mesh.defines;
                 defines[define] = 1;
@@ -259,7 +266,8 @@ function getFnTypePropertyStopValues(stops) {
  * @param {Array} aIndex
  * @param {Function} evaluate
  */
-function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
+function updateFnTypeAttrib(geometry, aIndex, config) {
+    const { attrName, evaluate } = config;
     const { aPickingId, features } = geometry.properties;
     let arr;
     if (aIndex) {
@@ -280,7 +288,17 @@ function updateFnTypeAttrib(attrName, geometry, aIndex, evaluate) {
     } else {
         //存在fn-type，但symbol更新过，要重新计算arr里的值
         arr = geometry.data[attrName];
-        arr.dirty = true;
+        if (isArray(arr)) {
+            arr.dirty = true;
+        } else {
+            const keyName = (PREFIX + attrName).trim();
+            arr = geometry.properties[keyName];
+            if (!arr) {
+                arr = geometry.properties[keyName] = new config.type(config.width * aPickingId.length);
+                arr.dirty = true;
+            }
+        }
+
         const len = arr.length / aPickingId.length;
         const l = aPickingId.length;
         let start = 0;
