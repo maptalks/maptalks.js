@@ -5,8 +5,6 @@ import Martini from '@mapbox/martini';
 let workerId;
 const offscreenCanvas = new OffscreenCanvas(514, 514);
 const offscreenCanvasContext = offscreenCanvas.getContext('2d');
-const callbacks = {
-};
 
 const terrainStructure = {
     width: 64,

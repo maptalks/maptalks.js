@@ -6,8 +6,11 @@ const V0 = [];
 const V1 = [];
 const V2 = [];
 
+const COORD0 = new maptalks.Coordinate(0, 0);
+const COORD1 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
+const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -113,7 +116,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
     }
 
-    _queryTileAltitude(out, tileInfo) {
+    _queryTileAltitude(out, extent) {
         if (!out) {
             out = {
                 tiles: {},
@@ -122,17 +125,19 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             };
         }
         const layer = this.layer;
-        let { extent2d } = tileInfo;
-        const { xmin, ymin, xmax, ymax } = extent2d;
-        const config = layer['_getTileConfig']();
+        const map = this.getMap();
 
         const z = this.getCurrentTileZoom();
         const sp = layer.getSpatialReference();
         const res = sp.getResolution(z);
-        POINT0.set(xmin, ymin);
-        const minIndex = config['_getTileNum'](POINT0, res);
-        POINT1.set(xmax, ymax);
-        const maxIndex = config['_getTileNum'](POINT1, res);
+        const { xmin, ymin, xmax, ymax } = extent;
+
+        const config = layer['_getTileConfig']();
+
+        COORD0.set(xmin, ymin);
+        const minIndex = config.getTileIndex(COORD0, res, true);
+        COORD1.set(xmax, ymax);
+        const maxIndex = config.getTileIndex(COORD1, res, true);
 
         const txmin = Math.min(minIndex.x, maxIndex.x);
         const txmax = Math.max(minIndex.x, maxIndex.x);
@@ -140,13 +145,18 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const tymin = Math.min(minIndex.y, maxIndex.y);
         const tymax = Math.max(minIndex.y, maxIndex.y);
 
+        map['_prjToPointAtRes'](COORD0, res, POINT0);
+        map['_prjToPointAtRes'](COORD1, res, POINT1);
+        const extent2d = TEMP_EXTENT.set(Math.min(POINT0.x, POINT1.x), Math.min(POINT0.y, POINT1.y), Math.max(POINT0.x, POINT1.x), Math.max(POINT0.y, POINT1.y));
+
         // martini 需要一点多余的数据
         const terrainSize = (layer.options['terrainTileSize'] || 256) + 1;
         // 扩大一个像素
-        extent2d = extent2d.add(extent2d.getWidth() / terrainSize);
+        extent2d._expand(extent2d.getWidth() / terrainSize);
         out.array = out.array || new Float32Array(terrainSize * terrainSize);
         const tiles = out.tiles;
         out.complete = true;
+        out.array.fill(0);
         for (let i = txmin; i <= txmax; i++) {
             for (let j = tymin; j <= tymax; j++) {
                 const tileId = this.layer['_getTileId'](i, j, z);
@@ -156,8 +166,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 const terrainData = this.tileCache.get(tileId);
                 // 如果当前瓦片找不到，则查询父级瓦片
                 if (terrainData) {
-                   this._fillAltitudeData(out, terrainData, extent2d, terrainSize);
-                   out.dirty = out.dirty || out.tiles[tileId] !== 1;
+                   this._fillAltitudeData(out.array, terrainData, extent2d, terrainSize);
+                   out.dirty = true;
                    tiles[tileId] = 1;
                 } else {
                     out.dirty = out.dirty || out.tiles[tileId] !== undefined;
@@ -171,12 +181,13 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         return out;
     }
 
-    _fillAltitudeData(out, terrainData, extentTerrain, extent2d, terrainSize) {
+    _fillAltitudeData(out, terrainData, extent2d, terrainSize) {
         const terrainExtent = terrainData.info.extent2d;
         const intersection = terrainExtent.intersection(extent2d);
         const { xmin, ymin, xmax, ymax } = intersection;
 
-        const { width, data } = terrainData;
+        const { data: terrain } = terrainData.image;
+        const width = terrain.width;
         const unit = extent2d.getWidth() / terrainSize;
 
         const xstart = Math.floor((xmin - extent2d.xmin) / unit);
@@ -187,20 +198,27 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const xspan = xend - xstart;
         const yspan = yend - ystart;
 
-        const tunit = terrainExtent.getWidth() / terrainData.data.width;
-        const tstartx = Math.floor((xmin - extentTerrain.xmin) / tunit);
-        const tstarty = Math.floor((ymin - extentTerrain.ymin) / tunit);
-        const stride = unit / tunit;
+        const tunit = terrainExtent.getWidth() / width;
+        const tstartx = Math.floor((xmin - terrainExtent.xmin) / tunit);
+        const tstarty = Math.floor((ymin - terrainExtent.ymin) / tunit);
+
+        const stride = Math.floor(unit / tunit);
 
         for (let i = 0; i <= xspan; i++) {
             for (let j = 0; j <= yspan; j++) {
-                const index = i + xstart + (ystart + j) * width;
+                const index = i + xstart + (ystart + j) * terrainSize;
                 let height = 0;
                 for (let k = 0; k < stride; k++) {
-                    const terrainIndex = tstartx + Math.floor(i * stride) + k + (tstarty + Math.floor(j * stride) + k) * width;
-                    height += data[terrainIndex];
+                    for (let kk = 0; kk < stride; kk++) {
+                        // const terrainIndex = tstartx + Math.floor(i * stride) + k + (tstarty + Math.floor(j * stride)) * width + kk;
+                        const terrainIndex = (tstartx + Math.floor(i * stride)) * width + k + tstarty + Math.floor(j * stride) + kk;
+                        height += terrain.data[terrainIndex];
+                    }
                 }
                 out[index] = height / Math.max(stride, 1);
+                // if (isNaN(out[index])) {
+                //     debugger
+                // }
             }
         }
         return out;

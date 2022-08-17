@@ -86,7 +86,7 @@ class Shader {
      * Get shader's context uniforms values
      * @param {Object} meshProps - mesh uniforms
      */
-    appendDescUniforms(meshProps) {
+    appendDescUniforms(regl, meshProps) {
         // const context = this.context;
         //TODO 这里以前是extend2，需要明确改用extend后是否会有bug
         // const props = extend(meshProps, context);
@@ -116,7 +116,7 @@ class Shader {
                 }
                 uniforms[name] = uniforms[name] || {};
                 for (let i = 0; i < len; i++) {
-                    uniforms[name][`${i}`] = values[i];
+                    uniforms[name][`${i}`] = values[i].getREGLTexture ? values[i].getREGLTexture(regl) : values[i];
                 }
             } else if (desc[p].type === 'function') {
                 if (!Object.getOwnPropertyDescriptor(uniforms, p)) {

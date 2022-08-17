@@ -10,6 +10,10 @@ import { extend } from '../util/util';
 const v3 = [0, 0, 0];
 const scale3 = [];
 const EMPTY_ARRAY = [];
+const POINT0 = new maptalks.Point(0, 0);
+const COORD0 = new maptalks.Coordinate(0, 0);
+const COORD1 = new maptalks.Coordinate(0, 0);
+const TEMP_EXTENT = new maptalks.Extent(0, 0, 0, 0);
 
 export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLayerGLRenderer {
     constructor(...args) {
@@ -24,25 +28,25 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
 
     consumeTile(tileImage, tileInfo) {
         const id = tileInfo.terrainDataId;
-        const terrainData = this._terrainCache.get(id);
+        const cachedTerrain = this._terrainCache.get(id);
         if (tileInfo.heights) {
-            terrainData.terrainGeo = tileImage;
+            const terrainData = cachedTerrain.image;
+            terrainData.terrainGeo = tileImage.terrain;
             if (!terrainData.mesh) {
                 const mesh = this._createTerrainMesh(tileInfo, terrainData);
                 terrainData.mesh = mesh;
             } else {
-                this._updateMesh(terrainData, terrainData.mesh);
+                this._updateMeshTerrain(terrainData);
             }
         } else {
             // 普通的瓦片图片
             super.consumeTile(tileImage, tileInfo);
-            if (terrainData && terrainData.mesh) {
-                terrainData.skins[tileInfo.skinIndex] = new reshader.Texture2D({
-                    data: tileImage,
-                    width: tileImage.width,
-                    height: tileImage.height
-                }, this._resLoader);
-                this._updateMesh(terrainData, terrainData.mesh);
+            const terrainData = cachedTerrain && cachedTerrain.image;
+            if (terrainData) {
+                terrainData.skins[tileInfo.skinIndex] = tileImage;
+                if (terrainData.mesh) {
+                    this._updateMeshSkin(terrainData, tileInfo.skinIndex);
+                }
             }
         }
     }
@@ -78,10 +82,10 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
         if (!tileInfo || !map || !tileImage) {
             return;
         }
-        const  { terrainDataId } = tileInfo;
-        const terrainData = this._terrainCache.get(terrainDataId);
-        if (terrainData.mesh) {
-            this._scene.addMesh(terrainData.mesh);
+        const  { id } = tileInfo;
+        const terrainData = this._terrainCache.get(id);
+        if (terrainData && terrainData.image && terrainData.image.mesh) {
+            this._scene.addMesh(terrainData.image.mesh);
         }
     }
 
@@ -96,12 +100,11 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
             return;
         }
         const { skins, terrainGeo } = terrainData;
-        const { terrain } = terrainGeo;
         const geo = new reshader.Geometry({
-            POSITION: terrain.positions,
-            TEXCOORD_0: terrain.texcoords
+            POSITION: terrainGeo.positions,
+            TEXCOORD_0: terrainGeo.texcoords
         },
-        terrain.triangles,
+        terrainGeo.triangles,
         0,
         {
             primitive: 'triangles',
@@ -114,16 +117,13 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
                 return t;
             }
             return new reshader.Texture2D({
-                data: t.image,
+                data: t.image || t,
                 width: t.width,
                 height: t.height
             }, this._resLoader);
         })
-        const uniforms = {
-            skins: textures
-        };
-        const material = new reshader.Material(uniforms);
-        const mesh = new reshader.Mesh(geo, material);
+        const mesh = new reshader.Mesh(geo);
+        mesh.setUniform('skinTextures', textures);
         mesh.setDefines({
             'SKIN_COUNT': skins.length
         });
@@ -145,30 +145,42 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
         return mesh;
     }
 
-    _updateMesh(tileImage, mesh) {
-        const { terrainData, skins } = tileImage;
-        if (terrainData.dirty) {
-            mesh.updateData('POSITION', terrainData.positions);
-            mesh.updateData('TEXCOORD_0', terrainData.texcoords);
-            mesh.setElements(terrainData.triangles);
-            terrainData.dirty = false;
+    _updateMeshTerrain(terrainData) {
+        const { mesh, terrainGeo } = terrainData;
+        const geo = new reshader.Geometry({
+            POSITION: terrainGeo.positions,
+            TEXCOORD_0: terrainGeo.texcoords
+        },
+        terrainGeo.triangles,
+        0,
+        {
+            primitive: 'triangles',
+            positionAttribute: 'POSITION',
+            uv0Attribute: 'TEXCOORD_0'
+        });
+        const old = mesh.geometry;
+        mesh.geometry = geo;
+        old.dispose();
+    }
+
+    _updateMeshSkin(terrainData, skinIndex) {
+        // const material = mesh.material;
+        const { mesh, skins } = terrainData;
+        const textures = mesh.getUniform('skinTextures');
+        const i = skinIndex;
+        if (textures[i] && textures[i].dispose) {
+            textures[i].dispose();
         }
-        const material = mesh.material;
-        const textures = material.get('skins');
-        let updated = false;
-        for (let i = 0; i < skins.length; i++) {
-            if (mesh.properties.skins[i] !== skins[i]) {
-                updated = true;
-                textures[i] = new reshader.Texture2D({
-                    data: skins[i].image,
-                    width: skins[i].width,
-                    height: skins[i].height
-                }, this._resLoader);
-            }
+        if (skins[i].destroy) {
+            textures[i] = skins[i];
+        } else {
+            textures[i] = new reshader.Texture2D({
+                data: skins[i].image || skins[i],
+                width: skins[i].width,
+                height: skins[i].height
+            }, this._resLoader);
         }
-        if (updated) {
-            material.set('skins', textures);
-        }
+        mesh.setUniform('skinTextures', textures);
     }
 
     _getTilesInCurrentFrame() {
@@ -206,33 +218,40 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
         for (let i = 0, l = allTiles.length; i < l; i++) {
             const tile = allTiles[i];
             const terrainDataId = this._getTerrainDataId(tile.x, tile.y, tile.z);
-            let terrainData = this._getCachedTerrainTile(terrainDataId);
-            if (isTerrainComplete(terrainData)) {
-                tiles.push(terrainData);
+            let cachedTerrain = this._getCachedTerrainTile(terrainDataId);
+            if (isTerrainComplete(cachedTerrain && cachedTerrain.image)) {
+                tiles.push(cachedTerrain);
                 continue;
             } else {
                 const key = 'terrain_' + terrainDataId;
-                terrainData = terrainData || {
+                cachedTerrain = cachedTerrain || {};
+                const terrainData = cachedTerrain.image || {
                     skins: []
                 };
                 // 从helper中获取瓦片范围内
                 if (!terrainData.heights || !terrainData.heights.complete) {
-                    terrainData.heights = this.layer.getTerrainHelper().queryTileAltitude(terrainData.terrain, tile);
+                    const terrainHelper = this.layer.getTerrainHelper();
+                    const tileExtent = this._getAltitudeExtent(tile);
+                    terrainData.heights = terrainHelper.queryTileAltitude(terrainData.heights, tileExtent);
                     if (terrainData.heights.dirty) {
                         tileQueue[key] = {
                             terrainDataId: terrainDataId,
                             heights: terrainData.heights,
                         };
                         extend(tileQueue[key], tile);
+                        tileQueue[key].id = key;
                         terrainData.heights.dirty = false;
+                        loadingCount++
                     }
                 }
-                this._terrainCache.add(terrainDataId, terrainData);
+                const info = cachedTerrain.info || extend({}, tile);
+                info.id = terrainDataId;
+                cachedTerrain.info = info;
+                cachedTerrain.image = terrainData;
+                this._terrainCache.add(terrainDataId, cachedTerrain);
             }
-            tiles.push({
-                info: tile,
-                image: terrainData
-            });
+            tiles.push(cachedTerrain);
+            const terrainData = cachedTerrain.image;
             for (let j = 0; j < gridCount; j++) {
                 const tile = tileGrids[j].tiles[i];
                 const tileId = tile['id'];
@@ -247,7 +266,8 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
                 } else {
                     const cached = this._getCachedTile(tileId);
                     if (cached) {
-                        terrainData.skins[j] = cached;
+                        terrainData.skins[j] = cached.image;
+                        tiles.push(cached);
                     } else {
                         tileLoading = loading = true;
                         const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
@@ -314,6 +334,7 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
         }
         this._emptyTileTexture = this.regl.texture(2, 2);
         this._resLoader = new reshader.ResourceLoader(this._emptyTileTexture);
+        this.renderer = new reshader.Renderer(this.regl);
         this._initShader();
     }
 
@@ -391,7 +412,6 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
     }
 
     _initShader() {
-        this.renderer = new reshader.Renderer(this.regl);
         const map = this.layer.getMap();
         this._uniforms = {
             'projViewMatrix' : map.projViewMatrix
@@ -401,6 +421,14 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
             vert,
             frag,
             uniforms: [
+                {
+                    name: 'skins',
+                    type: 'array',
+                    length: this.layer.getLayers().length,
+                    fn: (_, props) => {
+                        return props['skinTextures'];
+                    }
+                }
             ],
             extraCommandProps: {
                 viewport: {
@@ -446,6 +474,22 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
             projViewMatrix,
         };
         return uniforms;
+    }
+
+    _getAltitudeExtent(tileInfo) {
+        const sr = this.layer.getLayers()[0].getSpatialReference();
+        const res = sr.getResolution(tileInfo.z);
+        const map = this.getMap();
+
+        const { extent2d } = tileInfo;
+        POINT0.set(extent2d.xmin, extent2d.ymin);
+        map['_pointToPrjAtRes'](POINT0, res, COORD0);
+
+        POINT0.set(extent2d.xmax, extent2d.ymax);
+        map['_pointToPrjAtRes'](POINT0, res, COORD1);
+
+        TEMP_EXTENT.set(Math.min(COORD0.x, COORD1.x), Math.min(COORD0.y, COORD1.y), Math.max(COORD0.x, COORD1.x), Math.max(COORD0.y, COORD1.y));
+        return TEMP_EXTENT;
     }
 }
 

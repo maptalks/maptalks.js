@@ -41,7 +41,7 @@ class MeshShader extends Shader {
             const v = meshes[i].getREGLProps(regl, command.activeAttributes);
             this._ensureContextDefines(v);
             v.shaderContext = this.context;
-            this.appendDescUniforms(v);
+            this.appendDescUniforms(regl, v);
             props.push(v);
             count++;
 

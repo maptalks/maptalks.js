@@ -51,7 +51,7 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 width
             }
         };
-        this.send(data, [heights.buffer], (err, data) => {
+        this.send(data, null, (err, data) => {
             if (err) {
                 cb(err);
                 return;
