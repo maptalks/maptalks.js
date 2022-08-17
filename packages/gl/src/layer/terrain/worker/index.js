@@ -280,16 +280,14 @@ function generateMapboxTerrain(buffer) {
     return self.createImageBitmap(blob);
 }
 
-function loadTerrain(message) {
-    const data = message.data;
-    const callback = message.callback;
-    const { url, origin, exaggeration, type, accessToken } = data;
+function loadTerrain(params, cb) {
+    const { url, origin, exaggeration, type, accessToken } = params;
     if (type === 'tianditu') {
-        fetchTerrain(url, exaggeration, type, callback);
+        fetchTerrain(url, exaggeration, type, cb);
     } else if (type === 'cesium') {
         const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
         if (access_token) {
-            fetchTerrain(url, exaggeration, type, callback);
+            fetchTerrain(url, exaggeration, type, cb);
         } else {
             fetch(tokenUrl, {
                 responseType: "json",
@@ -303,16 +301,15 @@ function loadTerrain(message) {
                 return tkJson.json();
             }).then(res => {
                 access_token = res.accessToken;
-                fetchTerrain(url, exaggeration, type, callback);
+                fetchTerrain(url, exaggeration, type, cb);
             });
         }
     } else if (type === 'mapbox') {
-        fetchTerrain(url, exaggeration, type, callback);
+        fetchTerrain(url, exaggeration, type, cb);
     }
-    callbacks['receive'] = callback;
 }
 
-function fetchTerrain(url, exaggeration, type, callback) {
+function fetchTerrain(url, exaggeration, type, cb) {
     let headers = requestHeaders[type];
     if (type === 'cesium') {
         // headers['Authorization'] = 'Bearer ' + access_token;
@@ -324,7 +321,7 @@ function fetchTerrain(url, exaggeration, type, callback) {
     }
     load(url, headers, origin).then(res => {
         if (res.message) {
-            self.postMessage({callback, error: res});
+            cb({ error: res});
         } else {
             const buffer = res.data;
             let terrain = null;
@@ -338,15 +335,15 @@ function fetchTerrain(url, exaggeration, type, callback) {
             if (terrain.then) {
                 terrain.then(imgBitmap => {
                     const terrainData = mapboxBitMapToHeights(imgBitmap, exaggeration);
-                    self.postMessage({callback, data: terrainData }, res.transferables);
+                    cb({ data: terrainData }, res.transferables);
                 })
             } else {
                 //martini顶点计算方式:https://github.com/mapbox/martini/issues/5
-                self.postMessage({callback, data: terrain }, res.transferables);
+                cb({ data: terrain }, res.transferables);
             }
         }
     }).catch(e => {
-        self.postMessage({callback, error: e});
+        cb({ error: e});
     });
 }
 function mapboxBitMapToHeights(imgBitmap, exaggeration) {
@@ -409,20 +406,25 @@ function createMartiniData(heights, width) {
         texcoords.push(x / terrainStructure.width);
         texcoords.push(y / terrainStructure.height);
     }
-    const terrain = { positions, texcoords, triangles };
+    const terrain = { positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles };
     return terrain;
 }
 
-export const onmessage = function (message) {
+export const onmessage = function (message, postResponse) {
     const data = message.data;
-    const url = data.url;
     if (data.command === 'addLayer' || data.command === 'removeLayer') {
         // 保存当前worker的workerId。
         workerId = message.workerId;
         self.postMessage({type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
-    } else if (url) {
+    } else if (data.command === 'createTerrainMesh') {
+        const terrain = createMartiniData(data.params.heights, data.params.width);
+        const transferables = [ terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer ];
+        postResponse(null, { terrain }, transferables);
+    } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
-        loadTerrain(message);
+        loadTerrain(data.params, (data, transferables) => {
+            postResponse(data.error, data, transferables);
+        });
     }
 }
 

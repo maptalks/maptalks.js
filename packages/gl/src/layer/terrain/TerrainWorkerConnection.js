@@ -8,11 +8,16 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
 
     fetchTerrain(url, options, cb) {
         const data = {
-            url,
-            origin: location.origin,
-            exaggeration: options.exaggeration,
-            type: options.type,
-            accessToken: options.accessToken
+            actorId: this.actorId,
+            mapId: this.mapId,
+            command: 'fetchTerrain',
+            params: {
+                url,
+                origin: location.origin,
+                exaggeration: options.exaggeration,
+                type: options.type,
+                accessToken: options.accessToken
+            }
         };
         this.send(data, null, (err, data) => {
             if (err) {
@@ -35,6 +40,24 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
         };
 
         this.broadcast(data, null, cb);
+    }
+
+    createTerrainMesh(heights, width, cb) {
+        const data = {
+            actorId: this.actorId,
+            command : 'createTerrainMesh',
+            params : {
+                heights,
+                width
+            }
+        };
+        this.send(data, [heights.buffer], (err, data) => {
+            if (err) {
+                cb(err);
+                return;
+            }
+            cb(err, data);
+        });
     }
 
     removeLayer(layerId, options, cb) {

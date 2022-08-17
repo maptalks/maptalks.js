@@ -18,59 +18,45 @@ const options = {
 export default class TerrainLayer extends maptalks.TileLayer {
 
     queryAltitide(coordinate) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return 0;
+        }
         const map = this.getMap();
         const sr = this.getSpatialReference();
-        const zoom = Math.round(map.getZoom());
+        const zoom = this['_getTileZoom'](map.getZoom());
         const res = sr.getResolution(zoom);
         const repeatWorld = this.options['repeatWorld'];
-        const config = this._getTileConfig();
+        const config = this['_getTileConfig']();
         const projection = map.getProjection();
         const projCoord = projection.project(coordinate, COORD0);
         const tileIndex = config.getTileIndex(projCoord, res, repeatWorld);
-        const renderer = this.getRenderer();
-        if (renderer) {
-            const worldPos = map.coordinateToPoint(coordinate, null, POINT0);
-             return renderer._queryAltitide(tileIndex, worldPos, zoom);
-        }
+
+        const worldPos = map.coordToPoint(coordinate, null, POINT0);
+        return renderer._queryAltitide(tileIndex, worldPos, zoom);
     }
 
-    // getAnalysisMeshes() {
-    //     const renderer = this.getRenderer();
-    //     if (renderer) {
-    //         return renderer.getAnalysisMeshes();
-    //     }
-    //     return [];
-    // }
+    queryTileAltitude(out, tileInfo) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return null;
+        }
+        return renderer._queryTileAltitude(out, tileInfo);
+    }
 
-    // identifyAtPoint(point, options) {
-    //     const map = this.getMap();
-    //     if (!map) {
-    //         return [];
-    //     }
-    //     const dpr = map.getDevicePixelRatio();
-    //     const x = point.x * dpr, y = point.y * dpr;
-    //     const picked = this._pick(x, y, options);
-    //     const pickedPoint = picked && picked.point;
-    //     if (pickedPoint) {
-    //         const coordinate = map.pointAtResToCoordinate(new maptalks.Point(pickedPoint[0], pickedPoint[1]), map.getGLRes());
-    //         return [{ point: new maptalks.Coordinate(coordinate.x, coordinate.y, pickedPoint[2]) }];
-    //     } else {
-    //         return [];
-    //     }
-    // }
-
-    // _pick(x, y, options) {
-    //     const renderer = this.getRenderer();
-    //     if (renderer) {
-    //         return renderer._pick(x, y, options);
-    //     }
-    //     return null;
-    // }
+    queryTileMesh(tile, cb) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        renderer._queryTileMesh(tile, cb);
+    }
 }
 
 TerrainLayer.include({
     '_getTileId': (x, y, z) => {
         // always assume terrain layer is pyramid mode
+        // 由字符串操作改为数值操作，提升性能
         const row = Math.sqrt(Math.pow(4, z));
         return (z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y;
     }

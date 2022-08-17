@@ -11,8 +11,18 @@ const POINT1 = new maptalks.Point(0, 0);
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
+    drawTile() {}
+
+    onDrawTileStart() {}
+    onDrawTileEnd() {}
+
+    _queryTileMesh(tile, cb) {
+        const width = this.layer.options['terrainTileSize'] + 1;
+        this.workerConn.createTerrainMesh(tile, width, cb);
+    }
+
     loadTile(tile) {
-        const layer = this.layer.getLayers()[0];
+        const layer = this.layer;
         const type = layer.options.type;
         let x, y, z;
         if (type === 'cesium') {
@@ -36,7 +46,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 console.warn(err);
             }
             maptalks.Util.extend(terrainData, res);
-            this.onTileLoad(terrainData, tile);
+            this.consumeTile(terrainData, tile);
             this.setToRedraw();
         });
         return terrainData;
@@ -45,14 +55,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _queryAltitide(tileIndex, worldPos, z) {
         const tileId = this.layer['_getTileId'](tileIndex.x, tileIndex.y, z);
         const terrainData = this.tileCache.get(tileId);
-        if (terrainData) {
+        if (terrainData && terrainData.image) {
             const extent2d = terrainData.info.extent2d;
             const x = worldPos.x - extent2d.xmin;
             const y = worldPos.y - extent2d.ymin;
             // return this._findInTrinagle(terrainData.image, x, y);
-            return this._queryAltitudeInHeights(terrainData.image, x / extent2d.getWidth(), y / extent2d.getHeight());
+            return this._queryAltitudeInHeights(terrainData.image.data, x / extent2d.getWidth(), y / extent2d.getHeight());
         } else {
-            console.warn('terrain data has not been loaded');
+            return 0;
         }
     }
 
@@ -103,7 +113,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
     }
 
-    _queryTileAltitudes(tileInfo) {
+    _queryTileAltitude(out, tileInfo) {
+        if (!out) {
+            out = {
+                tiles: {},
+                dirty: true,
+                complete: false
+            };
+        }
         const layer = this.layer;
         let { extent2d } = tileInfo;
         const { xmin, ymin, xmax, ymax } = extent2d;
@@ -124,20 +141,34 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const tymax = Math.max(minIndex.y, maxIndex.y);
 
         // martini 需要一点多余的数据
-        const terrainSize = (layer.options['terrainSize'] || 256) + 1;
+        const terrainSize = (layer.options['terrainTileSize'] || 256) + 1;
         // 扩大一个像素
         extent2d = extent2d.add(extent2d.getWidth() / terrainSize);
-        const out = new Float32Array(terrainSize * terrainSize);
+        out.array = out.array || new Float32Array(terrainSize * terrainSize);
+        const tiles = out.tiles;
+        out.complete = true;
         for (let i = txmin; i <= txmax; i++) {
             for (let j = tymin; j <= tymax; j++) {
                 const tileId = this.layer['_getTileId'](i, j, z);
+                if (tiles[tileId]) {
+                    continue;
+                }
                 const terrainData = this.tileCache.get(tileId);
                 // 如果当前瓦片找不到，则查询父级瓦片
                 if (terrainData) {
-                   this._fillAltitudeData(out, terrainData, extent2d. terrainSize);
+                   this._fillAltitudeData(out, terrainData, extent2d, terrainSize);
+                   out.dirty = out.dirty || out.tiles[tileId] !== 1;
+                   tiles[tileId] = 1;
+                } else {
+                    out.dirty = out.dirty || out.tiles[tileId] !== undefined;
+                    if (out.tiles[tileId]) {
+                        delete out.tiles[tileId];
+                    }
+                    out.complete = false;
                 }
             }
         }
+        return out;
     }
 
     _fillAltitudeData(out, terrainData, extentTerrain, extent2d, terrainSize) {
@@ -239,20 +270,3 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 }
 
 export default TerrainLayerRenderer;
-
-function isTerrainComplete(tile, tilesCount) {
-    if (!tile || !tile.terrain || tile.skins.length < tilesCount) {
-        return false;
-    }
-    for (let i = 0; i < tile.skins.length; i++) {
-        if (!tile.skins[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-function getTileId(x, y, z) {
-    const row = Math.sqrt(Math.pow(4, z));
-    return (z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y;
-}

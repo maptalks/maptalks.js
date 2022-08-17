@@ -1,12 +1,24 @@
 import * as maptalks from 'maptalks';
+import TerrainPackLayerRenderer from './TerrainPackLayerRenderer';
+
+const options = {
+    renderer: 'gl'
+};
 
 export default class TerrainPackLayer extends maptalks.GroupTileLayer {
-    constructor(id, terrainLayer, layers, options) {
+    constructor(id, layers, options) {
         super(id, layers, options);
-        this._terrainLayer = terrainLayer;
     }
 
-    getTerrainLayer() {
-        return this._terrainLayer;
+    setTerrainHelper(helper) {
+        this._terrainHelper = helper;
+    }
+
+    getTerrainHelper() {
+        return this._terrainHelper;
     }
 }
+
+TerrainPackLayer.mergeOptions(options);
+
+TerrainPackLayer.registerRenderer('gl', TerrainPackLayerRenderer);

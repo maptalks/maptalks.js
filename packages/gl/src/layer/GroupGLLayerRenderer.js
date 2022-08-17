@@ -9,7 +9,6 @@ import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
-import TerrainLayer from './terrain/TerrainLayer';
 
 const EMPTY_COLOR = [0, 0, 0, 0];
 
@@ -33,10 +32,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     onAdd() {
         super.onAdd();
         this.prepareCanvas();
-        const terrainInfo = this.layer.getTerrain();
-        if (terrainInfo) {
-            this._setupTerrainLayers();
-        }
     }
 
     updateSceneConfig() {
@@ -386,7 +381,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this._weatherPainter && this._weatherPainter.isEnable()) {
             return true;
         }
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.testIfNeedRedraw()) {
@@ -403,7 +398,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     // }
 
     isRenderComplete() {
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && !renderer.isRenderComplete()) {
@@ -414,7 +409,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     mustRenderOnInteracting() {
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.mustRenderOnInteracting()) {
@@ -428,7 +423,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (super.isCanvasUpdated()) {
             return true;
         }
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && renderer.isCanvasUpdated()) {
@@ -445,7 +440,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this._envPainter && this._envPainter.isEnable()) {
             return false;
         }
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();
             if (renderer && !renderer.isBlank()) {
@@ -595,8 +590,12 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return super.getCanvasImage();
     }
 
+    _getLayers() {
+        return this.layer.getLayers();
+    }
+
     forEachRenderer(fn) {
-        const layers = this.layer.getLayers();
+        const layers = this._getLayers();
         for (const layer of layers) {
             if (!layer.isVisible()) {
                 continue;
@@ -979,7 +978,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _renderAnalysis(tex) {
-        const layers = this.layer.getLayers().filter(layer => {
+        const layers = this._getLayers().filter(layer => {
             return layer.isVisible();
         });
         return this._analysisPainter.paint(tex, layers);
@@ -1334,19 +1333,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._postProcessor.renderFBOToScreen(tex, +!!(config.sharpen && config.sharpen.enable), sharpFactor, map.getDevicePixelRatio());
         }
         this.layer.fire('postprocessend');
-    }
-
-    queryAltitide(x, y) {
-        return 0;
-    }
-
-    queryAltitudeMap(out, width, height, minx, miny, maxx, maxy) {
-        out.fill(0);
-        return out;
-    }
-
-    _setupTerrainLayers() {
-        // 遍历所有的图层，把相邻且sr一致的TileLayer/VectorTileLayer组织在一起
     }
 }
 
