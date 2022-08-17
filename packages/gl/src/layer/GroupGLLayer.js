@@ -282,6 +282,10 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     onRemove() {
+        if (this._terrainLayer) {
+            this._terrainLayer.off('tileload', this._onTerrainTileLoad, this);
+            this._terrainLayer['_doRemove']();
+        }
         this.layers.forEach(layer => {
             layer['_doRemove']();
             layer.off('show hide', this._onLayerShowHide, this);
@@ -479,8 +483,16 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         this._terrainInfo = info;
         this._terrainLayer = new TerrainLayer('__terrain_in_group', info);
+        this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
         return this;
+    }
+
+    _onTerrainTileLoad() {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
     }
 
     queryAltitide(coord) {
