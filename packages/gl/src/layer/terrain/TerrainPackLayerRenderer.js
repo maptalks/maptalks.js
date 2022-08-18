@@ -31,6 +31,9 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
         const cachedTerrain = this._terrainCache.get(id);
         if (tileInfo.heights) {
             const terrainData = cachedTerrain.image;
+            if (!terrainData) {
+                return;
+            }
             terrainData.terrainGeo = tileImage.terrain;
             if (!terrainData.mesh) {
                 const mesh = this._createTerrainMesh(tileInfo, terrainData);

@@ -2,7 +2,10 @@ import * as maptalks from 'maptalks';
 import TerrainPackLayerRenderer from './TerrainPackLayerRenderer';
 
 const options = {
-    renderer: 'gl'
+    renderer: 'gl',
+    forceRenderOnMoving: true,
+    forceRenderOnZooming: true,
+    forceRenderOnRotating: true
 };
 
 export default class TerrainPackLayer extends maptalks.GroupTileLayer {
