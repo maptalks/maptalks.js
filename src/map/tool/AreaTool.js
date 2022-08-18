@@ -60,8 +60,8 @@ class AreaTool extends DistanceTool {
      */
     constructor(options) {
         super(options);
-        this.on('enable', this._afterEnable, this)
-            .on('disable', this._afterDisable, this);
+        // this.on('enable', this._afterEnable, this)
+        //     .on('disable', this._afterDisable, this);
         this._measureLayers = [];
     }
 
