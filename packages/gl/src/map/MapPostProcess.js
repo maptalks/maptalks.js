@@ -44,12 +44,12 @@ renderer.MapCanvasRenderer.prototype.renderFrame = function () {
 };
 
 function doPostProcess(renderer, canvas) {
-    if (!postCanvas) {
-        createContext(canvas.width, canvas.height);
-    }
     const config = renderer.map.getPostProcessConfig();
     if (!config || !config.enable) {
         return;
+    }
+    if (!postCanvas) {
+        createContext(canvas.width, canvas.height);
     }
     if (postCanvas.width !== canvas.width || postCanvas.height !== canvas.height) {
         postCanvas.width = canvas.width;
