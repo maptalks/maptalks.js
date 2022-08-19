@@ -209,10 +209,45 @@ export default class BaseLayerWorker {
         if (this.featurePlugins) {
             pushIn(pluginConfigs, this.featurePlugins);
         }
-
+        const allCustomProps = {};
         for (let i = 0; i < pluginConfigs.length; i++) {
-            cloneFeaAndAppendCustomTags(features, context.tileInfo.z, pluginConfigs[i]);
+            cloneFeaAndAppendCustomTags(features, context.tileInfo.z, pluginConfigs[i], allCustomProps);
         }
+        const feas = [];
+        const copies = [];
+        // debugger
+        for (let i = 0; i < features.length; i++) {
+            const feature = features[i];
+            const customProps = allCustomProps[i];
+            if (customProps) {
+                copies.fill(null);
+                let count = 0;
+                for (const p in customProps) {
+                    let index = 0;
+                    const props = customProps[p].values();
+                    for (const v of props) {
+                        let fea = copies[index];
+                        if (!fea) {
+                            fea = proxyFea(features[i]);
+                            fea.originalFeature = feature;
+                            copies[index] = fea;
+                        }
+                        fea.properties[p] = v;
+                        index++;
+                    }
+                    if (index > count) {
+                        count = index;
+                    }
+                }
+                for (let i = 0; i < count; i++) {
+                    feas.push(copies[i]);
+                }
+            } else {
+                feas.push(features[i])
+            }
+        }
+
+        features = feas;
 
         const EXTENT = features[0].extent;
         const zoom = tileInfo.z,
@@ -243,7 +278,7 @@ export default class BaseLayerWorker {
                 targetData[typeIndex] = null;
                 continue;
             }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -336,7 +371,16 @@ export default class BaseLayerWorker {
                     if (!schema[feature.layer].properties) {
                         schema[feature.layer].properties = getPropTypes(feature.properties);
                     }
+                    if (feature.originalFeature) {
+                        const properties = feature.properties;
+                        delete properties['$layer'];
+                        delete properties['$type'];
+                        const fea = extend({}, feature.originalFeature);
+                        // fea.properties = extend({}, feature.originalFeature.properties, properties);
+                        fea.customProps = extend({}, properties);
 
+                        feature = fea;
+                    }
                     if (options.features) {
                         //reset feature's marks
                         if (feature && feaTags[i]) {
@@ -531,9 +575,11 @@ export default class BaseLayerWorker {
             // 并识别哪些feature归类到默认样式
             if ((!filter.def || filter.def === 'default') && !tags[i] ||
                 (filter.def === true || filter.def && (filter.def.condition !== undefined || Array.isArray(filter.def)) && filter(features[i], zoom))) {
+                const fea = features[i];
+                if (fea[keyName] === undefined) {
+                    fea[keyName] = i;
+                }
                 tags[i] = 1;
-                const fea = extend({}, features[i]);
-                fea[keyName] = i;
                 filtered.push(fea);
                 indexes.push(i);
                 if (styleType === 1) {
@@ -797,63 +843,49 @@ function hasFnTypeKeys(symbol) {
     return 0;
 }
 
-function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig) {
+function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig, customProps) {
     const customProperties = pluginConfig.customProperties;
+    if (!customProperties) {
+        return features;
+    }
     if (customProperties) {
         for (let i = 0; i < customProperties.length; i++) {
             customProperties[i].fn = FilterUtil.compileFilter(customProperties[i].filter);
         }
     }
-
-    if (!customProperties || !customProperties.length) {
-        for (let i = 0; i < features.length; i++) {
-            // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
-            features[i] = extend({}, features[i]);
-        }
-        return features;
-    }
-    const dupKey = '__customDups';
-    const additionalFeas = [];
-
     for (let j = 0; j < customProperties.length; j++) {
         for (let i = 0, l = features.length; i < l; i++) {
-            if (j === 0) {
-                // 因为feature会被用到多个VectorPack中，feature可能会被别的VectorPack修改
-                features[i] = extend({}, features[i]);
-            }
             if (customProperties[j].fn(features[i], zoom)) {
-                if (j === 0 && features[i].geojson) {
-                    // geojson数据的properties是存在geojson-vt index里的，customTags会改变原值，所以需要复制一份
-                    features[i].properties = extend({}, features[i].properties);
-                }
                 for (const p in customProperties[j].properties) {
                     const v = customProperties[j].properties[p];
                     if (isNil(v)) {
                         continue;
                     }
-                    if (!isNil(features[i].properties[p])) {
-                        const fea = extend({}, features[i]);
-                        fea.properties = extend({}, fea.properties);
-                        fea.properties[p] = v;
-                        additionalFeas.push(fea);
-                    } else {
-                        features[i].properties[p] = v;
+                    if (!customProps[i]) {
+                        customProps[i] = {};
                     }
+                    if (!customProps[i][p]) {
+                        customProps[i][p] = new Set();
+                    }
+                    customProps[i][p].add(v);
                 }
             }
         }
     }
+}
 
 
-    if (additionalFeas.length) {
-        for (let i = 0, l = features.length; i < l; i++) {
-            if (features[i].properties[dupKey]) {
-                delete features[i].properties[dupKey];
-            }
+function proxyFea(feature) {
+    const fea = {};
+    const result = new Proxy(fea, {
+        get (obj, prop) {
+            return fea[prop] === undefined ? feature[prop] : fea[prop];
         }
-        pushIn(features, additionalFeas);
-
-    }
-
-    return features;
+    });
+    result.properties = new Proxy({}, {
+        get: function(obj, prop) {
+            return prop in obj ? obj[prop] : feature.properties[prop];
+        }
+    });
+    return result;
 }
