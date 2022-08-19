@@ -1,4 +1,4 @@
-import { extend, isFunction, isNumber } from '../core/util';
+import { extend, isFunction } from '../core/util';
 import { on, off, createEl, computeDomPosition } from '../core/util/dom';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
@@ -214,28 +214,10 @@ class Overview extends Control {
     _getPerspectiveCoords() {
         const map = this.getMap();
         const projection = map.getProjection();
-        //fix prj value when current view is world wide
-        function fixPrjOnWorldWide(prjCoord) {
-            if (projection && projection.fullExtent) {
-                const { left, bottom, top, right } = projection.fullExtent || {};
-                if (isNumber(left)) {
-                    prjCoord.x = Math.max(left, prjCoord.x);
-                }
-                if (isNumber(right)) {
-                    prjCoord.x = Math.min(right, prjCoord.x);
-                }
-                if (isNumber(bottom)) {
-                    prjCoord.y = Math.max(bottom, prjCoord.y);
-                }
-                if (isNumber(top)) {
-                    prjCoord.y = Math.min(top, prjCoord.y);
-                }
-            }
-        }
         return map.getContainerExtent().toArray().map(c => {
             if (projection) {
                 const prjCoord = map._containerPointToPrj(c);
-                fixPrjOnWorldWide(prjCoord);
+                map._fixPrjOnWorldWide(prjCoord);
                 return projection.unproject(prjCoord);
             }
             return map.containerPointToCoordinate(c);
