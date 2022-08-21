@@ -1,4 +1,5 @@
 import { KEY_IDX } from '../../../common/Constant';
+import { extend } from '../../../common/Util';
 
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 
@@ -13,6 +14,9 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
             if (layer.options['features'] === 'id' && layer.getFeature) {
                 feature = layer.getFeature(feature);
                 feature.layer = layerId;
+            }
+            if (feature.customProps) {
+                extend(feature.properties, feature.customProps);
             }
             const keyIdxValue = feaIndexes ? feaIndexes[ii] : feature[KEY_IDX_NAME];
             pluginFeas[keyIdxValue] = {
