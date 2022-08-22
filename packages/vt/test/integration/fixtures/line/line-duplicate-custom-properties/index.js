@@ -1,8 +1,7 @@
 const data = {
     type: 'FeatureCollection',
     features: [
-        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0.0], [-0.4, 0.0]] }, properties: { type: 1, foo: 'bar' } },
-        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0.3], [-0.4, 0.3]] }, properties: { type: 2 } },
+        { type: 'Feature', geometry: { type: 'LineString', coordinates: [[-1, 0.0], [-0.4, 0.0]] }, properties: { type: 1, foo: 'bar' } }
     ]
 };
 

@@ -228,8 +228,7 @@ export default class BaseLayerWorker {
                     for (const v of props) {
                         let fea = copies[index];
                         if (!fea) {
-                            fea = proxyFea(features[i]);
-                            fea.originalFeature = feature;
+                            fea = proxyFea(feature);
                             copies[index] = fea;
                         }
                         fea.properties[p] = v;
@@ -243,7 +242,7 @@ export default class BaseLayerWorker {
                     feas.push(copies[i]);
                 }
             } else {
-                feas.push(features[i])
+                feas.push(feature)
             }
         }
 
@@ -874,18 +873,26 @@ function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig, customProps) 
     }
 }
 
+const proxyGetter0 = {
+    get (obj, prop) {
+        return prop in obj ? obj[prop] : obj.originalFeature[prop];
+    }
+};
+
+const oldPropsKey = '__original_properties';
+const proxyGetter1 = {
+    get: function(obj, prop) {
+        return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
+    }
+};
+
+const EMPTY_PROPS = {};
 
 function proxyFea(feature) {
     const fea = {};
-    const result = new Proxy(fea, {
-        get (obj, prop) {
-            return fea[prop] === undefined ? feature[prop] : fea[prop];
-        }
-    });
-    result.properties = new Proxy({}, {
-        get: function(obj, prop) {
-            return prop in obj ? obj[prop] : feature.properties[prop];
-        }
-    });
+    fea.originalFeature = feature;
+    const result = new Proxy(fea, proxyGetter0);
+    result.properties = new Proxy({}, proxyGetter1);
+    result.properties[oldPropsKey] = feature.properties || EMPTY_PROPS;
     return result;
 }

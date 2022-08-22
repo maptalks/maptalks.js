@@ -4,6 +4,7 @@ import { log2 } from '../../common/Util';
 import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
+import { PackUtil } from '@maptalks/vector-packer';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -162,6 +163,10 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             feature.tags = feature.tags || {};
             // feature.tags['$layer'] = layerId;
             // feature.tags['$type'] = feature.type;
+            if (!feature.geometry.converted) {
+                PackUtil.convertGeometry(feature);
+                feature.geometry.converted = 1;
+            }
             features.push({
                 type: feature.type,
                 layer: layerId,
