@@ -90,10 +90,10 @@ void main() {
     #endif
 
     #ifdef HAS_OPACITY
-        gl_FragColor = vec4(color.rgb, color.a * vOpacity);
+        gl_FragColor = color * vOpacity;
     #else
         // gl_FragColor = vec4(color.rgb, color.a * polygonOpacity);
-        gl_FragColor = vec4(color.rgb, color.a * polygonOpacity);
+        gl_FragColor = color * polygonOpacity;
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
