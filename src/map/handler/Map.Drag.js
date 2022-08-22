@@ -13,7 +13,7 @@ class MapDragHandler extends Handler {
         const dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new DragHandler(dom, {
             'cancelOn': this._cancelOn.bind(this),
-            'rightclick' : true
+            'rightclick': true
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
@@ -139,6 +139,7 @@ class MapDragHandler extends Handler {
             t = 5 * t;
             const dscale = isTouch ? 5 : 2.8;
             const targetPrjCoord = currentCenter.add(dxy._multi(dscale));
+            map._fixPrjOnWorldWide(targetPrjCoord);
             const targetCoord = map.getProjection().unproject(targetPrjCoord);
             map.panTo(targetCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
         } else {
@@ -233,10 +234,10 @@ class MapDragHandler extends Handler {
 
 Map.mergeOptions({
     'draggable': true,
-    'dragPan' : true,
-    'dragRotatePitch' : true,
-    'dragRotate' : true,
-    'dragPitch' : true
+    'dragPan': true,
+    'dragRotatePitch': true,
+    'dragRotate': true,
+    'dragPitch': true
 });
 
 Map.addOnLoadHook('addHandler', 'draggable', MapDragHandler);

@@ -2158,6 +2158,26 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             proto._onLoadHooks[i].call(this);
         }
     }
+    //fix prj value when current view is world wide
+    _fixPrjOnWorldWide(prjCoord) {
+        const projection = this.getProjection();
+        if (projection && projection.fullExtent && prjCoord) {
+            const { left, bottom, top, right } = projection.fullExtent || {};
+            if (isNumber(left)) {
+                prjCoord.x = Math.max(left, prjCoord.x);
+            }
+            if (isNumber(right)) {
+                prjCoord.x = Math.min(right, prjCoord.x);
+            }
+            if (isNumber(bottom)) {
+                prjCoord.y = Math.max(bottom, prjCoord.y);
+            }
+            if (isNumber(top)) {
+                prjCoord.y = Math.min(top, prjCoord.y);
+            }
+        }
+        return this;
+    }
 }
 
 Map.include(/** @lends Map.prototype */{
@@ -2528,7 +2548,7 @@ Map.include(/** @lends Map.prototype */{
             if (!projection) {
                 return null;
             }
-            const prjCoord = paramCenter ?  projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
+            const prjCoord = paramCenter ? projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
             const c = this._prjToPointAtRes(prjCoord, res, POINT);
             c._add(dx, dy);
             const target = this.pointAtResToCoord(c, res, COORD0);
