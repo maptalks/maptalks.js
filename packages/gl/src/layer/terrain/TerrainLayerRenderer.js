@@ -116,7 +116,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
     }
 
-    _queryTileAltitude(out, extent) {
+    _queryTileAltitude(out, extent, targetRes) {
         if (!out) {
             out = {
                 tiles: {},
@@ -125,7 +125,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             };
         }
         const layer = this.layer;
-        const map = this.getMap();
 
         const z = this.getCurrentTileZoom();
         const sp = layer.getSpatialReference();
@@ -134,10 +133,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         const config = layer['_getTileConfig']();
 
-        COORD0.set(xmin, ymin);
-        const minIndex = config.getTileIndex(COORD0, res, true);
-        COORD1.set(xmax, ymax);
-        const maxIndex = config.getTileIndex(COORD1, res, true);
+        POINT0.set(xmin, ymin)._multi(targetRes);
+        const minIndex = config['_getTileNum'](POINT0, targetRes, true);
+        POINT1.set(xmax, ymax)._multi(targetRes);
+        const maxIndex = config['_getTileNum'](POINT1, targetRes, true);
 
         const txmin = Math.min(minIndex.x, maxIndex.x);
         const txmax = Math.max(minIndex.x, maxIndex.x);
@@ -145,9 +144,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const tymin = Math.min(minIndex.y, maxIndex.y);
         const tymax = Math.max(minIndex.y, maxIndex.y);
 
-        map['_prjToPointAtRes'](COORD0, res, POINT0);
-        map['_prjToPointAtRes'](COORD1, res, POINT1);
-        const extent2d = TEMP_EXTENT.set(Math.min(POINT0.x, POINT1.x), Math.min(POINT0.y, POINT1.y), Math.max(POINT0.x, POINT1.x), Math.max(POINT0.y, POINT1.y));
+        const scale = targetRes / res;
+        POINT0.set(xmin, ymin)._multi(scale);
+        POINT1.set(xmax, ymax)._multi(scale);
+        const extent2d = TEMP_EXTENT.set(POINT0.x, POINT0.y, POINT1.x, POINT1.y);
 
         // martini 需要一点多余的数据
         const terrainSize = (layer.options['terrainTileSize'] || 256) + 1;

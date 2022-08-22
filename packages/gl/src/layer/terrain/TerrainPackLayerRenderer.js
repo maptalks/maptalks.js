@@ -234,8 +234,9 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
                 // 从helper中获取瓦片范围内
                 if (!terrainData.heights || !terrainData.heights.complete) {
                     const terrainHelper = this.layer.getTerrainHelper();
-                    const tileExtent = this._getAltitudeExtent(tile);
-                    terrainData.heights = terrainHelper.queryTileAltitude(terrainData.heights, tileExtent);
+                    const sr = this.layer.getLayers()[0].getSpatialReference();
+                    const res = sr.getResolution(tile.z);
+                    terrainData.heights = terrainHelper.queryTileAltitude(terrainData.heights, tile.extent2d, res);
                     if (terrainData.heights.dirty) {
                         tileQueue[key] = {
                             terrainDataId: terrainDataId,

@@ -36,12 +36,12 @@ export default class TerrainLayer extends maptalks.TileLayer {
         return renderer._queryAltitide(tileIndex, worldPos, zoom);
     }
 
-    queryTileAltitude(out, tileInfo) {
+    queryTileAltitude(out, tileExtent, res) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return null;
         }
-        return renderer._queryTileAltitude(out, tileInfo);
+        return renderer._queryTileAltitude(out, tileExtent, res);
     }
 
     queryTileMesh(tile, cb) {
