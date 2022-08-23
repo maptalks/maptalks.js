@@ -628,6 +628,77 @@ describe('picking specs', () => {
             });
             layer.addTo(map);
         });
+        it('should pick lines with customProperties', done => {
+            const options = {
+                features: 'feature',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [
+                                [13.417135053741617, 52.52956625878565],
+                                [13.417226248848124, 52.52956625878565],
+                            ]
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: {
+                            type: 'line'
+                        }
+                    },
+                    customProperties: [
+                        {
+                            "filter": true,
+                              "properties": {
+                                "custom_prop_line_batch_id": "admin-0-boundary-bg"
+                              }
+                        }
+                    ],
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                const expected = {
+                    'feature': {
+                        "customProps": {
+                            "custom_prop_line_batch_id": "admin-0-boundary-bg"
+                        },
+                        'type': 2,
+                        "properties": {
+                           "custom_prop_line_batch_id": "admin-0-boundary-bg",
+                           "mapbox_clip_end": 1,
+                           "mapbox_clip_start": 0
+                        },
+                        'id': 0,
+                        'layer': "0"
+                    },
+                    'symbol': {
+                        'lineColor': '#f00',
+                        'lineWidth': 20
+                    }
+                };
+                delete redPoint[0].data.tile;
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+                done();
+            });
+            layer.addTo(map);
+        });
         it('should pick polygon', done => {
             const options = {
                 data: {
