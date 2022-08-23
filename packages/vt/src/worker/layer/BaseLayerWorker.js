@@ -8,6 +8,8 @@ import { KEY_IDX } from '../../common/Constant';
 
 // let FONT_CANVAS;
 
+const oldPropsKey = '__original_properties';
+
 export default class BaseLayerWorker {
     constructor(id, options, upload, tileCache, tileLoading) {
         this.id = id;
@@ -376,6 +378,7 @@ export default class BaseLayerWorker {
                         delete properties['$type'];
                         const fea = extend({}, feature.originalFeature);
                         // fea.properties = extend({}, feature.originalFeature.properties, properties);
+                        delete properties[oldPropsKey];
                         fea.customProps = extend({}, properties);
 
                         feature = fea;
@@ -879,7 +882,6 @@ const proxyGetter0 = {
     }
 };
 
-const oldPropsKey = '__original_properties';
 const proxyGetter1 = {
     get: function(obj, prop) {
         return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
