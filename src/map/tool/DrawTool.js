@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { isNil } from '../../core/util';
+import { isFunction, isNil } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
@@ -375,7 +375,13 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             this._createGeometry(event);
         } else {
-            const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            let prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            const snapTo = this._geometry.snapTo;
+            //for adsorption effect
+            if (snapTo && isFunction(snapTo)) {
+                const containerPoint = this._geometry.snapTo(event.containerPoint) || event.containerPoint;
+                prjCoord = this.getMap()._containerPointToPrj(containerPoint);
+            }
             if (!isNil(this._historyPointer)) {
                 this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
             }
@@ -459,11 +465,15 @@ class DrawTool extends MapTool {
         if (!this._geometry || !map || map.isInteracting()) {
             return;
         }
-        const containerPoint = this._getMouseContainerPoint(event);
+        let containerPoint = this._getMouseContainerPoint(event);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
-        const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+        let prjCoord = this.getMap()._pointToPrj(event['point2d']);
+        if (this._geometry.snapTo) {
+            containerPoint = this._geometry.snapTo(containerPoint) || containerPoint;
+            prjCoord = map._containerPointToPrj(containerPoint);
+        }
         const projection = map.getProjection();
         event.drawTool = this;
         const registerMode = this._getRegisterMode();
@@ -616,7 +626,7 @@ class DrawTool extends MapTool {
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
                 'enableSimplify': false,
-                'enableAltitude' : this.options['enableAltitude']
+                'enableAltitude': this.options['enableAltitude']
             });
             this._map.addLayer(drawToolLayer);
         }
@@ -629,6 +639,7 @@ class DrawTool extends MapTool {
         }
         if (this._geometry) {
             param['geometry'] = this._getRegisterMode()['generate'](this._geometry, { drawTool: this });
+            param.tempGeometry = this._geometry;
         }
         MapTool.prototype._fireEvent.call(this, eventName, param);
     }
