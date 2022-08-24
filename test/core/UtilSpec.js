@@ -19,6 +19,12 @@ describe('Util', function () {
             var r = maptalks.StringUtil.replaceVariable(str, null);
             expect(r).to.eql(' is not .');
         });
+
+        it('replace variables with unicode name', function () {
+            var str = 'Be {🙂}, not be {😢}.';
+            var r = maptalks.StringUtil.replaceVariable(str, {'🙂': 'happy', '😢': 'sad'});
+            expect(r).to.eql('Be happy, not be sad.');
+        });
     });
 
     it('sign', function () {
