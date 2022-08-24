@@ -1,4 +1,4 @@
-import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, isPowerOfTwo, floorPowerOfTwo } from './common/Util.js';
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -226,14 +226,9 @@ function resize(image) {
     return canvas;
 }
 
-function isPowerOfTwo(value) {
-    return (value & (value - 1)) === 0 && value !== 0;
-}
 
 
-function floorPowerOfTwo(value) {
-    return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
-}
+
 
 // function ceilPowerOfTwo(value) {
 //     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));

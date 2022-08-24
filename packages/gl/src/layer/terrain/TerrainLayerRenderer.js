@@ -1,27 +1,216 @@
 import * as maptalks from 'maptalks';
-import { vec3 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
 import TerrainWorkerConnection from './TerrainWorkerConnection';
+import { createREGL } from '@maptalks/regl';
+import * as reshader from '@maptalks/reshader.gl';
 
 const V0 = [];
 const V1 = [];
 const V2 = [];
+const V3 = [];
 
-const COORD0 = new maptalks.Coordinate(0, 0);
-const COORD1 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
 const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
+const SCALE3 = [];
+
+
+const onRemove = maptalks.renderer.TileLayerCanvasRenderer.prototype.onRemove;
+
+maptalks.renderer.TileLayerCanvasRenderer.include({
+    renderTerrainSkin(regl, tileInfo, tileImage, skinIndex) {
+        if (!tileImage.skins) {
+            tileImage.skins = [];
+        }
+        let texture = tileImage.skins[skinIndex];
+        if (!tileImage.skinStatus) {
+            tileImage.skinStatus = [];
+        }
+        const status = tileImage.skinStatus[skinIndex];
+        if (texture && status) {
+            return;
+        }
+        const sr = this.layer.getSpatialReference();
+        const { x, y, z, res } = tileInfo;
+        let w = Math.round(tileInfo.extent2d.getWidth() / res);
+        let h = Math.round(tileInfo.extent2d.getHeight() / res);
+
+        const zoom = this.getCurrentTileZoom();
+        const myRes = sr.getResolution(zoom);
+        let scale = myRes / res;
+        if (scale < 1) {
+            scale = 1 / scale;
+            scale = 1 / Math.round(scale);
+        } else {
+            scale = Math.round(scale);
+        }
+        const myX = scale * x;
+        const myY = scale * y;
+
+        const tileId = this.layer['_getTileId'](myX, myY, zoom);
+        const cached = this.tileCache.get(tileId);
+        if (cached) {
+            const image = cached.image;
+            const myExtent = cached.info.extent2d;
+            let { width, height } = image;
+            width *= scale;
+            height *= scale;
+            if (width === w && height === h) {
+                texture = image;
+                tileImage.skins[skinIndex] = image;
+                tileImage.skinStatus[skinIndex] = 1;
+            } else {
+                if (!texture) {
+                    texture = document.createElement('canvas');
+                    if (!reshader.Util.isPowerOfTwo(w)) {
+                        w = reshader.Util.floorPowerOfTwo(w);
+                    }
+                    if (!reshader.Util.isPowerOfTwo(h)) {
+                        w = reshader.Util.floorPowerOfTwo(h);
+                    }
+                    texture.width = w;
+                    texture.height = h;
+                }
+                const ctx = texture.getContext('2d');
+                if (width > w && height > h) {
+                    ctx.drawImage(image, 0, 0, width, height);
+                    tileImage.skins[skinIndex] = image;
+                    tileImage.skinStatus[skinIndex] = 1;
+                } else {
+                    //TODO 当前瓦片比地形瓦片小
+
+                }
+            }
+
+
+        } else {
+
+        }
+    }
+
+    onRemove() {
+
+    }
+});
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
-    drawTile() {}
+    constructor(...args) {
+        super(...args);
+        this._scene = new reshader.Scene();
+    }
+
+    consumeTile(tileImage, tileInfo) {
+        if (tileImage && tileImage.mesh && !tileImage.terrainMesh) {
+            tileImage.terrainMesh = this._createTerrainMesh(tileInfo, tileImage.mesh);
+        }
+    }
+
+    draw(timestamp, parentContext) {
+        this._scene.clear();
+        super.draw(timestamp, parentContext);
+        this._endFrame(parentContext);
+    }
+
+    drawOnInteracting(event, timestamp, parentContext) {
+        this.draw(timestamp, parentContext);
+    }
+
+    drawTile(tileInfo, tileImage) {
+        const map = this.getMap();
+        if (!tileInfo || !map || !tileImage) {
+            return;
+        }
+        const mesh = tileImage.terrainMesh;
+        if (mesh) {
+            const skinCount = this.layer.getSkinCount();
+            if (mesh.properties.skinCount !== skinCount) {
+                const defines = mesh.defines();
+                defines['SKIN_COUNT'] = skinCount;
+                mesh.properties.skinCount = skinCount;
+                mesh.defines = defines;
+            }
+            this._scene.addMesh(mesh);
+        }
+    }
+
+    _drawTiles(tiles, parentTiles, childTiles) {
+        const skinCount = this.layer.getSkinCount();
+        // 集中对每个SkinLayer调用renderTerrainSkin，减少 program 的切换开销
+        for (let i = 0; i < skinCount; i++) {
+            for (let ii = 0; ii < tiles.length; ii++) {
+                this._drawTerrainSkin(i, tiles[ii].info, tiles[ii].image);
+            }
+            for (let ii = 0; ii < parentTiles.length; ii++) {
+                this._drawTerrainSkin(i, parentTiles[ii].info, parentTiles[ii].image);
+            }
+            for (let ii = 0; ii < childTiles.length; ii++) {
+                this._drawTerrainSkin(i, childTiles[ii].info, childTiles[ii].image);
+            }
+        }
+        return super._drawTiles(...arguments);
+    }
+
+    _drawTerrainSkin(skinIndex, tileInfo, tileImage) {
+        const map = this.getMap();
+        if (!tileInfo || !map || !tileImage) {
+            return;
+        }
+        const mesh = tileImage.terrainMesh;
+        if (mesh) {
+            const skinLayer = this.layer.getSkinLayer(skinIndex);
+            const renderer = skinLayer.getRenderer();
+            let texture = this._getEmptyTexture();
+            if (renderer) {
+                texture = renderer.renderTerrainSkin(tileInfo);
+            }
+            const textures = mesh.getUniform('skins0');
+            textures[skinIndex] = texture;
+        }
+    }
+
+    _endFrame(context) {
+        const uniforms = this._getUniformValues();
+        this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
+    }
 
     onDrawTileStart() {}
     onDrawTileEnd() {}
 
-    _queryTileMesh(tile, cb) {
-        const width = this.layer.options['terrainTileSize'] + 1;
-        this.workerConn.createTerrainMesh(tile, width, cb);
+    _createTerrainMesh(tileInfo, terrainGeo) {
+        const geo = new reshader.Geometry({
+            POSITION: terrainGeo.positions,
+            TEXCOORD_0: terrainGeo.texcoords
+        },
+        terrainGeo.triangles,
+        0,
+        {
+            primitive: 'triangles',
+            positionAttribute: 'POSITION',
+            uv0Attribute: 'TEXCOORD_0'
+        });
+
+        const skinCount = this.layer.getSkinCount();
+        const mesh = new reshader.Mesh(geo);
+        mesh.setDefines({
+            'SKIN_COUNT': skinCount
+        });
+
+        mesh.properties.skinCount = skinCount;
+
+        const map = this.getMap();
+        const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
+
+        const { extent2d, offset } = tileInfo;
+        V3[0] = (extent2d.xmin - offset[0]) * scale;
+        V3[1] = (tileInfo.extent2d.ymax - offset[1]) * scale;
+        const localTransform = mat4.identity([]);
+        mat4.translate(localTransform, localTransform, V3);
+        vec3.set(SCALE3, scale, scale, 1);
+        mat4.scale(localTransform, localTransform, SCALE3);
+        mesh.localTransform = localTransform;
+
+        return mesh;
     }
 
     loadTile(tile) {
@@ -285,6 +474,79 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         });
     }
 
+    createContext() {
+        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+        if (inGroup) {
+            this.gl = this.canvas.gl.wrap();
+            this.regl = this.canvas.gl.regl;
+        } else {
+            this._createREGLContext();
+        }
+        this._emptyTileTexture = this.regl.texture(2, 2);
+        this._resLoader = new reshader.ResourceLoader(this._emptyTileTexture);
+        this.renderer = new reshader.Renderer(this.regl);
+        this._initShader();
+    }
+
+    _createREGLContext() {
+        const layer = this.layer;
+
+        const attributes = layer.options.glOptions || {
+            alpha: true,
+            depth: true,
+            antialias: this.layer.options['antialias']
+            // premultipliedAlpha : false
+        };
+        attributes.preserveDrawingBuffer = true;
+        attributes.stencil = true;
+        this.glOptions = attributes;
+        this.gl = this.gl || this._createGLContext(this.canvas, attributes);
+        // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
+        this.regl = createREGL({
+            gl: this.gl,
+            attributes,
+            extensions: [
+                'OES_element_index_uint'
+            ],
+            optionalExtensions: layer.options['glExtensions']
+        });
+    }
+
+    _createGLContext(canvas, options) {
+        const names = ['webgl', 'experimental-webgl'];
+        let context = null;
+        /* eslint-disable no-empty */
+        for (let i = 0; i < names.length; ++i) {
+            try {
+                context = canvas.getContext(names[i], options);
+            } catch (e) { }
+            if (context) {
+                break;
+            }
+        }
+        return context;
+        /* eslint-enable no-empty */
+    }
+
+    resizeCanvas(canvasSize) {
+        if (!this.canvas) {
+            return;
+        }
+        super.resizeCanvas(canvasSize);
+
+    }
+
+    clearCanvas() {
+        if (!this.canvas) {
+            return;
+        }
+        super.clearCanvas();
+
+    }
+
+    _getEmptyTexture() {
+        return this._emptyTileTexture;
+    }
 }
 
 export default TerrainLayerRenderer;

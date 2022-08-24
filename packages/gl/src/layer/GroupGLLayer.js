@@ -3,7 +3,6 @@ import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from 'gl-matrix';
 import { isNil } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
-import TerrainPackLayer from './terrain/TerrainPackLayer';
 
 const options = {
     renderer : 'gl',
@@ -225,7 +224,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (this.options['terrain']) {
             this.setTerrain(this.options['terrain']);
         }
-        this._setupTerrainLayers();
         super.onLoadEnd();
     }
 
@@ -241,44 +239,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         });
         layer.load();
         this._bindChildListeners(layer);
-    }
-
-    _setupTerrainLayers() {
-        // 遍历所有的图层，把相邻且sr一致的TileLayer/VectorTileLayer组织在一起
-        if (!this._terrainLayer) {
-            return;
-        }
-        let uid = 0;
-        const packLayers = [];
-        const layers = this.getLayers();
-        let ref = null;
-        const pack = [];
-        for (let i = 0; i < layers.length; i++) {
-            if (layers[i] instanceof maptalks.TileLayer) {
-                const spRef = layers[i].getSpatialReference();
-                if (!ref || maptalks.SpatialReference.equals(spRef, ref)) {
-                    if (ref) {
-                        ref = spRef;
-                    }
-                    pack.push(layers[i]);
-                } else {
-                    const packLayer = new TerrainPackLayer('__terrain_pack_in_group_' + uid++, pack);
-                    packLayer.setTerrainHelper(this._terrainLayer);
-                    packLayers.push(packLayer);
-                    ref = spRef;
-                    pack.length = 0;
-                }
-            } else {
-                packLayers.push(layers[i]);
-            }
-        }
-        if (pack.length) {
-            const packLayer = new TerrainPackLayer('__terrain_pack_in_group_' + uid++, pack);
-            packLayer.setTerrainHelper(this._terrainLayer);
-            this._prepareLayer(packLayer);
-            packLayers.push(packLayer);
-        }
-        this._packLayers = packLayers;
     }
 
     onRemove() {
@@ -483,9 +443,25 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         this._terrainInfo = info;
         this._terrainLayer = new TerrainLayer('__terrain_in_group', info);
+        this._updateTerrainSkinLayers();
         this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
         return this;
+    }
+
+    _updateTerrainSkinLayers() {
+        const layers = this.layers;
+        const skinLayers = [];
+        for (let i = 0; i < layers.length; i++) {
+            if (!layers[i]) {
+                continue;
+            }
+            const renderer = layers[i].getRenderer();
+            if (renderer.renderToTerrainTile) {
+                skinLayers.push(layers[i]);
+            }
+        }
+        this._terrainLayer.setSkinLayers(skinLayers);
     }
 
     _onTerrainTileLoad() {

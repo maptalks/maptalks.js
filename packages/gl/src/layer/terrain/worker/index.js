@@ -45,12 +45,12 @@ function load(url, headers, origin) {
     return Ajax.getArrayBuffer(url, options);
 }
 
-function createHeightMap(heightmap, exag) {
+function createHeightMap(heightmap/*, exag*/) {
     const width = terrainStructure.width, height = terrainStructure.height;
     const endRow = width + 1, endColum = height + 1;
     const elementsPerHeight = terrainStructure.elementsPerHeight;
     const heightOffset = terrainStructure.heightOffset;
-    const exaggeration = terrainStructure.exaggeration || exag;
+    const exaggeration = 1;//terrainStructure.exaggeration || exag;
     const heightScale = terrainStructure.heightScale;
     const elementMultiplier = terrainStructure.elementMultiplier;
     const stride = 4;
@@ -130,7 +130,7 @@ function transformBuffer(zlibData){
     return myBuffer;
 }
 
-function generateTiandituTerrain(buffer, exaggeration) {
+function generateTiandituTerrain(buffer) {
     const view = new DataView(buffer);
     const zBuffer = new Uint8Array(view.byteLength);
     let index = 0;
@@ -141,7 +141,7 @@ function generateTiandituTerrain(buffer, exaggeration) {
     //解压数据
     const dZlib = decZlibBuffer(zBuffer);
     const heightBuffer = transformBuffer(dZlib);
-    const heights = createHeightMap(heightBuffer, exaggeration);
+    const heights = createHeightMap(heightBuffer);
     const terrainData = createMartiniData(heights, terrainStructure.width + 1);
     return terrainData;
 }
@@ -154,7 +154,7 @@ function lerp(p, q, time) {
   return (1.0 - time) * p + time * q;
 }
 
-function generateCesiumTerrain(buffer, exaggeration) {
+function generateCesiumTerrain(buffer) {
   let pos = 0;
   const cartesian3Elements = 3;
   const boundingSphereElements = cartesian3Elements + 1;
@@ -247,7 +247,7 @@ function generateCesiumTerrain(buffer, exaggeration) {
     uvs.push(1 - v);
     positions.push(u * 256);
     positions.push(-(1 - v) * 256);
-    positions.push(height * exaggeration);
+    positions.push(height);
   }
   return { positions, texcoords: uvs, triangles: indices}
 }
@@ -279,13 +279,13 @@ function generateMapboxTerrain(buffer) {
 }
 
 function loadTerrain(params, cb) {
-    const { url, origin, exaggeration, type, accessToken } = params;
+    const { url, origin, type, accessToken, terrainWidth } = params;
     if (type === 'tianditu') {
-        fetchTerrain(url, exaggeration, type, cb);
+        fetchTerrain(url, type, terrainWidth, cb);
     } else if (type === 'cesium') {
         const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
         if (access_token) {
-            fetchTerrain(url, exaggeration, type, cb);
+            fetchTerrain(url, type, terrainWidth, cb);
         } else {
             fetch(tokenUrl, {
                 responseType: "json",
@@ -299,15 +299,15 @@ function loadTerrain(params, cb) {
                 return tkJson.json();
             }).then(res => {
                 access_token = res.accessToken;
-                fetchTerrain(url, exaggeration, type, cb);
+                fetchTerrain(url, type, terrainWidth, cb);
             });
         }
     } else if (type === 'mapbox') {
-        fetchTerrain(url, exaggeration, type, cb);
+        fetchTerrain(url, type, terrainWidth, cb);
     }
 }
 
-function fetchTerrain(url, exaggeration, type, cb) {
+function fetchTerrain(url, type, terrainWidth, cb) {
     let headers = requestHeaders[type];
     if (type === 'cesium') {
         // headers['Authorization'] = 'Bearer ' + access_token;
@@ -324,27 +324,29 @@ function fetchTerrain(url, exaggeration, type, cb) {
             const buffer = res.data;
             let terrain = null;
             if (type === 'tianditu') {
-              terrain = generateTiandituTerrain(buffer, exaggeration);
+              terrain = generateTiandituTerrain(buffer);
             } else if (type === 'cesium') {
-              terrain = generateCesiumTerrain(buffer, exaggeration);
+              terrain = generateCesiumTerrain(buffer);
             } else if (type === 'mapbox') {
               terrain = generateMapboxTerrain(buffer);
             }
             if (terrain.then) {
                 terrain.then(imgBitmap => {
-                    const terrainData = mapboxBitMapToHeights(imgBitmap, exaggeration);
-                    cb({ data: terrainData }, res.transferables);
-                })
+                    const terrainData = mapboxBitMapToHeights(imgBitmap);
+                    const mesh = createMartiniData(terrain, terrainWidth);
+                    cb({ data: terrainData, mesh }, res.transferables);
+                });
             } else {
                 //martini顶点计算方式:https://github.com/mapbox/martini/issues/5
-                cb({ data: terrain }, res.transferables);
+                const mesh = createMartiniData(terrain, terrainWidth);
+                cb({ data: terrain, mesh }, res.transferables);
             }
         }
     }).catch(e => {
         cb({ error: e});
     });
 }
-function mapboxBitMapToHeights(imgBitmap, exaggeration) {
+function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
     const { width, height } = imgBitmap;
     // const pow = Math.floor(Math.log(width) / Math.log(2));
     // width = height = Math.pow(2, pow) + 1;
@@ -352,14 +354,18 @@ function mapboxBitMapToHeights(imgBitmap, exaggeration) {
     offscreenCanvas.width = width;
     offscreenCanvas.height = height;
     offscreenCanvasContext.drawImage(imgBitmap, 0, 0, width, height);
-    const terrainWidth = width;
+    // const terrainWidth = width;
+
     const imgData = offscreenCanvasContext.getImageData(0, 0, width, height).data;
     const heights = new Float32Array(terrainWidth * terrainWidth);
+
+    const stride = Math.floor(Math.log(width) / Math.LN2) / Math.floor(Math.log(terrainWidth) / Math.LN2);
+
     for (let i = 0; i < terrainWidth; i++) {
         for (let j = 0; j < terrainWidth; j++) {
             const index = i + j * terrainWidth;
             let height = 0;
-            const stride = 1;
+
             let nullCount = 0;
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {

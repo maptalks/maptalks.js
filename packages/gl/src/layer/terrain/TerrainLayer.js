@@ -3,19 +3,39 @@ import TerrainLayerRenderer from './TerrainLayerRenderer';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
+const EMPTY_ARRAY = [];
 
 const options = {
     'forceRenderOnMoving': true,
     'forceRenderOnZooming': true,
     'forceRenderOnRotating': true,
     'opacity': 1.0,
-    'exaggeration': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
-    'terrainTileSize': 128
+    'terrainTileSize': 6
 };
 
 export default class TerrainLayer extends maptalks.TileLayer {
+    setSkinLayers(skinLayers) {
+        const count = this.getSkinCount();
+        this._skinLayers = skinLayers;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
+    getSkinLayer(index) {
+        return this.getSkinLayers()[index];
+    }
+
+    getSkinLayers() {
+        return this._skinLayers || EMPTY_ARRAY;
+    }
+
+    getSkinCount() {
+        return this._skinLayers && this._skinLayers.length || 0;
+    }
 
     queryAltitide(coordinate) {
         const renderer = this.getRenderer();
