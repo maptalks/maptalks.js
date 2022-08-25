@@ -101,10 +101,10 @@ void main()
     #else
         vNormal = vec3(0.0);
     #endif
-
+    mat4 vmMatrix = getVMMatrix();
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
-    gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
+    gl_Position = jitteredProjection * vmMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
         vec2 TexCoord = getTexcoord(aTexCoord);
         vTexCoord = TexCoord * uvScale + uvOffset;

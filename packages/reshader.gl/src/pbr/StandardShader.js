@@ -37,8 +37,9 @@ class StandardShader extends MeshShader {
         const modelNormalMatrix = [];
         const tempMat4 = [];
         const modelViewNormalMatrix = [];
-        const modelViewMatrix = [];
+        const viewModelMatrix = [];
         const uEnvironmentTransform = [];
+        const centerMatrix = [];
 
         const uniforms = [
             //vert中的uniforms
@@ -73,10 +74,17 @@ class StandardShader extends MeshShader {
             //     }
             // },
             {
-                name: 'modelViewMatrix',
+                name: 'viewModelMatrix',
                 type: 'function',
                 fn: (_, props) => {
-                    return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                }
+            },
+            {
+                name: 'viewCenterMatrix',
+                type: 'function',
+                fn: (_, props) => {
+                    return mat4.multiply(centerMatrix, props['viewMatrix'], props['centerMatrix']);
                 }
             },
             {

@@ -5,6 +5,7 @@
     #ifdef HAS_INSTANCE_COLOR
         varying vec4 vInstanceColor;
     #endif
+    uniform mat4 viewCenterMatrix;
 #endif
 
 #ifdef HAS_SKIN
@@ -81,4 +82,12 @@ vec3 appendMorphNormal(vec3 NORMAL) {
         vec3 normal = NORMAL;
     #endif
     return normal;
+}
+
+mat4 getVMMatrix() {
+    #ifdef HAS_INSTANCE
+        return viewCenterMatrix;
+    #else
+        return viewModelMatrix;
+    #endif
 }
