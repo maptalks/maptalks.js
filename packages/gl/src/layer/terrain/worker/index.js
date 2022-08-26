@@ -142,8 +142,7 @@ function generateTiandituTerrain(buffer) {
     const dZlib = decZlibBuffer(zBuffer);
     const heightBuffer = transformBuffer(dZlib);
     const heights = createHeightMap(heightBuffer);
-    const terrainData = createMartiniData(heights, terrainStructure.width + 1);
-    return terrainData;
+    return heights;
 }
 
 function zigZagDecode(value) {
@@ -230,8 +229,8 @@ function generateCesiumTerrain(buffer) {
     quantizedVertexCount * 2,
     3 * quantizedVertexCount
   );
-  const positions = [];
-  const uvs = [];
+  const positions = new Float32Array(quantizedVertexCount * 3);
+  const uvs = new Float32Array(quantizedVertexCount * 2);
   for (let i = 0; i < quantizedVertexCount; ++i) {
     const rawU = uBuffer_1[i];
     const rawV = vBuffer_1[i];
@@ -243,11 +242,11 @@ function generateCesiumTerrain(buffer) {
       maximumHeight,
       heightBuffer_1[i] / maxShort
     );
-    uvs.push(u);
-    uvs.push(1 - v);
-    positions.push(u * 256);
-    positions.push(-(1 - v) * 256);
-    positions.push(height);
+    uvs[i * 2] = u;
+    uvs[i * 2 + 1] = 1 - v;
+    positions[i * 3] = (u * 256);
+    positions[i * 3 + 1] = (-(1 - v) * 256);
+    positions[i * 3 + 2] = height;
   }
   return { positions, texcoords: uvs, triangles: indices}
 }
@@ -324,22 +323,23 @@ function fetchTerrain(url, type, terrainWidth, cb) {
             const buffer = res.data;
             let terrain = null;
             if (type === 'tianditu') {
-              terrain = generateTiandituTerrain(buffer);
-            } else if (type === 'cesium') {
-              terrain = generateCesiumTerrain(buffer);
-            } else if (type === 'mapbox') {
-              terrain = generateMapboxTerrain(buffer);
-            }
-            if (terrain.then) {
-                terrain.then(imgBitmap => {
-                    const terrainData = mapboxBitMapToHeights(imgBitmap);
-                    const mesh = createMartiniData(terrain, terrainWidth);
-                    cb({ data: terrainData, mesh }, res.transferables);
-                });
-            } else {
+                terrain = generateTiandituTerrain(buffer);
                 //martini顶点计算方式:https://github.com/mapbox/martini/issues/5
                 const mesh = createMartiniData(terrain, terrainWidth);
                 cb({ data: terrain, mesh }, res.transferables);
+            } else if (type === 'cesium') {
+              terrain = generateCesiumTerrain(buffer);
+              const transferables = [terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer];
+              cb(terrain, transferables)
+            } else if (type === 'mapbox') {
+                terrain = generateMapboxTerrain(buffer);
+                terrain.then(imgBitmap => {
+                    const terrainData = mapboxBitMapToHeights(imgBitmap, terrainWidth);
+                    const mesh = createMartiniData(terrainData.data, terrainWidth);
+                    const transferables = [terrainData.data.buffer, mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
+
+                    cb({ data: terrainData, mesh }, transferables);
+                });
             }
         }
     }).catch(e => {
@@ -407,8 +407,8 @@ function createMartiniData(heights, width) {
         positions.push(x * (4 + skirtOffset));
         positions.push(-y * (4 + skirtOffset));
         positions.push(heights[y * width + x]);
-        texcoords.push(x / terrainStructure.width);
-        texcoords.push(y / terrainStructure.height);
+        texcoords.push(x / width);
+        texcoords.push(y / width);
     }
     const terrain = { positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles };
     return terrain;

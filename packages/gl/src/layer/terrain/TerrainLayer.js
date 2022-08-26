@@ -12,12 +12,12 @@ const options = {
     'opacity': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
-    'terrainTileSize': 6
+    'terrainTileSize': 6,
+    'terrainWidth': 65
 };
 
 export default class TerrainLayer extends maptalks.TileLayer {
     setSkinLayers(skinLayers) {
-        const count = this.getSkinCount();
         this._skinLayers = skinLayers;
         const renderer = this.getRenderer();
         if (renderer) {

@@ -114,6 +114,9 @@ module.exports = [
             file: 'build/worker.js',
             banner: `export default `,
             // footer: ``
+        },
+        watch: {
+            include: ['src/layer/terrain/worker/**/*.js']
         }
     },
     // {

@@ -38,6 +38,9 @@ const options = {
     multiSamples: 4
 };
 
+//
+const emptyDrawTile = () => {};
+
 export default class GroupGLLayer extends maptalks.Layer {
     /**
      * Reproduce a GroupGLLayer from layer's profile JSON.
@@ -457,7 +460,9 @@ export default class GroupGLLayer extends maptalks.Layer {
                 continue;
             }
             const renderer = layers[i].getRenderer();
-            if (renderer.renderToTerrainTile) {
+            if (renderer.renderTerrainSkin) {
+
+                renderer.drawTile = emptyDrawTile;
                 skinLayers.push(layers[i]);
             }
         }
