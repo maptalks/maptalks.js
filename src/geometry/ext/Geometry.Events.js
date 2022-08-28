@@ -21,7 +21,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         const params = map._getEventParams(event);
         if (isNumber(this._pickGeometryIndex)) {
             params.pickGeometryIndex = this._pickGeometryIndex;
-            delete this._pickGeometryIndex;
+            // delete this._pickGeometryIndex;
         }
         this._fireEvent(eventType, params);
     },
