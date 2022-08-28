@@ -22,7 +22,6 @@ vec3 Normal;
 vec4 Tangent;
 
 uniform mat4 modelMatrix;
-uniform mat4 viewModelMatrix;
 uniform mat4 positionMatrix;
 uniform mat4 projMatrix;
 

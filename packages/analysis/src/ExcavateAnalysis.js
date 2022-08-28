@@ -204,10 +204,10 @@ export default class ExcavateAnalysis extends Analysis {
         meshes.forEach(mesh => {
             const material = mesh.getMaterial();
             const defines = mesh.getDefines();
-            if (material.get('u_image')) {
-                defines['HAS_TERRAIN'] = 1;
-            } else if (material.get('baseColorTexture')) {
+            if (material.get('baseColorTexture')) {
                 defines['HAS_MODELTEXTURE'] = 1;
+            } else if (material.get('baseColorFactor')) {
+                defines['HAS_BASECOLOR'] = 1;
             }
             mesh.setDefines(defines);
         });

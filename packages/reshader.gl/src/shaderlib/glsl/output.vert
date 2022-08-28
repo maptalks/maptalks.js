@@ -7,7 +7,7 @@
     #endif
     uniform mat4 viewCenterMatrix;
 #endif
-
+uniform mat4 viewModelMatrix;
 #ifdef HAS_SKIN
     uniform int skinAnimation;
     #include <skin_vert>

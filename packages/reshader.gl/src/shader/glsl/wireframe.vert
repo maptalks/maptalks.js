@@ -5,7 +5,6 @@ varying vec3 vBarycentric;
 
 uniform mat4 modelMatrix;
 uniform mat4 projMatrix;
-uniform mat4 viewModelMatrix;
 uniform mat4 positionMatrix;
 varying vec3 vPosition;
 #include <get_output>

@@ -4,7 +4,7 @@ import vert from './glsl/excavate.vert';
 import frag from './glsl/excavate.frag';
 import { Util } from 'maptalks';
 
-const clearColor = [0, 0, 0, 1];
+const clearColor = [1.0, 0.0, 0.0, 1];
 
 export default class ExcavatePass {
     constructor(renderer, viewport) {

@@ -1,4 +1,4 @@
-import { reshader, mat4 } from '@maptalks/gl';
+import { reshader, mat4, quat } from '@maptalks/gl';
 import { Class, Eventable, Handlerable, Polygon } from 'maptalks';
 import ExtentPass from './pass/ExtentPass';
 import { coordinateToWorld } from './common/Util';
@@ -162,7 +162,7 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         map.setCenter(precenter);
         map.setPitch(prepitch);
         map.setBearing(prebearing);
-        this._extentMeshes = this._createBoundaryMesh(boundary);
+        this._extentMeshes = this._createBoundaryMesh(boundary, center);
         if (!this._extentPass) {
             const extentRenderer = new reshader.Renderer(this.regl);
             this._extentPass = new ExtentPass(extentRenderer, this._viewport);
@@ -172,30 +172,33 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
     }
 
 
-    _createBoundaryMesh(boundary) {
+    _createBoundaryMesh(boundary,center) {
         const pos = [];
         const map = this.layer.getMap();
+        const centerPos = coordinateToWorld(map, center.x, center.y, 0);
         for (let i = 0; i < boundary.length; i++) {
             const point = coordinateToWorld(map, ...boundary[i]);
-            pos.push(point[0]);
-            pos.push(point[1]);
+            pos.push(point[0] - centerPos[0]);
+            pos.push(point[1] - centerPos[1]);
             pos.push(0);
         }
         const triangles = earcut(pos, null, 3);
         if (this._extentMeshes) {
-            this._extentMeshes[0].geometry.updateData('POSITION', pos);
-        } else {
-            const geometry = new reshader.Geometry({
-                POSITION: pos
-            },
-            triangles,
-            0,
-            {
-                positionAttribute: 'POSITION'
-            });
-            const mesh = new reshader.Mesh(geometry);
-            this._extentMeshes = [mesh];
+            this._extentMeshes[0].geometry.dispose();
+            this._extentMeshes[0].dispose();
         }
+        const geometry = new reshader.Geometry({
+            POSITION: pos
+        },
+        triangles,
+        0,
+        {
+            positionAttribute: 'POSITION'
+        });
+        const mesh = new reshader.Mesh(geometry);
+        const mMatrix = mat4.fromRotationTranslationScale([], quat.identity([]), centerPos, [1, 1, 1]);
+        mesh.localTransform = mMatrix;
+        this._extentMeshes = [mesh];
         return this._extentMeshes;
     }
 }
