@@ -23,6 +23,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         this._scene = new reshader.Scene();
     }
 
+    isDrawable() {
+        return true;
+    }
+
     consumeTile(tileImage, tileInfo) {
         if (tileImage && tileImage.mesh && !tileImage.terrainMesh) {
             tileImage.terrainMesh = this._createTerrainMesh(tileInfo, tileImage.mesh);
@@ -84,12 +88,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (mesh) {
             const skinLayer = this.layer.getSkinLayer(skinIndex);
             const renderer = skinLayer.getRenderer();
-            let texture = this._getEmptyTexture();
             if (renderer) {
-                texture = renderer.renderTerrainSkin(this.regl, tileInfo, tileImage, skinIndex);
+                renderer.renderTerrainSkin(this.regl, tileInfo, tileImage, skinIndex);
             }
+            const emptyTexture = this._getEmptyTexture();
             const textures = mesh.getUniform('skins');
-            textures[skinIndex] = texture;
+            const skins = tileImage.skins;
+            for (let i = 0; i < skins.length; i++) {
+                textures[i] = skins[i] || emptyTexture;
+            }
         }
     }
 
@@ -102,6 +109,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     onDrawTileEnd() {}
 
     _createTerrainMesh(tileInfo, terrainGeo) {
+        const heightScale = this._getPointZ(100) / 100;
+        for(let i = 2; i < terrainGeo.positions.length; i = i + 3) {
+            terrainGeo.positions[i] *= heightScale;
+        }
         const geo = new reshader.Geometry({
             POSITION: terrainGeo.positions,
             TEXCOORD_0: terrainGeo.texcoords
@@ -114,6 +125,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             uv0Attribute: 'TEXCOORD_0'
         });
 
+        geo.generateBuffers(this.regl);
+
         const skinCount = this.layer.getSkinCount();
         const mesh = new reshader.Mesh(geo);
         mesh.setDefines({
@@ -122,17 +135,20 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         mesh.properties.skinCount = skinCount;
         const textures = [];
+        const emptyTexture = this._getEmptyTexture();
+        for (let i = 0; i < skinCount; i++) {
+            textures[i] = emptyTexture;
+        }
         mesh.setUniform('skins', textures);
 
         const map = this.getMap();
-        const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
+        const scale = tileInfo.res / map.getGLRes();
 
         const { extent2d, offset } = tileInfo;
-        V3[0] = (extent2d.xmin - offset[0]) * scale;
-        V3[1] = (tileInfo.extent2d.ymax - offset[1]) * scale;
+        vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
         const localTransform = mat4.identity([]);
         mat4.translate(localTransform, localTransform, V3);
-        vec3.set(SCALE3, scale, scale, 1);
+        vec3.set(SCALE3, scale * 8, scale * 8, 1);
         mat4.scale(localTransform, localTransform, SCALE3);
         mesh.localTransform = localTransform;
 
@@ -542,6 +558,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         };
         return uniforms;
     }
+
+    needToRedraw() {
+        return true;
+    }
 }
 
 export default TerrainLayerRenderer;
@@ -549,31 +569,39 @@ export default TerrainLayerRenderer;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
     renderTerrainSkin(regl, tileInfo, tileImage, skinIndex) {
-        if (!tileImage.skins) {
-            tileImage.skins = [];
+        if (!tileImage.skinImages) {
+            tileImage.skinImages = [];
         }
-        let texture = tileImage.skins[skinIndex];
+        if (!tileImage.skins) {
+             tileImage.skins = [];
+        }
         if (!tileImage.skinStatus) {
             tileImage.skinStatus = [];
         }
+
+        let texture = tileImage.skinImages[skinIndex];
+
         const status = tileImage.skinStatus[skinIndex];
         if (texture && status) {
             return;
         }
         const sr = this.layer.getSpatialReference();
         const { x, y, res, extent2d } = tileInfo;
-        let w = Math.round(tileInfo.extent2d.getWidth() / res);
-        let h = Math.round(tileInfo.extent2d.getHeight() / res);
+        let w = Math.round(tileInfo.extent2d.getWidth());
+        let h = Math.round(tileInfo.extent2d.getHeight());
 
         const zoom = this.getCurrentTileZoom();
         const myRes = sr.getResolution(zoom);
-        let scale = myRes / res;
+        const myTileSize = this.layer.getTileSize().width;
+
+        let scale = myRes / res * w / myTileSize;
         if (scale < 1) {
             scale = 1 / scale;
             scale = 1 / Math.round(scale);
         } else {
             scale = Math.round(scale);
         }
+        const resScale = myRes / res;
         const myX = scale * x;
         const myY = scale * y;
 
@@ -582,12 +610,11 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         if (cached) {
             const image = cached.image;
             let { width, height } = image;
-            width *= scale;
-            height *= scale;
             if (width === w && height === h) {
                 texture = image;
-                tileImage.skins[skinIndex] = image;
+                tileImage.skinImages[skinIndex] = image;
                 tileImage.skinStatus[skinIndex] = 1;
+                return texture;
             } else {
                 if (!texture) {
                     texture = document.createElement('canvas');
@@ -603,12 +630,19 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
                 const ctx = texture.getContext('2d');
                 if (width > w && height > h) {
                     // skin瓦片比地形瓦片大
-                    drawTileImage(ctx, extent2d, cached, scale);
-                    tileImage.skins[skinIndex] = image;
+                    drawTileImage(ctx, extent2d, cached, resScale);
+                    tileImage.skinImages[skinIndex] = image;
+                    tileImage.skins[skinIndex] = regl.texture({
+                        data: image,
+                        width,
+                        height
+                    });
                     tileImage.skinStatus[skinIndex] = 1;
                 } else {
                     // skin瓦片比地形瓦片小
                     const stride = Math.round(w / width);
+                    let sum = stride * stride;
+                    let count = 0;
                     for (let i = 0; i < stride; i++) {
                         for (let j = 0; j < stride; j++) {
                             let cachedTile;
@@ -622,12 +656,37 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
                             }
 
                             if (cachedTile) {
-                                drawTileImage(ctx, extent2d, cachedTile, scale);
+                                count++;
+                                drawTileImage(ctx, extent2d, cachedTile, resScale);
                             } else {
                                 //TODO 找父级瓦片
                             }
                         }
                     }
+                    const debugCanvas = document.getElementById('terrain_skin_debug');
+                    if (debugCanvas) {
+                        debugCanvas.width = w;
+                        debugCanvas.height = h;
+                        debugCanvas.getContext('2d').drawImage(texture, 0, 0);
+                    }
+
+                    if (sum === count) {
+                        tileImage.skinStatus[skinIndex] = 1;
+                    }
+                    let tex = tileImage.skins[skinIndex];
+                    const config = {
+                        data: texture,
+                        width: w,
+                        height: h
+                    };
+                    if (!tex) {
+                        tex = regl.texture(config);
+                    } else {
+                        tex(config);
+                    }
+                    tileImage.skins[skinIndex] = tex;
+                    tileImage.skinImages[skinIndex] = texture;
+                    return texture;
                 }
             }
         } else {

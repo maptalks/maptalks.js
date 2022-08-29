@@ -15,7 +15,7 @@ const terrainStructure = {
     heightScale: 0.001,
     elementMultiplier: 256,
     stride: 4,
-    skirtHeight: 0.1,
+    skirtHeight: 0.002,
     skirtOffset: 0.05 //用于减少地形瓦片之间的缝隙
 }
 const requestHeaders = {
@@ -359,7 +359,9 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
     const imgData = offscreenCanvasContext.getImageData(0, 0, width, height).data;
     const heights = new Float32Array(terrainWidth * terrainWidth);
 
-    const stride = Math.floor(Math.log(width) / Math.LN2) / Math.floor(Math.log(terrainWidth) / Math.LN2);
+    const stride = Math.round(width / terrainWidth);
+
+    const edge = terrainWidth - 1 - 1;
 
     for (let i = 0; i < terrainWidth; i++) {
         for (let j = 0; j < terrainWidth; j++) {
@@ -369,9 +371,18 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
             let nullCount = 0;
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {
-                    const x = i * stride + k;
-                    const y = j * stride + l;
-                    const imageIndex = x + y * terrainWidth * stride;
+                    let tx = i;
+                    let ty = j;
+                    if (tx >= edge) {
+                        tx = edge;
+                    }
+                    if (ty >= edge) {
+                        ty = edge;
+                    }
+                    let x = tx * stride + k;
+                    let y = ty * stride + l;
+
+                    const imageIndex = x + y * width;
                     const R = imgData[imageIndex * 4];
                     const G = imgData[imageIndex * 4 + 1];
                     const B = imgData[imageIndex * 4 + 2];
@@ -391,7 +402,7 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
     // debugger
     // const terrainData = createMartiniData(heights, terrainWidth);
     // offscreenCanvasContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-    return { data: heights, /*terrainData, */width, height };
+    return { data: heights, /*terrainData, */width: terrainWidth, height: terrainWidth };
 
 }
 
@@ -404,8 +415,10 @@ function createMartiniData(heights, width) {
     const skirtOffset = terrainStructure.skirtOffset;
     for (let i = 0; i < vertices.length / 2; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
-        positions.push(x * (4 + skirtOffset));
-        positions.push(-y * (4 + skirtOffset));
+        // positions.push(x * (4 + skirtOffset));
+        // positions.push(-y * (4 + skirtOffset));
+        positions.push(x * (1 + skirtOffset));
+        positions.push(-y * (1 + skirtOffset));
         positions.push(heights[y * width + x]);
         texcoords.push(x / width);
         texcoords.push(y / width);

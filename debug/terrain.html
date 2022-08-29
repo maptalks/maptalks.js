@@ -12,13 +12,14 @@
   <script type="text/javascript" src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <!-- <script type="text/javascript" src="../dist/maptalks.terrain-dev.js"></script> -->
   <body>
+    <canvas id="terrain_skin_debug"></canvas>
     <div id="map" class="container"></div>
     <script>
         const map = new maptalks.Map('map', {
             center: [91.14478,29.658272],
             zoomControl: true,
             zoom: 12,
-            // pitch: 45,
+            pitch: 45,
             // spatialReference:{
             //     projection:'EPSG:4326'
             // },
@@ -61,13 +62,14 @@
                   projection: 'EPSG:3857'
                 },
                 debug: true,
-                urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                subdomains: ['a','b','c','d'],
+                // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                urlTemplate: 'https://khms{s}.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
+                subdomains: ['1','2','3'],
                 attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
               })
         ];
 
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 0; i++) {
             skinLayers.push(new maptalks.TileLayer('base' + i, {
                 maxAvailableZoom : 20,
                 // spatialReference: {
