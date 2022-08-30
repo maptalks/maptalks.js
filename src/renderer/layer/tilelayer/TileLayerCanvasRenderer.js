@@ -594,8 +594,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 w += 0.1;
                 h += 0.1;
             }
-            if (zoom !== tileZoom) {
-                const scale = map._getResolution(tileZoom) / map._getResolution();
+            const res = map._getResolution();
+            if (res !== tileInfo.res) {
+                const scale = tileInfo.res / map._getResolution();
                 ctx.scale(scale, scale);
             }
             x = y = 0;
@@ -610,7 +611,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.font = '20px monospace';
             const point = new Point(x, y);
             Canvas2D.rectangle(ctx, point, { width: w, height: h }, 1, 0);
-            Canvas2D.fillText(ctx, this.getDebugInfo(tileId), point._add(10, 20), color);
+            Canvas2D.fillText(ctx, this.getDebugInfo(tileId), point._add(32, h - 14), color);
             Canvas2D.drawCross(ctx, x + w / 2, y + h / 2, 2, color);
             ctx.restore();
         }

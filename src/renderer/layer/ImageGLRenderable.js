@@ -107,11 +107,11 @@ const ImageGLRenderable = Base => {
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             if (debug) {
-                this.drawDebug(uMatrix, v2, 0, 0, w, h, debug);
+                this.drawDebug(uMatrix, 0, 0, w, h, debug);
             }
         }
 
-        drawDebug(uMatrix, attrib, x, y, w, h, debugInfo) {
+        drawDebug(uMatrix, x, y, w, h, debugInfo) {
             const gl = this.gl;
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
             this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
@@ -123,6 +123,7 @@ const ImageGLRenderable = Base => {
                 x, y
             ]), gl.DYNAMIC_DRAW);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
+            gl.uniform1f(this.program['u_opacity'], 1);
             gl.uniform1f(this.program['u_debug_line'], 1);
             gl.drawArrays(gl.LINE_STRIP, 0, 5);
             //draw debug info
@@ -143,10 +144,9 @@ const ImageGLRenderable = Base => {
             this.loadTexture(canvas);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
             w = 256;
-            h = 32;
             const x1 = x;
             const x2 = x + w;
-            const y1 = y;
+            const y1 = y - h + 32;
             const y2 = y - h;
             gl.bufferData(gl.ARRAY_BUFFER, this.set8(
                 x1, y1,
