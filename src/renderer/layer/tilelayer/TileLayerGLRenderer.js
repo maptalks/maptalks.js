@@ -64,7 +64,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             return;
         }
 
-        const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
+        const scale = tileInfo._glScale = tileInfo._glScale || tileInfo.res / map.getGLRes();
         const w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
         const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
         if (tileInfo.cache !== false) {

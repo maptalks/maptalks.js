@@ -418,7 +418,8 @@ class TileLayer extends Layer {
 
         let hasCurrentIn = false;
         const children = [];
-        const glScale = sr.getResolution(z) / glRes;
+        const res = sr.getResolution(z);
+        const glScale = res / glRes;
         for (let i = 0; i < 4; i++) {
             const dx = (i % 2);
             const dy = (i >> 1);
@@ -453,6 +454,7 @@ class TileLayer extends Layer {
                     z,
                     extent2d: extent,
                     error: node.error / 2,
+                    res,
                     id: tileId,
                     url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
                     offset
@@ -988,6 +990,7 @@ class TileLayer extends Layer {
                                 'extent2d': tileExtent,
                                 'offset': offset,
                                 'id': tileId,
+                                'res': res,
                                 'url': this.getTileUrl(idx.x, idx.y, z)
                             };
                             if (parentRenderer) {
