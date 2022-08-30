@@ -144,7 +144,7 @@ export function splitContent(content, font, wrapWidth, textWidth) {
 
 // const contentExpRe = /\{([\w_]+)\}/g;
 // export const CONTENT_EXPRE = /{([^}.]+)}/;
-export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
+export let CONTENT_EXPRE = /{([\u0000-\u0019\u0021-\uFFFF]+)}/g;
 
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
