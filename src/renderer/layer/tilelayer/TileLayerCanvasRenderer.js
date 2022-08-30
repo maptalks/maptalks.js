@@ -480,7 +480,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (!this.checkTileInQueue(tileData, tileInfo)) {
                 continue;
             }
-            this.tileOnBoard(tileData, tileInfo);
+            this.consumeTile(tileData, tileInfo);
             count++;
         }
         /* eslint-enable no-unmodified-loop-condition */
@@ -490,7 +490,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return true;
     }
 
-    tileOnBoard(tileImage, tileInfo) {
+    consumeTile(tileImage, tileInfo) {
         if (!this.layer) {
             return;
         }
@@ -570,7 +570,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const map = this.getMap(),
             zoom = map.getZoom(),
             ctx = this.context,
-            cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
+            cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage);
