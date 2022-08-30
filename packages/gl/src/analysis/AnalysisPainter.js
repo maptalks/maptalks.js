@@ -81,14 +81,17 @@ class AnalysisPainter {
     }
 
     _getToAnalysisMeshes(layers, excludeLayers) {
-        const toAnalysisLayers = layers.filter(layer => {
-            return excludeLayers.indexOf(layer.getId()) < 0;
-        });
         let toAnalysisMeshes = [];
-        for (let i = 0; i < toAnalysisLayers.length; i++) {
-            const renderder = toAnalysisLayers[i].getRenderer();
+        for (let i = 0; i < layers.length; i++) {
+            const renderder = layers[i].getRenderer();
             if (renderder && renderder.getAnalysisMeshes) {
                 const meshes = renderder.getAnalysisMeshes();
+                meshes.forEach(mesh => {
+                    mesh.setUniform('useAnalysis', 1);
+                    if (excludeLayers.indexOf(layers[i].getId()) > -1) {
+                        mesh.setUniform('useAnalysis', 0);
+                    }
+                });
                 toAnalysisMeshes = toAnalysisMeshes.concat(meshes);
             }
         }

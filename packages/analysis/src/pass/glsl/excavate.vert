@@ -7,6 +7,7 @@ uniform mat4 projViewModelMatrix;
 uniform vec4 extent;
 uniform sampler2D extentMap;
 uniform float height;
+uniform float useAnalysis;
 varying vec4 vWorldPosition;
 varying vec2 v_texCoord;
 void main() {
@@ -17,6 +18,9 @@ void main() {
     vec4 extentColor = texture2D(extentMap, uvInExtent);
     if (extentColor.r > 0.0) {
         vec4 wPosition = vec4(vWorldPosition.x, vWorldPosition.y, height, vWorldPosition.w);
+        if (useAnalysis == 0.0) {
+            wPosition = vWorldPosition;
+        }
         gl_Position = projViewMatrix * wPosition;
     } else {
         gl_Position = projViewModelMatrix * vec4(aPosition, 1.0);

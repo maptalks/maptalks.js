@@ -479,4 +479,45 @@ describe('bugs', () => {
         });
         gllayer.addTo(map);
     });
+
+    it('exclude layers', done => {
+        const gltflayer1 = new maptalks.GLTFLayer('gltf1');
+        const gltflayer2 = new maptalks.GLTFLayer('gltf2');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer1, gltflayer2], { sceneConfig });
+        const marker1 = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer1);
+        new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [1, 1, 1]
+            }
+        }).addTo(gltflayer1);
+        marker1.on('load', () => {
+            const boundary = [[ -0.00084, 0.00081],
+                [-0.00135, 0.00009],
+                [-0.00041, -0.00056],
+                [0.00054, 0.00006],
+                [0.0005, 0.00066]];
+            const excavateAnalysis = new maptalks.ExcavateAnalysis({
+                boundary,
+                textureUrl: './resources/ground.jpg',
+                excludeLayers: ['gltf2'] //不参与被开挖图层的id
+            });
+            excavateAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const renderer = gltflayer1.getRenderer();
+                const meshes = renderer.getAnalysisMeshes();
+                const tempMap = excavateAnalysis.exportAnalysisMap(meshes);
+                const index = (height / 2) * width * 4 + (width / 2) * 4;
+                const arr = tempMap.slice(index, index + 16);
+                expect(uint8ArrayEqual(arr, [122, 95, 84, 255, 123, 104, 90, 255, 112, 93, 79, 255, 125, 107, 93, 255]));
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    })
 });

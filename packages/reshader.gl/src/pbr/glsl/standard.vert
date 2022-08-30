@@ -22,7 +22,6 @@ vec3 Normal;
 vec4 Tangent;
 
 uniform mat4 modelMatrix;
-uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 uniform mat4 projMatrix;
 
@@ -144,9 +143,10 @@ void main() {
     vModelVertex = (modelMatrix * localVertex).xyz;
 
     vec4 position = localPositionMatrix * localVertex;
-    vec4 viewVertex = modelViewMatrix * position;
+    mat4 vmMatrix = getVMMatrix();
+    vec4 viewVertex = vmMatrix * position;
     vViewVertex = viewVertex;
-    // gl_Position = projMatrix * modelViewMatrix * localVertex;
+    // gl_Position = projMatrix * viewModelMatrix * localVertex;
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewVertex;
@@ -244,7 +244,7 @@ void main() {
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
+        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix,localVertex);
     #endif
 
     #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)

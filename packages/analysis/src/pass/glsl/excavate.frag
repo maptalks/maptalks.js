@@ -3,22 +3,23 @@ uniform vec4 extent;
 uniform vec4 extentPolygon;
 uniform sampler2D extentMap;
 uniform sampler2D groundTexture;
-#ifdef HAS_TERRAIN
-    uniform sampler2D u_image;
-#endif
 #ifdef HAS_MODELTEXTURE
     uniform sampler2D baseColorTexture;
 #endif
+#ifdef HAS_BASECOLOR
+    uniform vec4 baseColorFactor;
+#endif
 uniform float hasTexture;
+uniform float useAnalysis;
 varying vec4 vWorldPosition;
 varying vec2 v_texCoord;
 
 void fragColor() {
-    #ifdef HAS_TERRAIN
-        gl_FragColor = texture2D(u_image, v_texCoord);
-    #endif
     #ifdef HAS_MODELTEXTURE
         gl_FragColor = texture2D(baseColorTexture, v_texCoord);
+    #endif
+    #ifdef HAS_BASECOLOR
+        gl_FragColor = baseColorFactor;
     #endif
 }
 
@@ -35,6 +36,9 @@ void main() {
     if (extentColor.r > 0.0) {
         if (hasTexture == 1.0) {
             gl_FragColor = groundColor;
+            if (useAnalysis == 0.0) {
+                fragColor();
+            }
         } else {
             fragColor();
         }
