@@ -78,7 +78,7 @@ TerrainLayer.include({
         // always assume terrain layer is pyramid mode
         // 由字符串操作改为数值操作，提升性能
         const row = Math.sqrt(Math.pow(4, z));
-        return (z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y;
+        return '' + ((z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y);
     }
 })
 
