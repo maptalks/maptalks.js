@@ -188,6 +188,31 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         return terrainData;
     }
 
+    deleteTile(tile) {
+        if (!tile || !tile.image) {
+            return;
+        }
+        const { image } = tile;
+        const skins = image.skins;
+        if (skins && skins.length) {
+            for (let i = 0; i < skins.length; i++) {
+                if (skins[i] && skins[i].destroy) {
+                    skins[i].destroy();
+                }
+            }
+        }
+        if (image.terrainMesh) {
+            image.terrainMesh.geometry.dispose();
+            image.terrainMesh.dispose();
+        }
+        delete image.skins;
+        delete image.skinStatus;
+        delete image.skinImages;
+        delete image.skinTileIds;
+        delete image.terrainMesh;
+        delete image.mesh;
+    }
+
     _queryAltitide(tileIndex, worldPos, z) {
         const tileId = this.layer['_getTileId'](tileIndex.x, tileIndex.y, z);
         const terrainData = this.tileCache.get(tileId);
@@ -566,6 +591,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
 export default TerrainLayerRenderer;
 
+const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
     renderTerrainSkin(regl, tileInfo, tileImage, skinIndex) {
@@ -578,20 +604,24 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         if (!tileImage.skinStatus) {
             tileImage.skinStatus = [];
         }
-
-        let texture = tileImage.skinImages[skinIndex];
-
+        if (!tileImage.skinTileIds) {
+            tileImage.skinTileIds = [];
+        }
         const status = tileImage.skinStatus[skinIndex];
-        if (texture && status) {
+        if (status) {
             return;
         }
         const sr = this.layer.getSpatialReference();
-        const { x, y, res, extent2d } = tileInfo;
+        const { x, y, z, res, extent2d } = tileInfo;
         let w = Math.round(tileInfo.extent2d.getWidth());
         let h = Math.round(tileInfo.extent2d.getHeight());
 
-        const zoom = this.getCurrentTileZoom();
+        // const zoom = this.getCurrentTileZoom();
+        const resAtZ = sr.getResolution(z);
+        const zoom = z - Math.log(res / resAtZ) * Math.LOG2E;
         const myRes = sr.getResolution(zoom);
+
+
         const myTileSize = this.layer.getTileSize().width;
 
         let scale = myRes / res * w / myTileSize;
@@ -602,95 +632,58 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
             scale = Math.round(scale);
         }
         const resScale = myRes / res;
-        const myX = scale * x;
-        const myY = scale * y;
 
-        const tileId = this.layer['_getTileId'](myX, myY, zoom);
-        const cached = this.tileCache.get(tileId);
-        if (cached) {
-            const image = cached.image;
-            let { width, height } = image;
-            if (width === w && height === h) {
-                texture = image;
-                tileImage.skinImages[skinIndex] = image;
-                tileImage.skinStatus[skinIndex] = 1;
-                return texture;
-            } else {
-                if (!texture) {
-                    texture = document.createElement('canvas');
-                    if (!reshader.Util.isPowerOfTwo(w)) {
-                        w = reshader.Util.floorPowerOfTwo(w);
-                    }
-                    if (!reshader.Util.isPowerOfTwo(h)) {
-                        w = reshader.Util.floorPowerOfTwo(h);
-                    }
-                    texture.width = w;
-                    texture.height = h;
-                }
-                const ctx = texture.getContext('2d');
-                if (width > w && height > h) {
-                    // skin瓦片比地形瓦片大
-                    drawTileImage(ctx, extent2d, cached, resScale);
-                    tileImage.skinImages[skinIndex] = image;
-                    tileImage.skins[skinIndex] = regl.texture({
-                        data: image,
-                        width,
-                        height
-                    });
-                    tileImage.skinStatus[skinIndex] = 1;
-                } else {
-                    // skin瓦片比地形瓦片小
-                    const stride = Math.round(w / width);
-                    let sum = stride * stride;
-                    let count = 0;
-                    for (let i = 0; i < stride; i++) {
-                        for (let j = 0; j < stride; j++) {
-                            let cachedTile;
-                            if (i === 0 && j === 0) {
-                                cachedTile = cached;
-                            } else {
-                                const tileX = myX + i;
-                                const tileY = myY + j;
-                                const tileId = this.layer['_getTileId'](tileX, tileY, zoom);
-                                cachedTile = this.tileCache.get(tileId);
-                            }
-
-                            if (cachedTile) {
-                                count++;
-                                drawTileImage(ctx, extent2d, cachedTile, resScale);
-                            } else {
-                                //TODO 找父级瓦片
-                            }
-                        }
-                    }
-                    const debugCanvas = document.getElementById('terrain_skin_debug');
-                    if (debugCanvas) {
-                        debugCanvas.width = w;
-                        debugCanvas.height = h;
-                        debugCanvas.getContext('2d').drawImage(texture, 0, 0);
-                    }
-
-                    if (sum === count) {
-                        tileImage.skinStatus[skinIndex] = 1;
-                    }
-                    let tex = tileImage.skins[skinIndex];
-                    const config = {
-                        data: texture,
-                        width: w,
-                        height: h
-                    };
-                    if (!tex) {
-                        tex = regl.texture(config);
-                    } else {
-                        tex(config);
-                    }
-                    tileImage.skins[skinIndex] = tex;
-                    tileImage.skinImages[skinIndex] = texture;
-                    return texture;
-                }
+        let texture = tileImage.skinImages[skinIndex];
+        if (!texture) {
+            texture = document.createElement('canvas');
+            if (!reshader.Util.isPowerOfTwo(w)) {
+                w = reshader.Util.floorPowerOfTwo(w);
             }
+            if (!reshader.Util.isPowerOfTwo(h)) {
+                w = reshader.Util.floorPowerOfTwo(h);
+            }
+            texture.width = w;
+            texture.height = h;
+        }
+
+        let skinTileIds = tileImage.skinTileIds[skinIndex];
+        if (!skinTileIds) {
+            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(this.layer, x, y, zoom, scale, SKIN_LEVEL_LIMIT);
+        }
+        const level0 = skinTileIds['0'];
+        let complete = true;
+        for (let i = 0; i < level0.length; i++) {
+            const tileId = level0[i].id;
+            const cachedTile = this.tileCache.get(tileId);
+            if (!cachedTile) {
+                complete = false;
+                // const parentTile = getParentSkinTile(this.tileCache, skinTileIds);
+                continue;
+            }
+            const ctx = texture.getContext('2d');
+            drawTileImage(ctx, extent2d, cachedTile, resScale);
+        }
+        const debugCanvas = document.getElementById('terrain_skin_debug');
+        if (debugCanvas) {
+            debugCanvas.width = w;
+            debugCanvas.height = h;
+            debugCanvas.getContext('2d').drawImage(texture, 0, 0);
+        }
+        const config = {
+            data: texture,
+            width: w,
+            height: h
+        };
+        let tex = tileImage.skins[skinIndex];
+        if (!tex) {
+            tex = regl.texture(config);
         } else {
-            //TODO 找父级瓦片
+            tex(config);
+        }
+        tileImage.skins[skinIndex] = tex;
+        tileImage.skinImages[skinIndex] = texture;
+        if (complete) {
+            tileImage.skinStatus[skinIndex] = 1;
         }
     }
 });
@@ -705,4 +698,49 @@ function drawTileImage(ctx, extent, tile, scale) {
     const left = Math.round((xmin - extent.xmin) / extent.getWidth()) * width;
     const top = Math.round((extent.ymax - ymax) / extent.getHeight()) * height;
     ctx.drawImage(image, left, top, width, height);
+}
+
+function getCascadeTileIds(layer, x, y, z, scale, levelLimit) {
+    const result = {};
+    for (let i = 0; i < levelLimit; i++) {
+        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, scale, i);
+    }
+    return result;
+}
+
+const EMPTY_ARRAY = [];
+function getTileIdsAtLevel(layer, x, y, z, scale, level) {
+    z -= level;
+    if (z <= 0) {
+        return EMPTY_ARRAY;
+    }
+    scale = scale / Math.pow(2, level);
+    if (scale <= 1) {
+        const tx = Math.floor(x * scale);
+        const ty = Math.floor(y * scale);
+        return [{
+            x: tx,
+            y: ty,
+            z,
+            id: layer['_getTileId'](tx, ty, z)
+        }];
+    }
+    let result = [];
+    for (let i = 0; i < scale; i++) {
+        for (let j = 0; j < scale; j++) {
+            const tx = x * scale + i;
+            const ty = y * scale + j;
+            result.push({
+                x: tx,
+                y: ty,
+                z,
+                id: layer['_getTileId'](tx, ty, z)
+            });
+        }
+    }
+    return result;
+}
+
+function getParentSkinTile(tileCache, skinTileIds) {
+
 }
