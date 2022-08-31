@@ -452,16 +452,33 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
+    queryTerrain(coord) {
+        if (!this._terrainLayer) {
+            return null;
+        }
+        return this._terrainLayer.queryAltitide(coord);
+    }
+
     _updateTerrainSkinLayers() {
+        if (!this._skinBGOptions) {
+            this._skinBGOptions = {};
+        }
         const layers = this.layers;
         const skinLayers = [];
         for (let i = 0; i < layers.length; i++) {
             if (!layers[i]) {
                 continue;
             }
-            const renderer = layers[i].getRenderer();
+            const layer = layers[i];
+            const renderer = layer.getRenderer();
             if (renderer.renderTerrainSkin) {
-
+                this._skinBGOptions[layer.getId()] = layer.options['background'];
+                // ignore finding child tiles and parent tiles in skin layers
+                layer.options['background'] = false;
+                layer.getTiles = () => {
+                    // debugger
+                    return this._terrainLayer.getSkinTiles(layer);
+                };
                 renderer.drawTile = emptyDrawTile;
                 skinLayers.push(layers[i]);
             }
@@ -474,13 +491,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (renderer) {
             renderer.setToRedraw();
         }
-    }
-
-    queryAltitide(coord) {
-        if (!this._terrainLayer) {
-            return null;
-        }
-        return this._terrainLayer.queryAltitide(coord);
     }
 
 }

@@ -45,3 +45,15 @@ export const EMPTY_COLOR = [0, 0, 0, 0];
 export function hasOwn(obj, prop) {
     return Object.prototype.hasOwnProperty.call(obj, prop);
 }
+
+export function pushIn(dest) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        if (src) {
+            for (let ii = 0, ll = src.length; ii < ll; ii++) {
+                dest.push(src[ii]);
+            }
+        }
+    }
+    return dest.length;
+}

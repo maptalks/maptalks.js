@@ -1,5 +1,7 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
+import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes } from './TerrainTileUtil';
+import { pushIn } from '../util/util';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
@@ -16,13 +18,122 @@ const options = {
     'terrainWidth': 65
 };
 
+const EMPTY_TILE_GRIDS = {
+    tileGrids: [],
+    count: 0
+};
+
+
+const SKU_ID = '01';
+const TOKEN_VERSION = '1';
+const base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
 export default class TerrainLayer extends maptalks.TileLayer {
+    getTileUrl(x, y, z) {
+        let terrainUrl = super.getTileUrl(x, y, z);
+        const type = this.options.type;
+        if (type === 'cesium') {
+            z = z - 1;
+            const yTiles = 1 << z;
+            y =  yTiles - y - 1;
+        }
+        if (type === 'mapbox') {
+            const skuid = this._createSkuToken();
+            terrainUrl += '.webp?sku=' + skuid + '&access_token=' + this.options['accessToken'];
+        } else if (type === 'cesium') {
+            terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
+        }
+        return terrainUrl;
+    }
+
+    _createSkuToken() {
+        let sessionRandomizer = '';
+        for (let i = 0; i < 10; i++) {
+            sessionRandomizer += base62chars[Math.floor(Math.random() * 62)];
+        }
+        const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
+
+        return token;
+    }
+
     setSkinLayers(skinLayers) {
         this._skinLayers = skinLayers;
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
+    }
+
+    getSkinTiles(layer) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return EMPTY_TILE_GRIDS;
+        }
+        const tileGrids = renderer.getTileGridsInCurrentFrame();
+        const grid = tileGrids.tileGrids[0];
+        if (!grid) {
+            return EMPTY_TILE_GRIDS;
+        }
+        const layerId = layer.getId();
+        const tileSysScale = this._getTileConfig().tileSystem.scale;
+        const tileSize = layer.getTileSize().width;
+        const tiles = grid.tiles;
+        const sr = layer.getSpatialReference();
+        const size = tiles[0].extent2d.getWidth();
+
+        const dx = tileSysScale.x;
+        const dy = tileSysScale.y;
+
+        const skinTiles = [];
+        for (let i = 0; i < tiles.length; i++) {
+            const info = tiles[i];
+            const { res } = info;
+            const { res: skinRes, zoom } = getSkinTileRes(sr, info.z, res);
+            const resScale = skinRes / res;
+            const scale = getSkinTileScale(skinRes, tileSize, res, size);
+
+            const { extent2d } = info;
+            const leftX = scale * info.x;
+            const topY = scale * info.y;
+            if (!info.skinTileIds) {
+                info.skinTileIds = {};
+            }
+            if (!info.skinTileIds[layerId]) {
+                const layerTiles = [];
+
+                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, scale, 0);
+                for (let i = 0; i < tileIds.length; i++) {
+                    const skinTile = tileIds[i];
+                    skinTile.idx = skinTile.x;
+                    skinTile.idy = skinTile.y;
+                    skinTile.res = skinRes;
+                    skinTile.url = layer.getTileUrl(skinTile.x, skinTile.y, skinTile.z + layer.options['zoomOffset']),
+                    skinTile.offset = info.offset;
+
+                    const xOffset = dx * (skinTile.x - leftX) * tileSize;
+                    const yOffset = dy * (skinTile.y - topY) * tileSize;
+                    skinTile.extent2d = new maptalks.PointExtent(
+                        extent2d.xmin * resScale + xOffset,
+                        extent2d.ymin * resScale + yOffset,
+                        extent2d.xmax * resScale + xOffset,
+                        extent2d.ymax * resScale + yOffset,
+                    );
+                    layerTiles.push(skinTile);
+                }
+                info.skinTileIds[layerId] = layerTiles;
+            }
+            pushIn(skinTiles, info.skinTileIds[layerId]);
+        }
+        return {
+            tileGrids: [
+                {
+                    extent: grid.extent,
+                    tiles: skinTiles,
+                    count: skinTiles.length
+                }
+            ],
+            count: skinTiles.length
+        };
     }
 
     getSkinLayer(index) {

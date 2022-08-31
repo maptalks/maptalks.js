@@ -5,6 +5,7 @@ import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
+import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, getParentSkinTile } from './TerrainTileUtil';
 
 const V0 = [];
 const V1 = [];
@@ -156,24 +157,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     loadTile(tile) {
-        const layer = this.layer;
-        const type = layer.options.type;
-        let x, y, z;
-        if (type === 'cesium') {
-            x = tile.x;
-            z = tile.z - 1;
-            const yTiles = 1 << z;
-            y =  yTiles - tile.y - 1;
-        } else {
-            x = tile.x, y = tile.y, z = tile.z;
-        }
-        let terrainUrl = this.layer.getTileUrl(x, y, z);
-        if (type === 'mapbox') {
-            const skuid = this._createSkuToken();
-            terrainUrl += '.webp?sku=' + skuid + '&access_token=' + this.layer.options['accessToken'];
-        } else if (type === 'cesium') {
-            terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
-        }
+        const terrainUrl = tile.url;
         const terrainData = {};
         this.workerConn.fetchTerrain(terrainUrl, this.layer.options, (err, res) => {
             if (err) {
@@ -211,6 +195,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         delete image.skinTileIds;
         delete image.terrainMesh;
         delete image.mesh;
+    }
+
+    abortTileLoading(tileImage, tileInfo) {
+        if (tileInfo && tileInfo.url) {
+            if (this.workerConn) {
+                this.workerConn.abortTerrain(tileInfo.url);
+            }
+        }
+        super.abortTileLoading(tileImage, tileInfo);
     }
 
     _queryAltitide(tileIndex, worldPos, z) {
@@ -392,20 +385,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _calTriangleArae(x1, y1, x2, y2, x3, y3) {
         return Math.abs(x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) * 0.5;
     }
-
-    _createSkuToken() {
-        const SKU_ID = '01';
-        const TOKEN_VERSION = '1';
-        const base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let sessionRandomizer = '';
-        for (let i = 0; i < 10; i++) {
-            sessionRandomizer += base62chars[Math.floor(Math.random() * 62)];
-        }
-        const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
-
-        return token;
-    }
-
 
     onAdd() {
         super.onAdd();
@@ -617,20 +596,11 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         let h = Math.round(tileInfo.extent2d.getHeight());
 
         // const zoom = this.getCurrentTileZoom();
-        const resAtZ = sr.getResolution(z);
-        const zoom = z - Math.log(res / resAtZ) * Math.LOG2E;
-        const myRes = sr.getResolution(zoom);
-
+        const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
 
         const myTileSize = this.layer.getTileSize().width;
 
-        let scale = myRes / res * w / myTileSize;
-        if (scale < 1) {
-            scale = 1 / scale;
-            scale = 1 / Math.round(scale);
-        } else {
-            scale = Math.round(scale);
-        }
+        let scale = getSkinTileScale(myRes, myTileSize, res, w);
         const resScale = myRes / res;
 
         let texture = tileImage.skinImages[skinIndex];
@@ -681,9 +651,10 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
             tex(config);
         }
         tileImage.skins[skinIndex] = tex;
-        tileImage.skinImages[skinIndex] = texture;
         if (complete) {
             tileImage.skinStatus[skinIndex] = 1;
+            // save some memory
+            tileImage.skinImages[skinIndex] = null;
         }
     }
 });
@@ -698,49 +669,4 @@ function drawTileImage(ctx, extent, tile, scale) {
     const left = Math.round((xmin - extent.xmin) / extent.getWidth()) * width;
     const top = Math.round((extent.ymax - ymax) / extent.getHeight()) * height;
     ctx.drawImage(image, left, top, width, height);
-}
-
-function getCascadeTileIds(layer, x, y, z, scale, levelLimit) {
-    const result = {};
-    for (let i = 0; i < levelLimit; i++) {
-        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, scale, i);
-    }
-    return result;
-}
-
-const EMPTY_ARRAY = [];
-function getTileIdsAtLevel(layer, x, y, z, scale, level) {
-    z -= level;
-    if (z <= 0) {
-        return EMPTY_ARRAY;
-    }
-    scale = scale / Math.pow(2, level);
-    if (scale <= 1) {
-        const tx = Math.floor(x * scale);
-        const ty = Math.floor(y * scale);
-        return [{
-            x: tx,
-            y: ty,
-            z,
-            id: layer['_getTileId'](tx, ty, z)
-        }];
-    }
-    let result = [];
-    for (let i = 0; i < scale; i++) {
-        for (let j = 0; j < scale; j++) {
-            const tx = x * scale + i;
-            const ty = y * scale + j;
-            result.push({
-                x: tx,
-                y: ty,
-                z,
-                id: layer['_getTileId'](tx, ty, z)
-            });
-        }
-    }
-    return result;
-}
-
-function getParentSkinTile(tileCache, skinTileIds) {
-
 }

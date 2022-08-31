@@ -6,6 +6,8 @@ let workerId;
 const offscreenCanvas = new OffscreenCanvas(514, 514);
 const offscreenCanvasContext = offscreenCanvas.getContext('2d');
 
+const terrainRequests = {};
+
 const terrainStructure = {
     width: 64,
     height: 64,
@@ -16,7 +18,7 @@ const terrainStructure = {
     elementMultiplier: 256,
     stride: 4,
     skirtHeight: 0.002,
-    skirtOffset: 0.05 //用于减少地形瓦片之间的缝隙
+    skirtOffset: 0.01 //用于减少地形瓦片之间的缝隙
 }
 const requestHeaders = {
     'cesium_request_token': {
@@ -42,7 +44,20 @@ function load(url, headers, origin) {
         referrer: origin,
         headers
     };
-    return Ajax.getArrayBuffer(url, options);
+    const promise = Ajax.getArrayBuffer(url, options);
+    const controller = promise.xhr;
+    terrainRequests[url] = controller;
+    return promise.then(res => {
+        delete terrainRequests[url];
+        return res;
+    });
+}
+
+function abort(url) {
+    if (terrainRequests[url]) {
+        terrainRequests[url].abort();
+        delete terrainRequests[url];
+    }
 }
 
 function createHeightMap(heightmap/*, exag*/) {
@@ -317,8 +332,8 @@ function fetchTerrain(url, type, terrainWidth, cb) {
         }
     }
     load(url, headers, origin).then(res => {
-        if (res.message) {
-            cb({ error: res});
+        if (!res || res.message) {
+            cb({ error: res });
         } else {
             const buffer = res.data;
             let terrain = null;
@@ -343,6 +358,7 @@ function fetchTerrain(url, type, terrainWidth, cb) {
             }
         }
     }).catch(e => {
+        delete terrainRequests[url];
         cb({ error: e});
     });
 }
@@ -441,6 +457,11 @@ export const onmessage = function (message, postResponse) {
         //加载地形数据的逻辑
         loadTerrain(data.params, (data, transferables) => {
             postResponse(data.error, data, transferables);
+        });
+    } else if (data.command === 'abortTerrain') {
+        //加载地形数据的逻辑
+        abort(data.params.url, () => {
+            postResponse(null, {}, []);
         });
     }
 }

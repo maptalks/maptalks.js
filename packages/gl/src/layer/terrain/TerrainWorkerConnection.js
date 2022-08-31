@@ -28,6 +28,18 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
         });
     }
 
+    abortTerrain(url, cb) {
+        const data = {
+            actorId: this.actorId,
+            mapId: this.mapId,
+            command: 'abortTerrain',
+            params: {
+                url
+            }
+        };
+        this.broadcast(data, null, cb);
+    }
+
     addLayer(layerId, options, cb) {
         const data = {
             actorId: this.actorId,
