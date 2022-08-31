@@ -161,6 +161,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const terrainData = {};
         this.workerConn.fetchTerrain(terrainUrl, this.layer.options, (err, res) => {
             if (err) {
+                if (err.canceled) {
+                    return;
+                }
                 console.warn(err);
                 this.onTileError(terrainData, tile);
                 return;

@@ -333,7 +333,7 @@ function fetchTerrain(url, type, terrainWidth, cb) {
     }
     load(url, headers, origin).then(res => {
         if (!res || res.message) {
-            cb({ error: res });
+            cb({ error: res || { canceled: true }});
         } else {
             const buffer = res.data;
             let terrain = null;
