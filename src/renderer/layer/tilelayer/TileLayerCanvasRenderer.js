@@ -602,12 +602,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         const map = this.getMap();
         const children = [];
-        const sr = layer.getSpatialReference();
-        const res = sr.getResolution(info.z);
+        const res = info.res;
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
-            pmin = map._pointToPrjAtRes(min, res, TEMP_POINT1),
-            pmax = map._pointToPrjAtRes(max, res, TEMP_POINT2);
+            pmin = layer._project(map._pointToPrjAtRes(min, res, TEMP_POINT1), TEMP_POINT1),
+            pmax = layer._project(map._pointToPrjAtRes(max, res, TEMP_POINT2), TEMP_POINT2);
         const zoomDiff = 3;
         for (let i = 1; i < zoomDiff; i++) {
             this._findChildTilesAt(children, pmin, pmax, layer, info.z + i);
@@ -650,7 +649,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const d = sr.getZoomDirection(),
             zoomOffset = layer.options['zoomOffset'],
             zoomDiff = layer.options['backgroundZoomDiff'];
-        const res = sr.getResolution(info.z);
+        const res = info.res;
         const center = info.extent2d.getCenter(),
             prj = layer._project(map._pointToPrjAtRes(center, res));
         for (let diff = 1; diff <= zoomDiff; diff++) {
