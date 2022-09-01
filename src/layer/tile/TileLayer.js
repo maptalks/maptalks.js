@@ -990,7 +990,7 @@ class TileLayer extends Layer {
                                 'extent2d': tileExtent,
                                 'offset': offset,
                                 'id': tileId,
-                                'res': res,
+                                'res': this._hasOwnSR ? map._getResolution(z) : res,
                                 'url': this.getTileUrl(idx.x, idx.y, z)
                             };
                             if (parentRenderer) {

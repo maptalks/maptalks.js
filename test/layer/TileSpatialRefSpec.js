@@ -399,4 +399,29 @@ describe('TileSpatialRefSpec', function () {
             expect(actual).to.be.eql(expected);
         }
     });
+
+    it('tilelayer with 3857 in map of 4326, #1802', function () {
+        var crs = {
+          projection: "EPSG:4326"
+        };
+        createMap([121.47791752169039,31.18614357868957], 17.1, crs);
+        var tileLayer = new maptalks.TileLayer("base", {
+          urlTemplate: '#',
+          // repeatWorld:true,
+          spatialReference:{
+            projection:'EPSG:3857'
+          }
+        }).addTo(map);
+        var tileGrid = tileLayer.getTiles().tileGrids[0];
+        var tiles = tileGrid.tiles;
+        var extent = tileGrid.extent;
+        expect(extent.toJSON()).to.be.eql({ xmin: 11322112, ymin: 2906396.2408107626, xmax: 11322880, ymax: 2907054.2476699273 });
+        var expected = '109763,53574,17,{"xmin":11322112,"ymin":2906834.2476699273,"xmax":11322368,"ymax":2907054.2476699273},0.000010728836059570312|109763,53575,17,{"xmin":11322112,"ymin":2906615.2469585394,"xmax":11322368,"ymax":2906835.2469585394},0.000010728836059570312|109763,53576,17,{"xmin":11322112,"ymin":2906396.2408107626,"xmax":11322368,"ymax":2906616.2408107626},0.000010728836059570312|109764,53574,17,{"xmin":11322368,"ymin":2906834.2476699273,"xmax":11322624,"ymax":2907054.2476699273},0.000010728836059570312|109764,53575,17,{"xmin":11322368,"ymin":2906615.2469585394,"xmax":11322624,"ymax":2906835.2469585394},0.000010728836059570312|109764,53576,17,{"xmin":11322368,"ymin":2906396.2408107626,"xmax":11322624,"ymax":2906616.2408107626},0.000010728836059570312|109765,53574,17,{"xmin":11322624,"ymin":2906834.2476699273,"xmax":11322880,"ymax":2907054.2476699273},0.000010728836059570312|109765,53575,17,{"xmin":11322624,"ymin":2906615.2469585394,"xmax":11322880,"ymax":2906835.2469585394},0.000010728836059570312|109765,53576,17,{"xmin":11322624,"ymin":2906396.2408107626,"xmax":11322880,"ymax":2906616.2408107626},0.000010728836059570312';
+        var actual = tiles.map(function (t) {
+            return [t.idx, t.idy, t.z, JSON.stringify(t.extent2d.toJSON()), t.res].join();
+        }).sort().join('|');
+        if (!maptalks.Browser.ie) {
+            expect(actual).to.be.eql(expected);
+        }
+    });
 });
