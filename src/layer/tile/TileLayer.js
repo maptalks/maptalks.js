@@ -284,6 +284,7 @@ class TileLayer extends Layer {
                     z,
                     idx: i,
                     idy: y,
+                    res,
                     extent2d: tileConfig.getTilePrjExtent(i, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT)),
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
@@ -971,11 +972,12 @@ class TileLayer extends Layer {
                 //     tileExtent.set(p.x, p.y - height, p.x + width, p.y);
                 // }
                 if (allCount <= 4 || rightVisitEnd || this._isTileInExtent(frustumMatrix, tileExtent, offset, glScale)) {
+                    const tileRes = this._hasOwnSR ? map._getResolution(z) : res;
                     if (this._visitedTiles && cascadeLevel === 0) {
                         this._visitedTiles.add(tileId);
                     }
                     if (canSplitTile && cascadeLevel === 0) {
-                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileExtent, dx, dy, tileOffsets, parentRenderer);
+                        this._splitTiles(frustumMatrix, tiles, renderer, idx, z + 1, tileRes, tileExtent, dx, dy, tileOffsets, parentRenderer);
                         extent._combine(tileExtent);
                     } else {
                         if (!tileInfo) {
@@ -990,7 +992,7 @@ class TileLayer extends Layer {
                                 'extent2d': tileExtent,
                                 'offset': offset,
                                 'id': tileId,
-                                'res': this._hasOwnSR ? map._getResolution(z) : res,
+                                'res': tileRes,
                                 'url': this.getTileUrl(idx.x, idx.y, z)
                             };
                             if (parentRenderer) {
@@ -1052,7 +1054,7 @@ class TileLayer extends Layer {
         });
     }
 
-    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, tileExtent, dx, dy, tileOffsets, parentRenderer) {
+    _splitTiles(frustumMatrix, tiles, renderer, tileIdx, z, res, tileExtent, dx, dy, tileOffsets, parentRenderer) {
         // const hasOffset = offset[0] || offset[1];
         const yOrder = this._getTileConfig().tileSystem.scale.y;
         const glScale = this.getMap().getGLScale(z);
@@ -1065,17 +1067,17 @@ class TileLayer extends Layer {
         const x = tileIdx.x * 2;
         const y = tileIdx.y * 2;
 
-        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
+        let tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 0, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 0, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 0, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
-        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, 1, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
+        tile = this._checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, 1, 1, w, h, corner, glScale, tileOffsets, parentRenderer);
         if (tile) tiles.push(tile);
     }
 
-    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, i, j, w, h, corner, glScale, tileOffsets, parentRenderer) {
+    _checkAndAddTile(frustumMatrix, renderer, idx, idy, x, y, z, res, i, j, w, h, corner, glScale, tileOffsets, parentRenderer) {
         const tileId = this._getTileId(idx + i, idy + j, z);
         if (this._visitedTiles && this._visitedTiles.has(tileId)) {
             return null;
@@ -1090,6 +1092,7 @@ class TileLayer extends Layer {
             !this._isSplittedTileInExtent(frustumMatrix, childExtent, offset, glScale)) {
             return null;
         }
+        const childRes = res / 2;
         let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
         if (!tileInfo) {
             //reserve point caculated by tileConfig
@@ -1101,6 +1104,7 @@ class TileLayer extends Layer {
                 'extent2d': childExtent,
                 'id': tileId,
                 'offset': offset,
+                'res': childRes,
                 'url': this.getTileUrl(x + i, y + j, z + this.options['zoomOffset'])
             };
             if (parentRenderer) {

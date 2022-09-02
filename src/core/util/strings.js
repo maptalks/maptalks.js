@@ -144,9 +144,8 @@ export function splitContent(content, font, wrapWidth, textWidth) {
 
 // const contentExpRe = /\{([\w_]+)\}/g;
 // export const CONTENT_EXPRE = /{([^}.]+)}/;
-/* eslint-disable no-control-regex */
-export const CONTENT_EXPRE = /\{([\u0000-\u0019\u0021-\uFFFF]+)\}/g;
-/* eslint-enable no-control-regex */
+// export const CONTENT_EXPRE = /{([\u0000-\u0019\u0021-\uFFFF]+)}/g;
+export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
 
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
