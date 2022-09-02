@@ -284,6 +284,7 @@ class TileLayer extends Layer {
                     z,
                     idx: i,
                     idy: y,
+                    res,
                     extent2d: tileConfig.getTilePrjExtent(i, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT)),
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
