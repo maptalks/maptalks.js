@@ -187,7 +187,7 @@ class GroupTileLayer extends TileLayer {
         let count = 0;
         for (let i = 0, l = layers.length; i < l; i++) {
             const layer = layers[i];
-            if (!layer.options['visible'] || !layer.getMap()) {
+            if (!layer || !layer.options['visible'] || !layer.isVisible() || !layer.getMap()) {
                 continue;
             }
             const childGrid = layer.getTiles(z, parentLayer || this);

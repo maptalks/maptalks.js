@@ -1,3 +1,4 @@
+import { isNumber } from '../../core/util';
 import { preventDefault, stopPropagation } from '../../core/util/dom';
 import Geometry from '../Geometry';
 
@@ -18,6 +19,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
             preventDefault(event);
         }
         const params = map._getEventParams(event);
+        if (isNumber(this._pickGeometryIndex)) {
+            params.pickGeometryIndex = this._pickGeometryIndex;
+            // delete this._pickGeometryIndex;
+        }
         this._fireEvent(eventType, params);
     },
 

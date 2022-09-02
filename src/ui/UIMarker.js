@@ -1,4 +1,4 @@
-import { isString, flash, isNil, extend, isFunction, isNumber } from '../core/util';
+import { isString, flash, isNil, extend, isFunction, isNumber, now } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -413,7 +413,17 @@ class UIMarker extends Handlerable(UIComponent) {
         if (type === 'click' && this._mouseClickPositionIsChange()) {
             return;
         }
+        if (type === 'touchstart') {
+            this._touchstartTime = now();
+        }
         this.fire(e.type, event);
+        // Mobile device simulation click event
+        if (type === 'touchend' && Browser.touch) {
+            const clickTimeThreshold = this.getMap().options.clickTimeThreshold || 280;
+            if (now() - this._touchstartTime < clickTimeThreshold) {
+                this._onDomEvents(extend({}, e, { type: 'click' }));
+            }
+        }
     }
 
     _removeDOMEvents(dom) {

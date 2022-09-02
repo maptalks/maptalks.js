@@ -22,19 +22,19 @@ import Control from './Control';
 const options = {
     'level': 4,
     'position': {
-        'right' : 1,
-        'bottom' : 1
+        'right': 1,
+        'bottom': 1
     },
     'size': [300, 200],
-    'maximize' : true,
+    'maximize': true,
     'symbol': {
         'lineWidth': 3,
         'lineColor': '#1bbc9b',
         'polygonFill': '#1bbc9b',
         'polygonOpacity': 0.4
     },
-    'containerClass' : 'maptalks-overview',
-    'buttonClass' : 'maptalks-overview-button'
+    'containerClass': 'maptalks-overview',
+    'buttonClass': 'maptalks-overview-button'
 };
 
 /**
@@ -159,16 +159,16 @@ class Overview extends Control {
         extend(options, {
             'center': map.getCenter(),
             'zoom': this._getOverviewZoom(),
-            'zoomAnimationDuration'  : 150,
-            'pitch' : 0,
-            'bearing' : 0,
+            'zoomAnimationDuration': 150,
+            'pitch': 0,
+            'bearing': 0,
             'scrollWheelZoom': false,
             'checkSize': false,
             'doubleClickZoom': false,
             'touchZoom': false,
             'control': false,
-            'draggable' : false,
-            'maxExtent' : null
+            'draggable': false,
+            'maxExtent': null
         });
         this._overview = new Map(dom, options);
         this._updateBaseLayer();
@@ -213,7 +213,15 @@ class Overview extends Control {
 
     _getPerspectiveCoords() {
         const map = this.getMap();
-        return map.getContainerExtent().toArray().map(c => map.containerPointToCoordinate(c));
+        const projection = map.getProjection();
+        return map.getContainerExtent().toArray().map(c => {
+            if (projection) {
+                const prjCoord = map._containerPointToPrj(c);
+                map._fixPrjOnWorldWide(prjCoord);
+                return projection.unproject(prjCoord);
+            }
+            return map.containerPointToCoordinate(c);
+        });
     }
 
     _update() {
