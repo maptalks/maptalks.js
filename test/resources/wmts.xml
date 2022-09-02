@@ -54,8 +54,8 @@
             <wmts:TileMatrixSetLink>
                 <wmts:TileMatrixSet>EPSG:3857</wmts:TileMatrixSet>
             </wmts:TileMatrixSetLink>
-            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}?format=image/png"/>
-            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}?format=image/jpeg"/>
+            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png"/>
+            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg"/>
         </wmts:Layer>
         <wmts:Layer>
             <ows:Identifier>tg1</ows:Identifier>
@@ -70,8 +70,8 @@
             <wmts:TileMatrixSetLink>
                 <wmts:TileMatrixSet>EPSG:3857</wmts:TileMatrixSet>
             </wmts:TileMatrixSetLink>
-            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}?format=image/png"/>
-            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{tileMatrixSet}/{tileMatrix}/{tileRow}/{tileCol}?format=image/jpeg"/>
+            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png"/>
+            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg"/>
         </wmts:Layer>
         <wmts:TileMatrixSet>
             <ows:Identifier>EPSG:4326</ows:Identifier>
