@@ -56,12 +56,12 @@ const ns = 'wmts';
 
 // try get by localName, ns:localName
 function getElementsByTagName(element, localName) {
-    let result = element.getElementsByTagName(localName);
-    if (result) {
+    const result = element.getElementsByTagName(localName);
+    if (result && result.length) {
         return result;
     }
     const name = ns + ':' + localName;
-    return element.getElementByTagName(name);
+    return element.getElementsByTagName(name);
 }
 
 function getTileMatrixSet(TileMatrixSets, TileMatrixSetLink) {
