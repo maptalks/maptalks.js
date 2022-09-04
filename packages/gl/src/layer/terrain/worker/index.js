@@ -372,6 +372,9 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
     offscreenCanvasContext.drawImage(imgBitmap, 0, 0, width, height);
     // const terrainWidth = width;
 
+    let min = Infinity;
+    let max = -Infinity;
+
     const imgData = offscreenCanvasContext.getImageData(0, 0, width, height).data;
     const heights = new Float32Array(terrainWidth * terrainWidth);
 
@@ -412,13 +415,19 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
             }
             const count = (stride * stride - nullCount);
             height = height / (count || 1);
+            if (height > max) {
+                max = height;
+            }
+            if (height < min) {
+                min = height;
+            }
             heights[index] = height;
         }
     }
     // debugger
     // const terrainData = createMartiniData(heights, terrainWidth);
     // offscreenCanvasContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-    return { data: heights, /*terrainData, */width: terrainWidth, height: terrainWidth };
+    return { data: heights, /*terrainData, */width: terrainWidth, height: terrainWidth, min, max };
 
 }
 

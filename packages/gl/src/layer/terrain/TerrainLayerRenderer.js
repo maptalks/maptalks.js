@@ -31,6 +31,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     consumeTile(tileImage, tileInfo) {
         if (tileImage && tileImage.mesh && !tileImage.terrainMesh) {
             tileImage.terrainMesh = this._createTerrainMesh(tileInfo, tileImage.mesh);
+            tileInfo.minAltitude = tileImage.data.min;
+            tileInfo.maxAltitude = tileImage.data.max;
         }
         return super.consumeTile(tileImage, tileInfo);
     }
