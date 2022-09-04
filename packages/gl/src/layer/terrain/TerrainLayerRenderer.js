@@ -106,7 +106,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _endFrame(context) {
         const uniforms = this._getUniformValues();
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
-        const meshes = this._scene.getMeshes().reverse();
+        const meshes = this._scene.getMeshes().sort(terrainCompare);
         this._scene.setMeshes(meshes);
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
     }
@@ -696,4 +696,8 @@ function drawTileImage(ctx, extent, tile, scale) {
     const left = Math.round((xmin - extent.xmin) / extent.getWidth()) * width;
     const top = Math.round((extent.ymax - ymax) / extent.getHeight()) * height;
     ctx.drawImage(image, left, top, width, height);
+}
+
+function terrainCompare(mesh0, mesh1) {
+    return mesh0.getUniform('level') - mesh1.getUniform('level');
 }
