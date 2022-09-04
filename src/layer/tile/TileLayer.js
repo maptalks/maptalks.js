@@ -454,29 +454,28 @@ class TileLayer extends Layer {
             }
             let childNode = cached && cached.info;
             if (!childNode) {
-                if (!this._urlCache) {
-                    this._urlCache = new LRUCache(this.options['maxCacheSize']);
+                if (!this._infoCache) {
+                    this._infoCache = new LRUCache(this.options['maxCacheSize']);
                 }
-                let tileUrl = this._urlCache.get(tileId);
-                if (!tileUrl) {
-                    tileUrl = this.getTileUrl(childX, childY, z + this.options['zoomOffset']);
-                    this._urlCache.add(tileId, tileUrl);
+                childNode = this._infoCache.get(tileId);
+                if (!childNode) {
+                    childNode = {
+                        x: childX,
+                        y: childY,
+                        idx: childIdx,
+                        idy: childIdy,
+                        z,
+                        extent2d: extent,
+                        error: node.error / 2,
+                        res,
+                        id: tileId,
+                        parentNodeId: node.id,
+                        children: [],
+                        url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
+                        offset
+                    };
+                    this._infoCache.add(tileId, childNode);
                 }
-                childNode = {
-                    x: childX,
-                    y: childY,
-                    idx: childIdx,
-                    idy: childIdy,
-                    z,
-                    extent2d: extent,
-                    error: node.error / 2,
-                    res,
-                    id: tileId,
-                    parentNodeId: node.id,
-                    children: [],
-                    url: tileUrl,
-                    offset
-                };
                 if (parentRenderer) {
                     childNode['layer'] = this.getId();
                 }
