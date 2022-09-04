@@ -105,6 +105,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _endFrame(context) {
         const uniforms = this._getUniformValues();
+        // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
+        const meshes = this._scene.getMeshes().reverse();
+        this._scene.setMeshes(meshes);
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
     }
 
@@ -135,6 +138,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         mesh.setDefines({
             'SKIN_COUNT': skinCount
         });
+
+        const maxZoom = this.layer.getSpatialReference().getMaxZoom();
+        mesh.setUniform('level', maxZoom - tileInfo.z);
 
         mesh.properties.skinCount = skinCount;
         const textures = [];
@@ -531,6 +537,22 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     },
                     height : () => {
                         return this.canvas ? this.canvas.height : 1;
+                    }
+                },
+                stencil: {
+                    enable: true,
+                    func: {
+                        cmp: () => {
+                            return '<=';
+                        },
+                        ref: (context, props) => {
+                            return props.level;
+                        }
+                    },
+                    op: {
+                        fail: 'keep',
+                        zfail: 'keep',
+                        zpass: 'replace'
                     }
                 }
             }
