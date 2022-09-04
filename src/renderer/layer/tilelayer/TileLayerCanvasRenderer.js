@@ -102,29 +102,29 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // 改为consumeTileQueue只在finalRender时调用即解决问题
             this._consumeTileQueue();
         }
-        let tileGrids;
+        let currentTiles;
         let hasFreshTiles = false;
-        const frameTileGrids = this._frameTileGrids;
-        if (frameTileGrids && timestamp === frameTileGrids.timestamp) {
-            if (frameTileGrids.empty) {
+        const frameTiles = this._frameTiles;
+        if (frameTiles && timestamp === frameTiles.timestamp) {
+            if (frameTiles.empty) {
                 return;
             }
-            tileGrids = frameTileGrids;
+            currentTiles = frameTiles;
         } else {
-            tileGrids = this._getTilesInCurrentFrame();
-            if (!tileGrids) {
-                this._frameTileGrids = { empty: true, timestamp };
+            currentTiles = this._getTilesInCurrentFrame();
+            if (!currentTiles) {
+                this._frameTiles = { empty: true, timestamp };
                 this.completeRender();
                 return;
             }
             hasFreshTiles = true;
-            this._frameTileGrids = tileGrids;
-            this._frameTileGrids.timestamp = timestamp;
-            if (tileGrids.loadingCount) {
-                this.loadTileQueue(tileGrids.tileQueue);
+            this._frameTiles = currentTiles;
+            this._frameTiles.timestamp = timestamp;
+            if (currentTiles.loadingCount) {
+                this.loadTileQueue(currentTiles.tileQueue);
             }
         }
-        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = tileGrids;
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = currentTiles;
 
         this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
         if (!loadingCount) {
@@ -143,10 +143,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    getTileGridsInCurrentFrame() {
+        return this._frameTileGrids;
+    }
+
     _getTilesInCurrentFrame() {
         const map = this.getMap();
         const layer = this.layer;
-        const tileGrids = layer.getTiles().tileGrids;
+        let tileGrids = layer.getTiles();
+        this._frameTileGrids = tileGrids;
+        tileGrids = tileGrids.tileGrids;
         if (!tileGrids || !tileGrids.length) {
             return null;
         }
@@ -175,7 +181,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tileGrid = tileGrids[i];
             const allTiles = tileGrid['tiles'];
 
-            const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+            const placeholder = this._generatePlaceHolder(allTiles[0].res);
 
             for (let j = 0, l = allTiles.length; j < l; j++) {
                 const tile = allTiles[j],
@@ -798,14 +804,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tile.image.onerror = null;
     }
 
-    _generatePlaceHolder(z) {
+    _generatePlaceHolder(res) {
         const map = this.getMap();
         const placeholder = this.layer.options['placeholder'];
         if (!placeholder || map.getPitch()) {
             return null;
         }
         const tileSize = this.layer.getTileSize(),
-            scale = map._getResolution(z) / map._getResolution(),
+            scale = res / map._getResolution(),
             canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;
