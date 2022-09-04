@@ -9,6 +9,7 @@ import {
     isString,
     extend
 } from '../../core/util';
+import LRUCache from '../../core/util/LRUCache';
 import Browser from '../../core/Browser';
 import Size from '../../geo/Size';
 import Point from '../../geo/Point';
@@ -291,7 +292,8 @@ class TileLayer extends Layer {
                     id: this._getTileId(i, y, z),
                     url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
                     offset: [0, 0],
-                    error: error
+                    error: error,
+                    children: []
                 });
             }
         }
@@ -395,9 +397,7 @@ class TileLayer extends Layer {
                 {
                     extent,
                     count: tiles.length,
-                    tiles,
-                    offset: [0, 0],
-                    zoom: z
+                    tiles
                 }
             ],
             count: tiles.length
@@ -431,7 +431,12 @@ class TileLayer extends Layer {
             const childIdx = (idx << 1) + dx;
             const childIdy = (idy << 1) + dy;
 
-            const tileId = this._getTileId(childIdx, childIdy, z);
+            // const tileId = this._getTileId(childIdx, childIdy, z);
+            let tileId = node.children[i];
+            if (!tileId) {
+                tileId = this._getTileId(childIdx, childIdy, z);
+                node.children[i] = tileId;
+            }
             const cached = renderer.isTileCachedOrLoading(tileId);
             let extent;
             if (!cached) {
@@ -449,6 +454,14 @@ class TileLayer extends Layer {
             }
             let childNode = cached && cached.info;
             if (!childNode) {
+                if (!this._urlCache) {
+                    this._urlCache = new LRUCache(this.options['maxCacheSize']);
+                }
+                let tileUrl = this._urlCache.get(tileId);
+                if (!tileUrl) {
+                    tileUrl = this.getTileUrl(childX, childY, z + this.options['zoomOffset']);
+                    this._urlCache.add(tileId, tileUrl);
+                }
                 childNode = {
                     x: childX,
                     y: childY,
@@ -459,7 +472,9 @@ class TileLayer extends Layer {
                     error: node.error / 2,
                     res,
                     id: tileId,
-                    url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
+                    parentNodeId: node.id,
+                    children: [],
+                    url: tileUrl,
                     offset
                 };
                 if (parentRenderer) {
@@ -1040,8 +1055,6 @@ class TileLayer extends Layer {
             });
         }
         return {
-            'offset': offset,
-            'zoom': tileZoom,
             'extent': extent,
             'tiles': tiles
         };
