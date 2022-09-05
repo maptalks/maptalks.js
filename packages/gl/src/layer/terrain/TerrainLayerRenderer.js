@@ -104,7 +104,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             const skinLayer = this.layer.getSkinLayer(skinIndex);
             const renderer = skinLayer.getRenderer();
             if (renderer) {
-                renderer.renderTerrainSkin(this.regl, tileInfo, tileImage, skinIndex);
+                renderer.renderTerrainSkin(this.layer, this.regl, tileInfo, tileImage, skinIndex);
             }
             const emptyTexture = this._getEmptyTexture();
             const textures = mesh.getUniform('skins');
@@ -612,7 +612,7 @@ export default TerrainLayerRenderer;
 const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
-    renderTerrainSkin(regl, tileInfo, tileImage, skinIndex) {
+    renderTerrainSkin(terrainLayer, regl, tileInfo, tileImage, skinIndex) {
         if (!tileImage.skinImages) {
             tileImage.skinImages = [];
         }
@@ -639,8 +639,7 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
 
         const myTileSize = this.layer.getTileSize().width;
 
-        let scale = getSkinTileScale(myRes, myTileSize, res, w);
-        const resScale = myRes / res;
+        const scale = getSkinTileScale(myRes, myTileSize, res, w);
 
         let texture = tileImage.skinImages[skinIndex];
         if (!texture) {
@@ -661,16 +660,26 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         }
         const level0 = skinTileIds['0'];
         let complete = true;
+        const tiles = [];
+        let parentTile;
         for (let i = 0; i < level0.length; i++) {
             const tileId = level0[i].id;
             const cachedTile = this.tileCache.get(tileId);
             if (!cachedTile) {
                 complete = false;
-                // const parentTile = getParentSkinTile(this.tileCache, skinTileIds);
+                if (!parentTile) {
+                    parentTile = getParentSkinTile(this.layer, level0[i].x, level0[i].y, level0[i].z, terrainLayer.options.backZoomOffset);
+                }
                 continue;
             }
-            const ctx = texture.getContext('2d');
-            drawTileImage(ctx, extent2d, cachedTile, resScale);
+            tiles.push(cachedTile);
+        }
+        const ctx = texture.getContext('2d');
+        if (parentTile) {
+            drawTileImage(ctx, extent2d, parentTile, res);
+        }
+        for (let i = 0; i < tiles.length; i++) {
+            drawTileImage(ctx, extent2d, tiles[i], res);
         }
         const debugCanvas = document.getElementById('terrain_skin_debug');
         if (debugCanvas) {
@@ -699,14 +708,15 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
 });
 
 
-function drawTileImage(ctx, extent, tile, scale) {
+function drawTileImage(ctx, extent, tile, res) {
+    const scale = tile.info.res / res;
     const { info, image } = tile;
     const width = image.width * scale;
     const height = image.height * scale;
-    const xmin = info.extent2d.xmin / scale;
-    const ymax = info.extent2d.ymax / scale;
-    const left = Math.round((xmin - extent.xmin) / extent.getWidth()) * width;
-    const top = Math.round((extent.ymax - ymax) / extent.getHeight()) * height;
+    const xmin = info.extent2d.xmin * scale;
+    const ymax = info.extent2d.ymax * scale;
+    const left = Math.round(xmin - extent.xmin);
+    const top = Math.round(extent.ymax - ymax);
     ctx.drawImage(image, left, top, width, height);
 }
 

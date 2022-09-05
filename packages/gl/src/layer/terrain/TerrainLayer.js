@@ -15,7 +15,8 @@ const options = {
     'renderer': 'gl',
     'pyramidMode': 1,
     'terrainTileSize': 6,
-    'terrainWidth': 65
+    'terrainWidth': 65,
+    'backZoomOffset': -5
 };
 
 const EMPTY_TILE_GRIDS = {
@@ -78,6 +79,9 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const tileSysScale = this._getTileConfig().tileSystem.scale;
         const tileSize = layer.getTileSize().width;
         const tiles = grid.tiles;
+        if (!tiles.length) {
+            return EMPTY_TILE_GRIDS;
+        }
         const sr = layer.getSpatialReference();
         const size = tiles[0].extent2d.getWidth();
 
@@ -107,7 +111,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
                     skinTile.idx = skinTile.x;
                     skinTile.idy = skinTile.y;
                     skinTile.res = skinRes;
-                    skinTile.url = layer.getTileUrl(skinTile.x, skinTile.y, skinTile.z + layer.options['zoomOffset']),
+                    skinTile.url = layer.getTileUrl(skinTile.x, skinTile.y, skinTile.z + layer.options['zoomOffset']);
                     skinTile.offset = info.offset;
 
                     const xOffset = dx * (skinTile.x - leftX) * tileSize;

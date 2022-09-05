@@ -39,8 +39,17 @@ export function getTileIdsAtLevel(layer, x, y, z, scale, level) {
     return result;
 }
 
-export function getParentSkinTile(tileCache, skinTileIds) {
-
+export function getParentSkinTile(layer, x, y, z, limit) {
+    const tileCache = layer.getRenderer().tileCache;
+    const tx = Math.floor(x / 2);
+    const ty = Math.floor(y / 2);
+    const tz = z - 1;
+    const parentNodeId = layer['_getTileId'](tx, ty, tz);
+    const cached = tileCache.get(parentNodeId);
+    if (!cached && limit <= 0) {
+        return getParentSkinTile(layer, tx, ty, tz, limit + 1);
+    }
+    return cached;
 }
 
 export function getSkinTileScale(res, size, terrainRes, terrainSize) {
