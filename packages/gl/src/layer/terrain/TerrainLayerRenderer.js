@@ -33,6 +33,18 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             tileImage.terrainMesh = this._createTerrainMesh(tileInfo, tileImage.mesh);
             tileInfo.minAltitude = tileImage.data.min;
             tileInfo.maxAltitude = tileImage.data.max;
+            const tileInfoCache = this.layer.tileInfoCache;
+            if (tileInfoCache && tileInfo.parentNodeId) {
+                const parentNode = tileInfoCache.get(tileInfo.parentNodeId);
+                if (parentNode) {
+                    if (parentNode.minAltitude === undefined) {
+                        parentNode.minAltitude = tileInfo.minAltitude;
+                    }
+                    if (parentNode.maxAltitude === undefined) {
+                        parentNode.maxAltitude = tileInfo.maxAltitude;
+                    }
+                }
+            }
         }
         return super.consumeTile(tileImage, tileInfo);
     }
