@@ -229,18 +229,28 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         super.abortTileLoading(tileImage, tileInfo);
     }
 
-    _queryAltitide(tileIndex, worldPos, z) {
-        const tileId = this.layer['_getTileId'](tileIndex.x, tileIndex.y, z);
-        const terrainData = this.tileCache.get(tileId);
+    _queryTerrain(tileIndex, worldPos, res, z) {
+        const terrainData = this._findTerrainData(tileIndex.x, tileIndex.y, z, this.layer.options['backZoomOffset']);
         if (terrainData && terrainData.image) {
             const extent2d = terrainData.info.extent2d;
-            const x = worldPos.x - extent2d.xmin;
-            const y = worldPos.y - extent2d.ymin;
+            const terrainRes = terrainData.info.res;
+            const scale = terrainRes / res;
+            const x = worldPos.x - extent2d.xmin * scale;
+            const y = worldPos.y - extent2d.ymin * scale;
             // return this._findInTrinagle(terrainData.image, x, y);
-            return this._queryAltitudeInHeights(terrainData.image.data, x / extent2d.getWidth(), y / extent2d.getHeight());
+            return this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
         } else {
             return 0;
         }
+    }
+
+    _findTerrainData(x, y, z, limit) {
+        const tileId = this.layer['_getTileId'](x, y, z);
+        let terrainData = this.tileCache.get(tileId);
+        if (!terrainData && limit <= 0) {
+            terrainData = this._findTerrainData(Math.floor(x / 2), Math.floor(y / 2), z - 1, limit + 1);
+        }
+        return terrainData;
     }
 
 

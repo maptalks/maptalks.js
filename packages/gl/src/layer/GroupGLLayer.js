@@ -456,7 +456,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (!this._terrainLayer) {
             return null;
         }
-        return this._terrainLayer.queryAltitide(coord);
+        return this._terrainLayer.queryTerrain(coord);
     }
 
     _updateTerrainSkinLayers() {

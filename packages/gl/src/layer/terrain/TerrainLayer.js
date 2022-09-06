@@ -152,14 +152,14 @@ export default class TerrainLayer extends maptalks.TileLayer {
         return this._skinLayers && this._skinLayers.length || 0;
     }
 
-    queryAltitide(coordinate) {
+    queryTerrain(coordinate) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return 0;
         }
         const map = this.getMap();
         const sr = this.getSpatialReference();
-        const zoom = this['_getTileZoom'](map.getZoom());
+        const zoom = renderer.getCurrentTileZoom();
         const res = sr.getResolution(zoom);
         const repeatWorld = this.options['repeatWorld'];
         const config = this['_getTileConfig']();
@@ -167,8 +167,8 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const projCoord = projection.project(coordinate, COORD0);
         const tileIndex = config.getTileIndex(projCoord, res, repeatWorld);
 
-        const worldPos = map.coordToPoint(coordinate, null, POINT0);
-        return renderer._queryAltitide(tileIndex, worldPos, zoom);
+        const worldPos = map.coordToPointAtRes(coordinate, res, POINT0);
+        return renderer._queryTerrain(tileIndex, worldPos, res, zoom);
     }
 
     queryTileAltitude(out, tileExtent, res) {
