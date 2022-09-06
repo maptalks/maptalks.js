@@ -454,7 +454,7 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     queryTerrain(coord) {
         if (!this._terrainLayer) {
-            return null;
+            return 0;
         }
         return this._terrainLayer.queryTerrain(coord);
     }

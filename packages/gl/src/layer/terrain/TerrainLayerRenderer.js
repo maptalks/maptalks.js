@@ -248,7 +248,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const tileId = this.layer['_getTileId'](x, y, z);
         let terrainData = this.tileCache.get(tileId);
         if (!terrainData && limit <= 0) {
-            terrainData = this._findTerrainData(Math.floor(x / 2), Math.floor(y / 2), z - 1, limit + 1);
+            return this._findTerrainData(Math.floor(x / 2), Math.floor(y / 2), z - 1, limit + 1);
         }
         return terrainData;
     }
