@@ -1,4 +1,4 @@
-import { isFunction, isArrayHasData } from '../core/util';
+import { isFunction, isArrayHasData, isNil } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
@@ -426,6 +426,15 @@ class GeometryCollection extends Geometry {
                 })
             }
         };
+        const id = this.getId();
+        if (!isNil(id)) {
+            feature['id'] = id;
+        }
+        let properties;
+        if (isNil(options['properties']) || options['properties']) {
+            properties = this._exportProperties();
+        }
+        feature['properties'] = properties;
         options.feature = feature;
         return options;
     }
