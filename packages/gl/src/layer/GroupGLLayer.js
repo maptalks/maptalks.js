@@ -152,8 +152,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             return this;
         }
         layer._doRemove();
-        layer.off('show hide', this._onLayerShowHide, this);
-        layer.off('idchange', this._onLayerIDChange, this);
+        this._unbindChildListeners(layer);
         delete this._layerMap[layer.getId()];
         this.layers.splice(idx, 1);
         const renderer = this.getRenderer();
@@ -225,7 +224,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             this._prepareLayer(layer);
         });
         if (this.options['terrain']) {
-            this.setTerrain(this.options['terrain']);
+            this._initTerrainLayer();
         }
         super.onLoadEnd();
     }
@@ -245,14 +244,11 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     onRemove() {
-        if (this._terrainLayer) {
-            this._terrainLayer.off('tileload', this._onTerrainTileLoad, this);
-            this._terrainLayer['_doRemove']();
-        }
+        this._removeTerrainLayer();
         this.layers.forEach(layer => {
+            this._resetSkinLayer(layer);
             layer['_doRemove']();
-            layer.off('show hide', this._onLayerShowHide, this);
-            layer.off('idchange', this._onLayerIDChange, this);
+            this._unbindChildListeners(layer);
         });
         this._layerMap = {};
         this.clearAnalysis();
@@ -271,6 +267,11 @@ export default class GroupGLLayer extends maptalks.Layer {
     _bindChildListeners(layer) {
         layer.on('show hide', this._onLayerShowHide, this);
         layer.on('idchange', this._onLayerIDChange, this);
+    }
+
+    _unbindChildListeners(layer) {
+        layer.off('show hide', this._onLayerShowHide, this);
+        layer.off('idchange', this._onLayerIDChange, this);
     }
 
     _onLayerShowHide() {
@@ -440,17 +441,33 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     setTerrain(info) {
+        if (info === this.options['terrain']) {
+            return this;
+        }
         this.options['terrain'] = info;
         if (!this.getRenderer()) {
             return this;
         }
-        this._terrainInfo = info;
+        this._initTerrainLayer();
+        return this;
+    }
+
+    _initTerrainLayer() {
+        const info = this.options['terrain'];
+        this._resetTerrainSkinLayers();
+        this._removeTerrainLayer();
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+        if (!info) {
+            return this;
+        }
         this._terrainLayer = new TerrainLayer('__terrain_in_group', info);
         this._updateTerrainSkinLayers();
         this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
         this.fire('terrainlayercreated');
-        return this;
     }
 
     queryTerrain(coord) {
@@ -480,6 +497,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                     // debugger
                     return this._terrainLayer.getSkinTiles(layer);
                 };
+                layer.isTerrainSkin = 1;
                 renderer.drawTile = emptyDrawTile;
                 skinLayers.push(layers[i]);
             }
@@ -487,10 +505,54 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._terrainLayer.setSkinLayers(skinLayers);
     }
 
+    _resetSkinLayer(layer) {
+        if (!layer.isTerrainSkin) {
+            return;
+        }
+        const renderer = layer.getRenderer();
+        if (renderer) {
+            delete renderer.drawTile;
+        }
+
+        delete layer.getTiles;
+        delete layer.isTerrainSkin;
+        if (this._skinBGOptions) {
+            const backOption = this._skinBGOptions[layer.getId()];
+            if (backOption !== undefined) {
+                layer.options['background'] = backOption;
+            } else {
+                delete layer.options['background'];
+            }
+            delete this._skinBGOptions[layer.getId()];
+        }
+    }
+
+    _resetTerrainSkinLayers() {
+        const layers = this.layers;
+        for (let i = 0; i < layers.length; i++) {
+            if (!layers[i]) {
+                continue;
+            }
+            this._resetSkinLayer(layers[i]);
+        }
+        delete this._skinBGOptions;
+    }
+
     _onTerrainTileLoad() {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
+        }
+    }
+
+    _removeTerrainLayer() {
+        if (this._terrainLayer) {
+            const layer = this._terrainLayer;
+            layer.off('tileload', this._onTerrainTileLoad, this);
+            this._unbindChildListeners(layer);
+            this._terrainLayer['_doRemove']();
+            delete this._terrainLayer;
+            this.fire('terrainlayerremoved');
         }
     }
 

@@ -118,6 +118,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const meshes = this._scene.getMeshes().sort(terrainCompare);
         this._scene.setMeshes(meshes);
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
+        if (meshes.length && !Object.keys(this.tilesLoading).length) {
+            this.layer.fire('terrainreadyandrender');
+        }
     }
 
     onDrawTileStart() {}
@@ -572,10 +575,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             projViewMatrix,
         };
         return uniforms;
-    }
-
-    needToRedraw() {
-        return true;
     }
 }
 

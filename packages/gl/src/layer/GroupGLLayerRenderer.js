@@ -47,11 +47,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.setToRedraw();
     }
 
-    resetTerrain() {
-        // 更新terrain信息
-        // 重置所有图层
-    }
-
     render(...args) {
         if (!this.getMap() || !this.layer.isVisible()) {
             return;

@@ -116,11 +116,13 @@ export default class TerrainLayer extends maptalks.TileLayer {
 
                     const xOffset = dx * (skinTile.x - leftX) * tileSize;
                     const yOffset = dy * (skinTile.y - topY) * tileSize;
+                    const xmin = extent2d.xmin * resScale + xOffset;
+                    const ymax = extent2d.ymax * resScale + yOffset;
                     skinTile.extent2d = new maptalks.PointExtent(
-                        extent2d.xmin * resScale + xOffset,
-                        extent2d.ymin * resScale + yOffset,
-                        extent2d.xmax * resScale + xOffset,
-                        extent2d.ymax * resScale + yOffset,
+                        xmin,
+                        ymax - tileSize,
+                        xmin + tileSize,
+                        ymax,
                     );
                     layerTiles.push(skinTile);
                 }
