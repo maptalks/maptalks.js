@@ -449,6 +449,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._updateTerrainSkinLayers();
         this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
+        this.fire('terrainlayercreated');
         return this;
     }
 
@@ -493,6 +494,9 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
     }
 
+    getTerrainLayer() {
+        return this._terrainLayer;
+    }
 }
 
 GroupGLLayer.mergeOptions(options);

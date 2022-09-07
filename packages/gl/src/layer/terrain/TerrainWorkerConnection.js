@@ -6,7 +6,17 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
         this.mapId = mapId;
     }
 
+    checkUrl(url) {
+        if (!url || !maptalks.Util.isString(url)) {
+            return url;
+        }
+        //The URL is processed. Here, only the relative protocol is processed
+        return maptalks.Util.getAbsoluteURL(url);
+
+    }
+
     fetchTerrain(url, options, cb) {
+        url = this.checkUrl(url);
         const data = {
             actorId: this.actorId,
             mapId: this.mapId,

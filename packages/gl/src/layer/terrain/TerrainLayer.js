@@ -40,7 +40,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         }
         if (type === 'mapbox') {
             const skuid = this._createSkuToken();
-            terrainUrl += '.webp?sku=' + skuid + '&access_token=' + this.options['accessToken'];
+            terrainUrl += '?sku=' + skuid + '&access_token=' + this.options['accessToken'];
         } else if (type === 'cesium') {
             terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
         }
