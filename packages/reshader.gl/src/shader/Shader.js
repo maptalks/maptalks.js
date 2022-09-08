@@ -11,8 +11,6 @@ let uid = 0;
 
 const activeVarsCache = {};
 
-const COMMAND_CACHE_KEY = '__maptalks_shader_cache';
-
 class Shader {
     constructor({ vert, frag, uniforms, defines, extraCommandProps }) {
         this.vert = vert;
@@ -233,15 +231,6 @@ class Shader {
         const vHash = hashCode(vert);
         const fHash = hashCode(frag);
         const hash = vHash + '_' + fHash;
-        const commandHash = `${hash}_${+isNumber(elements)}_${+isInstanced}_${+disableVAO}`;
-        let COMMAND_CACHE = regl[COMMAND_CACHE_KEY];
-        if (!COMMAND_CACHE) {
-            COMMAND_CACHE = regl[COMMAND_CACHE_KEY] = {};
-        }
-        if (COMMAND_CACHE[commandHash]) {
-            COMMAND_CACHE[commandHash].ref++;
-            return COMMAND_CACHE[commandHash].command;
-        }
         const { activeAttributes, activeUniforms } = this.getActiveVars(regl, vert, frag, hash);
 
         const attributes = {};
@@ -298,9 +287,6 @@ class Shader {
         const reglCommand = regl(command);
         activeAttributes.key = activeAttributes.map(attr => attr.name).join();
         reglCommand.activeAttributes = activeAttributes;
-        COMMAND_CACHE[commandHash] = { command: reglCommand, ref: 1 };
-        reglCommand.hash = commandHash;
-        reglCommand.commandCache = COMMAND_CACHE;
         return reglCommand;
     }
 
@@ -310,20 +296,9 @@ class Shader {
             if (!command) {
                 continue;
             }
-            const hash = command.hash;
-            const COMMAND_CACHE = command.commandCache;
-            if (COMMAND_CACHE[hash]) {
-                COMMAND_CACHE[hash].ref--;
-            }
-            if (!COMMAND_CACHE[hash] || COMMAND_CACHE[hash].ref <= 0) {
-                if (command.destroy && !command[KEY_DISPOSED]) {
-                    command[KEY_DISPOSED] = true;
-                    command.destroy();
-                }
-                if (COMMAND_CACHE[hash]) {
-                    delete COMMAND_CACHE[hash];
-                }
-                delete command.commandCache;
+            if (command.destroy && !command[KEY_DISPOSED]) {
+                command[KEY_DISPOSED] = true;
+                command.destroy();
             }
         }
         this.commands = {};

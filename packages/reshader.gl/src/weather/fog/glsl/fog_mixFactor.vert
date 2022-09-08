@@ -1,7 +1,6 @@
 attribute vec3 aPosition;
 
 uniform mat4 projMatrix;
-uniform mat4 viewModelMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 positionMatrix;
 

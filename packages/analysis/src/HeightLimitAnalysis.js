@@ -25,7 +25,14 @@ export default class HeightLimitAnalysis extends FloodAnalysis {
 
     renderAnalysis(meshes) {
         const uniforms = super.renderAnalysis(meshes);
-        uniforms['flood_waterColor'] = this.options['limitColor'] || DEFAULT_LIMIT_COLOR;
+        uniforms['heightLimitMap'] = uniforms['floodMap'];
+        uniforms['limitColor'] = this.options['limitColor'] || DEFAULT_LIMIT_COLOR;
         return uniforms;
+    }
+
+    getDefines() {
+        return {
+            HAS_HEIGHTLIMIT: 1
+        };
     }
 }

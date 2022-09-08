@@ -58,16 +58,17 @@ class AnalysisPainter {
         delete this._shader.shaderDefines['HAS_CUT'];
         delete this._shader.shaderDefines['HAS_EXCAVATE'];
         delete this._shader.shaderDefines['HAS_CROSSCUT'];
+        delete this._shader.shaderDefines['HAS_HEIGHTLIMIT'];
         for (let i = 0; i < analysisTaskList.length; i++) {
             const task = analysisTaskList[i];
+            if (!task.isEnable()) {
+                continue;
+            }
             const defines = task.getDefines();
             extend(this._shader.shaderDefines, defines);
             const map = this.getMap();
             const width = map.width, height = map.height;
             const toAanalysisMeshes = this._getToAnalysisMeshes(layers, task.getExcludeLayers());
-            if (!task.isEnable()) {
-                continue;
-            }
             const analysisUniforms = task.renderAnalysis(toAanalysisMeshes, width, height);
             if (analysisUniforms) {
                 extend(uniforms, analysisUniforms);
@@ -80,14 +81,17 @@ class AnalysisPainter {
     }
 
     _getToAnalysisMeshes(layers, excludeLayers) {
-        const toAnalysisLayers = layers.filter(layer => {
-            return excludeLayers.indexOf(layer.getId()) < 0;
-        });
         let toAnalysisMeshes = [];
-        for (let i = 0; i < toAnalysisLayers.length; i++) {
-            const renderder = toAnalysisLayers[i].getRenderer();
+        for (let i = 0; i < layers.length; i++) {
+            const renderder = layers[i].getRenderer();
             if (renderder && renderder.getAnalysisMeshes) {
                 const meshes = renderder.getAnalysisMeshes();
+                meshes.forEach(mesh => {
+                    mesh.setUniform('useAnalysis', 1);
+                    if (excludeLayers.indexOf(layers[i].getId()) > -1) {
+                        mesh.setUniform('useAnalysis', 0);
+                    }
+                });
                 toAnalysisMeshes = toAnalysisMeshes.concat(meshes);
             }
         }

@@ -7,6 +7,7 @@ class PhongShader extends MeshShader {
     constructor(config = {}) {
         const normalMatrix = [];
         const viewModelMatrix = [];
+        const centerMatrix = [];
         const extraUniforms = config.uniforms;
         const uniforms = [
             {
@@ -22,7 +23,14 @@ class PhongShader extends MeshShader {
                 fn: function (context, props) {
                     return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
                 }
-            }
+            },
+            {
+                name: 'viewCenterMatrix',
+                type: 'function',
+                fn: (_, props) => {
+                    return mat4.multiply(centerMatrix, props['viewMatrix'], props['centerMatrix']);
+                }
+            },
         ];
         if (extraUniforms) {
             uniforms.push(...extraUniforms);

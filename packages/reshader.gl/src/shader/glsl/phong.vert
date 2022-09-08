@@ -25,7 +25,6 @@ varying vec3 vFragPos;
 varying vec3 vNormal;
 
 uniform mat4 projMatrix;
-uniform mat4 viewModelMatrix;
 uniform mat3 modelNormalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 positionMatrix;
@@ -101,10 +100,10 @@ void main()
     #else
         vNormal = vec3(0.0);
     #endif
-
+    mat4 vmMatrix = getVMMatrix();
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
-    gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
+    gl_Position = jitteredProjection * vmMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
         vec2 TexCoord = getTexcoord(aTexCoord);
         vTexCoord = TexCoord * uvScale + uvOffset;

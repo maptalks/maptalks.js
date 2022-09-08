@@ -417,3 +417,107 @@ describe('api of analysis', () => {
     //     });
     // });
 });
+
+describe('bugs', () => {
+    it('update boundary for crosscut analysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const crosscutAnalysis = new maptalks.CrossCutAnalysis({
+                cutLine: [[ -0.000847, 0.000815],
+                [-0.001351, 0.0000965],
+                [-0.000418, -0.000568]],
+                cutLineColor: [0.0, 1.0, 0.0, 1.0]
+              }).addTo(gllayer);
+            crosscutAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                crosscutAnalysis.update('cutLine', [[ -0.00084, 0.00082],
+                [-0.001355, 0.0000960],
+                [-0.00042, -0.00057]]);
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('add more than one analysis task, and then disable one of this', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            //skyline analysis
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            //viewshed analysis
+            const eyePos = [center.x + 0.01, center.y, 0];
+            const lookPoint = [center.x, center.y, 0];
+            const verticalAngle = 30;
+            const horizontalAngle = 20;
+            const viewshedAnalysis = new maptalks.ViewshedAnalysis({
+                eyePos,
+                lookPoint,
+                verticalAngle,
+                horizontalAngle
+            });
+            viewshedAnalysis.addTo(gllayer);
+            skylineAnalysis.disable();
+            done();
+        });
+        gllayer.addTo(map);
+    });
+
+    it('exclude layers', done => {
+        const gltflayer1 = new maptalks.GLTFLayer('gltf1');
+        const gltflayer2 = new maptalks.GLTFLayer('gltf2');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer1, gltflayer2], { sceneConfig });
+        const marker1 = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [5, 5, 5]
+            }
+        }).addTo(gltflayer1);
+        new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scale: [1, 1, 1]
+            }
+        }).addTo(gltflayer1);
+        marker1.on('load', () => {
+            const boundary = [[ -0.00084, 0.00081],
+                [-0.00135, 0.00009],
+                [-0.00041, -0.00056],
+                [0.00054, 0.00006],
+                [0.0005, 0.00066]];
+            const excavateAnalysis = new maptalks.ExcavateAnalysis({
+                boundary,
+                textureUrl: './resources/ground.jpg',
+                excludeLayers: ['gltf2'] //不参与被开挖图层的id
+            });
+            excavateAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const renderer = gltflayer1.getRenderer();
+                const meshes = renderer.getAnalysisMeshes();
+                const tempMap = excavateAnalysis.exportAnalysisMap(meshes);
+                const index = (height / 2) * width * 4 + (width / 2) * 4;
+                const arr = tempMap.slice(index, index + 16);
+                expect(uint8ArrayEqual(arr, [122, 95, 84, 255, 123, 104, 90, 255, 112, 93, 79, 255, 125, 107, 93, 255]));
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    })
+});

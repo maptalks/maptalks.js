@@ -52,6 +52,9 @@ export default class SkylineAnalysis extends Analysis {
     }
 
     exportSkylineMap(options) {
+        if (!canvas || !this.isEnable()) {
+            return null;
+        }
         if (!options) {
             options = {};
         }
@@ -66,9 +69,6 @@ export default class SkylineAnalysis extends Analysis {
                 pixels[(j * width + i) * 4 + 2] = data[((height - j) * width + i) * 4 + 2];
                 pixels[(j * width + i) * 4 + 3] = data[((height - j) * width + i) * 4 + 3];
             }
-        }
-        if (!canvas) {
-            return null;
         }
         canvas.width = width;
         canvas.height = height;
