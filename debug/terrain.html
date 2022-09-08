@@ -5,27 +5,28 @@
   <title>terrain test</title>
   <style type="text/css">
     html,body{margin:0px;height:100%;width:100%}
-    .container{width:100%;height:100%;background-color: black;}
+    /*.container{width:100%;height:100%;background-color: red;}*/
+    .container{width:512px;height:512px;background-color: red;}
   </style>
   <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
   <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
   <script type="text/javascript" src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <!-- <script type="text/javascript" src="../dist/maptalks.terrain-dev.js"></script> -->
   <body>
-    <canvas id="terrain_skin_debug"></canvas>
+    <!-- <canvas id="terrain_skin_debug"></canvas> -->
     <div id="map" class="container"></div>
     <script>
         const map = new maptalks.Map('map', {
             center: [91.14478,29.658272],
             zoomControl: true,
             zoom: 12,
-            pitch: 45,
+            // pitch: 45,
             // spatialReference:{
             //     projection:'EPSG:4326'
             // },
-            spatialReference:{
-                projection:'EPSG:3857' //for mapbox
-            },
+            // spatialReference:{
+            //     projection:'EPSG:3857' //for mapbox
+            // },
             // baseLayer: new maptalks.TileLayer('base1', {
             //     debug: true,
             //     urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
@@ -69,59 +70,57 @@
               })
         ];
 
-        for (let i = 0; i < 0; i++) {
-            skinLayers.push(new maptalks.TileLayer('base' + i, {
-                maxAvailableZoom : 20,
-                // spatialReference: {
-                //   projection: 'EPSG:3857'
-                // },
-                // debug: true,
-                urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                subdomains: ['a','b','c','d'],
-                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
-              }))
-        }
+        const terrain = {
+            // tileSystem : [1, -1, -180, 90],
+            // maxAvailableZoom: 12,
+            // opacity: 0.6,
+            // debug: true,
+            //天地图服务
+            // type: 'tianditu',
+            // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=648e42a59f95a6b9aae1d505d52d229f',
+            // urlTemplate: 'https://t{s}.tianditu.gov.cn/mapservice/swdx?T=elv_c&tk=648e42a59f95a6b9aae1d505d52d229f&x={x}&y={y}&l={z}', //天地图地形服务
+            //cesium服务
+            // type: 'cesium',
+            // accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZTJkNzU4YS0xZGFkLTRhMmYtYTRlYy0wMDZlNWQ3MjA3ZTgiLCJpZCI6OTYyOCwiaWF0IjoxNjUwNDMyNTgyfQ.qFOMTJmJ4V_IMHbNh9AH1lkZeWoApuTg5tlgcuhZrHU',
+            // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=8d01c39a7595da62e1a32a1e109584a3',
+            // terrainUrlTemplate: 'https://assets.cesium.com/1/{z}/{x}/{y}.terrain',
+            //mapbox服务
+            type: 'mapbox',
+            tileSize: 512,
+            spatialReference: 'preset-vt-3857',
+            accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
+            // urlTemplate: 'https://khms1.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
+            urlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}.webp',
+            subdomains:['0', '1', '2', '3', '4', '5', '6']
+        };
         const group = new maptalks.GroupGLLayer('group', skinLayers, {
-            terrain: {
-                // tileSystem : [1, -1, -180, 90],
-                // maxAvailableZoom: 12,
-                // opacity: 0.6,
-                // debug: true,
-                //天地图服务
-                // type: 'tianditu',
-                // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=648e42a59f95a6b9aae1d505d52d229f',
-                // urlTemplate: 'https://t{s}.tianditu.gov.cn/mapservice/swdx?T=elv_c&tk=648e42a59f95a6b9aae1d505d52d229f&x={x}&y={y}&l={z}', //天地图地形服务
-                //cesium服务
-                // type: 'cesium',
-                // accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZTJkNzU4YS0xZGFkLTRhMmYtYTRlYy0wMDZlNWQ3MjA3ZTgiLCJpZCI6OTYyOCwiaWF0IjoxNjUwNDMyNTgyfQ.qFOMTJmJ4V_IMHbNh9AH1lkZeWoApuTg5tlgcuhZrHU',
-                // urlTemplate: 'https://t{s}.tianditu.gov.cn/img_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=c&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=8d01c39a7595da62e1a32a1e109584a3',
-                // terrainUrlTemplate: 'https://assets.cesium.com/1/{z}/{x}/{y}.terrain',
-                //mapbox服务
-                type: 'mapbox',
-                tileSize: 512,
-                spatialReference: 'preset-vt-3857',
-                accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
-                // urlTemplate: 'https://khms1.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
-                urlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}',
-                subdomains:['0', '1', '2', '3', '4', '5', '6']
-            }
+            terrain
         });
 
         group.addTo(map);
-
+        // new maptalks.TileLayer('base1', {
+        //     debug: true,
+        //     // opacity: 0.1,
+        //     tileSize: 512,
+        //     spatialReference: 'preset-vt-3857',
+        //     urlTemplate: '1.png',
+        //     // urlTemplate: 'https://khms1.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
+        //     subdomains: ['a','b','c','d'],
+        //     attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        //   }).addTo(map);
         // group._terrainLayer.on('tileload', e => {
         //     console.log(e);
         // });
 
         map.on('click', e => {
-            // const terrainLayer = map.getBaseLayer();
+            const terrainLayer = map.getBaseLayer();
             console.time();
-            let height;
-            for (let i = 0; i < 100000; i++) {
-                height = group.queryAltitide(e.coordinate);
+            let terrain;
+            for (let i = 0; i < 10000; i++) {
+                terrain = group.queryTerrain(e.coordinate);
             }
             console.timeEnd();
-            console.log(height);
+            console.log(terrain);
         });
     </script>
   </body>
