@@ -71,20 +71,20 @@ export default class PolygonPack extends VectorPack {
         return format;
     }
 
-    createDataPack(...args) {
-        this.maxLineIndex = 0;
-        this.lineElements = [];
-        const pack = super.createDataPack(...args);
-        if (!pack) {
-            return pack;
-        }
-        let lineElements = this.lineElements;
-        const ElementType = getIndexArrayType(this.maxLineIndex);
-        lineElements = new ElementType(this.lineElements);
-        pack.lineIndices = lineElements;
-        pack.buffers.push(lineElements.buffer);
-        return pack;
-    }
+    // createDataPack(...args) {
+    //     this.maxLineIndex = 0;
+    //     this.lineElements = [];
+    //     const pack = super.createDataPack(...args);
+    //     if (!pack) {
+    //         return pack;
+    //     }
+    //     let lineElements = this.lineElements;
+    //     const ElementType = getIndexArrayType(this.maxLineIndex);
+    //     lineElements = new ElementType(this.lineElements);
+    //     pack.lineIndices = lineElements;
+    //     pack.buffers.push(lineElements.buffer);
+    //     return pack;
+    // }
 
     placeVector(polygon, scale) {
         // const symbol = polygon.symbol;
@@ -172,7 +172,7 @@ export default class PolygonPack extends VectorPack {
                     holeIndices.push(flattened.length / 3);
                 }
 
-                const lineIndex = this.lineElements.length;
+                // const lineIndex = this.lineElements.length;
 
                 this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z || 0);
                 if (hasUV) {
@@ -191,7 +191,7 @@ export default class PolygonPack extends VectorPack {
                     this.data.aUVOffset.push(...dynUVOffset);
                 }
                 this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
-                this.addLineElements(lineIndex + ring.length - 1, lineIndex);
+                // this.addLineElements(lineIndex + ring.length - 1, lineIndex);
 
                 flattened.push(ring[0].x);
                 flattened.push(ring[0].y);
@@ -215,7 +215,7 @@ export default class PolygonPack extends VectorPack {
                         this.data.aUVOffset.push(...dynUVOffset);
                     }
                     this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
-                    this.addLineElements(lineIndex + i - 1, lineIndex + i);
+                    // this.addLineElements(lineIndex + i - 1, lineIndex + i);
                     flattened.push(ring[i].x);
                     flattened.push(ring[i].y);
                     flattened.push(ring[i].z || 0);
@@ -232,8 +232,8 @@ export default class PolygonPack extends VectorPack {
         }
     }
 
-    addLineElements(...e) {
-        this.maxLineIndex = Math.max(this.maxLineIndex, ...e);
-        this.lineElements.push(...e);
-    }
+    // addLineElements(...e) {
+    //     this.maxLineIndex = Math.max(this.maxLineIndex, ...e);
+    //     this.lineElements.push(...e);
+    // }
 }
