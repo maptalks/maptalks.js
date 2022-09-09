@@ -3,7 +3,7 @@ import { reshader } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
-import { clamp, isNil } from '../Util';
+import { clamp, isNil, getUniqueIds } from '../Util';
 import CollisionGroup from './CollisionGroup';
 // import { getLabelContent } from './util/get_label_content';
 
@@ -26,6 +26,25 @@ const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 
 export default class CollisionPainter extends BasicPainter {
+
+    createGeometry(...args) {
+        const created = super.createGeometry(...args);
+        if (!created || !created.geometry) {
+            return created;
+        }
+        const { geometry } = created;
+        // collideIds 用于碰撞检测，同一个数据的多symbol会生成多个mesh，不同的mesh中元素的collideId相同时，则认为共享一个检测结果
+        // collideIds 优先用 aFeaIds，没有 aFeaIds 时，则用 aPickingId
+        // 但 markerPlacement 为 line 时，iconPainter会重新生成 collideIds 和 uniqueCollideIds
+        const glData = args[0];
+        const features = args[1];
+        if (features && Object.keys(features).length) {
+            geometry.properties.collideIds = glData.featureIds && glData.featureIds.length ? glData.featureIds : glData.data.aPickingId;
+            // uniqueCollideIds 是 collideIds 去重后的值，碰撞检测时对其遍历，按每个值来计算检测结果
+            geometry.properties.uniqueCollideIds = getUniqueIds(geometry.properties.collideIds);
+        }
+        return created;
+    }
 
     supportRenderMode(mode) {
         const renderToPointRenderTarget = this.sceneConfig.renderToPointRenderTarget;

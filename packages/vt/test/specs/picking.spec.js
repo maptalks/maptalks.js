@@ -1160,7 +1160,8 @@ describe('picking specs', () => {
         const layer = new VectorTileLayer('vt', {
             urlTemplate: 'http://localhost:4398/vt/{z}/{x}/{y}.mvt',
             spatialReference: 'preset-vt-3857',
-            pickingGeometry: true
+            pickingGeometry: true,
+            features: true
         });
         let count = 0;
         layer.on('canvasisdirty', () => {

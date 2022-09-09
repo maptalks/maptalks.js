@@ -414,6 +414,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         props.tileRatio = 1;
         props.z = 1;
         props.tileExtent = 1;
+        props.elements = geometry.elements;
+        props.aPickingId = geometry.data.aPickingId;
     }
 
     _isEnableWorkAround(key) {

@@ -1,6 +1,6 @@
 import Painter from './Painter';
 import { reshader } from '@maptalks/gl';
-import { extend, getUniqueIds } from '../Util';
+import { extend } from '../Util';
 
 export default class BasicPainter extends Painter {
 
@@ -23,7 +23,7 @@ export default class BasicPainter extends Painter {
         geometry.properties = {
             features,
             // Vector3DLayer中需要保存elements来实现show hide
-            elements: glData.indices
+            // elements: glData.indices
         };
         if (glData.iconAtlas) {
             geometry.properties.iconAtlas = glData.iconAtlas.image;
@@ -31,17 +31,12 @@ export default class BasicPainter extends Painter {
         if (glData.glyphAtlas) {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;
         }
-        // aPickingId 中存放的是 KEY_IDX 的值，Vector3DLayer中如果一个feature有多个symbol，feature.id相同但pickingId不同
-        // aFeaIds 存放的是 feature.id
-        geometry.properties.aFeaIds = glData.featureIds;
-        this._prepareFeatureIds(geometry, glData);
-
-        // collideIds 用于碰撞检测，同一个数据的多symbol会生成多个mesh，不同的mesh中元素的collideId相同时，则认为共享一个检测结果
-        // collideIds 优先用 aFeaIds，没有 aFeaIds 时，则用 aPickingId
-        // 但 markerPlacement 为 line 时，iconPainter会重新生成 collideIds 和 uniqueCollideIds
-        geometry.properties.collideIds = glData.featureIds && glData.featureIds.length ? glData.featureIds : glData.data.aPickingId;
-        // uniqueCollideIds 是 collideIds 去重后的值，碰撞检测时对其遍历，按每个值来计算检测结果
-        geometry.properties.uniqueCollideIds = getUniqueIds(geometry.properties.collideIds);
+        if (features && Object.keys(features).length) {
+            // aPickingId 中存放的是 KEY_IDX 的值，Vector3DLayer中如果一个feature有多个symbol，feature.id相同但pickingId不同
+            // aFeaIds 存放的是 feature.id
+            geometry.properties.aFeaIds = glData.featureIds;
+            this._prepareFeatureIds(geometry, glData);
+        }
         extend(geometry.properties, glData.properties);
         return {
             geometry,

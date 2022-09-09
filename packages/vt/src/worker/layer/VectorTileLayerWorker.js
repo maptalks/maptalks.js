@@ -18,59 +18,76 @@ export default class VectorTileLayerWorker extends LayerWorker {
      */
     getTileFeatures(tileInfo, cb) {
         const url = tileInfo.url;
+        if (this._cache.has(url)) {
+            const { err, data } = this._cache.get(url);
+            this._readTile(url, err, data, cb);
+            return;
+        }
         return Ajax.getArrayBuffer(url, (err, response) => {
             if (err) {
-                cb(err);
-                return;
+                if (!err.loading) {
+                    this._cache.add(url, { err, data: response && response.data });
+                }
+            } else if (response && response.data) {
+                this._cache.add(url, { err: null, data: response.data });
             }
-            let tile;
-            try {
-                tile = new VectorTile(new Pbf(response.data));
-            } catch (err) {
-                cb(err.message, [], []);
-                return;
-            }
-            const features = [];
-            if (!tile.layers) {
-                cb(null, features, []);
-                return;
-            }
-            const layers = {};
-            let feature;
-            for (const layer in tile.layers) {
-                if (hasOwn(tile.layers, layer)) {
-                    layers[layer] = {
-                        types: {}
-                    };
-                    const types = layers[layer].types;
-                    for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
-                        try {
-                            feature = tile.layers[layer].feature(i);
 
-                            types[feature.type] = 1;
-                            // feature.properties['$layer'] = layer;
-                            // feature.properties['$type'] = feature.type;
-                            features.push({
-                                type: feature.type,
-                                layer: layer,
-                                geometry: feature.loadGeometry(),
-                                properties: feature.properties,
-                                extent: feature.extent
-                            });
-                        } catch (err) {
-                            console.warn('error when load vt geometry:', err);
-                        }
+            this._readTile(url, err, response && response.data, cb);
+        });
+    }
 
+    _readTile(url, err, data, cb) {
+        if (err) {
+            cb(err);
+            return;
+        }
+        let tile;
+        try {
+            tile = new VectorTile(new Pbf(data));
+        } catch (err) {
+            cb(err.message, [], []);
+            return;
+        }
+        const features = [];
+        if (!tile.layers) {
+            cb(null, features, []);
+            return;
+        }
+        const layers = {};
+        let feature;
+        for (const layer in tile.layers) {
+            if (hasOwn(tile.layers, layer)) {
+                layers[layer] = {
+                    types: {}
+                };
+                const types = layers[layer].types;
+                for (let i = 0, l = tile.layers[layer].length; i < l; i++) {
+                    try {
+                        feature = tile.layers[layer].feature(i);
+
+                        types[feature.type] = 1;
+                        // feature.properties['$layer'] = layer;
+                        // feature.properties['$type'] = feature.type;
+                        features.push({
+                            type: feature.type,
+                            layer: layer,
+                            geometry: feature.loadGeometry(),
+                            properties: feature.properties,
+                            extent: feature.extent
+                        });
+                    } catch (err) {
+                        console.warn('error when load vt geometry:', err);
                     }
+
                 }
             }
+        }
 
-            for (const p in layers) {
-                layers[p].types = Object.keys(layers[p].types).map(t => +t);
-            }
+        for (const p in layers) {
+            layers[p].types = Object.keys(layers[p].types).map(t => +t);
+        }
 
-            cb(null, features, layers, { byteLength: response.data.byteLength });
-        });
+        cb(null, features, layers, { byteLength: data.byteLength });
     }
 
     abortTile(url, cb) {

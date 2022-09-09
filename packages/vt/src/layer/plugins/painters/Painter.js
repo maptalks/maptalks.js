@@ -169,7 +169,7 @@ class Painter {
                     const props = geo.geometry.properties;
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
-                    props.elements = props.elements || geo.geometry.elements;
+                    // props.elements = props.elements || geo.geometry.elements;
                     if (hasFeaIds) {
                         props.feaIdPickingMap = pickingIdMap;
                         props.feaPickingIdMap = idPickingMap;

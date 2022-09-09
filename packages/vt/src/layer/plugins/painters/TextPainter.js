@@ -164,7 +164,7 @@ export default class TextPainter extends CollisionPainter {
         if (!pack.glyphAtlas) {
             return null;
         }
-        const geo = super.createGeometry(pack);
+        const geo = super.createGeometry(pack, features);
         if (!geo || !geo.geometry) {
             return null;
         }

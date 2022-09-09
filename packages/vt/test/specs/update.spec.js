@@ -108,6 +108,7 @@ describe('update style specs', () => {
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
             data: point,
             style
         });
@@ -123,13 +124,13 @@ describe('update style specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         map.on('renderend', () => {
             count++;
-            if (count === 8) {
+            if (count === 5) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.setId('newId');
                 group.removeLayer('newId');
-            } else if (count === 9) {
+            } else if (count === 7) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[0] === 0);
@@ -173,6 +174,8 @@ describe('update style specs', () => {
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
+            features: true,
             data: point,
             style
         });
@@ -188,11 +191,10 @@ describe('update style specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         map.on('renderend', () => {
             count++;
-            if (count === 8) {
+            if (count === 4) {
                 map.zoomIn();
             } else if (count === 16) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色
                 assert(pixel[0] === 255);
                 done();
             }
@@ -1438,6 +1440,7 @@ describe('update style specs', () => {
             }
         };
         const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
             data: line,
             style
         });
@@ -1447,21 +1450,24 @@ describe('update style specs', () => {
         let painted = false;
         let finished = false;
         let count = 0;
-        groupLayer.on('layerload', () => {
+        map.on('renderend', () => {
             const canvas = groupLayer.getRenderer().canvas;
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
-                count++;
+
                 if (!painted) {
                     assert.deepEqual(pixel, [78, 78, 78, 255]);
 
                     material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
                     layer.updateSymbol(0, { material });
                     painted = true;
-                } else if (!finished && count >= 5) {
-                    finished = true;
-                    assert.deepEqual(pixel, [64, 73, 71, 255]);
-                    done();
+                } else if (!finished) {
+                    count++;
+                    if (count >= 3) {
+                        finished = true;
+                        assert.deepEqual(pixel, [64, 73, 71, 255]);
+                        done();
+                    }
                 }
             }
         });

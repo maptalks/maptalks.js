@@ -37,12 +37,8 @@ export function prepareFnTypeData(geometry, symbolDef, configs) {
 }
 
 function prepareAttr(geometry, symbolDef, config) {
-    const geoProps = geometry.properties;
-    let aPickingId = geoProps.aPickingId;
-    if (!aPickingId) {
-        aPickingId = geoProps.aPickingId = new geometry.data.aPickingId.constructor(geometry.data.aPickingId);
-    }
-
+    // 因为symbol有可能被更新为fn-type，aPickingId 是必须保存的
+    const aPickingId = preparePickingId(geometry);
     const { attrName, symbolName, related } = config;
     let arr = geometry.data[attrName];
     if (!arr) {
@@ -67,6 +63,15 @@ function prepareAttr(geometry, symbolDef, config) {
         createZoomFnTypeIndexData(geometry, symbolDef, config);
     }
     return arr;
+}
+
+function preparePickingId(geometry) {
+    const geoProps = geometry.properties;
+    let aPickingId = geoProps.aPickingId;
+    if (!aPickingId) {
+        aPickingId = geoProps.aPickingId = new geometry.data.aPickingId.constructor(geometry.data.aPickingId);
+    }
+    return aPickingId;
 }
 
 function updateAttrValue(arr, geometry, symbolDef, config) {

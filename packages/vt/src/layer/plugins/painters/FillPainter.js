@@ -95,7 +95,7 @@ class FillPainter extends BasicPainter {
 
         const material = new reshader.Material(uniforms, DEFAULT_UNIFORMS);
         const mesh = new reshader.Mesh(geometry, material, {
-            disableVAO: true,
+            // disableVAO: true,
             castShadow: false,
             picking: true
         });

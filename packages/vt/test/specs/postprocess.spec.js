@@ -61,6 +61,7 @@ describe('postprocess specs', () => {
 
     it('should can turn on taa', done => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
             data: DATA,
             style: [
                 {
@@ -94,6 +95,7 @@ describe('postprocess specs', () => {
 
     it('should can draw correctly with taa', done => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
             data: DATA,
             style: [
                 {
@@ -138,7 +140,7 @@ describe('postprocess specs', () => {
                         filter: true,
                     },
                 ]);
-            } else if (count >= 2) {
+            } else if (count === 2) {
                 const canvas = map.getRenderer().canvas;
                 const expectedPath = path.join(__dirname, 'fixtures', 'taa', 'setStyle', 'expected.png');
                 compareExpected(canvas, { expectedPath }, done);

@@ -50,23 +50,6 @@ export default class BaseLayerWorker {
                 return;
             }
         }
-        if (this._cache.has(url)) {
-            const { features, layers } = this._cache.get(url);
-            const waitings = loadings[url];
-            delete loadings[url];
-            if (!features || !features.length) {
-                this._callWaitings(waitings);
-                cb();
-                return;
-            }
-            if (waitings) {
-                for (let i = 0; i < waitings.length; i++) {
-                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features);
-                }
-            }
-            this._onTileLoad(context, cb, url, layers, features);
-            return;
-        }
         if (loadings[url]) {
             loadings[url].push({
                 callback: cb,
@@ -96,18 +79,13 @@ export default class BaseLayerWorker {
                 }
             }
             if (err) {
-                if (!err.loading) {
-                    this._cache.add(url, { features: [], layers: [] });
-                }
                 this._callWaitings(waitings, err);
                 return;
             }
             if (!features || !features.length) {
-                this._cache.add(url, { features: [], layers: [] });
                 this._callWaitings(waitings);
                 return;
             }
-            this._cache.add(url, { features, layers });
             if (waitings) {
                 for (let i = 0; i < waitings.length; i++) {
                     this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features, props);
