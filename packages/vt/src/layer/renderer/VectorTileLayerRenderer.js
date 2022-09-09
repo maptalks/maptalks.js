@@ -23,7 +23,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this.ready = false;
         this._styleCounter = 0;
         this._requestingMVT = {};
-        this._tileQueue = [];
         this._plugins = {};
         this._featurePlugins = {};
     }
@@ -148,9 +147,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     //always redraw when map is interacting
     needToRedraw() {
-        if (this._tileQueue.length) {
-            return true;
-        }
         const redraw = super.needToRedraw();
         if (!redraw) {
             const plugins = this._getFramePlugins();
@@ -346,13 +342,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert centi-meter to gl point
         this._parentContext = parentContext || {};
         this._startFrame(timestamp);
-        if (!parentContext || parentContext && parentContext.isFinalRender) {
-            // maptalks/issues#10
-            // 如果consumeTileQueue方法在每个renderMode都会调用，但多边形只在fxaa mode下才会绘制。
-            // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
-            // 改为consumeTileQueue只在finalRender时调用即解决问题
-            this._consumeTileQueue();
-        }
         super.draw(timestamp);
         if (this._currentTimestamp !== timestamp) {
             this._prepareRender(timestamp);
@@ -502,7 +491,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!data) {
             for (let i = 0; i < tiles.length; i++) {
                 const tileInfo = tiles[i];
-                this.onTileLoad({ _empty: true }, tileInfo);
+                this.consumeTile({ _empty: true }, tileInfo);
             }
             return;
         }
@@ -572,7 +561,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 }
             }
             tileInfo.extent = tileData && tileData.extent;
-            this._tileQueue.push({ tileData, tileInfo });
+            this.onTileLoad(tileData, tileInfo)
         }
         this.layer.fire('datareceived', { url });
     }
@@ -824,7 +813,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
             this._groundPainter.paint(groundContext);
         }
-
         plugins.forEach((plugin, idx) => {
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh) {
@@ -1093,7 +1081,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             const status = plugin.createTile(context);
             if (tileCache[idx].geometry) {
                 //插件数据以及经转化为geometry，可以删除原始数据以节省内存
-                pluginData[idx] = 1;
+                tileData.data[idx] = 1;
             }
             if (!this._needRetire && status.retire && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;
@@ -1101,19 +1089,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    _consumeTileQueue() {
-        let count = 0;
-        const limit = this.layer.options['meshLimitPerFrame'];
-        const queue = this._tileQueue;
-        while (queue.length && count < limit) {
-            const { tileData, tileInfo } = queue.shift();
-            if (tileData.style !== this._styleCounter) {
-                continue;
-            }
-            this.onTileLoad(tileData, tileInfo);
-            this._createOneTile(tileInfo, tileData);
-            count++;
-        }
+    checkTileInQueue(tileData) {
+        return tileData.style === this._styleCounter;
     }
 
     pick(x, y, options) {
@@ -1495,11 +1472,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return super.setZIndex.apply(this, arguments);
     }
 
-    onTileLoad(tileImage, tileInfo) {
+    consumeTile(tileImage, tileInfo) {
         if (tileImage._empty) {
             this._retirePrevTile(tileInfo);
         }
-        super.onTileLoad(tileImage, tileInfo);
+        super.consumeTile(tileImage, tileInfo);
+        this._createOneTile(tileInfo, tileImage);
     }
 
     onTileError(tileImage, tileInfo) {
