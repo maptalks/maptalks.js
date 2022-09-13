@@ -201,7 +201,6 @@ export default class BaseLayerWorker {
         }
         const feas = [];
         const copies = [];
-        // debugger
         for (let i = 0; i < features.length; i++) {
             const feature = features[i];
             const customProps = allCustomProps[i];
@@ -405,7 +404,6 @@ export default class BaseLayerWorker {
     }
 
     _createTileGeometry(tileFeatures, pluginConfig, context) {
-        // let features = cloneFeaAndAppendCustomTags(tileFeatures, context.tileInfo.z, pluginConfig);
         let features = tileFeatures;
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;

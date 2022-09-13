@@ -529,8 +529,10 @@ export default class VectorPack {
             result.featureIds = [];
         }
 
-        result.feaIdAttrMap = generateFeatureIndex(featIds);
-        result.feaIdIndiceMap = generateFeatureIndiceIndex(featIds, result.indices);
+        if (featIds && featIds.length) {
+            result.feaIdAttrMap = generateFeatureIndex(featIds);
+            result.feaIdIndiceMap = generateFeatureIndiceIndex(featIds, result.indices);
+        }
 
         return result;
     }
