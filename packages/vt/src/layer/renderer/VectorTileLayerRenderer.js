@@ -1095,6 +1095,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     pick(x, y, options) {
         const hits = [];
+        if (!this.layer.isVisible()) {
+            return hits;
+        }
         const plugins = this._getFramePlugins();
         plugins.forEach((plugin, idx) => {
             if (!plugin) {

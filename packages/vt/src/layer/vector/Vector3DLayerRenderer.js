@@ -1011,6 +1011,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     pick(x, y, options) {
         const hits = [];
+        if (!this.layer.isVisible()) {
+            return hits;
+        }
         const painters = [this.painter, this._markerPainter, this._linePainter];
         painters.forEach(painter => {
             if (!painter) {

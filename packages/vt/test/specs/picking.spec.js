@@ -1072,6 +1072,71 @@ describe('picking specs', () => {
             });
             layer.addTo(map);
         });
+
+        it('should pick nothing in hided PolygonLayer', done => {
+            const options = {
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            const data = {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [13.417135053741617, 52.52976625878565],
+                                [13.417226248848124, 52.52976625878565],
+                                [13.417226248848124, 52.52966625878565],
+                                [13.417135053741617, 52.52966625878565],
+                                [13.417135053741617, 52.52976625878565]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        idx: 10
+                    }
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [13.417135053741617, 52.52956625878565],
+                                [13.417226248848124, 52.52956625878565],
+                                [13.417226248848124, 52.52946625878565],
+                                [13.417135053741617, 52.52946625878565],
+                                [13.417135053741617, 52.52956625878565]
+                            ]
+                        ]
+                    },
+                    properties: {
+                        idx: 11
+                    }
+                }]
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new PolygonLayer('gvt', data, {
+                style: [
+                    {
+                        filter: true,
+                        symbol: {
+                            polygonFill: '#f00'
+                        }
+                    }
+                ]
+            });
+            layer.once('canvasisdirty', () => {
+                layer.hide();
+                const redPoint = layer.identify([13.41720, 52.52949625878565]);
+                assert(redPoint.length === 0);
+                done();
+            });
+            layer.addTo(map);
+        });
     });
 
     const COMMON_OPTIONS = {
@@ -1119,6 +1184,21 @@ describe('picking specs', () => {
             const picked = layer.identify([0.5, 0.5]);
             assert.ok(picked[0].point);
             assert.ok(!picked[0].data);
+            done();
+        });
+        layer.addTo(map);
+    }).timeout(5000);
+
+    it('should pick nothing in VectorTileLayer', done => {
+        map = new maptalks.Map(container, COMMON_OPTIONS.view || DEFAULT_VIEW);
+        const options = JSON.parse(JSON.stringify(COMMON_OPTIONS));
+        options.features = false;
+        options.pickingPoint = true;
+        const layer = new GeoJSONVectorTileLayer('gvt', options);
+        layer.once('canvasisdirty', () => {
+            layer.hide();
+            const picked = layer.identify([0.5, 0.5]);
+            assert.ok(picked.length === 0);
             done();
         });
         layer.addTo(map);
