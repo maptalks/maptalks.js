@@ -28,6 +28,10 @@ const SAVED_FN_TYPE = '__current_fn_types';
  * @param {*} configs
  */
 export function prepareFnTypeData(geometry, symbolDef, configs) {
+    const features = geometry.properties.features;
+    if (!features || !Object.keys(features).length) {
+        return;
+    }
     for (let i = 0; i < configs.length; i++) {
         const { symbolName } = configs[i];
         const savedTypes = geometry[SAVED_FN_TYPE] = geometry[SAVED_FN_TYPE] || {};
@@ -148,6 +152,10 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     }
     const geometry = mesh.geometry;
     if (!geometry) {
+        return;
+    }
+    const features = geometry.properties.features;
+    if (!features || !Object.keys(features).length) {
         return;
     }
     for (let i = 0; i < configs.length; i++) {

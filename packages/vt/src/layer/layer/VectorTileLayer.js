@@ -166,6 +166,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
+        this._styleFeatures = style.features;
         this._originFeatureStyle = style['featureStyle'] || [];
         this._featureStyle = parseFeatureStyle(style['featureStyle']);
         this._vtStyle = style['style'] || [];
@@ -837,6 +838,7 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     _getComputedStyle() {
         return {
+            features: this._styleFeatures || 0,
             background: this._background,
             style: this._vtStyle || [],
             featureStyle: this._featureStyle || []

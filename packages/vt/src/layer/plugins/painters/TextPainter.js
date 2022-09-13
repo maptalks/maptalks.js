@@ -434,6 +434,9 @@ export default class TextPainter extends CollisionPainter {
         const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
         const { collideIds, aCount, features, elements } = mesh.geometry.properties;
         const ids = collideIds;
+        if (!ids) {
+            return;
+        }
         const enableUniquePlacement = this.isEnableUniquePlacement();
 
         const meshBox = this._getMeshBoxes(1);

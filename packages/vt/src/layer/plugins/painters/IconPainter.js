@@ -127,6 +127,9 @@ class IconPainter extends CollisionPainter {
         // Vector3DLayer 中，feature有多个symbol时，会有多个数据的 feature.id 相同，但KEY_IDX不同的情况存在
         // 但 feature.id 可能不存在（比如mapbox的vt在线服务），aPickingId一定存在，所以遍历用的id数组优先选用 collideIds，没有的话就选用aPickingId
         const { collideIds, elements, aCount } = geo.properties;
+        if (!collideIds) {
+            return;
+        }
         const ids = collideIds;
         const collideBoxIndex = {};
         if (!elements) {
