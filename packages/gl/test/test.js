@@ -50,7 +50,7 @@ describe('gl tests', () => {
         });
     });
 
-    context.skip('terrain tests', () =>{
+    context('terrain tests', () =>{
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
