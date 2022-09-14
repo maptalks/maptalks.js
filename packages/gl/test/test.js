@@ -15,7 +15,42 @@ describe('gl tests', () => {
         document.body.removeChild(container);
     });
 
-    context('terrain tests', () =>{
+    context('ground color tests', () => {
+        it('support css color in ground', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                      type: 'fill'
+                    },
+                    symbol: {
+                      polygonFill: '#f00'
+                    }
+                }
+            };
+            const group = new maptalks.GroupGLLayer('group', [], {
+                sceneConfig
+            });
+            let count = 0;
+            group.once('layerload', () => {
+                if (count === 0) {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                    expect(pixel).to.be.eql({ data: { '0': 255, '1': 0, '2': 0, '3': 255 } });
+                    done();
+                }
+                count++;
+            });
+            group.addTo(map);
+        });
+    });
+
+    context.skip('terrain tests', () =>{
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],

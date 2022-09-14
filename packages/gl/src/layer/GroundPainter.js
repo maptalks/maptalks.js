@@ -3,7 +3,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform, hasOwn } from './util/util.js';
+import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const TEX_SIZE_W = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
@@ -520,13 +520,7 @@ class GroundPainter {
     }
 
     _parseColor(c) {
-        if (Array.isArray(c)) {
-            if (c.length === 3) {
-                c.push(1);
-            }
-            return c;
-        }
-        return c;
+        return normalizeColor([], c);
     }
 
     _getUVOffsetAnim() {

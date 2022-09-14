@@ -31,6 +31,7 @@
     "@maptalks/fusiongl": "^0.5.0",
     "@maptalks/regl": "^3.2.3",
     "@maptalks/reshader.gl": "^0.75.0",
+    "color": "^3.0.0",
     "gl-matrix": "^2.6.1"
   },
   "devDependencies": {

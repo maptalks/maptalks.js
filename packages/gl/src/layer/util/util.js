@@ -1,5 +1,6 @@
 const supportAssign = typeof Object.assign === 'function';
 import { vec3, mat4 } from 'gl-matrix';
+import Color from 'color';
 
 /**
  * Merges the properties of sources into destination object.
@@ -56,4 +57,20 @@ export function pushIn(dest) {
         }
     }
     return dest.length;
+}
+
+const colorCache = {};
+
+export function normalizeColor(out, color) {
+    if (!Array.isArray(color)) {
+        const key = color;
+        color = colorCache[key] = colorCache[key] || Color(color).array();
+        for (let i = 0; i < color.length; i++) {
+            out[i] = color[i];
+        }
+    }
+    if (out.length === 3) {
+        out.push(1);
+    }
+    return out;
 }
