@@ -244,6 +244,7 @@ export default class Geometry {
                 } else {
                     this._vao[key].vao(vaoData);
                 }
+                delete this.elements;
                 delete this._elementsUpdated;
             }
             return this._vao[key];
