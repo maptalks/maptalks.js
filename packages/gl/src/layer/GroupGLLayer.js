@@ -453,12 +453,24 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _initTerrainLayer() {
-        const info = this.options['terrain'];
-        this._resetTerrainSkinLayers();
-        this._removeTerrainLayer();
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
+        }
+        const info = this.options['terrain'];
+        if (this._terrainLayer) {
+            const options = this._terrainLayer.options;
+            if (!info || options.urlTemplate !== info.urlTemplate || options.spatialReference !== info.spatialReference) {
+                this._resetTerrainSkinLayers();
+                this._removeTerrainLayer();
+            } else {
+                for (const p in info) {
+                    if (p !== 'urlTemplate' && p !== 'spatialReference') {
+                        this._terrainLayer.config(p, info[p]);
+                    }
+                }
+                return this;
+            }
         }
         if (!info) {
             return this;
