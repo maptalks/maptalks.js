@@ -16,7 +16,8 @@ const options = {
     'pyramidMode': 1,
     'terrainTileSize': 6,
     'terrainWidth': 65,
-    'backZoomOffset': -5
+    'backZoomOffset': -5,
+    'depthMask': true
 };
 
 const EMPTY_TILE_GRIDS = {

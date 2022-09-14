@@ -541,7 +541,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                         zfail: 'keep',
                         zpass: 'replace'
                     }
-                }
+                },
+                depth: {
+                    enable: true,
+                    mask: () => {
+                        const depthMask = this.layer.options['depthMask'];
+                        return depthMask;
+                    },
+                    func: this.layer.options.depthFunc || '<='
+                },
             }
         });
         // this._picking = new FBORayPicking(
