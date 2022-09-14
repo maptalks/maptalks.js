@@ -67,16 +67,16 @@ function getSquareVertexes(width, height, dirX, dirY, dirZ, normalX, normalY, up
     const radius = vec2.len(SIZE) / width;
     const ratio = Math.atan(height / width);
 
-    let θ = Math.PI / 2 + (Math.PI / 2 - ratio);  // theta
+    let theta = Math.PI / 2 + (Math.PI / 2 - ratio);  // theta
     if (!radialOffsets[0]) {
         radialOffsets[0] = [];
     }
-    addTubeNormalVertexs(U, V, radialOffsets[0], radius, θ, up ? 1 : -1);
-    θ += 2 * ratio;
+    addTubeNormalVertexs(U, V, radialOffsets[0], radius, theta, up ? 1 : -1);
+    theta += 2 * ratio;
     if (!radialOffsets[1]) {
         radialOffsets[1] = [];
     }
-    addTubeNormalVertexs(U, V, radialOffsets[1], radius, θ, up ? 1 : -1);
+    addTubeNormalVertexs(U, V, radialOffsets[1], radius, theta, up ? 1 : -1);
 
     return radialOffsets;
 }

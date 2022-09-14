@@ -226,30 +226,30 @@ function getRadialVertexes(radius, segments, dirX, dirY, dirZ, normalX, normalY,
     const offsets = radialOffsets[segments];
     // const factor = 1;//up ? 1 : -1;
     for (var i = 0; i < segments; i++) {
-        const θ = Math.PI * i / segments;  // theta
+        const theta = Math.PI * i / segments;  // theta
         const middle = 0;
         // 因为join处的radius不为1，但join变为圆管时，垂直radius仍然是1，否则无法对齐，只有水平的radius为joinRadius
         // r就是radius的比例，在垂直时为1，水平时为joinRadius
         // normalY是y方向的normal值，垂直方向为0，水平方向为1
-        const normalY = (1 - Math.abs(θ - middle) / (Math.PI / 2));
+        const normalY = (1 - Math.abs(theta - middle) / (Math.PI / 2));
         // const r = 1;//(1 - normalY) * (joinRadius - 1) + 1;
-        // const dx = r * factor * radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
-        // const dy = r * factor * radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
-        // const dz = r * factor * radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);
+        // const dx = r * factor * radius * (Math.cos(theta) * U[0] + Math.sin(theta) * V[0]);
+        // const dy = r * factor * radius * (Math.cos(theta) * U[1] + Math.sin(theta) * V[1]);
+        // const dz = r * factor * radius * (Math.cos(theta) * U[2] + Math.sin(theta) * V[2]);
 
         // offsets[i] = offsets[i] || [];
         // vec4.set(offsets[i], dx, dy, dz, normalY * (up ? -1 : 1));
         offsets[i] = offsets[i] || [];
-        addTubeNormalVertexs(U, V, offsets[i], radius, θ, normalY * (up ? -1 : 1));
+        addTubeNormalVertexs(U, V, offsets[i], radius, theta, normalY * (up ? -1 : 1));
     }
     return offsets;
 }
 
 
-export function addTubeNormalVertexs(U, V, offsets, radius, θ, up) {
-    const dx = radius * (Math.cos(θ) * U[0] + Math.sin(θ) * V[0]);
-    const dy = radius * (Math.cos(θ) * U[1] + Math.sin(θ) * V[1]);
-    const dz = radius * (Math.cos(θ) * U[2] + Math.sin(θ) * V[2]);
+export function addTubeNormalVertexs(U, V, offsets, radius, theta, up) {
+    const dx = radius * (Math.cos(theta) * U[0] + Math.sin(theta) * V[0]);
+    const dy = radius * (Math.cos(theta) * U[1] + Math.sin(theta) * V[1]);
+    const dz = radius * (Math.cos(theta) * U[2] + Math.sin(theta) * V[2]);
 
     vec4.set(offsets, dx, dy, dz, up);
     return offsets;
