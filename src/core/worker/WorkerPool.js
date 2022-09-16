@@ -1,3 +1,4 @@
+import { requestAnimFrame } from '../util';
 import { getWorkerSourcePath } from './Worker';
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
@@ -98,10 +99,23 @@ export default class WorkerPool {
 }
 
 let globalWorkerPool;
-
+let isStart = false;
 export function getGlobalWorkerPool() {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
     }
     return globalWorkerPool;
+}
+
+export function globalWorkerPoolIsStart() {
+    return isStart;
+}
+
+function frameLoop() {
+    getGlobalWorkerPool().commit();
+    requestAnimFrame(frameLoop);
+}
+if (requestAnimFrame) {
+    requestAnimFrame(frameLoop);
+    isStart = true;
 }

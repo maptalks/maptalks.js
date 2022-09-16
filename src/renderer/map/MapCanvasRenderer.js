@@ -5,7 +5,7 @@ import Point from '../../geo/Point';
 import Canvas2D from '../../core/Canvas';
 import MapRenderer from './MapRenderer';
 import Map from '../../map/Map';
-import { getGlobalWorkerPool } from '../../core/worker/WorkerPool';
+import { getGlobalWorkerPool, globalWorkerPoolIsStart } from '../../core/worker/WorkerPool';
 
 /**
  * @classdesc
@@ -612,7 +612,9 @@ class MapCanvasRenderer extends MapRenderer {
         this._frameTimestamp = framestamp;
         this._resizeCount = 0;
         this.renderFrame(framestamp);
-        getGlobalWorkerPool().commit();
+        if (!globalWorkerPoolIsStart()) {
+            getGlobalWorkerPool().commit();
+        }
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
     }
