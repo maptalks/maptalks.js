@@ -599,6 +599,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             positionType: Float32Array,
             defaultAltitude: 0,
             forceAltitudeAttribute: true,
+            markerWidthType: Uint16Array,
+            markerHeightType: Uint16Array
         };
         const textOptions = extend({}, markerOptions);
         markerOptions.allowEmptyPack = 1;

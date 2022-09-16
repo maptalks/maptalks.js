@@ -342,14 +342,14 @@ export default class PointPack extends VectorPack {
         const formats = [];
         if (markerWidthFn) {
             formats.push({
-                type: Uint8Array,
+                type: this.options['markerWidthType'] || Uint8Array,
                 width: 1,
                 name: 'aMarkerWidth'
             });
         }
         if (markerHeightFn) {
             formats.push({
-                type: Uint8Array,
+                type: this.options['markerHeightType'] || Uint8Array,
                 width: 1,
                 name: 'aMarkerHeight'
             });
