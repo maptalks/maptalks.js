@@ -61,6 +61,17 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
                         }
                     }
                 }
+            } else if (placement === 'vertex-first') {
+                const ring = polygon[0];
+                if (ring && ring[0] && !isOut(ring[0], EXTENT)) {
+                    anchors.push(ring[0]);
+                }
+
+            } else if (placement === 'vertex-last') {
+                const ring = polygon[0];
+                if (ring && ring[ring.length - 1] && !isOut(ring[ring.length - 1], EXTENT)) {
+                    anchors.push(ring[ring.length - 1]);
+                }
             } else {
                 // 16 here represents 2 pixels
                 const poi = findPoleOfInaccessibility(polygon, 16);
@@ -78,6 +89,10 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
                     if (!isOut(line[ii], EXTENT)) {
                         anchors.push(line[ii]);
                     }
+                }
+            } else if (placement === 'vertex-last') {
+                if (line && line[line.length - 1] && !isOut(line[line.length - 1], EXTENT)) {
+                    anchors.push(line[line.length - 1]);
                 }
             } else {
                 if (!isOut(line[0], EXTENT)) {
