@@ -4,6 +4,7 @@ import { extend, isNil, isString, hasOwn, equalsArray } from '../../common/Util'
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
+import { PackUtil } from '@maptalks/vector-packer';
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
@@ -892,13 +893,13 @@ class VectorTileLayer extends maptalks.TileLayer {
         const results = renderer.pick(point.x * dpr, point.y * dpr, options);
         if (this.getJSONType() !== 'GeoJSONVectorTileLayer') {
             // 将瓦片坐标转成经纬度坐标
-            return this._convertPickedCoordinates(results);
+            return this._convertPickedFeature(results);
         } else {
             return results;
         }
     }
 
-    _convertPickedCoordinates(picks) {
+    _convertPickedFeature(picks) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return picks;
@@ -918,10 +919,63 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (geometry) {
                 pick.data = extend({}, pick.data);
                 pick.data.feature = extend({}, pick.data.feature);
-                pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
+                const type = pick.data.feature.type;
+                pick.data.feature.type = 'Feature';
+                // pick.data.feature.type = getFeatureType(pick.data.feature);
+                pick.data.feature.geometry = this._convertGeoemtry(type, geometry, nw, extent, res);
+                // pick.data.feature.geometry = this._convertGeometryCoords(geometry, nw, extent, res);
             }
         }
         return picks;
+    }
+
+    _convertGeoemtry(type, geometry, nw, extent, res) {
+        let geoType, coordinates;
+        if (type === 1) {
+            if (geometry.length <= 1) {
+                geoType = 'Point';
+                coordinates = this._convertGeometryCoords(geometry, nw, extent, res)[0] || [];
+            } else {
+                geoType = 'MultiPoint';
+                coordinates = this._convertGeometryCoords(geometry, nw, extent, res);
+            }
+        } else if (type === 2) {
+            if (geometry.length <= 1) {
+                geoType = 'LineString';
+                coordinates = this._convertGeometryCoords(geometry, nw. extent, res)[0] || [];
+            } else {
+                geoType = 'MultiLineString';
+                coordinates = this._convertGeometryCoords(geometry, nw. extent, res);
+            }
+        } else if (type === 3) {
+            coordinates = [];
+            let polygon;
+            let count = 0;
+            for (let i = 0; i < geometry.length; i++) {
+                const area = PackUtil.calculateSignedArea(geometry[i]);
+                if (area > 0) {
+                    count++;
+                    if (polygon && polygon.length) {
+                        coordinates.push(polygon);
+                    }
+                    polygon = [];
+                }
+                polygon.push(this._convertGeometryCoords(geometry[i], nw, extent, res))
+            }
+            if (polygon.length) {
+                coordinates.push(polygon);
+            }
+            if (count <= 1) {
+                geoType = 'Polygon';
+                coordinates = coordinates[0];
+            } else {
+                geoType = 'MultiPolygon';
+            }
+        }
+        return {
+            type: geoType,
+            coordinates
+        };
     }
 
     _convertGeometryCoords(geometry, nw, extent, res) {
@@ -1095,5 +1149,38 @@ function checkFeaStyleExist(styles, idx, styleIdx) {
 function checkStyleExist(styles, idx) {
     if (!styles[idx]) {
         throw new Error(`No plugin defined at style of ${idx}`);
+    }
+}
+
+function getFeatureType(feature) {
+    const geometry = feature.geometry;
+    if (feature.type === 1) {
+        if (geometry.length <= 1) {
+            return 'Point';
+        } else {
+            return 'MultiPoint';
+        }
+    } else if (feature.type === 2) {
+        if (geometry.length <= 1) {
+            return 'LineString';
+        } else {
+            return 'MultiLineString';
+        }
+    } else if (feature.type === 3) {
+        let count = 0;
+        for (let i = 0; i < geometry.length; i++) {
+            const area = PackUtil.calculateSignedArea(geometry[i]);
+            if (area > 0) {
+                count++
+            }
+            if (count > 1) {
+                break;
+            }
+        }
+        if (count <= 1) {
+            return 'Polygon'
+        } else {
+            return 'MultiPolygon';
+        }
     }
 }

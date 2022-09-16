@@ -1,6 +1,7 @@
 import { fillArray, isArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { StyleUtil } from '@maptalks/vector-packer';
+import { isObjectEmpty } from './is_obj_empty';
 
 export const PREFIX = '_fn_type_';
 export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
@@ -29,7 +30,7 @@ const SAVED_FN_TYPE = '__current_fn_types';
  */
 export function prepareFnTypeData(geometry, symbolDef, configs) {
     const features = geometry.properties.features;
-    if (!features || !Object.keys(features).length) {
+    if (isObjectEmpty(features)) {
         return;
     }
     for (let i = 0; i < configs.length; i++) {
@@ -155,18 +156,18 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
         return;
     }
     const features = geometry.properties.features;
-    if (!features || !Object.keys(features).length) {
+    if (isObjectEmpty(features)) {
         return;
     }
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
         const attrName = config.attrName;
-        const aIndexPropName = (PREFIX + attrName + 'Index').trim();
         if (!symbolChanged(geometry, symbolDef, config)) {
             const { aPickingId } = geometry.properties;
             if (!aPickingId || geometry._fnDataZoom === z) {
                 continue;
             }
+            const aIndexPropName = (PREFIX + attrName + 'Index').trim();
             const aIndex = geometry.properties[aIndexPropName];
             if (!aIndex) {
                 continue;
@@ -197,6 +198,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
                 }
             }
         } else {
+            const aIndexPropName = (PREFIX + attrName + 'Index').trim();
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
             updateFnTypeAttrib(geometry, aIndex, config);

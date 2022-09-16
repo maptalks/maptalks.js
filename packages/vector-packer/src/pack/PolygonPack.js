@@ -2,7 +2,6 @@ import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import classifyRings from './util/classify_rings';
 import earcut from 'earcut';
-import { getIndexArrayType } from './util/array';
 import { isNil, normalizeColor } from '../style/Util';
 import { clipPolygon } from './util/clip_polygon';
 import { isFunctionDefinition } from '@maptalks/function-type';

@@ -5,6 +5,7 @@ import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
 import { clamp, isNil, getUniqueIds } from '../Util';
 import CollisionGroup from './CollisionGroup';
+import { isObjectEmpty } from './util/is_obj_empty';
 // import { getLabelContent } from './util/get_label_content';
 
 
@@ -38,7 +39,7 @@ export default class CollisionPainter extends BasicPainter {
         // 但 markerPlacement 为 line 时，iconPainter会重新生成 collideIds 和 uniqueCollideIds
         const glData = args[0];
         const features = args[1];
-        if (features && Object.keys(features).length) {
+        if (!isObjectEmpty(features)) {
             geometry.properties.collideIds = glData.featureIds && glData.featureIds.length ? glData.featureIds : glData.data.aPickingId;
             // uniqueCollideIds 是 collideIds 去重后的值，碰撞检测时对其遍历，按每个值来计算检测结果
             geometry.properties.uniqueCollideIds = getUniqueIds(geometry.properties.collideIds);

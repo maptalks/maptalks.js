@@ -1,6 +1,7 @@
 import Painter from './Painter';
 import { reshader } from '@maptalks/gl';
 import { extend } from '../Util';
+import { isObjectEmpty } from './util/is_obj_empty';
 
 export default class BasicPainter extends Painter {
 
@@ -31,7 +32,7 @@ export default class BasicPainter extends Painter {
         if (glData.glyphAtlas) {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;
         }
-        if (features && Object.keys(features).length) {
+        if (!isObjectEmpty(features)) {
             // aPickingId 中存放的是 KEY_IDX 的值，Vector3DLayer中如果一个feature有多个symbol，feature.id相同但pickingId不同
             // aFeaIds 存放的是 feature.id
             geometry.properties.aFeaIds = glData.featureIds;

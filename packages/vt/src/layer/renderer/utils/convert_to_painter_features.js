@@ -1,5 +1,4 @@
 import { KEY_IDX } from '../../../common/Constant';
-import { extend } from '../../../common/Util';
 
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 
