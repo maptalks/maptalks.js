@@ -99,16 +99,11 @@ export default class WorkerPool {
 }
 
 let globalWorkerPool;
-let isStart = false;
 export function getGlobalWorkerPool() {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
     }
     return globalWorkerPool;
-}
-
-export function globalWorkerPoolIsStart() {
-    return isStart;
 }
 
 function frameLoop() {
@@ -117,5 +112,4 @@ function frameLoop() {
 }
 if (requestAnimFrame) {
     requestAnimFrame(frameLoop);
-    isStart = true;
 }
