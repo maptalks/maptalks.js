@@ -65,12 +65,12 @@ export function normalizeColor(out, color) {
     if (!Array.isArray(color)) {
         const key = color;
         color = colorCache[key] = colorCache[key] || Color(color).array();
-        for (let i = 0; i < color.length; i++) {
-            out[i] = color[i];
-        }
     }
-    if (out.length === 3) {
-        out.push(1);
+    for (let i = 0; i < color.length; i++) {
+        out[i] = color[i];
+    }
+    if (color.length === 3) {
+        out[3] = 1;
     }
     return out;
 }
