@@ -4,6 +4,9 @@ import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
 import { pack3, packDepth } from './PickingUtil';
 
+let TMP_POINT;
+let TMP_COORD;
+
 const unpackFun = `
     vec3 unpack(highp float f) {
         highp vec3 color;
@@ -90,9 +93,10 @@ const depthFrag = `
 
 export default class FBORayPicking {
 
-    constructor(renderer, { vert, uniforms, defines, extraCommandProps }, fbo) {
+    constructor(renderer, { vert, uniforms, defines, extraCommandProps }, fbo, map) {
         this._renderer = renderer;
         this._fbo = fbo;
+        this._map = map;
         this._clearFbo(fbo);
         this._vert = vert;
         this._uniforms = uniforms;
@@ -272,13 +276,16 @@ export default class FBORayPicking {
         }
 
         const points = [];
+        const coords = [];
         if (meshIds.length && options['returnPoint']) {
             const { viewMatrix, projMatrix } = options;
             const depths = this._pickDepth(px, py, width, height, pixels, pickedMeshes, uniforms);
             for (let i = 0; i < depths.length; i++) {
                 if (depths[i] && meshIds[i] != null && pickingIds[i] != null) {
                     const point = this._getWorldPos(x, y, depths[i], viewMatrix, projMatrix);
+                    const coord = this._convertPickPoint(point);
                     points.push(point);
+                    coords.push(coord);
                 } else {
                     points.push(null);
                 }
@@ -300,7 +307,8 @@ export default class FBORayPicking {
                     return {
                         meshId: meshIds[ii],
                         pickingId: pickingIds[ii],
-                        point: points[ii] || null
+                        point: points[ii] || null,
+                        coordinate: coords[ii] || null
                     };
                 }
             }
@@ -311,6 +319,24 @@ export default class FBORayPicking {
             meshId: null,
             point: null
         };
+    }
+
+    _convertPickPoint(point) {
+        const map = this._map;
+        if (!map) {
+            return null;
+        }
+        const glRes = map.getGLRes();
+        if (!TMP_POINT) {
+            const center = map.getCenter();
+            TMP_COORD = new center.constructor(0, 0, 0);
+            const point = map.coordToPoint(center);
+            TMP_POINT = new point.constructor(0, 0);
+        }
+        TMP_POINT.set(point[0], point[1]);
+        const coord = map.pointAtResToCoord(TMP_POINT, glRes, TMP_COORD);
+        const altitude = map.pointAtResToAltitude(point[2], glRes);
+        return [coord.x, coord.y, altitude];
     }
 
     clear() {
