@@ -194,7 +194,8 @@ class TubePainter extends BasicPainter {
                     ],
                     extraCommandProps: this.getExtraCommandProps()
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             )];
         }
     }

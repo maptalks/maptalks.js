@@ -448,6 +448,7 @@ class Painter {
             const result = {
                 data: props && props.features && props.features[pickingId],
                 point,
+                coordinate: picked.coordinate,
                 plugin: this.pluginIndex,
             };
             const idMap = mesh.geometry.properties.feaPickingIdMap;

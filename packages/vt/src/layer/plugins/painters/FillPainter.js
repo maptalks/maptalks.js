@@ -286,7 +286,8 @@ class FillPainter extends BasicPainter {
                     ],
                     extraCommandProps
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             )];
         }
     }

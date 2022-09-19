@@ -776,7 +776,8 @@ export default class TextPainter extends CollisionPainter {
                         viewport: this.pickingViewport
                     }
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             );
             textPicking.filter = mesh => {
                 const symbolIndex = mesh.properties.symbolIndex;
@@ -793,7 +794,8 @@ export default class TextPainter extends CollisionPainter {
                         viewport: this.pickingViewport
                     }
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             );
             linePicking.filter = mesh => {
                 const symbolIndex = mesh.properties.symbolIndex;

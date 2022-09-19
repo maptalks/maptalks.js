@@ -134,7 +134,8 @@ class WaterPainter extends BasicPainter {
                         viewport: this.pickingViewport
                     }
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             )];
         }
         this._loadTextures();

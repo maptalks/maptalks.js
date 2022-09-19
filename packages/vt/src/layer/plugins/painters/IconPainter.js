@@ -724,7 +724,8 @@ class IconPainter extends CollisionPainter {
                     ],
                     extraCommandProps: iconExtraCommandProps
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             );
             markerPicking.filter = mesh => {
                 return !!mesh.geometry.properties.iconAtlas;
@@ -737,7 +738,8 @@ class IconPainter extends CollisionPainter {
                     uniforms,
                     extraCommandProps
                 },
-                this.pickingFBO
+                this.pickingFBO,
+                this.getMap()
             );
             textPicking.filter = mesh => {
                 return !!mesh.geometry.properties.glyphAtlas;
