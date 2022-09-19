@@ -37,7 +37,7 @@ class StandardShader extends MeshShader {
         const modelNormalMatrix = [];
         const tempMat4 = [];
         const modelViewNormalMatrix = [];
-        const viewModelMatrix = [];
+        const modelViewMatrix = [];
         const uEnvironmentTransform = [];
         const centerMatrix = [];
 
