@@ -4,6 +4,7 @@ attribute vec3 aBarycentric;
 varying vec3 vBarycentric;
 
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 projMatrix;
 uniform mat4 positionMatrix;
 varying vec3 vPosition;
@@ -12,8 +13,7 @@ varying vec3 vPosition;
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
-    mat4 vmMatrix = getVMMatrix();
-    gl_Position = projMatrix * vmMatrix * localPositionMatrix * localPosition;
+    gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * localPosition;
     vBarycentric = aBarycentric;
     vPosition = aPosition;
 }

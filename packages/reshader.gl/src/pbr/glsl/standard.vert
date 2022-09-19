@@ -22,6 +22,7 @@ vec3 Normal;
 vec4 Tangent;
 
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 uniform mat4 projMatrix;
 
@@ -143,8 +144,7 @@ void main() {
     vModelVertex = (modelMatrix * localVertex).xyz;
 
     vec4 position = localPositionMatrix * localVertex;
-    mat4 vmMatrix = getVMMatrix();
-    vec4 viewVertex = vmMatrix * position;
+    vec4 viewVertex = modelViewMatrix * position;
     vViewVertex = viewVertex;
     // gl_Position = projMatrix * modelViewMatrix * localVertex;
     mat4 jitteredProjection = projMatrix;
