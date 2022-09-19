@@ -891,7 +891,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         const dpr = map.getDevicePixelRatio();
         const results = renderer.pick(point.x * dpr, point.y * dpr, options);
-        if (this.getJSONType() !== 'GeoJSONVectorTileLayer') {
+        if (this.options['features'] && this.options['features'] !== 'id') {
             // 将瓦片坐标转成经纬度坐标
             return this._convertPickedFeature(results);
         } else {
