@@ -228,13 +228,17 @@ export default class Geometry {
                     primitive: this.getPrimitive()
                 };
                 if (this.elements && !isNumber(this.elements)) {
-                    vaoData.elements = {
-                        primitive: this.getPrimitive(),
-                        data: this.elements
-                    };
-                    const type = this.getElementsType(this.elements);
-                    if (type) {
-                        vaoData.elements.type = type;
+                    if (this.elements.destroy) {
+                        vaoData.elements = this.elements;
+                    } else {
+                        vaoData.elements = {
+                            primitive: this.getPrimitive(),
+                            data: this.elements
+                        };
+                        const type = this.getElementsType(this.elements);
+                        if (type) {
+                            vaoData.elements.type = type;
+                        }
                     }
                 }
                 if (!this._vao[key]) {
@@ -267,7 +271,7 @@ export default class Geometry {
         return false;
     }
 
-    generateBuffers(regl, options) {
+    generateBuffers(regl) {
         //generate regl buffers beforehand to avoid repeated bufferData
         //提前处理addBuffer插入的arraybuffer
         const allocatedBuffers = this._buffers;
@@ -309,9 +313,9 @@ export default class Geometry {
         this.data = buffers;
         delete this._reglData;
 
-        const supportVAO = isSupportVAO(regl);
-        const excludeElementsInVAO = options && options.excludeElementsInVAO;
-        if ((!supportVAO || excludeElementsInVAO) && this.elements && !isNumber(this.elements)) {
+        // const supportVAO = isSupportVAO(regl);
+        // const excludeElementsInVAO = options && options.excludeElementsInVAO;
+        if (this.elements && !isNumber(this.elements)) {
             const info = {
                 primitive: this.getPrimitive(),
                 data: this.elements
@@ -327,11 +331,6 @@ export default class Geometry {
             }
             elements[REF_COUNT_KEY]++;
 
-        } else if (supportVAO && this.elements && this.elements.buffer) {
-            if (this.elements.byteOffset > 0) {
-                // this.elements有可能被包含在一个很大的arraybuffer中，会造成这个很大arraybuffer被缓存，无法释放。
-                this.elements = this.elements.slice();
-            }
         }
     }
 
