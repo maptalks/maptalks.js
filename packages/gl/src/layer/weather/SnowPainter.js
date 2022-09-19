@@ -2,7 +2,7 @@ import { mat4, vec3, quat } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import snowVert from './glsl/snow.vert';
 import snowFrag from './glsl/snow.frag';
-const viewModelMatrix = [];
+const modelViewMatrix = [];
 const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [], DEFAULT_ZOOM = 16.685648411389433;
 const Y_UP_TO_Z_UP = mat4.fromRotationTranslation([], quat.fromEuler([], 90, 0, 0), [0, 0, 0]);
@@ -31,10 +31,10 @@ class SnowPainter {
             frag: snowFrag,
             uniforms: [
                 {
-                    name: 'viewModelMatrix',
+                    name: 'modelViewMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

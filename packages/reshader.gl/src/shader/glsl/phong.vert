@@ -121,7 +121,7 @@ void main()
         shadow_computeShadowPars(localPositionMatrix * localPosition);
     #endif
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
+        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix, localPosition);
     #endif
 
     #ifdef HAS_I3S_UVREGION

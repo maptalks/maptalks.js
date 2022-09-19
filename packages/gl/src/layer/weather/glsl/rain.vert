@@ -43,6 +43,6 @@ void main()
     y += bottom;
     y += aPosition.y - aNormal.y;
     localPosition = vec4( foot.x, y, foot.y , 1.0);
-    gl_Position = projMatrix * viewModelMatrix * localPositionMatrix * localPosition;
+    gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * localPosition;
     vTexCoord = aTexCoord;
 }

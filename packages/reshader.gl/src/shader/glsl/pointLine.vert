@@ -35,6 +35,6 @@ void main()
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix, localPosition);
+        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix, localPosition);
     #endif
 }

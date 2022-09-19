@@ -146,7 +146,7 @@ void main() {
     mat4 vmMatrix = getVMMatrix();
     vec4 viewVertex = vmMatrix * position;
     vViewVertex = viewVertex;
-    // gl_Position = projMatrix * viewModelMatrix * localVertex;
+    // gl_Position = projMatrix * modelViewMatrix * localVertex;
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * viewVertex;
@@ -244,7 +244,7 @@ void main() {
     #endif
 
     #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * viewModelMatrix * localPositionMatrix,localVertex);
+        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
     #endif
 
     #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)

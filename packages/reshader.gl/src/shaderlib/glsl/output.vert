@@ -7,7 +7,7 @@
     #endif
     uniform mat4 viewCenterMatrix;
 #endif
-uniform mat4 viewModelMatrix;
+uniform mat4 modelViewMatrix;
 #ifdef HAS_SKIN
     uniform int skinAnimation;
     #include <skin_vert>
@@ -88,6 +88,6 @@ mat4 getVMMatrix() {
     #ifdef HAS_INSTANCE
         return viewCenterMatrix;
     #else
-        return viewModelMatrix;
+        return modelViewMatrix;
     #endif
 }

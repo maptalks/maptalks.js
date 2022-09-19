@@ -15,6 +15,6 @@ void main()
 {
     vec4 localPosition = getPosition(aPosition);
     mat4 localPositionMatrix = getPositionMatrix();
-    gl_Position = projMatrix * viewModelMatrix * localPositionMatrix * localPosition;
+    gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * localPosition;
     vTexCoord = aTexCoord;
 }

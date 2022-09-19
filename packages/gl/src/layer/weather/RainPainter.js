@@ -2,7 +2,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import { mat4, quat, vec3 } from 'gl-matrix';
 import rainVert from './glsl/rain.vert';
 import rainFrag from './glsl/rain.frag';
-const viewModelMatrix = [];
+const modelViewMatrix = [];
 const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [];
 const DEFAULT_COLOR = [1, 1, 1];
@@ -42,10 +42,10 @@ class RainPainer {
             frag: rainFrag,
             uniforms: [
                 {
-                    name: 'viewModelMatrix',
+                    name: 'modelViewMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

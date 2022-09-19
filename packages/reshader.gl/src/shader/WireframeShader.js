@@ -8,7 +8,7 @@ class WireframeShader extends MeshShader {
 
     constructor(config = {}) {
         let extraCommandProps = config.extraCommandProps || {};
-        const viewModelMatrix = [];
+        const modelViewMatrix = [];
         const centerMatrix = [];
         extraCommandProps = extend({}, extraCommandProps, {
             blend: {
@@ -28,10 +28,10 @@ class WireframeShader extends MeshShader {
             frag: wireframeFrag,
             uniforms: [
                 {
-                    name: 'viewModelMatrix',
+                    name: 'modelViewMatrix',
                     type: 'function',
                     fn: (context, props) => {
-                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                     }
                 },
                 {

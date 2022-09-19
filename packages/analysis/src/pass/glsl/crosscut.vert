@@ -9,5 +9,5 @@ void main()
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 worldPosition = modelMatrix * localPositionMatrix * getPosition(aPosition);
     vWorldPosition = worldPosition;
-    gl_Position = projMatrix * viewModelMatrix * localPositionMatrix * getPosition(aPosition);
+    gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * getPosition(aPosition);
 }

@@ -16,7 +16,7 @@ export default class CrossCutPass {
             frag,
             uniforms: [
                 {
-                    name: 'viewModelMatrix',
+                    name: 'modelViewMatrix',
                     type: 'function',
                     fn: function (context, props) {
                         return mat4.multiply([], props['viewMatrix'], props['modelMatrix']);

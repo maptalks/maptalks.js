@@ -74,10 +74,10 @@ class StandardShader extends MeshShader {
             //     }
             // },
             {
-                name: 'viewModelMatrix',
+                name: 'modelViewMatrix',
                 type: 'function',
                 fn: (_, props) => {
-                    return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                 }
             },
             {

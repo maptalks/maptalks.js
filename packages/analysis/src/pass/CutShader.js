@@ -6,7 +6,7 @@ import vert from './glsl/cutShader.vert';
 class CutShader extends reshader.MeshShader {
     constructor(config = {}) {
         const normalMatrix = [];
-        const viewModelMatrix = [];
+        const modelViewMatrix = [];
         const extraUniforms = config.uniforms;
         const uniforms = [
             {
@@ -17,10 +17,10 @@ class CutShader extends reshader.MeshShader {
                 }
             },
             {
-                name: 'viewModelMatrix',
+                name: 'modelViewMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                    return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                 }
             }
         ];

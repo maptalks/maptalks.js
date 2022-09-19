@@ -5,7 +5,7 @@ import Scene from '../../Scene';
 import { isFunction } from '../../common/Util';
 import mixVert from './glsl/fog_mixFactor.vert';
 import mixFrag from './glsl/fog_mixFactor.frag';
-const viewModelMatrix = [];
+const modelViewMatrix = [];
 class FogPass{
     constructor(regl, viewport) {
         this._regl = regl;
@@ -19,10 +19,10 @@ class FogPass{
             frag: mixFrag,
             uniforms: [
                 {
-                    name: 'viewModelMatrix',
+                    name: 'modelViewMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        return mat4.multiply(viewModelMatrix, props['viewMatrix'], props['modelMatrix']);
+                        return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
                     }
                 }
             ],

@@ -100,7 +100,7 @@ void main()
 
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
-    gl_Position = jitteredProjection * viewModelMatrix * localPositionMatrix * localPosition;
+    gl_Position = jitteredProjection * modelViewMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
         vec2 TexCoord = getTexcoord(aTexCoord);
         vTexCoord = TexCoord * uvScale + uvOffset;

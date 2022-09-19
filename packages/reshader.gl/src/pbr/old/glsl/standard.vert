@@ -16,7 +16,7 @@
 #endif
 #if defined(USE_NORMAL_MAP)
     varying vec3 vViewPos;
-    uniform mat4 viewModelMatrix;
+    uniform mat4 modelViewMatrix;
 #endif
     uniform mat4 modelMatrix;
     uniform mat4 projViewModelMatrix;
@@ -34,7 +34,7 @@
         vWorldPos = (modelMatrix * pos).xyz;
 
         #if defined(USE_NORMAL_MAP)
-            vViewPos = (viewModelMatrix * pos).xyz;
+            vViewPos = (modelViewMatrix * pos).xyz;
         #endif
 
         vNormal = mat3(modelMatrix) * aNormal;
