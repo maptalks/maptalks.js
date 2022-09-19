@@ -79,7 +79,8 @@ describe('style compress specs', () => {
                     }
                 }
             ],
-            featureStyle: []
+            featureStyle: [],
+            features: 0
         };
         assert.deepEqual(style, expected);
     });

@@ -6,6 +6,7 @@ import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import deepEuqal from 'fast-deep-equal';
+import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
@@ -446,7 +447,7 @@ class Painter {
                 point[2] = Math.round(point[2] * 1E5) / 1E5;
             }
             const result = {
-                data: props && props.features && props.features[pickingId],
+                data: this._convertProxyFeature(props && props.features && props.features[pickingId]),
                 point,
                 coordinate: picked.coordinate,
                 plugin: this.pluginIndex,
@@ -458,6 +459,19 @@ class Painter {
             return result;
         }
         return null;
+    }
+
+    _convertProxyFeature(data) {
+        const feature = data && data.feature;
+        if (!feature || !feature.customProps) {
+            return data;
+        }
+        const result = extend({}, data);
+        result.feature = extend({}, data.feature);
+        delete result.feature.customProps;
+        result.feature.properties = extend({}, feature.properties, feature.properties[oldPropsKey]);
+        delete result.feature.properties[oldPropsKey];
+        return result;
     }
 
     updateSceneConfig(/* config */) {

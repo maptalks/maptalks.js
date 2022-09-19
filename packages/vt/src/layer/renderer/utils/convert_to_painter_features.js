@@ -40,7 +40,7 @@ function hasFeature(features) {
     return false;
 }
 
-const oldPropsKey = '__original_properties';
+export const oldPropsKey = '__original_properties';
 
 const proxyGetter = {
     get: function(obj, prop) {

@@ -107,6 +107,7 @@ describe('picking specs', () => {
                     },
                 },
                 'point': [736, 736, 0],
+                'coordinate': [0.50537109375,0.5053645409603007,0],
                 'type': 'icon',
                 'plugin': 0,
                 'featureId': 0
@@ -159,6 +160,7 @@ describe('picking specs', () => {
                     },
                 },
                 'point': [736, 736, 0],
+                'coordinate': [0.50537109375, 0.5053645409603007, 0],
                 'type': 'icon',
                 'plugin': 0,
                 'featureId': 0
@@ -204,6 +206,7 @@ describe('picking specs', () => {
                         'layer': 0
                     },
                 },
+                "coordinate": [0.50537109375, 0.5053645409603007, 0],
                 'point': [736, 736, 0],
                 'type': 'icon',
                 'plugin': 0,
@@ -676,9 +679,6 @@ describe('picking specs', () => {
                 const redPoint = layer.identify([13.41720, 52.52956625878565]);
                 const expected = {
                     'feature': {
-                        "customProps": {
-                            "custom_prop_line_batch_id": "admin-0-boundary-bg"
-                        },
                         'type': 2,
                         "properties": {
                            "custom_prop_line_batch_id": "admin-0-boundary-bg",
@@ -740,7 +740,7 @@ describe('picking specs', () => {
             map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
             const layer = new GeoJSONVectorTileLayer('gvt', options);
             layer.once('canvasisdirty', () => {
-                const redPoint = layer.identify([13.41720, 52.52956625878565]);
+                const redPoint = layer.identify([13.41720, 52.52952]);
                 const expected = {
                     'feature': {
                         'type': 'Feature',

@@ -1151,36 +1151,3 @@ function checkStyleExist(styles, idx) {
         throw new Error(`No plugin defined at style of ${idx}`);
     }
 }
-
-function getFeatureType(feature) {
-    const geometry = feature.geometry;
-    if (feature.type === 1) {
-        if (geometry.length <= 1) {
-            return 'Point';
-        } else {
-            return 'MultiPoint';
-        }
-    } else if (feature.type === 2) {
-        if (geometry.length <= 1) {
-            return 'LineString';
-        } else {
-            return 'MultiLineString';
-        }
-    } else if (feature.type === 3) {
-        let count = 0;
-        for (let i = 0; i < geometry.length; i++) {
-            const area = PackUtil.calculateSignedArea(geometry[i]);
-            if (area > 0) {
-                count++
-            }
-            if (count > 1) {
-                break;
-            }
-        }
-        if (count <= 1) {
-            return 'Polygon'
-        } else {
-            return 'MultiPolygon';
-        }
-    }
-}
