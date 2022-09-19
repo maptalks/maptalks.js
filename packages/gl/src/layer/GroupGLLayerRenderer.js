@@ -286,7 +286,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     fbo: blitFBO
                 });
             }
-            blitFBO.blit(fbo, );
+            blitFBO.blit(fbo);
             return blitFBO.color[0];
         } else {
             return fbo.color[0];
@@ -341,7 +341,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._blitFBOs = [];
         }
         if (!fbo._blitFBO) {
-            const info = this._createSimpleFBOInfo(true);
+            const info = this._createSimpleFBOInfo(true, fbo.width, fbo.height);
             const blitFbo = this.regl.framebuffer(info);
             this._blitFBOs.push(blitFbo);
             fbo._blitFBO = blitFbo;
@@ -1106,8 +1106,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _createSimpleFBOInfo(forceTexture) {
-        const width = this.canvas.width, height = this.canvas.height;
+    _createSimpleFBOInfo(forceTexture, width, height) {
+        width = width || this.canvas.width, height = height || this.canvas.height;
         const regl = this.regl;
         const useMultiSamples = this._isUseMultiSample();
         let color;

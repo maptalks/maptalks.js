@@ -49,7 +49,7 @@ export default class PostProcess {
             const info = this._createFBOInfo(depthTex);
             this._bloomFBO = regl.framebuffer(info);
         } else {
-            const { width, height } = layerRenderer.canvas;
+            const { width, height } = depthTex;
             if (bloomFBO.width !== width || bloomFBO.height !== height) {
                 bloomFBO.resize(width, height);
             }
