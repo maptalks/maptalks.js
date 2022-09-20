@@ -83,6 +83,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         tileCache.reset();
         this.tilesInView = {};
         this.tilesLoading = {};
+        // 如果这里不清空 requestingMVT，updateStyle后的loadTile方法中，requestingMVT中会留有上次请求的缓存，导致不会调用worker的loadTile方法请求瓦片
+        this._requestingMVT = {};
         this['_parentTiles'] = [];
         this['_childTiles'] = [];
     }

@@ -34,9 +34,9 @@ export default class Dispatcher {
         const options = params.options;
         const uploader = this.send.bind(this, actorId);
         if (type === 'GeoJSONVectorTileLayer') {
-            this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, TILE_CACHE, TILE_LOADINGS, callback);
+            this._layers[key] = new GeoJSONLayerWorker(layerId, options, uploader, TILE_CACHE, {}, callback);
         } else {
-            this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, TILE_CACHE, TILE_LOADINGS, callback);
+            this._layers[key] = new VectorTileLayerWorker(layerId, options, uploader, TILE_CACHE, {}, callback);
         }
     }
 
@@ -52,7 +52,7 @@ export default class Dispatcher {
         delete this._layers[key];
         if (layer) {
             layer.onRemove(callback);
-            this._resetCache();
+            // this._resetCache();
         }
     }
 
@@ -95,7 +95,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.updateStyle(params, callback);
-            this._resetCache();
+            // this._resetCache();
         }
     }
 
@@ -103,7 +103,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.updateOptions(params, callback);
-            this._resetCache();
+            // this._resetCache();
         }
     }
 
@@ -111,7 +111,7 @@ export default class Dispatcher {
         const layer = this._getLayerById(mapId, layerId);
         if (layer) {
             layer.setData(params.data, callback);
-            this._resetCache();
+            // this._resetCache();
         }
     }
 
@@ -161,10 +161,10 @@ export default class Dispatcher {
     }
 
     _resetCache() {
-        const keys = Object.keys(TILE_LOADINGS);
-        for (let i = 0; i < keys.length; i++) {
-            delete TILE_LOADINGS[keys[i]];
-        }
+        // const keys = Object.keys(TILE_LOADINGS);
+        // for (let i = 0; i < keys.length; i++) {
+        //     delete TILE_LOADINGS[keys[i]];
+        // }
         TILE_CACHE.reset();
     }
 }

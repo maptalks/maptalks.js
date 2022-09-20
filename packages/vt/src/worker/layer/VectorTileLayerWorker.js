@@ -20,8 +20,10 @@ export default class VectorTileLayerWorker extends LayerWorker {
         const url = tileInfo.url;
         if (this._cache.has(url)) {
             const { err, data } = this._cache.get(url);
-            this._readTile(url, err, data, cb);
-            return;
+            // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
+            return setTimeout(() => {
+                this._readTile(url, err, data, cb);
+            }, 1);
         }
         return Ajax.getArrayBuffer(url, (err, response) => {
             if (err) {
@@ -102,8 +104,12 @@ export default class VectorTileLayerWorker extends LayerWorker {
     }
 
     onRemove() {
+        super.onRemove();
         for (const url in this.requests) {
-            this.requests[url].abort();
+            const xhr = this.requests[url];
+            if (xhr && xhr.abort) {
+                xhr.abort();
+            }
         }
         this.requests = {};
     }

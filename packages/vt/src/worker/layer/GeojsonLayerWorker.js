@@ -190,6 +190,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     }
 
     onRemove() {
+        super.onRemove();
         delete this.index;
     }
 }

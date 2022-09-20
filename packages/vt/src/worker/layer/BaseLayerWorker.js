@@ -58,12 +58,15 @@ export default class BaseLayerWorker {
         }
         if (loadings[url]) {
             loadings[url].push({
+                // 必须要保存context，因为context中的值可能会发生变化，例如styleCounter，导致逻辑发生错误
+                context,
                 callback: cb,
                 ref: this
             });
             return;
         }
         loadings[url] = [{
+            context,
             callback: cb,
             ref: this
         }];
@@ -94,7 +97,7 @@ export default class BaseLayerWorker {
             }
             if (waitings) {
                 for (let i = 0; i < waitings.length; i++) {
-                    this._onTileLoad.call(waitings[i].ref, context, waitings[i].callback, url, layers, features, props);
+                    this._onTileLoad.call(waitings[i].ref, waitings[i].context, waitings[i].callback, url, layers, features, props);
                 }
             }
         });
@@ -143,6 +146,10 @@ export default class BaseLayerWorker {
 
     checkIfCanceled(url) {
         return !this.requests[url];
+    }
+
+    onRemove() {
+        this.loadings = {};
     }
 
     fetchIconGlyphs(icons, glyphs, cb) {
