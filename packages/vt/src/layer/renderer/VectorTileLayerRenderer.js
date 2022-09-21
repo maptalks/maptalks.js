@@ -551,6 +551,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         data.layers = layers;
         for (let i = 0; i < tiles.length; i++) {
             const tileInfo = tiles[i];
+            if (i === 0) {
+                if (layer.options['debugTileData']) {
+                    const { x, y, z } = tileInfo;
+                    console.log('tile', {
+                        'layerId': layer.getId(),
+                        x,
+                        y,
+                        z,
+                        layers: groupFeatures(Object.values(features))
+                    });
+                }
+            }
             const tileData = i === 0 ? data : copyTileData(data);
             for (let j = 0; j < tileData.data.length; j++) {
                 if (!tileData.data[j]) {
@@ -1643,4 +1655,16 @@ function sortByLevel(m0, m1) {
 function hasMesh(plugin) {
     const meshes = plugin.painter && plugin.painter.scene && plugin.painter.scene.getMeshes();
     return meshes && meshes.length;
+}
+
+function groupFeatures(features) {
+    const group = {};
+    for (let i = 0; i < features.length; i++) {
+        const layer = features[i].layer || 'default';
+        if (!group[layer]) {
+            group[layer] = [];
+        }
+        group[layer].push(features[i]);
+    }
+    return group;
 }

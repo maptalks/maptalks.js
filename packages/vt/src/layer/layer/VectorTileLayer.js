@@ -47,7 +47,9 @@ const defaultOptions = {
     styleScale: 1,
     spatialReference: null, //'preset-vt-3857', preset-vt-4326'
     enableAltitude: true,
-    fadeAnimation: false
+    fadeAnimation: false,
+
+    debugTileData: false
 };
 
 /**
@@ -101,7 +103,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             baseRes: map.getGLRes(),
             //default render时，this._vtStyle有可能被default render设值
             style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
-            features: this.options.features,
+            features: this.options.debugTileData || this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry']
         };
