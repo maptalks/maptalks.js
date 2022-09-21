@@ -1513,14 +1513,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     highlight(highlights) {
         if (!this._highlighted) {
-            this._highlighted = {};
+            this._highlighted = new Map();
         }
         if (Array.isArray(highlights)) {
             for (let i = 0; i < highlights.length; i++) {
-                this._highlighted[highlights[i].id] = highlights[i];
+                this._highlighted.set(highlights[i].id, highlights[i]);
             }
         } else {
-            this._highlighted[highlights.id] = highlights;
+            this._highlighted.set(highlights.id, highlights);
         }
 
         const plugins = this._getFramePlugins();
@@ -1532,10 +1532,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     cancelHighlight(ids) {
         if (Array.isArray(ids)) {
             for (let i = 0; i < ids.length; i++) {
-                delete this._highlighted[ids[i]];
+                this._highlighted.delete(ids[i]);
             }
         } else {
-            delete this._highlighted[ids];
+            this._highlighted.delete(ids);
         }
         const plugins = this._getFramePlugins();
         plugins.forEach(plugin => {

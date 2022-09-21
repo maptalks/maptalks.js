@@ -452,10 +452,10 @@ class Painter {
                 coordinate: picked.coordinate,
                 plugin: this.pluginIndex,
             };
-            const idMap = mesh.geometry.properties.feaPickingIdMap;
-            if (idMap) {
-                result.featureId = idMap[pickingId];
-            }
+            // const idMap = mesh.geometry.properties.feaPickingIdMap;
+            // if (idMap) {
+            //     result.featureId = idMap[pickingId];
+            // }
             return result;
         }
         return null;
@@ -1060,13 +1060,12 @@ class Painter {
         let hasColor = false;
         let hasOpacity = false;
         const highlighted = this._highlighted;
-        const ids = Object.keys(this._highlighted);
+        const ids = highlighted.keys();
         const hlElements = [];
-        for (let i = 0; i < ids.length; i++) {
-            const id = highlighted[ids[i]].id;
+        for (const id of ids) {
             if (featureIdSet.has(id)) {
                 // update attribute data
-                let { color, opacity, bloom } = highlighted[id];
+                let { color, opacity, bloom } = highlighted.get(id);
                 if (color) {
                     if (!hasColor) {
                         if (!aHighlightColor) {
