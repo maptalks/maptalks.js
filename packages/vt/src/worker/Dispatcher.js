@@ -6,7 +6,7 @@ let callbackId = 0;
 
 //global level 1 cache for layers sharing the same urlTemplate
 const TILE_CACHE = new LRUCache(32);
-const TILE_LOADINGS = {};
+// const TILE_LOADINGS = {};
 
 export default class Dispatcher {
 

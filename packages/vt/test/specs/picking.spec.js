@@ -109,8 +109,7 @@ describe('picking specs', () => {
                 'point': [736, 736, 0],
                 'coordinate': [0.50537109375,0.5053645409603007,0],
                 'type': 'icon',
-                'plugin': 0,
-                'featureId': 0
+                'plugin': 0
             }];
             runner(options, coord, expected, true, done);
         });
@@ -162,8 +161,7 @@ describe('picking specs', () => {
                 'point': [736, 736, 0],
                 'coordinate': [0.50537109375, 0.5053645409603007, 0],
                 'type': 'icon',
-                'plugin': 0,
-                'featureId': 0
+                'plugin': 0
             }];
             runner(options, coord, expected, true, done);
         });
@@ -209,8 +207,7 @@ describe('picking specs', () => {
                 "coordinate": [0.50537109375, 0.5053645409603007, 0],
                 'point': [736, 736, 0],
                 'type': 'icon',
-                'plugin': 0,
-                'featureId': 0
+                'plugin': 0
             }];
             runner(options, coord, expected, true, done);
         });

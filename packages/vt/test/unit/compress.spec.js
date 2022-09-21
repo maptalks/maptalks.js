@@ -34,7 +34,7 @@ const STYLE = [
     }
 ];
 
-const COMPRESSED = { 'plugins': [{ 'type': 'line', 'dataConfig': { 'type': 'line' } }], 'styles': { featureStyle: [], style: [{ 'filter': ['==', 'type', 1], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }, { 'filter': ['==', 'type', 2], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }] } };
+const COMPRESSED = { 'features': 0, 'plugins': [{ 'type': 'line', 'dataConfig': { 'type': 'line' } }], 'styles': { featureStyle: [], style: [{ 'filter': ['==', 'type', 1], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }, { 'filter': ['==', 'type', 2], 'renderPlugin': 0, 'symbol': { 'lineWidth': 12, 'lineBlur': 5 } }] } };
 
 describe('style compress specs', () => {
     it('should compress a style', () => {

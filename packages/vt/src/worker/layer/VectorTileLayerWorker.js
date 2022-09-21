@@ -76,7 +76,6 @@ export default class VectorTileLayerWorker extends LayerWorker {
                             properties: feature.properties,
                             extent: feature.extent
                         };
-                        debugger
                         if (feature.id !== undefined) {
                             fea.id = feature.id;
                         }
