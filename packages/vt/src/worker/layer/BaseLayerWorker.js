@@ -1,6 +1,6 @@
-import { isNil, extend, getIndexArrayType, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
+import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil } from '@maptalks/vector-packer';
+import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -277,7 +277,7 @@ export default class BaseLayerWorker {
             }
 
             const maxIndex = tileFeaIndexes[tileFeaIndexes.length - 1];
-            const arrCtor = getIndexArrayType(maxIndex);
+            const arrCtor = PackUtil.getIndexArrayType(maxIndex);
             targetData[typeIndex] = {
                 //[feature_index, style_index, ...]
                 styledFeatures: new arrCtor(tileFeaIndexes)

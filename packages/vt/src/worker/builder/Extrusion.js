@@ -1,6 +1,6 @@
 import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
-import { isNumber, pushIn, getUnsignedArrayType, getPosArrayType } from '../../common/Util';
+import { isNumber, pushIn } from '../../common/Util';
 import { PackUtil } from '@maptalks/vector-packer';
 import earcut from 'earcut';
 import { KEY_IDX } from '../../common/Constant';
@@ -170,8 +170,8 @@ export function buildExtrudeFaces(
             }
         }
     }
-    const pickingCtor = getUnsignedArrayType(pickingIds.length ? pickingIds[pickingIds.length - 1] : 0);
-    const posArrayType = getPosArrayType(Math.max(512, maxAltitude));
+    const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.length ? pickingIds[pickingIds.length - 1] : 0);
+    const posArrayType = PackUtil.getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
         maxAltitude,
@@ -181,7 +181,7 @@ export function buildExtrudeFaces(
         featureIndexes: featIndexes
     };
     if (featIds.length) {
-        const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
+        const feaCtor = hasNegative ? PackUtil.getPosArrayType(maxFeaId) : PackUtil.getUnsignedArrayType(maxFeaId);
         data.featureIds = new feaCtor(featIds);
     } else {
         data.featureIds = [];

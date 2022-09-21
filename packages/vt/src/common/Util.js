@@ -162,29 +162,6 @@ export function exportIndices(indices) {
     return indices.length < 65536 ? new Uint16Array(indices) : new Uint32Array(indices);
 }
 
-
-export function getIndexArrayType(max) {
-    // Uint8Array performs badly in directx according to ANGLE
-    // if (max < 256) return Uint8Array;
-    if (max < 65536) return Uint16Array;
-    return Uint32Array;
-}
-
-export function getUnsignedArrayType(max) {
-    if (max < 256) return Uint8Array;
-    if (max < 65536) return Uint16Array;
-    return Uint32Array;
-}
-
-export function getPosArrayType(max) {
-    max = Math.abs(max);
-    if (max < 128) return Int8Array;
-    if (max < 65536 / 2) return Int16Array;
-    //TODO 这里不能用Int32Array，可能是regl的bug
-    return Float32Array;
-}
-
-
 export function isFnTypeSymbol(v) {
     return isFunctionDefinition(v) && v.property;
 }

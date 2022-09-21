@@ -38,11 +38,15 @@ export function getPosArrayType(max) {
     max = Math.abs(max);
     if (max < 128) return Int8Array;
     if (max < 65536 / 2) return Int16Array;
+    // https://stackoverflow.com/questions/3793838/which-is-the-first-integer-that-an-ieee-754-float-is-incapable-of-representing-e
+    if (max < Math.pow(2, 24)) return Float32Array;
+    //TODO 这里不能用Int32Array，可能是regl的bug
     return Float32Array;
 }
 
 export function getUnsignedArrayType(max) {
     if (max < 256) return Uint8Array;
     if (max < 65536) return Uint16Array;
-    return Float32Array;
+    if (max < Math.pow(2, 32)) return Uint32Array;
+    return Float64Array;
 }

@@ -1,4 +1,4 @@
-import { getIndexArrayType, isFnTypeSymbol } from '../../common/Util';
+import { isFnTypeSymbol } from '../../common/Util';
 import { buildExtrudeFaces } from './Extrusion';
 // import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { vec3, vec4 } from 'gl-matrix';
@@ -56,7 +56,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             //<<
         }, debugIndex);
     const buffers = [];
-    const ctor = getIndexArrayType(faces.vertices.length / 3);
+    const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
     const indices = new ctor(faces.indices);
     delete faces.indices;
     buffers.push(indices.buffer, faces.vertices.buffer, faces.pickingIds.buffer);
