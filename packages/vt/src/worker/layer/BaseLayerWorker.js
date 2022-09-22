@@ -51,11 +51,21 @@ export default class BaseLayerWorker {
         const debugTile = this.options.debugTile;
         if (debugTile) {
             const { x, y, z } = context.tileInfo;
-            if (z !== debugTile.z || x !== debugTile.x || y !== debugTile.y) {
+            let hit = false;
+            for (let i = 0; i < debugTile.length; i++) {
+                if (x === debugTile[i].x && y === debugTile[i].y && z === debugTile[i].z) {
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit) {
                 cb();
                 return;
             }
         }
+
+
+
         if (loadings[url]) {
             loadings[url].push({
                 // 必须要保存context，因为context中的值可能会发生变化，例如styleCounter，导致逻辑发生错误
@@ -291,7 +301,18 @@ export default class BaseLayerWorker {
             });
 
             buffers.push(targetData[typeIndex].styledFeatures.buffer);
-            let promise = this._createTileGeometry(tileFeatures, pluginConfig, { extent: EXTENT, zoom, tilePoint, ...context });
+            const tileContext = { extent: EXTENT, zoom, tilePoint, ...context };
+            if (this.options.debugTile) {
+                const debugTile = this.options.debugTile;
+                for (let i = 0; i < debugTile.length; i++) {
+                    const { x, y, z } = debugTile[i];
+                    if (tileInfo.x === x && tileInfo.y === y && tileInfo.z === z) {
+                        tileContext.debugIndex = debugTile[i].index;
+                        break;
+                    }
+                }
+            }
+            let promise = this._createTileGeometry(tileFeatures, pluginConfig, tileContext);
             if (useDefault) {
                 promise = promise.then(tileData => {
                     if (!tileData) {
@@ -419,7 +440,7 @@ export default class BaseLayerWorker {
         const { extent, glScale, zScale, zoom, tilePoint, pointAtTileRes } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
-        const debugIndex = this.options.debugTile && this.options.debugTile.index;
+        const debugIndex = context.debugIndex;
         if (type === '3d-extrusion') {
             const t = hasTexture(symbol);
             if (t) {

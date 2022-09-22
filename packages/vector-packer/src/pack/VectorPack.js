@@ -267,6 +267,8 @@ export default class VectorPack {
         });
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
+        let ids = new Set();
+        let isIdUnique = true;
         try {
             for (; i < l; i++) {
                 const feature = features[i];
@@ -436,11 +438,29 @@ export default class VectorPack {
         const featIds = [];
         let maxFeaId = 0;
         let hasNegative = false;
+        let isIdUnique = true;
+        const ids = new Set();
+
         for (let i = 0, l = vectors.length; i < l; i++) {
             if (!vectors[i].feature.geometry) {
                 continue;
             }
             const feaId = Array.isArray(vectors[i]) ? vectors[i][0].feature.id : vectors[i].feature.id;
+
+            if (isIdUnique) {
+                if (feature.id !== undefined) {
+                    if (ids) {
+                        if (ids.has(feature.id)) {
+                            isIdUnique = false;
+                        } else {
+                            ids.add(feature.id);
+                        }
+                    }
+                } else {
+                    isIdUnique = false;
+                }
+            }
+
             if (isNumber(feaId)) {
                 if (Math.abs(feaId) > maxFeaId) {
                     maxFeaId = Math.abs(feaId);
@@ -513,6 +533,7 @@ export default class VectorPack {
         buffers.push(elements.buffer);
         const result = {
             data: arrays,
+            isIdUnique,
             // format,
             indices: this.hasElements() ? elements : null,
             positionSize,

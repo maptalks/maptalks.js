@@ -519,7 +519,13 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this.setToRedraw();
                 return;
             }
-            const geometries = this._markerPainter.createGeometries(packData.map(d => d && d.data), this._allFeatures);
+            const geometries = this._markerPainter.createGeometries(packData.map(d => {
+                if (d && d.data) {
+                    // 让数据采用 featureIds 作为 collidedId
+                    d.data.isIdUnique = true;
+                }
+                return d && d.data;
+            }), this._allFeatures);
 
             for (let i = 0; i < geometries.length; i++) {
                 this._fillCommonProps(geometries[i].geometry, packData[i] && packData[i].data);
@@ -687,6 +693,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 if (!packData[i]) {
                     continue;
                 }
+                packData[i].data.isIdUnique = true;
                 const mesh = markerMeshes[i];
                 const aFeaIds = mesh.geometry.properties.aFeaIds;
                 const startIndex = aFeaIds.indexOf(feaId);

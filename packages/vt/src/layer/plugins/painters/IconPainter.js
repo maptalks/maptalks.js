@@ -445,11 +445,11 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    _iterateMeshBox(mesh, pickingIndex, fn, contextIndex) {
+    _iterateMeshBox(mesh, collideId, fn, contextIndex) {
         const map = this.getMap();
         // TODO  meshes[0]可能是不合法的数据
         const { collideBoxIndex } = mesh.meshes[0].geometry.properties;
-        const boxInfo = collideBoxIndex && collideBoxIndex[pickingIndex];
+        const boxInfo = collideBoxIndex && collideBoxIndex[collideId];
         if (!boxInfo) {
             return false;
         }
@@ -464,7 +464,7 @@ class IconPainter extends CollisionPainter {
                 continue;
             }
             const { collideBoxIndex } = meshes[j].geometry.properties;
-            const boxInfo = collideBoxIndex[pickingIndex];
+            const boxInfo = collideBoxIndex[collideId];
             if (!boxInfo) {
                 continue;
             }
@@ -482,7 +482,7 @@ class IconPainter extends CollisionPainter {
             }
             updated = true;
             const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
-            const boxInfo = collideBoxIndex[pickingIndex];
+            const boxInfo = collideBoxIndex[collideId];
             if (!boxInfo) {
                 continue;
             }
@@ -506,7 +506,7 @@ class IconPainter extends CollisionPainter {
         const visible = fn.call(this, mesh, meshBoxes, matrix, contextIndex.boxIndex++);
 
         if (visible) {
-            this._markerVisible(mesh, pickingIndex);
+            this._markerVisible(mesh, collideId);
         }
         return true;
     }
@@ -768,7 +768,7 @@ class IconPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE,
 
-            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one'))
+            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one' || this.sceneConfig.blendSrc === 1))
         };
     }
 
