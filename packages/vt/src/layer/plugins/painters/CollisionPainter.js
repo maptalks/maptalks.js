@@ -688,16 +688,19 @@ export default class CollisionPainter extends BasicPainter {
         return status;
     }
 
-    callShader(uniforms, context) {
-        this.callCurrentTileShader(uniforms, context);
+    // 2022-09-21 为了能绘制background瓦片，提升地图体验，注释掉了该方法
+    // 验证url: http://localhost/bugs/designer-942/debug.html
+    // 注释掉之后似乎不会出现背景瓦片导致的闪烁现象
+    // callShader(uniforms, context) {
+    //     this.callCurrentTileShader(uniforms, context);
 
-        if (this.shouldIgnoreBackground()) {
-            //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
-            //但有zoomFading时
-            return;
-        }
-        this.callBackgroundTileShader(uniforms, context);
-    }
+    //     // if (this.shouldIgnoreBackground()) {
+    //     //     //移动或旋转地图时，不绘制背景瓦片，消除背景瓦片引起的闪烁现象
+    //     //     //但有zoomFading时
+    //     //     return;
+    //     // }
+    //     this.callBackgroundTileShader(uniforms, context);
+    // }
 
     shouldIgnoreBackground() {
         // return false;
