@@ -8,6 +8,7 @@ export function createAtlasTexture(regl, atlas, flipY) {
         mag: 'linear', //very important
         min: 'linear', //very important
         flipY,
+        premultiplyAlpha: true
     };
     if (atlas.type === 'icon') {
         const wrapMode = (atlas.dataType !== 'point') ? 'repeat' : 'clamp';
