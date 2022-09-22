@@ -83,6 +83,7 @@ export default class BaseLayerWorker {
                 for (let i = 0; i < features.length; i++) {
                     features[i]['_debug_info'] = {
                         index: i,
+                        id: features[i].id,
                         tileId: context.tileInfo.id
                     };
                 }

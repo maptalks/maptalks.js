@@ -202,7 +202,11 @@ class Painter {
         const hasFeaIds = feaIds && feaIds.length;
         if (hasFeaIds) {
             for (let i = 0; i < feaIds.length; i++) {
-                idPickingMap[glData.data.aPickingId[i]] = feaIds[i];
+                const pickingId = glData.data.aPickingId[i];
+                if (idPickingMap[pickingId] !== undefined) {
+                    continue;
+                }
+                idPickingMap[pickingId] = feaIds[i];
                 if (!pickingIdMap[feaIds[i]]) {
                     pickingIdMap[feaIds[i]] = [];
                 }
