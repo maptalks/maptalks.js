@@ -118,27 +118,77 @@ class LayerSwitcher extends Control {
             li.appendChild(input);
             li.appendChild(label);
 
-            for (let i = 0; i < len; i++) {
-                const layer = layers[i];
-                if (this._isExcluded(layer)) {
-                    ul.appendChild(this._renderLayer(layer));
-                }
-            }
-            li.appendChild(ul);
-            elm.appendChild(li);
-            input.onchange = (e) => {
+            const groupInputOnChange = (e) => {
                 const checked = e.target.checked;
-                for (let i = 0, len = ul.childNodes.length; i < len; i++) {
-                    const childNode = ul.childNodes[i];
-                    const layer = childNode._layer, checkbox = childNode.childNodes[0];
+                const parentNode = e.target.parentNode;
+                if (!parentNode) {
+                    return;
+                }
+                const ul = parentNode.getElementsByTagName('ul')[0];
+                if (!ul) {
+                    return;
+                }
+                const parentLayerShow = (node) => {
+                    const layer = node._layer;
+                    if (layer) {
+                        layer[checked ? 'show' : 'hide']();
+                    }
+                };
+                const layerShow = (li) => {
+                    const layer = li._layer, checkbox = li.childNodes[0];
                     if (checkbox) {
                         checkbox.checked = checked;
                     }
                     if (layer) {
                         layer[checked ? 'show' : 'hide']();
                     }
-                }
+                };
+                parentLayerShow(parentNode);
+                ul.childNodes.forEach(li => {
+                    layerShow(li);
+                    //检查其是否有子节点,such as :groupgllayer
+                    const childUl = li.getElementsByTagName('ul')[0];
+                    if (!childUl) {
+                        return;
+                    }
+                    parentLayerShow(li);
+                    childUl.childNodes.forEach(li => {
+                        layerShow(li);
+                    });
+                });
             };
+
+            for (let i = 0; i < len; i++) {
+                const layer = layers[i];
+                if (this._isExcluded(layer)) {
+                    //such as :groupgllayer
+                    if (layer.getLayers) {
+                        const groupLi = createEl('li', 'group'), groupUl = createEl('ul'), groupLabel = createEl('label'), groupInput = createEl('input');
+                        groupLabel.innerHTML = layer.getId();
+                        groupInput.type = 'checkbox';
+                        groupInput.checked = layer.isVisible();
+                        groupInput.onchange = groupInputOnChange;
+                        groupLi.appendChild(groupInput);
+                        groupLi.appendChild(groupLabel);
+                        groupLi.appendChild(groupUl);
+                        groupLi._layer = layer;
+                        ul.appendChild(groupLi);
+                        const groupLayers = layer.getLayers() || [];
+                        groupLayers.forEach(layer => {
+                            groupUl.appendChild(this._renderLayer(layer, false, groupInput.checked));
+                        });
+                    } else {
+                        ul.appendChild(this._renderLayer(layer));
+                    }
+                    //只要有一个子节点不选中，顶级节点就不选中
+                    if (layer && !layer.isVisible()) {
+                        input.checked = false;
+                    }
+                }
+            }
+            li.appendChild(ul);
+            elm.appendChild(li);
+            input.onchange = groupInputOnChange;
         }
     }
 
@@ -148,7 +198,7 @@ class LayerSwitcher extends Control {
         return !(excludeLayers.length && excludeLayers.indexOf(id) >= 0);
     }
 
-    _renderLayer(layer, isBase) {
+    _renderLayer(layer, isBase, parentChecked = true) {
         const li = createEl('li', 'layer'),
             label = createEl('label'),
             input = createEl('input'),
@@ -166,6 +216,10 @@ class LayerSwitcher extends Control {
         }
 
         input.checked = visible && enabled;
+        //父节点没有选中，那么子节点一定不选中
+        if (!parentChecked) {
+            input.checked = false;
+        }
         if (!enabled) {
             input.setAttribute('disabled', 'disabled');
         }
