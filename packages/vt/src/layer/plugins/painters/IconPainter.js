@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
@@ -749,10 +750,23 @@ class IconPainter extends CollisionPainter {
         }
     }
 
+    getBlendFunc() {
+        return {
+            src: () => {
+                return this.sceneConfig.blendSrc || 1;
+            },
+            dst: () => {
+                return this.sceneConfig.blendDst || 'one minus src alpha';
+            }
+        };
+    }
+
     getUniformValues(map) {
         const projViewMatrix = map.projViewMatrix;
         const cameraToCenterDistance = map.cameraToCenterDistance;
         const canvasSize = [map.width, map.height];
+        const blendFunc = this.getBlendFunc();
+        const blendSrc = maptalks.Util.isFunction(blendFunc.src) ? blendFunc.src() : blendFunc.src;
         return {
             layerScale: this.layer.options['styleScale'] || 1,
             mapPitch: map.getPitch() * Math.PI / 180,
@@ -768,7 +782,7 @@ class IconPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE,
 
-            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one' || this.sceneConfig.blendSrc === 1))
+            blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
     }
 
