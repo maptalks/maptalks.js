@@ -15,7 +15,7 @@ import DrawTool from './DrawTool';
 const circleHooks = {
     'create': function (projection, prjCoord) {
         const center = projection.unproject(prjCoord[0]);
-        const circle =  new Circle(center, 0);
+        const circle = new Circle(center, 0);
         circle._setPrjCoordinates(prjCoord[0]);
         return circle;
     },
@@ -112,7 +112,7 @@ DrawTool.registerMode('freeHandRectangle', extend({
 
 DrawTool.registerMode('point', {
     'clickLimit': 1,
-    'action': ['click'],
+    'action': ['click', 'mousemove'],
     'create': function (projection, prjCoord) {
         const center = projection.unproject(prjCoord[0]);
         const marker = new Marker(center);
@@ -120,6 +120,17 @@ DrawTool.registerMode('point', {
         return marker;
     },
     'generate': function (geometry) {
+        return geometry;
+    },
+    'update': function (projection, prjCoord, geometry) {
+        if (Array.isArray(prjCoord)) {
+            prjCoord = prjCoord[prjCoord.length - 1];
+        }
+        if (!prjCoord) {
+            return geometry;
+        }
+        const coordinate = projection.unproject(prjCoord);
+        geometry.setCoordinates(coordinate);
         return geometry;
     }
 });

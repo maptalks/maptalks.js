@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { isFunction, isNil } from '../../core/util';
+import { extend, isFunction, isNil } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
@@ -389,6 +389,10 @@ class DrawTool extends MapTool {
             this._historyPointer = this._clickCoords.length;
             event.drawTool = this;
             registerMode['update'](this.getMap().getProjection(), this._clickCoords, this._geometry, event);
+            if (this.getMode() === 'point') {
+                this.endDraw(event);
+                return;
+            }
             /**
              * drawvertex event.
              *
@@ -449,7 +453,7 @@ class DrawTool extends MapTool {
              */
             this._fireEvent('drawstart', event);
         }
-        if (mode === 'point') {
+        if (mode === 'point' && event.type !== 'mousemove') {
             this.endDraw(event);
         }
     }
@@ -462,7 +466,11 @@ class DrawTool extends MapTool {
      */
     _mouseMoveHandler(event) {
         const map = this.getMap();
-        if (!this._geometry || !map || map.isInteracting()) {
+        if (!map || map.isInteracting()) {
+            return;
+        }
+        if (this.getMode() === 'point' && !this._geometry) {
+            this._createGeometry(event);
             return;
         }
         let containerPoint = this._getMouseContainerPoint(event);
@@ -637,6 +645,7 @@ class DrawTool extends MapTool {
         if (!param) {
             param = {};
         }
+        param = extend({}, param);
         if (this._geometry) {
             param['geometry'] = this._getRegisterMode()['generate'](this._geometry, { drawTool: this });
             param.tempGeometry = this._geometry;
