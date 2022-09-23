@@ -52,6 +52,9 @@ const EMPTY_PROPS = {};
 
 function proxyFea(feature) {
     const originalProperties = feature.properties;
+    if (originalProperties && originalProperties[oldPropsKey]) {
+        return feature;
+    }
     const properties = feature.customProps;
     properties[oldPropsKey] = originalProperties || EMPTY_PROPS;
     feature.properties = new Proxy(properties, proxyGetter);

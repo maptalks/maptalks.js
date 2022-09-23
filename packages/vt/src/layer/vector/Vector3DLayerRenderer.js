@@ -693,7 +693,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 if (!packData[i]) {
                     continue;
                 }
-                packData[i].data.isIdUnique = true;
+                if (packData[i].data) {
+                    packData[i].data.isIdUnique = true;
+                }
                 const mesh = markerMeshes[i];
                 const aFeaIds = mesh.geometry.properties.aFeaIds;
                 const startIndex = aFeaIds.indexOf(feaId);
