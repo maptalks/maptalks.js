@@ -180,7 +180,7 @@ class LayerSwitcher extends Control {
                     } else {
                         ul.appendChild(this._renderLayer(layer));
                     }
-                    //只有有一个子节点不选中，顶级节点就不选中
+                    //只要有一个子节点不选中，顶级节点就不选中
                     if (layer && !layer.isVisible()) {
                         input.checked = false;
                     }
@@ -198,7 +198,7 @@ class LayerSwitcher extends Control {
         return !(excludeLayers.length && excludeLayers.indexOf(id) >= 0);
     }
 
-    _renderLayer(layer, isBase, parentCheck = true) {
+    _renderLayer(layer, isBase, parentChecked = true) {
         const li = createEl('li', 'layer'),
             label = createEl('label'),
             input = createEl('input'),
@@ -217,7 +217,7 @@ class LayerSwitcher extends Control {
 
         input.checked = visible && enabled;
         //父节点没有选中，那么子节点一定不选中
-        if (!parentCheck) {
+        if (!parentChecked) {
             input.checked = false;
         }
         if (!enabled) {
