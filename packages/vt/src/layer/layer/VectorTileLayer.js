@@ -17,7 +17,7 @@ const defaultOptions = {
     forceRenderOnRotating: true,
     tileSize: [512, 512],
     tileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
-    features: true,
+    features: false,
     schema: false,
     cascadeTiles: true,
     collision: true,

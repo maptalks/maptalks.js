@@ -550,7 +550,7 @@ export default class VectorPack {
             result.featureIds = [];
         }
 
-        if (featIds && featIds.length) {
+        if (featIds && featIds.length && this.options.features) {
             result.feaIdAttrMap = generateFeatureIndex(featIds);
             result.feaIdIndiceMap = generateFeatureIndiceIndex(featIds, result.indices);
         }

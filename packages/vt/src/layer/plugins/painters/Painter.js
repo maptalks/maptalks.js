@@ -7,6 +7,7 @@ import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import deepEuqal from 'fast-deep-equal';
 import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
+import { isObjectEmpty } from './util/is_obj_empty';
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
@@ -166,15 +167,18 @@ class Painter {
             } else {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
-                    const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
                     const props = geo.geometry.properties;
+                    if (!isObjectEmpty(features)) {
+                        const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                        if (hasFeaIds) {
+                            props.feaIdPickingMap = pickingIdMap;
+                            props.feaPickingIdMap = idPickingMap;
+                        }
+                    }
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
                     // props.elements = props.elements || geo.geometry.elements;
-                    if (hasFeaIds) {
-                        props.feaIdPickingMap = pickingIdMap;
-                        props.feaPickingIdMap = idPickingMap;
-                    }
+
                     this.postCreateGeometry(geo, geometries);
                 }
                 // null 也需要push，保证ref指向的顺序是正确的

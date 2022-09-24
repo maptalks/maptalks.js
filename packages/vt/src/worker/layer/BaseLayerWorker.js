@@ -441,6 +441,13 @@ export default class BaseLayerWorker {
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         const debugIndex = context.debugIndex;
+        // console.log(context.tileInfo.id, tileFeatures.length);
+        let options = extend({}, dataConfig, {
+            EXTENT: extent,
+            zoom,
+            debugIndex,
+            features: this.options.features
+        });
         if (type === '3d-extrusion') {
             const t = hasTexture(symbol);
             if (t) {
@@ -453,11 +460,8 @@ export default class BaseLayerWorker {
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, dataConfig, extent))]);
         } else if (type === 'point') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
+            options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
-                zoom,
-                debugIndex,
                 //把 altitude 转为瓦片坐标
                 altitudeToTileScale: zScale * extent / this.options['tileSize'][1] / glScale
             });
@@ -476,35 +480,19 @@ export default class BaseLayerWorker {
                 return new PointPack(features, symbol, options).load(tileRatio);
             }));
         } else if (type === 'native-point') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
-                zoom,
-                debugIndex
-            });
             return parseSymbolAndGenPromises(features, symbol, options, NativePointPack, extent / tileSize);
         } else if (type === 'line') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
+            options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
-                tileRatio,
-                zoom,
-                debugIndex
+                tileRatio
             });
             return parseSymbolAndGenPromises(features, symbol, options, LinePack);
             // return Promise.resolve(null);
         } else if (type === 'native-line') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
-                zoom,
-                debugIndex
-            });
             return parseSymbolAndGenPromises(features, symbol, options, NativeLinePack);
         } else if (type === 'fill') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
-                requestor: this.fetchIconGlyphs.bind(this),
-                zoom,
-                debugIndex
+            options = extend(options, {
+                requestor: this.fetchIconGlyphs.bind(this)
             });
             return parseSymbolAndGenPromises(features, symbol, options, PolygonPack);
         } else if (type === 'line-extrusion') {
@@ -519,18 +507,15 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
+            options = extend(options, {
                 tileSize,
                 zScale,
-                glScale,
-                zoom,
-                debugIndex
+                glScale
             });
             if (t) {
                 const packs = [];
                 if (dataConfig.top !== false) {
-                    const opt = extend({}, options);
+                    const opt = extend(options, options);
                     opt.side = false;
                     packs.push(new LineExtrusionPack(features, symbol, opt));
                 }
@@ -544,21 +529,13 @@ export default class BaseLayerWorker {
                 return Promise.all([new LineExtrusionPack(features, symbol, options).load()]);
             }
         } else if (type === 'circle') {
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
-                zoom,
-                debugIndex
-            });
             return parseSymbolAndGenPromises(features, symbol, options, CirclePack);
             // const pack = new CirclePack(features, symbol, options);
             // return pack.load();
         } else if (type === 'round-tube' || type === 'square-tube') {
             const clazz = type === 'round-tube' ? RoundTubePack : SquareTubePack;
-            const options = extend({}, dataConfig, {
-                EXTENT: extent,
+            options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
-                zoom,
-                debugIndex,
                 radialSegments: type === 'round-tube' ? (dataConfig.radialSegments || 8) : 4,
                 pointAtTileRes,
                 tileRatio,
