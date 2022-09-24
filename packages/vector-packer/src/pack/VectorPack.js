@@ -147,7 +147,7 @@ export default class VectorPack {
             data.aAltitude.push(altitude);
         } else {
             packPosition(TEMP_PACK_POS, x, y, altitude);
-            data.aPosition.push(...TEMP_PACK_POS);
+            data.aPosition.push(TEMP_PACK_POS[0], TEMP_PACK_POS[1], TEMP_PACK_POS[2]);
         }
     }
 

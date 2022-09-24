@@ -173,51 +173,66 @@ export default class PolygonPack extends VectorPack {
 
                 // const lineIndex = this.lineElements.length;
 
-                this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z || 0);
-                if (hasUV) {
-                    this.data.aTexInfo.push(...uvStart, ...uvSize);
-                }
-                if (dynFill !== undefined) {
-                    this.data.aColor.push(...dynFill);
-                }
-                if (dynOpacity !== undefined) {
-                    this.data.aOpacity.push(dynOpacity);
-                }
-                if (dynUVScale !== undefined) {
-                    this.data.aUVScale.push(...dynUVScale);
-                }
-                if (dynUVOffset !== undefined) {
-                    this.data.aUVOffset.push(...dynUVOffset);
-                }
-                this.maxPos = Math.max(this.maxPos, Math.abs(ring[0].x), Math.abs(ring[0].y));
+                // this.fillPosition(this.data, ring[0].x, ring[0].y, ring[0].z || 0);
+                // if (hasUV) {
+                //     this.data.aTexInfo.push(uvStart[0], uvStart[1], uvSize[0], uvSize[1]);
+                // }
+                // if (dynFill !== undefined) {
+                //     this.data.aColor.push(dynFill[0], dynFill[1], dynFill[2], dynFill[3]);
+                // }
+                // if (dynOpacity !== undefined) {
+                //     this.data.aOpacity.push(dynOpacity);
+                // }
+                // if (dynUVScale !== undefined) {
+                //     this.data.aUVScale.push(dynUVScale[0], dynUVScale[1]);
+                // }
+                // if (dynUVOffset !== undefined) {
+                //     this.data.aUVOffset.push(dynUVOffset[0], dynUVOffset[1]);
+                // }
+
+                // const absX = Math.abs(ring[0].x);
+                // const absY = Math.abs(ring[0].y);
+                // if (absX > this.maxPos) {
+                //     this.maxPos = absX;
+                // }
+                // if (absY > this.maxPos) {
+                //     this.maxPos = absY;
+                // }
                 // this.addLineElements(lineIndex + ring.length - 1, lineIndex);
+                // flattened.push(ring[0].x, ring[0].y, ring[0].z || 0);
 
-                flattened.push(ring[0].x);
-                flattened.push(ring[0].y);
-                flattened.push(ring[0].z || 0);
-
-                for (let i = 1; i < ring.length; i++) {
-                    this.fillPosition(this.data, ring[i].x, ring[i].y, ring[i].z || 0);
+                for (let i = 0; i < ring.length; i++) {
+                    const x = ring[i].x;
+                    const y = ring[i].y;
+                    const z = ring[i].z || 0;
+                    this.fillPosition(this.data, x, y, z);
                     if (hasUV) {
-                        this.data.aTexInfo.push(...uvStart, ...uvSize);
+                        this.data.aTexInfo.push(uvStart[0], uvStart[1], uvSize[0], uvSize[1]);
                     }
                     if (dynFill !== undefined) {
-                        this.data.aColor.push(...dynFill);
+                        this.data.aColor.push(dynFill[0], dynFill[1], dynFill[2], dynFill[3]);
                     }
                     if (dynOpacity !== undefined) {
                         this.data.aOpacity.push(dynOpacity);
                     }
                     if (dynUVScale !== undefined) {
-                        this.data.aUVScale.push(...dynUVScale);
+                        this.data.aUVScale.push(dynUVScale[0], dynUVScale[1]);
                     }
                     if (dynUVOffset !== undefined) {
-                        this.data.aUVOffset.push(...dynUVOffset);
+                        this.data.aUVOffset.push(dynUVOffset[0], dynUVOffset[1]);
                     }
-                    this.maxPos = Math.max(this.maxPos, Math.abs(ring[i].x), Math.abs(ring[i].y));
+
+                    const absX = Math.abs(x);
+                    const absY = Math.abs(y);
+                    if (absX > this.maxPos) {
+                        this.maxPos = absX;
+                    }
+                    if (absY > this.maxPos) {
+                        this.maxPos = absY;
+                    }
+
                     // this.addLineElements(lineIndex + i - 1, lineIndex + i);
-                    flattened.push(ring[i].x);
-                    flattened.push(ring[i].y);
-                    flattened.push(ring[i].z || 0);
+                    flattened.push(x, y, z);
                 }
             }
             const indices = earcut(flattened, holeIndices, 3);
