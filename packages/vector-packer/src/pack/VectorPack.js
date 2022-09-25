@@ -267,8 +267,6 @@ export default class VectorPack {
         });
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;
-        let ids = new Set();
-        let isIdUnique = true;
         try {
             for (; i < l; i++) {
                 const feature = features[i];

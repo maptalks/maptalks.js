@@ -772,6 +772,83 @@ describe('picking specs', () => {
             });
             layer.addTo(map);
         });
+
+
+
+    it('should return feature properties used in symbol', done => {
+            const options = {
+                // 不返回features
+                features: 0,
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        },
+                        properties: {
+                            type: 1,
+                            color: '#f00',
+                            foo: 'bar',
+                            foo1: 'bar1'
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'fill',
+                        dataConfig: {
+                            type: 'fill'
+                        }
+                    },
+                    symbol: {
+                        polygonFill: {
+                            type: 'categorical',
+                            default: '#000',
+                            property: 'type',
+                            stops: [
+                                [
+                                    1, { type: 'identity', property: 'color' }
+                                ]
+                            ]
+                        },
+                        polygonOpacity: 1
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52952]);
+                const expected = {
+                    "type": 3,
+                    "layer": "0",
+                    "id": 0,
+                    "properties": {
+                        "type": 1,
+                        "color": "#f00"
+                    }
+                };
+                delete redPoint[0].data.feature["__fea_idx"];
+                assert.deepEqual(redPoint[0].data.feature, expected, JSON.stringify(redPoint[0].data.feature));
+                done();
+            });
+            layer.addTo(map);
+        });
     });
 
     context('should pick a tube', () => {

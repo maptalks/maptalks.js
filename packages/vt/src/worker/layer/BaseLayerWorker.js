@@ -287,7 +287,7 @@ export default class BaseLayerWorker {
             }
 
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
-            hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].length > 0;
+            hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
             const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
@@ -416,35 +416,23 @@ export default class BaseLayerWorker {
 
                                 feature = fea;
                             }
-
                             const o = extend({}, feature);
                             if (!options.features) {
                                 // 只输出symbol中用到的属性
                                 const pluginIndexs = feaTags[i];
-                                let properties;
-                                if (!originalFeature) {
-                                    properties = {};
-                                }
                                 for (let j = 0; j < pluginIndexs.length; j++) {
                                     const props = fnTypeProps[j];
                                     if (!props) {
                                         continue;
                                     }
-                                    for (let jj = 0; jj < props.length; jj++) {
-                                        const p = props[jj];
-                                        if (!originalFeature) {
-                                            properties[p] = o.properties[p];
-                                        } else if (!(p in o.customProps)) {
-                                            if (!originalFeature.properties[fntypePropsKey]) {
-                                                originalFeature.properties[fntypePropsKey] = new Set();
-                                            }
-                                            originalFeature.properties[fntypePropsKey].add(p);
-                                            needClearNoneFnTypeProps = true;
+                                    props.forEach(p => {
+                                        const properties = originalFeature ? originalFeature.properties : feature.properties;
+                                        if (!properties[fntypePropsKey]) {
+                                            properties[fntypePropsKey] = new Set();
                                         }
-                                    }
-                                }
-                                if (!originalFeature) {
-                                    o.properties = properties;
+                                        properties[fntypePropsKey].add(p);
+                                        needClearNoneFnTypeProps = true;
+                                    });
                                 }
                             }
                             allFeas[i] = o;
@@ -454,6 +442,7 @@ export default class BaseLayerWorker {
                 if (needClearNoneFnTypeProps) {
                     // 验证batch底图的内存情况
                     // http://localhost/bugs/designer-947/
+                    // 删除feature中，不是fn-type的属性
                     for (const p in allFeas) {
                         const feature = allFeas[p];
                         if (feature.properties[fntypePropsKey]) {
@@ -948,12 +937,27 @@ function getFnTypeProps(symbol, props, i) {
         return EMPTY_ARRAY;
     }
     for (const p in symbol) {
+        if (!symbol[p]) {
+            continue;
+        }
         if (isFnTypeSymbol(symbol[p])) {
             if (!props[i]) {
-                props[i] = [];
+                props[i] = new Set();
             }
-            props[i].push(symbol[p].property);
+            props[i].add(symbol[p].property);
         }
+        const stops = symbol[p].stops;
+        if (stops && stops.length) {
+            for (let i = 0; i < stops.length; i++) {
+                if (isFnTypeSymbol(stops[i][1])) {
+                    if (!props[i]) {
+                        props[i] = new Set();
+                    }
+                    props[i].add(stops[i][1].property);
+                }
+            }
+        }
+
     }
     return props[i];
 }
