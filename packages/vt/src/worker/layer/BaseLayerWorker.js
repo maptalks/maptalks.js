@@ -537,7 +537,7 @@ export default class BaseLayerWorker {
             if (t) {
                 const packs = [];
                 if (dataConfig.top !== false) {
-                    const opt = extend(options, options);
+                    const opt = extend({}, options);
                     opt.side = false;
                     packs.push(new LineExtrusionPack(features, symbol, opt));
                 }
