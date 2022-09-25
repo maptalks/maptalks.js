@@ -169,7 +169,6 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         style = JSON.parse(JSON.stringify(style));
         style = uncompress(style);
-        this._styleFeatures = style.features;
         this._originFeatureStyle = style['featureStyle'] || [];
         this._featureStyle = parseFeatureStyle(style['featureStyle']);
         this._vtStyle = style['style'] || [];
@@ -841,7 +840,6 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     _getComputedStyle() {
         return {
-            features: this._styleFeatures || 0,
             background: this._background,
             style: this._vtStyle || [],
             featureStyle: this._featureStyle || []
@@ -944,10 +942,10 @@ class VectorTileLayer extends maptalks.TileLayer {
         } else if (type === 2) {
             if (geometry.length <= 1) {
                 geoType = 'LineString';
-                coordinates = this._convertGeometryCoords(geometry, nw. extent, res)[0] || [];
+                coordinates = this._convertGeometryCoords(geometry, nw, extent, res)[0] || [];
             } else {
                 geoType = 'MultiLineString';
-                coordinates = this._convertGeometryCoords(geometry, nw. extent, res);
+                coordinates = this._convertGeometryCoords(geometry, nw, extent, res);
             }
         } else if (type === 3) {
             coordinates = [];

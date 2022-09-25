@@ -16,7 +16,7 @@ const style = [
                 type: 'point'
             },
             sceneConfig: {
-                // collision: true,
+                collision: true,
                 fading: false
             }
         },

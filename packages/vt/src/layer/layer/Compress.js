@@ -15,7 +15,6 @@ export function compress(json) {
     visitStyle(json.style, compressedStyle, pluginDefs);
     visitStyle(json.featureStyle, compressedFeatureStyle, pluginDefs);
     const compressed = {
-        features: json.features || 0,
         plugins: pluginDefs,
         styles: {
             style: compressedStyle,
@@ -76,7 +75,6 @@ export function uncompress(json) {
         targetFeatureStyle[i].renderPlugin = plugins[featureStyle[i].renderPlugin];
     }
     const target = {
-        features: json.features,
         style: targetStyle,
         featureStyle: targetFeatureStyle
     };

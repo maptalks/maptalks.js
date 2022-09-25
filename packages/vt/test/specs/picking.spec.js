@@ -630,7 +630,7 @@ describe('picking specs', () => {
         });
         it('should pick lines with customProperties', done => {
             const options = {
-                features: 'feature',
+                features: true,
                 data: {
                     type: 'FeatureCollection',
                     features: [{
@@ -675,19 +675,24 @@ describe('picking specs', () => {
             layer.once('canvasisdirty', () => {
                 const redPoint = layer.identify([13.41720, 52.52956625878565]);
                 const expected = {
-                    'feature': {
-                        'type': 2,
-                        "properties": {
-                           "custom_prop_line_batch_id": "admin-0-boundary-bg",
-                           "mapbox_clip_end": 1,
-                           "mapbox_clip_start": 0
+                    "feature": {
+                        "type": "Feature",
+                        "layer": "0",
+                        "id": 0,
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[13.417135030031204,52.529566339396496],[13.41722622513771,52.529566339396496]]
                         },
-                        'id': 0,
-                        'layer': "0"
+                        "properties": {
+                            "custom_prop_line_batch_id": "admin-0-boundary-bg",
+                            "mapbox_clip_start": 0,
+                            "mapbox_clip_end": 1
+                        },
+                        "extent": 8192
                     },
-                    'symbol': {
-                        'lineColor': '#f00',
-                        'lineWidth': 20
+                    "symbol": {
+                        "lineColor": "#f00",
+                        "lineWidth": 20
                     }
                 };
                 delete redPoint[0].data.tile;

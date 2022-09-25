@@ -4,21 +4,7 @@ import { StyleUtil } from '@maptalks/vector-packer';
 import { isObjectEmpty } from './is_obj_empty';
 
 export const PREFIX = '_fn_type_';
-export const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
-    'textFill': 1,
-    'textSize': 1,
-    'textOpacity': 1,
-    'markerWidth': 1,
-    'markerHeight': 1,
-    'markerOpacity': 1,
-    'markerDx': 1,
-    'markerDy': 1,
-    'lineWidth': 1,
-    'lineColor': 1,
-    'lineOpacity': 1,
-    'polygonFill': 1,
-    'polygonOpacity': 1
-};
+
 
 const SAVED_FN_TYPE = '__current_fn_types';
 /**
@@ -107,7 +93,7 @@ function createZoomFnTypeIndexData(geometry, symbolDef, config) {
     const isIdentityFn = symbolDef[symbolName].type === 'identity';
     // symbol是identity类型，且属性支持 fn type 值
     // TODO 这里应该遍历features，检查是否有 fn type 的值
-    const hasZoomIdentity = isIdentityFn && checkIfIdentityZoomDependent(config, symbolDef[symbolName], geometry);
+    const hasZoomIdentity = isIdentityFn && StyleUtil.checkIfIdentityZoomDependent(symbolName, symbolDef[symbolName].property, geoProps.features);
     if (!hasZoomIdentity && !stopValues.length) {
         //说明stops中没有function-type类型
         removeFnTypePropArrs(geometry, attrName);
@@ -369,34 +355,6 @@ export function isFnTypeSymbol(symbolProp) {
     return StyleUtil.isFnTypeSymbol(symbolProp);
 }
 
-function checkIfIdentityZoomDependent(config, fnDef, geometry) {
-    let { features } = geometry.properties;
-    if (!Array.isArray(features)) {
-        features = Object.values(features);
-    }
-    if (!features || !features.length) {
-        return false;
-    }
-    const { symbolName } = config;
-    if (!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName]) {
-        return false;
-    }
-    const prop = fnDef.property;
-    for (let i = 0; i < features.length; i++) {
-        const fea = features[i] && features[i].feature;
-        if (!fea) {
-            continue;
-        }
-        const v = fea.properties && fea.properties[prop];
-        if (!v) {
-            continue;
-        }
-        if (isFunctionDefinition(v) && !interpolated(v).isZoomConstant) {
-            return true;
-        }
-    }
-    return false;
-}
 
 function hasRelatedFnTypeSymbol(related, symbolDef) {
     if (!Array.isArray(related)) {

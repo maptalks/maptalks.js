@@ -265,6 +265,10 @@ export default class BaseLayerWorker {
         ];
         let currentType = 0;
         let typeIndex = -1;
+
+        const fnTypeProps = [];
+        let hasFnTypeProps = false;
+
         for (let i = 0; i < pluginConfigs.length; i++) {
             typeIndex++;
             const pluginConfig = pluginConfigs[i];
@@ -280,7 +284,11 @@ export default class BaseLayerWorker {
                 targetData[typeIndex] = null;
                 continue;
             }
-            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags);
+
+            getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
+            hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].length > 0;
+
+            const { tileFeatures, tileFeaIndexes } = this._filterFeatures(zoom, pluginConfig.type, pluginConfig.filter, features, feaTags, i);
 
             if (!tileFeatures.length) {
                 targetData[typeIndex] = null;
@@ -373,46 +381,60 @@ export default class BaseLayerWorker {
                     handleTileData(tileData, i);
                     targetData[pluginIndexes[i].typeIdx].data = tileData.data;
                 }
-
             }
             const allFeas = {};
             const schema = layers;
-            if (options.features || options.schema) {
+            if (options.features || options.schema || hasFnTypeProps) {
                 let feature;
                 for (let i = 0, l = features.length; i < l; i++) {
                     feature = features[i];
                     if (!schema[feature.layer].properties) {
                         schema[feature.layer].properties = getPropTypes(feature.properties);
                     }
-                    if (feature.originalFeature) {
-                        const properties = feature.properties;
-                        delete properties['$layer'];
-                        delete properties['$type'];
-                        const fea = extend({}, feature.originalFeature);
-                        // fea.properties = extend({}, feature.originalFeature.properties, properties);
-                        delete properties[oldPropsKey];
-                        fea.customProps = extend({}, properties);
-
-                        feature = fea;
-                    }
-                    if (options.features) {
+                    if (feature && (options.features || hasFnTypeProps && feaTags[i])) {
                         //reset feature's marks
-                        if (feature && feaTags[i]) {
-                            if (options.features === 'id') {
-                                allFeas[i] = feature.id;
-                            } else {
-                                const o = extend({}, feature);
-                                if (!options.pickingGeometry) {
-                                    delete o.geometry;
-                                }
-                                delete o.extent;
-                                delete o.properties['$layer'];
-                                delete o.properties['$type'];
-                                // _getFeaturesToMerge 中用于排序的临时字段
-                                delete o['__index'];
-                                allFeas[i] = o;
+                        if (options.features === 'id') {
+                            allFeas[i] = feature.id;
+                        } else {
+                            if (!options.pickingGeometry) {
+                                delete feature.geometry;
                             }
+                            delete feature.extent;
+                            delete feature.properties['$layer'];
+                            delete feature.properties['$type'];
+                            // _getFeaturesToMerge 中用于排序的临时字段
+                            delete feature['__index'];
+                            if (feature.originalFeature) {
+                                const properties = feature.properties;
+                                const fea = extend({}, feature.originalFeature);
+                                // fea.properties = extend({}, feature.originalFeature.properties, properties);
+                                delete properties[oldPropsKey];
+                                fea.customProps = extend({}, properties);
+
+                                feature = fea;
+                            }
+
+                            const o = extend({}, feature);
+                            if (!options.features) {
+                                // 只输出symbol中用到的属性
+                                const pluginIndexs = feaTags[i];
+                                const properties = {};
+                                for (let j = 0; j < pluginIndexs.length; j++) {
+                                    const props = fnTypeProps[j];
+                                    if (!props) {
+                                        continue;
+                                    }
+                                    for (let jj = 0; jj < props.length; jj++) {
+                                        const p = props[jj];
+                                        properties[p] = o.customProps ? ((p in o.customProps) ? o.customProps[p] : o.properties[p]) : o.properties[p];
+                                    }
+                                }
+                                o.properties = properties;
+                                delete o.customProps;
+                            }
+                            allFeas[i] = o;
                         }
+
                     }
                 }
             }
@@ -551,7 +573,7 @@ export default class BaseLayerWorker {
      * @param {*} filter
      * @param {*} features
      */
-    _filterFeatures(zoom, styleType, filter, features, tags) {
+    _filterFeatures(zoom, styleType, filter, features, tags, index) {
         const keyName = (KEY_IDX + '').trim();
         const indexes = [];
         const filtered = [];
@@ -569,7 +591,10 @@ export default class BaseLayerWorker {
                 if (fea[keyName] === undefined) {
                     fea[keyName] = i;
                 }
-                tags[i] = 1;
+                if (!tags[i]) {
+                    tags[i] = [];
+                }
+                tags[i].push(index);
                 filtered.push(fea);
                 indexes.push(i);
                 if (styleType === 1) {
@@ -885,4 +910,20 @@ function proxyFea(feature) {
     result.properties = new Proxy({}, proxyGetter1);
     result.properties[oldPropsKey] = feature.properties || EMPTY_PROPS;
     return result;
+}
+
+const EMPTY_ARRAY = [];
+function getFnTypeProps(symbol, props, i) {
+    if (!symbol) {
+        return EMPTY_ARRAY;
+    }
+    for (const p in symbol) {
+        if (isFnTypeSymbol(symbol[p])) {
+            if (!props[i]) {
+                props[i] = [];
+            }
+            props[i].push(symbol[p].property);
+        }
+    }
+    return props[i];
 }

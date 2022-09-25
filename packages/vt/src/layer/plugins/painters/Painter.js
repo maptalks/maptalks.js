@@ -597,6 +597,10 @@ class Painter {
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
         for (const p in newSymbolDef) {
             if (hasOwn(newSymbolDef, p)) {
+                // 当新的symbol中是fn-type类型属性，且没有缓存features而且property不一致时，就刷新
+                if (StyleUtil.isFnTypeSymbol(newSymbolDef[p]) && !this.layer.options['features'] && (!oldSymbolDef[p] || oldSymbolDef[p].property !== newSymbolDef[p].property)) {
+                    return true;
+                }
                 if (SYMBOLS_NEED_REBUILD_IN_VT[p] && !deepEuqal(newSymbolDef[p], oldSymbolDef[p])) {
                     return true;
                 }

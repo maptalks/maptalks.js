@@ -1,4 +1,4 @@
-import { isFunctionDefinition } from '@maptalks/function-type';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
 export function now() {
@@ -186,4 +186,47 @@ export function normalizeColor(out, color) {
         out.push(255);
     }
     return out;
+}
+
+const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
+    'textFill': 1,
+    'textSize': 1,
+    'textOpacity': 1,
+    'markerWidth': 1,
+    'markerHeight': 1,
+    'markerOpacity': 1,
+    'markerDx': 1,
+    'markerDy': 1,
+    'lineWidth': 1,
+    'lineColor': 1,
+    'lineOpacity': 1,
+    'polygonFill': 1,
+    'polygonOpacity': 1
+};
+
+// 遍历features，检查 symbolName 对应的属性中，是否有fn-type类型的值，而且和zoom相关
+export function checkIfIdentityZoomDependent(symbolName, prop, features) {
+    if (!Array.isArray(features)) {
+        features = Object.values(features);
+    }
+    if (!features || !features.length) {
+        return false;
+    }
+    if (!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName]) {
+        return false;
+    }
+    for (let i = 0; i < features.length; i++) {
+        const fea = features[i] && (features[i].feature || features[i]);
+        if (!fea) {
+            continue;
+        }
+        const v = fea.properties && fea.properties[prop];
+        if (!v) {
+            continue;
+        }
+        if (isFunctionDefinition(v) && !interpolated(v).isZoomConstant) {
+            return true;
+        }
+    }
+    return false;
 }

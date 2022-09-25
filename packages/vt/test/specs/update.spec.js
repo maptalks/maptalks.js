@@ -175,7 +175,6 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
-            features: true,
             data: point,
             style
         });
