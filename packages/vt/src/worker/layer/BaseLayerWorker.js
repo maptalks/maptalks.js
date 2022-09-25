@@ -9,6 +9,7 @@ import { KEY_IDX } from '../../common/Constant';
 // let FONT_CANVAS;
 
 const oldPropsKey = '__original_properties';
+const fntypePropsKey = '__fn-type_properties';
 
 export default class BaseLayerWorker {
     constructor(id, options, upload, tileCache, tileLoading) {
@@ -385,6 +386,7 @@ export default class BaseLayerWorker {
             const allFeas = {};
             const schema = layers;
             if (options.features || options.schema || hasFnTypeProps) {
+                let needClearNoneFnTypeProps = false;
                 let feature;
                 for (let i = 0, l = features.length; i < l; i++) {
                     feature = features[i];
@@ -404,7 +406,8 @@ export default class BaseLayerWorker {
                             delete feature.properties['$type'];
                             // _getFeaturesToMerge 中用于排序的临时字段
                             delete feature['__index'];
-                            if (feature.originalFeature) {
+                            const originalFeature = feature.originalFeature;
+                            if (originalFeature) {
                                 const properties = feature.properties;
                                 const fea = extend({}, feature.originalFeature);
                                 // fea.properties = extend({}, feature.originalFeature.properties, properties);
@@ -418,7 +421,10 @@ export default class BaseLayerWorker {
                             if (!options.features) {
                                 // 只输出symbol中用到的属性
                                 const pluginIndexs = feaTags[i];
-                                const properties = {};
+                                let properties;
+                                if (!originalFeature) {
+                                    properties = {};
+                                }
                                 for (let j = 0; j < pluginIndexs.length; j++) {
                                     const props = fnTypeProps[j];
                                     if (!props) {
@@ -426,15 +432,39 @@ export default class BaseLayerWorker {
                                     }
                                     for (let jj = 0; jj < props.length; jj++) {
                                         const p = props[jj];
-                                        properties[p] = o.customProps ? ((p in o.customProps) ? o.customProps[p] : o.properties[p]) : o.properties[p];
+                                        if (!originalFeature) {
+                                            properties[p] = o.properties[p];
+                                        } else if (!(p in o.customProps)) {
+                                            if (!originalFeature.properties[fntypePropsKey]) {
+                                                originalFeature.properties[fntypePropsKey] = new Set();
+                                            }
+                                            originalFeature.properties[fntypePropsKey].add(p);
+                                            needClearNoneFnTypeProps = true;
+                                        }
                                     }
                                 }
-                                o.properties = properties;
-                                delete o.customProps;
+                                if (!originalFeature) {
+                                    o.properties = properties;
+                                }
                             }
                             allFeas[i] = o;
                         }
-
+                    }
+                }
+                if (needClearNoneFnTypeProps) {
+                    // 验证batch底图的内存情况
+                    // http://localhost/bugs/designer-947/
+                    for (const p in allFeas) {
+                        const feature = allFeas[p];
+                        if (feature.properties[fntypePropsKey]) {
+                            const keys = feature.properties[fntypePropsKey];
+                            delete feature.properties[fntypePropsKey];
+                            for (const pp in feature.properties) {
+                                if (!keys.has(pp)) {
+                                    delete feature.properties[pp];
+                                }
+                            }
+                        }
                     }
                 }
             }
