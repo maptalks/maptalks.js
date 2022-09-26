@@ -15,9 +15,6 @@ export default class BaseLayerWorker {
     constructor(id, options, upload, tileCache, tileLoading) {
         this.id = id;
         this.options = options;
-        if (!isNil(options.style.features)) {
-            this.options.features = this.options.features || options.style.features;
-        }
         this.upload = upload;
         this._compileStyle(options.style);
         this.requests = {};
@@ -28,9 +25,6 @@ export default class BaseLayerWorker {
 
     updateStyle(style, cb) {
         this.options.style = style;
-        if (!isNil(style.features)) {
-            this.options.features = this.options.features || style.features;
-        }
         this._styleCounter = style.styleCounter;
         this._compileStyle(style);
         cb();

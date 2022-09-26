@@ -168,13 +168,12 @@ class Painter {
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
                     const props = geo.geometry.properties;
-                    if (!isObjectEmpty(features)) {
-                        const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
-                        if (hasFeaIds) {
-                            props.feaIdPickingMap = pickingIdMap;
-                            props.feaPickingIdMap = idPickingMap;
-                        }
+                    const { pickingIdMap, idPickingMap, hasFeaIds } = this._getIdMap(glData[i]);
+                    if (hasFeaIds) {
+                        props.feaIdPickingMap = pickingIdMap;
+                        props.feaPickingIdMap = idPickingMap;
                     }
+
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
                     // props.elements = props.elements || geo.geometry.elements;
