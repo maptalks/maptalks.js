@@ -219,7 +219,6 @@ export default class VectorPack {
             this.maxPosZ = maxZ;
         }
 
-
         const orders = this.options.order;
         if (orders) {
             const orderFilters = [];
@@ -232,8 +231,8 @@ export default class VectorPack {
             }
             checked = checked.sort((a, b) => {
                 const l = orderFilters.length;
-                let ia = l;
-                let ib = l;
+                let ia = -1;
+                let ib = -1;
                 for (let i = 0; i < l; i++) {
                     if (orderFilters[i](a)) {
                         ia = i;
@@ -241,7 +240,7 @@ export default class VectorPack {
                     if (orderFilters[i](b)) {
                         ib = i;
                     }
-                    if (ia < l && ib < l) {
+                    if (ia >= 0 && ia < l && ib >= 0 && ib < l) {
                         break;
                     }
                 }
