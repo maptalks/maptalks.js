@@ -230,3 +230,7 @@ export function checkIfIdentityZoomDependent(symbolName, prop, features) {
     }
     return false;
 }
+
+export function checkIfZoomFnTypeSymbol(symbolName) {
+    return !!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName];
+}

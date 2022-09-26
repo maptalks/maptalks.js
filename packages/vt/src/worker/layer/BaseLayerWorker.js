@@ -1,6 +1,6 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil } from '@maptalks/vector-packer';
+import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -285,7 +285,6 @@ export default class BaseLayerWorker {
                 targetData[typeIndex] = null;
                 continue;
             }
-
             getFnTypeProps(pluginConfig.symbol, fnTypeProps, i);
             hasFnTypeProps = hasFnTypeProps || fnTypeProps[i] && fnTypeProps[i].size > 0;
 
@@ -937,7 +936,8 @@ function getFnTypeProps(symbol, props, i) {
         return EMPTY_ARRAY;
     }
     for (const p in symbol) {
-        if (!symbol[p]) {
+        // 只保留支持zoom fn-type的样式属性，其他的属性忽略掉
+        if (!symbol[p] || !StyleUtil.checkIfZoomFnTypeSymbol(p)) {
             continue;
         }
         if (isFnTypeSymbol(symbol[p])) {
