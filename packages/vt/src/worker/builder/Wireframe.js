@@ -1,9 +1,11 @@
 import { countVertexes, isClippedEdge, fillPosArray } from './Common';
 import { KEY_IDX } from '../../common/Constant';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil, StyleUtil, FilterUtil } from '@maptalks/vector-packer';
+import { isFunctionDefinition } from '@maptalks/function-type';
+import { vec3 } from 'gl-matrix';
 
 export function buildWireframe(
-    features, EXTENT,
+    features, EXTENT, colorSymbol, opacity,
     {
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight,
         bottom
@@ -16,6 +18,10 @@ export function buildWireframe(
 
     const featIndexes = [];
     const vertices = new Int16Array(size);
+    const colors = new Uint8Array(vertices.length / 3 * 4);
+    if (isFunctionDefinition(colorSymbol)) {
+        colorSymbol = FilterUtil.compileFilter(colorSymbol);
+    }
     const indices = [];
 
     function fillIndices(start, offset, height) {
@@ -63,11 +69,24 @@ export function buildWireframe(
     let offset = 0;
     let maxAltitude = 0;
     const keyName = (KEY_IDX + '').trim();
+    const rgb = [];
 
     for (let r = 0, n = features.length; r < n; r++) {
         const feature = features[r];
         const geometry = feature.geometry;
+        if (colorSymbol) {
+            let color;
+            if (typeof colorSymbol === 'function') {
+                color = colorSymbol(feature && feature.properties);
+            } else {
+                color = colorSymbol;
+            }
+            StyleUtil.normalizeColor(rgb, color);
+        } else {
+            vec3.set(rgb, 255, 255, 255);
+        }
 
+        const colorStart = offset / 3 * 4;
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
 
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
@@ -84,6 +103,14 @@ export function buildWireframe(
             offset = fillIndices(start, offset, height * scale); //need to multiply with scale as altitude is
             start = offset;
         }
+
+        const colorEnd = start / 3 * 4;
+        for (let i = colorStart; i < colorEnd; i += 4) {
+            colors[i] = rgb[0];
+            colors[i + 1] = rgb[1];
+            colors[i + 2] = rgb[2];
+            colors[i + 3] = 255 * (opacity || 1);
+        }
         const count = indices.length - featIndexes.length;
         for (let i = 0; i < count; i++) {
             featIndexes.push(feature[keyName]);
@@ -98,11 +125,11 @@ export function buildWireframe(
 
     const feaCtor = PackUtil.getUnsignedArrayType(features.length);
     const posArrayType = PackUtil.getPosArrayType(Math.max(512, maxAltitude));
-
     const data = {
         aPosition: new posArrayType(vertices),  // vertexes
         indices: tIndices,    // indices for drawElements
-        aPickingId: new feaCtor(featIndexes)     // vertex index of each feature
+        aPickingId: new feaCtor(featIndexes),     // vertex index of each feature
+        aColor: colors
     };
     return data;
 }

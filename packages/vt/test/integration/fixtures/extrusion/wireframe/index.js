@@ -37,7 +37,7 @@ const style = [
     {
         renderPlugin: plugin,
         symbol: {
-            lineColor: '#000'
+            lineColor: '#f00'
         }
     }
 

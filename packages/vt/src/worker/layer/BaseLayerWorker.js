@@ -492,7 +492,7 @@ export default class BaseLayerWorker {
             }
             return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex))]);
         } else if (type === '3d-wireframe') {
-            return Promise.all([Promise.resolve(buildWireframe(features, dataConfig, extent))]);
+            return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
@@ -924,6 +924,13 @@ function proxyFea(feature) {
     return result;
 }
 
+function addFnTypeProp(props, i, property) {
+    if (!props[i]) {
+        props[i] = new Set();
+    }
+    props[i].add(property);
+}
+
 const EMPTY_ARRAY = [];
 function getFnTypeProps(symbol, props, i) {
     if (!symbol) {
@@ -935,19 +942,16 @@ function getFnTypeProps(symbol, props, i) {
             continue;
         }
         if (isFnTypeSymbol(symbol[p])) {
-            if (!props[i]) {
-                props[i] = new Set();
-            }
-            props[i].add(symbol[p].property);
+            addFnTypeProp(props, i, symbol[p].property);
+        } else if (p === 'lineGradientProperty') {
+            addFnTypeProp(props, i, symbol[p]);
+            continue;
         }
         const stops = symbol[p].stops;
         if (stops && stops.length) {
             for (let i = 0; i < stops.length; i++) {
                 if (isFnTypeSymbol(stops[i][1])) {
-                    if (!props[i]) {
-                        props[i] = new Set();
-                    }
-                    props[i].add(stops[i][1].property);
+                    addFnTypeProp(props, i, stops[i][1].property);
                 }
             }
         }

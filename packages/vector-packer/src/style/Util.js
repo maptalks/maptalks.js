@@ -231,6 +231,16 @@ export function checkIfIdentityZoomDependent(symbolName, prop, features) {
     return false;
 }
 
+const SYMBOLS_NEEDS_CHECK = {
+    // textName如果是property，传到painter来计算textFit
+    'textName': 1,
+    // 以下两个属性如果和property有关，需要传到painter来计算textFit
+    'markerTextFitPadding': 1,
+    'markerTextFit': 1,
+    // 需要把这个property传给painter来生成gradient
+    'lineGradientProperty': 1
+}
+
 export function checkIfZoomFnTypeSymbol(symbolName) {
-    return !!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName];
+    return !!SYMBOLS_SUPPORT_IDENTITY_FN_TYPE[symbolName] || !!SYMBOLS_NEEDS_CHECK[symbolName];
 }

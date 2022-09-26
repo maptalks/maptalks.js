@@ -7,7 +7,6 @@ import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import deepEuqal from 'fast-deep-equal';
 import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
-import { isObjectEmpty } from './util/is_obj_empty';
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 

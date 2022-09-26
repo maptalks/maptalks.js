@@ -111,7 +111,7 @@ function createPainterPlugin(type, Painter) {
                 }
                 const data = glData;
                 // 目前只有native-line和wireframe会用到
-                if (this.painter.colorSymbol) {
+                if (this.painter.colorSymbol && !isObjectEmpty(features)) {
                     for (let i = 0; i < glData.length; i++) {
                         const colors = this._generateColorArray(features, glData[i].data.aPickingId, glData[i].indices, glData[i].data.aPosition, glData[i].positionSize);
                         glData[i].data.aColor = colors;
@@ -493,4 +493,12 @@ export function extend(dest) {
         }
     }
     return dest;
+}
+
+function isObjectEmpty(obj) {
+    if (!obj) {
+        return true;
+    }
+    for (const p in obj) return false;
+    return true;
 }
