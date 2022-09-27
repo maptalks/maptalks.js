@@ -10,8 +10,13 @@ vec4 highlight_blendColor(vec4 color) {
 	vec4 outColor;
 	#if defined(HAS_HIGHLIGHT_COLOR)
 		color.rgb = color.rgb * (1.0 - vHighlightColor.a) + vHighlightColor.rgb * vHighlightColor.a;
+		#ifndef HAS_HIGHLIGHT_COLOR_POINT
         color.a = color.a * (1.0 - vHighlightColor.a) + vHighlightColor.a;
+        #endif
         outColor = color;
+        #ifdef HAS_HIGHLIGHT_COLOR_POINT
+        outColor.rgb *= outColor.a;
+        #endif
 	#else
 		outColor = color;
 	#endif
