@@ -146,7 +146,7 @@ export function splitContent(content, font, wrapWidth, textWidth) {
 // export const CONTENT_EXPRE = /{([^}.]+)}/;
 // export const CONTENT_EXPRE = /{([\u0000-\u0019\u0021-\uFFFF]+)}/g;
 export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
-
+const TEMPLATE_CHARS = ['{', '}'];
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
  * @example
@@ -161,7 +161,8 @@ export function replaceVariable(str, props) {
     if (!isString(str)) {
         return str;
     }
-    return str.replace(CONTENT_EXPRE, function (str, key) {
+
+    function getValue(key) {
         if (!props) {
             return '';
         }
@@ -172,7 +173,43 @@ export function replaceVariable(str, props) {
             return value.join();
         }
         return value;
+    }
+    str = str.replace(CONTENT_EXPRE, function (str, key) {
+        return getValue(key);
     });
+    if (str.indexOf(TEMPLATE_CHARS[0]) > -1 || str.indexOf(TEMPLATE_CHARS[1]) > -1) {
+        const keys = templateKeys(str);
+        for (let i = 0, len = keys.length; i < len; i++) {
+            const key = keys[i];
+            const value = getValue(key);
+            str = str.replace(`${TEMPLATE_CHARS[0]}${key}${TEMPLATE_CHARS[1]}`, value);
+        }
+    }
+    return str;
+}
+
+function templateKeys(str) {
+    str += '';
+    const keys = [];
+    let start = false;
+    let key = '';
+    for (let i = 0, len = str.length; i < len; i++) {
+        if (!start && str[i] === TEMPLATE_CHARS[0]) {
+            start = true;
+        }
+        if (str[i] === TEMPLATE_CHARS[0] && start) {
+            key = '';
+        }
+        if (start && TEMPLATE_CHARS.indexOf(str[i]) === -1) {
+            key += str[i];
+        }
+        if (str[i] === TEMPLATE_CHARS[1]) {
+            start = false;
+            keys.push(key);
+            key = '';
+        }
+    }
+    return keys;
 }
 
 /**
