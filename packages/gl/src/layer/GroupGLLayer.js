@@ -185,9 +185,6 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @returns {TileLayer[]}
      */
     getLayers() {
-        if (this._packLayers) {
-            return this._packLayers;
-        }
         return this.layers;
     }
 

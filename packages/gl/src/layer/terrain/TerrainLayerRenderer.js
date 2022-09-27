@@ -6,6 +6,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, getParentSkinTile } from './TerrainTileUtil';
+import { isNil } from '../util/util.js';
 
 const V3 = [];
 
@@ -579,7 +580,12 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _getUniformValues() {
         const map = this.getMap();
         const projViewMatrix = map.projViewMatrix;
+        let opacity = this.layer.options.opacity;
+        if (isNil(opacity)) {
+            opacity = 1;
+        }
         const uniforms = {
+            opacity,
             projViewMatrix,
         };
         return uniforms;

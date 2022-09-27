@@ -1,5 +1,6 @@
 precision mediump float;
 uniform sampler2D skins[SKIN_COUNT];
+uniform float opacity;
 varying vec2 vUv;
 
 vec4 blend(vec4 src, vec4 dst) {
@@ -11,5 +12,5 @@ void main() {
     for (int i = 0; i < SKIN_COUNT; i++) {
         color *= blend(texture2D(skins[i], vUv), color);
     }
-    gl_FragColor = color;
+    gl_FragColor = color * opacity;
 }
