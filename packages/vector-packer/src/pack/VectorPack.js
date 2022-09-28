@@ -531,6 +531,7 @@ export default class VectorPack {
         const result = {
             data: arrays,
             isIdUnique,
+            is2D: this.maxPosZ === 0,
             // format,
             indices: this.hasElements() ? elements : null,
             positionSize,

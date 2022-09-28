@@ -26,6 +26,7 @@ const levelNFilter = mesh => {
 
 class Painter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+        this._is2D = true;
         this.regl = regl;
         this.layer = layer;
         this.canvas = layer.getRenderer().canvas;
@@ -164,6 +165,9 @@ class Painter {
                     });
                 }
             } else {
+                if (!glData[i].is2D) {
+                    this._is2D = false;
+                }
                 const geo = this.createGeometry(glData[i], features, i);
                 if (geo && geo.geometry) {
                     const props = geo.geometry.properties;
@@ -184,6 +188,10 @@ class Painter {
             }
         }
         return geometries;
+    }
+
+    isOnly2D() {
+        return this._is2D;
     }
 
     postCreateGeometry() {}

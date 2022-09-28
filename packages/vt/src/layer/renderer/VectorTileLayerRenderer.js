@@ -992,7 +992,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isEnableTileStencil() {
-        return this.layer.isOnly2D();
+        const plugins = this._getFramePlugins();
+        for (let i = 0; i < plugins.length; i++) {
+            if (!plugins[i] || !plugins[i].painter) {
+                continue;
+            }
+            if (!plugins[i].painter.isOnly2D()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     drawTile(tileInfo, tileData) {
