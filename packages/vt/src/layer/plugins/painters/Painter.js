@@ -165,7 +165,7 @@ class Painter {
                     });
                 }
             } else {
-                if (!glData[i].is2D) {
+                if (glData[i] && !glData[i].is2D) {
                     this._is2D = false;
                 }
                 const geo = this.createGeometry(glData[i], features, i);

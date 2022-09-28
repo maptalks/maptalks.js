@@ -192,6 +192,14 @@ export default class RoundTubePack extends LinePack {
         }
         this.maxPos = Math.max(this.maxPos, Math.abs(x) + 1, Math.abs(y) + 1);
     }
+
+    createDataPack(vectors, scale) {
+        const pack = super.createDataPack(vectors, scale);
+        if (pack) {
+            pack.is2D = false;
+        }
+        return pack;
+    }
 }
 
 const Q = [];
