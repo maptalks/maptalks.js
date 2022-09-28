@@ -100,16 +100,107 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const mesh = tileImage.terrainMesh;
         if (mesh) {
             const skinLayer = this.layer.getSkinLayer(skinIndex);
-            const renderer = skinLayer.getRenderer();
-            if (renderer) {
-                renderer.renderTerrainSkin(this.layer, this.regl, tileInfo, tileImage, skinIndex);
-            }
+            this.renderSkin(skinLayer, tileInfo, tileImage, skinIndex);
             const emptyTexture = this._getEmptyTexture();
             const textures = mesh.getUniform('skins');
             const skins = tileImage.skins;
             for (let i = 0; i < skins.length; i++) {
                 textures[i] = skins[i] || emptyTexture;
             }
+        }
+    }
+
+    renderSkin(skinLayer, tileInfo, tileImage, skinIndex) {
+        if (!tileImage.skinImages) {
+            tileImage.skinImages = [];
+        }
+        if (!tileImage.skins) {
+             tileImage.skins = [];
+        }
+        if (!tileImage.skinStatus) {
+            tileImage.skinStatus = [];
+        }
+        if (!tileImage.skinTileIds) {
+            tileImage.skinTileIds = [];
+        }
+        const status = tileImage.skinStatus[skinIndex];
+        if (status) {
+            return;
+        }
+        const renderer = skinLayer.getRenderer();
+        if (!renderer) {
+             return;
+        }
+
+        const sr = skinLayer.getSpatialReference();
+        const { x, y, z, res, extent2d } = tileInfo;
+        let w = Math.round(extent2d.getWidth());
+        let h = Math.round(extent2d.getHeight());
+
+        // const zoom = this.getCurrentTileZoom();
+        const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
+
+        const myTileSize = skinLayer.getTileSize().width;
+
+        const scale = getSkinTileScale(myRes, myTileSize, res, w);
+
+        let skinTileIds = tileImage.skinTileIds[skinIndex];
+        if (!skinTileIds) {
+            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, scale, SKIN_LEVEL_LIMIT);
+        }
+        const level0 = skinTileIds['0'];
+        let complete = true;
+        const tiles = [];
+        let parentTile;
+        for (let i = 0; i < level0.length; i++) {
+            const tileId = level0[i].id;
+            const cachedTile = renderer.tileCache.get(tileId);
+            if (!cachedTile) {
+                complete = false;
+                if (!parentTile) {
+                    parentTile = getParentSkinTile(skinLayer, level0[i].x, level0[i].y, level0[i].z, this.layer.options.backZoomOffset);
+                }
+                continue;
+            }
+            tiles.push(cachedTile);
+        }
+
+        let texture = tileImage.skinImages[skinIndex];
+        if (!texture) {
+            texture = document.createElement('canvas');
+            if (!reshader.Util.isPowerOfTwo(w)) {
+                w = reshader.Util.floorPowerOfTwo(w);
+            }
+            if (!reshader.Util.isPowerOfTwo(h)) {
+                w = reshader.Util.floorPowerOfTwo(h);
+            }
+            texture.width = w;
+            texture.height = h;
+        }
+
+        renderer.renderTerrainSkin(this.regl, tileInfo, texture, tiles, parentTile);
+        const debugCanvas = document.getElementById('terrain_skin_debug');
+        if (debugCanvas) {
+            debugCanvas.width = w;
+            debugCanvas.height = h;
+            debugCanvas.getContext('2d').drawImage(texture, 0, 0);
+        }
+        const config = {
+            data: texture,
+            width: w,
+            height: h
+        };
+        let tex = tileImage.skins[skinIndex];
+        if (!tex) {
+            tex = this.regl.texture(config);
+        } else {
+            tex(config);
+        }
+        tileImage.skins[skinIndex] = tex;
+        if (complete) {
+            tileImage.skinStatus[skinIndex] = 1;
+            // save some memory
+            tileImage.skinImages[skinIndex] = null;
         }
     }
 
@@ -597,68 +688,8 @@ export default TerrainLayerRenderer;
 const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
-    renderTerrainSkin(terrainLayer, regl, tileInfo, tileImage, skinIndex) {
-        if (!tileImage.skinImages) {
-            tileImage.skinImages = [];
-        }
-        if (!tileImage.skins) {
-             tileImage.skins = [];
-        }
-        if (!tileImage.skinStatus) {
-            tileImage.skinStatus = [];
-        }
-        if (!tileImage.skinTileIds) {
-            tileImage.skinTileIds = [];
-        }
-        const status = tileImage.skinStatus[skinIndex];
-        if (status) {
-            return;
-        }
-        const sr = this.layer.getSpatialReference();
-        const { x, y, z, res, extent2d } = tileInfo;
-        let w = Math.round(tileInfo.extent2d.getWidth());
-        let h = Math.round(tileInfo.extent2d.getHeight());
-
-        // const zoom = this.getCurrentTileZoom();
-        const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
-
-        const myTileSize = this.layer.getTileSize().width;
-
-        const scale = getSkinTileScale(myRes, myTileSize, res, w);
-
-        let texture = tileImage.skinImages[skinIndex];
-        if (!texture) {
-            texture = document.createElement('canvas');
-            if (!reshader.Util.isPowerOfTwo(w)) {
-                w = reshader.Util.floorPowerOfTwo(w);
-            }
-            if (!reshader.Util.isPowerOfTwo(h)) {
-                w = reshader.Util.floorPowerOfTwo(h);
-            }
-            texture.width = w;
-            texture.height = h;
-        }
-
-        let skinTileIds = tileImage.skinTileIds[skinIndex];
-        if (!skinTileIds) {
-            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(this.layer, x, y, zoom, scale, SKIN_LEVEL_LIMIT);
-        }
-        const level0 = skinTileIds['0'];
-        let complete = true;
-        const tiles = [];
-        let parentTile;
-        for (let i = 0; i < level0.length; i++) {
-            const tileId = level0[i].id;
-            const cachedTile = this.tileCache.get(tileId);
-            if (!cachedTile) {
-                complete = false;
-                if (!parentTile) {
-                    parentTile = getParentSkinTile(this.layer, level0[i].x, level0[i].y, level0[i].z, terrainLayer.options.backZoomOffset);
-                }
-                continue;
-            }
-            tiles.push(cachedTile);
-        }
+    renderTerrainSkin(regl, tileInfo, texture, tiles, parentTile) {
+        const { res, extent2d } = tileInfo;
         const ctx = texture.getContext('2d');
         if (parentTile) {
             drawTileImage(ctx, extent2d, parentTile, res);
@@ -666,29 +697,7 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         for (let i = 0; i < tiles.length; i++) {
             drawTileImage(ctx, extent2d, tiles[i], res);
         }
-        const debugCanvas = document.getElementById('terrain_skin_debug');
-        if (debugCanvas) {
-            debugCanvas.width = w;
-            debugCanvas.height = h;
-            debugCanvas.getContext('2d').drawImage(texture, 0, 0);
-        }
-        const config = {
-            data: texture,
-            width: w,
-            height: h
-        };
-        let tex = tileImage.skins[skinIndex];
-        if (!tex) {
-            tex = regl.texture(config);
-        } else {
-            tex(config);
-        }
-        tileImage.skins[skinIndex] = tex;
-        if (complete) {
-            tileImage.skinStatus[skinIndex] = 1;
-            // save some memory
-            tileImage.skinImages[skinIndex] = null;
-        }
+
     }
 });
 
