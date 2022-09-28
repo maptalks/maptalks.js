@@ -12,6 +12,13 @@ const EMPTY_ARRAY = [];
 const CLEAR_COLOR = [0, 0, 0, 0];
 const TILE_POINT = new maptalks.Point(0, 0);
 
+const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill']);
+const terrainSkinFilter = plugin => {
+    const config = plugin.config;
+    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && plugin.painter && plugin.painter.isOnly2D();
+    return !is2D;
+}
+
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     supportRenderMode() {
@@ -1004,7 +1011,17 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return true;
     }
 
-    drawTile(tileInfo, tileData) {
+    // 有地形时的tile draw 方法
+    drawTileOnTerrain(tileInfo, tileData) {
+        // drawTile 有可能在GroupGLLayer被替换，但prototype上的定义是不会被替换的
+        return VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData, terrainSkinFilter);
+    }
+
+    renderTerrainSkin() {
+
+    }
+
+    drawTile(tileInfo, tileData, filter) {
         if (!tileData.cache) return;
         const tileCache = tileData.cache;
         const tilePoint = TILE_POINT.set(tileInfo.extent2d.xmin, tileInfo.extent2d.ymax);
@@ -1018,7 +1035,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const plugins = this._getFramePlugins(tileData);
 
         plugins.forEach((plugin, idx) => {
-            if (!plugin) {
+            if (!plugin || filter && !filter(plugin)) {
                 return;
             }
             const visible = this._isVisible(idx);
