@@ -73,6 +73,7 @@ class TubePainter extends BasicPainter {
         setUniformFromSymbol(uniforms, 'linePatternGap', symbol, 'linePatternGap', 0);
         setUniformFromSymbol(uniforms, 'metallicFactor', symbol, 'metallicFactor', 0);
         setUniformFromSymbol(uniforms, 'roughnessFactor', symbol, 'roughnessFactor', 0.4);
+        setUniformFromSymbol(uniforms, 'emissiveFactor', symbol, 'emissiveFactor', [0, 0, 0]);
         setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', [1, 1]);
 
         const iconAtlas = geometry.properties.iconAtlas;
