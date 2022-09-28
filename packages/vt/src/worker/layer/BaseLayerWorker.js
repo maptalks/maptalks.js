@@ -1,6 +1,6 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil } from '@maptalks/vector-packer';
+import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -946,6 +946,22 @@ function getFnTypeProps(symbol, props, i) {
         } else if (p === 'lineGradientProperty') {
             addFnTypeProp(props, i, symbol[p]);
             continue;
+        } else if (p === 'textName') {
+            // 返回 textName 中可能用到的属性名
+            if (isString(symbol[p])) {
+                const vars = TextUtil.resolveVarNames(symbol[p]);
+                if (vars) {
+                    for (let j = 0; j < vars.length; j++) {
+                        addFnTypeProp(props, i, vars[j]);
+                    }
+                }
+            } else if (FilterUtil.isExpression(symbol[p])) {
+                const vars = [];
+                TextUtil.resolveExpVarNames(vars, symbol[p]);
+                for (let j = 0; j < vars.length; j++) {
+                    addFnTypeProp(props, i, vars[j]);
+                }
+            }
         }
         const stops = symbol[p].stops;
         if (stops && stops.length) {

@@ -56,3 +56,19 @@ export function resolveText(str, props) {
         return value;
     });
 }
+
+export function resolveVarNames(str) {
+    return str.match(contentExpRe);
+}
+
+// 从expression中获取属性名
+export function resolveExpVarNames(out, arr) {
+    for (let i = 0; i < arr.length; i++) {
+        // https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#get
+        if (arr[i].length === 2 && arr[i][0] === 'get') {
+            out.push(arr[i][1]);
+        } else if (Array.isArray(arr[i])) {
+            resolveExpVarNames(out, arr[i]);
+        }
+    }
+}
