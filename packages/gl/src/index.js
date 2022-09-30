@@ -14,7 +14,7 @@ import GroundPainter from './layer/GroundPainter';
 import './light/MapLights.js';
 import './map/MapPostProcess.js';
 
-
+export * as HighlightUtil from './layer/util/highlight.js';
 export { GroupGLLayer, GroundPainter };
 
 export { default as HeatmapProcess } from './layer/HeatmapProcess';
