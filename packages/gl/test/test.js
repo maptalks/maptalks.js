@@ -85,6 +85,41 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+        it('terrain layer with opacity', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                opacity: 0.5
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 150, '1': 154, '2': 158, '3': 63 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
         it('GroupGLLayer.setTerrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
