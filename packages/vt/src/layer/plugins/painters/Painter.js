@@ -1039,14 +1039,8 @@ class Painter {
     }
 
     _prepareFeatureIds(geometry, glData) {
-        const { featureIds, feaIdAttrMap, feaIdIndiceMap } = glData;
+        const { featureIds, feaIdIndiceMap } = glData;
         geometry.properties.aFeaIds = featureIds;
-        const featureIdSet = new Set();
-        for (let i = 0, l = featureIds.length; i < l; i++) {
-            featureIdSet.add(featureIds[i]);
-        }
-        geometry.properties.featureIdSet = featureIdSet;
-        geometry.properties.feaIdAttrMap = feaIdAttrMap;
         geometry.properties.feaIdIndiceMap = feaIdIndiceMap;
     }
 
@@ -1067,7 +1061,7 @@ class Painter {
         if (this._highlightTimestamp === highlightTimestamp) {
             return;
         }
-        const { featureIdSet, aFeaIds, feaIdAttrMap, feaIdIndiceMap } = mesh.geometry.properties;
+        const { aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
         let { aHighlightColor, aHighlightOpacity } = mesh.geometry.properties;
         if (aHighlightColor) {
             aHighlightColor.fill(0);
@@ -1081,9 +1075,10 @@ class Painter {
         const ids = highlighted.keys();
         const hlElements = [];
         for (const id of ids) {
-            if (featureIdSet.has(id)) {
+            if (feaIdIndiceMap[id]) {
                 // update attribute data
                 let { color, opacity, bloom } = highlighted.get(id);
+                let normalizedColor;
                 if (color) {
                     if (!hasColor) {
                         if (!aHighlightColor) {
@@ -1091,16 +1086,8 @@ class Painter {
                         }
                         hasColor = true;
                     }
-                    const normalizedColor = StyleUtil.normalizeColor(COLOR, color);
-
-                    const [start, end] = feaIdAttrMap[id];
-                    const count = end - start;
-                    for (let k = 0; k < count; k++) {
-                        const idx = (start + k) * 4;
-                        vec4.set(aHighlightColor.subarray(idx, idx + 4), ...normalizedColor);
-                    }
+                    normalizedColor = StyleUtil.normalizeColor(COLOR, color);
                 }
-
                 opacity = isNil(opacity) ? 1 : opacity;
                 if (opacity < 1) {
                     if (!hasOpacity) {
@@ -1110,21 +1097,22 @@ class Painter {
                         }
                         hasOpacity = true;
                     }
-
-                    const [start, end] = feaIdAttrMap[id];
-                    const count = end - start;
-                    for (let k = 0; k < count; k++) {
-                        const idx = start + k;
-                        aHighlightOpacity[idx] = opacity * 255;
-                    }
                 }
 
-                if (bloom) {
-                    const indices = feaIdIndiceMap[id];
-                    if (indices) {
-                        for (let j = 0; j < indices.length; j++) {
-                            hlElements.push(indices[j]);
+                const indices = feaIdIndiceMap[id];
+                if (indices) {
+                    for (let j = 0; j < indices.length; j++) {
+                        const idx = indices[j];
+                        if (normalizedColor) {
+                            vec4.set(aHighlightColor.subarray(idx * 4, idx * 4 + 4), ...normalizedColor);
                         }
+                        if (opacity < 1) {
+                            aHighlightOpacity[idx] = opacity * 255;
+                        }
+                        if (bloom) {
+                            hlElements.push(idx);
+                        }
+
                     }
                 }
             }

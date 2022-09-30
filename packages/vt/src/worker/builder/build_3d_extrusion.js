@@ -128,7 +128,6 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         data.buffers.push(fnTypes.aOpacity.buffer);
     }
 
-    data.data.feaIdAttrMap = PackUtil.generateFeatureIndex(data.data.featureIds);
     data.data.feaIdIndiceMap = PackUtil.generateFeatureIndiceIndex(data.data.featureIds, data.data.indices);
     return data;
 }
