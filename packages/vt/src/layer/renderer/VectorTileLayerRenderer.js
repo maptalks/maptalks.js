@@ -1289,6 +1289,21 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._plugins[styleCounter] = plugins;
         this._featurePlugins[styleCounter] = featurePlugins;
         this.layer.fire('pluginsinited');
+
+        if (this._highlighted && this._highlighted.size || this.layer._highlighted) {
+            if (this.layer._highlighted) {
+                this.layer._resumeHighlights();
+            }
+            const map = this.getMap();
+            const renderer = map.getRenderer();
+            renderer.callInNextFrame(() => {
+                const plugins = this._getFramePlugins();
+                plugins.forEach(plugin => {
+                    plugin.highlight(this._highlighted);
+                });
+            });
+        }
+
         return plugins;
     }
 
