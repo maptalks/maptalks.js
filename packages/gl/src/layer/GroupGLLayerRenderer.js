@@ -598,6 +598,16 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     forEachRenderer(fn) {
+        const layers = this._getLayers();
+        for (const layer of layers) {
+            if (!layer.isVisible() || !layer.options['beneathTerrain']) {
+                continue;
+            }
+            const renderer = layer.getRenderer();
+            if (renderer) {
+                fn(renderer, layer);
+            }
+        }
         const terrainLayer = this.layer._terrainLayer;
         if (terrainLayer) {
             const renderer = terrainLayer.getRenderer();
@@ -605,9 +615,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 fn(renderer, terrainLayer);
             }
         }
-        const layers = this._getLayers();
         for (const layer of layers) {
-            if (!layer.isVisible()) {
+            if (!layer.isVisible() || layer.options['beneathTerrain']) {
                 continue;
             }
             const renderer = layer.getRenderer();

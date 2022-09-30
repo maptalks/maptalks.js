@@ -178,7 +178,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             texture.height = h;
         }
 
-        renderer.renderTerrainSkin(this.regl, tileInfo, texture, tiles, parentTile);
+        renderer.renderTerrainSkin(this.regl, this.layer, tileInfo, texture, tiles, parentTile);
         const debugCanvas = document.getElementById('terrain_skin_debug');
         if (debugCanvas) {
             debugCanvas.width = w;
@@ -622,7 +622,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     enable: true,
                     func: {
                         cmp: () => {
-                            return '<=';
+                            return '<';
                         },
                         ref: (context, props) => {
                             return props.level;
@@ -641,6 +641,11 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                         return depthMask;
                     },
                     func: this.layer.options.depthFunc || '<='
+                },
+                blend: {
+                enable: true,
+                    func: { src: this.layer.options.blendSrc, dst: this.layer.options.blendDst },
+                    equation: 'add'
                 },
             }
         });
@@ -688,7 +693,7 @@ export default TerrainLayerRenderer;
 const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
-    renderTerrainSkin(regl, tileInfo, texture, tiles, parentTile) {
+    renderTerrainSkin(regl, terrainLayer, tileInfo, texture, tiles, parentTile) {
         const { res, extent2d } = tileInfo;
         const ctx = texture.getContext('2d');
         if (parentTile) {

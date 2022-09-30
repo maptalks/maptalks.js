@@ -17,7 +17,9 @@ const options = {
     'terrainTileSize': 6,
     'terrainWidth': 65,
     'backZoomOffset': -5,
-    'depthMask': true
+    'depthMask': true,
+    'blendSrc': 'src alpha',
+    'blendDst': 'one minus src alpha'
 };
 
 const EMPTY_TILE_GRIDS = {

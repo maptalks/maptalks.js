@@ -39,7 +39,7 @@ const options = {
 };
 
 //
-const emptyDrawTile = () => {};
+const emptyMethod = () => {};
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -507,7 +507,16 @@ export default class GroupGLLayer extends maptalks.Layer {
                     return this._terrainLayer.getSkinTiles(layer);
                 };
                 layer.isTerrainSkin = 1;
-                renderer.drawTile = emptyDrawTile;
+                // 重载原有的drawTile方法
+                // 如果renderer定义了drawTileOnTerrain，则代替原有的drawTile，否则用空方法代替
+                if (renderer.drawTileOnTerrain) {
+                    renderer.drawTile = (...args) => {
+                        return renderer.drawTileOnTerrain(...args);
+                    };
+                } else {
+                    renderer.drawTile = emptyMethod;
+                }
+
                 skinLayers.push(layers[i]);
             }
         }
