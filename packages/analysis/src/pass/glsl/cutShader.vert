@@ -20,6 +20,7 @@ varying vec3 vFragPos;
 varying vec3 vNormal;
 
 uniform mat4 projMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat3 modelNormalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 positionMatrix;
