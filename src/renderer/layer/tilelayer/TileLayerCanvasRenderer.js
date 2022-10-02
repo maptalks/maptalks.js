@@ -181,7 +181,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tileGrid = tileGrids[i];
             const allTiles = tileGrid['tiles'];
 
-            const placeholder = this._generatePlaceHolder(allTiles[0].res);
+            let placeholder;
+            if (allTiles.length) {
+                placeholder = this._generatePlaceHolder(allTiles[0].res);
+            }
 
             for (let j = 0, l = allTiles.length; j < l; j++) {
                 const tile = allTiles[j],

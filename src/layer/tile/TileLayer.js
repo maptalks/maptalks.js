@@ -140,7 +140,9 @@ const options = {
 
     'decodeImageInWorker': false,
 
-    'tileLimitPerFrame': 0
+    'tileLimitPerFrame': 0,
+
+    'backZoomOffset': 0
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
@@ -378,6 +380,7 @@ class TileLayer extends Layer {
         const offsets = {
             0: offset0
         };
+        const preservedZoom = this.options['backZoomOffset'] + z;
         const extent = new PointExtent();
         const tiles = [];
         while (queue.length > 0) {
@@ -391,13 +394,19 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
+            if (preservedZoom < z && tiles[tiles.length - 1] !== node && preservedZoom === node.z) {
+                // extent._combine(node.extent2d);
+                tiles.push(node);
+            }
         }
         return {
             tileGrids: [
                 {
                     extent,
                     count: tiles.length,
-                    tiles
+                    tiles,
+                    offset: [0, 0],
+                    zoom: z
                 }
             ],
             count: tiles.length
@@ -432,6 +441,9 @@ class TileLayer extends Layer {
             const childIdy = (idy << 1) + dy;
 
             // const tileId = this._getTileId(childIdx, childIdy, z);
+            if (!node.children) {
+                node.children = [];
+            }
             let tileId = node.children[i];
             if (!tileId) {
                 tileId = this._getTileId(childIdx, childIdy, z);
@@ -439,26 +451,24 @@ class TileLayer extends Layer {
             }
             const cached = renderer.isTileCachedOrLoading(tileId);
             let extent;
-            if (!cached) {
-                if (scaleY < 0) {
-                    const nwx = minx + dx * width;
-                    const nwy = maxy - dy * height;
-                    // extent2d 是 node.z 级别上的 extent
-                    extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
-
-                } else {
-                    const swx = minx + dx * width;
-                    const swy = miny + dy * height;
-                    extent = new PointExtent(swx, swy, swx + width, swy + height);
-                }
-            }
             let childNode = cached && cached.info;
             if (!childNode) {
-                if (!this._infoCache) {
-                    this._infoCache = new LRUCache(this.options['maxCacheSize']);
+                if (!this.tileInfoCache) {
+                    this.tileInfoCache = new LRUCache(this.options['maxCacheSize'] * 4);
                 }
-                childNode = this._infoCache.get(tileId);
+                childNode = this.tileInfoCache.get(tileId);
                 if (!childNode) {
+                    if (scaleY < 0) {
+                        const nwx = minx + dx * width;
+                        const nwy = maxy - dy * height;
+                        // extent2d 是 node.z 级别上的 extent
+                        extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
+
+                    } else {
+                        const swx = minx + dx * width;
+                        const swy = miny + dy * height;
+                        extent = new PointExtent(swx, swy, swx + width, swy + height);
+                    }
                     childNode = {
                         x: childX,
                         y: childY,
@@ -474,7 +484,7 @@ class TileLayer extends Layer {
                         url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
                         offset
                     };
-                    this._infoCache.add(tileId, childNode);
+                    this.tileInfoCache.add(tileId, childNode);
                 }
                 if (parentRenderer) {
                     childNode['layer'] = this.getId();
@@ -489,6 +499,7 @@ class TileLayer extends Layer {
             } else if (visible === -1) {
                 continue;
             } else if (visible === 0 && z !== maxZoom) {
+                // 任意子瓦片的error低于maxError，则添加父级瓦片，不再遍历子瓦片
                 tiles.push(node);
                 gridExtent._combine(node.extent2d);
                 return;
@@ -1054,6 +1065,8 @@ class TileLayer extends Layer {
             });
         }
         return {
+            'offset': offset,
+            'zoom': tileZoom,
             'extent': extent,
             'tiles': tiles
         };
