@@ -10,6 +10,7 @@ import UIComponent from './UIComponent';
 
 /**
  * @property {Object} options - construct options
+ * @property {String} [options.containerClass=null]  - css class name applied to UIMarker's DOM container
  * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
  * @property {Number}  [options.single=false]     - if the marker is a global single one.
  * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
