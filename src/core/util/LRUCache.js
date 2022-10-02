@@ -1,4 +1,6 @@
 const isMapSupported = typeof Map === 'function';
+
+const nullOnRemove = () => {};
 /**
  * from mapbox-gl-js
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
@@ -14,7 +16,7 @@ class ArrayLRUCache {
      */
     constructor(max, onRemove) {
         this.max = max;
-        this.onRemove = onRemove;
+        this.onRemove = onRemove || nullOnRemove;
         this.reset();
     }
 
@@ -160,7 +162,7 @@ if (isMapSupported) {
     MapLRUCache = class {
         constructor(max, onRemove) {
             this.max = max;
-            this.onRemove = onRemove;
+            this.onRemove = onRemove || nullOnRemove;
             this.reset();
         }
 

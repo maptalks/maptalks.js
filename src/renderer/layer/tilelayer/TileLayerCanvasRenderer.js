@@ -71,6 +71,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.tilesLoading = {};
         this._parentTiles = [];
         this._childTiles = [];
+        this._tileQueue = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
         if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
             this._tileImageWorkerConn = new TileWorkerConnection();
@@ -94,29 +95,36 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 return;
             }
         }
-        let tileGrids;
+        if (!context || context && context.isFinalRender) {
+            // maptalks/issues#10
+            // 如果consumeTileQueue方法在每个renderMode都会调用，但多边形只在fxaa mode下才会绘制。
+            // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
+            // 改为consumeTileQueue只在finalRender时调用即解决问题
+            this._consumeTileQueue();
+        }
+        let currentTiles;
         let hasFreshTiles = false;
-        const frameTileGrids = this._frameTileGrids;
-        if (frameTileGrids && timestamp === frameTileGrids.timestamp) {
-            if (frameTileGrids.empty) {
+        const frameTiles = this._frameTiles;
+        if (frameTiles && timestamp === frameTiles.timestamp) {
+            if (frameTiles.empty) {
                 return;
             }
-            tileGrids = frameTileGrids;
+            currentTiles = frameTiles;
         } else {
-            tileGrids = this._getTilesInCurrentFrame();
-            if (!tileGrids) {
-                this._frameTileGrids = { empty: true, timestamp };
+            currentTiles = this._getTilesInCurrentFrame();
+            if (!currentTiles) {
+                this._frameTiles = { empty: true, timestamp };
                 this.completeRender();
                 return;
             }
             hasFreshTiles = true;
-            this._frameTileGrids = tileGrids;
-            this._frameTileGrids.timestamp = timestamp;
-            if (tileGrids.loadingCount) {
-                this.loadTileQueue(tileGrids.tileQueue);
+            this._frameTiles = currentTiles;
+            this._frameTiles.timestamp = timestamp;
+            if (currentTiles.loadingCount) {
+                this.loadTileQueue(currentTiles.tileQueue);
             }
         }
-        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = tileGrids;
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = currentTiles;
 
         this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
         if (!loadingCount) {
@@ -135,10 +143,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
+    getTileGridsInCurrentFrame() {
+        return this._frameTileGrids;
+    }
+
     _getTilesInCurrentFrame() {
         const map = this.getMap();
         const layer = this.layer;
-        const tileGrids = layer.getTiles().tileGrids;
+        let tileGrids = layer.getTiles();
+        this._frameTileGrids = tileGrids;
+        tileGrids = tileGrids.tileGrids;
         if (!tileGrids || !tileGrids.length) {
             return null;
         }
@@ -167,7 +181,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const tileGrid = tileGrids[i];
             const allTiles = tileGrid['tiles'];
 
-            const placeholder = this._generatePlaceHolder(tileGrid.zoom);
+            let placeholder;
+            if (allTiles.length) {
+                placeholder = this._generatePlaceHolder(allTiles[0].res);
+            }
 
             for (let j = 0, l = allTiles.length; j < l; j++) {
                 const tile = allTiles[j],
@@ -305,6 +322,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     needToRedraw() {
         const map = this.getMap();
+        if (this._tileQueue.length) {
+            return true;
+        }
         if (map.getPitch()) {
             return super.needToRedraw();
         }
@@ -456,6 +476,30 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onTileLoad(tileImage, tileInfo) {
+        this._tileQueue.push({ tileInfo: tileInfo, tileData: tileImage });
+    }
+
+    _consumeTileQueue() {
+        let count = 0;
+        const limit = this.layer.options['tileLimitPerFrame'];
+        const queue = this._tileQueue;
+        /* eslint-disable no-unmodified-loop-condition */
+        while (queue.length && (limit <= 0 || count < limit)) {
+            const { tileData, tileInfo } = queue.shift();
+            if (!this.checkTileInQueue(tileData, tileInfo)) {
+                continue;
+            }
+            this.consumeTile(tileData, tileInfo);
+            count++;
+        }
+        /* eslint-enable no-unmodified-loop-condition */
+    }
+
+    checkTileInQueue() {
+        return true;
+    }
+
+    consumeTile(tileImage, tileInfo) {
         if (!this.layer) {
             return;
         }
@@ -535,7 +579,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const map = this.getMap(),
             zoom = map.getZoom(),
             ctx = this.context,
-            cp = map._pointToContainerPoint(point, tileZoom, 0, TEMP_POINT),
+            cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage);
@@ -763,14 +807,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         tile.image.onerror = null;
     }
 
-    _generatePlaceHolder(z) {
+    _generatePlaceHolder(res) {
         const map = this.getMap();
         const placeholder = this.layer.options['placeholder'];
         if (!placeholder || map.getPitch()) {
             return null;
         }
         const tileSize = this.layer.getTileSize(),
-            scale = map._getResolution(z) / map._getResolution(),
+            scale = res / map._getResolution(),
             canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;

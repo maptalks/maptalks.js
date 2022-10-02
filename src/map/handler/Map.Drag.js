@@ -139,9 +139,8 @@ class MapDragHandler extends Handler {
             t = 5 * t;
             const dscale = isTouch ? 5 : 2.8;
             const targetPrjCoord = currentCenter.add(dxy._multi(dscale));
-            map._fixPrjOnWorldWide(targetPrjCoord);
-            const targetCoord = map.getProjection().unproject(targetPrjCoord);
-            map.panTo(targetCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
+            // map._fixPrjOnWorldWide(targetPrjCoord);
+            map._panTo(targetPrjCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
         } else {
             map.onMoveEnd(param);
         }
