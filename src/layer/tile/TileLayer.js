@@ -753,6 +753,9 @@ class TileLayer extends Layer {
         if (this._renderer) {
             this._renderer.clear();
         }
+        if (this.tileInfoCache) {
+            this.tileInfoCache.reset();
+        }
         /**
          * clear event, fired when tile layer is cleared.
          *
@@ -1282,6 +1285,10 @@ class TileLayer extends Layer {
         delete this._sr;
         delete this._srMinZoom;
         delete this._hasOwnSR;
+        delete this._rootNodes;
+        if (this.tileInfoCache) {
+            this.tileInfoCache.reset();
+        }
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.clear();
