@@ -73,7 +73,7 @@ class NativePointPainter extends BasicPainter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
-        const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
+        // const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const config = {
             vert,
             frag,
@@ -91,25 +91,25 @@ class NativePointPainter extends BasicPainter {
             defines: null,
             extraCommandProps: {
                 viewport,
-                stencil: {
-                    enable: true,
-                    func: {
-                        cmp: () => {
-                            return stencil ? '=' : '<=';
-                        },
-                        ref: (context, props) => {
-                            return stencil ? props.stencilRef : props.level;
-                        },
-                        mask: 0xFF
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: () => {
-                            return stencil ? 'zero' : 'replace';
-                        }
-                    }
-                },
+                // stencil: {
+                //     enable: false,
+                //     func: {
+                //         cmp: () => {
+                //             return stencil ? '=' : '<=';
+                //         },
+                //         ref: (context, props) => {
+                //             return stencil ? props.stencilRef : props.level;
+                //         },
+                //         mask: 0xFF
+                //     },
+                //     op: {
+                //         fail: 'keep',
+                //         zfail: 'keep',
+                //         zpass: () => {
+                //             return stencil ? 'zero' : 'replace';
+                //         }
+                //     }
+                // },
                 depth: {
                     enable: true,
                     mask: false,

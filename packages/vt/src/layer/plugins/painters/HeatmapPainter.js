@@ -87,29 +87,8 @@ export default class HeatmapPainter extends BasicPainter {
     init() {
         const regl = this.regl;
         this.renderer = new reshader.Renderer(regl);
-        const enableStencil = this.layer.getRenderer().isEnableTileStencil();
-        const stencil = {
-            enable: true,
-            mask: 0xFF,
-            func: {
-                cmp: () => {
-                    return enableStencil ? '=' : '<=';
-                },
-                ref: (context, props) => {
-                    return enableStencil ? props.stencilRef : props.level;
-                },
-                mask: 0xFF
-            },
-            op: {
-                fail: 'keep',
-                zfail: 'keep',
-                zpass: () => {
-                    return stencil ? 'zero' : 'replace';
-                }
-            }
-        };
         const polygonOfffset = this.getPolygonOffset();
         const symbol = this.getSymbols()[0];
-        this._process = new HeatmapProcess(this.regl, this.sceneConfig, this.layer, symbol.heatmapColor, stencil, polygonOfffset);
+        this._process = new HeatmapProcess(this.regl, this.sceneConfig, this.layer, symbol.heatmapColor, null, polygonOfffset);
     }
 }
