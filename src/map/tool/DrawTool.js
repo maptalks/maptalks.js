@@ -473,6 +473,9 @@ class DrawTool extends MapTool {
             this._createGeometry(event);
             return;
         }
+        if (!this._geometry) {
+            return;
+        }
         let containerPoint = this._getMouseContainerPoint(event);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
