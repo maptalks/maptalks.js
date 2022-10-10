@@ -95,13 +95,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 return;
             }
         }
-        if (!context || context && context.isFinalRender) {
+
+        if (this._renderTimestamp !== timestamp) {
             // maptalks/issues#10
             // 如果consumeTileQueue方法在每个renderMode都会调用，但多边形只在fxaa mode下才会绘制。
             // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
             // 改为consumeTileQueue只在finalRender时调用即解决问题
             this._consumeTileQueue();
+            this._renderTimestamp = timestamp;
         }
+
+
         let currentTiles;
         let hasFreshTiles = false;
         const frameTiles = this._frameTiles;
