@@ -50,6 +50,75 @@ describe('gl tests', () => {
         });
     });
 
+    context('tilelayer tests', () => {
+        it('support tilelayer in post process, maptalks/issues#148', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true,
+                        taa: true
+                    }
+                }
+            };
+            const tileLayer = new maptalks.TileLayer('base', {
+                urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+            });
+            const group = new maptalks.GroupGLLayer('group', [tileLayer], {
+                sceneConfig
+            });
+            let count = 0;
+            group.once('layerload', () => {
+                if (count === 0) {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                    expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
+                    done();
+                }
+                count++;
+            });
+            group.addTo(map);
+        });
+
+        it('support tilelayer in post process (taa off), maptalks/issues#148', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const tileLayer = new maptalks.TileLayer('base', {
+                urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+            });
+            const group = new maptalks.GroupGLLayer('group', [tileLayer], {
+                sceneConfig
+            });
+            let count = 0;
+            group.once('layerload', () => {
+                if (count === 0) {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                    expect(pixel).to.be.eql({ data: { '0': 138, '1': 142, '2': 143, '3': 255 } });
+                    done();
+                }
+                count++;
+            });
+            group.addTo(map);
+        });
+    });
+
     context('terrain tests', () =>{
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
