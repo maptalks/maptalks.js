@@ -362,12 +362,13 @@ class DrawTool extends MapTool {
      * @private
      */
     _clickHandler(event) {
+        const map = this.getMap();
         const registerMode = this._getRegisterMode();
         // const coordinate = event['coordinate'];
         //dbclick will trigger two click
         if (this._clickCoords && this._clickCoords.length) {
             const len = this._clickCoords.length;
-            const prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            const prjCoord = map._pointToPrj(event['point2d']);
             if (this._clickCoords[len - 1].equals(prjCoord)) {
                 return;
             }
@@ -375,12 +376,31 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             this._createGeometry(event);
         } else {
-            let prjCoord = this.getMap()._pointToPrj(event['point2d']);
+            let prjCoord = map._pointToPrj(event['point2d']);
+            //for snap effect
             const snapTo = this._geometry.snapTo;
-            //for adsorption effect
             if (snapTo && isFunction(snapTo)) {
-                const containerPoint = this._geometry.snapTo(event.containerPoint) || event.containerPoint;
-                prjCoord = this.getMap()._containerPointToPrj(containerPoint);
+                let containerPoint = event.containerPoint;
+                const lastContainerPoints = [];
+                if (this.options.edgeAutoComplete) {
+                    const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
+                    lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
+                    const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
+                    if (beforeLastCoord) {
+                        lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
+                    }
+                }
+                const snapResult = snapTo(containerPoint, lastContainerPoints);
+                containerPoint = (snapResult.effectedVertex ? snapResult.point : snapResult) || containerPoint;
+                prjCoord = map._containerPointToPrj(containerPoint);
+                if (snapResult.effectedVertex) {
+                    const additionVertex = snapResult.effectedVertex.map(vertex => map._containerPointToPrj(vertex));
+                    this._clickCoords = this._clickCoords.concat(additionVertex);
+                }
+                // ensure snap won't trigger again when dblclick
+                if (this._clickCoords[this._clickCoords.length - 1].equals(prjCoord)) {
+                    return;
+                }
             }
             if (!isNil(this._historyPointer)) {
                 this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
@@ -388,7 +408,7 @@ class DrawTool extends MapTool {
             this._clickCoords.push(prjCoord);
             this._historyPointer = this._clickCoords.length;
             event.drawTool = this;
-            registerMode['update'](this.getMap().getProjection(), this._clickCoords, this._geometry, event);
+            registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, event);
             if (this.getMode() === 'point') {
                 this.endDraw(event);
                 return;
@@ -480,10 +500,26 @@ class DrawTool extends MapTool {
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
-        let prjCoord = this.getMap()._pointToPrj(event['point2d']);
-        if (this._geometry.snapTo) {
-            containerPoint = this._geometry.snapTo(containerPoint) || containerPoint;
+        let prjCoord = map._pointToPrj(event['point2d']);
+        // for snap effect
+        let snapAdditionVertex = [];
+        const snapTo = this._geometry.snapTo;
+        if (snapTo && isFunction(snapTo)) {
+            const lastContainerPoints = [];
+            if (this.options.edgeAutoComplete) {
+                const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
+                lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
+                const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
+                if (beforeLastCoord) {
+                    lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
+                }
+            }
+            const snapResult = snapTo(containerPoint, lastContainerPoints);
+            containerPoint = (snapResult.effectedVertex ? snapResult.point : snapResult) || containerPoint;
             prjCoord = map._containerPointToPrj(containerPoint);
+            if (snapResult.effectedVertex) {
+                snapAdditionVertex = snapResult.effectedVertex.map(vertex => map._containerPointToPrj(vertex));
+            }
         }
         const projection = map.getProjection();
         event.drawTool = this;
@@ -493,7 +529,7 @@ class DrawTool extends MapTool {
             if (path && path.length > 0 && prjCoord.equals(path[path.length - 1])) {
                 return;
             }
-            registerMode['update'](projection, path.concat([prjCoord]), this._geometry, event);
+            registerMode['update'](projection, path.concat(snapAdditionVertex, [prjCoord]), this._geometry, event);
         } else {
             //free hand mode
             registerMode['update'](projection, prjCoord, this._geometry, event);
