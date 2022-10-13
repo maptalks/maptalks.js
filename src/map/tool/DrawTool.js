@@ -377,33 +377,19 @@ class DrawTool extends MapTool {
             this._createGeometry(event);
         } else {
             let prjCoord = map._pointToPrj(event['point2d']);
+            if (!isNil(this._historyPointer)) {
+                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
+            }
             //for snap effect
             const snapTo = this._geometry.snapTo;
             if (snapTo && isFunction(snapTo)) {
-                let containerPoint = event.containerPoint;
-                const lastContainerPoints = [];
-                if (this.options.edgeAutoComplete) {
-                    const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
-                    lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
-                    const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
-                    if (beforeLastCoord) {
-                        lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
-                    }
-                }
-                const snapResult = snapTo(containerPoint, lastContainerPoints);
-                containerPoint = (snapResult.effectedVertex ? snapResult.point : snapResult) || containerPoint;
-                prjCoord = map._containerPointToPrj(containerPoint);
-                if (snapResult.effectedVertex) {
-                    const additionVertex = snapResult.effectedVertex.map(vertex => map._containerPointToPrj(vertex));
-                    this._clickCoords = this._clickCoords.concat(additionVertex);
-                }
+                const snapResult = this._getSnapResult(snapTo, event.containerPoint);
+                prjCoord = snapResult.prjCoord;
+                this._clickCoords = this._clickCoords.concat(snapResult.effectedVertex);
                 // ensure snap won't trigger again when dblclick
                 if (this._clickCoords[this._clickCoords.length - 1].equals(prjCoord)) {
                     return;
                 }
-            }
-            if (!isNil(this._historyPointer)) {
-                this._clickCoords = this._clickCoords.slice(0, this._historyPointer);
             }
             this._clickCoords.push(prjCoord);
             this._historyPointer = this._clickCoords.length;
@@ -505,21 +491,9 @@ class DrawTool extends MapTool {
         let snapAdditionVertex = [];
         const snapTo = this._geometry.snapTo;
         if (snapTo && isFunction(snapTo)) {
-            const lastContainerPoints = [];
-            if (this.options.edgeAutoComplete) {
-                const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
-                lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
-                const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
-                if (beforeLastCoord) {
-                    lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
-                }
-            }
-            const snapResult = snapTo(containerPoint, lastContainerPoints);
-            containerPoint = (snapResult.effectedVertex ? snapResult.point : snapResult) || containerPoint;
-            prjCoord = map._containerPointToPrj(containerPoint);
-            if (snapResult.effectedVertex) {
-                snapAdditionVertex = snapResult.effectedVertex.map(vertex => map._containerPointToPrj(vertex));
-            }
+            const snapResult = this._getSnapResult(snapTo, containerPoint);
+            prjCoord = snapResult.prjCoord;
+            snapAdditionVertex = snapResult.effectedVertex;
         }
         const projection = map.getProjection();
         event.drawTool = this;
@@ -665,6 +639,29 @@ class DrawTool extends MapTool {
             return false;
         }
         return true;
+    }
+
+    _getSnapResult (snapTo, containerPoint) {
+        const map = this.getMap();
+        const lastContainerPoints = [];
+        if (this.options.edgeAutoComplete) {
+            const lastCoord = this._clickCoords[(this._historyPointer || 1) - 1];
+            lastContainerPoints.push(map._prjToContainerPoint(lastCoord));
+            const beforeLastCoord = this._clickCoords[(this._historyPointer || 1) - 2];
+            if (beforeLastCoord) {
+                lastContainerPoints.push(map._prjToContainerPoint(beforeLastCoord));
+            }
+        }
+        const snapResult = snapTo(containerPoint, lastContainerPoints);
+        containerPoint = (snapResult.effectedVertex ? snapResult.point : snapResult) || containerPoint;
+        const prjCoord = map._containerPointToPrj(containerPoint);
+        if (snapResult.effectedVertex) {
+            snapResult.effectedVertex = snapResult.effectedVertex.map(vertex => map._containerPointToPrj(vertex));
+        }
+        return {
+            prjCoord,
+            effectedVertex: snapResult.effectedVertex || []
+        };
     }
 
     _getDrawLayer() {
