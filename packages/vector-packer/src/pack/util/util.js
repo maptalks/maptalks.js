@@ -43,13 +43,13 @@ export function getHeightValue(properties, heightProp, defaultValue) {
     //prepare altitude property
     let height = defaultValue;
     if (heightProp && properties) {
-        height = properties[heightProp];
+        height = +properties[heightProp];
     }
     if (height === undefined) {
         height = defaultValue;
     }
     //乘以100是因为 tileTransform 中是以厘米为单位，但这里是以米为单位
-    return (height || 0) * 100;
+    return (isNaN(height) ? 0 : height) * 100;
 }
 
 export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty) {

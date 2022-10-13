@@ -7,6 +7,7 @@ import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
+const EMPTY_UV_ORIGIN = [0, 0];
 const SCALE = [1, 1, 1];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 const EMPTY_UV_OFFSET = [0, 0];
@@ -113,6 +114,11 @@ class MeshPainter extends Painter {
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
             enumerable: true,
             get: () => {
+                if (this.dataConfig.side) {
+                    // 侧面的纹理不会根据瓦片左上角坐标偏移
+                    // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
+                    return EMPTY_UV_ORIGIN;
+                }
                 const uvScale = this.getSymbol(symbolIndex).material.uvScale || [1, 1];
                 const dataUVScale = this.dataConfig.dataUVScale || [1, 1];
                 // 每个瓦片左上角的坐标值

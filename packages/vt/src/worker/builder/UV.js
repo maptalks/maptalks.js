@@ -61,7 +61,8 @@ export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, g
     let seg = 0;
     //因为是逆时针，需要倒序遍历
     for (let i = indices.length - 1; i >= 0; i--) {
-        const ix = indices[i] * 3, iy = indices[i] * 3 + 1, iz = indices[i] * 3 + 2;
+        const idx = indices[i];
+        const ix = idx * 3, iy = idx * 3 + 1, iz = idx * 3 + 2;
         const x = vertices[ix], y = vertices[iy], z = vertices[iz];
         if (!maxz && !minz) {
             maxz = Math.max(vertices[iz], vertices[indices[i - 2] * 3 + 2]);
@@ -98,8 +99,8 @@ export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, g
 
         const u = len * glScale * localScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
         const v = (z === maxz ? 0 : h * vScale / texHeight);
-        uvs[ix / 3 * 2] = u;
-        uvs[ix / 3 * 2 + 1] = -v;
+        uvs[idx * 2] = u;
+        uvs[idx * 2 + 1] = v;
 
         if (m === 0) {
             lensofar += seg;
