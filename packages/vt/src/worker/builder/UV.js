@@ -55,7 +55,7 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale
     }
 }
 
-export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
+export function buildSideUV(mode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -98,7 +98,12 @@ export function buildSideUV(mode, uvs, vertices, indices, texWidth, texHeight, g
 
 
         const u = len * glScale * localScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
-        const v = (z === maxz ? 0 : h * vScale / texHeight);
+        let v;
+        if (textureYOrigin === 'bottom') {
+            v = (z === maxz ? h * vScale / texHeight : 0);
+        } else {
+            v = (z === maxz ? 0 : h * vScale / texHeight);
+        }
         uvs[idx * 2] = u;
         uvs[idx * 2 + 1] = v;
 

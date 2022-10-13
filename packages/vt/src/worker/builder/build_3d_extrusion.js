@@ -25,6 +25,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         topUVMode,
         sideUVMode,
         top, side,
+        textureYOrigin,
         topThickness,
     } = dataConfig;
     //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
@@ -46,6 +47,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             uvOrigin,
             topUVMode,
             sideUVMode,
+            textureYOrigin,
             //>> needed by uv computation
             glScale,
             localScale,

@@ -270,6 +270,7 @@ class StandardPainter extends MeshPainter {
     }
 
     _updateMaterial(config) {
+        const dataConfig = this.dataConfig;
         const materialConfig = config || this.getSymbols()[0].material;
         const material = {};
         let hasTexture = false;
@@ -314,7 +315,7 @@ class StandardPainter extends MeshPainter {
                             wrap: 'repeat'
                         };
                     }
-                    texConf.flipY = false;
+                    texConf.flipY = !dataConfig.side || this.dataConfig.textureYOrigin === 'bottom';
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     material[p].once('complete', this._bindedOnTextureLoad);
                     material[p].once('disposed', this._bindDisposeCachedTexture);
