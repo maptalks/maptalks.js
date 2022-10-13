@@ -111,6 +111,13 @@ class StandardShader extends MeshShader {
         } else if (geometry.data[geometry.desc.normalAttribute]) {
             defines['HAS_NORMAL'] = 1;
         }
+        if (geometry.data[geometry.desc.colorAttribute]) {
+            defines['HAS_COLOR'] = 1;
+        }
+        if (geometry.data[geometry.desc.color0Attribute]) {
+            defines['HAS_COLOR0'] = 1;
+            defines['COLOR0_SIZE'] = geometry.getColor0Size();
+        }
         return defines;
     }
 }

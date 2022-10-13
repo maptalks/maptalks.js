@@ -184,7 +184,7 @@ export default class Geometry {
             const key = activeAttributes && activeAttributes.key || 'default';
             if (!this._vao[key] || updated || this._elementsUpdated) {
                 const reglData = this._reglData[activeAttributes.key];
-                const vertexCount = this.getVertexCount();
+                const vertexCount = this._vertexCount;
                 const buffers = [];
 
                 for (let i = 0; i < activeAttributes.length; i++) {
@@ -282,7 +282,7 @@ export default class Geometry {
             delete allocatedBuffers[p].data;
         }
         const data = this.data;
-        const vertexCount = this.getVertexCount();
+        const vertexCount = this._vertexCount;
         const buffers = {};
         for (const key in data) {
             if (!data[key]) {
@@ -335,7 +335,7 @@ export default class Geometry {
     }
 
     getVertexCount() {
-        const { positionAttribute, positionSize } = this.desc;
+        const { positionAttribute, positionSize, color0Attribute } = this.desc;
         let data = this.data[positionAttribute];
         if (data.data) {
             data = data.data;
@@ -350,7 +350,22 @@ export default class Geometry {
         } else if (data && data.count !== undefined) {
             this._vertexCount = data.count;
         }
+        const key = color0Attribute;
+        if (this.data[key]) {
+            const arr = this.data[key].data || this.data[key].array || this.data[key];
+            if (Array.isArray(arr)) {
+                this._color0Size = arr.length / this._vertexCount;
+            } else if (arr && arr.count) {
+                this._color0Size = arr.count / this._vertexCount;
+            } else if (this.data[key].buffer && this.data[key].buffer.destroy) {
+                this._color0Size = this.data[key].buffer['_buffer'].dimension;
+            }
+        }
         return this._vertexCount;
+    }
+
+    getColor0Size() {
+        return this._color0Size || 0;
     }
 
     /**
@@ -399,7 +414,7 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
-        const oldVertexCount = this.getVertexCount();
+        const oldVertexCount = this._vertexCount;
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
         }
@@ -677,7 +692,7 @@ export default class Geometry {
             throw new Error('Primitive must be triangles to create bary centric data');
         }
         this._incrVersion();
-        const bary = new Uint8Array(this.getVertexCount() * 3);
+        const bary = new Uint8Array(this._vertexCount * 3);
         for (let i = 0, l = this.elements.length; i < l;) {
             for (let j = 0; j < 3; j++) {
                 const ii = this.elements[i++];
@@ -707,7 +722,7 @@ export default class Geometry {
         if (!isArray(pos)) {
             throw new Error(this.desc.positionAttribute + ' must be array to build unique vertex.');
         }
-        const vertexCount = this.getVertexCount();
+        const vertexCount = this._vertexCount;
 
         const l = indices.length;
         for (let i = 0; i < keys.length; i++) {

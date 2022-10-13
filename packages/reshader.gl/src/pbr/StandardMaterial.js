@@ -78,18 +78,14 @@ class StandardMaterial extends Material {
         if (uniforms['GAMMA_CORRECT_INPUT']) {
             defines['GAMMA_CORRECT_INPUT'] = 1;
         }
+        if (geometry.data[geometry.desc.colorAttribute]) {
+            defines['HAS_COLOR'] = 1;
+        }
         const color0 = geometry.data[geometry.desc.color0Attribute];
         if (color0) {
             defines['HAS_COLOR0'] = 1;
-            let size = 3;
-            if (color0.length) {
-                size = color0.length / geometry.getVertexCount();
-            } else if (color0.buffer) {
-                size = color0.buffer['_buffer'].dimension;
-            }
-            defines['COLOR0_SIZE'] = size;
+            defines['COLOR0_SIZE'] = geometry.getColor0Size();
         }
-
         if (geometry.data[geometry.desc.tangentAttribute]) {
             defines['HAS_TANGENT'] = 1;
         } else if (geometry.data[geometry.desc.normalAttribute]) {

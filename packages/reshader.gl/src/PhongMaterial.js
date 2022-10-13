@@ -37,6 +37,14 @@ class PhongMaterial extends Material {
         if (uniforms['extrusionOpacity']) {
             defines['HAS_EXTRUSION_OPACITY'] = 1;
         }
+        if (geometry.data[geometry.desc.colorAttribute]) {
+            defines['HAS_COLOR'] = 1;
+        }
+        const color0 = geometry.data[geometry.desc.color0Attribute];
+        if (color0) {
+            defines['HAS_COLOR0'] = 1;
+            defines['COLOR0_SIZE'] = geometry.getColor0Size();
+        }
         if (!geometry.data[geometry.desc.uv0Attribute]) {
             return defines;
         }

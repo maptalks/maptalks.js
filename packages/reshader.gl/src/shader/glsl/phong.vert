@@ -15,9 +15,13 @@ attribute vec3 aPosition;
 #endif
 #if defined(HAS_COLOR)
     attribute vec4 aColor;
-    varying vec4 vColor;
+
 #elif defined(HAS_COLOR0)
-    attribute vec4 aColor0;
+    #if COLOR0_SIZE == 3
+        attribute vec3 aColor0;
+    #else
+        attribute vec4 aColor0;
+    #endif
     varying vec4 vColor;
 #endif
 
@@ -114,7 +118,11 @@ void main()
     #if defined(HAS_COLOR)
         vColor = aColor / 255.0;
     #elif defined(HAS_COLOR0)
-        vColor = aColor0 / 255.0;
+        #if COLOR0_SIZE == 3
+            vColor = vec4(aColor0 / 255.0, 1.0);
+        #else
+            vColor = aColor0 / 255.0;
+        #endif
     #endif
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
