@@ -121,7 +121,8 @@ describe('vector tile integration specs', () => {
             }
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
-            style.meshLimitPerFrame = 1000;
+            style.features = 0;
+            style.tileLimitPerFrame = 0;
             // style.debug = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             const sceneConfig = style.sceneConfig;

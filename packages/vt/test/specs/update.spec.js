@@ -238,7 +238,7 @@ describe('update style specs', () => {
                     symbol: { lineColor: '#0f0', lineWidth: 8, lineOpacity: 1 }
                 }
             ]);
-        }, true, null, 0, 3);
+        }, true, null, 0, 4);
     });
 
     it('should can set style with missed filter', done => {
@@ -259,7 +259,8 @@ describe('update style specs', () => {
         });
     });
 
-    context('renderStyle methods', () => {
+    // 2022-10-14, 暂时去掉renderStyle的相关方法
+    context.skip('renderStyle methods', () => {
         it('should can addRenderStyle', done => {
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
                 layer.addRenderStyle(1, {
@@ -355,7 +356,7 @@ describe('update style specs', () => {
 
     });
 
-    context('featureStyle methods', () => {
+    context.skip('featureStyle methods', () => {
         it('should can addFeatureStyle', done => {
             assertChangeStyle(done, [0, 255, 0, 255], layer => {
                 layer.updateFeatureStyle({
@@ -1924,10 +1925,10 @@ describe('update style specs', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: line,
             style,
-            meshLimitPerFrame: 1000
+            tileLimitPerFrame: 0
         });
         renderCount = renderCount || 0;
-        doneRenderCount = doneRenderCount || 3;
+        doneRenderCount = doneRenderCount || 4;
         let dirty = false;
         let count = 0;
         const renderer = map.getRenderer();
