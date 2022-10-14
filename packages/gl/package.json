@@ -13,7 +13,8 @@
     "tdd": "karma start --no-single-run",
     "prepare": "npm run build",
     "lint": "eslint src/**/*.js",
-    "preversion": "npm run lint"
+    "pretest": "npm run lint && npm run build",
+    "preversion": "npm test"
   },
   "files": [
     "dist/maptalksgl.js",

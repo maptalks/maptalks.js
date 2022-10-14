@@ -51,6 +51,35 @@ describe('gl tests', () => {
     });
 
     context('tilelayer tests', () => {
+
+        it('GroupGLLayer.queryTerrain', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    const altitude = group.queryTerrain(map.getCenter());
+                    expect(altitude).to.be.eql(4442.0751953125);
+                    done();
+                });
+            });
+            group.addTo(map);
+        });
+
         it('support tilelayer in post process, maptalks/issues#148', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
@@ -265,34 +294,6 @@ describe('gl tests', () => {
                         done();
                     });
                     group.setTerrain(null);
-                });
-            });
-            group.addTo(map);
-        });
-
-        it('GroupGLLayer.queryTerrain', done => {
-            map = new maptalks.Map(container, {
-                center: [91.14478,29.658272],
-                zoom: 12
-            });
-            const skinLayers = [
-                new maptalks.TileLayer('base', {
-                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
-                })
-            ];
-            const terrain = {
-                type: 'mapbox',
-                tileSize: 512,
-                spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
-            }
-            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
-            group.once('terrainlayercreated', () => {
-                const terrainLayer = group.getTerrainLayer();
-                terrainLayer.once('terrainreadyandrender', () => {
-                    const altitude = group.queryTerrain(map.getCenter());
-                    expect(altitude).to.be.eql(4442.0751953125);
-                    done();
                 });
             });
             group.addTo(map);
