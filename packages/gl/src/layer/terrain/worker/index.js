@@ -294,12 +294,13 @@ function generateMapboxTerrain(buffer) {
 
 function loadTerrain(params, cb) {
     const { url, origin, type, accessToken, terrainWidth } = params;
+    const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
-        fetchTerrain(url, type, terrainWidth, cb);
+        fetchTerrain(url, headers, type, terrainWidth, cb);
     } else if (type === 'cesium') {
         const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
         if (access_token) {
-            fetchTerrain(url, type, terrainWidth, cb);
+            fetchTerrain(url, headers, type, terrainWidth, cb);
         } else {
             fetch(tokenUrl, {
                 responseType: "json",
@@ -313,16 +314,15 @@ function loadTerrain(params, cb) {
                 return tkJson.json();
             }).then(res => {
                 access_token = res.accessToken;
-                fetchTerrain(url, type, terrainWidth, cb);
+                fetchTerrain(url, headers, type, terrainWidth, cb);
             });
         }
     } else if (type === 'mapbox') {
-        fetchTerrain(url, type, terrainWidth, cb);
+        fetchTerrain(url, headers, type, terrainWidth, cb);
     }
 }
 
-function fetchTerrain(url, type, terrainWidth, cb) {
-    let headers = requestHeaders[type];
+function fetchTerrain(url, headers, type, terrainWidth, cb) {
     if (type === 'cesium') {
         // headers['Authorization'] = 'Bearer ' + access_token;
         headers = {

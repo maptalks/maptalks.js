@@ -19,7 +19,8 @@ const options = {
     'backZoomOffset': -5,
     'depthMask': true,
     'blendSrc': 'src alpha',
-    'blendDst': 'one minus src alpha'
+    'blendDst': 'one minus src alpha',
+    'requireSkuToken': true
 };
 
 const EMPTY_TILE_GRIDS = {
@@ -42,8 +43,16 @@ export default class TerrainLayer extends maptalks.TileLayer {
             y =  yTiles - y - 1;
         }
         if (type === 'mapbox') {
-            const skuid = this._createSkuToken();
-            terrainUrl += '?sku=' + skuid + '&access_token=' + this.options['accessToken'];
+            if (this.options['requireSkuToken']) {
+                if (!this._skuToken) {
+                    this._skuToken = this._createSkuToken();
+                }
+                if (terrainUrl.indexOf('?') > -1) {
+                    terrainUrl += '&sku=' + this._skuToken;
+                } else {
+                    terrainUrl += '?sku=' + this._skuToken;
+                }
+            }
         } else if (type === 'cesium') {
             terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
         }
@@ -51,12 +60,12 @@ export default class TerrainLayer extends maptalks.TileLayer {
     }
 
     _createSkuToken() {
+        // https://github.com/mapbox/mapbox-gl-js/blob/6971327e188b9aa045622925a59800aa8ee940ac/src/util/sku_token.js
         let sessionRandomizer = '';
         for (let i = 0; i < 10; i++) {
             sessionRandomizer += base62chars[Math.floor(Math.random() * 62)];
         }
         const token = [TOKEN_VERSION, SKU_ID, sessionRandomizer].join('');
-
         return token;
     }
 
