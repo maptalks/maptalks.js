@@ -6,7 +6,7 @@
   <style type="text/css">
     html,body{margin:0px;height:100%;width:100%}
     /*.container{width:100%;height:100%;background-color: red;}*/
-    .container{width:512px;height:512px;background-color: red;}
+    .container{width:100%;height:100%;background-color: red;}
   </style>
   <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
   <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
@@ -20,6 +20,7 @@
             center: [91.14478,29.658272],
             zoomControl: true,
             zoom: 12,
+            centerCross: true,
             // pitch: 45,
             // spatialReference:{
             //     projection:'EPSG:4326'
@@ -88,10 +89,11 @@
             type: 'mapbox',
             tileSize: 512,
             spatialReference: 'preset-vt-3857',
-            accessToken: 'pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
-            // urlTemplate: 'https://khms1.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
-            urlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}.webp',
-            subdomains:['0', '1', '2', '3', '4', '5', '6']
+            // urlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}.webp?access_token=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
+            // subdomains:['0', '1', '2', '3', '4', '5', '6'],
+
+            urlTemplate: 'https://{s}.tiles.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
+            subdomains:['a', 'b', 'c', 'd']
         };
         const group = new maptalks.GroupGLLayer('group', skinLayers, {
             terrain
