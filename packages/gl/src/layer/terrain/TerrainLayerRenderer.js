@@ -593,11 +593,19 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             'projViewMatrix' : map.projViewMatrix
         };
         const skinCount = this.layer.getSkinCount();
+        const projViewModelMatrix = [];
 
         this._shader = new reshader.MeshShader({
             vert,
             frag,
             uniforms: [
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    }
+                },
                 {
                     name: 'skins',
                     type: 'array',
