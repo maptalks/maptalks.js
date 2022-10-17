@@ -63,6 +63,10 @@ export function resolveVarNames(str) {
 
 // 从expression中获取属性名
 export function resolveExpVarNames(out, arr) {
+    if (arr.length === 2 && arr[0] === 'get') {
+        out.push(arr[1]);
+        return;
+    }
     for (let i = 0; i < arr.length; i++) {
         // https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#get
         if (arr[i].length === 2 && arr[i][0] === 'get') {
