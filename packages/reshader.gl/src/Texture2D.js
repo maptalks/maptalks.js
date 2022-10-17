@@ -17,8 +17,12 @@ class Texture2D extends Texture {
         }
         if (config.hdr) {
             data = parseRGBE(data.data, 0, config.maxRange);
-            this.rgbmRange = data.rgbmRange;
-            config.data = data.pixels;
+            if (!data) {
+                throw new Error('Invalid hdr data' + (config.url ? ':' + config.url : ''));
+            } else {
+                this.rgbmRange = data.rgbmRange;
+                config.data = data.pixels;
+            }
         } else {
             config.data = data;
         }
