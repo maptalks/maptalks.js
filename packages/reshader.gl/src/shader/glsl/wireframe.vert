@@ -13,7 +13,11 @@ varying vec3 vPosition;
 void main () {
     mat4 localPositionMatrix = getPositionMatrix();
     vec4 localPosition = getPosition(aPosition);
-    gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * localPosition;
+    #ifdef HAS_MASK_EXTENT
+        gl_Position = projMatrix * getMaskPosition(localPositionMatrix * localPosition, modelMatrix);
+    #else
+        gl_Position = projMatrix * modelViewMatrix * localPositionMatrix * localPosition;
+    #endif
     vBarycentric = aBarycentric;
     vPosition = aPosition;
 }

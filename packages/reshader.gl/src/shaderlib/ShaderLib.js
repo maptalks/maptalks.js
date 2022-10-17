@@ -25,6 +25,9 @@ import draco_decode_vert from './glsl/draco_decode.vert';
 
 import highlight_vert from './glsl/highlight.vert';
 import highlight_frag from './glsl/highlight.frag';
+
+import mask_vert from './glsl/mask.vert';
+import mask_frag from './glsl/mask.frag';
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 // import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
@@ -123,7 +126,10 @@ const ShaderChunk = {
     draco_decode_vert,
 
     highlight_vert,
-    highlight_frag
+    highlight_frag,
+
+    mask_vert,
+    mask_frag
 };
 /* eslint-enable camelcase */
 

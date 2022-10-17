@@ -97,7 +97,7 @@ varying vec3 vFragPos;
 #endif
 
 #include <highlight_frag>
-
+#include <mask_frag>
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
@@ -221,7 +221,9 @@ void main() {
     #endif
 
     glFragColor = highlight_blendColor(glFragColor);
-
+    #ifdef HAS_MASK_EXTENT
+        glFragColor = setMask(glFragColor);
+    #endif
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
     #endif

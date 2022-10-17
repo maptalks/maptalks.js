@@ -40,6 +40,8 @@ varying vec3 vPosition;
   varying vec4 vInstanceColor;
 #endif
 
+#include <mask_frag>
+
 #define F4 0.309016994374947451
 #define halfDist 0.5
 
@@ -244,6 +246,9 @@ void main () {
   glFragColor = getStyledWireframe(vBarycentric);
   glFragColor *= (halfDist + opacity);
 
+  #ifdef HAS_MASK_EXTENT
+    glFragColor = setMask(glFragColor);
+  #endif
   #if __VERSION__ == 100
       gl_FragColor = glFragColor;
   #endif

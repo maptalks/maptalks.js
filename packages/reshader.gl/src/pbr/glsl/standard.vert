@@ -149,7 +149,11 @@ void main() {
     // gl_Position = projMatrix * modelViewMatrix * localVertex;
     mat4 jitteredProjection = projMatrix;
     jitteredProjection[2].xy += halton.xy / outSize.xy;
-    gl_Position = jitteredProjection * viewVertex;
+    #ifdef HAS_MASK_EXTENT
+        gl_Position = jitteredProjection * getMaskPosition(position, modelMatrix);
+    #else
+        gl_Position = jitteredProjection * viewVertex;
+    #endif
     // gl_PointSize = min(64.0, max(1.0, -uPointSize / vViewVertex.z));
 
     #ifdef PICKING_MODE

@@ -49,6 +49,7 @@ export { default as CopyShader } from './shader/CopyShader.js';
 export { default as FogPass } from './weather/fog/FogPass.js';
 export { default as FogShader } from './weather/fog/FogShader.js';
 export { default as RainRipplesPass } from './weather/rain/RainRipplesPass.js';
+export { default as ExtentPass } from './shader/ExtentPsss.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };

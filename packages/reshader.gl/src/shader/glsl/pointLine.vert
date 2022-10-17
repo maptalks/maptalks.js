@@ -6,6 +6,7 @@ attribute vec3 aPosition;
 
 
 uniform mat4 modelMatrix;
+uniform mat4 projMatrix;
 uniform mat4 positionMatrix;
 
 uniform mat4 projViewModelMatrix;
@@ -26,7 +27,11 @@ void main()
     vec4 localPosition = getPosition(aPosition);
     mat4 localPositionMatrix = getPositionMatrix();
     gl_PointSize = pointSize;
-    gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
+    #ifdef HAS_MASK_EXTENT
+        gl_Position = projMatrix * getMaskPosition(localPositionMatrix * localPosition, modelMatrix);
+    #else
+        gl_Position = projViewModelMatrix * localPositionMatrix * localPosition;
+    #endif
     #ifdef HAS_COLOR0
         vColor = aColor0 / 255.0;
     #endif

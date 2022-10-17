@@ -12,6 +12,8 @@
     #include <skin_vert>
 #endif
 
+#include <mask_vert>
+
 #ifdef HAS_MORPH
     attribute vec3 POSITION0;
     attribute vec3 POSITION1;

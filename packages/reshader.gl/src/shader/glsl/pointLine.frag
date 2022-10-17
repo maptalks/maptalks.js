@@ -15,6 +15,7 @@ uniform vec4 baseColorFactor;
     #endif
     varying vec2 vTexCoord;
 #endif
+#include <mask_frag>
 void main() {
     #ifdef HAS_COLOR0
         glFragColor = vColor * baseColorFactor;
@@ -31,6 +32,9 @@ void main() {
     #endif
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
+    #endif
+    #ifdef HAS_MASK_EXTENT
+        glFragColor = setMask(glFragColor);
     #endif
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;
