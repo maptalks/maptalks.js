@@ -101,3 +101,5 @@ import * as Constants from './common/Constants';
 export { Constants };
 
 export { default as KHRTechniquesWebglManager } from './extensions/KHRTechniquesWebglManager';
+
+export { default as earcut } from 'earcut';
