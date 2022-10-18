@@ -10,6 +10,7 @@ const options = {
     extensions : [
 
     ],
+    single: true,
     onlyWebGL1: false,
     optionalExtensions : [
         'ANGLE_instanced_arrays',
@@ -576,6 +577,19 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     getTerrainLayer() {
         return this._terrainLayer;
+    }
+
+    _bindMap(...args) {
+        if (this.options['single']) {
+            const map = args[0];
+            const layers = map.getLayers();
+            for (let i = 0; i < layers.length; i++) {
+                if (layers[i] instanceof GroupGLLayer) {
+                    throw new Error('Only one GroupGLLayer is allowed in a map instance. Set options.single to false if you want to add two or more GroupGLLayers.');
+                }
+            }
+        }
+        return super._bindMap(...args);
     }
 }
 
