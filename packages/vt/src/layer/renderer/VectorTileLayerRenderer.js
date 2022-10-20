@@ -408,6 +408,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
+    getAnalysisMeshes() {
+        return this.getShadowMeshes();
+    }
+
     getShadowMeshes() {
         const meshes = [];
         const plugins = this._getAllPlugins();
