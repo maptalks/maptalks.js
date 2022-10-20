@@ -148,6 +148,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         const data = this.features;
         if (Array.isArray(data)) {
             data.forEach(f => {
+                if (!f) {
+                    return;
+                }
                 if (f.id === undefined || f.id === null) {
                     f.id = uid++;
                 }
@@ -155,6 +158,9 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             });
         } else if (data.features) {
             data.features.forEach(f => {
+                if (!f) {
+                    return;
+                }
                 if (f.id === undefined || f.id === null) {
                     f.id = uid++;
                 }
