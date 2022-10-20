@@ -355,7 +355,7 @@ class Painter {
     callCurrentTileShader(uniforms, context) {
         if (this.shader) {
             //1. render current tile level's meshes
-            this.shader.filter = context.sceneFilter ? [this.level0Filter, context.sceneFilter] : this.level0Filter;
+            this.shader.filter = context && context.sceneFilter ? [this.level0Filter, context.sceneFilter] : this.level0Filter;
         }
         this.callRenderer(this.shader, uniforms, context);
     }
@@ -364,7 +364,7 @@ class Painter {
         if (this.shader) {
             //2. render background tile level's meshes
             //stenciled pixels already rendered in step 1
-            this.shader.filter = context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
+            this.shader.filter = context && context.sceneFilter ? [this.levelNFilter, context.sceneFilter] : this.levelNFilter;
         }
         this.scene.getMeshes().sort(sortByLevel);
         this.callRenderer(this.shader, uniforms, context);
@@ -374,7 +374,7 @@ class Painter {
         const meshes = this.scene.getMeshes();
         const renderMeshes = [];
         meshes.forEach(mesh => {
-            if (mesh.properties.hlBloomMesh && context.bloom) {
+            if (mesh.properties.hlBloomMesh && context && context.bloom) {
                 renderMeshes.push(mesh.properties.hlBloomMesh);
             }
             renderMeshes.push(mesh);
