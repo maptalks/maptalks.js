@@ -1,4 +1,4 @@
-import { extend, isNil, normalizeColor255 } from './util.js';
+import { extend, isNil, normalizeColor255, pushIn } from './util.js';
 import { vec4, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 
@@ -34,11 +34,12 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
     let hasColor = false;
     let hasOpacity = false;
     const ids = highlighted.keys();
-    const hlElements = [];
+    let hlElements = null;
+    let invisibleIds = null;
     for (const id of ids) {
-        if (feaIdIndiceMap[id]) {
+        if (feaIdIndiceMap.has(id)) {
             // update attribute data
-            let { color, opacity, bloom } = highlighted.get(id);
+            let { color, opacity, bloom, visible } = highlighted.get(id);
             let normalizedColor;
             if (color) {
                 if (!hasColor) {
@@ -59,8 +60,13 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
                     hasOpacity = true;
                 }
             }
-
-            const indices = feaIdIndiceMap[id];
+            if (visible === false) {
+                if (!invisibleIds) {
+                    invisibleIds = new Set();
+                }
+                invisibleIds.add(id);
+            }
+            const indices = feaIdIndiceMap.get(id);
             if (indices) {
                 for (let j = 0; j < indices.length; j++) {
                     const idx = indices[j];
@@ -71,9 +77,15 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
                         aHighlightOpacity[idx] = opacity * 255;
                     }
                     if (bloom) {
+                        if (!hlElements) {
+                            hlElements = [];
+                        }
                         hlElements.push(idx);
+                        if (!invisibleIds) {
+                            invisibleIds = new Set();
+                        }
+                        invisibleIds.add(id);
                     }
-
                 }
             }
         }
@@ -106,11 +118,22 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
         mesh.geometry.updateData('aHighlightOpacity', aHighlightOpacity);
         delete defines['HAS_HIGHLIGHT_OPACITY'];
     }
+    if (invisibleIds && invisibleIds.size > 0) {
+        const elements = [];
+        feaIdIndiceMap.forEach((value, key) => {
+            if (invisibleIds.has(key)) {
+                return;
+            }
+            pushIn(elements, value);
+        });
+        mesh.geometry.setElements(elements);
+        mesh.geometry.generateBuffers(regl);
+    }
     mesh.setDefines(defines);
     mesh.properties.highlightTimestamp = timestamp;
 
     let hlBloomMesh = mesh.properties.hlBloomMesh;
-    if (hlElements.length) {
+    if (hlElements && hlElements.length) {
         if (!hlBloomMesh) {
             const geo = new reshader.Geometry(mesh.geometry.data, hlElements, 0, mesh.geometry.desc);
             const material = mesh.material;
