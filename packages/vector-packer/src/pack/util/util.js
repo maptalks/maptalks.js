@@ -126,14 +126,16 @@ export function generateFeatureIndiceIndex(featureIds, indices) {
     if (!indices) {
         return null;
     }
-    const indiceIndex = {};
+    const indiceIndex = new Map();
     for (let i = 0; i < indices.length; i++) {
         const idx = indices[i];
         const id = featureIds[idx];
-        if (!indiceIndex[id]) {
-            indiceIndex[id] = [];
+        let index = indiceIndex.get(id);
+        if (!index) {
+            index = [];
+            indiceIndex.set(id, index);
         }
-        indiceIndex[id].push(idx);
+        index.push(idx);
     }
     return indiceIndex;
 }
