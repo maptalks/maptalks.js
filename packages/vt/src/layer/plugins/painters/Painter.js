@@ -655,8 +655,10 @@ class Painter {
 
     _compileSymbols() {
         const map = this.getMap();
+        const params = [];
         const fn = () => {
-            return [map.getZoom()];
+            params[0] = map.getZoom();
+            return params;
         };
         this._symbol = [];
         this._visibleFn = [];
