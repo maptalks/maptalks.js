@@ -215,7 +215,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
 
 function prepareGeometry(geometry, enableCollision, visibleInCollision) {
     const symbol = this.getSymbol(geometry.properties.symbolIndex);
-    const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
+    const isLinePlacement = geometry.properties.textPlacement === 'line' && !isIconText(symbol);
     const { aPosition, aShape } = geometry.data;
     const vertexCount = aPosition.length / geometry.desc.positionSize;
     geometry.properties.aPickingId = geometry.data.aPickingId;
@@ -288,7 +288,7 @@ function setMeshUniforms(geometry, uniforms, symbol) {
     setUniformFromSymbol(uniforms, 'textHaloRadius', symbol, 'textHaloRadius', DEFAULT_UNIFORMS['textHaloRadius']);
     setUniformFromSymbol(uniforms, 'textHaloOpacity', symbol, 'textHaloOpacity', DEFAULT_UNIFORMS['textHaloOpacity']);
     setUniformFromSymbol(uniforms, 'textPerspectiveRatio', symbol, 'textPerspectiveRatio', DEFAULT_UNIFORMS['textPerspectiveRatio'], v => {
-        return symbol['textPlacement'] === 'line' ? 1 : v;
+        return geometry.properties.textPlacement === 'line' ? 1 : v;
     });
     setUniformFromSymbol(uniforms, 'rotateWithMap', symbol, 'textRotationAlignment', DEFAULT_UNIFORMS['textRotationAlignment'], v => +(v === 'map'));
     setUniformFromSymbol(uniforms, 'pitchWithMap', symbol, 'textPitchAlignment', DEFAULT_UNIFORMS['textPitchAlignment'], v => +(v === 'map'));
@@ -590,7 +590,7 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const map = this.getMap();
     const geoProps = mesh.geometry.properties;
     const symbol = this.getSymbol(geoProps.symbolIndex);
-    const isLinePlacement = symbol['textPlacement'] === 'line' && !isIconText(symbol);
+    const isLinePlacement = geoProps.textPlacement === 'line' && !isIconText(symbol);
     const { aTextSize, aTextHaloRadius, aShape } = geoProps;
     let textSize = (aTextSize ? aTextSize[elements[start]] : mesh.properties.textSize);
     if (textSize === null || textSize === undefined) {

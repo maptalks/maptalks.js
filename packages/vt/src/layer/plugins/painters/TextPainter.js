@@ -19,28 +19,24 @@ import { getCentiMeterScale } from '../../../common/Util';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && symbol['textPlacement'] !== 'line';
+    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && mesh.geometry.properties.textPlacement !== 'line';
 };
 
 const shaderFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] !== 'line';
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && mesh.geometry.properties.textPlacement !== 'line';
 };
 
 const shaderLineFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
-    const symbol = this.getSymbol(mesh.properties.symbolIndex);
-    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && symbol['textPlacement'] === 'line';
+    return !this._isHalo0(mesh) && renderer.isTileNearCamera(mesh) && mesh.geometry.properties.textPlacement === 'line';
 };
 
 const shaderLineFilterN = function (mesh) {
     const renderer = this.layer.getRenderer();
-    const symbol = this.getSymbol(mesh.properties.symbolIndex);
     const z = mesh.properties.tile.z;
     const currentZoom = renderer.getCurrentTileZoom();
-    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && symbol['textPlacement'] === 'line' && z < currentZoom;
+    return !this._isHalo0(mesh) && !renderer.isForeground(mesh) && mesh.geometry.properties.textPlacement === 'line' && z < currentZoom;
 };
 
 //label box 或 icon box 对应的element数量
@@ -191,7 +187,7 @@ export default class TextPainter extends CollisionPainter {
         const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
         const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig, this.layer.options['collision'], !enableCollision, enableUniquePlacement);
         if (mesh.length) {
-            const isLinePlacement = symbol['textPlacement'] === 'line';
+            const isLinePlacement = geometry.properties.textPlacement === 'line';
             //tags for picking
             if (isLinePlacement) {
                 this._hasLineText = true;
@@ -298,7 +294,7 @@ export default class TextPainter extends CollisionPainter {
             // const idx = geometry.properties.aPickingId[0];
             // console.log(`图层:${geometry.properties.features[idx].feature.layer},数据数量：${geometry.count / BOX_ELEMENT_COUNT}`);
             const meshKey = mesh.properties.meshKey;
-            if (symbol['textPlacement'] === 'line') {
+            if (geometry.properties.textPlacement === 'line') {
                 //line placement
                 if (!geometry.properties.line) {
                     continue;
@@ -798,9 +794,7 @@ export default class TextPainter extends CollisionPainter {
                 this.getMap()
             );
             linePicking.filter = mesh => {
-                const symbolIndex = mesh.properties.symbolIndex;
-                const symbol = this.getSymbol(symbolIndex);
-                return symbol['textPlacement'] === 'line';
+                return mesh.geometry.properties.textPlacement === 'line';
             };
             this.picking = [textPicking, linePicking];
         }

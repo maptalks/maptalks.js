@@ -190,10 +190,10 @@ class IconPainter extends CollisionPainter {
                 meshes.push(...mesh);
             }
         }
-        if (symbolDef.markerPlacement === 'line') {
+        if (geometry.properties.markerPlacement === 'line') {
             this._rebuildCollideIds(geometry, context);
         }
-        if (symbolDef.markerPlacement === 'line' || symbolDef.textPlacement === 'line') {
+        if (geometry.properties.markerPlacement === 'line') {
             meshes.forEach(m => m.properties.isLinePlacement = true);
         }
         this._prepareCollideIndex(geometry);

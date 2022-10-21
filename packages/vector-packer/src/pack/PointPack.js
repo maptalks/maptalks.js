@@ -692,10 +692,20 @@ export default class PointPack extends VectorPack {
     }
 
     _getPlacement(point, symbol) {
+        let placement;
         if (this._fnTypes.markerPlacementFn) {
-            return this._fnTypes.markerPlacementFn(this.options['zoom'], point.feature.properties);
+            placement = this._fnTypes.markerPlacementFn(this.options['zoom'], point.feature.properties);
+        } else {
+            placement = symbol.markerPlacement || this._textPlacement;
         }
-        return symbol.markerPlacement || this._textPlacement;
+        // 记录pack的point placement
+        if (!this._packMarkerPlacement && (symbol.markerPlacement || symbol.isIconText)) {
+            this._packMarkerPlacement = placement;
+        }
+        if (this._textPlacement && !symbol.isIconText && !this._packTextPlacement) {
+            this._packTextPlacement = placement;
+        }
+        return placement;
     }
 
     getPackSDFFormat(symbol) {

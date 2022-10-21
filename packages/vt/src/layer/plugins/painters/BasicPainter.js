@@ -38,6 +38,12 @@ export default class BasicPainter extends Painter {
             geometry.properties.aFeaIds = glData.featureIds;
             this._prepareFeatureIds(geometry, glData);
         }
+        if (glData.markerPlacement) {
+            geometry.properties.markerPlacement = glData.markerPlacement;
+        }
+        if (glData.textPlacement) {
+            geometry.properties.textPlacement = glData.textPlacement;
+        }
         extend(geometry.properties, glData.properties);
         return {
             geometry,

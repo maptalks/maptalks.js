@@ -539,6 +539,13 @@ export default class VectorPack {
             symbolIndex: this.symbolDef.index || { index: 0 }
         };
 
+        if (this._packMarkerPlacement) {
+            result.markerPlacement = this._packMarkerPlacement;
+        }
+        if (this._packTextPlacement) {
+            result.textPlacement = this._packTextPlacement;
+        }
+
         if (featIds.length) {
             const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
             // featureIds 里存放的是 feature.id
