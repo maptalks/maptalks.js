@@ -57,7 +57,6 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
             layerId,
             command : 'addLayer',
             params : {
-                options
             }
         };
 
