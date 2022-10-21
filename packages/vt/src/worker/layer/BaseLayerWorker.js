@@ -904,12 +904,18 @@ function cloneFeaAndAppendCustomTags(features, zoom, pluginConfig, customProps) 
 const proxyGetter0 = {
     get (obj, prop) {
         return prop in obj ? obj[prop] : obj.originalFeature[prop];
+    },
+    has(obj, key) {
+        return (key in obj) || (key in obj.originalFeature);
     }
 };
 
 const proxyGetter1 = {
     get: function(obj, prop) {
         return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
+    },
+    has(obj, key) {
+        return (key in obj) || (key in obj[oldPropsKey]);
     }
 };
 

@@ -45,6 +45,9 @@ export const oldPropsKey = '__original_properties';
 const proxyGetter = {
     get: function(obj, prop) {
         return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
+    },
+    has: function(obj, prop) {
+        return (prop in obj) || (prop in obj[oldPropsKey]);
     }
 };
 

@@ -208,6 +208,50 @@ describe('compile filter specs', () => {
         };
         assert(!compiled[0].filter(falseFeature));
     });
+
+    it('expression has operator', () => {
+        const compiled = FilterUtil.compileStyle([
+            {
+                filter: {
+                    condition: [
+                        {
+                            condition: [
+                                "all",
+                                ["has", "foo"],
+                                ["<=", ["get", "reflen"], 4]
+                            ]
+                        }
+                    ],
+                    type: 'any'
+                },
+                customProperties: {
+                    filter: true,
+                    properties: {
+                        'type': 1
+                    }
+                },
+                symbol: {
+                    foo: 'bar'
+                }
+            }
+        ]);
+
+        const feature = {
+            layer: 'layer',
+            properties: {
+                foo: 'bar',
+                'reflen': 4
+            }
+        };
+        const feature2 = {
+            layer: 'layer',
+            properties: {
+                'reflen': 4
+            }
+        };
+        assert(compiled[0].filter(feature));
+        assert(!compiled[0].filter(feature2));
+    });
 });
 
 function reverseStr(s) {
