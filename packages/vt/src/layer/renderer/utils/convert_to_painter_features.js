@@ -56,6 +56,7 @@ const EMPTY_PROPS = {};
 function proxyFea(feature) {
     const originalProperties = feature.properties;
     if (originalProperties && originalProperties[oldPropsKey]) {
+        // 已经proxy过了
         return feature;
     }
     const properties = feature.customProps;
