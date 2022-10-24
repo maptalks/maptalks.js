@@ -81,10 +81,6 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
                             hlElements = [];
                         }
                         hlElements.push(idx);
-                        if (!invisibleIds) {
-                            invisibleIds = new Set();
-                        }
-                        invisibleIds.add(id);
                     }
                 }
             }
@@ -126,8 +122,14 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
             }
             pushIn(elements, value);
         });
+        mesh.properties.hasInvisible = true;
+        mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
         mesh.geometry.setElements(elements);
         mesh.geometry.generateBuffers(regl);
+    } else if (mesh.properties.hasInvisible) {
+        mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
+        delete mesh.properties.hasInvisible;
+        delete mesh.properties.oldElementsBeforeHighlight;
     }
     mesh.setDefines(defines);
     mesh.properties.highlightTimestamp = timestamp;
@@ -136,6 +138,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
     if (hlElements && hlElements.length) {
         if (!hlBloomMesh) {
             const geo = new reshader.Geometry(mesh.geometry.data, hlElements, 0, mesh.geometry.desc);
+            geo.generateBuffers(regl);
             const material = mesh.material;
             hlBloomMesh = new reshader.Mesh(geo, material, mesh.config);
             const uniforms = mesh.uniforms;
@@ -178,7 +181,9 @@ export function deleteHighlightBloomMesh(mesh) {
     const { hlBloomMesh } = mesh.properties;
     if (hlBloomMesh) {
         const hlGeo = hlBloomMesh.geometry;
-        hlGeo.dispose();
+        if (hlGeo.elements && hlGeo.elements.destroy) {
+            hlGeo.elements.destroy();
+        }
         hlBloomMesh.dispose();
         delete mesh.properties.hlBloomMesh;
     }
