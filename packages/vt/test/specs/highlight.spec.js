@@ -255,7 +255,7 @@ describe('highlight specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         group.on('layerload', () => {
             count++;
-            if (count === 4) {
+            if (count === 5) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 //变成高亮的绿色
@@ -297,7 +297,7 @@ describe('highlight specs', () => {
         const x = renderer.canvas.width, y = renderer.canvas.height;
         group.on('layerload', () => {
             count++;
-            if (count === 4) {
+            if (count === 5) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 //变成高亮的绿色
@@ -389,7 +389,7 @@ describe('highlight specs', () => {
                 //开始是红色
                 assert.deepEqual(pixel, [125, 15, 15, 255]);
                 layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
-            } else if (count === 5) {
+            } else if (count === 6) {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
@@ -477,20 +477,20 @@ describe('highlight specs', () => {
         let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
+        const start = 6;
         group.on('layerload', () => {
             count++
-            if (count === 4) {
+            if (count === start) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
-            } else if (count === 5) {
+            } else if (count === start + 1) {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
                 layer.cancelHighlight(0);
-
-            } else if (count === 6) {
+            } else if (count === start + 2) {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
