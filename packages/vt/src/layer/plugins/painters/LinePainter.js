@@ -523,6 +523,17 @@ class LinePainter extends BasicPainter {
         };
     }
 
+    getBlendFunc() {
+        return {
+            src: () => {
+                return this.sceneConfig.blendSrc || 'one';
+            },
+            dst: () => {
+                return this.sceneConfig.blendDst || 'one minus src alpha';
+            }
+        };
+    }
+
     getUniformValues(map, context) {
         const projViewMatrix = map.projViewMatrix,
             viewMatrix = map.viewMatrix,
