@@ -5,7 +5,7 @@ const marker = new maptalks.Marker([0, 0], {
         textName: '{name}',
         textFill: [1, 0, 0, 1],
         textSize: 30,
-        textRotation: 90
+        textRotation: 60
     },
     properties: {
         name: 'test'

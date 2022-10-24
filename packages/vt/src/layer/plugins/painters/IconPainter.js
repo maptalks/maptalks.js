@@ -482,7 +482,8 @@ class IconPainter extends CollisionPainter {
                 continue;
             }
             updated = true;
-            const { elements, aCount, collideBoxIndex } = meshes[j].geometry.properties;
+            const geoProps = meshes[j].geometry.properties;
+            const { elements, aCount, collideBoxIndex } = geoProps;
             const boxInfo = collideBoxIndex[collideId];
             if (!boxInfo) {
                 continue;
@@ -496,7 +497,7 @@ class IconPainter extends CollisionPainter {
             meshBoxes[index].mesh = meshes[j];
             meshBoxes[index].start = startIndex;
             meshBoxes[index].end = end;//startIndex + charCount * BOX_ELEMENT_COUNT;
-            meshBoxes[index].boxCount = boxCount;
+            meshBoxes[index].boxCount = geoProps.glyphAtlas ? charCount : boxCount;
             meshBoxes[index].allElements = elements;
             index++;
         }

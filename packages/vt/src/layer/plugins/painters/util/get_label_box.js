@@ -57,7 +57,7 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
             vec2.multiply(br, br, AXIS_FACTOR);
         }
 
-        let textRotation = aRotation ? -aRotation[i] / 9362 : -(symbol['textRotation'] || 0) * Math.PI / 180;
+        const textRotation = aRotation ? aRotation[i] / 9362 : (symbol['textRotation'] || 0) * Math.PI / 180;
         const mapRotation = !isAlongLine ? map.getBearing() * Math.PI / 180 : 0;
         if (textRotation || mapRotation) {
             const shapeMatrix = getShapeMatrix(MAT2, textRotation, mapRotation, rotateWidthMap, pitchWithMap);

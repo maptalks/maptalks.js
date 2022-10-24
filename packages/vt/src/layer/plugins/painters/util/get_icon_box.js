@@ -72,7 +72,7 @@ export function getIconBox(out, mesh, i, matrix, map) {
     vec2.mul(bl, bl, sizeScale);
     vec2.mul(br, br, sizeScale);
 
-    let rotation = aRotation ? aRotation[i] / 9362 : -(symbol['markerRotation'] || 0) * Math.PI / 180;
+    const rotation = -(aRotation ? aRotation[i] / 9362 : -(symbol['markerRotation'] || 0) * Math.PI / 180);
 
     //1. 获得shape的tl, tr, bl, 和br
     //2. 计算旋转矩阵: shapeMatrix

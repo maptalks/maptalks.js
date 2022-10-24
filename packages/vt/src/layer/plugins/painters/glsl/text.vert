@@ -148,9 +148,9 @@ void main() {
         0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
         4.0);
     #ifdef HAS_ROTATION
-        float rotation = aRotation / 9362.0 - mapRotation * isRotateWithMap;
+        float rotation = -aRotation / 9362.0 - mapRotation * isRotateWithMap;
     #else
-        float rotation = textRotation - mapRotation * isRotateWithMap;
+        float rotation = -textRotation - mapRotation * isRotateWithMap;
     #endif
     if (isPitchWithMap == 1.0) {
         #ifdef REVERSE_MAP_ROTATION_ON_PITCH
