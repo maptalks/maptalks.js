@@ -131,7 +131,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         return { first1000, idMap };
     }
 
-    getTileFeatures(tileInfo, cb) {
+    getTileFeatures(context, cb) {
+        const tileInfo = context.tileInfo;
         const features = [];
         if (!this.index) {
             setTimeout(function () {

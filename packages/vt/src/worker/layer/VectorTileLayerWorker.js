@@ -16,8 +16,9 @@ export default class VectorTileLayerWorker extends LayerWorker {
      * @param {Object} tileInfo  - tileInfo, url, xyz, res, extent, etc
      * @param {Function} cb      - callback function when finished
      */
-    getTileFeatures(tileInfo, cb) {
-        const url = tileInfo.url;
+    getTileFeatures(context, cb) {
+        const url = context.tileInfo.url;
+        const fetchOptions = context.fetchOptions;
         if (this._cache.has(url)) {
             const { err, data } = this._cache.get(url);
             // setTimeout是因为该方法需要返回对象，否则BaseLayerWorker中的this.requests没有缓存，导致BaseLayerWorker不执行回调逻辑
@@ -25,7 +26,7 @@ export default class VectorTileLayerWorker extends LayerWorker {
                 this._readTile(url, err, data, cb);
             }, 1);
         }
-        return Ajax.getArrayBuffer(url, (err, response) => {
+        return Ajax.getArrayBuffer(url, fetchOptions, (err, response) => {
             if (err) {
                 if (!err.loading) {
                     this._cache.add(url, { err, data: response && response.data });

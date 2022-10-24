@@ -49,7 +49,8 @@ const defaultOptions = {
     enableAltitude: true,
     fadeAnimation: false,
 
-    debugTileData: false
+    debugTileData: false,
+    fetchOptions: null
 };
 
 /**

@@ -75,7 +75,7 @@ export default class BaseLayerWorker {
             callback: cb,
             ref: this
         }];
-        this.requests[url] = this.getTileFeatures(context.tileInfo, (err, features, layers, props) => {
+        this.requests[url] = this.getTileFeatures(context, (err, features, layers, props) => {
             const waitings = loadings[url];
             delete loadings[url];
             if (this.checkIfCanceled(url)) {

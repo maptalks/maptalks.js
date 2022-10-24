@@ -88,21 +88,10 @@ const Ajax = {
             return client;
         } else {
             const controller = new AbortController();
-            const signal = controller.signal;
-            const requestConfig = {
-                signal, method: options.method || 'GET', referrerPolicy: 'origin'
-            };
-            if (isPost) {
-                if (!isNil(options.body)) {
-                    requestConfig.body = JSON.stringify(options.body);
-                }
-            }
-            if (!isNil(options.headers)) {
-                requestConfig.headers = options.headers;
-            }
-            if (!isNil(options.credentials)) {
-                requestConfig.credentials = options.credentials;
-            }
+            const requestConfig = options;
+            requestConfig.signal = controller.signal;
+            requestConfig.referrerPolicy = requestConfig.referrerPolicy || 'origin';
+            requestConfig.method = requestConfig.method || 'GET';
             fetch(url, requestConfig).then(response => {
                 const parsed = this._parseResponse(response, options['returnJSON'], options['responseType']);
                 if (parsed.message) {
