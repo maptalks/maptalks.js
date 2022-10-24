@@ -119,21 +119,21 @@ module.exports = [
             include: ['src/layer/terrain/worker/**/*.js']
         }
     },
-    // {
-    //     input: 'src/index.js',
-    //     plugins: configPlugins.concat(plugins),
-    //     external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
-    //     output: {
-    //         'sourcemap': production ? false : 'inline',
-    //         'format': 'es',
-    //         'globals' : {
-    //             'maptalks' : 'maptalks'
-    //         },
-    //         'file': 'build/gl.es.js'
-    //     }
-    // },
     {
         input: 'src/index.js',
+        plugins: configPlugins.concat(plugins),
+        external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
+        output: {
+            'sourcemap': production ? false : 'inline',
+            'format': 'es',
+            'globals' : {
+                'maptalks' : 'maptalks'
+            },
+            'file': 'build/gl.es.js'
+        }
+    },
+    {
+        input: production ? 'build/index.js' : 'src/index-dev.js',
         plugins: configPlugins,
         external : ['maptalks'],
         output: {
@@ -152,7 +152,7 @@ module.exports = [
         }
     },
     {
-        input: 'src/index.js',
+        input: 'build/index.js',
         plugins: configPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {

@@ -9,9 +9,9 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 
-import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext } from './gl.es.js';
+import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, HighlightUtil } from './gl.es.js';
 
-export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext };
+export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, HighlightUtil };
 import transcoders from '../src/transcoders';
 export { transcoders };
 
