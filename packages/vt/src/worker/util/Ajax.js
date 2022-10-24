@@ -1,4 +1,4 @@
-import { isFunction, uid, isNil } from '../../common/Util';
+import { isFunction, uid } from '../../common/Util';
 
 const USE_FETCH = typeof fetch === 'function' && typeof AbortController  === 'function';
 
