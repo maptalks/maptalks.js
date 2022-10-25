@@ -153,7 +153,7 @@ module.exports = [
     },
     {
         input: 'build/index.js',
-        plugins: configPlugins.concat(plugins),
+        plugins: configPlugins,
         external : ['maptalks', '@maptalks/reshader.gl', '@maptalks/fusiongl', '@maptalks/regl', 'gl-matrix'],
         output: {
             'sourcemap': production ? false : 'inline',
