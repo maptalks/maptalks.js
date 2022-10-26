@@ -634,7 +634,7 @@ class Painter extends Class {
         }
         Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
-        const ctx = testCanvas.getContext('2d');
+        const ctx = Canvas.getCanvas2DContext(testCanvas);
         try {
             this.paint(null, ctx, this._hitPoint);
         } catch (e) {

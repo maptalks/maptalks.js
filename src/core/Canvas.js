@@ -26,6 +26,9 @@ const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
 
 const Canvas = {
+    getCanvas2DContext(canvas) {
+        return canvas.getContext('2d', { willReadFrequently: true });
+    },
     setHitTesting(testing) {
         hitTesting = testing;
     },

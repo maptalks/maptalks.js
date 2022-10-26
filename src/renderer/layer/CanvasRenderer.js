@@ -427,7 +427,7 @@ class CanvasRenderer extends Class {
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
         }
-        this.context = this.canvas.getContext('2d');
+        this.context = Canvas2D.getCanvas2DContext(this.canvas);
         if (!this.context) {
             return;
         }
