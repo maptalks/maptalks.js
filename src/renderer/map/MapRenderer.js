@@ -17,6 +17,9 @@ class MapRenderer extends Class {
         super();
         this.map = map;
         this._handlerQueue = [];
+        this._thisDocVisibilitychange = this._onDocVisibilitychange.bind(this);
+        this._thisDocDragStart = this._onDocDragStart.bind(this);
+        this._thisDocDragEnd = this._onDocDragEnd.bind(this);
     }
 
     callInNextFrame(fn) {
@@ -102,6 +105,45 @@ class MapRenderer extends Class {
 
     onLoad() {
         this._frameLoop();
+    }
+
+    _onDocVisibilitychange() {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
+        this.setToRedraw();
+    }
+
+    _getWrapPanel() {
+        if (!this.map) {
+            return null;
+        }
+        const panels = this.map.getPanels();
+        return panels && panels.mapWrapper;
+    }
+    _onDocDragStart() {
+        const wrapPanel = this._getWrapPanel();
+        if (wrapPanel) {
+            wrapPanel.style.overflow = 'visible';
+        }
+        return;
+    }
+
+    _onDocDragEnd() {
+        const wrapPanel = this._getWrapPanel();
+        if (wrapPanel) {
+            wrapPanel.style.overflow = 'hidden';
+        }
+        return;
+    }
+
+    _containerIsOffscreen() {
+        const container = this.map.getContainer();
+        if (!container || !container.style || container.style.display === 'none') {
+            return true;
+        }
+        const minSize = Math.min(container.clientWidth, container.clientHeight);
+        return minSize <= 0;
     }
 }
 

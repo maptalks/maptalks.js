@@ -22,7 +22,6 @@ class MapCanvasRenderer extends MapRenderer {
         super(map);
         //container is a <canvas> element
         this._containerIsCanvas = !!map._containerDOM.getContext;
-        this._thisVisibilitychange = this._onVisibilitychange.bind(this);
         this._registerEvents();
         this._loopTime = 0;
     }
@@ -893,7 +892,9 @@ class MapCanvasRenderer extends MapRenderer {
         });
 
         if (Browser.webgl && typeof document !== 'undefined') {
-            addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
+            addDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
         if (Browser.addDPRListening) {
             Browser.addDPRListening(this.map);
@@ -915,13 +916,6 @@ class MapCanvasRenderer extends MapRenderer {
 
     _getCanvasLayers() {
         return this.map._getLayers(layer => layer.isCanvasRender());
-    }
-
-    _onVisibilitychange() {
-        if (document.visibilityState !== 'visible') {
-            return;
-        }
-        this.setToRedraw();
     }
 
     //----------- top elements methods -------------
@@ -963,15 +957,6 @@ class MapCanvasRenderer extends MapRenderer {
             this.context.drawImage(this.topLayer, 0, 0);
         }
         this.map.fire('drawtopsend');
-    }
-
-    _containerIsOffscreen() {
-        const container = this.map.getContainer();
-        if (!container || !container.style || container.style.display === 'none') {
-            return true;
-        }
-        const minSize = Math.min(container.clientWidth, container.clientHeight);
-        return minSize <= 0;
     }
 
 }
