@@ -10,6 +10,12 @@ export function clearHighlight(mesh) {
     delete defines['HAS_HIGHLIGHT_OPACITY'];
     mesh.setDefines(defines);
     delete mesh.properties.highlightTimestamp;
+    if (mesh.properties.oldElementsBeforeHighlight) {
+        mesh.geometry.elements.destroy();
+        mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
+        delete mesh.properties.oldElementsBeforeHighlight;
+        delete mesh.properties.hasInvisible;
+    }
     deleteHighlightBloomMesh(mesh);
 }
 
@@ -115,7 +121,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
         delete defines['HAS_HIGHLIGHT_OPACITY'];
     }
     if (invisibleIds && invisibleIds.size > 0) {
-        const elements = [];
+        let elements = [];
         feaIdIndiceMap.forEach((value, key) => {
             if (invisibleIds.has(key)) {
                 return;
@@ -123,10 +129,24 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
             pushIn(elements, value);
         });
         mesh.properties.hasInvisible = true;
-        mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
+        if (!mesh.properties.oldElementsBeforeHighlight) {
+            mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
+        }
+        const info = {
+            data: elements,
+            // type: mesh.geometry.getElementsType(elements),
+            primitive: mesh.geometry.getPrimitive()
+        };
+        if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
+            mesh.geometry.elements.destroy();
+        }
+        elements = regl.elements(info);
         mesh.geometry.setElements(elements);
         mesh.geometry.generateBuffers(regl);
     } else if (mesh.properties.hasInvisible) {
+        if (mesh.geometry.elements && mesh.geometry.elements.destroy) {
+            mesh.geometry.elements.destroy();
+        }
         mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
         delete mesh.properties.hasInvisible;
         delete mesh.properties.oldElementsBeforeHighlight;

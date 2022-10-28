@@ -331,6 +331,14 @@ class Mesh {
     }
 
     dispose() {
+        const oldElements = this.properties.oldElementsBeforeHighlight;
+        if (oldElements) {
+            if (oldElements.destroy) {
+                oldElements.destroy();
+            }
+            delete this.properties.oldElementsBeforeHighlight;
+            delete this.properties.hasInvisible;
+        }
         delete this._geometry;
         delete this._material;
         this.uniforms = {};

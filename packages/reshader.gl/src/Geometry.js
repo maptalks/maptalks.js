@@ -484,8 +484,9 @@ export default class Geometry {
         this._incrVersion();
         const e = this.elements;
         this.count = count === undefined ? getElementLength(elements) : count;
-
-        if (e.destroy) {
+        if (elements && elements.destroy) {
+            this.elements = elements;
+        } else if (e.destroy) {
             this.elements = e(elements);
         } else {
             this.elements = elements;
@@ -826,6 +827,9 @@ function getElementLength(elements) {
     } else if (elements.count !== undefined) {
         // object buffer form
         return elements.count;
+    } else if (elements.destroy) {
+        // a regl element buffer
+        return elements['_elements'].vertCount;
     } else if (elements.length !== undefined) {
         return elements.length;
     } else if (elements.data) {
