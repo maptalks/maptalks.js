@@ -474,7 +474,7 @@ Map.include(/** @lends Map.prototype */{
         if (!this._animPlayer) {
             return;
         }
-        if (props['center']) {
+        if (props['center'] || props['prjCenter']) {
             this.onMoveStart();
         }
         if (props['zoom'] && !this.isZooming()) {
