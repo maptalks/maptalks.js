@@ -1518,6 +1518,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const prjCenter = this._getPrjCenter();
         if (!this._originCenter || this._verifyExtent(prjCenter)) {
             this._originCenter = prjCenter;
+            this._eventCenterAltitude = this.centerAltitude;
         }
         this._moving = true;
         this._trySetCursor('move');
@@ -1552,6 +1553,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     onMoveEnd(param) {
         this._moving = false;
+        this._recenterOnTerrain();
+
         this._trySetCursor('default');
         /**
          * moveend event
