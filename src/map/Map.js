@@ -26,6 +26,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
 import { computeDomPosition } from '../core/util/dom';
 
 const TEMP_COORD = new Coordinate(0, 0);
+const TEMP_POINT = new Point(0, 0);
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
@@ -451,7 +452,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this._center;
         }
         const projection = this.getProjection();
-        return projection.unproject(this._prjCenter);
+        const center = projection.unproject(this._prjCenter);
+        if (this.centerAltitude) {
+            center.z = this.centerAltitude;
+        }
+        return center;
     }
 
     /**
@@ -1518,7 +1523,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         const prjCenter = this._getPrjCenter();
         if (!this._originCenter || this._verifyExtent(prjCenter)) {
             this._originCenter = prjCenter;
-            this._eventCenterAltitude = this.centerAltitude;
         }
         this._moving = true;
         this._trySetCursor('move');
@@ -1553,7 +1557,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     onMoveEnd(param) {
         this._moving = false;
-        this._recenterOnTerrain();
+        if (!this._suppressRecenter) {
+            this._recenterOnTerrain();
+        }
+
 
         this._trySetCursor('default');
         /**
@@ -1945,9 +1952,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _setPrjCoordAtContainerPoint(coordinate, point) {
-        if (point.x === this.width / 2 && point.y === this.height / 2) {
-            return this;
-        }
         const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
         const pcenter = this._pointToPrj(this._prjToPoint(coordinate).sub(t));
         this._setPrjCenter(pcenter);
@@ -1975,10 +1979,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Coordinate} the new projected center.
      */
     _offsetCenterByPixel(pixel) {
-        const pos = new Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
-        const pCenter = this._containerPointToPrj(pos);
-        this._setPrjCenter(pCenter);
-        return pCenter;
+        const pos = TEMP_POINT.set(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
+        const coord = this._containerPointToPrj(pos, TEMP_COORD);
+        const containerCenter = TEMP_POINT.set(this.width / 2, this.height / 2);
+        this._setPrjCoordAtContainerPoint(coord, containerCenter);
     }
 
     /**
@@ -2505,6 +2509,8 @@ Map.include(/** @lends Map.prototype */{
     pixelToDistance: function () {
         const COORD0 = new Coordinate(0, 0);
         const COORD1 = new Coordinate(0, 0);
+        const TARGET0 = new Coordinate(0, 0);
+        const TARGET1 = new Coordinate(0, 0);
         return function (width, height) {
             const projection = this.getProjection();
             if (!projection) {
@@ -2512,9 +2518,12 @@ Map.include(/** @lends Map.prototype */{
             }
             const fullExt = this.getFullExtent();
             const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
-            const target = COORD0.set(this.width / 2 + width, this.height / 2 + d * height);
-            const coord = this.containerPointToCoord(target, COORD1);
-            return projection.measureLength(this.getCenter(), coord);
+            const coord0 = COORD0.set(this.width / 2, this.height / 2);
+            const coord1 = COORD1.set(this.width / 2 + width, this.height / 2 + d * height);
+            // 考虑高度海拔后，容器中心点的坐标就不一定是center了
+            const target0 = this.containerPointToCoord(TARGET0, coord0);
+            const target1 = this.containerPointToCoord(TARGET1, coord1);
+            return projection.measureLength(target0, target1);
         };
     }(),
 

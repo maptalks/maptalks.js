@@ -555,8 +555,8 @@ Map.include(/** @lends Map.prototype */{
             }
 
             const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
-            this.centerAltitude = this._eventCenterAltitude !== undefined ? this._eventCenterAltitude : this._queryTerrainByProjCoord(this._prjCenter);
-            const centerPointZ = this.centerAltitude * this._meterToGLPoint;
+            const centerAltitude = this.centerAltitude || 0;
+            const centerPointZ = centerAltitude * this._meterToGLPoint;
             this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, centerPointZ);
 
             const pitch = this.getPitch() * RADIAN;
@@ -575,6 +575,9 @@ Map.include(/** @lends Map.prototype */{
             const cx = center2D.x - dist * Math.sin(bearing);
             const cy = center2D.y - dist * Math.cos(bearing);
             this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz + centerPointZ);
+            // console.log('0.camera', this.cameraPosition);
+            // console.log('0.center', center2D, this.centerAltitude);
+            // console.log('0.cameraToGroundDistance', cameraToGroundDistance);
 
             // const adjustedZoom = this._adjustZoomOnTerrain();
             // if (adjustedZoom >= 0) {
@@ -606,33 +609,57 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
+    updateCenterAltitude() {
+        const prjCenter = this._getPrjCenter();
+        const altitude = this._queryTerrainByProjCoord(prjCenter);
+        this.centerAltitude = altitude;
+        this._calcMatrices();
+        this.getRenderer().setToRedraw();
+    },
+
     _recenterOnTerrain() {
         const pitch = this.getPitch() * RADIAN;
         const bearing = this.getBearing() * RADIAN;
-        const meterToGLPoint = this._meterToGLPoint;
         const centerAltitude = this._queryTerrainByProjCoord(this._prjCenter);
-        const altDist = (centerAltitude - this.centerAltitude) * meterToGLPoint;
+        const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;
 
         const cameraToCenterDistance = this._getFovZ();
         const cameraZenithDistance = this._cameraZenithDistance === undefined ? cameraToCenterDistance : this._cameraZenithDistance;
 
-        const cameraToGroundDistance = cameraZenithDistance - this.centerAltitude * meterToGLPoint;
+        const cameraToGroundDistance = cameraZenithDistance - this.centerAltitude * this._meterToGLPoint;
         const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.cos(pitch);
+
 
         const cameraPosition = this.cameraPosition;
         const dist = Math.sin(pitch) * newCameraToGroundDistance;
         const center2D = TEMP_POINT;
         center2D.x = cameraPosition[0] + dist * Math.sin(bearing);
         center2D.y = cameraPosition[1] + dist * Math.cos(bearing);
+        // console.log(centerAltitude);
+        // centerAltitude = (cameraPosition[2] - Math.cos(pitch) * newCameraToGroundDistance) / this._meterToGLPoint;
+        // console.log(centerAltitude, (this.cameraToCenterDistance - newCameraToGroundDistance) / this._meterToGLPoint);
+        // centerAltitude = (this.cameraToCenterDistance - newCameraToGroundDistance) / this._meterToGLPoint;
 
-        const centerPointZ = centerAltitude * meterToGLPoint;
+        const centerPointZ = centerAltitude * this._meterToGLPoint;
         this._cameraZenithDistance = (cameraPosition[2] - centerPointZ) / Math.cos(pitch) + centerPointZ;
 
-        const newPrjCenter = this._pointToPrjAtRes(center2D, this.getGLRes(), TEMP_COORD);
+        // const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.sin(pitch);
+        // console.log('1.camera', this.cameraPosition);
+        // console.log('1.center', center2D, centerAltitude);
+        // console.log('1.newCameraToGroundDistance', newCameraToGroundDistance);
+        // console.log(newCameraToGroundDistance, newCameraToGroundDistance1);
+
+        // const newPrjCenter = this._pointToPrjAtRes(center2D, this.getGLRes(), TEMP_COORD);
 
 
-        this._eventCenterAltitude = centerAltitude;
-        this._setPrjCenter(newPrjCenter);
+        this.centerAltitude = centerAltitude;
+        // this._setPrjCenter(newPrjCenter);
+        const newCenter = this.pointAtResToCoordinate(center2D, this.getGLRes(), TEMP_COORD);
+        this._eventSilence = true;
+        this._suppressRecenter = true;
+        this.setCenter(newCenter);
+        delete this._suppressRecenter;
+        delete this._eventSilence;
     },
     // _adjustZoomOnTerrain() {
     //     const z = this._eventCameraZ;
@@ -659,8 +686,8 @@ Map.include(/** @lends Map.prototype */{
     _queryTerrainByProjCoord(coord) {
         const layers = this._getLayers();
         for (let i = 0; i < layers.length; i++) {
-            if (layers[i].queryTerrainByProjCoord) {
-                return layers[i].queryTerrainByProjCoord(coord);
+            if (layers[i]._queryTerrainByProjCoord) {
+                return layers[i]._queryTerrainByProjCoord(coord);
             }
         }
         return 0;
