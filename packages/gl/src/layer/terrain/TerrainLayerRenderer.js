@@ -47,7 +47,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         super.consumeTile(tileImage, tileInfo);
         const map = this.getMap();
-        if (map.centerAltitude === undefined && tileInfo.z === this.getCurrentTileZoom()) {
+        if (map.updateCenterAltitude && map.centerAltitude === undefined && tileInfo.z === this.getCurrentTileZoom()) {
             const prjCenter = map._getPrjCenter();
             const centerPoint = map._prjToPointAtRes(prjCenter, tileInfo.res, TEMP_POINT);
             if (tileInfo.extent2d.contains(centerPoint)) {
