@@ -10,6 +10,7 @@
   </style>
   <link rel="stylesheet" href="/maptalks/dist/maptalks.css">
   <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
+  <!-- <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.min.js"></script> -->
   <script type="text/javascript" src="/maptalksgl/dist/maptalksgl-dev.js"></script>
   <!-- <script type="text/javascript" src="../dist/maptalks.terrain-dev.js"></script> -->
   <body>
@@ -20,6 +21,8 @@
             center: [91.14478,29.658272],
             zoomControl: true,
             zoom: 12,
+            // pitch: 1,
+            pitch: 70,
             centerCross: true,
             // pitch: 45,
             // spatialReference:{
@@ -65,8 +68,10 @@
                 },
                 debug: true,
                 // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                urlTemplate: 'https://khms{s}.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
-                subdomains: ['1','2','3'],
+                // urlTemplate: 'https://khms{s}.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
+                // subdomains: ['1','2','3'],
+                'urlTemplate' : 'http://webst{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+                'subdomains'  : ['01','02','03','04'],
                 attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
               })
         ];
@@ -114,16 +119,35 @@
         //     console.log(e);
         // });
 
-        map.on('click', e => {
-            const terrainLayer = map.getBaseLayer();
-            console.time();
-            let terrain;
-            for (let i = 0; i < 10000; i++) {
-                terrain = group.queryTerrain(e.coordinate);
-            }
-            console.timeEnd();
-            console.log(terrain);
+        map.on('moveend', e => {
+            // const terrainLayer = map.getBaseLayer();
+            // console.time();
+            // let terrain;
+            // for (let i = 0; i < 10000; i++) {
+            //     terrain = group.queryTerrain(e.coordinate);
+            // }
+            // console.timeEnd();
+            // console.log(terrain);
+            // console.log(e.coordinate);
+            // console.log(map._getPrjCenter());
+            console.log(map.getCenter());
+            console.log(map.containerPointToCoord(new maptalks.Point(map.width / 2, map.height / 2)));
         });
+
+        const layer = new maptalks.VectorLayer('v').addTo(map);
+        const marker = new maptalks.Marker(map.getCenter()).addTo(layer);
+        marker.setInfoWindow({
+            'title'     : 'Marker\'s InfoWindow',
+            'content'   : 'Click on marker to open.'
+        });
+        marker.openInfoWindow();
+
+
+        function pan() {
+            // map.panTo(map.getCenter().add(0.06, 0));
+            map.panBy(new maptalks.Point(200, -200), { animation: false });
+        }
+
     </script>
   </body>
 </html>
