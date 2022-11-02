@@ -566,7 +566,7 @@ Map.include(/** @lends Map.prototype */{
             // const z = scale * (size.height || 1) / 2 / ratio;
             // const cz = z * Math.cos(pitch);
             const cameraToCenterDistance = this._getFovZ();
-            const cameraZenithDistance = this._cameraZenithDistance === undefined ? cameraToCenterDistance : this._cameraZenithDistance;
+            const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
             const cameraToGroundDistance = cameraZenithDistance - centerPointZ;
             const cz = cameraToGroundDistance * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
@@ -624,7 +624,7 @@ Map.include(/** @lends Map.prototype */{
         const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;
 
         const cameraToCenterDistance = this._getFovZ();
-        const cameraZenithDistance = this._cameraZenithDistance === undefined ? cameraToCenterDistance : this._cameraZenithDistance;
+        const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
 
         const cameraToGroundDistance = cameraZenithDistance - this.centerAltitude * this._meterToGLPoint;
         const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.cos(pitch);
@@ -641,7 +641,7 @@ Map.include(/** @lends Map.prototype */{
         // centerAltitude = (this.cameraToCenterDistance - newCameraToGroundDistance) / this._meterToGLPoint;
 
         const centerPointZ = centerAltitude * this._meterToGLPoint;
-        this._cameraZenithDistance = (cameraPosition[2] - centerPointZ) / Math.cos(pitch) + centerPointZ;
+        this.cameraZenithDistance = (cameraPosition[2] - centerPointZ) / Math.cos(pitch) + centerPointZ;
 
         // const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.sin(pitch);
         // console.log('1.camera', this.cameraPosition);
@@ -686,8 +686,8 @@ Map.include(/** @lends Map.prototype */{
     _queryTerrainByProjCoord(coord) {
         const layers = this._getLayers();
         for (let i = 0; i < layers.length; i++) {
-            if (layers[i]._queryTerrainByProjCoord) {
-                return layers[i]._queryTerrainByProjCoord(coord);
+            if (layers[i].queryTerrainByProjCoord) {
+                return layers[i].queryTerrainByProjCoord(coord);
             }
         }
         return 0;
