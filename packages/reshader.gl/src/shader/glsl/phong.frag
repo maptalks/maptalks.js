@@ -23,20 +23,7 @@ uniform vec3 cameraPosition;
 #endif
 
 #ifdef HAS_MAP
-    varying vec2 vTexCoord;
-    #ifdef HAS_I3S_UVREGION
-        varying vec4 vUvRegion;
-    #endif
-
-    vec2 computeTexCoord() {
-        #ifdef HAS_I3S_UVREGION
-            vec2 atlasScale = vUvRegion.zw - vUvRegion.xy;
-            vec2 uvAtlas = fract(vTexCoord) * atlasScale + vUvRegion.xy;
-            return uvAtlas;
-        #else
-            return vTexCoord;
-        #endif
-    }
+    #include <computeTexcoord_frag>
 #endif
 varying vec3 vNormal;
 varying vec3 vFragPos;

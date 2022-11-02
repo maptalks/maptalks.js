@@ -2,6 +2,7 @@ attribute vec3 aPosition;
 
 uniform mat4 projMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 
 varying vec4 vWorldPosition;

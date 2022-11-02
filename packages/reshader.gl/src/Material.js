@@ -77,6 +77,9 @@ class Material {
         if (uniforms['morphWeights1']) {
             defines['HAS_MORPH'] = 1;
         }
+        if (uniforms['khr_offset'] || uniforms['khr_rotation'] || uniforms['khr_scale']) { //对纹理坐标转换的扩展的支持
+            defines['HAS_KHR_TEXTURE_TRANSFORM'] = 1;
+        }
         return defines;
     }
 

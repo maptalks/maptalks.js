@@ -5,6 +5,7 @@ varying vec2 vTexCoord;
 
 uniform mat4 projMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 #include <get_output>
 

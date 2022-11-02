@@ -25,6 +25,7 @@ const helperIndices = [
 ];
 const MAT = [], QUAT = [], VEC3 = [], v1 = [1, 0, 0], NORMAL = [];
 const clearColor = [0, 0, 0, 1];
+let near = 0.01;
 export default class ViewshedPass {
     constructor(renderer, viewport) {
         this.renderer = renderer;
@@ -174,6 +175,7 @@ export default class ViewshedPass {
         const uniforms = {
             viewshed_projViewMatrixFromViewpoint: projViewMatrixFromViewpoint,
             projViewMatrix,
+            near,
             depthMap: this._depthFBO
         };
         this.renderer.render(
@@ -187,9 +189,9 @@ export default class ViewshedPass {
     //根据视点位置，方向，垂直角，水平角构建矩阵
     _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle) {
         const aspect =  verticalAngle / horizontalAngle;
-        let distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
-        distance = distance < 1 ? 1 : distance;
-        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1, distance);
+        const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
+        near = distance / 100;
+        const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, near, distance);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return projViewMatrix;

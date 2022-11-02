@@ -321,6 +321,11 @@ export default class GLTFPack {
                 const baseColorTexture = pbrMetallicRoughness.baseColorTexture;
                 if (baseColorTexture) {
                     materialUniforms['baseColorTexture'] = this._getTexture(baseColorTexture);
+                    if (baseColorTexture['KHR_texture_transform']) {
+                        materialUniforms['khr_offset'] = baseColorTexture['KHR_texture_transform'].offset || [0, 0];
+                        materialUniforms['khr_rotation'] = baseColorTexture['KHR_texture_transform'].rotation ||0;
+                        materialUniforms['khr_scale'] = baseColorTexture['KHR_texture_transform'].scale || [1, 1];
+                    }
                 }
                 if (pbrMetallicRoughness.baseColorFactor) {
                     materialUniforms['baseColorFactor'] = pbrMetallicRoughness.baseColorFactor;

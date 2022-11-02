@@ -28,6 +28,8 @@ import highlight_frag from './glsl/highlight.frag';
 
 import mask_vert from './glsl/mask.vert';
 import mask_frag from './glsl/mask.frag';
+
+import computeTexcoord_frag from './glsl/compute_texcoord.frag';
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 // import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
@@ -129,7 +131,9 @@ const ShaderChunk = {
     highlight_frag,
 
     mask_vert,
-    mask_frag
+    mask_frag,
+
+    computeTexcoord_frag
 };
 /* eslint-enable camelcase */
 

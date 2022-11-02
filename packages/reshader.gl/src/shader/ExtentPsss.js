@@ -37,8 +37,8 @@ class ExtentPass {
                 width: 1,
                 height: 1,
                 wrap: 'clamp',
-                mag : 'linear',
-                min : 'linear'
+                mag : 'nearest', //采用nearest采样，避免因linear造成的边界附近产生空隙
+                min : 'nearest'
             }),
             depth: true
         });

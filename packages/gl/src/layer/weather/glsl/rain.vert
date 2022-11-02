@@ -4,6 +4,7 @@ attribute vec2 aTexCoord;
 
 uniform mat4 projMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 
 uniform vec3 cameraPosition;
