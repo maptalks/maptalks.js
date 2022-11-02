@@ -13,6 +13,7 @@ const V3 = [];
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
 const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
+const TEMP_POINT = new maptalks.Point(0, 0);
 const SCALE3 = [];
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
@@ -44,7 +45,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 }
             }
         }
-        return super.consumeTile(tileImage, tileInfo);
+        super.consumeTile(tileImage, tileInfo);
+        const map = this.getMap();
+        if (map.centerAltitude === undefined && tileInfo.z === this.getCurrentTileZoom()) {
+            const prjCenter = map._getPrjCenter();
+            const centerPoint = map._prjToPointAtRes(prjCenter, tileInfo.res, TEMP_POINT);
+            if (tileInfo.extent2d.contains(centerPoint)) {
+                map.updateCenterAltitude();
+            }
+        }
     }
 
     draw(timestamp, parentContext) {
@@ -337,7 +346,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _findTerrainData(x, y, z, limit) {
         const tileId = this.layer['_getTileId'](x, y, z);
-        let terrainData = this.tileCache.get(tileId);
+        let terrainData = this.tilesInView[tileId] || this.tileCache.get(tileId);
         if (!terrainData && limit <= 0) {
             return this._findTerrainData(Math.floor(x / 2), Math.floor(y / 2), z - 1, limit + 1);
         }
@@ -630,7 +639,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     enable: true,
                     func: {
                         cmp: () => {
-                            return '<';
+                            return '<=';
                         },
                         ref: (context, props) => {
                             return props.level;

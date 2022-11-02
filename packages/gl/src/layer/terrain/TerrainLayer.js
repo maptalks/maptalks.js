@@ -166,7 +166,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         return this._skinLayers && this._skinLayers.length || 0;
     }
 
-    queryTerrain(coordinate) {
+    queryTerrainByProjCoord(prjCoord) {
         const renderer = this.getRenderer();
         if (!renderer) {
             return 0;
@@ -177,12 +177,19 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const res = sr.getResolution(zoom);
         const repeatWorld = this.options['repeatWorld'];
         const config = this['_getTileConfig']();
-        const projection = map.getProjection();
-        const projCoord = projection.project(coordinate, COORD0);
-        const tileIndex = config.getTileIndex(projCoord, res, repeatWorld);
-
-        const worldPos = map.coordToPointAtRes(coordinate, res, POINT0);
+        const tileIndex = config.getTileIndex(prjCoord, res, repeatWorld);
+        const worldPos = map._prjToPointAtRes(prjCoord, res, POINT0);
         return renderer._queryTerrain(tileIndex, worldPos, res, zoom);
+    }
+
+    queryTerrain(coordinate) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return 0;
+        }
+        const projection = this.getMap().getProjection();
+        const projCoord = projection.project(coordinate, COORD0);
+        return this.queryTerrainByProjCoord(projCoord);
     }
 
     queryTileAltitude(out, tileExtent, res) {

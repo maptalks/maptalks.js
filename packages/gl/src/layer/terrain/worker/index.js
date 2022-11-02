@@ -4,7 +4,7 @@ import Martini from '@mapbox/martini';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 const offscreenCanvas = new OffscreenCanvas(514, 514);
-const offscreenCanvasContext = offscreenCanvas.getContext('2d');
+const offscreenCanvasContext = offscreenCanvas.getContext('2d', { willReadFrequently: true });
 
 const terrainRequests = {};
 

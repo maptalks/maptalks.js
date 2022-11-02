@@ -487,6 +487,13 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this._terrainLayer.queryTerrain(coord);
     }
 
+    queryTerrainByProjCoord(projCoord) {
+        if (!this._terrainLayer) {
+            return 0;
+        }
+        return this._terrainLayer.queryTerrainByProjCoord(projCoord);
+    }
+
     _updateTerrainSkinLayers() {
         if (!this._skinBGOptions) {
             this._skinBGOptions = {};
