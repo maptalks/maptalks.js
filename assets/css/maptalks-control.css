@@ -38,7 +38,7 @@
 
 .maptalks-msgBox { background: #fff; border: 1px solid #b4b3b3; border-radius: 3px; /*box-shadow: 3px 5px 5px #dbdada;*/}
 .maptalks-msgBox em.maptalks-ico { display: block; width: 17px; height: 10px; background: url(images/control/5_1.png) no-repeat; position: absolute; left: 50%; margin-left: -5px; bottom: -10px;}
-.maptalks-msgBox h2 { display: block; height: 30px; line-height: 30px; font-weight: bold; font-size: 14px; padding: 0 10px;  margin: 0;}
+.maptalks-msgBox h2 { display: block; height: auto; line-height: 30px; font-weight: bold; font-size: 14px; padding: 0 10px;  margin: 0;  white-space: nowrap;padding-right: 30px;}
 .maptalks-msgBox a.maptalks-close { display: block; width: 13px; height: 13px; background: url(images/control/infownd-close.png) no-repeat; position: absolute; top: 8px; right: 10px;}
 .maptalks-msgBox a.maptalks-close:hover { background: url(images/control/infownd-close-hover.png) no-repeat;}
 .maptalks-msgBox .maptalks-msgContent { font-size: 12px;padding: 10px; min-width: 200px;}
