@@ -102,6 +102,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
             // 改为consumeTileQueue只在finalRender时调用即解决问题
             this._consumeTileQueue();
+            this._computeAvgTileAltitude();
             this._renderTimestamp = timestamp;
         }
 
@@ -305,7 +306,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onDrawTileStart() { }
-    onDrawTileEnd() { }
+    onDrawTileEnd() {}
 
     _drawTile(info, image, parentContext) {
         if (image) {
@@ -497,6 +498,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             count++;
         }
         /* eslint-enable no-unmodified-loop-condition */
+    }
+
+    _computeAvgTileAltitude() {
+        let sumMin = 0;
+        let sumMax = 0;
+        let count = 0;
+        for (const p in this.tilesInView) {
+            const info = this.tilesInView[p] && this.tilesInView[p].info;
+            if (info) {
+                sumMin += info.minAltitude || 0;
+                sumMax += info.maxAltitude || 0;
+                count++;
+            }
+        }
+        this.avgMinAltitude = sumMin / count;
+        this.avgMaxAltitude = sumMax / count;
     }
 
     checkTileInQueue() {

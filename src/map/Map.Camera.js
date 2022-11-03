@@ -618,6 +618,9 @@ Map.include(/** @lends Map.prototype */{
     },
 
     _recenterOnTerrain() {
+        if (this.centerAltitude === undefined) {
+            return;
+        }
         const pitch = this.getPitch() * RADIAN;
         const bearing = this.getBearing() * RADIAN;
         const centerAltitude = this._queryTerrainByProjCoord(this._prjCenter);
