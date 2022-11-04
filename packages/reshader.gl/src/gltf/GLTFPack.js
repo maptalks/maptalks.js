@@ -425,6 +425,9 @@ function createGeometry(primitive, regl) {
             color[i] = Math.round(aColor0.array[i] * 255);
         }
         aColor0.array = color;
+    } else if (aColor0 && aColor0.array instanceof Uint16Array) {
+        const color = new Uint8Array(aColor0.array);
+        aColor0.array = color;
     }
     const attrs = {};
     for (const name in attributes) {

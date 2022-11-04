@@ -123,7 +123,8 @@ export default class RainRipplePass {
             projMatrix: options.projMatrix,
             viewMatrix: options.viewMatrix,
             time: options.time,
-            rippleRadius: options.rippleRadius
+            rippleRadius: options.rippleRadius,
+            density: options.density
         };
         this.renderer.render(
             this._shader,

@@ -137,6 +137,7 @@ class WeatherPainter {
         options['viewMatrix'] = map.viewMatrix;
         options['time'] = this._getTimeSpan() / 1000;
         options['rippleRadius'] = rippleRadius;
+        options['density'] = weatherConfig.rain.density || 2000;
 
         const ripplesMap = this._rainRipplesPass.render(map, options);
         return ripplesMap;
@@ -168,6 +169,10 @@ class WeatherPainter {
     isEnableSnow() {
         const weatherConfig = this._layer.getWeatherConfig();
         return weatherConfig && weatherConfig.enable && weatherConfig.snow && weatherConfig.snow.enable;
+    }
+
+    _hasWeather() {
+        return this.isEnableRain() || this.isEnableFog() || this.isEnableSnow();
     }
 
     update() {

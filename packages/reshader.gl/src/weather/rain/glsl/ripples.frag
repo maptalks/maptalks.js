@@ -7,6 +7,7 @@ precision mediump float;
 #include <gl2_frag>
 varying vec2 vTexCoord;
 uniform float rippleRadius;
+uniform float density;
 uniform float time;
 
 vec3 hash3( vec2 p ) {
@@ -17,12 +18,13 @@ vec3 hash3( vec2 p ) {
 }
 
 float noise( in vec2 x) {
-    vec2 p = floor(x);
-    vec2 f = fract(x);
+    vec2 v = x * density / 4000.0;
+    vec2 p = floor(v);
+    vec2 f = fract(v);
 
 	float va = 0.0;
-    for( int j=-2; j<=2; j++ )
-    for( int i=-2; i<=2; i++ )
+    for( int j=-4; j<=4; j++ )
+    for( int i=-4; i<=4; i++ )
     {
         vec2 g = vec2( float(i),float(j) );
 		vec3 o = hash3( p + g );

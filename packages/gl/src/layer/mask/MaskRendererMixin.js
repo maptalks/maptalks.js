@@ -76,7 +76,7 @@ export default function (Base) {
             if (!this._maskDefines) {
                 this._maskDefines = {};
             }
-            if (this._maskUniforms['mask_colorExtent']) {
+            if (this._maskUniforms && this._maskUniforms['mask_colorExtent']) {
                 this._maskDefines['HAS_MASK_EXTENT'] = 1;
             } else {
                 delete this._maskDefines['HAS_MASK_EXTENT'];
