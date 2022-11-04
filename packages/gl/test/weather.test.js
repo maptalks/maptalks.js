@@ -56,10 +56,7 @@ describe('weather tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext("2d");
                 const pixel = ctx.getImageData(map.width / 2, map.height / 2, 1, 1).data;
-                expect(pixel[0]).to.be.eql(248);
-                expect(pixel[1]).to.be.eql(228);
-                expect(pixel[2]).to.be.eql(96);
-                expect(pixel[3]).to.be.eql(255);
+                expect(Array.from(pixel)).to.be.eql([248, 228, 96, 255]);
                 done();
             }, 100);
         });
@@ -89,10 +86,7 @@ describe('weather tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext("2d");
                 const pixel = ctx.getImageData(map.width / 2, map.height / 2, 1, 1).data;
-                expect(pixel[0]).to.be.eql(248);
-                expect(pixel[1]).to.be.eql(246);
-                expect(pixel[2]).to.be.eql(236);
-                expect(pixel[3]).to.be.eql(255);
+                expect(Array.from(pixel)).to.be.eql([248, 246, 236, 255]);
                 done();
             }, 100);
         });
@@ -126,10 +120,7 @@ describe('weather tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext("2d");
                 const pixel = ctx.getImageData(map.width / 2, map.height / 2, 1, 1).data;
-                expect(pixel[0]).to.be.eql(248);
-                expect(pixel[1]).to.be.eql(228);
-                expect(pixel[2]).to.be.eql(96);
-                expect(pixel[3]).to.be.eql(255);
+                expect(Array.from(pixel)).to.be.eql([248, 228, 96, 255]);
                 done();
             }, 100);
         });

@@ -178,7 +178,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const repeatWorld = this.options['repeatWorld'];
         const config = this['_getTileConfig']();
         const tileIndex = config.getTileIndex(prjCoord, res, repeatWorld);
-        const worldPos = map._prjToPointAtRes(prjCoord, res, POINT0);
+        const worldPos = map['_prjToPointAtRes'](prjCoord, res, POINT0);
         return renderer._queryTerrain(tileIndex, worldPos, res, zoom);
     }
 
