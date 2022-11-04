@@ -83,7 +83,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             return;
         }
         for (let i = 0, l = this.layers.length; i < l; i++) {
-            this.layers[i]._order = i;
+            this.layers[i]['__group_gl_order'] = i;
         }
         this.layers.sort(sortLayersByZIndex);
     }
@@ -612,7 +612,7 @@ function empty() {}
 function sortLayersByZIndex(a, b) {
     const c = a.getZIndex() - b.getZIndex();
     if (c === 0) {
-        return a._order - b._order;
+        return a['__group_gl_order'] - b['__group_gl_order'];
     }
     return c;
 }
