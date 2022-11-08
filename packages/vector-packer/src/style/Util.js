@@ -172,7 +172,7 @@ const colorCache = {};
 
 export function normalizeColor(out, color) {
     if (!Array.isArray(color)) {
-        if (color.r !== undefined && color.g !== undefined && color.b !== undefined) {
+        if (color && color.r !== undefined && color.g !== undefined && color.b !== undefined) {
             // a object containing r, g, b, a
             out[0] = color.r * 255;
             out[1] = color.g * 255;
