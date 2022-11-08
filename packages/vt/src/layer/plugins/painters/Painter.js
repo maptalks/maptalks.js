@@ -1,7 +1,7 @@
 import { reshader, mat4, HighlightUtil } from '@maptalks/gl';
 import StencilHelper from './StencilHelper';
 import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '@maptalks/vector-packer';
-import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';

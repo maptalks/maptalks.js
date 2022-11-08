@@ -103,6 +103,8 @@ class LinePainter extends BasicPainter {
                     lineDasharray = [old[0], old[1], old[2], old[2]];
                 } else if (dasharray.length === 4) {
                     lineDasharray = dasharray;
+                } else if (dasharray.length > 4) {
+                    lineDasharray = dasharray.slice(0, 4);
                 }
             }
             return lineDasharray || [0, 0, 0, 0];

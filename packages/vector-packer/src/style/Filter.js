@@ -3,7 +3,7 @@ import { expression, featureFilter as createExpressionFilter } from '@mapbox/map
 import { extend, isNil } from './Util';
 const { isExpressionFilter, isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
 
-export function compileStyle(styles) {
+export function compileStyle(styles=[]) {
     styles = styles.map(s => {
         const style = extend({}, s);
         if (style.filter && style.filter.value) {
@@ -154,11 +154,20 @@ const STRING_TYPES = {
     'polygonPatternFile': 1
 };
 
+const ARRAY_TYPES = {
+    'lineDasharray': 1,
+    'markerLineDasharray': 1,
+    'uvScale': 1,
+    'uvOffset': 1
+};
+
 export function getExpressionType(p) {
     if (STRING_TYPES[p]) {
         return 'string';
     } else if (isInterpolated(p)) {
         return 'number';
+    } else if (ARRAY_TYPES[p]) {
+        return 'array';
     } else {
         return 'color';
     }
