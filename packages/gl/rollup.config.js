@@ -148,7 +148,7 @@ module.exports = [
             'file': outputFile
         },
         watch: {
-            include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.mjs']
+            include: ['src/**/*.js', 'src/**/*.glsl',  'src/**/*.vert',  'src/**/*.frag', '../reshader.gl/dist/*.mjs', 'build/worker.js']
         }
     },
     {

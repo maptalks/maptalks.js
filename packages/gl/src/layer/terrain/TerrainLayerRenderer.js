@@ -5,6 +5,7 @@ import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
+import debugFrag from './glsl/debug.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, getParentSkinTile } from './TerrainTileUtil';
 import { isNil } from '../util/util.js';
 
@@ -15,6 +16,11 @@ const POINT1 = new maptalks.Point(0, 0);
 const TEMP_EXTENT = new maptalks.PointExtent(0, 0, 0, 0);
 const TEMP_POINT = new maptalks.Point(0, 0);
 const SCALE3 = [];
+
+const DEBUG_POINT = new maptalks.Point(20, 20);
+const TILE_POINT = new maptalks.Point(0, 0);
+const v3 = [];
+const arr16 = [];
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -213,36 +219,162 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
     }
 
+    drawDebug(context, tileInfo) {
+        const map = this.getMap();
+        let canvas = this._debugInfoCanvas;
+        if (!canvas) {
+            const dpr = this.getMap().getDevicePixelRatio() > 1 ? 2 : 1;
+            canvas = this._debugInfoCanvas = document.createElement('canvas');
+            canvas.width = 256 * dpr;
+            canvas.height = 32 * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.font = '20px monospace';
+            ctx.scale(dpr, dpr);
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const color = this.layer.options['debugOutline'];
+        ctx.fillStyle = color;
+        const debugInfo = this.getDebugInfo(tileInfo.id);
+        ctx.fillText(debugInfo, DEBUG_POINT.x, DEBUG_POINT.y + 1);
+
+        if (!this._debugMesh) {
+            this._debugTex = this.regl.texture({
+                data: canvas,
+                width: canvas.width,
+                height: canvas.height
+            });
+
+            let tileSize = this.layer.options['tileSize'];
+            if (Array.isArray(tileSize)) {
+                tileSize = tileSize[0];
+            }
+            const x = 0;
+            const y = 0;
+            let w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
+            const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
+            const geometry = new reshader.Geometry({
+                aPosition: [
+                    x, y, 0,
+                    x + w, y, 0,
+                    x + w, y - h, 0,
+                    x, y - h, 0,
+                    x, y, 0
+                ]
+            }, 5, 0, {
+                'primitive': 'line strip',
+            });
+            geometry.generateBuffers(this.regl);
+            this._debugMesh = new reshader.Mesh(geometry);
+            this._debugMesh.setUniform('debugLine', 1);
+            this._debugMesh.setUniform('debugImage', this._debugTex);
+
+            w = 256;
+            const x1 = x;
+            const x2 = x + w;
+            const y1 = y - h + 32;
+            const y2 = y - h;
+            const textGeometry = new reshader.Geometry({
+                aPosition: [
+                    x1, y1, 0,
+                    x1, y2, 0,
+                    x2, y1, 0,
+                    x2, y2, 0
+                ],
+                aTexCoord: new Uint8Array([
+                    0.0, 0.0,
+                    0.0, 1.0,
+                    1.0, 0.0,
+                    1.0, 1.0
+                ])
+            }, 4, 0, {
+                'primitive': 'triangle strip',
+            });
+            textGeometry.generateBuffers(this.regl);
+            this._debugTextMesh = new reshader.Mesh(textGeometry);
+            this._debugTextMesh.setUniform('debugLine', 0);
+
+
+            this._debugTextMesh.setUniform('debugImage', this._debugTex);
+
+            this._debugScene = new reshader.Scene();
+        }
+
+        const scale = tileInfo._glScale = tileInfo._glScale || tileInfo.res / map.getGLRes();
+        const { extent2d, offset } = tileInfo;
+        const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
+        const x = point.x * scale,
+            y = point.y * scale;
+        v3[0] = x || 0;
+        v3[1] = y || 0;
+        const modelMatrix = mat4.identity(arr16);
+        mat4.translate(modelMatrix, modelMatrix, v3);
+        mat4.scale(modelMatrix, modelMatrix, [scale, scale, 1]);
+
+        const uniforms = this._getUniformValues();
+        // uniforms.modelMatrix = modelMatrix;
+        this._debugMesh.setLocalTransform(modelMatrix);
+        this._debugTextMesh.setLocalTransform(modelMatrix);
+        this._debugScene.setMeshes([this._debugMesh]);
+        this.renderer.render(this._debugShader, uniforms, this._debugScene, this.getRenderFBO(context));
+        this._debugScene.setMeshes([this._debugTextMesh]);
+        this.renderer.render(this._debugShader, uniforms, this._debugScene, this.getRenderFBO(context));
+
+    }
+
     _endFrame(context) {
         const uniforms = this._getUniformValues();
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
         const meshes = this._scene.getMeshes().sort(terrainCompare);
         this._scene.setMeshes(meshes);
+        for (let i = 0; i < meshes.length; i++) {
+            const geometry = meshes[i].geometry;
+            const { skirtOffset } = geometry.properties;
+            geometry.setDrawOffset(0);
+            geometry.setDrawCount(skirtOffset);
+        }
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
+        for (let i = 0; i < meshes.length; i++) {
+            const geometry = meshes[i].geometry;
+            const { skirtOffset, skirtCount } = geometry.properties;
+            geometry.setDrawOffset(skirtOffset);
+            geometry.setDrawCount(skirtCount);
+        }
+        this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
+        if (this.layer.options['debug']) {
+            for (const p in this.tilesInView) {
+                const info = this.tilesInView[p] && this.tilesInView[p].info;
+                if (info) {
+                    this.drawDebug(context, info);
+                }
+            }
+        }
         if (meshes.length && !Object.keys(this.tilesLoading).length) {
             this.layer.fire('terrainreadyandrender');
         }
     }
 
-    onDrawTileStart() {}
-    onDrawTileEnd() {}
-
     _createTerrainMesh(tileInfo, terrainGeo) {
+        const { positions, texcoords, triangles, numTriangles } = terrainGeo;
+
         const heightScale = this._getPointZ(100) / 100;
-        for(let i = 2; i < terrainGeo.positions.length; i = i + 3) {
-            terrainGeo.positions[i] *= heightScale;
+        for(let i = 2; i < positions.length; i = i + 3) {
+            positions[i] *= heightScale;
         }
         const geo = new reshader.Geometry({
-            POSITION: terrainGeo.positions,
-            TEXCOORD_0: terrainGeo.texcoords
+            POSITION: positions,
+            TEXCOORD_0: texcoords
         },
-        terrainGeo.triangles,
+        triangles,
         0,
         {
             primitive: 'triangles',
             positionAttribute: 'POSITION',
             uv0Attribute: 'TEXCOORD_0'
         });
+
+        geo.properties.skirtOffset = numTriangles * 3;
+        geo.properties.skirtCount = triangles.length - numTriangles * 3;
 
         geo.generateBuffers(this.regl);
 
@@ -280,7 +412,15 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     loadTile(tile) {
         const terrainUrl = tile.url;
         const terrainData = {};
-        this.workerConn.fetchTerrain(terrainUrl, this.layer.options, (err, res) => {
+        const sp = this.layer.getSpatialReference();
+        const res = sp.getResolution(tile.z);
+        const options = {
+            terrainWidth: this.layer.options.terrainWidth,
+            type: this.layer.options.type,
+            accessToken: this.layer.options.accessToken,
+            error: res
+        };
+        this.workerConn.fetchTerrain(terrainUrl, options, (err, res) => {
             if (err) {
                 if (err.canceled) {
                     return;
@@ -493,7 +633,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         if (this._shader) {
             this._shader.dispose();
+            this._debugShader.dispose();
             delete this._shader;
+            delete this._debugShader;
         }
         if (this._emptyTileTexture) {
             this._emptyTileTexture.destroy();
@@ -604,6 +746,48 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const skinCount = this.layer.getSkinCount();
         const projViewModelMatrix = [];
 
+        const extraCommandProps = {
+            viewport: {
+                x : 0,
+                y : 0,
+                width : () => {
+                    return this.canvas ? this.canvas.width : 1;
+                },
+                height : () => {
+                    return this.canvas ? this.canvas.height : 1;
+                }
+            },
+            stencil: {
+                enable: true,
+                func: {
+                    cmp: () => {
+                        return '<=';
+                    },
+                    ref: (context, props) => {
+                        return props.level;
+                    }
+                },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            depth: {
+                enable: true,
+                mask: () => {
+                    const depthMask = this.layer.options['depthMask'];
+                    return depthMask;
+                },
+                func: this.layer.options.depthFunc || '<='
+            },
+            blend: {
+                enable: true,
+                func: { src: this.layer.options.blendSrc, dst: this.layer.options.blendDst },
+                equation: 'add'
+            },
+        };
+
         this._shader = new reshader.MeshShader({
             vert,
             frag,
@@ -624,48 +808,30 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     }
                 }
             ],
+            extraCommandProps
+        });
+
+        this._debugShader = new reshader.MeshShader({
+            vert: vert,
+            frag: debugFrag,
+            uniforms: [
+                {
+                    name: 'projViewModelMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
+                    }
+                }
+            ],
             extraCommandProps: {
-                viewport: {
-                    x : 0,
-                    y : 0,
-                    width : () => {
-                        return this.canvas ? this.canvas.width : 1;
-                    },
-                    height : () => {
-                        return this.canvas ? this.canvas.height : 1;
-                    }
-                },
-                stencil: {
-                    enable: true,
-                    func: {
-                        cmp: () => {
-                            return '<=';
-                        },
-                        ref: (context, props) => {
-                            return props.level;
-                        }
-                    },
-                    op: {
-                        fail: 'keep',
-                        zfail: 'keep',
-                        zpass: 'replace'
-                    }
-                },
+                viewport: extraCommandProps.viewport,
                 depth: {
                     enable: true,
-                    mask: () => {
-                        const depthMask = this.layer.options['depthMask'];
-                        return depthMask;
-                    },
-                    func: this.layer.options.depthFunc || '<='
-                },
-                blend: {
-                enable: true,
-                    func: { src: this.layer.options.blendSrc, dst: this.layer.options.blendDst },
-                    equation: 'add'
+                    mask: false,
+                    func: 'always'
                 },
             }
-        });
+        })
         // this._picking = new FBORayPicking(
         //     this.renderer,
         //     {

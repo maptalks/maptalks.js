@@ -293,14 +293,14 @@ function generateMapboxTerrain(buffer) {
 }
 
 function loadTerrain(params, cb) {
-    const { url, origin, type, accessToken, terrainWidth } = params;
+    const { url, origin, type, accessToken, terrainWidth, error } = params;
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
-        fetchTerrain(url, headers, type, terrainWidth, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, cb);
     } else if (type === 'cesium') {
         const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
         if (access_token) {
-            fetchTerrain(url, headers, type, terrainWidth, cb);
+            fetchTerrain(url, headers, type, terrainWidth, error, cb);
         } else {
             fetch(tokenUrl, {
                 responseType: "json",
@@ -314,15 +314,15 @@ function loadTerrain(params, cb) {
                 return tkJson.json();
             }).then(res => {
                 access_token = res.accessToken;
-                fetchTerrain(url, headers, type, terrainWidth, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, cb);
             });
         }
     } else if (type === 'mapbox') {
-        fetchTerrain(url, headers, type, terrainWidth, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, cb);
     }
 }
 
-function fetchTerrain(url, headers, type, terrainWidth, cb) {
+function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
     if (type === 'cesium') {
         // headers['Authorization'] = 'Bearer ' + access_token;
         headers = {
@@ -340,7 +340,8 @@ function fetchTerrain(url, headers, type, terrainWidth, cb) {
             if (type === 'tianditu') {
                 terrain = generateTiandituTerrain(buffer);
                 //martini顶点计算方式:https://github.com/mapbox/martini/issues/5
-                const mesh = createMartiniData(terrain, terrainWidth);
+                const mesh = createMartiniData(error, terrain, terrainWidth);
+                res.transferables.push(mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer);
                 cb({ data: terrain, mesh }, res.transferables);
             } else if (type === 'cesium') {
               terrain = generateCesiumTerrain(buffer);
@@ -350,7 +351,7 @@ function fetchTerrain(url, headers, type, terrainWidth, cb) {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
                     const terrainData = mapboxBitMapToHeights(imgBitmap, terrainWidth);
-                    const mesh = createMartiniData(terrainData.data, terrainWidth);
+                    const mesh = createMartiniData(error, terrainData.data, terrainWidth);
                     const transferables = [terrainData.data.buffer, mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
 
                     cb({ data: terrainData, mesh }, transferables);
@@ -431,24 +432,28 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
 
 }
 
-function createMartiniData(heights, width) {
+function createMartiniData(error, heights, width) {
     const martini = new Martini(width);
     const terrainTile = martini.createTile(heights);
-    const mesh = terrainTile.getMesh(0.1);
-    const { triangles, vertices } = mesh;
+    const mesh = terrainTile.getMeshWithSkirts(error);
+    const { triangles, vertices, numVerticesWithoutSkirts, numTriangles } = mesh;
     const positions = [], texcoords = [];
     const skirtOffset = terrainStructure.skirtOffset;
     for (let i = 0; i < vertices.length / 2; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
-        // positions.push(x * (4 + skirtOffset));
-        // positions.push(-y * (4 + skirtOffset));
         positions.push(x * (1 + skirtOffset));
         positions.push(-y * (1 + skirtOffset));
-        positions.push(heights[y * width + x]);
+        if (i >= numVerticesWithoutSkirts) {
+            positions.push(0);
+        } else {
+            positions.push(heights[y * width + x]);
+        }
         texcoords.push(x / width);
         texcoords.push(y / width);
     }
-    const terrain = { positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles };
+    const terrain = {
+        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles, numTriangles
+    };
     return terrain;
 }
 

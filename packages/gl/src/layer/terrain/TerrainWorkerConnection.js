@@ -26,7 +26,8 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 origin: location.origin,
                 terrainWidth: options.terrainWidth,
                 type: options.type,
-                accessToken: options.accessToken
+                accessToken: options.accessToken,
+                error: options.error
             }
         };
         this.send(data, null, (err, data) => {
