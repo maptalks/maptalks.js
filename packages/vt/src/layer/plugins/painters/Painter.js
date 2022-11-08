@@ -1,6 +1,6 @@
 import { reshader, mat4, HighlightUtil } from '@maptalks/gl';
 import StencilHelper from './StencilHelper';
-import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil } from '@maptalks/vector-packer';
+import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '@maptalks/vector-packer';
 import { loadFunctionTypes, isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
@@ -612,9 +612,11 @@ class Painter {
             delete symbol[p];
         }
         const map = this.getMap();
+        const params = [];
         // extend(this._symbol, this.symbolDef);
-        const loadedSymbol = loadFunctionTypes(this.symbolDef[i], () => {
-            return [map.getZoom()];
+        const loadedSymbol = FuncTypeUtil.loadSymbolFnTypes(this.symbolDef[i], () => {
+            params[0] = map.getZoom();
+            return params;
         });
         for (const p in loadedSymbol) {
             const d = Object.getOwnPropertyDescriptor(loadedSymbol, p);
@@ -663,7 +665,7 @@ class Painter {
         this._symbol = [];
         this._visibleFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
-            this._symbol[i] = loadFunctionTypes(extend({}, this.symbolDef[i]), fn);
+            this._symbol[i] = FuncTypeUtil.loadSymbolFnTypes(extend({}, this.symbolDef[i]), fn);
             if (this.symbolDef[i] && isFunctionDefinition(this.symbolDef[i].visible)) {
                 this._visibleFn[i] = interpolated(this.symbolDef[i].visible);
             }

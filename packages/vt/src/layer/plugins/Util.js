@@ -111,6 +111,10 @@ function _colorSetter(cache, size, c) {
     if (cache && cache[c]) {
         return cache[c];
     }
+    if (c.r !== undefined && c.g !== undefined && c.b !== undefined && c.a !== undefined) {
+        const color = [c.r, c.g, c.b, c.a];
+        return color;
+    }
     const color = Color(c).unitArray();
     if (color.length === 3 && size === 4) {
         color.push(1);

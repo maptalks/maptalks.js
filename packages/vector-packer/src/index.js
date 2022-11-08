@@ -21,6 +21,8 @@ import * as StyleUtil from './style/Util.js';
 export { StyleUtil };
 import * as FilterUtil from './style/Filter.js';
 export { FilterUtil };
+import * as FuncTypeUtil from './style/FuncType.js';
+export { FuncTypeUtil };
 //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
 export const PACK_TEX_SIZE = 128 / 256;
 
