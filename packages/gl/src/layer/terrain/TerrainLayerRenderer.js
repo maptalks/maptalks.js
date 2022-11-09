@@ -7,7 +7,6 @@ import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
 import debugFrag from './glsl/debug.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, getParentSkinTile } from './TerrainTileUtil';
-import { isNil } from '../util/util.js';
 
 const V3 = [];
 
@@ -77,8 +76,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!tileInfo || !map || !tileImage) {
             return;
         }
+        let opacity = this.getTileOpacity(tileImage);
+        if (opacity < 1) {
+            this.setToRedraw();
+        }
+        opacity *= (this.layer.options.opacity || 1);
         const mesh = tileImage.terrainMesh;
         if (mesh) {
+            mesh.setUniform('opacity', opacity);
             const skinCount = this.layer.getSkinCount();
             if (mesh.properties.skinCount !== skinCount) {
                 const defines = mesh.defines();
@@ -86,6 +91,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 mesh.properties.skinCount = skinCount;
                 mesh.defines = defines;
             }
+            const preservedZoom = this.getCurrentTileZoom() + this.layer.options['backZoomOffset'];
+            const isLeaf = !!this.tilesInView[tileInfo.id] && tileInfo.z !== preservedZoom;
+            mesh.setUniform('depthMask', isLeaf);
+            // mesh.setUniform('depthFunc', isLeaf ? 'always' : '<=')
             this._scene.addMesh(mesh);
         }
     }
@@ -327,20 +336,27 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
         const meshes = this._scene.getMeshes().sort(terrainCompare);
         this._scene.setMeshes(meshes);
-        for (let i = 0; i < meshes.length; i++) {
-            const geometry = meshes[i].geometry;
-            const { skirtOffset } = geometry.properties;
-            geometry.setDrawOffset(0);
-            geometry.setDrawCount(skirtOffset);
-        }
+        // for (let i = 0; i < meshes.length; i++) {
+        //     // const depthMask = meshes[i].properties.depthMask;
+        //     meshes[i].setUniform('depthMask', true);
+        //     meshes[i].setUniform('depthFunc', 'always');
+        //     const geometry = meshes[i].geometry;
+        //     const { skirtOffset } = geometry.properties;
+        //     geometry.setDrawOffset(0);
+        //     geometry.setDrawCount(skirtOffset);
+        // }
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
-        for (let i = 0; i < meshes.length; i++) {
-            const geometry = meshes[i].geometry;
-            const { skirtOffset, skirtCount } = geometry.properties;
-            geometry.setDrawOffset(skirtOffset);
-            geometry.setDrawCount(skirtCount);
-        }
-        this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
+
+        // for (let i = 0; i < meshes.length; i++) {
+        //     const geometry = meshes[i].geometry;
+        //     const { skirtOffset, skirtCount } = geometry.properties;
+        //     meshes[i].properties.depthMask = meshes[i].getUniform('depthMask');
+        //     meshes[i].setUniform('depthMask', true);
+        //     meshes[i].setUniform('depthFunc', '<=');
+        //     geometry.setDrawOffset(skirtOffset);
+        //     geometry.setDrawCount(skirtCount);
+        // }
+        // this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
         if (this.layer.options['debug']) {
             for (const p in this.tilesInView) {
                 const info = this.tilesInView[p] && this.tilesInView[p].info;
@@ -388,6 +404,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         mesh.setUniform('level', maxZoom - tileInfo.z);
 
         mesh.properties.skinCount = skinCount;
+        mesh.properties.z = tileInfo.z;
         const textures = [];
         const emptyTexture = this._getEmptyTexture();
         for (let i = 0; i < skinCount; i++) {
@@ -775,11 +792,17 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             },
             depth: {
                 enable: true,
-                mask: () => {
+                mask: (_, props) => {
                     const depthMask = this.layer.options['depthMask'];
-                    return depthMask;
+                    return depthMask && props['depthMask'];
                 },
-                func: this.layer.options.depthFunc || '<='
+                func: this.layer.options['depthFunc'] || '<='
+                // func: (_, props) => {
+                //     if (props['depthFunc']) {
+                //         return props['depthFunc'];
+                //     }
+                //     return this.layer.options['depthFunc'] || '<=';
+                // },
             },
             blend: {
                 enable: true,
@@ -859,12 +882,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _getUniformValues() {
         const map = this.getMap();
         const projViewMatrix = map.projViewMatrix;
-        let opacity = this.layer.options.opacity;
-        if (isNil(opacity)) {
-            opacity = 1;
-        }
         const uniforms = {
-            opacity,
             projViewMatrix,
         };
         return uniforms;
@@ -903,5 +921,5 @@ function drawTileImage(ctx, extent, tile, res) {
 }
 
 function terrainCompare(mesh0, mesh1) {
-    return mesh0.getUniform('level') - mesh1.getUniform('level');
+    return mesh1.getUniform('level') - mesh0.getUniform('level');
 }

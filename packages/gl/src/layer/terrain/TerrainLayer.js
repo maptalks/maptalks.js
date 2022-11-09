@@ -18,7 +18,7 @@ const options = {
     'terrainWidth': 65,
     'backZoomOffset': -4,
     'depthMask': true,
-    'blendSrc': 'src alpha',
+    'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
     'requireSkuToken': true
 };
