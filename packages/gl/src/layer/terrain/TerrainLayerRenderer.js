@@ -654,20 +654,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 }
             },
             stencil: {
-                enable: true,
-                func: {
-                    cmp: () => {
-                        return '<';
-                    },
-                    ref: (context, props) => {
-                        return props.level;
-                    }
-                },
-                op: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
+                enable: false
             },
             depth: {
                 enable: true,
