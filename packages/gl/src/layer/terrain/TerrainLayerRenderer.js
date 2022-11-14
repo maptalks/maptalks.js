@@ -84,31 +84,30 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 mesh.properties.skinCount = skinCount;
                 mesh.defines = defines;
             }
-            const preservedZoom = this.getCurrentTileZoom() + this.layer.options['backZoomOffset'];
-            const isLeaf = !!this.tilesInView[tileInfo.id] && tileInfo.z !== preservedZoom;
+            const currentZoom = this.getCurrentTileZoom();
+            const isLeaf = this.drawingTiles === true && tileInfo.z >= currentZoom - 2 && tileInfo.z <= currentZoom;
             mesh.setUniform('depthMask', isLeaf);
-            // mesh.setUniform('depthFunc', isLeaf ? 'always' : '<=')
             this._scene.addMesh(mesh);
         }
     }
 
-    getTileOpacity(tileImage) {
-        const opacity = super.getTileOpacity(tileImage);
-        if (opacity < 1) {
-            return opacity;
-        }
-        const skinCount = this.layer.getSkinCount();
-        const skinStatus = tileImage.skinStatus;
-        if (!skinStatus) {
-            return 0.99;
-        }
-        for (let i = 0; i < skinCount; i++) {
-            if (!skinStatus[i]) {
-                return 0.99
-            }
-        }
-        return 1;
-    }
+    // getTileOpacity(tileImage) {
+    //     const opacity = super.getTileOpacity(tileImage);
+    //     if (opacity < 1) {
+    //         return opacity;
+    //     }
+    //     const skinCount = this.layer.getSkinCount();
+    //     const skinStatus = tileImage.skinStatus;
+    //     if (!skinStatus) {
+    //         return 0.99;
+    //     }
+    //     for (let i = 0; i < skinCount; i++) {
+    //         if (!skinStatus[i]) {
+    //             return 0.99
+    //         }
+    //     }
+    //     return 1;
+    // }
 
     _drawTiles(tiles, parentTiles, childTiles) {
         const skinCount = this.layer.getSkinCount();
@@ -236,6 +235,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (complete) {
             tileImage.skinStatus[skinIndex] = 1;
             // save some memory
+            tileImage.skinTileIds = [];
             tileImage.skinImages[skinIndex] = null;
         }
     }
@@ -245,34 +245,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
         const meshes = this._scene.getMeshes().sort(terrainCompare);
         this._scene.setMeshes(meshes);
-        // for (let i = 0; i < meshes.length; i++) {
-        //     // const depthMask = meshes[i].properties.depthMask;
-        //     meshes[i].setUniform('depthMask', true);
-        //     meshes[i].setUniform('depthFunc', 'always');
-        //     const geometry = meshes[i].geometry;
-        //     const { skirtOffset } = geometry.properties;
-        //     geometry.setDrawOffset(0);
-        //     geometry.setDrawCount(skirtOffset);
-        // }
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
-
-        // for (let i = 0; i < meshes.length; i++) {
-        //     const geometry = meshes[i].geometry;
-        //     const { skirtOffset, skirtCount } = geometry.properties;
-        //     meshes[i].properties.depthMask = meshes[i].getUniform('depthMask');
-        //     meshes[i].setUniform('depthMask', true);
-        //     meshes[i].setUniform('depthFunc', '<=');
-        //     geometry.setDrawOffset(skirtOffset);
-        //     geometry.setDrawCount(skirtCount);
-        // }
-        // this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
         if (meshes.length && !Object.keys(this.tilesLoading).length) {
             this.layer.fire('terrainreadyandrender');
         }
     }
 
     _createTerrainMesh(tileInfo, terrainGeo) {
-        const { positions, texcoords, triangles, numTriangles } = terrainGeo;
+        const { positions, texcoords, triangles } = terrainGeo;
 
         const heightScale = this._getPointZ(100) / 100;
         for(let i = 2; i < positions.length; i = i + 3) {
@@ -290,8 +270,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             uv0Attribute: 'TEXCOORD_0'
         });
 
-        geo.properties.skirtOffset = numTriangles * 3;
-        geo.properties.skirtCount = triangles.length - numTriangles * 3;
+        // geo.properties.skirtOffset = numTriangles * 3;
+        // geo.properties.skirtCount = triangles.length - numTriangles * 3;
 
         geo.generateBuffers(this.regl);
 
@@ -677,7 +657,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 enable: true,
                 func: {
                     cmp: () => {
-                        return '<=';
+                        return '<';
                     },
                     ref: (context, props) => {
                         return props.level;
@@ -832,5 +812,12 @@ function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height) {
 
 
 function terrainCompare(mesh0, mesh1) {
+    const depthMask0 = +mesh0.getUniform('depthMask');
+    const depthMask1 = mesh1.getUniform('depthMask');
+    // depthMask为false的排在前面，为true的排在后面
+    if (depthMask0 !== depthMask1) {
+        return depthMask0 - depthMask1;
+    }
+    // 高级瓦片
     return mesh1.getUniform('level') - mesh0.getUniform('level');
 }

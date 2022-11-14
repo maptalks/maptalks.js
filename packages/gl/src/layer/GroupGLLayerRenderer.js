@@ -740,6 +740,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     drawGround(forceRender) {
+        const config = this.layer.getGroundConfig();
+        if (!config || !config.enable) {
+            return false;
+        }
         if (!this._groundPainter) {
             return false;
         }
