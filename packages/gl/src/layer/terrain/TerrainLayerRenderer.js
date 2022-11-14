@@ -5,7 +5,6 @@ import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
-import debugFrag from './glsl/debug.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, getParentSkinTile } from './TerrainTileUtil';
 
 const V3 = [];
@@ -17,9 +16,6 @@ const TEMP_POINT = new maptalks.Point(0, 0);
 const SCALE3 = [];
 
 const DEBUG_POINT = new maptalks.Point(20, 20);
-const TILE_POINT = new maptalks.Point(0, 0);
-const v3 = [];
-const arr16 = [];
 
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
@@ -77,9 +73,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             return;
         }
         let opacity = this.getTileOpacity(tileImage);
-        if (opacity < 1) {
-            this.setToRedraw();
-        }
         opacity *= (this.layer.options.opacity || 1);
         const mesh = tileImage.terrainMesh;
         if (mesh) {
@@ -97,6 +90,24 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             // mesh.setUniform('depthFunc', isLeaf ? 'always' : '<=')
             this._scene.addMesh(mesh);
         }
+    }
+
+    getTileOpacity(tileImage) {
+        const opacity = super.getTileOpacity(tileImage);
+        if (opacity < 1) {
+            return opacity;
+        }
+        const skinCount = this.layer.getSkinCount();
+        const skinStatus = tileImage.skinStatus;
+        if (!skinStatus) {
+            return 0.99;
+        }
+        for (let i = 0; i < skinCount; i++) {
+            if (!skinStatus[i]) {
+                return 0.99
+            }
+        }
+        return 1;
     }
 
     _drawTiles(tiles, parentTiles, childTiles) {
@@ -157,9 +168,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
 
         const sr = skinLayer.getSpatialReference();
-        const { x, y, z, res, extent2d } = tileInfo;
-        let w = Math.round(extent2d.getWidth());
-        let h = Math.round(extent2d.getHeight());
+        const { x, y, z, res, offset } = tileInfo;
+        const tileSize = this.layer.getTileSize().width;
+        let w = tileSize;
+        let h = tileSize;
 
         // const zoom = this.getCurrentTileZoom();
         const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
@@ -170,7 +182,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         let skinTileIds = tileImage.skinTileIds[skinIndex];
         if (!skinTileIds) {
-            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, scale, SKIN_LEVEL_LIMIT);
+            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, offset, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];
         let complete = true;
@@ -228,109 +240,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
     }
 
-    drawDebug(context, tileInfo) {
-        const map = this.getMap();
-        let canvas = this._debugInfoCanvas;
-        if (!canvas) {
-            const dpr = this.getMap().getDevicePixelRatio() > 1 ? 2 : 1;
-            canvas = this._debugInfoCanvas = document.createElement('canvas');
-            canvas.width = 256 * dpr;
-            canvas.height = 32 * dpr;
-            const ctx = canvas.getContext('2d');
-            ctx.font = '20px monospace';
-            ctx.scale(dpr, dpr);
-        }
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const color = this.layer.options['debugOutline'];
-        ctx.fillStyle = color;
-        const debugInfo = this.getDebugInfo(tileInfo.id);
-        ctx.fillText(debugInfo, DEBUG_POINT.x, DEBUG_POINT.y + 1);
-
-        if (!this._debugMesh) {
-            this._debugTex = this.regl.texture({
-                data: canvas,
-                width: canvas.width,
-                height: canvas.height
-            });
-
-            let tileSize = this.layer.options['tileSize'];
-            if (Array.isArray(tileSize)) {
-                tileSize = tileSize[0];
-            }
-            const x = 0;
-            const y = 0;
-            let w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
-            const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
-            const geometry = new reshader.Geometry({
-                aPosition: [
-                    x, y, 0,
-                    x + w, y, 0,
-                    x + w, y - h, 0,
-                    x, y - h, 0,
-                    x, y, 0
-                ]
-            }, 5, 0, {
-                'primitive': 'line strip',
-            });
-            geometry.generateBuffers(this.regl);
-            this._debugMesh = new reshader.Mesh(geometry);
-            this._debugMesh.setUniform('debugLine', 1);
-            this._debugMesh.setUniform('debugImage', this._debugTex);
-
-            w = 256;
-            const x1 = x;
-            const x2 = x + w;
-            const y1 = y - h + 32;
-            const y2 = y - h;
-            const textGeometry = new reshader.Geometry({
-                aPosition: [
-                    x1, y1, 0,
-                    x1, y2, 0,
-                    x2, y1, 0,
-                    x2, y2, 0
-                ],
-                aTexCoord: new Uint8Array([
-                    0.0, 0.0,
-                    0.0, 1.0,
-                    1.0, 0.0,
-                    1.0, 1.0
-                ])
-            }, 4, 0, {
-                'primitive': 'triangle strip',
-            });
-            textGeometry.generateBuffers(this.regl);
-            this._debugTextMesh = new reshader.Mesh(textGeometry);
-            this._debugTextMesh.setUniform('debugLine', 0);
-
-
-            this._debugTextMesh.setUniform('debugImage', this._debugTex);
-
-            this._debugScene = new reshader.Scene();
-        }
-
-        const scale = tileInfo._glScale = tileInfo._glScale || tileInfo.res / map.getGLRes();
-        const { extent2d, offset } = tileInfo;
-        const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
-        const x = point.x * scale,
-            y = point.y * scale;
-        v3[0] = x || 0;
-        v3[1] = y || 0;
-        const modelMatrix = mat4.identity(arr16);
-        mat4.translate(modelMatrix, modelMatrix, v3);
-        mat4.scale(modelMatrix, modelMatrix, [scale, scale, 1]);
-
-        const uniforms = this._getUniformValues();
-        // uniforms.modelMatrix = modelMatrix;
-        this._debugMesh.setLocalTransform(modelMatrix);
-        this._debugTextMesh.setLocalTransform(modelMatrix);
-        this._debugScene.setMeshes([this._debugMesh]);
-        this.renderer.render(this._debugShader, uniforms, this._debugScene, this.getRenderFBO(context));
-        this._debugScene.setMeshes([this._debugTextMesh]);
-        this.renderer.render(this._debugShader, uniforms, this._debugScene, this.getRenderFBO(context));
-
-    }
-
     _endFrame(context) {
         const uniforms = this._getUniformValues();
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
@@ -357,14 +266,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         //     geometry.setDrawCount(skirtCount);
         // }
         // this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
-        if (this.layer.options['debug']) {
-            for (const p in this.tilesInView) {
-                const info = this.tilesInView[p] && this.tilesInView[p].info;
-                if (info) {
-                    this.drawDebug(context, info);
-                }
-            }
-        }
         if (meshes.length && !Object.keys(this.tilesLoading).length) {
             this.layer.fire('terrainreadyandrender');
         }
@@ -650,9 +551,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         if (this._shader) {
             this._shader.dispose();
-            this._debugShader.dispose();
             delete this._shader;
-            delete this._debugShader;
         }
         if (this._emptyTileTexture) {
             this._emptyTileTexture.destroy();
@@ -833,28 +732,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             ],
             extraCommandProps
         });
-
-        this._debugShader = new reshader.MeshShader({
-            vert: vert,
-            frag: debugFrag,
-            uniforms: [
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: function (context, props) {
-                        return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
-            extraCommandProps: {
-                viewport: extraCommandProps.viewport,
-                depth: {
-                    enable: true,
-                    mask: false,
-                    func: 'always'
-                },
-            }
-        })
         // this._picking = new FBORayPicking(
         //     this.renderer,
         //     {
@@ -895,30 +772,64 @@ const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
     renderTerrainSkin(regl, terrainLayer, tileInfo, texture, tiles, parentTile) {
-        const { res, extent2d } = tileInfo;
+        const { res, extent2d, offset } = tileInfo;
+        const debug = terrainLayer.options['debug'];
+        const debugColor = terrainLayer.options['debugOutline'];
         const ctx = texture.getContext('2d');
         if (parentTile) {
-            drawTileImage(ctx, extent2d, parentTile, res);
+            drawTileImage(ctx, extent2d, offset, parentTile, res, debug);
         }
         for (let i = 0; i < tiles.length; i++) {
-            drawTileImage(ctx, extent2d, tiles[i], res);
+            drawTileImage(ctx, extent2d, offset, tiles[i], res, debug);
         }
 
+        if (debug) {
+            const debugInfo = tileInfo.x + '/' + tileInfo.y + '/' + tileInfo.z;
+            const { width, height } = ctx.canvas;
+            drawDebug(ctx, debugInfo, debugColor, 6, 0, 0, width, height);
+        }
     }
 });
 
 
-function drawTileImage(ctx, extent, tile, res) {
+function drawTileImage(ctx, extent, terrainOffset, tile, res, debug) {
     const scale = tile.info.res / res;
     const { info, image } = tile;
+    const offset = info.offset;
     const width = image.width * scale;
     const height = image.height * scale;
     const xmin = info.extent2d.xmin * scale;
     const ymax = info.extent2d.ymax * scale;
-    const left = Math.round(xmin - extent.xmin);
-    const top = Math.round(extent.ymax - ymax);
-    ctx.drawImage(image, left, top, width, height);
+    const left = xmin - extent.xmin;
+    const top = extent.ymax - ymax;
+    const dx = terrainOffset[0] - offset[0];
+    const dy = offset[1] - terrainOffset[1];
+    ctx.drawImage(image, left + dx, top + dy, width, height);
+    if (debug) {
+        const { x, y, z } = tile.info;
+        drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, left + dx, top + dy, width, height);
+    }
 }
+
+function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height) {
+    ctx.font = '20px monospace';
+    ctx.fillStyle = color;
+    DEBUG_POINT.y = height - 30;
+    ctx.globalAlpha = 1;
+    ctx.fillText(debugInfo, DEBUG_POINT.x + left, DEBUG_POINT.y + top);
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(left, top);
+    ctx.lineTo(left + width, top);
+    ctx.lineTo(left + width, top + height);
+    ctx.lineTo(left, top + height);
+    ctx.lineTo(left, top);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+}
+
 
 function terrainCompare(mesh0, mesh1) {
     return mesh1.getUniform('level') - mesh0.getUniform('level');

@@ -8,9 +8,9 @@ vec4 blend(vec4 src, vec4 dst) {
 }
 
 void main() {
-    vec4 color = vec4(1.0);
+    vec4 color = vec4(0.0);
     for (int i = 0; i < SKIN_COUNT; i++) {
-        color *= blend(texture2D(skins[i], vUv), color);
+        color = blend(texture2D(skins[i], vUv), color);
     }
     gl_FragColor = color * opacity;
 }

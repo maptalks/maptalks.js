@@ -12,6 +12,7 @@
   <script type="text/javascript" src="/maptalks/dist/maptalks.js"></script>
   <!-- <script type="text/javascript" src="https://unpkg.com/maptalks/dist/maptalks.min.js"></script> -->
   <script type="text/javascript" src="/maptalksgl/dist/maptalksgl-dev.js"></script>
+  <script type="text/javascript" src="https://fuzhenn.github.io/chinese_coordinate_conversion/chncrs.js"></script>
   <!-- <script type="text/javascript" src="../dist/maptalks.terrain-dev.js"></script> -->
   <body>
     <!-- <canvas id="terrain_skin_debug"></canvas> -->
@@ -19,11 +20,16 @@
     <script>
         const map = new maptalks.Map('map', {
             center: [91.14478,29.658272],
+            // 武汉
             zoomControl: true,
-            zoom: 12,
+            zoom: 10,
             // pitch: 1,
-            pitch: 70,
+            // pitch: 70,
+            "center":[114.30360682872288,30.544745851787155,0],"zoom":14.99525432299291,"pitch":0,"bearing":0,
             centerCross: true,
+
+            //有裂缝
+            "center":[114.31135353780905,30.5437759669405,46.900001525878906],"zoom":18.20975314908587,"pitch":0,"bearing":0,
             // pitch: 45,
             // spatialReference:{
             //     projection:'EPSG:4326'
@@ -60,13 +66,24 @@
             // })
         });
 
+        // 临时变量用于接受中间结果，避免创建新对象
+        const targetCoord = new maptalks.Coordinate(0, 0);
+        const POINT0 = new maptalks.Coordinate(0, 0);
+        const POINT1 = new maptalks.Coordinate(0, 0);
         const skinLayers = [
             new maptalks.TileLayer('base', {
                 maxAvailableZoom : 20,
                 spatialReference: {
                   projection: 'EPSG:3857'
                 },
-                debug: true,
+                offset: function (z) {
+                    //实时计算wgs84和gcj02瓦片的偏移量
+                    const center = map.getCenter();
+                    const c = maptalks.CRSTransform.transform(center.toArray(), 'GCJ02', 'WGS84');
+                    targetCoord.set(c[0], c[1]);
+                    const offset = map.coordToPoint(center, z, POINT0)._sub(map.coordToPoint(targetCoord, z, POINT1));
+                    return offset._round().toArray();
+                },
                 // urlTemplate: 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                 // urlTemplate: 'https://khms{s}.googleapis.com/kh?v=923&hl=en&x={x}&y={y}&z={z}',
                 // subdomains: ['1','2','3'],

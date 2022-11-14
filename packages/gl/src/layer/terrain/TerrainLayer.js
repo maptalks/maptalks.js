@@ -1,7 +1,6 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes } from './TerrainTileUtil';
-import { pushIn } from '../util/util';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
@@ -16,7 +15,7 @@ const options = {
     'pyramidMode': 1,
     'terrainTileSize': 512,
     'terrainWidth': 65,
-    'backZoomOffset': -4,
+    'backZoomOffset': -5,
     'depthMask': true,
     'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
@@ -101,6 +100,8 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const dy = tileSysScale.y;
 
         const skinTiles = [];
+        const allSkinTileIds = new Set();
+
         for (let i = 0; i < tiles.length; i++) {
             const info = tiles[i];
             const { res } = info;
@@ -108,23 +109,25 @@ export default class TerrainLayer extends maptalks.TileLayer {
             const resScale = skinRes / res;
             const scale = getSkinTileScale(skinRes, tileSize, res, size);
 
-            const { extent2d } = info;
+            const { extent2d, offset } = info;
             const leftX = scale * info.x;
             const topY = scale * info.y;
             if (!info.skinTileIds) {
                 info.skinTileIds = {};
             }
             if (!info.skinTileIds[layerId]) {
+                const skinTileIds = new Set();
                 const layerTiles = [];
-
-                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, scale, 0);
-                for (let i = 0; i < tileIds.length; i++) {
-                    const skinTile = tileIds[i];
+                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, offset, scale, 0);
+                for (let j = 0; j < tileIds.length; j++) {
+                    let skinTile = tileIds[j];
+                    if (skinTileIds.has(skinTile.id)) {
+                        continue;
+                    }
                     skinTile.idx = skinTile.x;
                     skinTile.idy = skinTile.y;
                     skinTile.res = skinRes;
                     skinTile.url = layer.getTileUrl(skinTile.x, skinTile.y, skinTile.z + layer.options['zoomOffset']);
-                    skinTile.offset = info.offset;
 
                     const xOffset = dx * (skinTile.x - leftX) * tileSize;
                     const yOffset = dy * (skinTile.y - topY) * tileSize;
@@ -136,11 +139,18 @@ export default class TerrainLayer extends maptalks.TileLayer {
                         xmin + tileSize,
                         ymax,
                     );
+                    skinTileIds.add(skinTile.id);
                     layerTiles.push(skinTile);
                 }
                 info.skinTileIds[layerId] = layerTiles;
             }
-            pushIn(skinTiles, info.skinTileIds[layerId]);
+            const tileSkinTiles = info.skinTileIds[layerId];
+            for (let j = 0; j < tileSkinTiles.length; j++ ){
+                if (!allSkinTileIds.has(tileSkinTiles[j].id)) {
+                    skinTiles.push(tileSkinTiles[j]);
+                    allSkinTileIds.add(tileSkinTiles[j].id);
+                }
+            }
         }
         return {
             tileGrids: [

@@ -30,6 +30,19 @@ export function isNumber(val) {
     return (typeof val === 'number') && !isNaN(val);
 }
 
+/**
+ * Check whether the object is a function
+ * @param {Object} obj
+ * @return {Boolean}
+ * @memberOf Util
+ */
+export function isFunction(obj) {
+    if (isNil(obj)) {
+        return false;
+    }
+    return typeof obj === 'function' || (obj.constructor !== null && obj.constructor === Function);
+}
+
 const SCALE = [];
 export function getGroundTransform(out, map) {
     const extent = map['_get2DExtentAtRes'](map.getGLRes());
