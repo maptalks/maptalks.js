@@ -197,6 +197,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
         this._groundPainter = new GroundPainter(this.regl, this.layer);
+
+        if (!this.consumeTile) {
+            const version = this.getMap().VERSION;
+            throw new Error(`Incompatible version of maptalks: ${version}, upgrade maptalks >= v1.0.0-rc.14`);
+        }
     }
 
     _createREGLContext() {
