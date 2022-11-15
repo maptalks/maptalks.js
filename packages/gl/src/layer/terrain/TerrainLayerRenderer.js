@@ -301,7 +301,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
         const localTransform = mat4.identity([]);
         mat4.translate(localTransform, localTransform, V3);
-        vec3.set(SCALE3, scale * 8, scale * 8, 1);
+        let terrainScale = this.layer.options['tileSize'] / (this.layer.options['terrainWidth'] - 1);
+        terrainScale =  (this.layer.options['tileSize'] + 2 * terrainScale) / (this.layer.options['terrainWidth'] - 1);
+        vec3.set(SCALE3, scale * terrainScale, scale * terrainScale, 1);
         mat4.scale(localTransform, localTransform, SCALE3);
         mesh.localTransform = localTransform;
 
@@ -443,7 +445,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const extent2d = TEMP_EXTENT.set(POINT0.x, POINT0.y, POINT1.x, POINT1.y);
 
         // martini 需要一点多余的数据
-        const terrainSize = (layer.options['terrainTileSize'] || 256) + 1;
+        const terrainSize = (layer.options['tileSize'] || 256) + 1;
         // 扩大一个像素
         extent2d._expand(extent2d.getWidth() / terrainSize);
         out.array = out.array || new Float32Array(terrainSize * terrainSize);

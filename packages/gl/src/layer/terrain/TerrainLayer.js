@@ -13,7 +13,7 @@ const options = {
     'opacity': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
-    'terrainTileSize': 512,
+    'tileSize': 512,
     'terrainWidth': 65,
     'backZoomOffset': -5,
     'depthMask': true,
