@@ -5,6 +5,7 @@ import frag from './glsl/cut.frag';
 import { Util } from 'maptalks';
 import CutAnalysisController from './CutAnalysisController';
 import CutShader from './CutShader';
+import AnalysisPass from './AnalysisPass';
 
 const clearColor = [0, 0, 0, 1];
 const phongUniforms = {
@@ -14,12 +15,7 @@ const phongUniforms = {
     'lightDirection': [1.0, 1.0, 1.0]
 };
 
-export default class CutPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class CutPass extends AnalysisPass {
 
     _init() {
         this._meshesFBO = this.renderer.regl.framebuffer({

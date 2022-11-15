@@ -2,15 +2,11 @@ import { reshader, mat4 } from '@maptalks/gl';
 import * as maptalks from 'maptalks';
 import vert from './glsl/excavateExtent.vert';
 import frag from './glsl/excavateExtent.frag';
+import AnalysisPass from './AnalysisPass';
 
 const EMPTY_COLOR = [0, 0, 0, 1];
 
-export default class ExtentPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class ExtentPass extends AnalysisPass {
 
     _init() {
         this._fbo = this.renderer.regl.framebuffer({

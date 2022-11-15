@@ -1,10 +1,9 @@
 import { mat4 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
-import depthVert from './glsl/depth.vert';
-import depthFrag from './glsl/depth.frag';
 import vert from './glsl/insight.vert';
 import frag from './glsl/insight.frag';
 import { Util } from 'maptalks';
+import AnalysisPass from './AnalysisPass';
 
 const helperPos = [
     0, 0, 0,
@@ -15,40 +14,9 @@ const helperIndices = [
 ];
 const MAT = [];
 const clearColor = [0, 0, 0, 1];
-export default class InSightPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class InSightPass extends AnalysisPass {
 
     _init() {
-        this._depthShader = new reshader.MeshShader({
-            vert: depthVert,
-            frag: depthFrag,
-            uniforms: [
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
-            extraCommandProps: {
-                viewport: this._viewport
-            }
-        });
-        this._depthFBO = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
-                width: 1,
-                height: 1,
-                wrap: 'clamp',
-                mag : 'linear',
-                min : 'linear'
-            }),
-            depth: true
-        });
         this._insightShader = new reshader.MeshShader({
             vert,
             frag,
@@ -91,22 +59,24 @@ export default class InSightPass {
     }
 
     render(meshes, config) {
-        this._resize();
+        const { eyePos, lookPoint, horizontalAngle, verticalAngle } = config;
+        if (!this._validViewport(horizontalAngle, verticalAngle) || !eyePos || !lookPoint) {
+            return this._fbo;
+        }
+        if (!this._depthShader) {
+            this._createDepthShader(horizontalAngle, verticalAngle);
+        }
+        this._resize(horizontalAngle, verticalAngle);
         this.renderer.clear({
             color : clearColor,
             depth : 1,
             framebuffer : this._fbo
         });
-        const eyePos = config.eyePos;
-        const lookPoint = config.lookPoint;
-        if (!eyePos || !lookPoint) {
-            return this._fbo;
-        }
         const modelMatrix = mat4.identity(MAT);
         this._helperMesh.localTransform = modelMatrix;
         this._scene.setMeshes(meshes);
-        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, 45, 45);
-        this._renderDepth(this._scene, projViewMatrixFromViewpoint);
+        const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, 45, 45);
+        this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
         this._updateHelperGeometry(eyePos, lookPoint);
         this._scene.setMeshes(this._helperMesh);
         this._renderInsightMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
@@ -137,24 +107,6 @@ export default class InSightPass {
         }
     }
 
-    //渲染深度贴图
-    _renderDepth(scene, projViewMatrix) {
-        const uniforms = {
-            projViewMatrix
-        };
-        this.renderer.clear({
-            color : [0, 0, 0, 1],
-            depth : 1,
-            framebuffer : this._depthFBO
-        });
-        this.renderer.render(
-            this._depthShader,
-            uniforms,
-            scene,
-            this._depthFBO
-        );
-    }
-
     //渲染insight贴图
     _renderInsightMap(scene, projViewMatrixFromViewpoint, projViewMatrix) {
         const uniforms = {
@@ -177,18 +129,13 @@ export default class InSightPass {
         const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance + 1000);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-        return projViewMatrix;
+        return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
     }
 
     dispose() {
+        super.dispose();
         if (this._fbo) {
             this._fbo.destroy();
-        }
-        if (this._depthFBO) {
-            this._depthFBO.destroy();
-        }
-        if (this._depthShader) {
-            this._depthShader.dispose();
         }
         if (this._insightShader) {
             this._insightShader.dispose();
@@ -199,14 +146,17 @@ export default class InSightPass {
         }
     }
 
-    _resize() {
+    _resize(horizontalAngle, verticalAngle) {
         const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
         const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }
-        if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
-            this._depthFBO.resize(width, height);
+        if (this._depthFBO && (this._depthFBO.width / this._depthFBO.height !== horizontalAngle / verticalAngle)) {
+            const size = this._getDepthMapSize(horizontalAngle, verticalAngle);
+            if (size) {
+                this._depthFBO.resize(size.width, size.height);
+            }
         }
     }
 }

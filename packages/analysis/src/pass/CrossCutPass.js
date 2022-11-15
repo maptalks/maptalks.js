@@ -2,13 +2,9 @@ import { reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/crosscut.vert';
 import frag from './glsl/crosscut.frag';
 import { Util } from 'maptalks';
+import AnalysisPass from './AnalysisPass';
 
-export default class CrossCutPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class CrossCutPass extends AnalysisPass {
 
     _init() {
         this._shader = new reshader.MeshShader({

@@ -4,14 +4,9 @@ import extentFrag from './glsl/extent.frag';
 import outlineFrag from './glsl/outline.frag';
 import sceneVert from './glsl/sceneVert.vert';
 import { Util } from 'maptalks';
+import AnalysisPass from './AnalysisPass';
 
-export default class OutlinePass {
-    constructor(renderer, viewport)  {
-        this._renderer = renderer;
-        this.regl = renderer.regl;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class OutlinePass extends AnalysisPass {
 
     render(meshes, { projViewMatrix, lineColor, lineWidth }) {
         if (!meshes || !meshes.length) {
@@ -75,13 +70,13 @@ export default class OutlinePass {
     }
 
     _drawExtent(scene, matrix) {
-        this._renderer.render(this.extentShader, {
+        this.renderer.render(this.extentShader, {
             'projViewMatrix': matrix
         }, scene, this.fboExtent);
     }
 
     _drawOutline(lineColor, lineWidth, targetFBO) {
-        this._renderer.render(this.outlineShader, {
+        this.renderer.render(this.outlineShader, {
             'texSize' : [targetFBO.width, targetFBO.height],
             'visibleEdgeColor' : lineColor || [1, 0, 0],
             'maskTexture' : this.fboExtent,

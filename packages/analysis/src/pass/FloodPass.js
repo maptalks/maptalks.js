@@ -1,25 +1,12 @@
 import { reshader } from '@maptalks/gl';
-import depthVert from './glsl/depth.vert';
-import depthFrag from './glsl/depth.frag';
 import vert from './glsl/flood.vert';
 import frag from './glsl/flood.frag';
 import { Util } from 'maptalks';
+import AnalysisPass from './AnalysisPass';
 
-export default class FloodPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class FloodPass extends AnalysisPass {
 
     _init() {
-        this._depthShader = new reshader.MeshShader({
-            vert: depthVert,
-            frag: depthFrag,
-            extraCommandProps: {
-                viewport: this._viewport
-            }
-        });
         this._shader = new reshader.MeshShader({
             vert,
             frag,

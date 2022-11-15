@@ -2,7 +2,6 @@ import { Coordinate, Extent } from "maptalks";
 import { mat4 } from 'gl-matrix';
 import { normalizeColor } from '../util/util.js';
 
-const MASK_COLOR = [1, 0, 0];
 const maskModeMap = {
     'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5
 };
@@ -27,7 +26,7 @@ export default function (Base) {
                     });
                     const symbol = polygon.getSymbol();
                     const { polygonFill, polygonOpacity } = symbol;
-                    const maskColor = normalizeColor(MASK_COLOR, polygonFill);
+                    const maskColor = normalizeColor([], polygonFill);
                     maskColor[3] = polygonOpacity || 0.6;
                     const maskObject = {
                         maskColor,

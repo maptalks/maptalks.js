@@ -1,17 +1,17 @@
 import { mat4, quat, vec3 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
-import depthVert from './glsl/depth.vert';
-import depthFrag from './glsl/depth.frag';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
 import { Util } from 'maptalks';
+import AnalysisPass from './AnalysisPass';
 
 const helperPos = [
     0, 0, 0,
     1, 1, -1,
     1, -1, -1,
     1, -1, 1,
-    1, 1, 1
+    1, 1, 1,
+    1, 0, 0
 ]
 const helperIndices = [
     0, 1,
@@ -21,45 +21,16 @@ const helperIndices = [
     1, 2,
     2, 3,
     3, 4,
-    4, 1
+    4, 1,
+    0,5
 ];
-const MAT = [], QUAT = [], VEC3 = [], v1 = [1, 0, 0], NORMAL = [];
+const MAT = [], QUAT1 = quat.identity([]), QUAT2 = quat.identity([]),  VEC3 = [], v1 = [1, 0, 0], VEC31 = [], VEC32 = [];
 const clearColor = [0, 0, 0, 1];
 let near = 0.01;
-export default class ViewshedPass {
-    constructor(renderer, viewport) {
-        this.renderer = renderer;
-        this._viewport = viewport;
-        this._init();
-    }
+export default class ViewshedPass extends AnalysisPass {
 
     _init() {
-        this._depthShader = new reshader.MeshShader({
-            vert: depthVert,
-            frag: depthFrag,
-            uniforms: [
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: (context, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
-            extraCommandProps: {
-                viewport: this._viewport
-            }
-        });
-        this._depthFBO = this.renderer.regl.framebuffer({
-            color: this.renderer.regl.texture({
-                width: 1,
-                height: 1,
-                wrap: 'clamp',
-                mag : 'linear',
-                min : 'linear'
-            }),
-            depth: true
-        });
+        super._init();
         this._viewshedShader = new reshader.MeshShader({
             vert,
             frag,
@@ -104,78 +75,55 @@ export default class ViewshedPass {
     }
 
     render(meshes, config) {
-        this._resize();
+        const { eyePos, lookPoint, horizontalAngle, verticalAngle } = config;
+        if (!this._validViewport(horizontalAngle, verticalAngle) || !eyePos || !lookPoint) {
+            return this._fbo;
+        }
+        if (!this._depthShader) {
+            this._createDepthShader(horizontalAngle, verticalAngle);
+        }
+        this._resize(horizontalAngle, verticalAngle);
         this.renderer.clear({
             color : clearColor,
             depth : 1,
             framebuffer : this._fbo
         });
-        const eyePos = config.eyePos;
-        const lookPoint = config.lookPoint;
-        if (!eyePos || !lookPoint) {
-            return this._fbo;
-        }
-        const verticalAngle = config.verticalAngle || 90;
-        const horizontalAngle = config.horizontalAngle || 90;
+        this._helperMesh.localTransform = this._getHelperMeshMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle);
+        meshes.push(this._helperMesh);
+        this._scene.setMeshes(meshes);
+        const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle);
+        this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
+        this._renderViewshedMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix, far);
+        return this._fbo;
+    }
+
+    //计算辅助线框的矩阵
+    _getHelperMeshMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle) {
         const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
         if (distance <= 0) {
             console.warn('both lookpoint and eyePos are in the same position');
         }
-        //计算辅助线框的矩阵
         const modelMatrix = mat4.identity(MAT);
         const vector = vec3.set(VEC3, lookPoint[0] - eyePos[0], lookPoint[1] - eyePos[1], lookPoint[2] - eyePos[2]);
-        const normal = this._calNormal(NORMAL, v1, vector);
-        let angle = vec3.angle(v1, vector);
-        angle = vector[1] >= 0 ? angle : Math.PI * 2 - angle;
-        const rotation = quat.setAxisAngle(QUAT, normal, angle);
         const halfHorizontalAngle = (horizontalAngle * Math.PI) / (2 * 180);
         const halfVerticalAngle = (verticalAngle * Math.PI) / (2 * 180);
+        let angleX_Z = vec3.angle(v1, vec3.set(VEC31, vector[0], vector[1], 0));
+        angleX_Z = vector[1] >= 0 ? angleX_Z : Math.PI * 2 - angleX_Z;
+        const rotation = quat.rotateZ(QUAT1, QUAT2, angleX_Z);
+        let angleY_Z = vec3.angle(vec3.set(VEC32, vector[0], vector[1], 0), vector);
+        angleY_Z = vector[0] >= 0 ? angleY_Z : Math.PI * 2 - angleY_Z;
+        quat.rotateY(rotation, rotation, angleY_Z);
         mat4.fromRotationTranslationScale(modelMatrix, rotation, eyePos, [distance, distance * Math.tan(halfHorizontalAngle), distance * Math.tan(halfVerticalAngle)]);
-        this._helperMesh.localTransform = modelMatrix;
-        meshes.push(this._helperMesh);
-        this._scene.setMeshes(meshes);
-        const projViewMatrixFromViewpoint = this._createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle);
-        this._renderDepth(this._scene, projViewMatrixFromViewpoint);
-        this._renderViewshedMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
-        return this._fbo;
-    }
-
-    _calNormal(out, v1, v2) {
-        if (v1[0] === 0 && v2[0] === 0) {
-            return vec3.set(out, 1, 0, 0);
-        } else if (v1[1] === 0 && v2[1] === 0) {
-            return vec3.set(out, 0, 1, 0);
-        } else {
-            const y = (v1[2] * v2[0] - v2[2] * v1[0]) / (v1[0] * v2[1] - v2[0] * v1[1]);
-            const x = ((v1[2] - v2[2]) + (v1[1] - v2[1]) * y) / (v1[0] - v2[0]);
-            return vec3.set(out, x, y, 1);
-        }
-    }
-
-    //渲染深度贴图
-    _renderDepth(scene, projViewMatrix) {
-        const uniforms = {
-            projViewMatrix
-        };
-        this.renderer.clear({
-            color : [0, 0, 0, 1],
-            depth : 1,
-            framebuffer : this._depthFBO
-        });
-        this.renderer.render(
-            this._depthShader,
-            uniforms,
-            scene,
-            this._depthFBO
-        );
+        return modelMatrix;
     }
 
     //渲染viewshed贴图
-    _renderViewshedMap(scene, projViewMatrixFromViewpoint, projViewMatrix) {
+    _renderViewshedMap(scene, projViewMatrixFromViewpoint, projViewMatrix, far) {
         const uniforms = {
             viewshed_projViewMatrixFromViewpoint: projViewMatrixFromViewpoint,
             projViewMatrix,
             near,
+            far,
             depthMap: this._depthFBO
         };
         this.renderer.render(
@@ -194,18 +142,13 @@ export default class ViewshedPass {
         const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, near, distance);
         const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
-        return projViewMatrix;
+        return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
     }
 
     dispose() {
+        super.dispose();
         if (this._fbo) {
             this._fbo.destroy();
-        }
-        if (this._depthFBO) {
-            this._depthFBO.destroy();
-        }
-        if (this._depthShader) {
-            this._depthShader.dispose();
         }
         if (this._viewshedShader) {
             this._viewshedShader.dispose();
@@ -216,14 +159,17 @@ export default class ViewshedPass {
         }
     }
 
-    _resize() {
+    _resize(horizontalAngle, verticalAngle) {
         const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
         const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }
-        if (this._depthFBO && (this._depthFBO.width !== width || this._depthFBO.height !== height)) {
-            this._depthFBO.resize(width, height);
+        if (this._depthFBO && (this._depthFBO.width / this._depthFBO.height !== horizontalAngle / verticalAngle)) {
+            const size = this._getDepthMapSize(horizontalAngle, verticalAngle);
+            if (size) {
+                this._depthFBO.resize(size.width, size.height);
+            }
         }
     }
 }
