@@ -380,7 +380,7 @@ class TileLayer extends Layer {
         const offsets = {
             0: offset0
         };
-        const preservedZoom = this.options['backZoomOffset'] + z;
+        const preservedBackZoom = this.options['backZoomOffset'] + z;
         const extent = new PointExtent();
         const tiles = [];
         while (queue.length > 0) {
@@ -394,7 +394,7 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
-            if (preservedZoom < z && tiles[tiles.length - 1] !== node && preservedZoom === node.z) {
+            if (preservedBackZoom < z && tiles[tiles.length - 1] !== node && preservedBackZoom === node.z) {
                 // extent._combine(node.extent2d);
                 tiles.push(node);
             }
@@ -1157,14 +1157,21 @@ class TileLayer extends Layer {
     }
 
     _getTileOffset(z) {
+        if (!this._tileOffsets) {
+            this._tileOffsets = {};
+        }
+        if (this._tileOffsets[z]) {
+            return this._tileOffsets[z];
+        }
         let offset = this.options['offset'];
         if (isFunction(offset)) {
             offset = offset.call(this, z);
         }
         if (isNumber(offset)) {
-            return [offset, offset];
+            offset = [offset, offset];
         }
-        return offset || [0, 0];
+        this._tileOffsets[z] = offset || [0, 0];
+        return this._tileOffsets[z];
     }
 
     _getTileId(x, y, zoom, id) {

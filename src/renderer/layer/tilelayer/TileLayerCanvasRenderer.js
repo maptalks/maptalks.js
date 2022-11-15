@@ -184,6 +184,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         for (let i = 0; i < l; i++) {
             const tileGrid = tileGrids[i];
+            const preservedBackZoom = this.layer.options['backZoomOffset'] + tileGrid.zoom;
             const allTiles = tileGrid['tiles'];
 
             let placeholder;
@@ -217,7 +218,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         }
                     }
                 }
-                if (!tileLoading) continue;
+                if (!tileLoading || tile.z === preservedBackZoom) continue;
                 if (checkedTiles[tileId]) {
                     continue;
                 }
@@ -285,18 +286,28 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context, parentContext);
 
         if (this.layer.options['opacity'] === 1) {
+            this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingChildTiles;
+            this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingParentTiles;
         }
 
+        this.drawingTiles = true;
         tiles.sort(this._compareTiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
             this._drawTileAndCache(tiles[i], parentContext);
         }
+        delete this.drawingTiles;
 
         if (this.layer.options['opacity'] < 1) {
+            this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingChildTiles;
+            this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingParentTiles;
         }
 
         placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
@@ -657,7 +668,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     getDebugInfo(tileId) {
         const xyz = tileId.split('_');
         const length = xyz.length;
-        return 'x:' + xyz[length - 2] + ', y:' + xyz[length - 3] + ', z:' + xyz[length - 1];
+        return xyz[length - 2] + '/' + xyz[length - 3] + '/' + xyz[length - 1];
     }
 
     _findChildTiles(info) {
