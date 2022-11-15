@@ -88,7 +88,7 @@ class WMSTileLayer extends TileLayer {
         const max = tileExtent.getMax(),
             min = tileExtent.getMin();
 
-        const bbox = (this._wmsVersion >= 1.3  && this.wmsParams.crs === 'EPSG:4326' ?
+        const bbox = (this._wmsVersion >= 1.3  && (this.wmsParams.crs === 'EPSG:4326' || this.wmsParams.crs === 'EPSG:4490') ?
             [min.y, min.x, max.y, max.x] :
             [min.x, min.y, max.x, max.y]).join(',');
 
