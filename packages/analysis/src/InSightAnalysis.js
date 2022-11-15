@@ -27,6 +27,8 @@ export default class InSightAnalysis extends Analysis {
         this._renderOptions['visibleColor'] = this.options.visibleColor;
         this._renderOptions['invisibleColor'] = this.options.invisibleColor;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+        this._renderOptions['horizontalAngle'] = 45;
+        this._renderOptions['verticalAngle'] = 45;
     }
 
     _setPass(renderer) {

@@ -17,6 +17,7 @@ const clearColor = [0, 0, 0, 1];
 export default class InSightPass extends AnalysisPass {
 
     _init() {
+        super._init();
         this._insightShader = new reshader.MeshShader({
             vert,
             frag,
@@ -75,7 +76,7 @@ export default class InSightPass extends AnalysisPass {
         const modelMatrix = mat4.identity(MAT);
         this._helperMesh.localTransform = modelMatrix;
         this._scene.setMeshes(meshes);
-        const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, 45, 45);
+        const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle);
         this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
         this._updateHelperGeometry(eyePos, lookPoint);
         this._scene.setMeshes(this._helperMesh);

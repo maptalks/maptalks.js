@@ -76,17 +76,49 @@ const frag2 = `
 `;
 
 //from https://github.com/mikolalysenko/glsl-read-float
+// const depthFrag = `
+//     #define SHADER_NAME depth
+
+//     precision highp float;
+//     varying float vFbo_picking_viewZ;
+
+//     #include <common_pack_float>
+
+//     void main() {
+//         gl_FragColor = common_unpackFloat(vFbo_picking_viewZ);
+//         // gl_FragColor = unpack(34678.3456789);
+//     }
+// `;
+
 const depthFrag = `
-    #define SHADER_NAME depth
-
-    precision highp float;
-    varying float vFbo_picking_viewZ;
-
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+    #include <gl2_frag>
     #include <common_pack_float>
+    varying float vFbo_picking_viewZ;
+    uniform float logDepthBufFC;
+    varying float vFragDepth;
+
+    const float PackUpscale = 256. / 255.;
+    const float UnpackDownscale = 255. / 256.;
+    const vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256., 256. );
+    const vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );
+    const float ShiftRight8 = 1. / 256.;
+    vec4 packDepthToRGBA(const in float v ) {
+        vec4 r = vec4(fract(v * PackFactors), v);
+        r.yzw -= r.xyz * ShiftRight8;
+        return r * PackUpscale;
+    }
 
     void main() {
-        gl_FragColor = common_unpackFloat(vFbo_picking_viewZ);
-        // gl_FragColor = unpack(34678.3456789);
+        float fragDepth = vFragDepth > 1.0 ? vFragDepth : vFbo_picking_viewZ + 1.0;
+        gl_FragDepthEXT = log2(fragDepth) * logDepthBufFC * 0.5;
+        vec4 depthColor = packDepthToRGBA(fragDepth - 1.0);
+        glFragColor = common_unpackFloat(dot(depthColor, UnpackFactors));
+        #if __VERSION__ == 100
+            gl_FragColor = glFragColor;
+        #endif
     }
 `;
 
@@ -161,6 +193,7 @@ export default class FBORayPicking {
             defines : defines1,
             extraCommandProps
         });
+        this._depthShader.version = 300;
         this._scene = new Scene();
         this._scene1 = new Scene();
     }
