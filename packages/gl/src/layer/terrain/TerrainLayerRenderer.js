@@ -85,7 +85,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 mesh.defines = defines;
             }
             const currentZoom = this.getCurrentTileZoom();
-            const isLeaf = this.drawingTiles === true && tileInfo.z >= currentZoom - 2 && tileInfo.z <= currentZoom;
+            const backZoom = currentZoom + this.layer.options['backZoomOffset'];
+            const isLeaf = this.drawingTiles === true && tileInfo.z > backZoom && tileInfo.z <= currentZoom;
             mesh.setUniform('depthMask', isLeaf);
             this._scene.addMesh(mesh);
         }
@@ -800,7 +801,7 @@ function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height) {
 
 function terrainCompare(mesh0, mesh1) {
     const depthMask0 = +mesh0.getUniform('depthMask');
-    const depthMask1 = mesh1.getUniform('depthMask');
+    const depthMask1 = +mesh1.getUniform('depthMask');
     // depthMask为false的排在前面，为true的排在后面
     if (depthMask0 !== depthMask1) {
         return depthMask0 - depthMask1;
