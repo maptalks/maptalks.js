@@ -243,8 +243,12 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _endFrame(context) {
         const uniforms = this._getUniformValues();
+        // if (!this._bindCompare) {
+        //     this._bindCompare = terrainCompare.bind(this);
+        // }
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
         const meshes = this._scene.getMeshes().sort(terrainCompare);
+
         this._scene.setMeshes(meshes);
         this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
         if (meshes.length && !Object.keys(this.tilesLoading).length) {
@@ -287,6 +291,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         mesh.properties.skinCount = skinCount;
         mesh.properties.z = tileInfo.z;
+        // mesh.properties.tileInfo = tileInfo;
         const textures = [];
         const emptyTexture = this._getEmptyTexture();
         for (let i = 0; i < skinCount; i++) {
@@ -295,14 +300,19 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         mesh.setUniform('skins', textures);
 
         const map = this.getMap();
+        const tileSize = this.layer.options['tileSize'];
+        const terrainWidth = tileSize + 1;
+
         const scale = tileInfo.res / map.getGLRes();
+
+        let terrainScale = (tileSize + 2) / terrainWidth;
 
         const { extent2d, offset } = tileInfo;
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
         const localTransform = mat4.identity([]);
         mat4.translate(localTransform, localTransform, V3);
-        let terrainScale = this.layer.options['tileSize'] / (this.layer.options['terrainWidth'] - 1);
-        terrainScale =  (this.layer.options['tileSize'] + 2 * terrainScale) / (this.layer.options['terrainWidth'] - 1);
+
+        // terrainScale =  (tileSize + 2 * terrainScale) / (terrainWidth - 1);
         vec3.set(SCALE3, scale * terrainScale, scale * terrainScale, 1);
         mat4.scale(localTransform, localTransform, SCALE3);
         mesh.localTransform = localTransform;
@@ -310,18 +320,106 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         return mesh;
     }
 
+    _findParentAvailableTile(tile) {
+        const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
+        let z = tile.z;
+        let cached;
+        while(z > maxAvailableZoom && tile) {
+            cached = this['_findParentTile'](tile);
+            tile = cached && cached.info;
+            z = tile && tile.z;
+        }
+        return cached;
+    }
+
+    _findParentTileInfo(tile) {
+
+    }
+
+    _clipParentTerrain(parentTile, tile) {
+        const { image, info } = parentTile;
+        const terrainData = image.data;
+        const terrainWidth = terrainData.width;
+        const { extent2d: parentExtent, res: parentRes } = info;
+        const { extent2d, res } = tile;
+        const width = parentExtent.getWidth();
+        const height = parentExtent.getHeight();
+        let xmin = (extent2d.xmin * res / parentRes - parentExtent.xmin) / width * terrainWidth;
+        let ymin = (parentExtent.ymax - extent2d.ymax * res / parentRes) / height * terrainWidth;
+        const xmax = (extent2d.xmax * res / parentRes - parentExtent.xmin) / width * terrainWidth;
+
+        const tileWidth = Math.ceil(xmax - xmin);
+        xmin = Math.floor(xmin);
+        ymin = Math.floor(ymin);
+        // 先行再列
+        const heights = new Float32Array(tileWidth * tileWidth);
+        let min = Infinity;
+        let max = -Infinity;
+        for (let i = 0; i < tileWidth; i++) {
+            for (let j = 0; j < tileWidth; j++) {
+                const height = terrainData.data[(i + xmin) + (ymin + j) * terrainWidth];
+                heights[i + j * tileWidth] = height;
+                if (height < min) {
+                    min = height;
+                }
+                if (height > max) {
+                    max = height;
+                }
+            }
+        }
+        return {
+            width: tileWidth,
+            height: tileWidth,
+            data: heights,
+            min,
+            max
+        };
+    }
+
     loadTile(tile) {
-        const terrainUrl = tile.url;
-        const terrainData = {};
+        const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
         const sp = this.layer.getSpatialReference();
         const res = sp.getResolution(tile.z);
+        if (maxAvailableZoom && tile.z > maxAvailableZoom) {
+            const parentTile = this._findParentAvailableTile(tile);
+            if (parentTile) {
+                // clip
+                const childTileHeights = this._clipParentTerrain(parentTile, tile);
+                const terrainData = {};
+                this.workerConn.createTerrainMesh({
+                    terrainHeights: childTileHeights,
+                    terrainWidth: this.layer.options.tileSize + 1,
+                    error: res
+                }, (err, resource) => {
+                    if (err) {
+                        if (err.canceled) {
+                            return;
+                        }
+                        console.warn(err);
+                        this.onTileError(terrainData, tile);
+                        return;
+                    }
+                    maptalks.Util.extend(terrainData, resource);
+                    this.consumeTile(terrainData, tile);
+                    this.setToRedraw();
+                });
+                return terrainData;
+            } else {
+                // const parentTileInfo = this._findParentTileInfo(tile);
+
+            }
+        }
+        const terrainUrl = tile.url;
+        const terrainData = {};
+
         const options = {
-            terrainWidth: this.layer.options.terrainWidth,
+            terrainWidth: (this.layer.options.tileSize + 1),
             type: this.layer.options.type,
             accessToken: this.layer.options.accessToken,
-            error: res
+            error: res,
+            maxAvailable: maxAvailableZoom === tile.z
         };
-        this.workerConn.fetchTerrain(terrainUrl, options, (err, res) => {
+        this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
             if (err) {
                 if (err.canceled) {
                     return;
@@ -330,7 +428,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 this.onTileError(terrainData, tile);
                 return;
             }
-            maptalks.Util.extend(terrainData, res);
+            maptalks.Util.extend(terrainData, resource);
             this.consumeTile(terrainData, tile);
             this.setToRedraw();
         });
@@ -657,7 +755,24 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 }
             },
             stencil: {
-                enable: false
+                enable: false,
+                func: {
+                    cmp: () => {
+                        return '<=';
+                    },
+                    ref: (context, props) => {
+                        return props.level;
+                    }
+                },
+                op: {
+                    fail: 'keep',
+                    zfail: 'keep',
+                    zpass: 'replace'
+                }
+            },
+            cull: {
+                enable: true,
+                face: 'back'
             },
             depth: {
                 enable: true,
@@ -777,16 +892,16 @@ function drawTileImage(ctx, extent, terrainOffset, tile, res, debug) {
     ctx.drawImage(image, left + dx, top + dy, width, height);
     if (debug) {
         const { x, y, z } = tile.info;
-        drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, left + dx, top + dy, width, height);
+        drawDebug(ctx, `${x}/${y}/${z}`, 'yellow', 1, left + dx, top + dy, width, height, -18);
     }
 }
 
-function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height) {
+function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height, textOffsetY = 0) {
     ctx.font = '20px monospace';
     ctx.fillStyle = color;
     DEBUG_POINT.y = height - 30;
     ctx.globalAlpha = 1;
-    ctx.fillText(debugInfo, DEBUG_POINT.x + left, DEBUG_POINT.y + top);
+    ctx.fillText(debugInfo, DEBUG_POINT.x + left, DEBUG_POINT.y + top + textOffsetY);
     ctx.globalAlpha = 0.6;
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
@@ -808,6 +923,17 @@ function terrainCompare(mesh0, mesh1) {
     if (depthMask0 !== depthMask1) {
         return depthMask0 - depthMask1;
     }
+    const level0 = mesh0.getUniform('level');
+    const level1 = mesh1.getUniform('level');
+    return level0 - level1;
+    // if (level0 !== level1) {
+    //     return level0 - level1;
+    // }
+    // const cameraPosition = this.getMap().cameraPosition;
+    // const P0 = mesh0.boundingBox.getCenter();
+    // const P1 = mesh1.boundingBox.getCenter();
+    // // 近的在前面
+    // return vec2.dist(P0, cameraPosition) - vec2.dist(P1, cameraPosition);
     // 高级瓦片
-    return mesh1.getUniform('level') - mesh0.getUniform('level');
+    // return mesh0.getUniform('level') - mesh1.getUniform('level');
 }

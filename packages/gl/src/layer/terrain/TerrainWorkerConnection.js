@@ -27,7 +27,8 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 terrainWidth: options.terrainWidth,
                 type: options.type,
                 accessToken: options.accessToken,
-                error: options.error
+                error: options.error,
+                maxAvailable: options.maxAvailable
             }
         };
         this.send(data, null, (err, data) => {
@@ -64,16 +65,13 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
         this.broadcast(data, null, cb);
     }
 
-    createTerrainMesh(heights, width, cb) {
+    createTerrainMesh(params, cb) {
         const data = {
             actorId: this.actorId,
-            command : 'createTerrainMesh',
-            params : {
-                heights,
-                width
-            }
+            command: 'createTerrainMesh',
+            params
         };
-        this.send(data, null, (err, data) => {
+        this.send(data, [params.terrainHeights.data.buffer], (err, data) => {
             if (err) {
                 cb(err);
                 return;

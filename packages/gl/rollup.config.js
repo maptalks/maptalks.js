@@ -29,7 +29,7 @@ const plugins = production ? [terser({
         properties: {
             'regex' : /^_/,
             'keep_quoted' : true,
-            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles'],
+            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom'],
         }
     },
     output : {

@@ -293,14 +293,14 @@ function generateMapboxTerrain(buffer) {
 }
 
 function loadTerrain(params, cb) {
-    const { url, origin, type, accessToken, terrainWidth, error } = params;
+    const { url, origin, type, accessToken, terrainWidth, error, maxAvailable } = params;
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
-        fetchTerrain(url, headers, type, terrainWidth, error, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
     } else if (type === 'cesium') {
         const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
         if (access_token) {
-            fetchTerrain(url, headers, type, terrainWidth, error, cb);
+            fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
         } else {
             fetch(tokenUrl, {
                 responseType: "json",
@@ -314,15 +314,15 @@ function loadTerrain(params, cb) {
                 return tkJson.json();
             }).then(res => {
                 access_token = res.accessToken;
-                fetchTerrain(url, headers, type, terrainWidth, error, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
             });
         }
     } else if (type === 'mapbox') {
-        fetchTerrain(url, headers, type, terrainWidth, error, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
     }
 }
 
-function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
+function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb) {
     if (type === 'cesium') {
         // headers['Authorization'] = 'Bearer ' + access_token;
         headers = {
@@ -350,11 +350,9 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
             } else if (type === 'mapbox') {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
-                    const terrainData = mapboxBitMapToHeights(imgBitmap, terrainWidth);
-                    const mesh = createMartiniData(error, terrainData.data, terrainWidth);
-                    const transferables = [terrainData.data.buffer, mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
-
-                    cb({ data: terrainData, mesh }, transferables);
+                    const imageData = bitmapToImageData(imgBitmap);
+                    const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
+                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, true, cb);
                 });
             }
         }
@@ -363,7 +361,25 @@ function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
         cb({ error: e});
     });
 }
-function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
+
+function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, transferData, cb) {
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth);
+    const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
+    const data = { mesh};
+    if (transferData) {
+        data.data = terrainData;
+        if (maxAvailable) {
+            const originalTerrainData = mapboxBitMapToHeights(imageData, imageData.width + 1);
+            data.data = originalTerrainData;
+            transferables.push(originalTerrainData.data.buffer);
+        } else {
+            transferables.push(terrainData.data.buffer);
+        }
+    }
+    cb(data, transferables);
+}
+
+function bitmapToImageData(imgBitmap) {
     const { width, height } = imgBitmap;
     // const pow = Math.floor(Math.log(width) / Math.log(2));
     // width = height = Math.pow(2, pow) + 1;
@@ -371,12 +387,18 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
     offscreenCanvas.width = width;
     offscreenCanvas.height = height;
     offscreenCanvasContext.drawImage(imgBitmap, 0, 0, width, height);
+    return offscreenCanvasContext.getImageData(0, 0, width, height);
+}
+
+function mapboxBitMapToHeights(imageData, terrainWidth) {
+
+    const { data: imgData, width } = imageData;
     // const terrainWidth = width;
 
     let min = Infinity;
     let max = -Infinity;
 
-    const imgData = offscreenCanvasContext.getImageData(0, 0, width, height).data;
+
     const heights = new Float32Array(terrainWidth * terrainWidth);
 
     const stride = Math.round(width / terrainWidth);
@@ -389,19 +411,18 @@ function mapboxBitMapToHeights(imgBitmap, terrainWidth) {
             let height = 0;
 
             let nullCount = 0;
+            let tx = i;
+            let ty = j;
+            if (tx >= edge) {
+                tx = edge;
+            }
+            if (ty >= edge) {
+                ty = edge;
+            }
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {
-                    let tx = i;
-                    let ty = j;
-                    if (tx >= edge) {
-                        tx = edge;
-                    }
-                    if (ty >= edge) {
-                        ty = edge;
-                    }
                     let x = tx * stride + k;
                     let y = ty * stride + l;
-
                     const imageIndex = x + y * width;
                     const R = imgData[imageIndex * 4];
                     const G = imgData[imageIndex * 4 + 1];
@@ -483,6 +504,59 @@ function createMartiniData(error, heights, width) {
 //     return terrain;
 // }
 
+// 把heights转换为width为terrainWidth的高程数组数据
+const cachedArray = {};
+function convertHeightWidth(heights, terrainWidth) {
+    const { data, width } = heights;
+    const result = cachedArray[terrainWidth] = cachedArray[terrainWidth] || new Float32Array(terrainWidth * terrainWidth);
+    let min = Infinity;
+    let max = -Infinity;
+    const stride = width > terrainWidth ? Math.round(width / terrainWidth) : Math.round(terrainWidth / width);
+
+    const edge = terrainWidth - 1;
+
+    for (let i = 0; i < terrainWidth; i++) {
+        for (let j = 0; j < terrainWidth; j++) {
+            const index = i + j * terrainWidth;
+            let height = 0;
+            let tx = i;
+            let ty = j;
+            if (tx >= edge) {
+                tx = edge;
+            }
+            if (ty >= edge) {
+                ty = edge;
+            }
+            if (width > terrainWidth) {
+                for (let k = 0; k < stride; k++) {
+                    for (let l = 0; l < stride; l++) {
+                        let x = tx * stride + k;
+                        let y = ty * stride + l;
+
+                        const imageIndex = x + y * width;
+                        height += data[imageIndex];
+                    }
+                }
+                const count = stride * stride;
+                height = height / (count || 1);
+            } else {
+                let x = Math.floor(tx / stride);
+                let y = Math.floor(ty / stride);
+                const imageIndex = x + y * width;
+                height = data[imageIndex];
+            }
+            if (height > max) {
+                max = height;
+            }
+            if (height < min) {
+                min = height;
+            }
+            result[index] = height;
+        }
+    }
+    return { data: result, width: terrainWidth, height: terrainWidth, min, max };
+}
+
 export const onmessage = function (message, postResponse) {
     const data = message.data;
     if (data.command === 'addLayer' || data.command === 'removeLayer') {
@@ -490,9 +564,16 @@ export const onmessage = function (message, postResponse) {
         workerId = message.workerId;
         self.postMessage({type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
     } else if (data.command === 'createTerrainMesh') {
-        const terrain = createMartiniData(data.params.heights, data.params.width);
-        const transferables = [ terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer ];
-        postResponse(null, { terrain }, transferables);
+        const { error, terrainHeights, terrainWidth } = data.params;
+        let terrainData = terrainHeights;
+        if (terrainHeights.width !== terrainWidth) {
+            terrainData = convertHeightWidth(terrainHeights, terrainWidth);
+        }
+        triangulateTerrain(error, terrainData, terrainWidth, null, null, false, (data, transferables) => {
+            data.data = terrainHeights;
+            transferables.push(terrainHeights.data.buffer);
+            postResponse(data.error, data, transferables);
+        });
     } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
         loadTerrain(data.params, (data, transferables) => {

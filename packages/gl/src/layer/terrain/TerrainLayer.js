@@ -58,6 +58,15 @@ export default class TerrainLayer extends maptalks.TileLayer {
         return terrainUrl;
     }
 
+    _getTileZoom(zoom) {
+        const maxAvailableZoom = this.options['maxAvailableZoom'];
+        // 忽略原有的 maxAvailableZoom 逻辑，改为如果zoom超过 maxAvailableZoom 则用父瓦片分割
+        this.options['maxAvailableZoom'] = null;
+        const tileZoom = super['_getTileZoom'](zoom);
+        this.options['maxAvailableZoom'] = maxAvailableZoom;
+        return tileZoom;
+    }
+
     _createSkuToken() {
         // https://github.com/mapbox/mapbox-gl-js/blob/6971327e188b9aa045622925a59800aa8ee940ac/src/util/sku_token.js
         let sessionRandomizer = '';
