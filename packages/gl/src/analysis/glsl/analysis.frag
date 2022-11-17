@@ -8,6 +8,7 @@ precision mediump float;
 varying vec2 vTexCoord;
 #ifdef HAS_FLOODANALYSE
     uniform vec3 flood_waterColor;
+    uniform float flood_waterOpacity;
     uniform sampler2D floodMap;
 #endif
 #ifdef HAS_SKYLINE
@@ -46,9 +47,9 @@ void main() {
     #ifdef HAS_VIEWSHED
         vec4 viewshedColor = texture2D(viewshedMap, vTexCoord);
         if (viewshedColor.r > 0.99) {
-            glFragColor = vec4(mix(viewshed_invisibleColor.rgb, sceneColor.rgb, 0.3), sceneColor.a);
+            glFragColor = vec4(mix(viewshed_invisibleColor.rgb, sceneColor.rgb, viewshed_invisibleColor.a), sceneColor.a);
         } else if (viewshedColor.g > 0.99) {
-            glFragColor = vec4(mix(viewshed_visibleColor.rgb, sceneColor.rgb, 0.3), sceneColor.a);
+            glFragColor = vec4(mix(viewshed_visibleColor.rgb, sceneColor.rgb, viewshed_visibleColor.a), sceneColor.a);
         } else if (viewshedColor.a < 0.01) {
             glFragColor = vec4(viewshedColor.rgb, 1.0);
         }
@@ -56,7 +57,7 @@ void main() {
     #ifdef HAS_FLOODANALYSE
         vec4 floodColor = texture2D(floodMap, vTexCoord);
         if (floodColor.r > 0.0) {
-            glFragColor = vec4(mix(flood_waterColor, glFragColor.rgb, 0.6), glFragColor.a);
+            glFragColor = vec4(mix(flood_waterColor, glFragColor.rgb, flood_waterOpacity), glFragColor.a);
         }
     #endif
     #ifdef HAS_SKYLINE

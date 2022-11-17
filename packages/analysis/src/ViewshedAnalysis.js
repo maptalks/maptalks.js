@@ -53,8 +53,8 @@ export default class ViewshedAnalysis extends Analysis {
         const uniforms = {};
         const viewshedMap =  this._pass.render(meshes, this._renderOptions);
         uniforms['viewshedMap'] = viewshedMap;
-        uniforms['viewshed_visibleColor'] =  this._renderOptions['visibleColor'] || [0.0, 1.0, 0.0, 1.0];
-        uniforms['viewshed_invisibleColor'] = this._renderOptions['invisibleColor'] || [1.0, 0.0, 0.0, 1.0];
+        uniforms['viewshed_visibleColor'] =  this._renderOptions['visibleColor'] || [0.0, 1.0, 0.0, 0.3];
+        uniforms['viewshed_invisibleColor'] = this._renderOptions['invisibleColor'] || [1.0, 0.0, 0.0, 0.3];
         return uniforms;
     }
 

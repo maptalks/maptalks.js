@@ -15,6 +15,8 @@ export default class FloodAnalysis extends Analysis {
         const map = this.layer.getMap();
         this._renderOptions = {};
         this._renderOptions['waterHeight'] = altitudeToDistance(map, this.options.waterHeight);
+        this._renderOptions['waterOpacity'] = this.options.waterOpacity;
+        this._renderOptions['waterColor'] = this.options.waterColor;
         this._renderOptions['extent'] = VEC4;
         this._renderOptions['extentMap'] = renderer.regl.texture({width: 2, height: 2});
         this._renderOptions['hasExtent'] = 0;
@@ -65,7 +67,8 @@ export default class FloodAnalysis extends Analysis {
         if (this.options.boundary) {
             this._extentPass.render(this._extentMeshes, this._pvMatrix);
         }
-        uniforms['flood_waterColor'] = this.options['waterColor'] || DEFAULT_WATER_COLOR;
+        uniforms['flood_waterColor'] = this._renderOptions['waterColor'] || DEFAULT_WATER_COLOR;
+        uniforms['flood_waterOpacity'] = this._renderOptions['waterOpacity'] || 0.6;
         uniforms['floodMap'] = this._pass.render(meshes, this._renderOptions);
         return uniforms;
     }

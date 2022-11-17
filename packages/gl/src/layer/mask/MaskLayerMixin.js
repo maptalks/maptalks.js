@@ -32,8 +32,8 @@ export default function (Base) {
                         maskColor,
                         position: worldPositions,
                         maskMode: this._getMaskMode(mask.mode),
-                        flatHeight: mask.flatHeight || 0,
-                        heightRange: mask.heightRange ? [mask.heightRange[0], mask.heightRange[1]] : [0, 0]
+                        flatHeight: this._altitudeToPoint(mask.flatHeight) || 0,
+                        heightRange: mask.heightRange ? [this._altitudeToPoint(mask.heightRange[0]), this._altitudeToPoint(mask.heightRange[1])] : [0, 0]
                     };
                     maskObjects.push(maskObject);
                     const extent = polygon.getExtent();
@@ -122,6 +122,12 @@ export default function (Base) {
                 throw new Error('invalid mask mode type!');
             }
             return maskModeMap[mode];
+        }
+
+        _altitudeToPoint(altitude = 0) {
+            const map = this.getMap();
+            const res = map.getGLRes();
+            return map.altitudeToPoint(altitude, res);
         }
     };
 }

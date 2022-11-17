@@ -8,17 +8,20 @@ class AnalysisShader extends reshader.QuadShader {
         super({
             vert, frag,
             extraCommandProps: {
-                viewport
-            },
-            blend: {
-                enable: true,
-                func: {
-                    srcRGB: 'src alpha',
-                    srcAlpha: 1,
-                    dstRGB: 'one minus src alpha',
-                    dstAlpha: 'one minus src alpha'
+                viewport,
+                cull: {
+                    enable: true
                 },
-                equation: 'add'
+                blend: {
+                    enable: true,
+                    func: {
+                        srcRGB: 'src alpha',
+                        srcAlpha: 1,
+                        dstRGB: 'one minus src alpha',
+                        dstAlpha: 'one minus src alpha'
+                    },
+                    equation: 'add'
+                }
             }
         });
     }
