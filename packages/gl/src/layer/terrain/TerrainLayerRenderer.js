@@ -856,8 +856,8 @@ export default TerrainLayerRenderer;
 const SKIN_LEVEL_LIMIT = 4;
 
 maptalks.renderer.TileLayerCanvasRenderer.include({
-    renderTerrainSkin(regl, terrainLayer, tileInfo, texture, tiles, parentTile) {
-        const { res, extent2d, offset } = tileInfo;
+    renderTerrainSkin(regl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
+        const { res, extent2d, offset } = terrainTileInfo;
         const debug = terrainLayer.options['debug'];
         const debugColor = terrainLayer.options['debugOutline'];
         const ctx = texture.getContext('2d');
@@ -869,10 +869,11 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
         }
 
         if (debug) {
-            const debugInfo = tileInfo.x + '/' + tileInfo.y + '/' + tileInfo.z;
+            const debugInfo = terrainTileInfo.x + '/' + terrainTileInfo.y + '/' + terrainTileInfo.z;
             const { width, height } = ctx.canvas;
             drawDebug(ctx, debugInfo, debugColor, 6, 0, 0, width, height);
         }
+        this.layer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
     }
 });
 

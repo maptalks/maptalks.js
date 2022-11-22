@@ -527,6 +527,9 @@ export default class GroupGLLayer extends maptalks.Layer {
 
                 skinLayers.push(layers[i]);
             }
+            if (renderer.setTerrainHelper) {
+                renderer.setTerrainHelper(this._terrainLayer);
+            }
         }
         this._terrainLayer.setSkinLayers(skinLayers);
     }
