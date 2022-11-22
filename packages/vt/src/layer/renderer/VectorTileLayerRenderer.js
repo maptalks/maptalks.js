@@ -22,7 +22,7 @@ const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill']);
 const terrainSkinFilter = plugin => {
     const config = plugin.config;
     // const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && plugin.painter && plugin.painter.isOnly2D();
-    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.clampToTerrain;
+    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.isTerrainSkin;
     return is2D;
 }
 
@@ -1520,19 +1520,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'native-line':
             renderPlugin = {
                 type: 'native-line',
-                dataConfig: { type: 'native-line', only2D: true, clampToTerrain: true }
+                dataConfig: { type: 'native-line', only2D: true, isTerrainSkin: true }
             };
             break;
         case 'native-point':
             renderPlugin = {
                 type: 'native-point',
-                dataConfig: { type: 'native-point', only2D: true, clampToTerrain: true }
+                dataConfig: { type: 'native-point', only2D: true, isTerrainSkin: true }
             };
             break;
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true, clampToTerrain: true },
+                dataConfig: { type: 'fill', only2D: true, isTerrainSkin: true },
                 sceneConfig: { antialias: true }
             };
             break;
