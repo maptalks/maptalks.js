@@ -140,6 +140,7 @@ class StandardPainter extends MeshPainter {
 
         const pickingConfig = {
             vert: `
+                #include <gl2_vert>
                 attribute vec3 aPosition;
                 uniform mat4 projViewModelMatrix;
                 uniform mat4 positionMatrix;

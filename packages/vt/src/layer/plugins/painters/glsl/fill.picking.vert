@@ -1,3 +1,4 @@
+#include <gl2_vert>
 #ifdef HAS_ALTITUDE
     attribute vec2 aPosition;
     attribute float aAltitude;

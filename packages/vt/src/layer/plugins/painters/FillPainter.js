@@ -9,6 +9,8 @@ import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
 
+const IDENTITY_ARR = mat4.identity([]);
+
 const DEFAULT_UNIFORMS = {
     'polygonFill': [1, 1, 1, 1],
     'polygonOpacity': 1,
@@ -214,14 +216,14 @@ class FillPainter extends BasicPainter {
 
 
         this.renderer = new reshader.Renderer(regl);
-
+        const isRenderingTerrain = !!(context && context.isRenderingTerrain);
         const renderer = this.layer.getRenderer();
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
         const extraCommandProps = {
             viewport: this.pickingViewport,
             stencil: {
-                enable: true,
+                enable: !isRenderingTerrain,
                 func: {
                     cmp: () => {
                         return stencil ? '=' : '<=';
@@ -269,6 +271,7 @@ class FillPainter extends BasicPainter {
         this._createShader(context, extraCommandProps);
 
         if (this.pickingFBO) {
+            const projViewModelMatrix = [];
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
@@ -278,7 +281,6 @@ class FillPainter extends BasicPainter {
                             name: 'projViewModelMatrix',
                             type: 'function',
                             fn: function (context, props) {
-                                const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }
@@ -293,12 +295,12 @@ class FillPainter extends BasicPainter {
     }
 
     _createShader(context, extraCommandProps) {
+        const projViewModelMatrix = [];
         const uniforms = [
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
@@ -317,11 +319,12 @@ class FillPainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const projViewMatrix = map.projViewMatrix;
+        const projViewMatrix = context && context.isRenderingTerrain ? IDENTITY_ARR : map.projViewMatrix;
+        const glScale = context && context.isRenderingTerrain ? 1 : 1 / map.getGLScale();
         // const blendSrc = this.sceneConfig.blendSrc;
         const uniforms = {
             projViewMatrix,
-            glScale: 1 / map.getGLScale(),
+            glScale,
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
         this.setIncludeUniformValues(uniforms, context);

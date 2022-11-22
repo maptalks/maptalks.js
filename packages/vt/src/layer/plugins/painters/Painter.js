@@ -28,7 +28,7 @@ class Painter {
         this._is2D = true;
         this.regl = regl;
         this.layer = layer;
-        this.canvas = layer.getRenderer().canvas;
+        this.canvas = regl['_gl'].canvas;
         this.sceneConfig = sceneConfig || {};
         this.dataConfig = dataConfig || {};
         //插件的序号，也是style的序号
@@ -440,7 +440,8 @@ class Painter {
                 picked = picking.pick(x, y, tolerance, uniforms, {
                     viewMatrix: map.viewMatrix,
                     projMatrix: map.projMatrix,
-                    returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false
+                    returnPoint: this.layer.options['pickingPoint'] && this.sceneConfig.pickingPoint !== false,
+                    logDepthBufFC: 2.0 / (Math.log(map.cameraFar + 1.0) / Math.LN2)
                 });
             }
             const { meshId, pickingId, point } = picked;
