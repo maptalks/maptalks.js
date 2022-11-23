@@ -114,7 +114,7 @@ Map.include(/** @lends Map.prototype */ {
         if (!isArrayHasData(reqLayers)) {
             return this;
         }
-        const eventType = opts.eventType;
+        const eventTypes = opts.eventTypes;
         let layers = [];
         for (let i = 0, len = reqLayers.length; i < len; i++) {
             if (isString(reqLayers[i])) {
@@ -123,12 +123,12 @@ Map.include(/** @lends Map.prototype */ {
                 layers.push(reqLayers[i]);
             }
         }
-        if (eventType) {
+        if (eventTypes) {
             layers = layers.filter(layer => {
                 if (!layer._hasEventListener) {
                     return true;
                 }
-                return layer._hasEventListener(eventType);
+                return layer._hasEventListener(eventTypes);
             });
         }
 

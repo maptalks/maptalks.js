@@ -664,15 +664,21 @@ class OverlayLayer extends Layer {
         }
     }
 
-    _hasEventListener(eventType) {
-        if (!eventType) {
+    _hasEventListener(eventTypes) {
+        if (!eventTypes) {
             return false;
+        }
+        if (!Array.isArray(eventTypes)) {
+            eventTypes = [eventTypes];
         }
         const geos = this.getGeometries() || [];
         for (let i = 0, len = geos.length; i < len; i++) {
-            const listens = geos[i].listens(eventType);
-            if (listens > 0) {
-                return true;
+            for (let j = 0, len1 = eventTypes.length; j < len1; j++) {
+                const eventType = eventTypes[j];
+                const listens = geos[i].listens(eventType);
+                if (listens > 0) {
+                    return true;
+                }
             }
         }
         return false;
