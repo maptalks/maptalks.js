@@ -1186,11 +1186,14 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             if (renderer) {
                 renderer.setLayerCanvasUpdated();
             }
-            this.once('frameend', () => {
-                removed.forEach(layer => {
-                    layer.fire('remove');
-                });
+            removed.forEach(layer => {
+                layer.fire('remove');
             });
+            // this.once('frameend', () => {
+            //     removed.forEach(layer => {
+            //         layer.fire('remove');
+            //     });
+            // });
         }
         /**
          * removelayer event, fired when removing layers.

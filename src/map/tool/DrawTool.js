@@ -482,7 +482,7 @@ class DrawTool extends MapTool {
         if (!this._geometry) {
             return;
         }
-        let containerPoint = this._getMouseContainerPoint(event);
+        const containerPoint = this._getMouseContainerPoint(event);
         if (!this._isValidContainerPoint(containerPoint)) {
             return;
         }
@@ -641,7 +641,7 @@ class DrawTool extends MapTool {
         return true;
     }
 
-    _getSnapResult (snapTo, containerPoint) {
+    _getSnapResult(snapTo, containerPoint) {
         const map = this.getMap();
         const lastContainerPoints = [];
         if (this.options.edgeAutoComplete) {
