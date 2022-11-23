@@ -34,10 +34,10 @@ describe('Geometry.RemoveHide', function () {
     var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
     //override marker's default symbol by a 10 * 10 ellipse
     geometries[0].setSymbol({
-        markerType : 'ellipse',
-        markerWidth : 10,
-        markerHeight : 10,
-        markerFill : '#000'
+        markerType: 'ellipse',
+        markerWidth: 10,
+        markerHeight: 10,
+        markerFill: '#000'
     });
     for (var i = 0, len = geometries.length; i < len; i++) {
         testRemoveHide.call(this, geometries[i], context);
@@ -46,7 +46,7 @@ describe('Geometry.RemoveHide', function () {
 });
 
 function getTestPoints(geometry, context) {
-        var layer = context.layer,
+    var layer = context.layer,
         map = layer.getMap();
     var coordinates = [
         geometry.getCenter(),
@@ -99,11 +99,11 @@ function test(geometry, context, fn, done) {
     if (geometry instanceof maptalks.Polygon || geometry instanceof maptalks.LineString ||
         geometry instanceof maptalks.MultiLineString || geometry instanceof maptalks.MultiPolygon) {
         geometry.setSymbol({
-            'lineWidth' : 2,
-            'lineColor' : '#000000',
-            'lineOpacity' : 1,
-            'polygonFill' : '#000000',
-            'polygonOpacity' : 1
+            'lineWidth': 2,
+            'lineColor': '#000000',
+            'lineOpacity': 1,
+            'polygonFill': '#000000',
+            'polygonOpacity': 1
         });
     }
     var testPoints = getTestPoints(geometry, context);
@@ -117,8 +117,10 @@ function test(geometry, context, fn, done) {
             done();
         });
         layer.once('remove', function () {
-            expect(isDrawn(testPoints, context.container)).not.to.be.ok();
-            done();
+            map.once('frameend', function () {
+                expect(isDrawn(testPoints, context.container)).not.to.be.ok();
+                done();
+            })
         });
         layer.once('hide', function () {
             expect(isDrawn(testPoints, context.container)).not.to.be.ok();
@@ -189,21 +191,21 @@ function testRemoveHide(geometry, _context) {
             map.setCenter(geometry.getFirstCoordinate());
             if (!(geometry instanceof maptalks.Marker) && !(geometry instanceof maptalks.MultiPoint)) {
                 geometry.setSymbol({
-                    'lineWidth' : 5,
-                    'lineColor' : '#000000',
-                    'lineOpacity' : 1,
-                    'polygonFill' : '#000000',
-                    'polygonOpacity' : 1
+                    'lineWidth': 5,
+                    'lineColor': '#000000',
+                    'lineOpacity': 1,
+                    'polygonFill': '#000000',
+                    'polygonOpacity': 1
                 });
             } else {
                 geometry.setSymbol({
-                    'markerType'    : 'pie',
-                    'markerHeight'  : 24,
-                    'markerWidth'   : 24,
-                    'markerFill'    : '#de3333',
-                    'markerLineColor' : '#ffffff',
-                    'markerLineWidth' : 1,
-                    'opacity' : 1
+                    'markerType': 'pie',
+                    'markerHeight': 24,
+                    'markerWidth': 24,
+                    'markerFill': '#de3333',
+                    'markerLineColor': '#ffffff',
+                    'markerLineWidth': 1,
+                    'opacity': 1
                 });
             }
             var testPoints = getTestPoints(geometry, _context);
@@ -225,7 +227,7 @@ function testRemoveHide(geometry, _context) {
                     //layer throws layerload event right after editLayer in current frame
                     //remove the geometry in the next frame
                     geometry.remove();
-                },1);
+                }, 1);
             }, 40);
         });
     });
