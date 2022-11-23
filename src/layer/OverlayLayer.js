@@ -663,6 +663,20 @@ class OverlayLayer extends Layer {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
     }
+
+    _hasEventListener(eventType) {
+        if (!eventType) {
+            return false;
+        }
+        const geos = this.getGeometries() || [];
+        for (let i = 0, len = geos.length; i < len; i++) {
+            const listens = geos[i].listens(eventType);
+            if (listens > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 OverlayLayer.mergeOptions(options);
