@@ -458,6 +458,17 @@ class DrawTool extends MapTool {
              * @property {Event} domEvent                 - dom event
              */
             this._fireEvent('drawstart', event);
+            // snapTo First coordinate point
+            const snapTo = this._geometry.snapTo;
+            if (snapTo && isFunction(snapTo)) {
+                const snapResult = this._getSnapResult(snapTo, event.containerPoint);
+                const map = this.getMap();
+                if (map && snapResult) {
+                    const prjCoord = snapResult.prjCoord;
+                    this._clickCoords = [prjCoord];
+                    registerMode['update'](map.getProjection(), this._clickCoords, this._geometry, event);
+                }
+            }
         }
         if (mode === 'point' && event.type !== 'mousemove') {
             this.endDraw(event);
