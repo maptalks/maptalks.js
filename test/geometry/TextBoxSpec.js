@@ -331,4 +331,21 @@ describe('Geometry.TextBox', function () {
         expect(textBox instanceof maptalks.TextBox).to.be.ok();
         expect(maptalks.Util.extend({}, textBox.getTextStyle().symbol, textBox.getBoxSymbol())).to.be.eql(json.symbol);
     });
+
+    it('dynamic width, height', function () {
+        var width = {
+            stops: [[1, 2], [20, 40]]
+        };
+        var height = {
+            stops: [[1, 1], [20, 20]]
+        };
+        var vector = new maptalks.TextBox('■■■', center, width, height);
+        layer = new maptalks.VectorLayer('id');
+        map.addLayer(layer);
+        layer.addGeometry(vector);
+        var symbol = vector._getCompiledSymbol();
+        expect(symbol.markerWidth).to.be.eql(34);
+        expect(symbol.markerHeight).to.be.eql(17);
+    });
+
 });

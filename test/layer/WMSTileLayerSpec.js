@@ -84,7 +84,8 @@ describe('WMSTileLayer', function () {
             'renderer' : 'canvas'
         });
         map.addLayer(tile);
-        expect(tile.getTileUrl(1, 2, 1)).to.be.eql('/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=0,-40075016.68557848,20037508.342789244,-20037508.342789244');
+        var expected = '/resources/tile.png?SERVICE=WMS&REQUEST=GetMap&LAYERS=layer&STYLES=styles&FORMAT=image%2Fpng&TRANSPARENT=true&VERSION=1.3.0&WIDTH=256&HEIGHT=256&CRS=EPSG%3A4490&BBOX=-40075016.68557848,0,-20037508.342789244,20037508.342789244';
+        expect(tile.getTileUrl(1, 2, 1)).to.be.eql(expected);
     });
 
     it('map with crs EPSG:4326', function () {
