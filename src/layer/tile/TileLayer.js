@@ -20,8 +20,6 @@ import Layer from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
-import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -1321,50 +1319,3 @@ function distanceToRect(min, max, xyz) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-const workerSource = `
-function (exports) {
-    exports.onmessage = function (msg, postResponse) {
-        var url = msg.data.url;
-        var fetchOptions = msg.data.fetchOptions;
-        requestImageOffscreen(url, function (err, data) {
-            var buffers = [];
-            if (data && data.data && data.data.buffer) {
-                buffers.push(data.data.buffer);
-            }
-            postResponse(err, data, buffers);
-        }, fetchOptions);
-    };
-
-    var offCanvas, offCtx;
-    function requestImageOffscreen(url, cb, fetchOptions) {
-        if (!offCanvas) {
-            offCanvas = new OffscreenCanvas(2, 2);
-            offCtx = offCanvas.getContext('2d');
-        }
-        fetch(url, fetchOptions ? fetchOptions : {})
-            .then(response => response.blob())
-            .then(blob => createImageBitmap(blob))
-            .then(bitmap => {
-                var { width, height } = bitmap;
-                offCanvas.width = width;
-                offCanvas.height = height;
-                offCtx.drawImage(bitmap, 0, 0);
-                bitmap.close();
-                var imgData = offCtx.getImageData(0, 0, width, height);
-                // debugger
-                cb(null, { width, height, data: new Uint8Array(imgData.data) });
-            }).catch(err => {
-                console.warn('error when loading tile:', url);
-                console.warn(err);
-                cb(err);
-            });
-    }
-}`;
-
-function registerWorkerSource() {
-    if (!Browser.decodeImageInWorker) {
-        return;
-    }
-    registerWorkerAdapter(imageFetchWorkerKey, function () { return workerSource; });
-}
-registerWorkerSource();
