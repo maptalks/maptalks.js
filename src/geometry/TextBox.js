@@ -308,7 +308,8 @@ class TextBox extends TextMarker {
     }
 
     endEdit() {
-        const zoom = this.getMap().getZoom();
+        const map = this.getMap();
+        const zoom = map && map.getZoom();
         if (this._oldWidth) {
             const markerWidth = this._width;
             const widthFn = interpolated(this._oldWidth);
