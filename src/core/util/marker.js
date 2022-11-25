@@ -204,5 +204,5 @@ export const DYNAMIC_SYMBOL_PROPS = [
 ];
 
 export const SIZE_SYMBOL_PROPS = [
-    'textName', 'markerType', 'markerFile', 'textHaloRadius', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY'
+    'textName', 'markerType', 'markerFile', 'textHaloRadius', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY', 'textWrapWidth'
 ];
