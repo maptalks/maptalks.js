@@ -210,7 +210,7 @@ class DrawTool extends MapTool {
     onDisable() {
         const map = this.getMap();
         this._restoreMapCfg();
-        this.endDraw();
+        this.endDraw({ ignoreEndEvent: true });
         if (this._map) {
             map.removeLayer(this._getDrawLayer());
             if (this.options['autoPanAtEdge']) {
@@ -606,7 +606,9 @@ class DrawTool extends MapTool {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        this._fireEvent('drawend', param);
+        if (!param.ignoreEndEvent) {
+            this._fireEvent('drawend', param);
+        }
         delete this._geometry;
         if (this.options['once']) {
             this.disable();

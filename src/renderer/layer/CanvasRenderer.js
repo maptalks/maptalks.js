@@ -6,6 +6,7 @@ import Canvas2D from '../../core/Canvas';
 import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
+import { registerWorkerAdapter } from '../../core/worker/Worker';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -959,3 +960,51 @@ export class ResourceCache {
         this.resources = {};
     }
 }
+
+const workerSource = `
+function (exports) {
+    exports.onmessage = function (msg, postResponse) {
+        var url = msg.data.url;
+        var fetchOptions = msg.data.fetchOptions;
+        requestImageOffscreen(url, function (err, data) {
+            var buffers = [];
+            if (data && data.data && data.data.buffer) {
+                buffers.push(data.data.buffer);
+            }
+            postResponse(err, data, buffers);
+        }, fetchOptions);
+    };
+
+    var offCanvas, offCtx;
+    function requestImageOffscreen(url, cb, fetchOptions) {
+        if (!offCanvas) {
+            offCanvas = new OffscreenCanvas(2, 2);
+            offCtx = offCanvas.getContext('2d',{willReadFrequently: true });
+        }
+        fetch(url, fetchOptions ? fetchOptions : {})
+            .then(response => response.blob())
+            .then(blob => createImageBitmap(blob))
+            .then(bitmap => {
+                var { width, height } = bitmap;
+                offCanvas.width = width;
+                offCanvas.height = height;
+                offCtx.drawImage(bitmap, 0, 0);
+                bitmap.close();
+                var imgData = offCtx.getImageData(0, 0, width, height);
+                // debugger
+                cb(null, { width, height, data: new Uint8Array(imgData.data) });
+            }).catch(err => {
+                console.warn('error when loading tile:', url);
+                console.warn(err);
+                cb(err);
+            });
+    }
+}`;
+
+function registerWorkerSource() {
+    if (!Browser.decodeImageInWorker) {
+        return;
+    }
+    registerWorkerAdapter(imageFetchWorkerKey, function () { return workerSource; });
+}
+registerWorkerSource();
