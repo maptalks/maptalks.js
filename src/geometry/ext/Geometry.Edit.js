@@ -17,7 +17,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (!this.getMap() || !this.options['editable']) {
             return this;
         }
-        this.endEdit();
+        if (this._editor) {
+            this.endEdit();
+        }
         this._editor = new GeometryEditor(this, opts);
         this._editor.start();
         /**
