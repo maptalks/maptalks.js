@@ -147,6 +147,11 @@ const EVENTS =
  * @property {Event} domEvent                 - dom event
  */
 
+const MOUSEEVENT_ASSOCIATION_TABLE = {
+    'mousemove': ['mousemove', 'mouseover', 'mouseout', 'mouseenter'],
+    'touchend': ['touchend', 'click']
+};
+
 class MapGeometryEventsHandler extends Handler {
 
     addHooks() {
@@ -230,7 +235,7 @@ class MapGeometryEventsHandler extends Handler {
             return;
         }
 
-
+        const eventTypes = MOUSEEVENT_ASSOCIATION_TABLE[eventType] || [eventType];
         const identifyOptions = {
             'includeInternals': true,
             //return only one geometry on top,
@@ -255,7 +260,8 @@ class MapGeometryEventsHandler extends Handler {
             'count': 1,
             'containerPoint': containerPoint,
             'onlyVisible': map.options['onlyVisibleGeometryEvents'],
-            'layers': layers
+            'layers': layers,
+            eventTypes
         };
         const callback = fireGeometryEvent.bind(this);
 
