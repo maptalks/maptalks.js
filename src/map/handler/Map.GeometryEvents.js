@@ -148,7 +148,8 @@ const EVENTS =
  */
 
 const MOUSEEVENT_ASSOCIATION_TABLE = {
-    'mousemove': ['mousemove', 'mouseover', 'mouseout', 'mouseenter']
+    'mousemove': ['mousemove', 'mouseover', 'mouseout', 'mouseenter'],
+    'touchend': ['touchend', 'click']
 };
 
 class MapGeometryEventsHandler extends Handler {
