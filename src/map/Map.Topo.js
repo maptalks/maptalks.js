@@ -125,10 +125,10 @@ Map.include(/** @lends Map.prototype */ {
         }
         if (eventTypes) {
             layers = layers.filter(layer => {
-                if (!layer._hasEventListener) {
+                if (!layer._hasGeoListeners) {
                     return true;
                 }
-                return layer._hasEventListener(eventTypes);
+                return layer._hasGeoListeners(eventTypes);
             });
         }
 

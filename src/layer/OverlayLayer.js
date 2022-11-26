@@ -19,6 +19,8 @@ const options = {
 };
 
 
+const TMP_EVENTS_ARR = [];
+
 /**
  * @classdesc
  * Base class of all the layers that can add/remove geometries. <br>
@@ -664,12 +666,13 @@ class OverlayLayer extends Layer {
         }
     }
 
-    _hasEventListener(eventTypes) {
+    _hasGeoListeners(eventTypes) {
         if (!eventTypes) {
             return false;
         }
         if (!Array.isArray(eventTypes)) {
-            eventTypes = [eventTypes];
+            TMP_EVENTS_ARR[0] = eventTypes;
+            eventTypes = TMP_EVENTS_ARR;
         }
         const geos = this.getGeometries() || [];
         for (let i = 0, len = geos.length; i < len; i++) {
