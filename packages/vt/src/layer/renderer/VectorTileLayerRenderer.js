@@ -6,6 +6,8 @@ import DebugPainter from './utils/DebugPainter';
 import TileStencilRenderer from './stencil/TileStencilRenderer';
 import { extend, pushIn, getCentiMeterScale, isNil } from '../../common/Util';
 import convertToPainterFeatures from './utils/convert_to_painter_features';
+import { isFunctionDefinition } from '@maptalks/function-type';
+import { FilterUtil } from '@maptalks/vector-packer';
 
 // const DEFAULT_PLUGIN_ORDERS = ['native-point', 'native-line', 'fill'];
 const EMPTY_ARRAY = [];
@@ -54,7 +56,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return this._workerConn;
     }
 
-    setStyle() {
+    getStyleCounter() {
+        return this._styleCounter;
+    }
+
+    setStyle(silent) {
         if (this._groundPainter) {
             this._groundPainter.update();
         }
@@ -65,11 +71,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             style.styleCounter = this._styleCounter;
             this._workerConn.updateStyle(style, err => {
                 if (err) throw new Error(err);
-                this._needRetire = true;
-                // this.clear();
-                // this._clearPlugin();
-                this._initPlugins();
-                this.setToRedraw();
+                if (!silent) {
+                    this._needRetire = true;
+                    // this.clear();
+                    // this._clearPlugin();
+                    this._initPlugins();
+                    this.setToRedraw();
+                }
                 this.layer.fire('refreshstyle');
             });
         } else {
@@ -157,6 +165,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const plugin = plugins[idx];
         plugin.style = styles[idx];
         const needRefresh = plugin.updateSymbol(symbol, styles[idx].symbol);
+        if (!needRefresh && needRefreshStyle(symbol)) {
+            this.setStyle(true);
+        }
         this.setToRedraw();
         return needRefresh;
     }
@@ -1840,4 +1851,22 @@ function groupFeatures(features) {
         group[layer].push(features[i]);
     }
     return group;
+}
+
+
+function needRefreshStyle(symbol) {
+    if (Array.isArray(symbol)) {
+        const symbols = symbol;
+        for (let i = 0; i < symbols.length; i++) {
+            if (needRefreshStyle(symbols[i])) {
+                return true;
+            }
+        }
+    }
+    for (const p in symbol) {
+        if (isFunctionDefinition(symbol[p]) || FilterUtil.isExpression(symbol[p])) {
+            return true;
+        }
+    }
+    return false;
 }

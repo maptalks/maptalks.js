@@ -476,6 +476,22 @@ describe('update style specs', () => {
         }, false, null, 0, 2);
     });
 
+    it('should can updateSymbol with function-type value', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbol('lineStyle', {
+                lineColor: {
+                    type: 'categorical',
+                    property: 'type',
+                    stops: [
+                        [1, [0, 1, 0, 1]]
+                    ]
+                }
+            });
+            map.setZoom(map.getZoom() + 2);
+            assert(layer.getRenderer().getStyleCounter() === 1);
+        }, false, null, 0, 2);
+    });
+
     it('should can update multiple symbol', done => {
         const style = [
             {
