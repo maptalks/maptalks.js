@@ -164,7 +164,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const w = this.style.markerWidth;
         const h = this.style.markerHeight;
         this._fixedExtent = this._fixedExtent || new PointExtent();
-        return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * h / w] : null);
+        return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * (w === 0 ? 1 : h / w)] : null);
     }
 
     translate() {
