@@ -69,6 +69,15 @@ class Painter {
         // if (this._visibleFn && !this._visibleFn.isFeatureConstant) {
         //     return true;
         // }
+        const { minZoom, maxZoom } = this.sceneConfig;
+        const map = this.getMap();
+        const zoom = map.getZoom();
+        if (!isNil(minZoom) && zoom < minZoom) {
+            return false;
+        }
+        if (!isNil(maxZoom) && zoom > maxZoom) {
+            return false;
+        }
         const visibleFns = this._visibleFn;
         if (visibleFns.length) {
             for (let i = 0; i < visibleFns.length; i++) {

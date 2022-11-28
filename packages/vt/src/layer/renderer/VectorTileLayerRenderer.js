@@ -431,11 +431,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     getShadowMeshes() {
         const meshes = [];
         const plugins = this._getAllPlugins();
-        plugins.forEach((plugin, idx) => {
+        plugins.forEach((plugin) => {
             if (!plugin) {
                 return;
             }
-            const visible = this._isVisible(idx);
+            const visible = this._isVisible(plugin);
             if (!visible) {
                 return;
             }
@@ -834,7 +834,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (this.layer.options.collision) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
-                if (!hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
                     return;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
@@ -849,7 +849,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             });
         } else {
             plugins.forEach((plugin) => {
-                if (!hasMesh(plugin)) {
+                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
                     return;
                 }
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
@@ -943,9 +943,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         if (!plugin) {
             return true;
         }
-        const idx = plugin.renderIndex;
         const parentContext = this._parentContext;
-        const visible = this._isVisible(idx);
+        const visible = this._isVisible(plugin);
         const includesChanged = parentContext && parentContext.states && parentContext.states.includesChanged;
         const hasMesh = this._hasMesh(plugin.painter.scene.getMeshes());
         const empty = !visible || !includesChanged && !hasMesh;
@@ -1160,8 +1159,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin || filter && !filter(plugin)) {
                 return;
             }
-            const visible = this._isVisible(idx);
-            if (!pluginData[idx] || !visible) {
+            if (!pluginData[idx]) {
                 return;
             }
             if (!tileCache[idx]) {
@@ -1223,8 +1221,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!plugin) {
                 return;
             }
-            const visible = this._isVisible(idx);
-            if (!pluginData[idx] || !visible) {
+            if (!pluginData[idx]) {
                 return;
             }
             const isTerrainPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
@@ -1269,11 +1266,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return hits;
         }
         const plugins = this._getFramePlugins();
-        plugins.forEach((plugin, idx) => {
+        plugins.forEach((plugin) => {
             if (!plugin) {
                 return;
             }
-            const visible = this._isVisible(idx);
+            const visible = this._isVisible(plugin);
             if (!visible) {
                 return;
             }
@@ -1547,15 +1544,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         };
     }
 
-    _isVisible(/*idx*/) {
-        // const styles = this.layer.getCompiledStyle();
-        // if (!styles[idx]) return true;
-        // const symbol = styles[idx].symbol;
-        // if (!symbol) return true;
-        // // const z = this.layer.getMap().getZoom();
-        // // const v = evaluate(symbol['visible'], null, z);
-        // // return v !== false;
-        // return symbol.visible !== false;
+    _isVisible(plugin) {
+        // return plugin.isVisible();
         return true;
     }
 
