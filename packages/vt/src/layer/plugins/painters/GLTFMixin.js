@@ -11,6 +11,8 @@ const EMPTY_ARRAY = [];
 const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
 const TEMP_MATRIX = [];
 
+const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
+
 const pickingVert = `
     attribute vec3 aPosition;
     uniform mat4 projViewModelMatrix;
@@ -160,7 +162,8 @@ const GLTFMixin = Base =>
                     setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
-                    const positionMatrix = mat4.multiply([], gltfMatrix, nodeMatrix);
+                    const positionMatrix = mat4.multiply([], Y_TO_Z, nodeMatrix);
+                    mat4.multiply(positionMatrix, gltfMatrix, positionMatrix);
                     const matrix = [];
                     mat4.fromTranslation(matrix, anchorTranslation);
                     mat4.multiply(positionMatrix, matrix, positionMatrix);
