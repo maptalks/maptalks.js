@@ -185,6 +185,30 @@ describe('FunctionTypeSpec', function () {
         expect(s.markerWidth).not.to.be.ok();
     });
 
+    it('markerFill with color-interpolate function type', function (done) {
+        var marker = new maptalks.Marker([100, 0], {
+            properties: {
+                value: 1
+            },
+            symbol:{
+                'markerType' : 'ellipse',
+                'markerFill': {
+                    property: 'value',
+                    stops: [[0, 'red'], [5, 'black'], [10, 'white']],
+                    type: 'color-interpolate'
+                },
+                'markerHeight':30
+            }
+        });
+        layer.once('layerload', function () {
+            var s = interpolateSymbol(marker, marker.getSymbol());
+            expect(s.markerFill).to.be.eql([0.788235294117647, 0, 0, 1]);
+            done();
+        });
+        layer.addGeometry(marker);
+
+    });
+
     it('interpolate a composite symbol', function (done) {
         var marker = new maptalks.Marker([100, 0], {
             symbol:[
