@@ -427,7 +427,9 @@ class MapCanvasRenderer extends MapRenderer {
 
     remove() {
         if (Browser.webgl && typeof document !== 'undefined') {
-            removeDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
+            removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
