@@ -3,7 +3,7 @@ import StyledPoint from './StyledPoint';
 import { getPointAnchors } from './util/get_point_anchors.js';
 import { getGlyphQuads, getIconQuads, getEmptyIconQuads } from './util/quads';
 import { allowsVerticalWritingMode } from './util/script_detection';
-import { isOut, isNil, wrap, isString } from './util/util';
+import { isOut, isNil, wrap, isString, getFeaAltitudeAndHeight } from './util/util';
 import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { normalizeColor } from '../style/Util';
@@ -510,9 +510,11 @@ export default class PointPack extends VectorPack {
         }
         const extent = this.options.EXTENT;
         const textCount = quads.length;
+        const { altitudeScale, altitudeProperty, defaultAltitude } = this.options;
+        const { altitude: featureAltitude } = getFeaAltitudeAndHeight(point.feature, altitudeScale, altitudeProperty, defaultAltitude);
         for (let i = 0; i < anchors.length; i++) {
             const anchor = anchors[i];
-            const altitude = anchor.z || 0;
+            const altitude = anchor.z || featureAltitude || 0;
             if (extent !== Infinity && isOut(anchor, extent)) {
                 continue;
             }

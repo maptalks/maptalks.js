@@ -142,6 +142,7 @@ export default class VectorPack {
     }
 
     fillPosition(data, x, y, altitude) {
+        // 乘以100是把米转为厘米
         if (this.needAltitudeAttribute()) {
             data.aPosition.push(x, y);
             data.aAltitude.push(altitude);

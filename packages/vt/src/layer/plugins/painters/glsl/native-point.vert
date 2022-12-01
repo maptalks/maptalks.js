@@ -8,6 +8,7 @@
     attribute vec3 aPosition;
 #endif
 
+uniform mat4 positionMatrix;
 uniform mat4 projViewModelMatrix;
 uniform float markerSize;
 
@@ -19,7 +20,7 @@ uniform float markerSize;
 
 void main() {
     vec3 position = unpackVTPosition();
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
     gl_PointSize = markerSize;
 
     #ifdef PICKING_MODE

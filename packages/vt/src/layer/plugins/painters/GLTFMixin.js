@@ -34,8 +34,8 @@ const pickingVert = `
 const GLTFMixin = Base =>
 
     class extends Base {
-        constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-            super(regl, layer, symbol, sceneConfig, pluginIndex);
+        constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+            super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             this._ready = false;
             this.scene.sortFunction = this.sortByCommandKey;
             this._gltfMeshInfos = [];
@@ -306,6 +306,7 @@ const GLTFMixin = Base =>
             const tileSize = this.layer.getTileSize();
             const tileScale = tileSize.width / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
             const zScale = this.layer.getRenderer().getZScale();
+            const altitudeOffset = (this.dataConfig.altitudeOffset || 0) * 100;
             const position = [];
             const mat = [];
             for (let i = 0; i < count; i++) {
@@ -314,7 +315,7 @@ const GLTFMixin = Base =>
                     aPosition[i * positionSize] * tileScale,
                     //vt中的y轴方向与opengl(maptalks世界坐标系)相反
                     -aPosition[i * positionSize + 1] * tileScale,
-                    positionSize === 2 ? 0 : aPosition[i * positionSize + 2] * zScale
+                    positionSize === 2 ? 0 : (aPosition[i * positionSize + 2] + altitudeOffset) * zScale
                 );
                 mat4.fromTranslation(mat, pos);
                 setInstanceData('instance_vectorA', i, mat, 0);

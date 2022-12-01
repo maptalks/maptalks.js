@@ -46,7 +46,7 @@ export function getHeightValue(properties, heightProp, defaultValue) {
         height = +properties[heightProp];
     }
     if (isNaN(height)) {
-        height = defaultValue;
+        height = defaultValue || 0;
     }
     //乘以100是因为 tileTransform 中是以厘米为单位，但这里是以米为单位
     return height * 100;
@@ -59,7 +59,7 @@ export function getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty
     const altitudeValue = getHeightValue(feature.properties, altitudeProperty, defaultAltitude);
     const altitude = altitudeValue * altitudeScale;
 
-    let height = defaultHeight && defaultHeight * 100 || altitudeValue;
+    let height = (defaultHeight || 0) && defaultHeight * 100 || altitudeValue;
     if (heightProperty) {
         height = getHeightValue(feature.properties, heightProperty, defaultHeight);
     } else if (minHeightProperty) {

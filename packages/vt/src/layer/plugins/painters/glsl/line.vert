@@ -44,6 +44,7 @@ uniform float cameraToCenterDistance;
     uniform float lineStrokeWidth;
 #endif
 
+uniform mat4 positionMatrix;
 uniform mat4 projViewModelMatrix;
 uniform mat4 modelMatrix;
 uniform float tileResolution;
@@ -161,8 +162,8 @@ void main() {
 
 
     vec4 pos4 = vec4(position, 1.0);
-    vec4 vertex = projViewModelMatrix * pos4;
-    vVertex = (modelMatrix * pos4).xyz;
+    vec4 vertex = projViewModelMatrix * positionMatrix * pos4;
+    vVertex = (modelMatrix * positionMatrix * pos4).xyz;
 
     #ifdef HAS_STROKE_WIDTH
         float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
@@ -195,7 +196,7 @@ void main() {
 
     float scale = tileResolution / resolution;
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
-    gl_Position = projViewModelMatrix * localVertex;
+    gl_Position = projViewModelMatrix * positionMatrix * localVertex;
 
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
@@ -211,7 +212,7 @@ void main() {
         outset += aaWidth / 6.0;
         // 用新的dist计算新的端点位置
         localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
-        gl_Position = projViewModelMatrix * localVertex;
+        gl_Position = projViewModelMatrix * positionMatrix * localVertex;
     }
 
     #ifdef HAS_LINE_DX

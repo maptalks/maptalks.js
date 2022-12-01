@@ -1,4 +1,4 @@
-import { reshader, mat4, HighlightUtil } from '@maptalks/gl';
+import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
 import StencilHelper from './StencilHelper';
 import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '@maptalks/vector-packer';
 import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks/function-type';
@@ -13,6 +13,7 @@ const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshade
 const TEX_CACHE_KEY = '__gl_textures';
 
 const MAT = [];
+const V3 = [];
 
 const EMPTY_ARRAY = [];
 const level0Filter = mesh => {
@@ -259,6 +260,14 @@ class Painter {
 
     createMesh(/* geometries, transform */) {
         throw new Error('not implemented');
+    }
+
+    getAltitudeOffsetMatrix() {
+        const altitudeOffset = (this.dataConfig.altitudeOffset || 0) * 100;
+        const matrix = mat4.identity([]);
+        vec3.set(V3, 0, 0, altitudeOffset);
+        mat4.translate(matrix, matrix, V3);
+        return matrix;
     }
 
     isBloom(mesh) {

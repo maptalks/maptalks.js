@@ -7,8 +7,8 @@ import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
 class NativeLinePainter extends BasicPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
         this.primitive = 'lines';
         if (isFunctionDefinition(this.symbolDef['lineColor'])) {
             const map = layer.getMap();

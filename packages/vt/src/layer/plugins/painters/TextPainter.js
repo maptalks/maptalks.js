@@ -71,8 +71,8 @@ const featureState = {};
 const availableImages = [];
 
 export default class TextPainter extends CollisionPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
         this.propAllowOverlap = 'textAllowOverlap';
         this.propIgnorePlacement = 'textIgnorePlacement';
         // this.layer.getRenderer().canvas.addEventListener('webglcontextlost', e => {
@@ -195,7 +195,9 @@ export default class TextPainter extends CollisionPainter {
                 this._hasNormalText = true;
             }
         }
-
+        mesh.forEach(m => {
+            m.positionMatrix = this.getAltitudeOffsetMatrix();
+        });
         return mesh;
     }
 

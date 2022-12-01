@@ -52,7 +52,8 @@ class NativePointPainter extends BasicPainter {
         if (mesh.geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
         }
-        mesh.setDefines(defines)    ;
+        mesh.setDefines(defines);
+        mesh.positionMatrix = this.getAltitudeOffsetMatrix();
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;

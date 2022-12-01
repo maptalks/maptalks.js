@@ -45,8 +45,8 @@ const EMPTY_COLLISION = {
 };
 
 class IconPainter extends CollisionPainter {
-    constructor(regl, layer, symbol, sceneConfig, pluginIndex) {
-        super(regl, layer, symbol, sceneConfig, pluginIndex);
+    constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
+        super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
 
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
@@ -178,6 +178,7 @@ class IconPainter extends CollisionPainter {
         if (this._isMarkerGeo(geometry)) {
             const mesh = createMarkerMesh(this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.icon, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
             if (mesh) {
+                mesh.positionMatrix = this.getAltitudeOffsetMatrix();
                 delete mesh.geometry.properties.glyphAtlas;
                 meshes.push(mesh);
             }
@@ -185,6 +186,7 @@ class IconPainter extends CollisionPainter {
             const mesh = createTextMesh.call(this, this.regl, geometry, transform, symbolDef, symbol, fnTypeConfig.text, layer.options['collision'], !enableCollision, this.isEnableUniquePlacement());
             if (mesh.length) {
                 mesh.forEach(m => {
+                    m.positionMatrix = this.getAltitudeOffsetMatrix();
                     delete m.geometry.properties.iconAtlas;
                 });
                 meshes.push(...mesh);

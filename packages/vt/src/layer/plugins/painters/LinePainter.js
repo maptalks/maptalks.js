@@ -147,6 +147,7 @@ class LinePainter extends BasicPainter {
             picking: true
         });
         mesh.setLocalTransform(transform);
+        mesh.positionMatrix = this.getAltitudeOffsetMatrix();
 
         const defines = {};
         if (iconAtlas) {

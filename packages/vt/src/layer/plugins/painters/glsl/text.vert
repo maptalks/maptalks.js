@@ -53,6 +53,7 @@ uniform float flipY;
 #endif
 
 uniform float cameraToCenterDistance;
+uniform mat4 positionMatrix;
 uniform mat4 projViewModelMatrix;
 uniform float textPerspectiveRatio;
 
@@ -135,7 +136,7 @@ void main() {
     }
     vec2 texCoord = aTexCoord;
 
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
     float projDistance = gl_Position.w;
 
     //预乘w，得到gl_Position在NDC中的坐标值
@@ -172,7 +173,7 @@ void main() {
     } else {
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
     gl_Position.xy += vec2(myTextDx, -myTextDy) * 2.0 / canvasSize * projDistance;
     // gl_Position.xy += vec2(1.0, 10.0);

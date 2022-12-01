@@ -66,6 +66,7 @@ attribute float aPadOffsetY;
 #endif
 
 uniform float cameraToCenterDistance;
+uniform mat4 positionMatrix;
 uniform mat4 projViewModelMatrix;
 uniform float markerPerspectiveRatio;
 
@@ -124,7 +125,7 @@ void main() {
     #else
         float isRotateWithMap = rotateWithMap;
     #endif
-    gl_Position = projViewModelMatrix * vec4(position, 1.0);
+    gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
     float projDistance = gl_Position.w;
     float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * markerPerspectiveRatio;
     //通过distance动态调整大小
@@ -164,7 +165,7 @@ void main() {
         float cameraScale = projDistance / cameraToCenterDistance;
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
     }
 
     gl_Position.xy += vec2(myMarkerDx, -myMarkerDy) * 2.0 / canvasSize * projDistance;

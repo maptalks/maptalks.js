@@ -94,6 +94,7 @@ class MeshPainter extends Painter {
         }
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
+        mesh.setPositionMatrix(this.getAltitudeOffsetMatrix());
         mesh.setLocalTransform(transform);
 
         //没有高度或level >= 3的瓦片mesh不产生阴影
