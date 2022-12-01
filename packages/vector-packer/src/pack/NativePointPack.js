@@ -1,9 +1,7 @@
 import VectorPack from './VectorPack';
 import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
-import classifyRings from './util/classify_rings';
-import findPoleOfInaccessibility from './util/find_pole_of_inaccessibility';
-import { isOut } from './util/util';
+import { getFeatureAnchors } from './util/get_point_anchors';
 
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
@@ -36,11 +34,10 @@ export default class NativePointPack extends VectorPack {
     }
 
     _getAnchors(point, spacing, placement) {
-        const feature = point.feature,
-            type = point.feature.type;
+        const feature = point.feature;
         const EXTENT = this.options.EXTENT;
-        const anchors = [];
         if (placement === 'line') {
+            const anchors = [];
             let lines = feature.geometry;
             if (EXTENT) {
                 lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
@@ -63,35 +60,11 @@ export default class NativePointPack extends VectorPack {
                     lineAnchors
                 );
             }
-        } else if (type === 3) {
-            const rings = classifyRings(feature.geometry, 0);
-            for (let i = 0; i < rings.length; i++) {
-                const polygon = rings[i];
-                // 16 here represents 2 pixels
-                const poi = findPoleOfInaccessibility(polygon, 16);
-                if (!isOut(poi, EXTENT)) {
-                    anchors.push(poi);
-                }
-            }
-        } else if (feature.type === 2) {
-            for (let i = 0; i < feature.geometry.length; i++) {
-                const line = feature.geometry[i];
-                if (!isOut(line[0], EXTENT)) {
-                    anchors.push(line[0]);
-                }
-            }
-        } else if (feature.type === 1) {
-            for (let i = 0; i < feature.geometry.length; i++) {
-                const points = feature.geometry[i];
-                for (let ii = 0; ii < points.length; ii++) {
-                    const point = points[ii];
-                    if (!isOut(point, EXTENT)) {
-                        anchors.push(point);
-                    }
-                }
-            }
+            return anchors;
+        } else {
+            return getFeatureAnchors(feature, placement, EXTENT);
         }
-        return anchors;
+
     }
 
 

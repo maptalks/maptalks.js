@@ -11,8 +11,8 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
     const glyphSize = size ? 24 : 0;
     const fontScale = size ? size[0] / glyphSize : 1;
     const textBoxScale = scale * fontScale;
-    const anchors = [];
     if (placement === 'line') {
+        const anchors = [];
         let lines = feature.geometry;
         if (EXTENT) {
             lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
@@ -22,7 +22,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
             const lineAnchors = getAnchors(lines[i],
                 spacing,
                 TEXT_MAX_ANGLE,
-                symbol['isIconText'] ? null : shape.vertical || shape.horizontal || shape,
+                symbol['isIconText'] ? null : shape && shape.vertical || shape && shape.horizontal || shape,
                 null, //shapedIcon,
                 glyphSize,
                 symbol['isIconText'] ? 1 : textBoxScale,
@@ -47,8 +47,16 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
                 }
             }
         }
+        return anchors;
+    } else {
+        return getFeatureAnchors(feature, placement, EXTENT);
+    }
+}
 
-    } else if (feature.type === 3) {
+
+export function getFeatureAnchors(feature, placement, EXTENT) {
+    const anchors = [];
+    if (feature.type === 3) {
         const rings = classifyRings(feature.geometry, 0);
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
