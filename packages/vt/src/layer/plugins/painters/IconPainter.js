@@ -14,7 +14,7 @@ import textVert from './glsl/text.vert';
 import textFrag from './glsl/text.frag';
 import textPickingVert from './glsl/text.vert';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
-import { GLYPH_SIZE } from './Constant';
+import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
 
 const ICON_FILTER = function (mesh) {
@@ -44,8 +44,7 @@ const EMPTY_COLLISION = {
     colliides: -1
 };
 
-// shaping.js shapeIcon方法中用来计算shape值的基准icon大小
-const ICON_SIZE = [2048, 2048];
+const ICON_SIZE_ARR = [ICON_SIZE, ICON_SIZE];
 
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
@@ -780,7 +779,7 @@ class IconPainter extends CollisionPainter {
             projViewMatrix,
             cameraToCenterDistance,
             canvasSize,
-            iconSize: ICON_SIZE,
+            iconSize: ICON_SIZE_ARR,
             resolution: map.getResolution(),
 
             //text uniforms

@@ -9,6 +9,7 @@ import { KEY_IDX } from '../../common/Constant';
 import Vector3DLayer from './Vector3DLayer';
 import { isFunctionDefinition, loadFunctionTypes } from '@maptalks/function-type';
 import convertToPainterFeatures from '../renderer/utils/convert_to_painter_features';
+import { ICON_PAINTER_SCENECONFIG } from '../core/Constant';
 
 // const SYMBOL_SIMPLE_PROPS = {
 //     textFill: 1,
@@ -1248,7 +1249,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         this._defineSymbolBloom(markerSymbol, 'markerBloom');
         this._defineSymbolBloom(markerSymbol, 'textBloom');
-        this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, this.layer.options.sceneConfig, 0);
+        const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
+        this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, sceneConfig, 0);
         this._markerPainter.setTextShaderDefines({
             'REVERSE_MAP_ROTATION_ON_PITCH': 1
         });

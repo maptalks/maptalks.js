@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import { fromJSON } from './util/from_json';
+import { ICON_PAINTER_SCENECONFIG } from '../core/Constant';
 
 const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
@@ -12,15 +13,7 @@ const defaultOptions = {
     },
     collision: false,
     collisionFrameLimit: 1,
-    sceneConfig: {
-        collision: true,
-        fading: false,
-        fadingDuration: 16 * 14,
-        fadeInDelay: 600,
-        fadeOutDelay: 100,
-        uniquePlacement: false,
-        depthFunc: 'always'
-    }
+    sceneConfig: ICON_PAINTER_SCENECONFIG
 };
 
 class PointLayer extends Vector3DLayer {
