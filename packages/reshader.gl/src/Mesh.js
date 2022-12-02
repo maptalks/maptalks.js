@@ -181,7 +181,7 @@ class Mesh {
     setDefines(defines) {
         const bak = this._bakDefines;
         this._defines = defines;
-        this.dirtyDefines = !!bak !== !!defines || !equalDefine(bak, defines);
+        this.dirtyDefines = this.dirtyDefines || !!bak !== !!defines || !equalDefine(bak, defines);
         if (this.dirtyDefines) {
             this._bakDefines = extend({}, defines);
         }
