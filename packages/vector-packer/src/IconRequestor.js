@@ -193,7 +193,7 @@ export default class IconRequestor {
         if (!size[0] || !size[1]) {
             return;
         }
-        const maxSize = this.options['maxSize'] || 254;
+        const maxSize = this.options['maxSize'] || 2048;
         let [width, height] = size;
         const ratio = width / height;
 

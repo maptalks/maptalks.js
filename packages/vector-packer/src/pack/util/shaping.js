@@ -448,7 +448,7 @@ function shapeIcon(image, //: ImagePosition,
     // const y1 = dy - image.displaySize[1] * verticalAlign;
     // const y2 = y1 + image.displaySize[1];
 
-    const width = 24, height = 24;
+    const width = 2048, height = 2048;
     const x1 = -width * horizontalAlign;
     const x2 = x1 + width;
     const y1 = -height * verticalAlign;

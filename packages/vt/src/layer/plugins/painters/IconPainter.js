@@ -44,6 +44,9 @@ const EMPTY_COLLISION = {
     colliides: -1
 };
 
+// shaping.js shapeIcon方法中用来计算shape值的基准icon大小
+const ICON_SIZE = [2048, 2048];
+
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
@@ -777,7 +780,7 @@ class IconPainter extends CollisionPainter {
             projViewMatrix,
             cameraToCenterDistance,
             canvasSize,
-            iconSize: [24, 24],
+            iconSize: ICON_SIZE,
             resolution: map.getResolution(),
 
             //text uniforms
