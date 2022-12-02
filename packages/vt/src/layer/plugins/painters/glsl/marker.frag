@@ -15,9 +15,9 @@ varying float vOpacity;
 
 void main() {
     vec4 fragColor = texture2D(iconTex, vTexCoord) * markerOpacity * vOpacity;
-    if (blendSrcIsOne == 1.0) {
-        fragColor *= fragColor.a;
-    }
+    // if (blendSrcIsOne == 1.0) {
+    //     fragColor *= fragColor.a;
+    // }
 
 
     // float alphaSum = 0.0;
