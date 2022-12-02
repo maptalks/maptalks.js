@@ -29,6 +29,13 @@ const line = {
     ]
 };
 
+const line1 = {
+    type: 'FeatureCollection',
+    features: [
+        { type: 'Feature', id: 0, geometry: { type: 'LineString', coordinates: [[-1, 0, 1], [1, 0, 1]] }, properties: { type: 1 } }
+    ]
+};
+
 const point = {
     type: 'FeatureCollection',
     features: [
@@ -216,7 +223,53 @@ describe('highlight specs', () => {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
+                //bloom泛光范围里的像素值
                 pixel = readPixel(renderer.canvas, x / 2 - 50, y / 2);
+                assert(pixel[1] > 10);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can highlight line1 with altitude, maptalks/issues#183', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'line',
+                    dataConfig: { type: 'line' }
+                },
+                symbol: { lineWidth: 10, lineColor: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: line1,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5 });
+            } else if (count === 6) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
                 assert(pixel[1] > 10);
                 done();
             }
