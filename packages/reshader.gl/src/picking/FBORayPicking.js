@@ -98,7 +98,7 @@ const depthFrag = `
     #include <common_pack_float>
     varying float vFbo_picking_viewZ;
     uniform float logDepthBufFC;
-    varying float vFragDepth;
+    varying float vFbo_picking_fragDepth;
 
     const float PackUpscale = 256. / 255.;
     const float UnpackDownscale = 255. / 256.;
@@ -112,7 +112,7 @@ const depthFrag = `
     }
 
     void main() {
-        float fragDepth = vFragDepth > 1.0 ? vFragDepth : vFbo_picking_viewZ + 1.0;
+        float fragDepth = vFbo_picking_fragDepth > 1.0 ? vFbo_picking_fragDepth : vFbo_picking_viewZ + 1.0;
         gl_FragDepthEXT = log2(fragDepth) * logDepthBufFC * 0.5;
         vec4 depthColor = packDepthToRGBA(fragDepth - 1.0);
         glFragColor = common_unpackFloat(dot(depthColor, UnpackFactors));
