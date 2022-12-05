@@ -23,6 +23,7 @@ const options = {
         'OES_texture_float_linear',
         'WEBGL_depth_texture',
         'EXT_shader_texture_lod',
+        'EXT_frag_depth',
         // compressed textures
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_etc',

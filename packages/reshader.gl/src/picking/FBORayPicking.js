@@ -94,6 +94,9 @@ const depthFrag = `
     #ifdef GL_ES
         precision highp float;
     #endif
+    #if __VERSION__ == 100
+        #extension GL_EXT_frag_depth : enable
+    #endif
     #include <gl2_frag>
     #include <common_pack_float>
     varying float vFbo_picking_viewZ;
@@ -467,6 +470,7 @@ export default class FBORayPicking {
 
         this._scene1.setMeshes(meshes);
         this._clearFbo(fbo1);
+        uniforms.logDepthBufFC = 2.0 / (Math.log(this._map.cameraFar + 1.0) / Math.LN2);
 
         this._renderer.render(this._depthShader, uniforms, this._scene1, fbo1);
 
