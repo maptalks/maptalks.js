@@ -19,7 +19,7 @@ export default function TinySDF(fontSize, buffer, radius, cutoff, fontFamily, fo
     this.canvas = typeof document === 'undefined' ? new OffscreenCanvas(size, size) : document.createElement('canvas');
     this.canvas.width = this.canvas.height = size;
 
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
     this.ctx.font = this.fontStyle + ' ' + this.fontWeight + ' ' + this.fontSize + 'px ' + this.fontFamily;
     this.ctx.textBaseline = 'middle';
     this.ctx.fillStyle = 'black';
