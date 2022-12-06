@@ -137,6 +137,90 @@ describe('highlight specs', () => {
         group.addTo(map);
     });
 
+    it('should can highlight icon using filter', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        const start = 6;
+        group.on('layerload', () => {
+            count++
+            if (count === start) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({
+                    name: 'test',
+                    filter: feature => { return feature.id === 0; },
+                    color: [0, 1, 0, 1],
+                    opacity: 0.5,
+                    bloom: 1
+                });
+            } else if (count === start + 1) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色
+                assert(pixel[1] > 10);
+                layer.cancelHighlight('test');
+            } else if (count === start + 2) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('missing name for highlight with filter', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        try {
+            layer.highlight({
+                // missing name for highlight with filter
+                filter: () => { return true; },
+                color: '#f00'
+            });
+        } catch (err) {
+            // an error will be thrown here
+            done();
+        }
+
+    });
+
     it('should can highlight text', done => {
         const style = [
             {
@@ -177,7 +261,7 @@ describe('highlight specs', () => {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
                 assert(pixel[1] > 10 && pixel[1] < 255);
-                assert(pixel[3] < 100);
+                assert(pixel[3] < 150);
                 done();
             }
         });

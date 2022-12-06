@@ -8,7 +8,7 @@ import convertGeometry from './util/convert_geometry';
 import { extend } from '../style/Util';
 import { loadFunctionTypes, interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { isFnTypeSymbol, isNumber, hasOwn } from '../style/Util';
-import { getHeightValue, generateFeatureIndiceIndex } from './util/util';
+import { getHeightValue, generatePickingIndiceIndex } from './util/util';
 import StyledVector from './StyledVector';
 import { packPosition/*, unpackPosition*/ } from './util/pack_position';
 import { compileFilter, isExpression, createExpression, getExpressionType, isInterpolated } from '../style/Filter';
@@ -556,10 +556,7 @@ export default class VectorPack {
             result.featureIds = [];
         }
 
-        if (featIds && featIds.length && this.options.features) {
-            result.feaIdIndiceMap = generateFeatureIndiceIndex(featIds, result.indices);
-        }
-
+        result.pickingIdIndiceMap = generatePickingIndiceIndex(feaIdxValues, result.indices);
         return result;
     }
 

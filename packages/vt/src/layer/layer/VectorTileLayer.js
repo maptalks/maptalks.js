@@ -282,6 +282,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     highlight(highlights) {
+        this._validateHighlight(highlights);
         const renderer = this.getRenderer();
         if (!renderer) {
             if (!this._highlighted) {
@@ -292,6 +293,26 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
         renderer.highlight(highlights);
         return this;
+    }
+
+    _validateHighlight(highlights) {
+        if (Array.isArray(highlights)) {
+            for (let i = 0; i < highlights.length; i++) {
+                this._validateHighlight(highlights[i]);
+            }
+            return;
+        }
+        if (highlights.filter) {
+            if (!this.options['features']) {
+                throw new Error('options.features must be turned on to support filter in highlight');
+            }
+            if (!highlights.name) {
+                throw new Error('A name is required for highlight with filter');
+            }
+        }
+        if (isNil(highlights.filter) && isNil(highlights.id)) {
+            throw new Error('id or filter must be provided for highlight');
+        }
     }
 
     _resumeHighlights() {

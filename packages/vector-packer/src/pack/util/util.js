@@ -122,14 +122,14 @@ export function generateFeatureIndex(featureIds) {
     return index;
 }
 
-export function generateFeatureIndiceIndex(featureIds, indices) {
+export function generatePickingIndiceIndex(pickingIds, indices) {
     if (!indices) {
         return null;
     }
     const indiceIndex = new Map();
     for (let i = 0; i < indices.length; i++) {
         const idx = indices[i];
-        const id = featureIds[idx];
+        const id = pickingIds[idx];
         let index = indiceIndex.get(id);
         if (!index) {
             index = [];

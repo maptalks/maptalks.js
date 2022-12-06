@@ -74,6 +74,7 @@ class NativePointPainter extends BasicPainter {
                 return this.canvas ? this.canvas.height : 1;
             }
         };
+        const projViewModelMatrix = [];
         // const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const config = {
             vert,
@@ -83,7 +84,6 @@ class NativePointPainter extends BasicPainter {
                     name: 'projViewModelMatrix',
                     type: 'function',
                     fn: function (context, props) {
-                        const projViewModelMatrix = [];
                         mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                         return projViewModelMatrix;
                     }
@@ -129,6 +129,7 @@ class NativePointPainter extends BasicPainter {
         this.shader.version = 300;
 
         if (this.pickingFBO) {
+            const projViewModelMatrix = [];
             this.picking = [new reshader.FBORayPicking(
                 this.renderer,
                 {
@@ -138,7 +139,6 @@ class NativePointPainter extends BasicPainter {
                             name: 'projViewModelMatrix',
                             type: 'function',
                             fn: function (context, props) {
-                                const projViewModelMatrix = [];
                                 mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                                 return projViewModelMatrix;
                             }

@@ -1048,15 +1048,15 @@ class Painter {
     }
 
     _prepareFeatureIds(geometry, glData) {
-        const { featureIds, feaIdIndiceMap } = glData;
+        const { featureIds, pickingIdIndiceMap } = glData;
         geometry.properties.aFeaIds = featureIds;
-        geometry.properties.feaIdIndiceMap = feaIdIndiceMap;
+        geometry.properties.pickingIdIndiceMap = pickingIdIndiceMap;
     }
 
     _highlightMesh(mesh) {
-
-        const { aFeaIds, feaIdIndiceMap } = mesh.geometry.properties;
-        HighlightUtil.highlightMesh(this.regl, mesh, this._highlighted, this._highlightTimestamp, aFeaIds, feaIdIndiceMap);
+        const { pickingIdIndiceMap } = mesh.geometry.properties;
+        const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
+        HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }
 }
 
@@ -1086,4 +1086,41 @@ function hashCode(s) {
         hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
+}
+
+// 用户输入的highlights的转换函数
+// * 如果highlight输入的是id，转化成pickingId
+// * 如果highlight输入的是filter函数，则转换成过滤后数据的pickingId
+// 转换后gl中的highlightMesh方法只需要考虑id相关逻辑
+function convertHighlights(mesh, layer, inputHighlights) {
+    const { aPickingId, feaIdPickingMap, features } = mesh.geometry.properties;
+    const highlights = new Map();
+    const names = inputHighlights.keys();
+    for (const name of names) {
+        const highlight = inputHighlights.get(name);
+        if (!highlight) {
+            continue;
+        }
+        if (!isNil(highlight.id)) {
+            const pickingIds = feaIdPickingMap[highlight.id];
+            if (!pickingIds || !pickingIds.length) {
+                continue;
+            }
+            for (let i = 0; i < pickingIds.length; i++) {
+                highlights.set(pickingIds[i], highlight);
+            }
+        } else if (highlight.filter) {
+            let current = null;
+            for (let i = 0; i < aPickingId.length; i++) {
+                if (aPickingId[i] !== current) {
+                    current = aPickingId[i];
+                }
+                const feature = features[current];
+                if (highlight.filter(feature && feature.feature, layer)) {
+                    highlights.set(current, highlight);
+                }
+            }
+        }
+    }
+    return highlights;
 }

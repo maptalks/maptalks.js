@@ -252,7 +252,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     'OES_vertex_array_object',
                     'OES_texture_half_float', 'OES_texture_half_float_linear',
                     'OES_texture_float', 'OES_texture_float_linear',
-                    'WEBGL_draw_buffers', 'EXT_shader_texture_lod'
+                    'WEBGL_draw_buffers', 'EXT_shader_texture_lod',
+                    'EXT_frag_depth'
                 ]
         });
         return { gl, attributes, regl };
@@ -1689,10 +1690,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (Array.isArray(highlights)) {
             for (let i = 0; i < highlights.length; i++) {
-                this._highlighted.set(highlights[i].id, highlights[i]);
+                if (isNil(highlights[i].name) && !isNil(highlights[i].id)) {
+                    highlights[i] = extend({}, highlights[i]);
+                    highlights[i].name = highlights[i].id;
+                }
+                this._highlighted.set(highlights[i].name, highlights[i]);
             }
         } else {
-            this._highlighted.set(highlights.id, highlights);
+            if (isNil(highlights.name) && !isNil(highlights.id)) {
+                highlights = extend({}, highlights);
+                highlights.name = highlights.id;
+            }
+            this._highlighted.set(highlights.name, highlights);
         }
 
         const plugins = this._getFramePlugins();
@@ -1701,13 +1710,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         });
     }
 
-    cancelHighlight(ids) {
-        if (Array.isArray(ids)) {
-            for (let i = 0; i < ids.length; i++) {
-                this._highlighted.delete(ids[i]);
+    cancelHighlight(names) {
+        if (Array.isArray(names)) {
+            for (let i = 0; i < names.length; i++) {
+                this._highlighted.delete(names[i]);
             }
         } else {
-            this._highlighted.delete(ids);
+            this._highlighted.delete(names);
         }
         const plugins = this._getFramePlugins();
         plugins.forEach(plugin => {
