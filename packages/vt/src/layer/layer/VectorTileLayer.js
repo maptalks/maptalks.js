@@ -41,11 +41,12 @@ const defaultOptions = {
     maxIconSize: 254,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
-        'win-intel-gpu-crash': true
+        // 2022-12-06, 用当前版本测试crash.html，已经不再崩溃，关闭该workaround, http://localhost/bugs/issue-175/webgl_crash/crash2.html
+        'win-intel-gpu-crash': false
     },
     pyramidMode: 1,
     styleScale: 1,
-    spatialReference: null, //'preset-vt-3857', preset-vt-4326'
+    spatialReference: 'preset-vt-3857', //'preset-vt-3857', preset-vt-4326'
     enableAltitude: true,
     fadeAnimation: false,
 
