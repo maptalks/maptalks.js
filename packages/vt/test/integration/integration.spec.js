@@ -100,7 +100,12 @@ describe('vector tile integration specs', () => {
                 }
             });
             if (style.groupSceneConfig) {
-                const group = new GroupGLLayer('group', [layer], { sceneConfig: style.groupSceneConfig });
+                const children = [];
+                if (style.layers) {
+                    children.push(...style.layers);
+                }
+                children.push(layer);
+                const group = new GroupGLLayer('group', children, { sceneConfig: style.groupSceneConfig });
                 group.addTo(map);
             } else {
                 layer.addTo(map);
