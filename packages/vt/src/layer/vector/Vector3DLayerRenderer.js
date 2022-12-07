@@ -1000,6 +1000,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _removeFeatures(uid) {
         const features = this.features[uid];
+        if (!features) {
+            return;
+        }
         if (Array.isArray(features)) {
             for (let i = 0; i < features.length; i++) {
                 const id = features[i][KEY_IDX_NAME];

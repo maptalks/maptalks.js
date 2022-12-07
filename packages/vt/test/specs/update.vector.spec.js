@@ -1438,6 +1438,108 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can clear PointLayer, maptalks/issues#180', done => {
+        const redMarker = new maptalks.Marker(
+          map.getCenter(),
+          {
+            symbol: [
+              {
+                markerType: 'square',
+                markerVerticalAlignment: 'middle',
+                markerFill: '#f00',
+                markerOpacity: 0.7,
+                markerTextFit: 'both',
+                markerTextFitPadding: [3, 3, 3, 3],
+
+                textName: 'MARKER的文字',
+                textFaceName: '微软雅黑, monospace',
+                textSize: 16,
+                textFill: '#000'
+              },
+            ]
+          }
+        );
+        //// PointLayer
+        const pointLayer = new PointLayer('pointLayer');
+        pointLayer.addGeometry(redMarker);
+
+        const groupLayer = new GroupGLLayer("group", [pointLayer]);
+        groupLayer.addTo(map);
+
+        setTimeout(() => {
+            pointLayer.remove();
+            assert(groupLayer.getLayers().length === 0);
+            pointLayer.addTo(groupLayer);
+            pointLayer.clear();
+            done();
+        }, 500);
+
+    });
+
+    it('should can remove PointLayer and add again, maptalks/issues#180', done => {
+        const redMarker = new maptalks.Marker(
+          map.getCenter(),
+          {
+            symbol: [
+              {
+                markerType: 'ellipse',
+                markerVerticalAlignment: 'middle',
+                markerFill: '#f00',
+                markerWidth: 20,
+                markerHeight: 20,
+              },
+            ]
+          }
+        );
+        //// PointLayer
+        const pointLayer = new PointLayer('pointLayer');
+        pointLayer.addGeometry(redMarker);
+
+        const groupLayer = new GroupGLLayer("group", [pointLayer]);
+        groupLayer.addTo(map);
+
+        setTimeout(() => {
+            pointLayer.remove();
+            pointLayer.addTo(groupLayer);
+            const pixel = readPixel(groupLayer.getRenderer().canvas, map.width / 2, map.height / 2);
+                //开始是红色
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        }, 500);
+
+    });
+
+    it('should can clear PointLayer after removed, maptalks/issues#178', done => {
+        const redMarker = new maptalks.Marker(
+          map.getCenter(),
+          {
+            symbol: [
+              {
+                markerType: 'ellipse',
+                markerVerticalAlignment: 'middle',
+                markerFill: '#f00',
+                markerWidth: 20,
+                markerHeight: 20,
+              },
+            ]
+          }
+        );
+        //// PointLayer
+        const pointLayer = new PointLayer('pointLayer');
+        pointLayer.addGeometry(redMarker);
+
+        const groupLayer = new GroupGLLayer("group", [pointLayer]);
+        groupLayer.addTo(map);
+
+        setTimeout(() => {
+            groupLayer.removeLayer(pointLayer);
+            groupLayer.addLayer(pointLayer);
+            pointLayer.clear();
+            done();
+        }, 500);
+
+    });
+
     it('should can remove text marker with markerTextFit, maptalks/issues#113', done => {
         //// GroupGLLayer
         const sceneConfig = {
