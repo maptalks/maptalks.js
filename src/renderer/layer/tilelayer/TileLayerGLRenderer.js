@@ -33,7 +33,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     onDrawTileStart(context, parentContext) {
         const gl = this.gl;
+        gl.enable(gl.STENCIL_TEST);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.depthMask(true);
         if (parentContext && parentContext.renderTarget) {
             const fbo = parentContext.renderTarget.fbo;
             if (fbo) {
