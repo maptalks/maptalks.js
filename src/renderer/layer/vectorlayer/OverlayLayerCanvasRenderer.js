@@ -33,11 +33,13 @@ class OverlayLayerRenderer extends CanvasRenderer {
                 continue;
             }
             if (!this.resources) {
+                res.geo = geo;
                 resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
                     const url = res[i][0];
                     if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
+                        res[i].geo = geo;
                         resources.push(res[i]);
                         cache[url] = 1;
                     }

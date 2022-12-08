@@ -7,6 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
+import { checkResourceTemplate } from '../../core/ImageManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -764,6 +765,8 @@ class CanvasRenderer extends Class {
     }
 
     _promiseResource(url) {
+        const imgUrl = checkResourceTemplate(url && url[0], url.geo);
+        delete url.geo;
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         const renderer = this.layer.options['renderer'] || '';
@@ -772,8 +775,8 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (!isSVG(url[0]) && me._resWorkerConn) {
-                const uri = getAbsoluteURL(url[0]);
+            if (!isSVG(imgUrl) && me._resWorkerConn) {
+                const uri = getAbsoluteURL(imgUrl);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
@@ -794,7 +797,7 @@ class CanvasRenderer extends Class {
                 } else if (renderer !== 'canvas') {
                     img['crossOrigin'] = '';
                 }
-                if (isSVG(url[0]) && !IS_NODE) {
+                if (isSVG(imgUrl) && !IS_NODE) {
                     //amplify the svg image to reduce loading.
                     if (url[1]) { url[1] *= 2; }
                     if (url[2]) { url[2] *= 2; }
@@ -804,7 +807,7 @@ class CanvasRenderer extends Class {
                     resolve(url);
                 };
                 img.onabort = function (err) {
-                    if (console) { console.warn('image loading aborted: ' + url[0]); }
+                    if (console) { console.warn('image loading aborted: ' + imgUrl); }
                     if (err) {
                         if (console) { console.warn(err); }
                     }
