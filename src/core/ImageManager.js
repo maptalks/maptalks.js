@@ -14,6 +14,17 @@ function createCanvas() {
     return canvas;
 }
 
+const PROTOCOLS = ['http', 'data:image/', 'blob:'];
+
+function isAbsoluteURL(url) {
+    for (let i = 0, len = PROTOCOLS.length; i < len; i++) {
+        if (url.indexOf(PROTOCOLS[i]) === 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * @classdesc
  * Global image source manager,It is static and should not be initiated
@@ -23,7 +34,8 @@ function createCanvas() {
  * @category core
  * @example
  *  ImageManager.setSourceUrl('http://abc.com/images/');
- *  var img = ImageManager.get('hello');
+ *  var img = ImageManager.get('hello.png');//http://abc.com/hello.png
+ *
  *  ImageManager.add('test','dog.png');
  *  var img = ImageManager.get('test');//http://abc.com/images/dog.png
  *
@@ -59,15 +71,10 @@ export const ImageManager = {
         if (!isString(img)) {
             return img;
         }
-        if (img.indexOf('data:image/') === 0) {
+        if (isAbsoluteURL(img)) {
             return img;
-        } else if (img.indexOf('http') === 0) {
-            return img;
-        } else if (img.indexOf('blob:') === 0) {
-            return img;
-        } else {
-            return `${ImageManager.sourceUrl}${img}`;
         }
+        return `${ImageManager.sourceUrl}${img}`;
     },
 
     /**
