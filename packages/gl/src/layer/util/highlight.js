@@ -19,7 +19,7 @@ export function clearHighlight(mesh) {
     deleteHighlightBloomMesh(mesh);
 }
 
-export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaIdIndiceMap) {
+export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap) {
     const { highlightTimestamp } = mesh.properties;
     if (!highlighted) {
         if (highlightTimestamp) {
@@ -30,6 +30,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
     if (timestamp === highlightTimestamp) {
         return;
     }
+    const vertexCount = mesh.geometry.getVertexCount();
     let { aHighlightColor, aHighlightOpacity } = mesh.geometry.properties;
     if (aHighlightColor) {
         aHighlightColor.fill(0);
@@ -50,7 +51,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
             if (color) {
                 if (!hasColor) {
                     if (!aHighlightColor) {
-                        aHighlightColor = new Uint8Array(aFeaIds.length * 4);
+                        aHighlightColor = new Uint8Array(vertexCount * 4);
                     }
                     hasColor = true;
                 }
@@ -60,7 +61,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, aFeaIds, feaId
             if (opacity < 1) {
                 if (!hasOpacity) {
                     if (!aHighlightOpacity) {
-                        aHighlightOpacity = new Uint8Array(aFeaIds.length);
+                        aHighlightOpacity = new Uint8Array(vertexCount);
                         aHighlightOpacity.fill(255);
                     }
                     hasOpacity = true;
