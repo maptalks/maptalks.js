@@ -19,11 +19,17 @@ const plugins = [
     commonjs(),
 ];
 
+const getGlobal = function () {
+  if (typeof self !== 'undefined') { return self; }
+  if (typeof window !== 'undefined') { return window; }
+  if (typeof global !== 'undefined') { return global; }
+  throw new Error('unable to locate global object');
+};
 
 const printVer = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\n`;
-const intro = `${printVer} const transcoder = function () {\n`;
+const intro = `${printVer} const transcoder = function () { const getGlobal = ${getGlobal.toString()}; const currentGlobal = getGlobal(); if (!currentGlobal.ktx______decoder) currentGlobal.ktx______decoder = function () {\n`;
 const outro = `
-    };
+    }(); return currentGlobal.ktx______decoder; };
     if (typeof exports === 'object' && typeof module !== 'undefined') {
         const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('ktx2', transcoder);
@@ -97,8 +103,8 @@ if (production) {
                 exports: 'named',
                 extend: true,
                 file: 'dist/transcoder.js',
-                banner: `export default function () {`,
-                footer: `}`
+                banner: `export default function () { const getGlobal = ${getGlobal.toString()}; const currentGlobal = getGlobal(); if (!currentGlobal.ktx______decoder) currentGlobal.ktx______decoder = function () {`,
+                footer: '}(); return currentGlobal.ktx______decoder; };',
             }
         },
         {

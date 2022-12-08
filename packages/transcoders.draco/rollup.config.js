@@ -19,11 +19,17 @@ const plugins = [
     commonjs(),
 ];
 
+const getGlobal = function () {
+  if (typeof self !== 'undefined') { return self; }
+  if (typeof window !== 'undefined') { return window; }
+  if (typeof global !== 'undefined') { return global; }
+  throw new Error('unable to locate global object');
+};
 
 const printVer = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\n`;
-const intro = `${printVer} const transcoder = function () {\n`;
+const intro = `${printVer} const transcoder = function () { const getGlobal = ${getGlobal.toString()}; const currentGlobal = getGlobal(); if (!currentGlobal.draco______decoder) currentGlobal.draco______decoder = function () {\n`;
 const outro = `
-    };
+    }(); return currentGlobal.draco______decoder; };
     if (typeof exports === 'object' && typeof module !== 'undefined') {
         const maptalksgl = require('@maptalks/gl');
         maptalksgl.transcoders.registerTranscoder('draco', transcoder);
@@ -97,8 +103,8 @@ if (production) {
                 exports: 'named',
                 extend: true,
                 file: 'dist/transcoder.js',
-                banner: `export default function () {`,
-                footer: `}`
+                banner: `export default function () { const getGlobal = ${getGlobal.toString()}; const currentGlobal = getGlobal(); if (!currentGlobal.draco______decoder) currentGlobal.draco______decoder = function () {`,
+                footer: '}(); return currentGlobal.draco______decoder; };',
             }
         },
         {
