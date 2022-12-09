@@ -832,9 +832,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     isEnableTAA() {
-        const sceneConfig =  this.layer._getSceneConfig();
-        const config = sceneConfig && sceneConfig.postProcess;
-        return config && config.antialias && config.antialias.enable && config.antialias.taa;
+        // const sceneConfig =  this.layer._getSceneConfig();
+        // const config = sceneConfig && sceneConfig.postProcess;
+        // return config && config.antialias && config.antialias.enable && config.antialias.taa;
+        return false;
     }
 
     isEnableSSAO() {
