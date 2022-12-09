@@ -403,7 +403,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 continue;
             }
             const geometryEvents = layer.options['geometryEvents'];
-            if (isMapGeometryEvent && (geometryEvents === false || geometryEvents === 0)) {
+            if (isMapGeometryEvent && (geometryEvents === undefined || geometryEvents === false || geometryEvents === 0)) {
                 continue;
             }
             let picks = layer.identifyAtPoint(point, options);
