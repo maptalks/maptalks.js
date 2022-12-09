@@ -46,26 +46,26 @@ describe('ImageManager.Spec', function () {
         done();
     });
 
-    it('get image witch cache', function (done) {
+    it('get image with cache', function (done) {
         ImageManager.add('a', 'tile.png');
         expect(getImage('a')).to.be.equal(hostUrl + 'tile.png');
         done();
     });
 
-    it('get image witch has host', function (done) {
+    it('get image with has host', function (done) {
         ImageManager.add('b', 'https://abc.com/tile.png');
         expect(getImage('b')).to.be.equal('https://abc.com/tile.png');
         done();
     });
 
-    it('get image witch base64', function (done) {
+    it('get image with base64', function (done) {
         var base64 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         ImageManager.add('c', base64);
         expect(getImage('c')).to.be.equal(base64);
         done();
     });
 
-    it('get image witch blob', function (done) {
+    it('get image with blob', function (done) {
         fetch(hostUrl + 'tile.png').then(function (res) {
             return res.blob();
         }).then(function (blob) {
