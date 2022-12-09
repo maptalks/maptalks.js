@@ -3,7 +3,6 @@ precision mediump float;
 
 uniform vec4 baseColorFactor;
 uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
-uniform float opacity;
 uniform float ambientStrength;
 uniform float specularStrength;
 
@@ -185,7 +184,7 @@ void main() {
         result += emit;
     #endif
 
-    glFragColor = vec4(result, opacity);
+    glFragColor = vec4(result, polygonOpacity);
     // glFragColor = linearTosRGB(glFragColor);
     #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         float colorAlpha = vColor.a;
