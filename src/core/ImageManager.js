@@ -14,6 +14,14 @@ function createCanvas() {
     return canvas;
 }
 
+function createOffscreenCanvas() {
+    let offscreenCanvas;
+    if (Browser.decodeImageInWorker) {
+        offscreenCanvas = new OffscreenCanvas(2, 2);
+    }
+    return offscreenCanvas;
+}
+
 const PROTOCOLS = ['http', 'data:image/', 'blob:'];
 
 function isAbsoluteURL(url) {
@@ -57,10 +65,11 @@ export const ImageManager = {
 
     /**
      * get image source
-     * @param {stStringring} name
-     * @returns {String} imageUrl
+     * @param {String} name
+     * @param {Boolean} imgBitMap
+     * @returns {String} url/imgBitMap
      */
-    get(name) {
+    get(name, imgBitMap = false) {
         if (!ImageManager.sourceUrl) {
             ImageManager.setSourceUrl(getAbsoluteURL('/'));
         }
@@ -68,11 +77,13 @@ export const ImageManager = {
         if (!img) {
             return `${ImageManager.sourceUrl}${name}`;
         }
-        if (!isString(img)) {
+        if (isString(img) && isAbsoluteURL(img)) {
             return img;
         }
-        if (isAbsoluteURL(img)) {
-            return img;
+        if (img.imgBitMap && imgBitMap) {
+            return img.imgBitMap;
+        } else if (img.base64) {
+            return img.base64;
         }
         return `${ImageManager.sourceUrl}${img}`;
     },
@@ -133,6 +144,14 @@ export const ImageManager = {
                 return;
             }
 
+            function getCtx(canvas, width, height) {
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, width, height);
+                return ctx;
+            }
+
             function parseSprite(json = {}, image) {
                 const canvas = createCanvas();
                 if (!canvas) {
@@ -141,11 +160,8 @@ export const ImageManager = {
                     });
                     return;
                 }
-                canvas.width = image.width;
-                canvas.height = image.height;
-                const ctx = canvas.getContext('2d');
+                const ctx = getCtx(canvas, image.width, image.height);
                 ctx.drawImage(image, 0, 0);
-                const tempCanvas = createCanvas();
                 const icons = [];
                 for (const name in json) {
                     const spriteItem = json[name];
@@ -155,6 +171,8 @@ export const ImageManager = {
                     });
                 }
                 let idx = 0;
+                const tempCanvas = createCanvas();
+                const offscreenCanvas = createOffscreenCanvas();
                 function drawIcon() {
                     if (idx === icons.length) {
                         resolve();
@@ -162,23 +180,21 @@ export const ImageManager = {
                     }
                     const { name, spriteItem } = icons[idx];
                     const { x, y, width, height } = spriteItem;
-                    tempCanvas.width = width;
-                    tempCanvas.height = height;
-                    const ctx1 = tempCanvas.getContext('2d');
-                    ctx1.clearRect(0, 0, width, height);
+                    const ctx1 = getCtx(tempCanvas, width, height);
                     ctx1.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-                    if (tempCanvas.toDataURL) {
-                        ImageManager.add(name, tempCanvas.toDataURL());
-                        idx++;
-                        drawIcon();
-                    } else if (tempCanvas.transferToImageBitmap) {
-                        ImageManager.add(name, tempCanvas.transferToImageBitmap());
-                        idx++;
-                        drawIcon();
-                    } else {
-                        idx++;
-                        drawIcon();
+                    const base64 = tempCanvas.toDataURL();
+                    let imgBitMap;
+                    if (offscreenCanvas) {
+                        const ctx2 = getCtx(offscreenCanvas, width, height);
+                        ctx2.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+                        imgBitMap = offscreenCanvas.transferToImageBitmap();
                     }
+                    ImageManager.add(name, {
+                        base64,
+                        imgBitMap
+                    });
+                    idx++;
+                    drawIcon();
                 }
                 drawIcon();
             }
@@ -202,20 +218,29 @@ export const ImageManager = {
     },
 };
 
-export function checkResourceTemplate(key, geo) {
+export function checkResourceTemplate(url, geo) {
+    const key = url[0];
     if (!key) {
         return key;
     }
     if (key.indexOf('$') === 0) {
         const name = key.substring(1, key.length);
-        return ImageManager.get(name);
-    } else if (key.indexOf('{') > -1 && key.indexOf('}') > -1) {
+        return ImageManager.get(name, Browser.decodeImageInWorker);
+    } else if (imageIsTemplate(key)) {
         if (!geo) {
             return key;
         }
         const properties = geo.getProperties();
         const name = replaceVariable(key, properties || {});
-        return ImageManager.get(name);
+        url[0] = name;
+        return ImageManager.get(name, Browser.decodeImageInWorker);
     }
     return key;
+}
+
+export function imageIsTemplate(key) {
+    if (!key) {
+        return false;
+    }
+    return (key.indexOf('{') > -1 && key.indexOf('}') > -1);
 }
