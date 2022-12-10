@@ -95,7 +95,7 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize);
+            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize);
             const instanceBuffers = {};
             //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
@@ -178,7 +178,8 @@ const GLTFMixin = Base =>
                             return positionMatrix;
                         }
                     });
-                    mesh.setLocalTransform(tileTranslationMatrix);
+                    const localTransform = mat4.translate([], tileTranslationMatrix, instanceCenter);
+                    mesh.setLocalTransform(localTransform);
 
                     geometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
                     //上面已经生成了buffer，无需再生成
@@ -307,8 +308,9 @@ const GLTFMixin = Base =>
             const tileScale = tileSize.width / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
             const zScale = this.layer.getRenderer().getZScale();
             const altitudeOffset = (this.dataConfig.altitudeOffset || 0) * 100;
+            let minx = Infinity, miny = Infinity, minz = Infinity;
+            let maxx = -Infinity, maxy = -Infinity, maxz = -Infinity;
             const position = [];
-            const mat = [];
             for (let i = 0; i < count; i++) {
                 const pos = vec3.set(
                     position,
@@ -317,12 +319,45 @@ const GLTFMixin = Base =>
                     -aPosition[i * positionSize + 1] * tileScale,
                     positionSize === 2 ? 0 : (aPosition[i * positionSize + 2] + altitudeOffset) * zScale
                 );
+                if (pos[0] < minx) {
+                    minx = pos[0];
+                }
+                if (pos[0] > maxx) {
+                    maxx = pos[0];
+                }
+                if (pos[1] < miny) {
+                    miny = pos[1];
+                }
+                if (pos[1] > maxy) {
+                    maxy = pos[1];
+                }
+                if (pos[2] < minz) {
+                    minz = pos[2];
+                }
+                if (pos[2] > maxz) {
+                    maxz = pos[2];
+                }
+            }
+            const cx = minx + maxx / 2;
+            const cy = miny + maxy / 2;
+            const cz = minz + maxz / 2;
+            const mat = [];
+            for (let i = 0; i < count; i++) {
+                const pos = vec3.set(
+                    position,
+                    aPosition[i * positionSize] * tileScale  - cx,
+                    //vt中的y轴方向与opengl(maptalks世界坐标系)相反
+                    -aPosition[i * positionSize + 1] * tileScale - cy,
+                    positionSize === 2 ? 0 : (aPosition[i * positionSize + 2] + altitudeOffset) * zScale - cz
+                );
                 mat4.fromTranslation(mat, pos);
                 setInstanceData('instance_vectorA', i, mat, 0);
                 setInstanceData('instance_vectorB', i, mat, 1);
                 setInstanceData('instance_vectorC', i, mat, 2);
                 instanceData['aPickingId'][i] = i;
             }
+            vec3.set(position, cx, cy, cz);
+            return position;
         }
 
         getShaderConfig() {
