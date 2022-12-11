@@ -3,7 +3,7 @@ import Material from './Material.js';
 const DEFAULT_UNIFORMS = {
     'baseColorFactor': [1, 1, 1, 1],
     'materialShininess' : 32.0,
-    'ambientStrength' : 1,
+    'environmentExposure' : 1,
     'specularStrength' : 32,
     'opacity' : 1.0,
     'extrusionOpacity': 0,

@@ -3,7 +3,7 @@ precision mediump float;
 
 uniform vec4 baseColorFactor;
 uniform float materialShininess;//反光度，即影响镜面高光的散射/半径
-uniform float ambientStrength;
+uniform float environmentExposure;
 uniform float specularStrength;
 
 uniform vec3 light0_viewDirection;
@@ -130,7 +130,7 @@ vec3 getSpecularColor() {
 void main() {
     //环境光
     vec4 baseColor = getBaseColor();
-    vec3 ambient = ambientStrength * ambientColor * baseColor.rgb;
+    vec3 ambient = environmentExposure * ambientColor * baseColor.rgb;
 
     #ifdef HAS_INSTANCE_COLOR
         ambient *= vInstanceColor.rgb;
