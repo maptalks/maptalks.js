@@ -52,7 +52,7 @@ class LinePainter extends BasicPainter {
             return true;
         }
         for (let i = 0; i < symbols.length; i++) {
-            if (symbols[i]['linePatternAnimSpeed']) {
+            if (symbols[i]['linePatternFile'] && symbols[i]['linePatternAnimSpeed']) {
                 return true;
             }
         }

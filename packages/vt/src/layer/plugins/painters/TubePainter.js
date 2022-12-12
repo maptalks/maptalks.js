@@ -30,7 +30,7 @@ class TubePainter extends BasicPainter {
         }
         const symbols = this.getSymbols();
         for (let i = 0; i < symbols.length; i++) {
-            if (symbols[i]['linePatternAnimSpeed']) {
+            if (symbols[i]['linePatternFile'] && symbols[i]['linePatternAnimSpeed']) {
                 return true;
             }
         }
