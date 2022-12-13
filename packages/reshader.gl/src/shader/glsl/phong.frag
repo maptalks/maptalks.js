@@ -184,7 +184,12 @@ void main() {
         result += emit;
     #endif
 
-    glFragColor = vec4(result, polygonOpacity);
+    #ifdef IS_LINE_EXTRUSION
+        glFragColor = vec4(result, lineOpacity);
+    #else
+        glFragColor = vec4(result, polygonOpacity);
+    #endif
+
     // glFragColor = linearTosRGB(glFragColor);
     #if defined(HAS_COLOR) || defined(HAS_COLOR0)
         float colorAlpha = vColor.a;
