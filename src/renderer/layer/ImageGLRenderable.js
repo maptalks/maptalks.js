@@ -113,6 +113,7 @@ const ImageGLRenderable = Base => {
 
         drawDebug(uMatrix, x, y, w, h, debugInfo) {
             const gl = this.gl;
+            gl.disable(gl.DEPTH_TEST);
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
             this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -156,6 +157,7 @@ const ImageGLRenderable = Base => {
             ), gl.DYNAMIC_DRAW);
             gl.uniform1f(this.program['u_debug_line'], 0);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            gl.enable(gl.DEPTH_TEST);
         }
 
         bufferTileData(x, y, w, h, buffer) {
@@ -235,7 +237,7 @@ const ImageGLRenderable = Base => {
             const gl = this.gl;
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
-            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.STENCIL_TEST);
 
             gl.enable(gl.BLEND);
@@ -287,6 +289,9 @@ const ImageGLRenderable = Base => {
             if (this.gl) {
                 this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
+            }
+            if (!this.gl.wrap) {
+                this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
             }
         }
 

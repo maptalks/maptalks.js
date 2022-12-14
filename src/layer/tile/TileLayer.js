@@ -1292,6 +1292,32 @@ class TileLayer extends Layer {
             renderer.clear();
         }
     }
+
+    /**
+     * Get layer's polygonOffset count
+     * @return {Number}
+     */
+    getPolygonOffsetCount() {
+        return 2;
+    }
+
+    /**
+     * Get layer's base polygon offset
+     * @return {Number}
+     */
+    getPolygonOffset() {
+        return this._polygonOffset || 0;
+    }
+
+    /**
+     * Set layer's base polygon offset, called by GroupGLLayer
+     * @param {Number} offset polygon offset
+     * @return {TileLayer}
+     */
+    setPolygonOffset(offset) {
+        this._polygonOffset = offset;
+        return this;
+    }
 }
 
 TileLayer.registerJSONType('TileLayer');
