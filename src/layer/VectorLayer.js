@@ -32,7 +32,6 @@ const TEMP_EXTENT = new PointExtent();
 const options = {
     'debug': false,
     'enableSimplify': true,
-    'geometryEvents': true,
     'defaultIconSize': [20, 20],
     'cacheVectorOnCanvas': true,
     'cacheSvgOnCanvas': Browser.gecko,
