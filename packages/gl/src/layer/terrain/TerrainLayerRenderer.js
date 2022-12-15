@@ -332,9 +332,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         return cached;
     }
 
-    _findParentTileInfo(tile) {
+    // _findParentTileInfo(tile) {
 
-    }
+    // }
 
     _clipParentTerrain(parentTile, tile) {
         const { image, info } = parentTile;
