@@ -116,7 +116,9 @@ const depthFrag = `
 
     void main() {
         float fragDepth = vFbo_picking_fragDepth > 1.0 ? vFbo_picking_fragDepth : vFbo_picking_viewZ + 1.0;
-        gl_FragDepthEXT = log2(fragDepth) * logDepthBufFC * 0.5;
+        #if __VERSION__ == 300
+            gl_FragDepthEXT = log2(fragDepth) * logDepthBufFC * 0.5;
+        #endif
         vec4 depthColor = packDepthToRGBA(fragDepth - 1.0);
         glFragColor = common_unpackFloat(dot(depthColor, UnpackFactors));
         #if __VERSION__ == 100
