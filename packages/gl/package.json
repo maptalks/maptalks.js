@@ -29,7 +29,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@mapbox/martini": "^0.2.0",
-    "@maptalks/fusiongl": "^0.5.0",
+    "@maptalks/fusiongl": "^0.5.1",
     "@maptalks/regl": "^3.2.3",
     "@maptalks/reshader.gl": "^0.79.1",
     "color": "^3.0.0",
