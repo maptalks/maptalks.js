@@ -73,7 +73,7 @@ describe('gl tests', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     const altitude = group.queryTerrain(map.getCenter());
-                    expect(altitude).to.be.eql(4442.0751953125);
+                    expect(altitude).to.be.eql(4311.2001953125);
                     done();
                 });
             });
@@ -160,6 +160,7 @@ describe('gl tests', () => {
                 })
             ];
             const terrain = {
+                fadeAnimation: false,
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
@@ -175,7 +176,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 151, '1': 155, '2': 156, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 } });
                         done();
                     });
                 });
@@ -194,6 +195,7 @@ describe('gl tests', () => {
                 })
             ];
             const terrain = {
+                fadeAnimation: false,
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
@@ -210,7 +212,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 150, '1': 154, '2': 158, '3': 63 } });
+                        expect(pixel).to.be.eql({ data: { '0': 147, '1': 147, '2': 143, '3': 191 } });
                         done();
                     });
                 });
@@ -229,6 +231,7 @@ describe('gl tests', () => {
                 })
             ];
             const terrain = {
+                fadeAnimation: false,
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
@@ -241,7 +244,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = group.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 151, '1': 155, '2': 156, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 }});
                         done();
                     });
                 });
@@ -278,6 +281,7 @@ describe('gl tests', () => {
                 })
             ];
             const terrain = {
+                fadeAnimation: false,
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
@@ -311,6 +315,7 @@ describe('gl tests', () => {
                 })
             ];
             const terrain = {
+                fadeAnimation: false,
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
@@ -324,9 +329,9 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 151, '1': 155, '2': 156, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 } });
                         const altitude = group.queryTerrain(map.getCenter());
-                        expect(altitude).to.be.eql(4442.0751953125);
+                        expect(altitude).to.be.eql(4311.2001953125);
                         done();
                     });
                 });
