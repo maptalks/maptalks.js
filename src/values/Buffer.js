@@ -42,7 +42,12 @@ include(GLContext.prototype, {
         const attrs = states.attributes;
         for (const p in attrs) {
             if (attrs[p].buffer === buffer) {
+                // 2022-12-16 vt（开启debug）和tilelayer同时添加时，发现偶发的会因为deleteBuffer导致vt中的DebugPainter报错
+                // 在disableVertexAttribArray后解决。这个操作一般都是安全的:
+                // 因为delete不会在渲染过程中调用，而每次渲染开始或者切换context时，都会重新enableVertexAttribArray
                 attrs[p].buffer = null;
+                attrs[p].enable = false;
+                this._gl.disableVertexAttribArray(+p);
             }
         }
         return this._gl.deleteBuffer(buffer);

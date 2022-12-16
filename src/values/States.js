@@ -491,7 +491,7 @@ include(GLContext.prototype, {
      */
     vertexAttribPointer(index, size, type, normalized, stride, offset) {
         this._checkAndRestore();
-        const args = [index, size, type, normalized, stride, offset];
+        // const args = [index, size, type, normalized, stride, offset];
         if (!this.states.attributes[index]) {
             this.states.attributes[index] = {
                 enable : true
@@ -499,7 +499,16 @@ include(GLContext.prototype, {
         }
         const attrib = this.states.attributes[index];
         attrib.buffer = this.states.arrayBuffer;
-        attrib.args = args;
+        if (!attrib.args) {
+            attrib.args = [index, size, type, normalized, stride, offset];
+        } else {
+            attrib.args[0] = index;
+            attrib.args[1] = size;
+            attrib.args[2] = type;
+            attrib.args[3] = normalized;
+            attrib.args[4] = stride;
+            attrib.args[5] = offset;
+        }
         return this._gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
     },
 
@@ -634,6 +643,8 @@ include(GLContext.prototype, {
                 } else {
                     gl.disableVertexAttribArray(i);
                 }
+            } else {
+                gl.disableVertexAttribArray(i);
             }
         }
 
