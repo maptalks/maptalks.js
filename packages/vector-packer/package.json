@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/vector-packer",
-  "version": "0.77.0",
+  "version": "0.78.0",
   "description": "Packer to pack simple vector graphics for gl",
   "module": "dist/vector-packer.mjs",
   "files": [
