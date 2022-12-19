@@ -58,9 +58,9 @@ export default class SkylineAnalysis extends Analysis {
         if (!options) {
             options = {};
         }
-        const width = this._fbo.width, height = this._fbo.height;
         const meshes = this._pass.getRenderMeshes();
         const data = this.exportAnalysisMap(meshes)
+        const width = this._fbo.width, height = this._fbo.height;
         const pixels = new Uint8ClampedArray(data.length);
         for (let i = 0; i < width; i++) {
             for (let j = 0; j < height; j++) {
