@@ -386,7 +386,7 @@ export default class LinePack extends VectorPack {
                     // 第一段第一个坐标与最后一段最后一个坐标相同时，说明是多边形被切分后的第一段和最后一段，则把这两个线段做合并，并删除最后一段
                     const firstseg = segs[0];
                     const lastseg = segs[segs.length - 1];
-                    if (firstseg[0].equals(lastseg[lastseg.length - 1])) {
+                    if (equalPoint(firstseg[0], lastseg[lastseg.length - 1])) {
                         segs[0] = lastseg.concat(firstseg.slice(1));
                         segs.length = segs.length - 1;
                     }
@@ -465,11 +465,11 @@ export default class LinePack extends VectorPack {
 
         // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
-        while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        while (len >= 2 && equalPoint(vertices[len - 1], vertices[len - 2])) {
             len--;
         }
         let first = 0;
-        while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
+        while (first < len - 1 && equalPoint(vertices[first], vertices[first + 1])) {
             first++;
         }
 
@@ -511,7 +511,7 @@ export default class LinePack extends VectorPack {
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
-            if (nextVertex && vertices[i].equals(nextVertex)) continue;
+            if (nextVertex && equalPoint(vertices[i], nextVertex)) continue;
 
             if (nextNormal) prevNormal = nextNormal;
             if (currentVertex) prevVertex = currentVertex;
@@ -780,7 +780,7 @@ export default class LinePack extends VectorPack {
         this.addHalfVertex(p, leftX, leftY, round, false, endLeft, segment, leftNormalDistance);
         this.addHalfVertex(p, rightX, rightY, round, true, -endRight, segment, rightNormalDistance);
 
-        if (!this.prevVertex || !p.equals(this.prevVertex)) {
+        if (!this.prevVertex || !equalPoint(p, this.prevVertex)) {
             this.prevVertex = p;
         }
         // There is a maximum "distance along the line" that we can store in the buffers.
@@ -1025,4 +1025,8 @@ function getNormalDistance(perp, normal) {
     const normalAngle = normal.angleTo(ORIGINZERO);
     const sign = Math.sign(normalAngle - perpAngle);
     return sign * Math.sqrt(z * z - x * x);
+}
+
+function equalPoint(p1, p2) {
+    return p1.equals(p2) && p1.z === p2.z;
 }

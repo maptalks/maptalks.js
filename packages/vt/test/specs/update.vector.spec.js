@@ -53,7 +53,7 @@ describe('vector layers update style specs', () => {
         });
 
         const layer = new PointLayer('point', marker);
-        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
+        assertChangeStyle(done, layer, [0, 255, 0, 127], () => {
             marker.updateSymbol({
                 markerFill: '#0f0',
                 markerOpacity: 0.5
@@ -104,7 +104,7 @@ describe('vector layers update style specs', () => {
         });
 
         const layer = new PointLayer('point', marker);
-        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
+        assertChangeStyle(done, layer, [0, 255, 0, 127], () => {
             marker.updateSymbol({
                 markerFill: '#0f0',
                 markerOpacity: 0.5
@@ -169,7 +169,7 @@ describe('vector layers update style specs', () => {
                 }
             ]
         });
-        assertChangeStyle(done, layer, [0, 255, 0, 63], () => {
+        assertChangeStyle(done, layer, [0, 255, 0, 127], () => {
             layer.updateSymbol(0, {
                 markerFill: '#0f0',
                 markerOpacity: 0.5

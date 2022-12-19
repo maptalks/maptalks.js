@@ -216,7 +216,7 @@ describe('vector layers symbol update specs', () => {
                 updated = true;
             } else if (updated && count >= 3) {
                 const pixel = readPixel(renderer.canvas, x + 20, y);
-                assert.deepEqual(pixel, [0, 255, 0, 63]);
+                assert.deepEqual(pixel, [0, 255, 0, 127]);
                 const pixel1 = readPixel(renderer.canvas, x, y);
                 assert.deepEqual(pixel1, [255, 0, 0, 255]);
                 assert(partialUpdate);
@@ -279,7 +279,7 @@ describe('vector layers symbol update specs', () => {
                 ]);
                 updated = true;
             } else if (updated && count >= 3) {
-                const pixel = readPixel(renderer.canvas, x + 38, y);
+                const pixel = readPixel(renderer.canvas, x + 37, y);
                 assert.deepEqual(pixel, [0, 255, 0, 255]);
                 const pixel1 = readPixel(renderer.canvas, x, y);
                 assert.deepEqual(pixel1, [255, 0, 0, 255]);
@@ -339,7 +339,7 @@ describe('vector layers symbol update specs', () => {
             } else if (updated && count >= 3) {
                 const pixel = readPixel(renderer.canvas, x, y);
                 //中心点往外40，能读到像素了
-                assert.deepEqual(pixel, [255, 0, 0, 63]);
+                assert.deepEqual(pixel, [255, 0, 0, 127]);
                 assert(partialUpdate);
                 done();
             }
@@ -931,7 +931,7 @@ describe('vector layers symbol update specs', () => {
                 updated = true;
             } else if (updated && count === 3) {
                 const pixel = readPixel(layer.getRenderer().canvas, x, y);
-                assert.deepEqual(pixel, [255, 0, 0, 63]);
+                assert.deepEqual(pixel, [255, 0, 0, 127]);
                 assert(partialUpdate);
                 done();
             }

@@ -1191,8 +1191,7 @@ describe('update style specs', () => {
             postProcess: {
                 enable: true,
                 antialias: {
-                    enable: true,
-                    taa: true
+                    enable: true
                 }
             }
         };
@@ -1208,7 +1207,7 @@ describe('update style specs', () => {
                     assert(pixel[1] > pixel[0]);
                     // 调用zindex后，红色就变为上层
                     layerRed.setZIndex(2);
-                } else if (count === startCount + 4) {
+                } else if (count === startCount + 2) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2 + 30, canvas.height / 2 + 30);
                     assert(pixel[1] < pixel[0]);
@@ -1305,8 +1304,7 @@ describe('update style specs', () => {
             postProcess: {
                 enable: true,
                 antialias: {
-                    enable: true,
-                    taa: true
+                    enable: true
                 },
                 ssr: {
                     enable: true,
@@ -1355,7 +1353,7 @@ describe('update style specs', () => {
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
                     assert.deepEqual(pixel, [159, 159, 159, 255]);
                     layerRed.updateSymbol(1, { ssr: true });
-                } else if (count === startCount + 4) {
+                } else if (count === startCount + 2) {
                     const canvas = layer.getRenderer().canvas;
                     const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2 + 20);
                     assert.deepEqual(pixel, [134, 113, 113, 255]);

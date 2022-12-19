@@ -50,6 +50,7 @@ class DebugPainter {
         this._command({
             transform,
             data: this._data,
+            texData: this._texCoordData,
             debugLine: 1,
             primitive: 'lines',
             framebuffer: fbo || null,
@@ -60,13 +61,13 @@ class DebugPainter {
         this._command({
             transform,
             data: this._textData,
+            texData: this._texCoordData,
             debugLine: 0,
             primitive: 'triangle strip',
             framebuffer: fbo || null,
             image: this._texture,
             count: 4
         });
-
     }
 
     delete() {
@@ -136,7 +137,7 @@ class DebugPainter {
             `,
             attributes: {
                 aPosition: this._regl.prop('data'),
-                aTexCoord: this._texCoordData
+                aTexCoord: this._regl.prop('texData')
             },
             uniforms: {
                 transform: this._regl.prop('transform'),

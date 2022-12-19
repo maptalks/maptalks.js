@@ -59,7 +59,7 @@ describe('postprocess specs', () => {
         map.remove();
     });
 
-    it('should can turn on taa', done => {
+    it.skip('should can turn on taa', done => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
             data: DATA,
@@ -93,7 +93,7 @@ describe('postprocess specs', () => {
         groupLayer.addTo(map);
     });
 
-    it('should can draw correctly with taa', done => {
+    it.skip('should can draw correctly with taa', done => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
             data: DATA,
@@ -149,7 +149,7 @@ describe('postprocess specs', () => {
         groupLayer.addTo(map);
     });
 
-    it('fuzhenn/maptalks-ide#2793,  retire taa when switching ssr', done => {
+    it.skip('fuzhenn/maptalks-ide#2793,  retire taa when switching ssr', done => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: DATA,
             style: [

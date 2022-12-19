@@ -61,6 +61,7 @@ module.exports = {
     layers: [
         new maptalks.TileLayer('b', {
             // 1 px black dot
+            fadeAnimation: false,
             urlTemplate: 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
         })
     ],
@@ -68,8 +69,7 @@ module.exports = {
         postProcess: {
             enable: true,
             antialias: {
-                enable: true,
-                taa: true
+                enable: true
             }
         }
     },

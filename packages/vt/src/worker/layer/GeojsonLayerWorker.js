@@ -148,7 +148,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             return 1;
         }
         const layers = [];
-
         for (let i = 0, l = tile.features.length; i < l; i++) {
             const feature = tile.features[i];
 
