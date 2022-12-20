@@ -1,7 +1,7 @@
 import { createFilter } from '@maptalks/feature-filter';
 import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
 import { extend, isNil } from './Util';
-const { isExpressionFilter, isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
+const { isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
 
 export function compileStyle(styles=[]) {
     styles = styles.map(s => {
@@ -66,7 +66,7 @@ export function compileFilter(filterValue) {
             return check(feature) && filterFn(feature, zoom);
         };
     }
-    if (isExpressionFilter(filterValue)) {
+    if (isMapboxExpression(filterValue)) {
         let expression = createExpressionFilter(filterValue);
         expression = expression && expression.filter;
         const filterFn = (feature, zoom) => {

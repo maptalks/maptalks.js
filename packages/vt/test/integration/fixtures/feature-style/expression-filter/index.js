@@ -2,8 +2,8 @@ const data = {
     type: 'FeatureCollection',
     features: [
         { type: 'Feature', id: 0, geometry: { type: 'LineString', coordinates: [[-1, 0.9], [0, 0.9], [0.6, -0.5]] }, properties: { type: 1 } },
-        { type: 'Feature', id: 1, geometry: { type: 'LineString', coordinates: [[-1, 0.6], [-0.2, 0.6], [0.3, -0.5]] }, properties: { type: 2 } },
-        { type: 'Feature', id: 2, geometry: { type: 'LineString', coordinates: [[-1, 0.3], [-0.4, 0.3], [0, -0.5]] }, properties: { type: 3 } }
+        { type: 'Feature', id: 1, geometry: { type: 'LineString', coordinates: [[-1, 0.6], [-0.2, 0.6], [0.3, -0.5]] }, properties: { type: 2, foo: '1bar2' } },
+        { type: 'Feature', id: 2, geometry: { type: 'LineString', coordinates: [[-1, 0.3], [-0.4, 0.3], [0, -0.5]] }, properties: { type: 3, foo: '1bar2' } }
     ]
 };
 
@@ -33,9 +33,10 @@ const style = [
             sceneConfig: {
             }
         },
-        filter: ['==', ['get', 'type'], 2],
+        // filter: ['==', ['get', 'type'], 2],
+        filter: ['contains', 'foo', 'bar'],
         symbol: {
-            lineColor: '#000',
+            lineColor: '#0f0',
             lineWidth: 12,
             lineJoin: 'round'
         }
