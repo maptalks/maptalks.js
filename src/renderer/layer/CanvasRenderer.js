@@ -40,7 +40,7 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
-        if (Browser.decodeImageInWorker && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
+        if (Browser.decodeImageInWorker && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
             this._resWorkerConn = new ResourceWorkerConnection();
         }
         this.setToRedraw();
@@ -861,7 +861,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && !img.close && Browser.imageBitMap && !Browser.safari) {
+        if (img && !img.close && Browser.imageBitMap && !Browser.safari && !Browser.iosWeixin) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
