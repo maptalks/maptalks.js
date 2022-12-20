@@ -1,4 +1,4 @@
-import { createFilter } from '@maptalks/feature-filter';
+import { createFilter, isFeatureFilter } from '@maptalks/feature-filter';
 import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
 import { extend, isNil } from './Util';
 const { isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
@@ -66,7 +66,9 @@ export function compileFilter(filterValue) {
             return check(feature) && filterFn(feature, zoom);
         };
     }
-    if (isMapboxExpression(filterValue)) {
+    if (isFeatureFilter(filterValue)) {
+        return createFilter(filterValue);
+    } else {
         let expression = createExpressionFilter(filterValue);
         expression = expression && expression.filter;
         const filterFn = (feature, zoom) => {
@@ -74,8 +76,6 @@ export function compileFilter(filterValue) {
             return expression && expression(EVALUATION_PARAM, feature);
         };
         return filterFn;
-    } else {
-        return createFilter(filterValue);
     }
 }
 
