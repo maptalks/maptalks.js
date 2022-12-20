@@ -73,7 +73,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._childTiles = [];
         this._tileQueue = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
-        if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
+        if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
             this._tileImageWorkerConn = new TileWorkerConnection();
         }
         this._compareTiles = compareTiles.bind(this);
