@@ -19,6 +19,7 @@ if (!IS_NODE) {
         android23 = ua.search('android [23]') !== -1,
         chrome = ua.indexOf('chrome') !== -1,
         gecko = ua.indexOf('gecko') !== -1 && !webkit && !window.opera && !ie,
+        iosWeixin = /iphone/i.test(ua) && /micromessenger/i.test(ua),
 
         mobile = typeof orientation !== 'undefined' || ua.indexOf('mobile') !== -1,
         msPointer = !window.PointerEvent && window.MSPointerEvent,
@@ -97,6 +98,7 @@ if (!IS_NODE) {
         gecko3d: gecko3d,
         opera12: opera12,
         any3d: any3d,
+        iosWeixin,
 
         mobile: mobile,
         mobileWebkit: mobile && webkit,

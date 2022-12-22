@@ -15,7 +15,8 @@ import GeoJSON from '../geometry/GeoJSON';
  * @instance
  */
 const options = {
-    'drawImmediate': false
+    'drawImmediate': false,
+    'geometryEvents': true
 };
 
 

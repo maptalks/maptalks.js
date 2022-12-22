@@ -73,7 +73,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._childTiles = [];
         this._tileQueue = [];
         this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
-        if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari)) {
+        if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
             this._tileImageWorkerConn = new TileWorkerConnection();
         }
         this._compareTiles = compareTiles.bind(this);
@@ -283,6 +283,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
+        this._childTiles.sort(this._compareTiles);
+        this._parentTiles.sort(this._compareTiles);
         if (this.layer.options['opacity'] === 1) {
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
