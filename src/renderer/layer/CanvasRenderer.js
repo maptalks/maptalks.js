@@ -7,7 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { checkResourceTemplate, imageIsTemplate } from '../../core/ImageManager';
+import { checkResourceValue, resourceIsTemplate } from '../../core/ImageManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -368,7 +368,7 @@ class CanvasRenderer extends Class {
                     continue;
                 }
                 //模板的资源不能缓存,比如 {iconName},因为资源是动态读取的，不能根据简单的字符串来缓存了,可能多个资源的名字都是{iconName}了
-                if (!imageIsTemplate(url[0])) {
+                if (!resourceIsTemplate(url[0])) {
                     cache[url.join('-')] = 1;
                 }
                 if (!resources.isResourceLoaded(url, true)) {
@@ -769,7 +769,7 @@ class CanvasRenderer extends Class {
 
     _promiseResource(url) {
         //当资源是{iconName}这样的模板时,url里关于资源的url会被替换的，比如{iconName} 会被替换为 url[0]= 真实的图片的名字
-        const imgUrl = checkResourceTemplate(url, url.geo);
+        const imgUrl = checkResourceValue(url, url.geo);
         delete url.geo;
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];

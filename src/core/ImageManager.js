@@ -1,4 +1,4 @@
-import { getAbsoluteURL, isString, replaceVariable } from './util';
+import { getAbsoluteURL, isNil, isString, replaceVariable } from './util';
 import Browser from './Browser';
 import { createEl } from './util/dom';
 import Ajax from './Ajax';
@@ -218,15 +218,16 @@ export const ImageManager = {
     },
 };
 
-export function checkResourceTemplate(url, geo) {
-    const key = url[0];
-    if (!key) {
+export function checkResourceValue(url, geo) {
+    let key = url[0];
+    if (isNil(key)) {
         return key;
     }
+    key += '';
     if (key.indexOf('$') === 0) {
         const name = key.substring(1, key.length);
         return ImageManager.get(name, Browser.decodeImageInWorker);
-    } else if (imageIsTemplate(key)) {
+    } else if (resourceIsTemplate(key)) {
         if (!geo) {
             return key;
         }
@@ -238,9 +239,10 @@ export function checkResourceTemplate(url, geo) {
     return key;
 }
 
-export function imageIsTemplate(key) {
-    if (!key) {
-        return false;
+export function resourceIsTemplate(key) {
+    if (isNil(key)) {
+        return key;
     }
+    key += '';
     return (key.indexOf('{') > -1 && key.indexOf('}') > -1);
 }
