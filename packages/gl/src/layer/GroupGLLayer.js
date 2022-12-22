@@ -416,6 +416,12 @@ export default class GroupGLLayer extends maptalks.Layer {
             if (!picks.length) {
                 continue;
             }
+            const id = layer.getId();
+            for (let j = 0; j < picks.length; j++) {
+                if (picks[j]) {
+                    picks[j].layer = id;
+                }
+            }
             result.push(...picks);
         }
         if (options.orderByCamera) {
