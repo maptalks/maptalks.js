@@ -1,7 +1,12 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import { setUniformFromSymbol, createColorSetter, isNil, isNumber, extend } from '../Util';
+import { getCentiMeterScale } from '../../../common/Util';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const V3 = [];
+const TEMP_V3_0 = [];
+const TEMP_V3_1 = [];
+const TEMP_V3_2 = [];
 const Q4 = [];
 const DEFAULT_TRANSLATION = [0, 0, 0];
 const DEFAULT_ROTATION = [0, 0, 0];
@@ -40,6 +45,7 @@ const GLTFMixin = Base =>
             this.scene.sortFunction = this.sortByCommandKey;
             this._gltfMeshInfos = [];
             this._gltfManager = new reshader.GLTFManager(regl);
+            this._initTRSFuncType();
             this._initGLTF();
         }
 
@@ -83,7 +89,7 @@ const GLTFMixin = Base =>
             const map = this.getMap();
             const { geometry } = geo;
             const { positionSize, features } = geometry;
-            const { aPosition } = geometry.data;
+            const { aPosition, aPickingId } = geometry.data;
             const count = aPosition.length / positionSize;
             if (count === 0) {
                 return null;
@@ -95,7 +101,7 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize);
+            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize, aPickingId, features);
             const instanceBuffers = {};
             //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
@@ -108,6 +114,8 @@ const GLTFMixin = Base =>
                 };
             }
 
+            const hasFnType = this._hasFuncType();
+
             const meshes = [];
             const symbols = this.getSymbols();
             for (let i = 0; i < symbols.length; i++) {
@@ -116,9 +124,13 @@ const GLTFMixin = Base =>
                 if (!meshInfos) {
                     continue;
                 }
+                const { fixSizeOnZoom } = symbol;
+                let gltfMatrix = mat4.identity([]);
+                // let translationInMeters;
+                if (!hasFnType) {
+                    gltfMatrix = this._getSymbolTRSMatrix(gltfMatrix);
+                }
 
-                const { translation, rotation, scale, fixSizeOnZoom } = symbol;
-                const gltfMatrix = this._getGLTFMatrix([], translation, rotation, scale);
                 let zOffset = 0;
                 //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
                 meshInfos.forEach(info => {
@@ -134,6 +146,10 @@ const GLTFMixin = Base =>
                     }
                 });
                 const anchorTranslation = [0, 0, zOffset];
+                // if (!hasFnType) {
+                //     vec3.add(anchorTranslation, translationInMeters, anchorTranslation);
+                // }
+                //
                 const childMeshes = meshInfos.map(info => {
                     const { geometry, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
                     const MatClazz = this.getMaterialClazz(materialInfo);
@@ -294,14 +310,13 @@ const GLTFMixin = Base =>
             return symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index].hasSkinAnimation();
         }
 
-        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize) {
+        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize, aPickingId, features) {
             function setInstanceData(name, idx, matrix, col) {
                 instanceData[name][idx * 4] = matrix[col];
                 instanceData[name][idx * 4 + 1] = matrix[col + 4];
                 instanceData[name][idx * 4 + 2] = matrix[col + 8];
                 instanceData[name][idx * 4 + 3] = matrix[col + 12];
             }
-
 
             const count = aPosition.length / positionSize;
             const tileSize = this.layer.getTileSize();
@@ -342,6 +357,9 @@ const GLTFMixin = Base =>
             const cy = miny + maxy / 2;
             const cz = minz + maxz / 2;
             const mat = [];
+
+            const hasFnType = this._hasFuncType();
+
             for (let i = 0; i < count; i++) {
                 const pos = vec3.set(
                     position,
@@ -351,6 +369,11 @@ const GLTFMixin = Base =>
                     positionSize === 2 ? 0 : (aPosition[i * positionSize + 2] + altitudeOffset) * zScale - cz
                 );
                 mat4.fromTranslation(mat, pos);
+                if (hasFnType) {
+                    const trs = this._getSymbolTRSMatrix(TEMP_MATRIX, features, aPickingId, i);
+                    mat4.multiply(mat, mat, trs);
+                }
+
                 setInstanceData('instance_vectorA', i, mat, 0);
                 setInstanceData('instance_vectorB', i, mat, 1);
                 setInstanceData('instance_vectorC', i, mat, 2);
@@ -358,6 +381,74 @@ const GLTFMixin = Base =>
             }
             vec3.set(position, cx, cy, cz);
             return position;
+        }
+
+        _getMeterScale() {
+            if (!this._meterScale) {
+                const map = this.getMap();
+                this._meterScale = getCentiMeterScale(map.getGLRes(), map) * 100;
+            }
+            return this._meterScale;
+        }
+
+        // features, aPickingId, i 允许为空
+        _getSymbolTRSMatrix(out, features, aPickingId, i) {
+            const map = this.getMap();
+            const symbolDef = this.symbolDef[0];
+
+            const meterScale = this._getMeterScale();
+            let tx = symbolDef['translationX'] || 0;
+            let ty = symbolDef['translationY'] || 0;
+            let tz = symbolDef['translationZ'] || 0;
+
+            let rx = symbolDef['rotationX'] || 0;
+            let ry = symbolDef['rotationY'] || 0;
+            let rz = symbolDef['rotationZ'] || 0;
+
+            let sx = symbolDef['scaleX'] || 0;
+            let sy = symbolDef['scaleY'] || 0;
+            let sz = symbolDef['scaleZ'] || 0;
+
+            const idx = aPickingId && aPickingId[i];
+            const feature = features && features[idx];
+
+            const zoom = map.getZoom();
+            const properties = feature && feature.feature && feature.feature.properties;
+
+            if (this._txFn) {
+                tx = this._txFn(zoom, properties);
+            }
+            if (this._tyFn) {
+                ty = this._tyFn(zoom, properties);
+            }
+            if (this._tzFn) {
+                tz = this._tzFn(zoom, properties);
+            }
+            const translation = vec3.set(TEMP_V3_0, tx * meterScale, ty * meterScale, tz * meterScale);
+
+            if (this._rxFn) {
+                rx = this._rxFn(zoom, properties);
+            }
+            if (this._ryFn) {
+                ry = this._ryFn(zoom, properties);
+            }
+            if (this._rzFn) {
+                rz = this._rzFn(zoom, properties);
+            }
+            const rotation = vec3.set(TEMP_V3_1, rx, ry, rz);
+
+            if (this._sxFn) {
+                sx = this._sxFn(zoom, properties);
+            }
+            if (this._syFn) {
+                sy = this._syFn(zoom, properties);
+            }
+            if (this._szFn) {
+                sz = this._szFn(zoom, properties);
+            }
+            const scale = vec3.set(TEMP_V3_2, sx, sy, sz);
+
+            return this._getGLTFMatrix(out, translation, rotation, scale);
         }
 
         getShaderConfig() {
@@ -372,6 +463,44 @@ const GLTFMixin = Base =>
             this._initGLTF();
         }
 
+        _initTRSFuncType() {
+            const symbolDef = this.symbolDef[0];
+            if (isFunctionDefinition(symbolDef['translationX'])) {
+                this._txFn = interpolated(symbolDef['translationX']);
+            }
+            if (isFunctionDefinition(symbolDef['translationY'])) {
+                this._tyFn = interpolated(symbolDef['translationY'])
+            }
+            if (isFunctionDefinition(symbolDef['translationZ'])) {
+                this._tzFn = interpolated(symbolDef['translationZ'])
+            }
+
+            if (isFunctionDefinition(symbolDef['rotationX'])) {
+                this._rxFn = interpolated(symbolDef['rotationX']);
+            }
+            if (isFunctionDefinition(symbolDef['rotationY'])) {
+                this._ryFn = interpolated(symbolDef['rotationY'])
+            }
+            if (isFunctionDefinition(symbolDef['rotationZ'])) {
+                this._rzFn = interpolated(symbolDef['rotationZ'])
+            }
+
+            if (isFunctionDefinition(symbolDef['scaleX'])) {
+                this._sxFn = interpolated(symbolDef['scaleX']);
+            }
+            if (isFunctionDefinition(symbolDef['scaleY'])) {
+                this._syFn = interpolated(symbolDef['scaleY'])
+            }
+            if (isFunctionDefinition(symbolDef['scaleZ'])) {
+                this._szFn = interpolated(symbolDef['scaleZ'])
+            }
+        }
+
+        _hasFuncType() {
+            return !!(this._txFn && !this._txFn.isFeatureConstant || this._tyFn && !this._tyFn.isFeatureConstant || this._tzFn && !this._tzFn.isFeatureConstant ||
+                this._rxFn && !this._rxFn.isFeatureConstant || this._ryFn && !this._ryFn.isFeatureConstant || this._rzFn && !this._rzFn.isFeatureConstant ||
+                this._sxFn && !this._sxFn.isFeatureConstant || this._syFn && !this._syFn.isFeatureConstant || this._szFn && !this._szFn.isFeatureConstant);
+        }
 
         //TODO 缺乏GLTF模型的更新逻辑
         //TODO 缺乏多个symbols的支持
