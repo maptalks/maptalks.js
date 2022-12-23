@@ -1122,7 +1122,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._terrainRegl.clear(TERRAIN_CLEAR);
         this._startFrame(timestamp, terrainSkinFilter);
         this.drawTile(info, image, terrainSkinFilter);
-        this._drawTerrainSkinTexture();
+        this._endTerrainFrame();
         const canvas = document.createElement('canvas');
         canvas.width = terrainCanvas.width;
         canvas.height = terrainCanvas.height;
@@ -1135,7 +1135,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         };
     }
 
-    _drawTerrainSkinTexture() {
+    _endTerrainFrame() {
         const plugins = this._getAllPlugins();
         plugins.forEach((plugin, idx) => {
             const hasMesh = this._isVisitable(plugin);
@@ -1194,7 +1194,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 timestamp: this._frameTime,
                 tileInfo,
                 tileZoom: this['_tileZoom'],
-                bloom: this._parentContext && this._parentContext.bloom
+                bloom: this._parentContext && this._parentContext.bloom,
+                isRenderingTerrain
             };
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {

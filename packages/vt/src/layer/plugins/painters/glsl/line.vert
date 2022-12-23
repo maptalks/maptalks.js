@@ -163,7 +163,11 @@ void main() {
 
     vec4 pos4 = vec4(position, 1.0);
     vec4 vertex = projViewModelMatrix * positionMatrix * pos4;
-    vVertex = (modelMatrix * positionMatrix * pos4).xyz;
+    #ifdef IS_RENDERING_TERRAIN
+        vVertex = (positionMatrix * pos4).xyz;
+    #else
+        vVertex = (modelMatrix * positionMatrix * pos4).xyz;
+    #endif
 
     #ifdef HAS_STROKE_WIDTH
         float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
@@ -194,12 +198,18 @@ void main() {
         vec2 dist = outset * extrude;
     #endif
 
-    float scale = tileResolution / resolution;
+    #ifdef IS_RENDERING_TERRAIN
+        float scale = 1.0;
+    #else
+        float scale = tileResolution / resolution;
+    #endif
+
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
     gl_Position = projViewModelMatrix * positionMatrix * localVertex;
 
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
+    #ifndef IS_RENDERING_TERRAIN
     float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
     float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
     // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
@@ -214,6 +224,7 @@ void main() {
         localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
         gl_Position = projViewModelMatrix * positionMatrix * localVertex;
     }
+    #endif
 
     #ifdef HAS_LINE_DX
         float myLineDx = aLineDxDy[0];
@@ -232,7 +243,11 @@ void main() {
 
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);
-        vGammaScale = projDistance / cameraToCenterDistance;
+        #ifdef IS_RENDERING_TERRAIN
+            vGammaScale = 1.0;
+        #else
+            vGammaScale = projDistance / cameraToCenterDistance;
+        #endif
         #ifndef ENABLE_TILE_STENCIL
             vPosition = position.xy;
             #ifdef USE_LINE_OFFSET

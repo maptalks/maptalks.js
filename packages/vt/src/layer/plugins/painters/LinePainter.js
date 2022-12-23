@@ -10,6 +10,8 @@ import { prepareFnTypeData, isFnTypeSymbol } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 
+const IDENTITY_ARR = mat4.identity([]);
+
 class LinePainter extends BasicPainter {
 
     prepareSymbol(symbol) {
@@ -447,7 +449,11 @@ class LinePainter extends BasicPainter {
     createShader(context) {
         this._context = context;
         const uniforms = [];
-        const defines = {};
+        const defines = {
+        };
+        if (context && context.isRenderingTerrain) {
+            defines['IS_RENDERING_TERRAIN'] = 1;
+        }
         this.fillIncludes(defines, uniforms, context);
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
@@ -538,11 +544,14 @@ class LinePainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const projViewMatrix = map.projViewMatrix,
-            viewMatrix = map.viewMatrix,
+        const isRenderingTerrain = context && context.isRenderingTerrain;
+        const tileSize = this.layer.getTileSize().width;
+
+        const projViewMatrix = isRenderingTerrain ? IDENTITY_ARR : map.projViewMatrix;
+        const viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
-            canvasSize = [map.width, map.height];
+            canvasSize = isRenderingTerrain ? [tileSize, tileSize] : [map.width, map.height];
 
         // const glScale = map.getGLScale();
         // const c = vec3.transformMat4([], map.cameraLookAt, projViewMatrix);
