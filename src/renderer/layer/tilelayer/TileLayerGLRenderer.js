@@ -38,8 +38,13 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     onDrawTileStart(context, parentContext) {
         const gl = this.gl;
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.depthFunc(gl.LEQUAL);
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.enable(gl.STENCIL_TEST);
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+        // for (let i = 0; i<8; i++) {
+        //     gl.disableVertexAttribArray(i);
+        // }
         const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
         gl.depthMask(depthMask);
         if (parentContext && parentContext.renderTarget) {
@@ -93,7 +98,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
         }
         const gl = this.gl;
-        gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
+        gl.stencilFunc(gl.LEQUAL, this.tilesInView[tileInfo.id] ? 0 : Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
         const layerPolygonOffset = this.layer.getPolygonOffset();
         const polygonOffset = this.tilesInView[tileInfo.id] ? layerPolygonOffset - 1 : layerPolygonOffset;
         gl.polygonOffset(polygonOffset, polygonOffset);
