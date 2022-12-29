@@ -319,8 +319,8 @@ const GLTFMixin = Base =>
             }
 
             const count = aPosition.length / positionSize;
-            const tileSize = this.layer.getTileSize();
-            const tileScale = tileSize.width / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
+            const tileSize = this.layer.options.tileSize;
+            const tileScale = tileSize / tileExtent * this.layer.getRenderer().getTileGLScale(tileZoom);
             const zScale = this.layer.getRenderer().getZScale();
             const altitudeOffset = (this.dataConfig.altitudeOffset || 0) * 100;
             let minx = Infinity, miny = Infinity, minz = Infinity;

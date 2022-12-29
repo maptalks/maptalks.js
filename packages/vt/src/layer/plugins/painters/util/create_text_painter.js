@@ -312,12 +312,13 @@ export function createTextShader(layer, sceneConfig) {
         }
     };
 
+    const projViewModelMatrix = [];
     const uniforms = [
         {
             name: 'projViewModelMatrix',
             type: 'function',
             fn: function (context, props) {
-                return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
+                return mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
             }
         },
         {

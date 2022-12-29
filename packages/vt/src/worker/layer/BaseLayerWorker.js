@@ -470,7 +470,7 @@ export default class BaseLayerWorker {
         let features = tileFeatures;
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
-        const tileSize = this.options.tileSize[0];
+        const tileSize = this.options.tileSize;
         const { extent, glScale, zScale, zoom, tilePoint, pointAtTileRes } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
@@ -490,14 +490,14 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'][1] / extent, symbol, zoom, debugIndex))]);
+            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'] / extent, symbol, zoom, debugIndex))]);
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
                 //把 altitude 转为瓦片坐标
-                altitudeToTileScale: zScale * extent / this.options['tileSize'][1] / glScale
+                altitudeToTileScale: zScale * extent / this.options['tileSize'] / glScale
             });
             // 如果同时定义了 marker 属性和text属性，textPlacement， textSpacing会被markerPlacement，markerSpacing代替
             const symbols = PointPack.splitPointSymbol(symbol);
@@ -719,7 +719,7 @@ export default class BaseLayerWorker {
 
 //         const tileMatrix = mat4.identity(m);
 //         mat4.translate(tileMatrix, tileMatrix, [tilePos.x, tilePos.y, 0]);
-//         mat4.scale(tileMatrix, tileMatrix, [tileSize[0] / EXTENT, tileSize[1] / EXTENT, 1]);
+//         mat4.scale(tileMatrix, tileMatrix, [tileSize / EXTENT, tileSize / EXTENT, 1]);
 
 //         //local transform in current frame
 //         if (transform) {

@@ -3,7 +3,7 @@ import { getCharOffset } from './get_char_offset';
 
 const FIRST_POINT = [], LAST_POINT = [];
 
-export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, aspectRatio, planeMatrix) {
+export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, aspectRatio, planeMatrix) {
     const { aVertical } = mesh.geometry.properties;
     const isVertical = aVertical[firstChrIdx];
 
@@ -12,12 +12,12 @@ export function getLabelNormal(firstCharOffset, lastCharOffset, mesh, textSize, 
     //2. 读取anchor第一个文字和最后一个文字的位置
     //3. 计算flip和vertical的值并设置
 
-    let offset = getCharOffset.call(this, FIRST_POINT, mesh, textSize, line, firstChrIdx, labelAnchor, scale, false);
+    let offset = getCharOffset.call(this, FIRST_POINT, mesh, textSize, line, firstChrIdx, projectedAnchor, anchor, scale, false);
     if (!offset) {
         return null;
     }
     vec3.copy(firstCharOffset, offset);
-    offset = getCharOffset.call(this, LAST_POINT, mesh, textSize, line, lastChrIdx, labelAnchor, scale, false);
+    offset = getCharOffset.call(this, LAST_POINT, mesh, textSize, line, lastChrIdx, projectedAnchor, anchor, scale, false);
     if (!offset) {
         return null;
     }

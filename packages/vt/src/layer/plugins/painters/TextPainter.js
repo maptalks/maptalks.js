@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
@@ -69,6 +70,11 @@ const params = {};
 const feature = {};
 const featureState = {};
 const availableImages = [];
+
+const PROJ_COORD = new maptalks.Coordinate(0, 0);
+const ANCHOR_POINT = new maptalks.Point(0, 0);
+const TILEPOINT = new maptalks.Point(0, 0);
+const ELEVATED_ANCHOR = [];
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
@@ -379,8 +385,16 @@ export default class TextPainter extends CollisionPainter {
         if (!isPitchWithMap) {
             const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
             //project line to screen coordinates
-            const out = new Array(line.length);
-            line = this._projectLine(out, line, matrix, map.width, map.height);
+            //line.id都为0，但不同的tile, matrix是不同的，故可以用matrix作为hash id
+            const id = line.id + '-' + matrix.join();
+            let out;
+            if (this._projectedLinesCache[id]) {
+                line = this._projectedLinesCache[id];
+            } else {
+                out = geometryProps.projectedLine = geometryProps.projectedLine || new Array(line.length);
+                line = this._projectLine(out, line, matrix, map.width, map.height);
+                this._projectedLinesCache[id] = out;
+            }
         }
         const enableCollision = this._needUpdateCollision();
         const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
@@ -417,13 +431,7 @@ export default class TextPainter extends CollisionPainter {
     }
 
     _projectLine(out, line, matrix, width, height) {
-        //line.id都为0，但不同的tile, matrix是不同的，故可以用matrix作为hash id
-        const id = line.id + '-' + matrix.join();
-        if (this._projectedLinesCache[id]) {
-            return this._projectedLinesCache[id];
-        }
         const prjLine = projectLine(out, line, matrix, width, height);
-        this._projectedLinesCache[id] = prjLine;
         return prjLine;
     }
 
@@ -479,6 +487,9 @@ export default class TextPainter extends CollisionPainter {
 
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix/*, labelIndex*/) {
+        const renderer = this.layer.getRenderer();
+        const terrainHelper = renderer.getTerrainHelper && renderer.getTerrainHelper();
+
         const enableCollision = this._needUpdateCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
@@ -499,17 +510,55 @@ export default class TextPainter extends CollisionPainter {
         // }
 
         const isProjected = !planeMatrix;
-        const idx = meshElements[start] * positionSize;
+        const index = meshElements[start];
+        const idx = index * positionSize;
         // let labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], positionSize === 2 ? 0 : aAnchor[idx + 2]);
-        let labelAnchor = ANCHOR;
+        let labelAnchor;
         if (geometry.data.aAltitude) {
-            vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAltitude[meshElements[start]]);
+            labelAnchor = vec3.set(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAltitude[index]);
         } else {
-            PackUtil.unpackPosition(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+            labelAnchor = PackUtil.unpackPosition(ANCHOR, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
         }
+
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
-        vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1], projLabelAnchor[0], projLabelAnchor[1]);
-        if (map.isOffscreen(ANCHOR_BOX)) {
+        vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1]);
+
+        let elevatedAnchor;
+        if (terrainHelper) {
+            let aTerrainAltitude = geometry.properties.aTerrainAltitude;
+            if (!aTerrainAltitude) {
+                aTerrainAltitude = geometry.properties.aTerrainAltitude = new Map();
+            }
+            let altitude = aTerrainAltitude.get(index);
+            if (altitude === undefined || altitude === null) {
+                const { res, extent, extent2d } = mesh.properties.tile;
+                const { xmin, ymax } = extent2d;
+                const tilePoint = TILEPOINT.set(xmin, ymax);
+                ANCHOR_POINT.set(ANCHOR[0], ANCHOR[1]);
+                const projCoord = this.layer.tilePointToPrjCoord(PROJ_COORD, ANCHOR_POINT, tilePoint, extent, res);
+                const altitudeResult = terrainHelper.queryTerrainByProjCoord(projCoord);
+                altitude = altitudeResult[0] || 0;
+                if (altitudeResult[1]) {
+                    aTerrainAltitude.set(index, altitude);
+                }
+            }
+
+            if (altitude) {
+                elevatedAnchor = vec3.set(ELEVATED_ANCHOR, ...labelAnchor);
+                elevatedAnchor[2] += altitude * 100;
+                elevatedAnchor = projectPoint(elevatedAnchor, elevatedAnchor, mvpMatrix, map.width, map.height);
+
+                // const point2 = map['_prjToContainerPointAtRes'](projCoord, map._getResolution(), null, altitude);
+                // console.log(elevatedAnchor[0], elevatedAnchor[1], point2);
+            } else {
+                elevatedAnchor = ANCHOR_BOX;
+            }
+
+        } else {
+            elevatedAnchor = ANCHOR_BOX;
+        }
+
+        if (map.isOffscreen(elevatedAnchor)) {
             if (!enableCollision) {
                 resetOffset(aOffset, meshElements, start, end);
             }
@@ -521,7 +570,7 @@ export default class TextPainter extends CollisionPainter {
             labelAnchor = projLabelAnchor;
         }
 
-        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'][0];
+        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'];
 
         let visible = true;
 
@@ -532,7 +581,7 @@ export default class TextPainter extends CollisionPainter {
         const firstChrIdx = meshElements[start];
         const lastChrIdx = meshElements[end - 1];
         const textSize = aTextSize ? aTextSize[firstChrIdx] : mesh.properties.textSize;
-        const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix);
+        const normal = this._updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, ANCHOR, scale, planeMatrix);
         if (normal === null) {
             resetOffset(aOffset, meshElements, start, end);
             //normal返回null说明计算过程中有文字visible是false，直接退出
@@ -603,14 +652,14 @@ export default class TextPainter extends CollisionPainter {
             //every character has 4 vertice, and 6 indexes
             const vertexStart = meshElements[j];
             let offset;
-            if (!flip && j === start && !onlyOne) {
+            if (!flip && j === start && !onlyOne && !terrainHelper) {
                 // 因为在updateNormal中已经计算过first_offset，这里就不再计算了
                 offset = FIRST_CHAROFFSET;
-            } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne) {
+            } else if (!flip && j === end - BOX_ELEMENT_COUNT && !onlyOne && !terrainHelper) {
                 // 因为在updateNormal中已经计算过last_offset，这里就不再计算了
                 offset = LAST_CHAROFFSET;
             } else {
-                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, scale, flip);
+                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, terrainHelper, this.layer, mvpMatrix);
             }
             if (!offset) {
                 //remove whole text if any char is missed
@@ -692,10 +741,10 @@ export default class TextPainter extends CollisionPainter {
         return visible;
     }
 
-    _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, planeMatrix) {
+    _updateNormal(mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, planeMatrix) {
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
         const map = this.getMap();
-        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, labelAnchor, scale, map.width / map.height, planeMatrix);
+        const normal = onlyOne ? 0 : getLabelNormal.call(this, FIRST_CHAROFFSET, LAST_CHAROFFSET, mesh, textSize, line, firstChrIdx, lastChrIdx, projectedAnchor, anchor, scale, map.width / map.height, planeMatrix);
 
         return normal;
     }

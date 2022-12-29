@@ -466,7 +466,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isTileNearCamera(mesh) {
-        const gap = this.getCurrentTileZoom() - mesh.properties.tile.z;
+        const layer = this.layer;
+        let zoom = layer['_getTileZoom'](this.getMap().getZoom());
+        const minZoom = layer.getMinZoom(),
+            maxZoom = layer.getMaxZoom();
+        zoom = maptalks.Util.clamp(zoom, minZoom, maxZoom);
+        const gap = zoom - mesh.properties.tile.z;
         return gap <= 1;
     }
 
@@ -940,7 +945,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (transform && extent) {
                     const debugInfo = this.getDebugInfo(info.id);
                     const matrix = mat4.multiply(mat, projViewMatrix, transform);
-                    const tileSize = this.layer.getTileSize().width;
+                    const tileSize = this.layer.options.tileSize;
                     this._debugPainter.draw(
                         debugInfo, matrix,
                         tileSize, extent,
@@ -1075,8 +1080,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._createTerrainSkinCanvas();
     }
 
+    getTerrainHelper() {
+        return this._terrainLayer;
+    }
+
     _createTerrainSkinCanvas() {
-        const tileSize = this.layer.getTileSize().width;
+        const tileSize = this.layer.options.tileSize;
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = tileSize;
 
@@ -1088,7 +1097,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     // 有地形时的tile draw 方法
     drawTileOnTerrain(tileInfo, tileData) {
         // drawTile 有可能在GroupGLLayer被替换，但prototype上的定义是不会被替换的
-        VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData, terrainSkinFilter);
+        // VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData, terrainSkinFilter);
+        VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData);
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
@@ -1742,12 +1752,12 @@ VectorTileLayerRenderer.include({
         return function (point, z, EXTENT) {
             const glScale = this.getTileGLScale(z);
             const tilePos = point;
-            const tileSize = this.layer.getTileSize();
+            const tileSize = this.layer.options.tileSize;
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
             mat4.translate(posMatrix, posMatrix, vec3.set(v1, tilePos.x, tilePos.y, 0));
-            mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize.width / EXTENT, -tileSize.height / EXTENT, 1));
+            mat4.scale(posMatrix, posMatrix, vec3.set(v2, tileSize / EXTENT, -tileSize / EXTENT, 1));
 
             return posMatrix;
         };

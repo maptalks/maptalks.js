@@ -138,7 +138,8 @@ void main() {
         gl_Position = projViewModelMatrix * vec4(position + offset, 1.0);
 
     } else {
-        gl_Position.xy += offset.xy * 2.0 / canvasSize * perspectiveRatio * projDistance;
+        // gl_Position.xy += offset.xy * 2.0 / canvasSize * perspectiveRatio * projDistance;
+        gl_Position.xy += offset.xy * 2.0 / canvasSize * projDistance;
 
     }
 

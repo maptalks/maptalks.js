@@ -27,7 +27,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         if (options.tileSize) {
             //for different tile size, set a zoom offset for geojson-vt
             //https://github.com/mapbox/geojson-vt/issues/35
-            this.zoomOffset = -log2(options.tileSize[0] / 256);
+            this.zoomOffset = -log2(options.tileSize / 256);
         }
         this.setData(options.data, cb);
     }

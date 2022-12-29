@@ -257,7 +257,7 @@ function createPainterPlugin(type, Painter) {
             const map = layer.getMap(),
                 sr = layer.getSpatialReference ? layer.getSpatialReference() : map.getSpatialReference(),
                 tileResolution = sr.getResolution(tileInfo.z),
-                tileRatio = context.tileExtent / layer.getTileSize().width;
+                tileRatio = context.tileExtent / layer.options.tileSize;
             geometry.properties.tileResolution = tileResolution;
             geometry.properties.tileRatio = tileRatio;
             geometry.properties.z = tileInfo.z;

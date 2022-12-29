@@ -15,7 +15,7 @@ const defaultOptions = {
     forceRenderOnZooming: true,
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
-    tileSize: [512, 512],
+    tileSize: 512,
     tileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
     features: false,
     schema: false,
@@ -143,6 +143,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         this.options['style'] = style;
         this._setStyle(style);
         return this;
+    }
+
+    tilePointToPrjCoord(out, point, tilePoint, extent, res) {
+        const tileSize = this.options['tileSize'];
+        const tileScale = extent / tileSize;
+        const srcPoint = TMP_POINT.set(tilePoint.x + point.x / tileScale, tilePoint.y - point.y / tileScale);
+        const map = this.getMap();
+        return map._pointToPrjAtRes(srcPoint, res, out);
     }
 
     _setStyle(style) {
@@ -1006,7 +1014,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _convertGeometryCoords(geometry, nw, extent, res) {
-        const tileSize = this.options.tileSize[0];
+        const tileSize = this.options.tileSize;
         const tileScale = extent / tileSize;
         const map = this.getMap();
         const coords = [];
