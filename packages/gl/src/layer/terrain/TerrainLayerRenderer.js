@@ -476,7 +476,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             const terrainRes = terrainData.info.res;
             const scale = terrainRes / res;
             const x = worldPos.x - extent2d.xmin * scale;
-            const y = worldPos.y - extent2d.ymin * scale;
+            const y = extent2d.ymax * scale - worldPos.y;
             return this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
         } else {
             return 0;
@@ -496,7 +496,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const { width, height, data } = terrainData;
         const tx = Math.floor(width * x);
         const ty = Math.floor(height * y);
-        return data[tx * width + ty];
+        return data[ty * width + tx];
     }
 
 
