@@ -8,6 +8,8 @@ import { PackUtil } from '@maptalks/vector-packer';
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
+const PROJ_COORD = new maptalks.Coordinate(0, 0);
+const EMPTY_ALTITUDE = [0, 0];
 
 const defaultOptions = {
     renderer: 'gl',
@@ -145,12 +147,24 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this;
     }
 
-    tilePointToPrjCoord(out, point, tilePoint, extent, res) {
+    _tilePointToPrjCoord(out, point, tilePoint, extent, res) {
         const tileSize = this.options['tileSize'];
         const tileScale = extent / tileSize;
         const srcPoint = TMP_POINT.set(tilePoint.x + point.x / tileScale, tilePoint.y - point.y / tileScale);
         const map = this.getMap();
-        return map._pointToPrjAtRes(srcPoint, res, out);
+        return map['_pointToPrjAtRes'](srcPoint, res, out);
+    }
+
+    queryTilePointTerrain(point, tilePoint, extent, res) {
+        const renderer = this.getRenderer();
+        const terrainHelper = renderer && renderer.getTerrainHelper();
+        if (!renderer || !terrainHelper) {
+            EMPTY_ALTITUDE[0] = 0;
+            EMPTY_ALTITUDE[1] = 0;
+            return EMPTY_ALTITUDE;
+        }
+        const projCoord = this._tilePointToPrjCoord(PROJ_COORD, point, tilePoint, extent, res);
+        return terrainHelper.queryTerrainByProjCoord(projCoord);
     }
 
     _setStyle(style) {

@@ -3,7 +3,6 @@ import Point from '@mapbox/point-geometry';
 import { projectPoint } from './projection';
 import { vec3 } from '@maptalks/gl';
 
-const TEMP_COORD = new maptalks.Coordinate(0, 0);
 const CURRENT2 = [];
 const PREV2 = [];
 const P2 = [];
@@ -16,7 +15,7 @@ const P2 = [];
  * @param {Number} dx - offset x
  * @param {Number} dy - offset y
  */
-export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip, scale, elevatedAnchor, terrainHelper, vtLayer, mvpMatrix) {
+export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip, scale, elevatedAnchor, vtLayer, mvpMatrix) {
     if (!elevatedAnchor) {
         elevatedAnchor = projectedAnchor;
     }
@@ -82,13 +81,15 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
     // The point is on the current segment. Interpolate to find it.
     const segmentInterpolationT = (absOffsetX - distanceToPrev) / currentSegmentDistance;
 
+    const renderer = vtLayer && vtLayer.getRenderer();
+    const terrainHelper = renderer && renderer.getTerrainHelper();
     if (terrainHelper) {
         const prevToCurrent = currentPoint.sub(prevPoint);
         let p = prevToCurrent.mult(segmentInterpolationT)._add(prevPoint);
 
-        current = elevate(CURRENT2, mesh, currentPoint, terrainHelper, vtLayer, mvpMatrix);
-        prev = elevate(PREV2, mesh, prevPoint, terrainHelper, vtLayer, mvpMatrix);
-        p = elevate(P2, mesh, p, terrainHelper, vtLayer, mvpMatrix);
+        current = elevate(CURRENT2, mesh, currentPoint, vtLayer, mvpMatrix);
+        prev = elevate(PREV2, mesh, prevPoint, vtLayer, mvpMatrix);
+        p = elevate(P2, mesh, p, vtLayer, mvpMatrix);
 
         const segmentAngle = angle + Math.atan2(current[1] - prev[1], current[0] - prev[0]);
 
@@ -115,13 +116,12 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
 
 const TILEPOINT = new maptalks.Point(0, 0);
 const TEMP_V3 = [];
-function elevate(out, mesh, anchor, terrainHelper, vtLayer, mvpMatrix) {
-    const map = terrainHelper.getMap();
+function elevate(out, mesh, anchor, vtLayer, mvpMatrix) {
+    const map = vtLayer.getMap();
     const { res, extent, extent2d } = mesh.properties.tile;
     const { xmin, ymax } = extent2d;
     const tilePoint = TILEPOINT.set(xmin, ymax);
-    const projCoord = vtLayer.tilePointToPrjCoord(TEMP_COORD, anchor, tilePoint, extent, res);
-    const altitudeResult = terrainHelper.queryTerrainByProjCoord(projCoord);
+    const altitudeResult = vtLayer.queryTilePointTerrain(anchor, tilePoint, extent, res);
     const altitude = altitudeResult[0] || 0;
     if (altitude) {
         let elevatedAnchor = vec3.set(TEMP_V3, anchor.x, anchor.y, 0);

@@ -535,8 +535,7 @@ export default class TextPainter extends CollisionPainter {
                 const { xmin, ymax } = extent2d;
                 const tilePoint = TILEPOINT.set(xmin, ymax);
                 ANCHOR_POINT.set(ANCHOR[0], ANCHOR[1]);
-                const projCoord = this.layer.tilePointToPrjCoord(PROJ_COORD, ANCHOR_POINT, tilePoint, extent, res);
-                const altitudeResult = terrainHelper.queryTerrainByProjCoord(projCoord);
+                const altitudeResult = this.layer.queryTilePointTerrain(ANCHOR_POINT, tilePoint, extent, res);
                 altitude = altitudeResult[0] || 0;
                 if (altitudeResult[1]) {
                     aTerrainAltitude.set(index, altitude);
@@ -659,7 +658,7 @@ export default class TextPainter extends CollisionPainter {
                 // 因为在updateNormal中已经计算过last_offset，这里就不再计算了
                 offset = LAST_CHAROFFSET;
             } else {
-                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, terrainHelper, this.layer, mvpMatrix);
+                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, this.layer, mvpMatrix);
             }
             if (!offset) {
                 //remove whole text if any char is missed

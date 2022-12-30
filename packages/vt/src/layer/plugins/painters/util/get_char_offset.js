@@ -4,7 +4,7 @@ import { getLineOffset } from './line_offset';
 
 const GLYPH_OFFSET = [], SEGMENT = [], DXDY = [];
 
-export function getCharOffset(out, mesh, textSize, line, i, projectedAnchor, anchor, scale, flip, elevatedAnchor, terrainHelper, vtLayer, mvpMatrix) {
+export function getCharOffset(out, mesh, textSize, line, i, projectedAnchor, anchor, scale, flip, elevatedAnchor, vtLayer, mvpMatrix) {
     // 遍历每个文字，对每个文字获取: anchor, glyphOffset, dx， dy
     // 计算anchor的屏幕位置
     // 根据地图pitch和cameraDistanceFromCenter计算glyph的perspective ratio
@@ -22,6 +22,6 @@ export function getCharOffset(out, mesh, textSize, line, i, projectedAnchor, anc
     const glyphOffset = vec2.set(GLYPH_OFFSET, aGlyphOffset[i * 2], aGlyphOffset[i * 2 + 1]),
         segment = vec3.set(SEGMENT, aSegment[i * 3], aSegment[i * 3 + 1], aSegment[i * 3 + 2]);
 
-    const offset = getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], textSize / 24, flip, scale, elevatedAnchor, terrainHelper, vtLayer, mvpMatrix);
+    const offset = getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dxdy[0], dxdy[1], segment[0], segment[1], segment[2], textSize / 24, flip, scale, elevatedAnchor, vtLayer, mvpMatrix);
     return offset;
 }

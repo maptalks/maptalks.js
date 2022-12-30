@@ -155,6 +155,7 @@ void main() {
     #endif
     if (isPitchWithMap == 1.0) {
         #ifdef REVERSE_MAP_ROTATION_ON_PITCH
+            // PointLayer 的  mapRotation 计算方式
             rotation += mapRotation;
         #else
             rotation -= mapRotation;
