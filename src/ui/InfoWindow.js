@@ -413,13 +413,13 @@ class InfoWindow extends UIComponent {
 
     _getDomEvents() {
         return {
-            'mousemove': this._onDomMousemove,
+            'mouseover': this._onDomMouseover,
             'mouseout': this._onDomMouseout
         };
     }
 
     // eslint-disable-next-line no-unused-vars
-    _onDomMousemove(domEvent) {
+    _onDomMouseover(domEvent) {
         const map = this.getMap();
         if (!map) {
             return;
