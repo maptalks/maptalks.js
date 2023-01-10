@@ -34,9 +34,12 @@ class MapScrollWheelZoomHandler extends Handler {
     }
 
     _onWheelScroll(evt) {
-        preventDefault(evt);
-        stopPropagation(evt);
         const map = this.target;
+        if (map.options['preventWheelScroll']) {
+            preventDefault(evt);
+            stopPropagation(evt);
+        }
+
         if (map._ignoreEvent(evt) || !map.options['zoomable']) {
             return false;
         }
@@ -147,13 +150,13 @@ class MapScrollWheelZoomHandler extends Handler {
         }
         const duration = 90;
         map._animateTo({
-            'zoom' : nextZoom - this._delta * 1 / 2,
-            'around' : this._origin
+            'zoom': nextZoom - this._delta * 1 / 2,
+            'around': this._origin
         }, {
-            'continueOnViewChanged' : true,
-            'easing' : 'linear',
-            'duration' : duration,
-            'wheelZoom' : true
+            'continueOnViewChanged': true,
+            'easing': 'linear',
+            'duration': duration,
+            'wheelZoom': true
         }, frame => {
             if (frame.state.playState !== 'finished') {
                 if (frame.state.playState !== 'running') {
@@ -167,11 +170,11 @@ class MapScrollWheelZoomHandler extends Handler {
                 nextZoom === map.getMaxZoom() || nextZoom === map.getMinZoom()) {
 
                 map._animateTo({
-                    'zoom' : nextZoom,
-                    'around' : this._origin
+                    'zoom': nextZoom,
+                    'around': this._origin
                 }, {
-                    'continueOnViewChanged' : true,
-                    'duration' : 100
+                    'continueOnViewChanged': true,
+                    'duration': 100
                 }, frame => {
                     if (frame.state.playState !== 'running') {
                         // setTimeout(() => {

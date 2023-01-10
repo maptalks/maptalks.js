@@ -29,7 +29,7 @@ const TEMP_COORD = new Coordinate(0, 0);
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
- * @property {Boolean} [options.seamlessZoom=false]             - whether to use seamless zooming mode
+ * @property {Boolean} [options.seamlessZoom=true]             - whether to use seamless zooming mode
  * @property {Boolean} [options.zoomInCenter=false]             - whether to fix in the center when zooming
  * @property {Number}  [options.zoomOrigin=null]                - zoom origin in container point, e.g. [400, 300]
  * @property {Boolean} [options.zoomAnimation=true]             - enable zooming animation
@@ -138,7 +138,8 @@ const options = {
 
     'clickTimeThreshold': 280,
 
-    'stopRenderOnOffscreen': true
+    'stopRenderOnOffscreen': true,
+    'preventWheelScroll': true
 };
 
 /**
