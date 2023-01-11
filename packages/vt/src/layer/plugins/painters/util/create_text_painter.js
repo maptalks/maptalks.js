@@ -49,7 +49,7 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
 
 
     //避免重复创建属性数据
-    if (!geometry.properties.aAnchor) {
+    if (!geometry.properties.aCount) {
         prepareGeometry.call(this, geometry, enableCollision || enableUniquePlacement, visibleInCollision);
         const { aTextSize, aTextDx, aTextDy, aPitchAlign, aRotationAlign, aRotation, aOverlap, aAltitude } = geometry.data;
         if (aTextSize) {

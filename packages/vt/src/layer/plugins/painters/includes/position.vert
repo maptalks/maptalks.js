@@ -1,3 +1,7 @@
+#ifdef HAS_TERRAIN_ALTITUDE
+attribute float aTerrainAltitude;
+#endif
+
 #ifdef HAS_ALTITUDE
     vec3 unpackVTPosition() {
         return vec3(aPosition, aAltitude);
@@ -12,6 +16,10 @@
         vec2 highs = floor(abs(aPosition.xy) / position_modValue);
 
         float altitude = sign(z + position_delta) * (highs.x * 2.0 + highs.y) * pow(2.0, 15.0) + z;
+        #ifdef HAS_TERRAIN_ALTITUDE
+            // aTerrainAltitude的单位是米，在vt中需要转换为厘米
+            altitude += aTerrainAltitude * 100.0;
+        #endif
         return vec3(pos, altitude);
     }
 #endif

@@ -6,6 +6,8 @@ import frag from './glsl/native-line.frag';
 import pickingVert from './glsl/native-line.vert';
 import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 
+const IDENTITY_ARR = mat4.identity([]);
+
 class NativeLinePainter extends BasicPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
@@ -140,8 +142,10 @@ class NativeLinePainter extends BasicPainter {
         }
     }
 
-    getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix;
+    getUniformValues(map, context) {
+        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
+        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
+
         return {
             projViewMatrix
         };

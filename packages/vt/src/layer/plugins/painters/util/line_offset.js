@@ -93,8 +93,8 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
 
         const segmentAngle = angle + Math.atan2(current[1] - prev[1], current[0] - prev[0]);
 
-        out[0] = (p[0] - projectedAnchor[0]) / scale;
-        out[1] = (p[1] - projectedAnchor[1]) / scale;
+        out[0] = (p[0] - elevatedAnchor[0]) / scale;
+        out[1] = (p[1] - elevatedAnchor[1]) / scale;
         out[2] = segmentAngle;
         return out;
     }

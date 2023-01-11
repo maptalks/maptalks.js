@@ -424,6 +424,11 @@ export default class TextPainter extends CollisionPainter {
                 visElemts.count = count;
             }
         });
+        const aAltitudeArr = mesh.geometry.properties.aAltitude;
+        if (aAltitudeArr && aAltitudeArr.dirty) {
+            geometry.updateData('aAltitude', aAltitudeArr);
+            aAltitudeArr.dirty = false;
+        }
         if (enableCollision && (visElemts.count !== allElements.length || geometry.count !== visElemts.count)) {
             geometry.setElements(visElemts, visElemts.count);
             // console.log('绘制', visibleElements.length / 6, '共', allElements.length / 6);
@@ -523,32 +528,14 @@ export default class TextPainter extends CollisionPainter {
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
         vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1]);
 
+        const aTerrainAltitude = geometry.properties.aTerrainAltitude;
         let elevatedAnchor;
-        if (terrainHelper) {
-            let aTerrainAltitude = geometry.properties.aTerrainAltitude;
-            if (!aTerrainAltitude) {
-                aTerrainAltitude = geometry.properties.aTerrainAltitude = new Map();
-            }
-            let altitude = aTerrainAltitude.get(index);
-            if (altitude === undefined || altitude === null) {
-                const { res, extent, extent2d } = mesh.properties.tile;
-                const { xmin, ymax } = extent2d;
-                const tilePoint = TILEPOINT.set(xmin, ymax);
-                ANCHOR_POINT.set(ANCHOR[0], ANCHOR[1]);
-                const altitudeResult = this.layer.queryTilePointTerrain(ANCHOR_POINT, tilePoint, extent, res);
-                altitude = altitudeResult[0] || 0;
-                if (altitudeResult[1]) {
-                    aTerrainAltitude.set(index, altitude);
-                }
-            }
-
+        if (aTerrainAltitude) {
+            const altitude = aTerrainAltitude[index] * 100;
             if (altitude) {
                 elevatedAnchor = vec3.set(ELEVATED_ANCHOR, ...labelAnchor);
-                elevatedAnchor[2] += altitude * 100;
+                elevatedAnchor[2] = altitude;
                 elevatedAnchor = projectPoint(elevatedAnchor, elevatedAnchor, mvpMatrix, map.width, map.height);
-
-                // const point2 = map['_prjToContainerPointAtRes'](projCoord, map._getResolution(), null, altitude);
-                // console.log(elevatedAnchor[0], elevatedAnchor[1], point2);
             } else {
                 elevatedAnchor = ANCHOR_BOX;
             }

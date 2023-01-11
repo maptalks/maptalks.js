@@ -151,7 +151,7 @@ function createPainterPlugin(type, Painter) {
             let retire = false;
             const painter = this.painter;
             const tilePoint = [tileInfo.extent2d.xmin, tileInfo.extent2d.ymax];
-            const meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix });
+            const meshes = painter.createMeshes(geometries, tileTransform, { tileExtent, tilePoint, tileZoom, tileTranslationMatrix }, context);
             if (meshes.length) {
                 const enableTileStencil = layer.getRenderer().isEnableTileStencil();
                 for (let i = 0; i < meshes.length; i++) {

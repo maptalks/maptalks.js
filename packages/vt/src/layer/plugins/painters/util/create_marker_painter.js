@@ -28,7 +28,7 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
     };
 
     //!geometry.properties.aAnchor 以避免重复创建collision数据
-    if ((enableCollision || enableUniquePlacement) && !geometry.properties.aAnchor) {
+    if ((enableCollision || enableUniquePlacement) && !geometry.properties.aShape) {
         const { aPosition, aShape } = geometry.data;
         const vertexCount = geometry.data.aPosition.length / geometry.desc.positionSize;
         //initialize opacity array

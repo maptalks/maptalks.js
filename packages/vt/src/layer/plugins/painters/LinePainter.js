@@ -451,7 +451,7 @@ class LinePainter extends BasicPainter {
         const uniforms = [];
         const defines = {
         };
-        if (context && context.isRenderingTerrain) {
+        if (context && context.isTerrainSkinPlugin) {
             defines['IS_RENDERING_TERRAIN'] = 1;
         }
         this.fillIncludes(defines, uniforms, context);
@@ -544,14 +544,14 @@ class LinePainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const isRenderingTerrain = context && context.isRenderingTerrain;
+        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
         const tileSize = this.layer.options.tileSize;
 
-        const projViewMatrix = isRenderingTerrain ? IDENTITY_ARR : map.projViewMatrix;
+        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
         const viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution(),
-            canvasSize = isRenderingTerrain ? [tileSize, tileSize] : [map.width, map.height];
+            canvasSize = isTerrainSkinPlugin ? [tileSize, tileSize] : [map.width, map.height];
 
         // const glScale = map.getGLScale();
         // const c = vec3.transformMat4([], map.cameraLookAt, projViewMatrix);

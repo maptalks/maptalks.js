@@ -20,11 +20,11 @@ const TERRAIN_CLEAR = {
     stencil: 0
 };
 
-const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill']);
+const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill', 'native-line', 'line-gradient']);
 const terrainSkinFilter = plugin => {
     const config = plugin.config;
     // const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && plugin.painter && plugin.painter.isOnly2D();
-    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.isTerrainSkin;
+    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.awareOfTerrain;
     return is2D;
 }
 
@@ -811,11 +811,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!visible) {
                 return;
             }
-            const isTerrainPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainPlugin & this._terrainGL || this.gl;
+            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
+            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
+            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
             const pickingFBO = this.pickingFBO;
-            if (isTerrainPlugin) {
+            if (isTerrainSkinPlugin) {
                 // terrain Painter会创建picking，但pickingFBO和this.regl不同，导致报错
                 this.pickingFBO = null;
             }
@@ -825,7 +825,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 layer: this.layer,
                 symbol,
                 gl,
-                isRenderingTerrain: isTerrainPlugin,
+                isRenderingTerrain,
+                isTerrainSkinPlugin,
                 sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
                 dataConfig: plugin.config ? plugin.config.dataConfig : null,
                 pluginIndex: idx,
@@ -857,7 +858,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                     return;
                 }
-                if (isRenderingTerrain && terrainSkinFilter(plugin)) {
+                if (isRenderingTerrain && terrainSkinFilter(plugin) && plugin.painter.dataConfig.awareOfTerrain) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -872,7 +873,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                     return;
                 }
-                if (isRenderingTerrain && terrainSkinFilter(plugin)) {
+                if (isRenderingTerrain && terrainSkinFilter(plugin) && plugin.painter.dataConfig.awareOfTerrain) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -974,14 +975,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = !!this._terrainLayer;
-        const isTerrainPlugin = plugin && terrainSkinFilter(plugin);
-        const regl = isTerrainPlugin && this._terrainRegl || this.regl;
-        const gl = isTerrainPlugin & this._terrainGL || this.gl;
+        const isTerrainSkinPlugin = plugin && terrainSkinFilter(plugin);
+        const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
+        const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
         const context = {
             regl,
             layer: this.layer,
             gl,
             isRenderingTerrain,
+            isTerrainSkinPlugin,
             sceneConfig: plugin && plugin.config.sceneConfig,
             pluginIndex: plugin && plugin.renderIndex,
             polygonOffsetIndex,
@@ -1187,9 +1189,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileCache[idx]) {
                 return;
             }
-            const isTerrainPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainPlugin & this._terrainGL || this.gl;
+            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
+            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
+            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
             const context = {
                 regl,
                 layer: this.layer,
@@ -1198,14 +1200,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex: idx,
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
-                tileTransform: isTerrainPlugin ? terrainTileTransform : tileTransform,
+                tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
                 tileTranslationMatrix,
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
                 tileInfo,
                 tileZoom: this['_tileZoom'],
                 bloom: this._parentContext && this._parentContext.bloom,
-                isRenderingTerrain
+                isRenderingTerrain,
+                isTerrainSkinPlugin
             };
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
@@ -1247,9 +1250,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!pluginData[idx]) {
                 return;
             }
-            const isTerrainPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainPlugin & this._terrainGL || this.gl;
+            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
+            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
+            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
@@ -1261,7 +1264,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex: idx,
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
-                tileTransform: isTerrainPlugin ? terrainTileTransform : tileTransform,
+                tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
+                isRenderingTerrain,
+                isTerrainSkinPlugin,
                 tileTranslationMatrix,
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,

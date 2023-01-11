@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { reshader, vec3, mat4, HighlightUtil } from '@maptalks/gl';
 import StencilHelper from './StencilHelper';
 import { SYMBOLS_NEED_REBUILD_IN_VT, StyleUtil, FuncTypeUtil } from '@maptalks/vector-packer';
@@ -14,6 +15,8 @@ const TEX_CACHE_KEY = '__gl_textures';
 
 const MAT = [];
 const V3 = [];
+const TILEPOINT = new maptalks.Point(0, 0);
+const ANCHOR_POINT = new maptalks.Point(0, 0);
 
 const EMPTY_ARRAY = [];
 const level0Filter = mesh => {
@@ -239,14 +242,18 @@ class Painter {
         throw new Error('not implemented');
     }
 
-    createMeshes(geometries, transform, params) {
-        const context = {};
+    createMeshes(geometries, transform, params, context) {
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            let mesh = this.createMesh(geometries[i], transform, params, context);
+            const awareOfTerrain = this.dataConfig.awareOfTerrain;
+            if (awareOfTerrain && context && context.isRenderingTerrain && !context.isTerrainSkinPlugin) {
+                const geometry = geometries[i];
+                this._updateTerrainAltitude(geometry && geometry.geometry, context);
+            }
+            let mesh = this.createMesh(geometries[i], transform, params, context || {});
             if (Array.isArray(mesh)) {
                 mesh = mesh.filter(m => !!m);
                 meshes.push(...mesh);
@@ -286,13 +293,24 @@ class Painter {
         meshes.forEach(mesh => {
             const bloom = this.isBloom(mesh) && isEnableBloom;
             mesh.bloom = bloom;
+            let updated = false;
             const defines = mesh.defines || {};
             if (!!defines['HAS_BLOOM'] !== bloom) {
+                updated = true;
                 if (bloom) {
                     defines['HAS_BLOOM'] = 1;
                 } else {
                     delete defines['HAS_BLOOM'];
                 }
+            }
+            if (mesh.geometry.data.aTerrainAltitude) {
+                this._updateTerrainAltitude(mesh.geometry, context);
+            }
+            if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
+                defines['HAS_TERRAIN_ALTITUDE'] = 1;
+                updated = true;
+            }
+            if (updated) {
                 mesh.setDefines(defines);
             }
             this._highlightMesh(mesh);
@@ -1057,6 +1075,61 @@ class Painter {
         const { pickingIdIndiceMap } = mesh.geometry.properties;
         const highlights = this._highlighted ? convertHighlights(mesh, this.layer, this._highlighted) : null;
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
+    }
+
+    _updateTerrainAltitude(geometry, context) {
+        if (!geometry) {
+            return;
+        }
+        let aAnchor = geometry.properties.aAnchor;
+        if (!aAnchor) {
+            const { aPosition } = geometry.data;
+            aAnchor = geometry.properties.aAnchor = aPosition.slice(0);
+        }
+        let aTerrainAltitude = geometry.properties.aTerrainAltitude;
+        if (!aTerrainAltitude) {
+            aTerrainAltitude = geometry.properties.aTerrainAltitude = new Float32Array(aAnchor.length / geometry.desc.positionSize);
+        }
+        if (!geometry.data.aTerrainAltitude) {
+            geometry.data.aTerrainAltitude = aTerrainAltitude;
+        } else if (aTerrainAltitude.dirty) {
+            geometry.updateData('aTerrainAltitude', aTerrainAltitude);
+        }
+        aTerrainAltitude.dirty = false;
+        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
+    }
+
+    _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
+        const { res, extent, extent2d } = tile;
+        const { xmin, ymax } = extent2d;
+        const tilePoint = TILEPOINT.set(xmin, ymax);
+        const positionSize = aPosition.length / aTerrainAltitude.length;
+        let queryResult = aTerrainAltitude.queryResult;
+        if (!queryResult) {
+            queryResult = aTerrainAltitude.queryResult = new Map();
+        }
+        for (let i = start; i <= end; i++) {
+            ANCHOR_POINT.set(aPosition[i * positionSize], aPosition[i * positionSize + 1]);
+            const index = ANCHOR_POINT[0] + ANCHOR_POINT[1] * extent;
+            let altitude = queryResult.get(index);
+            if (altitude || altitude === 0) {
+                if (aTerrainAltitude[i] !== altitude) {
+                    aTerrainAltitude[i] = altitude;
+                    aTerrainAltitude.dirty = true;
+                }
+                continue;
+            }
+
+            const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, tilePoint, extent, res);
+            altitude = result[0] || 0;
+            if (aTerrainAltitude[i] !== altitude) {
+                aTerrainAltitude[i] = altitude;
+                aTerrainAltitude.dirty = true;
+            }
+            if (result[1]) {
+                queryResult.set(index, altitude);
+            }
+        }
     }
 }
 
