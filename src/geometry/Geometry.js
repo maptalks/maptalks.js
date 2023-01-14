@@ -1406,10 +1406,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!layer) {
             return 0;
         }
-        let layerAltitude = 0, enableAltitude = false;
         const layerOpts = layer.options;
-        layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
-        enableAltitude = layerOpts['enableAltitude'];
+        const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        const enableAltitude = layerOpts['enableAltitude'];
         if (!enableAltitude) {
             return layerAltitude;
         }
@@ -1442,8 +1441,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             altitudeProperty = layerOpts['altitudeProperty'];
         }
         const properties = this.properties || {};
-        if (!isNil(properties[altitudeProperty])) {
-            return properties[altitudeProperty];
+        const altitude = properties[altitudeProperty];
+        if (!isNil(altitude)) {
+            return altitude;
         }
         const alts = getGeometryCoordinatesAlts(this, 0, false);
         if (!isNil(alts)) {
