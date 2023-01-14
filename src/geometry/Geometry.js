@@ -1409,7 +1409,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
         const enableAltitude = layerOpts['enableAltitude'];
         const altitudeProperty = layerOpts['altitudeProperty'];
-        const properties = this.getProperties() || {};
+        const properties = this.properties || {};
+        //if properties.altitude is null
         //for new Geometry([x,y,z])
         if (isNil(properties[altitudeProperty])) {
             const coordinates = this.getCoordinates ? this.getCoordinates() : null;
@@ -1439,12 +1440,29 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNumber(alt)) {
             return this;
         }
+        const layer = this.getLayer();
+        if (layer) {
+            const layerOpts = layer.options;
+            const altitudeProperty = layerOpts['altitudeProperty'];
+            const properties = this.properties || {};
+            const altitude = properties[altitudeProperty];
+            //update properties altitude
+            if (!isNil(altitude)) {
+                if (Array.isArray(altitude)) {
+                    for (let i = 0, len = altitude.length; i < len; i++) {
+                        altitude[i] = alt;
+                    }
+                } else {
+                    properties[altitudeProperty] = alt;
+                }
+            }
+        }
         const coordinates = this.getCoordinates ? this.getCoordinates() : null;
         if (!coordinates) {
             return this;
         }
+        //update coordinates.z
         setCoordinatesAlt(coordinates, alt);
-        const layer = this.getLayer();
         if (layer) {
             const render = layer.getRenderer();
             //for webgllayer,pointlayer/linestringlayer/polygonlayer
