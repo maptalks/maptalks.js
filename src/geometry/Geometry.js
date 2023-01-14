@@ -1423,7 +1423,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             }
         }
         //old,the altitude is bind properties
-        const altitude = enableAltitude ? properties ? properties[altitudeProperty] : 0 : 0;
+        const altitude = properties[altitudeProperty];
+        if (isNil(altitude)) {
+            return layerAltitude;
+        }
         if (Array.isArray(altitude)) {
             return altitude.map(alt => {
                 return alt + layerAltitude;
