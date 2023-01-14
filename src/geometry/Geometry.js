@@ -1400,30 +1400,27 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //------------- altitude + layer.altitude -------------
     //this is for vectorlayer
-    getAltitude() {
+    //内部方法 for render,因为返回的值受layer.enableAltitude影响
+    _getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
             return 0;
         }
+        let layerAltitude = 0, enableAltitude = false;
         const layerOpts = layer.options;
-        const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
-        const enableAltitude = layerOpts['enableAltitude'];
+        layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        enableAltitude = layerOpts['enableAltitude'];
+        if (!enableAltitude) {
+            return layerAltitude;
+        }
         const altitudeProperty = layerOpts['altitudeProperty'];
         const properties = this.properties || {};
         //if properties.altitude is null
         //for new Geometry([x,y,z])
         if (isNil(properties[altitudeProperty])) {
-            const coordinates = this.getCoordinates ? this.getCoordinates() : null;
-            if (coordinates) {
-                const hasAlt = [];
-                coordinatesHasAlt(coordinates, hasAlt);
-                if (hasAlt.length) {
-                    const alts = getCoordinatesAlts(coordinates, layerAltitude, enableAltitude);
-                    if (this.getShell) {
-                        return alts[0][0];
-                    }
-                    return alts;
-                }
+            const alts = getGeometryCoordinatesAlts(this, layerAltitude, enableAltitude);
+            if (!isNil(alts)) {
+                return alts;
             }
         }
         //old,the altitude is bind properties
@@ -1436,25 +1433,45 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return altitude + layerAltitude;
     }
 
+    //this for user,和图层是否开启 enableAltitude无关
+    getAltitude() {
+        let altitudeProperty = 'altitude';
+        const layer = this.getLayer();
+        if (layer) {
+            const layerOpts = layer.options;
+            altitudeProperty = layerOpts['altitudeProperty'];
+        }
+        const properties = this.properties || {};
+        if (!isNil(properties[altitudeProperty])) {
+            return properties[altitudeProperty];
+        }
+        const alts = getGeometryCoordinatesAlts(this, 0, false);
+        if (!isNil(alts)) {
+            return alts;
+        }
+        return 0;
+    }
+
     setAltitude(alt) {
         if (!isNumber(alt)) {
             return this;
         }
+        let altitudeProperty = 'altitude';
         const layer = this.getLayer();
         if (layer) {
             const layerOpts = layer.options;
-            const altitudeProperty = layerOpts['altitudeProperty'];
-            const properties = this.properties || {};
-            const altitude = properties[altitudeProperty];
-            //update properties altitude
-            if (!isNil(altitude)) {
-                if (Array.isArray(altitude)) {
-                    for (let i = 0, len = altitude.length; i < len; i++) {
-                        altitude[i] = alt;
-                    }
-                } else {
-                    properties[altitudeProperty] = alt;
+            altitudeProperty = layerOpts['altitudeProperty'];
+        }
+        const properties = this.properties || {};
+        const altitude = properties[altitudeProperty];
+        //update properties altitude
+        if (!isNil(altitude)) {
+            if (Array.isArray(altitude)) {
+                for (let i = 0, len = altitude.length; i < len; i++) {
+                    altitude[i] = alt;
                 }
+            } else {
+                properties[altitudeProperty] = alt;
             }
         }
         const coordinates = this.getCoordinates ? this.getCoordinates() : null;
@@ -1475,7 +1492,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _genMinMaxAlt() {
-        const altitude = this.getAltitude();
+        const altitude = this._getAltitude();
         if (Array.isArray(altitude)) {
             this._minAlt = Number.MAX_VALUE;
             this._maxAlt = Number.MIN_VALUE;
@@ -1517,6 +1534,22 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
 Geometry.mergeOptions(options);
 
+function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
+    const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
+    if (coordinates) {
+        const tempAlts = [];
+        coordinatesHasAlt(coordinates, tempAlts);
+        if (tempAlts.length) {
+            const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
+            if (geometry.getShell) {
+                return alts[0][0];
+            }
+            return alts;
+        }
+    }
+    return null;
+}
+
 function setCoordinatesAlt(coordinates, alt) {
     if (Array.isArray(coordinates)) {
         for (let i = 0, len = coordinates.length; i < len; i++) {
@@ -1527,16 +1560,16 @@ function setCoordinatesAlt(coordinates, alt) {
     }
 }
 
-function coordinatesHasAlt(coordinates, hasAlt) {
-    if (hasAlt.length) {
+function coordinatesHasAlt(coordinates, tempAlts) {
+    if (tempAlts.length) {
         return;
     }
     if (Array.isArray(coordinates)) {
         for (let i = 0, len = coordinates.length; i < len; i++) {
-            coordinatesHasAlt(coordinates[i], hasAlt);
+            coordinatesHasAlt(coordinates[i], tempAlts);
         }
     } else if (isNumber(coordinates.z)) {
-        hasAlt.push(coordinates.z);
+        tempAlts.push(coordinates.z);
     }
 }
 
@@ -1550,6 +1583,8 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
     }
     if (enableAltitude && isNumber(coordinates.z)) {
         return coordinates.z + layerAlt;
+    } else if (isNumber(coordinates.z)) {
+        return coordinates.z;
     }
     return layerAlt;
 }

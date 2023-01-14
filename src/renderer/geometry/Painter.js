@@ -847,7 +847,7 @@ class Painter extends Class {
     }
 
     getAltitude() {
-        const propAlt = this.geometry.getAltitude();
+        const propAlt = this.geometry._getAltitude();
         if (propAlt !== this._propAlt) {
             this._altAtGL = this._getGeometryAltitude();
         }
@@ -876,7 +876,7 @@ class Painter extends Class {
         if (!map) {
             return 0;
         }
-        const altitude = this.geometry.getAltitude();
+        const altitude = this.geometry._getAltitude();
         this._propAlt = altitude;
         if (!altitude) {
             this.minAltitude = this.maxAltitude = 0;
