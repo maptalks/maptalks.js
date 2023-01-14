@@ -1581,12 +1581,16 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
         }
         return alts;
     }
-    if (enableAltitude && isNumber(coordinates.z)) {
-        return coordinates.z + layerAlt;
-    } else if (isNumber(coordinates.z)) {
-        return coordinates.z;
+    if (isNumber(coordinates.z)) {
+        if (enableAltitude) {
+            return layerAlt + coordinates.z;
+        }
+        return layerAlt;
+    } else if (enableAltitude) {
+        return layerAlt;
+    } else {
+        return 0;
     }
-    return layerAlt;
 }
 
 export default Geometry;
