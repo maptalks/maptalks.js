@@ -29,6 +29,7 @@ import { isFunctionDefinition } from '../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
+const TEMP_PROPERTIES = {};
 
 /**
  * @property {Object} options                       - geometry options
@@ -1412,8 +1413,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!enableAltitude) {
             return layerAltitude;
         }
-        const altitudeProperty = layerOpts['altitudeProperty'];
-        const properties = this.properties || {};
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
         //if properties.altitude is null
         //for new Geometry([x,y,z])
         if (isNil(properties[altitudeProperty])) {
@@ -1435,13 +1436,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //this for user,和图层是否开启 enableAltitude无关
     getAltitude() {
-        let altitudeProperty = 'altitude';
         const layer = this.getLayer();
-        if (layer) {
-            const layerOpts = layer.options;
-            altitudeProperty = layerOpts['altitudeProperty'];
-        }
-        const properties = this.properties || {};
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
         const altitude = properties[altitudeProperty];
         if (!isNil(altitude)) {
             return altitude;
@@ -1457,13 +1454,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!isNumber(alt)) {
             return this;
         }
-        let altitudeProperty = 'altitude';
         const layer = this.getLayer();
-        if (layer) {
-            const layerOpts = layer.options;
-            altitudeProperty = layerOpts['altitudeProperty'];
-        }
-        const properties = this.properties || {};
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
         const altitude = properties[altitudeProperty];
         //update properties altitude
         if (!isNil(altitude)) {
@@ -1486,9 +1479,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             //for webgllayer,pointlayer/linestringlayer/polygonlayer
             if (render && render.gl) {
                 this.setCoordinates(coordinates);
+            } else if (render) {
+                this._repaint();
             }
         }
-        this._repaint();
         return this;
     }
 
@@ -1534,6 +1528,15 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 }
 
 Geometry.mergeOptions(options);
+
+function getAltitudeProperty(layer) {
+    let altitudeProperty = 'altitude';
+    if (layer) {
+        const layerOpts = layer.options;
+        altitudeProperty = layerOpts['altitudeProperty'];
+    }
+    return altitudeProperty;
+}
 
 function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
     const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
