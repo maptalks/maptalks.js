@@ -1401,7 +1401,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //------------- altitude + layer.altitude -------------
     //this is for vectorlayer
-    //内部方法 for render,因为返回的值受layer.enableAltitude影响
+    //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
     _getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
@@ -1415,9 +1415,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const altitudeProperty = getAltitudeProperty(layer);
         const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
         //if properties.altitude is null
         //for new Geometry([x,y,z])
-        if (isNil(properties[altitudeProperty])) {
+        if (isNil(altitude)) {
             const alts = getGeometryCoordinatesAlts(this, layerAltitude, enableAltitude);
             if (!isNil(alts)) {
                 return alts;
@@ -1425,7 +1426,6 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return layerAltitude;
         }
         //old,the altitude is bind properties
-        const altitude = properties[altitudeProperty];
         if (Array.isArray(altitude)) {
             return altitude.map(alt => {
                 return alt + layerAltitude;
@@ -1434,7 +1434,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return altitude + layerAltitude;
     }
 
-    //this for user,和图层是否开启 enableAltitude无关
+    //this for user
     getAltitude() {
         const layer = this.getLayer();
         const altitudeProperty = getAltitudeProperty(layer);
@@ -1586,10 +1586,7 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
         return alts;
     }
     if (isNumber(coordinates.z)) {
-        if (enableAltitude) {
-            return layerAlt + coordinates.z;
-        }
-        return layerAlt;
+        return enableAltitude ? layerAlt + coordinates.z : coordinates.z;
     } else if (enableAltitude) {
         return layerAlt;
     } else {
