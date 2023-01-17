@@ -968,8 +968,8 @@ function (exports) {
         var fetchOptions = msg.data.fetchOptions;
         requestImageOffscreen(url, function (err, data) {
             var buffers = [];
-            if (data && data.data && data.data.buffer) {
-                buffers.push(data.data.buffer);
+            if (data && data.data) {
+                buffers.push(data.data);
             }
             postResponse(err, data, buffers);
         }, fetchOptions);
@@ -985,14 +985,15 @@ function (exports) {
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
-                var { width, height } = bitmap;
-                offCanvas.width = width;
-                offCanvas.height = height;
-                offCtx.drawImage(bitmap, 0, 0);
-                bitmap.close();
-                var imgData = offCtx.getImageData(0, 0, width, height);
+                // var { width, height } = bitmap;
+                // offCanvas.width = width;
+                // offCanvas.height = height;
+                // offCtx.drawImage(bitmap, 0, 0);
+                // bitmap.close();
+                // var imgData = offCtx.getImageData(0, 0, width, height);
                 // debugger
-                cb(null, { width, height, data: new Uint8Array(imgData.data) });
+                // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects#supported_objects
+                cb(null, {data:bitmap});
             }).catch(err => {
                 console.warn('error when loading tile:', url);
                 console.warn(err);
