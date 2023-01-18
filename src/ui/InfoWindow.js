@@ -285,6 +285,7 @@ class InfoWindow extends UIComponent {
     }
 
     onRemove() {
+        this._onDomMouseout();
         this.onDomRemove();
     }
 

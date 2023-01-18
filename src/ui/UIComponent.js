@@ -255,6 +255,9 @@ class UIComponent extends Eventable(Class) {
         if (!this.getDOM()) {
             return this;
         }
+        if (this._onDomMouseout) {
+            this._onDomMouseout();
+        }
         this.options['visible'] = false;
         const anim = this._getAnimation(),
             dom = this.getDOM();
