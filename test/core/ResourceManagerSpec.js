@@ -1,6 +1,6 @@
-describe('ImageManager.Spec', function () {
+describe('ResourceManager.Spec', function () {
     var hostUrl = 'http://localhost:9876/resources/';
-    var ImageManager = maptalks.ImageManager;
+    var ResourceManager = maptalks.ResourceManager;
 
     var container;
     var map;
@@ -9,7 +9,7 @@ describe('ImageManager.Spec', function () {
     var layer;
 
     beforeEach(function () {
-        ImageManager.setSourceUrl(hostUrl);
+        ResourceManager.setRootUrl(hostUrl);
         var setups = COMMON_CREATE_MAP(center, null, {
             width: 300,
             height: 200
@@ -27,7 +27,7 @@ describe('ImageManager.Spec', function () {
     });
 
     function getImage(key) {
-        return ImageManager.get(key);
+        return ResourceManager.get(key);
     }
 
     function getMarker(markerFile) {
@@ -47,20 +47,20 @@ describe('ImageManager.Spec', function () {
     });
 
     it('get image with cache', function (done) {
-        ImageManager.add('a', 'tile.png');
+        ResourceManager.add('a', 'tile.png');
         expect(getImage('a')).to.be.equal(hostUrl + 'tile.png');
         done();
     });
 
     it('get image with has host', function (done) {
-        ImageManager.add('b', 'https://abc.com/tile.png');
+        ResourceManager.add('b', 'https://abc.com/tile.png');
         expect(getImage('b')).to.be.equal('https://abc.com/tile.png');
         done();
     });
 
     it('get image with base64', function (done) {
         var base64 = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-        ImageManager.add('c', base64);
+        ResourceManager.add('c', base64);
         expect(getImage('c')).to.be.equal(base64);
         done();
     });
@@ -70,14 +70,14 @@ describe('ImageManager.Spec', function () {
             return res.blob();
         }).then(function (blob) {
             var url = URL.createObjectURL(blob);
-            ImageManager.add('d', url);
+            ResourceManager.add('d', url);
             expect(getImage('d')).to.be.equal(url);
             done();
         })
     });
 
     it('load sprite', function (done) {
-        ImageManager.loadSprite({
+        ResourceManager.loadSprite({
             imgUrl: hostUrl + 'sprite.png',
             jsonUrl: hostUrl + 'sprite.json'
         }).then(function () {

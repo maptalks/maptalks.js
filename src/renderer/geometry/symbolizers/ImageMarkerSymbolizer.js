@@ -6,7 +6,7 @@ import PointExtent from '../../../geo/PointExtent';
 import { getImageMarkerFixedExtent, isImageSymbol } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
-import { resourceIsTemplate } from '../../../core/ImageManager';
+import { resourceIsTemplate } from '../../../core/ResourceManager';
 const TEMP_SIZE = new Size(1, 1);
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {

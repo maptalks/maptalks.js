@@ -1,4 +1,4 @@
-import { resourceIsTemplate } from '../../../core/ImageManager';
+import { resourceIsTemplate } from '../../../core/ResourceManager';
 import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 

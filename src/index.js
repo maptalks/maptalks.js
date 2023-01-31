@@ -78,4 +78,4 @@ const worker = {
 
 export { worker };
 
-export { ImageManager } from './core/ImageManager';
+export { ResourceManager } from './core/ResourceManager';

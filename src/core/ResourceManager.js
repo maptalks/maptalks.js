@@ -35,32 +35,32 @@ function isAbsoluteURL(url) {
 
 /**
  * @classdesc
- * Global image source manager,It is static and should not be initiated
+ * Global resource manager,It is static and should not be initiated
  * more info https://github.com/maptalks/maptalks.js/issues/1859
  * @class
  * @static
  * @category core
  * @example
- *  ImageManager.setSourceUrl('http://abc.com/images/');
- *  var img = ImageManager.get('hello.png');//http://abc.com/hello.png
+ *  ResourceManager.setRootUrl('http://abc.com/images/');
+ *  var img = ResourceManager.get('hello.png');//http://abc.com/images/hello.png
  *
- *  ImageManager.add('test','dog.png');
- *  var img = ImageManager.get('test');//http://abc.com/images/dog.png
+ *  ResourceManager.add('test','dog.png');
+ *  var img = ResourceManager.get('test');//http://abc.com/images/dog.png
  *
  *
  *
  *
  */
-export const ImageManager = {
-    sourceUrl: '',
-    images: {},
+export const ResourceManager = {
+    rootUrl: '',
+    cache: {},
 
     /**
      * set image source root path
      * @param {String} url
      */
-    setSourceUrl(url) {
-        ImageManager.sourceUrl = url;
+    setRootUrl(url) {
+        ResourceManager.rootUrl = url;
     },
 
     /**
@@ -70,12 +70,12 @@ export const ImageManager = {
      * @returns {String} url/imgBitMap
      */
     get(name, imgBitMap = false) {
-        if (!ImageManager.sourceUrl) {
-            ImageManager.setSourceUrl(getAbsoluteURL('/'));
+        if (!ResourceManager.rootUrl) {
+            ResourceManager.setRootUrl(getAbsoluteURL('/'));
         }
-        const img = ImageManager.images[name];
+        const img = ResourceManager.cache[name];
         if (!img) {
-            return `${ImageManager.sourceUrl}${name}`;
+            return `${ResourceManager.rootUrl}${name}`;
         }
         if (isString(img) && isAbsoluteURL(img)) {
             return img;
@@ -85,7 +85,7 @@ export const ImageManager = {
         } else if (img.base64) {
             return img.base64;
         }
-        return `${ImageManager.sourceUrl}${img}`;
+        return `${ResourceManager.rootUrl}${img}`;
     },
 
     /**
@@ -93,7 +93,7 @@ export const ImageManager = {
      * @param {String} name
      */
     remove(name) {
-        delete ImageManager.images[name];
+        delete ResourceManager.cache[name];
     },
 
     /**
@@ -102,11 +102,11 @@ export const ImageManager = {
      * @param {String} imageUrl
      */
     add(name, imgUrl) {
-        if (ImageManager.images[name]) {
+        if (ResourceManager.cache[name]) {
             console.warn(`${name} img Already exists,the ${name} Cannot be added`);
             return;
         }
-        ImageManager.images[name] = imgUrl;
+        ResourceManager.cache[name] = imgUrl;
     },
 
     /**
@@ -115,7 +115,7 @@ export const ImageManager = {
      * @param {String} imageUrl
      */
     update(name, imageUrl) {
-        ImageManager.images[name] = imageUrl;
+        ResourceManager.cache[name] = imageUrl;
     },
 
     /**
@@ -123,7 +123,7 @@ export const ImageManager = {
      * @returns {Object} images
      */
     all() {
-        return ImageManager.images;
+        return ResourceManager.cache;
     },
 
     /**
@@ -189,7 +189,7 @@ export const ImageManager = {
                         ctx2.drawImage(canvas, x, y, width, height, 0, 0, width, height);
                         imgBitMap = offscreenCanvas.transferToImageBitmap();
                     }
-                    ImageManager.add(name, {
+                    ResourceManager.add(name, {
                         base64,
                         imgBitMap
                     });
@@ -226,7 +226,7 @@ export function checkResourceValue(url, geo) {
     key += '';
     if (key.indexOf('$') === 0) {
         const name = key.substring(1, key.length);
-        return ImageManager.get(name, Browser.decodeImageInWorker);
+        return ResourceManager.get(name, Browser.decodeImageInWorker);
     } else if (resourceIsTemplate(key)) {
         if (!geo) {
             return key;
@@ -234,7 +234,7 @@ export function checkResourceValue(url, geo) {
         const properties = geo.getProperties();
         const name = replaceVariable(key, properties || {});
         url[0] = name;
-        return ImageManager.get(name, Browser.decodeImageInWorker);
+        return ResourceManager.get(name, Browser.decodeImageInWorker);
     }
     return key;
 }
