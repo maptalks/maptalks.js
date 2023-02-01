@@ -1,7 +1,7 @@
 import Color from 'color';
 import BasicPainter from './BasicPainter';
 import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/line.vert';
 import frag from './glsl/line.frag';
 import pickingVert from './glsl/line.vert';
@@ -11,6 +11,7 @@ import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 
 const IDENTITY_ARR = mat4.identity([]);
+const TEMP_CANVAS_SIZE = [];
 
 class LinePainter extends BasicPainter {
 
@@ -550,8 +551,11 @@ class LinePainter extends BasicPainter {
         const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
         const viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
-            resolution = map.getResolution(),
-            canvasSize = isTerrainSkinPlugin ? [tileSize, tileSize] : [map.width, map.height];
+            resolution = map.getResolution();
+        const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
+        if (isTerrainSkinPlugin) {
+            vec2.set(canvasSize, tileSize, tileSize);
+        }
 
         // const glScale = map.getGLScale();
         // const c = vec3.transformMat4([], map.cameraLookAt, projViewMatrix);

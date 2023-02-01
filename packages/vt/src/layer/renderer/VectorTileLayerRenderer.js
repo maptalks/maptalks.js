@@ -975,7 +975,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = !!this._terrainLayer;
-        const isTerrainSkinPlugin = plugin && terrainSkinFilter(plugin);
+        const isTerrainSkinPlugin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
         const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
         const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
         const context = {

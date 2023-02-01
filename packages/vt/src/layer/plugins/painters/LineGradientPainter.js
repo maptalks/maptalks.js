@@ -18,11 +18,12 @@ class LineGradientPainter extends LinePainter {
         const aGradIndex = new Uint8Array(featureIndexes.length);
         const grads = [];
         let current = featureIndexes[0];
-        grads.push(features[current].feature.properties[gradProp]);
+        const properties = features[current].feature.properties;
+        grads.push(properties && properties[gradProp] || 0);
         for (let i = 1; i < featureIndexes.length; i++) {
             if (featureIndexes[i] !== current) {
                 current = featureIndexes[i];
-                grads.push(features[current].feature.properties[gradProp]);
+                grads.push(properties && properties[gradProp] || 0);
             }
             aGradIndex[i] = grads.length - 1;
         }
@@ -96,12 +97,12 @@ class LineGradientPainter extends LinePainter {
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
         }
+        const projViewModelMatrix = [];
         uniforms.push(
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }

@@ -53,8 +53,8 @@ class NativeLinePainter extends BasicPainter {
         return uniforms;
     }
 
-    init() {
-        const stencil = this.layer.getRenderer().isEnableTileStencil();
+    init(context) {
+        const stencil = this.layer.getRenderer().isEnableTileStencil() && (!context || !context.isTerrainSkinPlugin);
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
