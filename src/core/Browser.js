@@ -34,7 +34,8 @@ if (!IS_NODE) {
         // this will Improve performance 2-3FPS
         imageBitMap = typeof window !== 'undefined' && isFunction(window.createImageBitmap),
         resizeObserver = typeof window !== 'undefined' && isFunction(window.ResizeObserver),
-        btoa = typeof window !== 'undefined' && isFunction(window.btoa);
+        btoa = typeof window !== 'undefined' && isFunction(window.btoa),
+        proxy = typeof window !== 'undefined' && isFunction(window.Proxy);
 
 
     let chromeVersion = 0;
@@ -124,6 +125,7 @@ if (!IS_NODE) {
         decodeImageInWorker,
         monitorDPRChange: true,
         supportsPassive,
+        proxy,
         removeDPRListening: (map) => {
             if (map) {
                 delete maps[map.id];

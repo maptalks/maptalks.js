@@ -79,6 +79,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                 this.setMask(Geometry.fromJSON(options.mask));
             }
         }
+        this.proxyOptions();
     }
 
     /**
