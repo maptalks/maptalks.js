@@ -26,7 +26,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
 import { computeDomPosition } from '../core/util/dom';
 
 const TEMP_COORD = new Coordinate(0, 0);
-const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor'];
+const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky'];
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
  * @property {Boolean} [options.centerCross=false]              - Display a red cross in the center of map
