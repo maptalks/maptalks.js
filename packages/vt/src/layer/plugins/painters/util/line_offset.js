@@ -15,7 +15,7 @@ const P2 = [];
  * @param {Number} dx - offset x
  * @param {Number} dy - offset y
  */
-export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip, scale, elevatedAnchor, vtLayer, mvpMatrix) {
+export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOffset, dx, dy, segment, lineStartIndex, lineLength, fontScale, flip, scale, elevatedAnchor, vtLayer, mvpMatrix, isPitchWithMap) {
     if (!elevatedAnchor) {
         elevatedAnchor = projectedAnchor;
     }
@@ -83,7 +83,7 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
 
     const renderer = vtLayer && vtLayer.getRenderer();
     const terrainHelper = renderer && renderer.getTerrainHelper();
-    if (terrainHelper) {
+    if (!isPitchWithMap && terrainHelper) {
         const prevToCurrent = currentPoint.sub(prevPoint);
         let p = prevToCurrent.mult(segmentInterpolationT)._add(prevPoint);
 

@@ -63,6 +63,7 @@ const TEMP_QUAT = [];
 const TEMP_MAT4 = [];
 const TEMP_MAT4_1 = [];
 const TEMP_AXIS = [];
+const TEMP_CANVAS_SIZE = [];
 
 const FIRST_CHAROFFSET = [], LAST_CHAROFFSET = [];
 
@@ -75,6 +76,8 @@ const PROJ_COORD = new maptalks.Coordinate(0, 0);
 const ANCHOR_POINT = new maptalks.Point(0, 0);
 const TILEPOINT = new maptalks.Point(0, 0);
 const ELEVATED_ANCHOR = [];
+
+const IDENTITY_ARR = mat4.identity([]);
 
 export default class TextPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
@@ -183,7 +186,7 @@ export default class TextPainter extends CollisionPainter {
         return geo;
     }
 
-    createMesh(geo, transform) {
+    createMesh(geo, transform, { tileVectorTransform }) {
         const enableCollision = this.isEnableCollision();
         const enableUniquePlacement = this.isEnableUniquePlacement();
         const { geometry, symbolIndex } = geo;
@@ -203,6 +206,7 @@ export default class TextPainter extends CollisionPainter {
         }
         mesh.forEach(m => {
             m.positionMatrix = this.getAltitudeOffsetMatrix();
+            m.properties.tileVectorTransform = tileVectorTransform;
         });
         return mesh;
     }
@@ -442,7 +446,7 @@ export default class TextPainter extends CollisionPainter {
 
     forEachBox(mesh, fn) {
         const map = this.getMap();
-        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.localTransform);
+        const matrix = mat4.multiply(PROJ_MATRIX, map.projViewMatrix, mesh.properties.tileVectorTransform);
         const { collideIds, aCount, features, elements } = mesh.geometry.properties;
         const ids = collideIds;
         if (!ids) {
@@ -493,7 +497,10 @@ export default class TextPainter extends CollisionPainter {
     // start and end is the start and end index of a label
     _updateLabelAttributes(mesh, meshElements, start, end, line, mvpMatrix, planeMatrix/*, labelIndex*/) {
         const renderer = this.layer.getRenderer();
-        const terrainHelper = renderer.getTerrainHelper && renderer.getTerrainHelper();
+
+        const uniforms = mesh.material.uniforms;
+        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
+        const terrainHelper = !isPitchWithMap && renderer.getTerrainHelper && renderer.getTerrainHelper();
 
         const enableCollision = this._needUpdateCollision();
         const map = this.getMap();
@@ -574,8 +581,7 @@ export default class TextPainter extends CollisionPainter {
             return false;
         }
         const onlyOne = lastChrIdx - firstChrIdx <= 3;
-        const uniforms = mesh.material.uniforms;
-        const isPitchWithMap = uniforms['pitchWithMap'] === 1;
+        
         const flip = Math.floor(normal / 2);
         const vertical = normal % 2;
 
@@ -645,7 +651,7 @@ export default class TextPainter extends CollisionPainter {
                 // 因为在updateNormal中已经计算过last_offset，这里就不再计算了
                 offset = LAST_CHAROFFSET;
             } else {
-                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, this.layer, mvpMatrix);
+                offset = getCharOffset.call(this, CHAR_OFFSET, mesh, textSize, line, vertexStart, labelAnchor, ANCHOR, scale, flip, elevatedAnchor, this.layer, mvpMatrix, isPitchWithMap);
             }
             if (!offset) {
                 //remove whole text if any char is missed
@@ -771,17 +777,23 @@ export default class TextPainter extends CollisionPainter {
         return true;
     }
 
-    init() {
+    init(context) {
         // const map = this.getMap();
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
 
-        const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
+        const { uniforms, extraCommandProps } = createTextShader.call(this, this.canvas, this.sceneConfig);
+        const defines = {
+        };
+        if (context && context.isTerrainSkinPlugin) {
+            defines['IS_RENDERING_TERRAIN'] = 1;
+        }
 
         this.shader = new reshader.MeshShader({
             // vert: vertAlongLine, frag,
             vert, frag,
+            defines,
             uniforms,
             extraCommandProps
         });
@@ -796,6 +808,7 @@ export default class TextPainter extends CollisionPainter {
         this._shaderAlongLine = new reshader.MeshShader({
             vert: vertAlongLine, frag,
             uniforms,
+            defines,
             extraCommandProps: commandProps
         });
 
@@ -837,10 +850,16 @@ export default class TextPainter extends CollisionPainter {
         }
     }
 
-    getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix;
+    getUniformValues(map, context) {
+        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
+        const tileSize = this.layer.options.tileSize;
+        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
         const cameraToCenterDistance = map.cameraToCenterDistance;
-        const canvasSize = [map.width, map.height];
+        // const canvasSize = [map.width, map.height];
+        const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
+        if (isTerrainSkinPlugin) {
+            vec2.set(canvasSize, tileSize, tileSize);
+        }
         //手动构造map的x与z轴的三维旋转矩阵
         //http://planning.cs.uiuc.edu/node102.html
         // const pitch = map.getPitch(),

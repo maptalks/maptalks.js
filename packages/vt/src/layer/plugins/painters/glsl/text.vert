@@ -142,12 +142,18 @@ void main() {
     //预乘w，得到gl_Position在NDC中的坐标值
     // gl_Position /= gl_Position.w;
 
-    float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
-    //通过distance动态调整大小
-    float perspectiveRatio = clamp(
-        0.5 + 0.5 * (1.0 - distanceRatio),
-        0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
-        4.0);
+    #ifdef IS_RENDERING_TERRAIN
+        float perspectiveRatio = 1.0;
+    #else
+        float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
+        //通过distance动态调整大小
+        float perspectiveRatio = clamp(
+            0.5 + 0.5 * (1.0 - distanceRatio),
+            0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+            4.0);
+    #endif
+    
+    
     #ifdef HAS_ROTATION
         float rotation = -aRotation / 9362.0 - mapRotation * isRotateWithMap;
     #else
@@ -167,14 +173,20 @@ void main() {
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     shape = shapeMatrix * (shape / glyphSize * myTextSize);
 
-    float cameraScale = projDistance / cameraToCenterDistance;
     if (isPitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * projDistance;
     } else {
+        #ifdef IS_RENDERING_TERRAIN
+            float offsetScale = tileRatio;
+        #else
+            float cameraScale = projDistance / cameraToCenterDistance;
+            float offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        #endif
+        
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
-        gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);
+        gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * offsetScale, 1.0);
     }
     gl_Position.xy += vec2(myTextDx, -myTextDy) * 2.0 / canvasSize * projDistance;
     // gl_Position.xy += vec2(1.0, 10.0);

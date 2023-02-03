@@ -696,7 +696,7 @@ class IconPainter extends CollisionPainter {
         });
         this.shader.version = 300;
 
-        const { uniforms, extraCommandProps } = createTextShader.call(this, this.layer, this.sceneConfig);
+        const { uniforms, extraCommandProps } = createTextShader.call(this, canvas, this.sceneConfig);
         //icon的text在intel gpu下不会引起崩溃，可以关闭模板
         // extraCommandProps.stencil.enable = false;
         const defines = this._textDefines || {};

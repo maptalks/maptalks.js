@@ -114,12 +114,16 @@ void main() {
 
     float cameraScale = projDistance / cameraToCenterDistance;
 
-    float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
-    //通过distance动态调整大小
-    float perspectiveRatio = clamp(
-        0.5 + 0.5 * (1.0 - distanceRatio),
-        0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
-        4.0);
+    #ifdef IS_RENDERING_TERRAIN
+        float perspectiveRatio = 1.0;
+    #else
+        float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
+        //通过distance动态调整大小
+        float perspectiveRatio = clamp(
+            0.5 + 0.5 * (1.0 - distanceRatio),
+            0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+            4.0);
+    #endif
     #ifdef HAS_OFFSET_Z
         //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
         vec3 offset = aOffset / 10.0;
@@ -131,9 +135,14 @@ void main() {
     vec2 texCoord = aTexCoord;
 
     if (isPitchWithMap == 1.0) {
+        #ifdef IS_RENDERING_TERRAIN
+            float offsetScale = tileRatio;
+        #else
+            float offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        #endif
         //乘以cameraScale可以抵消相机近大远小的透视效果
         //offset.z已经被转成了厘米，所以不用再乘以scale
-        offset.xy *= tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        offset.xy *= offsetScale;
         // gl_Position = projViewModelMatrix * vec4(position + vec3(offset.xy, 0.0), 1.0);
         gl_Position = projViewModelMatrix * vec4(position + offset, 1.0);
 

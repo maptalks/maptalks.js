@@ -298,9 +298,7 @@ function setMeshUniforms(geometry, uniforms, symbol) {
     setUniformFromSymbol(uniforms, 'textRotation', symbol, 'textRotation', DEFAULT_UNIFORMS['textRotation'], v => v * Math.PI / 180);
 }
 
-export function createTextShader(layer, sceneConfig) {
-    const renderer = layer.getRenderer();
-    const canvas = renderer.canvas;
+export function createTextShader(canvas, sceneConfig) {
     const viewport = {
         x: 0,
         y: 0,

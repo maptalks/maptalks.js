@@ -24,6 +24,9 @@ const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill', 'native-line', 'line-grad
 const terrainSkinFilter = plugin => {
     const config = plugin.config;
     // const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && plugin.painter && plugin.painter.isOnly2D();
+    if (config.type === 'text' && plugin.style && plugin.style.symbol && plugin.style.symbol.textPitchAlignment === 'map')  {
+        return true;
+    }
     const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.awareOfTerrain;
     return is2D;
 }
@@ -1149,6 +1152,35 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _endTerrainFrame() {
         const plugins = this._getAllPlugins();
+        const cameraPosition = this.getMap().cameraPosition;
+        const timestamp = this._currentTimestamp || 0;
+
+        if (this.layer.options.collision) {
+            //按照plugin顺序更新collision索引
+            plugins.forEach((plugin) => {
+                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                    return;
+                }
+                if (!terrainSkinFilter(plugin) || !plugin.painter.dataConfig.awareOfTerrain) {
+                    return;
+                }
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                plugin.prepareRender(context);
+                plugin.updateCollision(context);
+            });
+        } else {
+            plugins.forEach((plugin) => {
+                if (!this._isVisible(plugin) || !hasMesh(plugin)) {
+                    return;
+                }
+                if (!terrainSkinFilter(plugin) || !plugin.painter.dataConfig.awareOfTerrain) {
+                    return;
+                }
+                const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                plugin.prepareRender(context);
+            });
+        }
+
         plugins.forEach((plugin, idx) => {
             const hasMesh = this._isVisitable(plugin);
             if (!hasMesh || !terrainSkinFilter(plugin)) {
@@ -1201,6 +1233,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
                 tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
+                tileVectorTransform: tileTransform,
                 tileTranslationMatrix,
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
@@ -1265,6 +1298,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
                 tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
+                tileVectorTransform: tileTransform,
                 isRenderingTerrain,
                 isTerrainSkinPlugin,
                 tileTranslationMatrix,
