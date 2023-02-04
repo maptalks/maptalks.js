@@ -106,6 +106,6 @@ Map.include(/** @lends Map.prototype */ {
             return index;
         }
         this.uiList.splice(index, 1);
-        return this;
+        return index;
     }
 });
