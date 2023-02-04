@@ -398,10 +398,6 @@ class InfoWindow extends UIComponent {
         return width;
     }
 
-    _getTransformOriginOffset() {
-        const size = this.getSize();
-        return [size.width / 2, -size.height];
-    }
 }
 
 InfoWindow.mergeOptions(options);

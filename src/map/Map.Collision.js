@@ -51,28 +51,21 @@ Map.include(/** @lends Map.prototype */ {
             if (!collision) {
                 continue;
             }
-            if (!ui.isVisible() || !ui.getDOM()) {
+            const dom = ui.getDOM();
+            if (!ui.isVisible() || !dom) {
                 continue;
             }
-            const size = ui._size;
-            if (!size) {
-                continue;
-            }
-            const p = ui.getPosition();
-            if (!p) {
+            if (!dom.getBoundingClientRect) {
                 continue;
             }
             if (!ui.bbox) {
                 ui.bbox = [0, 0, 0, 0];
             }
-            const { width, height } = size;
-            let transformOffset = [0, 0];
-            if (ui._getTransformOriginOffset) {
-                transformOffset = ui._getTransformOriginOffset();
-            }
-            const [tx, ty] = transformOffset;
-            const minX = p.x - width / 2 - collisionBufferSize + tx, maxX = p.x + width / 2 + collisionBufferSize + tx;
-            const minY = p.y - height / 2 - collisionBufferSize + ty, maxY = p.y + height / 2 + collisionBufferSize + ty;
+            //https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+            const bcRect = dom.getBoundingClientRect();
+            const { x, y, width, height } = bcRect;
+            const minX = x - collisionBufferSize, maxX = x + width + collisionBufferSize;
+            const minY = y - collisionBufferSize, maxY = y + height + collisionBufferSize;
             ui.bbox[0] = minX;
             ui.bbox[1] = minY;
             ui.bbox[2] = maxX;
