@@ -46,7 +46,10 @@ const options = {
     'pitchWithMap': false,
     'rotateWithMap': false,
     'visible': true,
-    'roundPoint': false
+    'roundPoint': false,
+    'collision': false,
+    'collisionBufferSize': 5,
+    'collisionWeight': 0
 };
 
 /**
@@ -124,6 +127,26 @@ class UIComponent extends Eventable(Class) {
         return this._owner.getMap();
     }
 
+    _collides() {
+        const map = this.getMap();
+        if (!map) {
+            return this;
+        }
+        map._addUI(this);
+        map._uiCollides();
+        return this;
+    }
+
+    _collidesEffect(show) {
+        const dom = this.getDOM();
+        if (!dom) {
+            return this;
+        }
+        const visibility = show ? 'visible' : 'hidden';
+        dom.style.visibility = visibility;
+        return this;
+    }
+
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
      * @param {Coordinate} [coordinate=null] - coordinate to show, default is owner's center
@@ -175,6 +198,7 @@ class UIComponent extends Eventable(Class) {
             if (!this._showBySymbolChange) {
                 this.fire('showend');
             }
+            this._collides();
             return this;
         }
 
@@ -243,6 +267,7 @@ class UIComponent extends Eventable(Class) {
         if (!this._showBySymbolChange) {
             this.fire('showend');
         }
+        this._collides();
         return this;
     }
 
@@ -290,6 +315,7 @@ class UIComponent extends Eventable(Class) {
         }
         //remove map bind events
         this._switchMapEvents('off');
+        this._collides();
         return this;
     }
 
@@ -316,6 +342,10 @@ class UIComponent extends Eventable(Class) {
         if (!this._owner) {
             return this;
         }
+        const map = this.getMap();
+        if (map) {
+            map._removeUI(this);
+        }
         this.hide();
         this._switchEvents('off');
         if (this.onRemove) {
@@ -334,6 +364,7 @@ class UIComponent extends Eventable(Class) {
          * @property {ui.UIComponent} target - UIComponent
          */
         this.fire('remove');
+        this._collides();
         return this;
     }
 
@@ -657,6 +688,7 @@ class UIComponent extends Eventable(Class) {
         if (this.isVisible()) {
             //when dom resize , update position
             this._setPosition();
+            this._collides();
         }
     }
 

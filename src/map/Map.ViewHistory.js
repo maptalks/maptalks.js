@@ -91,7 +91,7 @@ Map.include(/** @lends Map.prototype */ {
         const old = this.getView();
         if (options['animation']) {
             this._animateTo(view, {
-                'duration' : options['duration']
+                'duration': options['duration']
             }, frame => {
                 if (frame.state.playState === 'finished') {
                     this._fireViewChange(old, view);
@@ -113,9 +113,12 @@ Map.include(/** @lends Map.prototype */ {
 
     _fireViewChange(old, view) {
         this._fireEvent('viewchange', {
-            'old' : old,
-            'new' : view
+            'old': old,
+            'new': view
         });
+        if (this._uiCollides) {
+            this._uiCollides();
+        }
     },
 
     _getCurrentView() {
@@ -127,6 +130,6 @@ Map.include(/** @lends Map.prototype */ {
 });
 
 Map.mergeOptions({
-    'viewHistory' : true,
-    'viewHistoryCount' : 10
+    'viewHistory': true,
+    'viewHistoryCount': 10
 });
