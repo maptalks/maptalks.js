@@ -1,6 +1,5 @@
 import Map from './Map';
 import CollisionIndex from '../core/CollisionIndex';
-import { isNumber } from '../core/util';
 
 Map.include(/** @lends Map.prototype */ {
     /**
@@ -48,36 +47,27 @@ Map.include(/** @lends Map.prototype */ {
         const uiList = this.uiList;
         for (let i = 0, len = uiList.length; i < len; i++) {
             const ui = uiList[i];
-            const { collisionBufferSize, collision, dx, dy } = ui.options;
+            const { collisionBufferSize, collision } = ui.options;
             if (!collision) {
                 continue;
             }
             if (!ui.isVisible() || !ui.getDOM()) {
                 continue;
             }
-            const coordinate = ui.getCoordinates();
-            if (!coordinate) {
-                continue;
-            }
             const size = ui._size;
             if (!size) {
                 continue;
             }
-            const p = this.coordToContainerPoint(coordinate);
+            const p = ui.getPosition();
+            if (!p) {
+                continue;
+            }
             if (!ui.bbox) {
                 ui.bbox = [0, 0, 0, 0];
             }
             const { width, height } = size;
-            let minX = p.x - width / 2 - collisionBufferSize, maxX = p.x + width / 2 + collisionBufferSize;
-            let minY = p.y - height / 2 - collisionBufferSize, maxY = p.y + height / 2 + collisionBufferSize;
-            if (isNumber(dx)) {
-                minX += dx;
-                maxX += dx;
-            }
-            if (isNumber(dy)) {
-                minY += dy;
-                maxY += dy;
-            }
+            const minX = p.x - width / 2 - collisionBufferSize, maxX = p.x + width / 2 + collisionBufferSize;
+            const minY = p.y - height / 2 - collisionBufferSize, maxY = p.y + height / 2 + collisionBufferSize;
             ui.bbox[0] = minX;
             ui.bbox[1] = minY;
             ui.bbox[2] = maxX;
