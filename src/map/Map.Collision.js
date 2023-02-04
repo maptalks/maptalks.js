@@ -66,8 +66,13 @@ Map.include(/** @lends Map.prototype */ {
                 ui.bbox = [0, 0, 0, 0];
             }
             const { width, height } = size;
-            const minX = p.x - width / 2 - collisionBufferSize, maxX = p.x + width / 2 + collisionBufferSize;
-            const minY = p.y - height / 2 - collisionBufferSize, maxY = p.y + height / 2 + collisionBufferSize;
+            let transformOffset = [0, 0];
+            if (ui._getTransformOriginOffset) {
+                transformOffset = ui._getTransformOriginOffset();
+            }
+            const [tx, ty] = transformOffset;
+            const minX = p.x - width / 2 - collisionBufferSize + tx, maxX = p.x + width / 2 + collisionBufferSize + tx;
+            const minY = p.y - height / 2 - collisionBufferSize + ty, maxY = p.y + height / 2 + collisionBufferSize + ty;
             ui.bbox[0] = minX;
             ui.bbox[1] = minY;
             ui.bbox[2] = maxX;
