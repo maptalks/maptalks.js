@@ -48,7 +48,7 @@ const options = {
     'visible': true,
     'roundPoint': false,
     'collision': false,
-    'collisionBufferSize': 5,
+    'collisionBufferSize': 2,
     'collisionWeight': 0
 };
 
@@ -133,7 +133,7 @@ class UIComponent extends Eventable(Class) {
             return this;
         }
         map._addUI(this);
-        map._uiCollides();
+        map._insertUICollidesQueue();
         return this;
     }
 

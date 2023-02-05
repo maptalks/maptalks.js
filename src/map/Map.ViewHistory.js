@@ -116,9 +116,7 @@ Map.include(/** @lends Map.prototype */ {
             'old': old,
             'new': view
         });
-        if (this._uiCollides) {
-            this._uiCollides();
-        }
+        this._insertUICollidesQueue();
     },
 
     _getCurrentView() {

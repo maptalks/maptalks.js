@@ -35,8 +35,16 @@ Map.include(/** @lends Map.prototype */ {
         return this;
     },
 
-    _uiCollides() {
-        if (!this.uiList) {
+    _insertUICollidesQueue() {
+        if (!this._uiCollidesQueue) {
+            this._uiCollidesQueue = [];
+        }
+        this._uiCollidesQueue.push(1);
+        return this;
+    },
+
+    uiCollides() {
+        if (!this.uiList || !this._uiCollidesQueue || this._uiCollidesQueue.length === 0) {
             return this;
         }
         if (!this._uiCollisionIndex) {
@@ -77,6 +85,7 @@ Map.include(/** @lends Map.prototype */ {
             uiCollisionIndex.insertBox(ui.bbox);
             ui._collidesEffect(true);
         }
+        this._uiCollidesQueue = [];
         return this;
     },
 

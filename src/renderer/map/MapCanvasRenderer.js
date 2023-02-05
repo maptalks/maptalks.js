@@ -70,6 +70,8 @@ class MapCanvasRenderer extends MapRenderer {
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
         this._canvasUpdated = false;
+        //loop ui Collides
+        map.uiCollides();
         return true;
     }
 
