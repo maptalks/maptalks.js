@@ -1,6 +1,8 @@
 import Map from './Map';
 import CollisionIndex from '../core/CollisionIndex';
 
+const UICollisionIndex = new CollisionIndex();
+
 Map.include(/** @lends Map.prototype */ {
     /**
      * Get map scope collision index
@@ -44,14 +46,11 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     uiCollides() {
-        if (!this.uiList || !this._uiCollidesQueue || this._uiCollidesQueue.length === 0) {
+        if (!this.uiList || this.uiList.length === 0 || !this._uiCollidesQueue || this._uiCollidesQueue.length === 0) {
             return this;
         }
-        if (!this._uiCollisionIndex) {
-            this._uiCollisionIndex = new CollisionIndex();
-        }
-        const uiCollisionIndex = this._uiCollisionIndex;
-        uiCollisionIndex.clear();
+        const collisionIndex = UICollisionIndex;
+        collisionIndex.clear();
         const uiList = this.uiList;
         for (let i = 0, len = uiList.length; i < len; i++) {
             const ui = uiList[i];
@@ -78,11 +77,11 @@ Map.include(/** @lends Map.prototype */ {
             ui.bbox[1] = minY;
             ui.bbox[2] = maxX;
             ui.bbox[3] = maxY;
-            if (uiCollisionIndex.collides(ui.bbox)) {
+            if (collisionIndex.collides(ui.bbox)) {
                 ui._collidesEffect(false);
                 continue;
             }
-            uiCollisionIndex.insertBox(ui.bbox);
+            collisionIndex.insertBox(ui.bbox);
             ui._collidesEffect(true);
         }
         this._uiCollidesQueue = [];
