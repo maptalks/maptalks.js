@@ -144,6 +144,17 @@ class UIComponent extends Eventable(Class) {
         }
         const visibility = show ? 'visible' : 'hidden';
         dom.style.visibility = visibility;
+        if (!dom.classList || !dom.classList.add) {
+            return this;
+        }
+        const className = 'animation-fadeIn';
+        if (show) {
+            // dom.classList.remove('animation-fadeOut');
+            dom.classList.add(className);
+        } else {
+            dom.classList.remove(className);
+            // dom.classList.add('animation-fadeOut');
+        }
         return this;
     }
 
