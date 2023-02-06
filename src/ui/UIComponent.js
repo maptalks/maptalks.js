@@ -155,13 +155,13 @@ class UIComponent extends Eventable(Class) {
         if (!this.options['collisionFadeIn']) {
             return this;
         }
-        const className = 'maptalks-ui-animation-fadeIn';
-        if (show) {
-            // dom.classList.remove('animation-fadeOut');
+        const classList = dom.classList;
+        const className = 'mtk-ui-fadein';
+        const hasClass = classList.contains(className);
+        if (show && !hasClass) {
             dom.classList.add(className);
-        } else {
+        } else if (!show && hasClass) {
             dom.classList.remove(className);
-            // dom.classList.add('animation-fadeOut');
         }
         return this;
     }
