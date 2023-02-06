@@ -32,6 +32,7 @@ import Geometry from '../geometry/Geometry';
  * @property {Boolean}  [options.collision=false]  - whether collision
  * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
  * @property {Number}  [options.collisionWeight=0]  - Collision weight, large priority collision
+ * @property {Boolean}  [options.collisionFadeIn=false]  - Collision fade in animation
  * @memberOf ui.UIComponent
  * @instance
  */
@@ -52,7 +53,8 @@ const options = {
     'roundPoint': false,
     'collision': false,
     'collisionBufferSize': 2,
-    'collisionWeight': 0
+    'collisionWeight': 0,
+    'collisionFadeIn': false
 };
 
 /**
@@ -150,7 +152,10 @@ class UIComponent extends Eventable(Class) {
         if (!dom.classList || !dom.classList.add) {
             return this;
         }
-        const className = 'animation-fadeIn';
+        if (!this.options['collisionFadeIn']) {
+            return this;
+        }
+        const className = 'maptalks-ui-animation-fadeIn';
         if (show) {
             // dom.classList.remove('animation-fadeOut');
             dom.classList.add(className);
