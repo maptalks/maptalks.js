@@ -397,7 +397,6 @@ class InfoWindow extends UIComponent {
         }
         return width;
     }
-
 }
 
 InfoWindow.mergeOptions(options);

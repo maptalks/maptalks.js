@@ -29,6 +29,9 @@ import Geometry from '../geometry/Geometry';
  * @property {Number}  [options.animationOnHide=false]  - if calls animation on hiding.
  * @property {Boolean}  [options.pitchWithMap=false]    - whether tilt with map
  * @property {Boolean}  [options.rotateWithMap=false]  - whether rotate with map
+ * @property {Boolean}  [options.collision=false]  - whether collision
+ * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
+ * @property {Number}  [options.collisionWeight=0]  - Collision weight, large priority collision
  * @memberOf ui.UIComponent
  * @instance
  */
