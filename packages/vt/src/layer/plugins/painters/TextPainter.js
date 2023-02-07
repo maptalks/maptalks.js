@@ -1,4 +1,3 @@
-import * as maptalks from 'maptalks';
 import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
@@ -107,11 +106,18 @@ export default class TextPainter extends CollisionPainter {
     }
 
     needToRefreshTerrainTile() {
-        return this.symbolDef[0].textPitchAlignment === 'map' || isFunctionDefinition(this.symbolDef[0].textPitchAlignment);
+        for (let i = 0; i < this.symbolDef.length; i++) {
+            const symbolDef = this.symbolDef[i];
+            const pitchAlignment = symbolDef['textPitchAlignment'];
+            if (pitchAlignment === 'map' || isFunctionDefinition(pitchAlignment) || FilterUtil.isExpression(pitchAlignment)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     isTerrainVector() {
-        return this.dataConfig.awareOfTerrain && !this.symbolDef[0].textPitchAlignment || this.symbolDef[0].textPitchAlignment === 'viewport';
+        return this.dataConfig.awareOfTerrain && !this.needToRefreshTerrainTile();
     }
 
     isTerrainSkin() {

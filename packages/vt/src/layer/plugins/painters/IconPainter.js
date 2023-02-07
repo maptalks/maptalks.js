@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
@@ -16,6 +17,7 @@ import textPickingVert from './glsl/text.vert';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
+import { FilterUtil } from '@maptalks/vector-packer';
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -62,6 +64,25 @@ class IconPainter extends CollisionPainter {
         this._textFilter0 = TEXT_FILTER.bind(this);
         this._textFilter1 = TEXT_FILTER_N.bind(this);
         this._meshesToCheck = [];
+    }
+
+    needToRefreshTerrainTile() {
+        for (let i = 0; i < this.symbolDef.length; i++) {
+            const symbolDef = this.symbolDef[i];
+            const pitchAlignment = symbolDef['markerPitchAlignment'];
+            if (pitchAlignment === 'map' || isFunctionDefinition(pitchAlignment) || FilterUtil.isExpression(pitchAlignment)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isTerrainVector() {
+        return this.dataConfig.awareOfTerrain && !this.needToRefreshTerrainTile();
+    }
+
+    isTerrainSkin() {
+        return super.isTerrainSkin() && this.needToRefreshTerrainTile();
     }
 
     setTextShaderDefines(defines) {
