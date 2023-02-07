@@ -53,6 +53,7 @@ uniform float tileRatio; //EXTENT / tileSize
 
 uniform float layerScale;
 
+uniform float isRenderingTerrain;
 uniform float textPitchFilter;
 
 #ifndef PICKING_MODE
@@ -116,16 +117,17 @@ void main() {
 
     float cameraScale = projDistance / cameraToCenterDistance;
 
-    #ifdef IS_RENDERING_TERRAIN
-        float perspectiveRatio = 1.0;
-    #else
+    float perspectiveRatio;
+    if (isRenderingTerrain == 1.0) {
+        perspectiveRatio = 1.0;
+    } else {
         float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
         //通过distance动态调整大小
-        float perspectiveRatio = clamp(
+        perspectiveRatio = clamp(
             0.5 + 0.5 * (1.0 - distanceRatio),
             0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
             4.0);
-    #endif
+    }
     #ifdef HAS_OFFSET_Z
         //精度修正：js中用int16存的offset,会丢失小数点，乘以十后就能保留小数点后1位
         vec3 offset = aOffset / 10.0;
@@ -137,11 +139,12 @@ void main() {
     vec2 texCoord = aTexCoord;
 
     if (isPitchWithMap == 1.0) {
-        #ifdef IS_RENDERING_TERRAIN
-            float offsetScale = tileRatio;
-        #else
-            float offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
-        #endif
+        float offsetScale;
+        if (isRenderingTerrain == 1.0) {
+            offsetScale = tileRatio;
+        } else {
+            offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        }
         //乘以cameraScale可以抵消相机近大远小的透视效果
         //offset.z已经被转成了厘米，所以不用再乘以scale
         offset.xy *= offsetScale;

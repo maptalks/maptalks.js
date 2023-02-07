@@ -216,14 +216,14 @@ class FillPainter extends BasicPainter {
 
 
         this.renderer = new reshader.Renderer(regl);
-        const isTerrainSkinPlugin = !!(context && context.isTerrainSkinPlugin);
+        const isRenderingTerrain = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
         const renderer = this.layer.getRenderer();
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
         const extraCommandProps = {
             viewport: this.pickingViewport,
             stencil: {
-                enable: !isTerrainSkinPlugin,
+                enable: !isRenderingTerrain,
                 func: {
                     cmp: () => {
                         return stencil ? '=' : '<=';
@@ -319,8 +319,8 @@ class FillPainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const projViewMatrix = context && context.isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
-        const glScale = context && context.isTerrainSkinPlugin ? 1 : 1 / map.getGLScale();
+        const projViewMatrix = context && context.isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+        const glScale = context && context.isRenderingTerrainSkin ? 1 : 1 / map.getGLScale();
         // const blendSrc = this.sceneConfig.blendSrc;
         const uniforms = {
             projViewMatrix,

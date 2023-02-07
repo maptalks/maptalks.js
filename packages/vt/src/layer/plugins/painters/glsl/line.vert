@@ -51,6 +51,7 @@ uniform float tileResolution;
 uniform float resolution;
 //EXTENT / tileSize
 uniform float tileRatio;
+uniform float isRenderingTerrain;
 #if defined(HAS_LINE_DX) || defined(HAS_LINE_DY)
     attribute vec2 aLineDxDy;
 #endif
@@ -163,11 +164,11 @@ void main() {
 
     vec4 pos4 = vec4(position, 1.0);
     vec4 vertex = projViewModelMatrix * positionMatrix * pos4;
-    #ifdef IS_RENDERING_TERRAIN
+    if (isRenderingTerrain == 1.0) {
         vVertex = (positionMatrix * pos4).xyz;
-    #else
+    } else {
         vVertex = (modelMatrix * positionMatrix * pos4).xyz;
-    #endif
+    }
 
     #ifdef HAS_STROKE_WIDTH
         float strokeWidth = aLineStrokeWidth / 2.0 * layerScale;
@@ -198,33 +199,34 @@ void main() {
         vec2 dist = outset * extrude;
     #endif
 
-    #ifdef IS_RENDERING_TERRAIN
-        float scale = 1.0;
-    #else
-        float scale = tileResolution / resolution;
-    #endif
+    float scale;
+    if (isRenderingTerrain == 1.0) {
+        scale = 1.0;
+    } else {
+        scale = tileResolution / resolution;
+    }
 
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
     gl_Position = projViewModelMatrix * positionMatrix * localVertex;
 
     // #284 解决倾斜大时的锯齿问题
     // 改为实时增加outset来解决，避免因为只调整xy而产生错误的深度值
-    #ifndef IS_RENDERING_TERRAIN
-    float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
-    float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
-    // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
-    //TODO linePack中 needExtraVertex为true时，一些不应该做抗锯齿计算的点，会出现抗锯齿
-    if (pixelDelta * myLineWidth < 0.0) {
-        // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
-        float pixelScale = -pixelDelta / limit;
-        float aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
-        dist += aaWidth * extrude;
-        outset += aaWidth / 6.0;
-        // 用新的dist计算新的端点位置
-        localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
-        gl_Position = projViewModelMatrix * positionMatrix * localVertex;
+    if (isRenderingTerrain == 0.0) {
+        float limit = min(AA_CLIP_LIMIT / canvasSize.x, AA_CLIP_LIMIT / canvasSize.y);
+        float pixelDelta = distance(gl_Position.xy / gl_Position.w, vertex.xy / vertex.w) - limit;
+        // * lineWidth 为了解决lineWidth为0时的绘制错误， #295
+        //TODO linePack中 needExtraVertex为true时，一些不应该做抗锯齿计算的点，会出现抗锯齿
+        if (pixelDelta * myLineWidth < 0.0) {
+            // 绘制端点和原位置的间距太小，会产生锯齿，通过增加 dist 减少锯齿
+            float pixelScale = -pixelDelta / limit;
+            float aaWidth = pixelScale * pixelScale * pixelScale * pixelScale * AA_LINE_WIDTH;
+            dist += aaWidth * extrude;
+            outset += aaWidth / 6.0;
+            // 用新的dist计算新的端点位置
+            localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+            gl_Position = projViewModelMatrix * positionMatrix * localVertex;
+        }    
     }
-    #endif
 
     #ifdef HAS_LINE_DX
         float myLineDx = aLineDxDy[0];
@@ -243,11 +245,11 @@ void main() {
 
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);
-        #ifdef IS_RENDERING_TERRAIN
+        if (isRenderingTerrain == 1.0) {
             vGammaScale = 1.0;
-        #else
+        } else {
             vGammaScale = projDistance / cameraToCenterDistance;
-        #endif
+        }
         #ifndef ENABLE_TILE_STENCIL
             vPosition = position.xy;
             #ifdef USE_LINE_OFFSET

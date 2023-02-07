@@ -142,17 +142,17 @@ void main() {
     //预乘w，得到gl_Position在NDC中的坐标值
     // gl_Position /= gl_Position.w;
 
-    #ifdef IS_RENDERING_TERRAIN
-        float perspectiveRatio = 1.0;
-    #else
+    float perspectiveRatio;
+    if (isRenderingTerrain == 1.0) {
+        perspectiveRatio = 1.0;
+    } else {
         float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
         //通过distance动态调整大小
-        float perspectiveRatio = clamp(
+        perspectiveRatio = clamp(
             0.5 + 0.5 * (1.0 - distanceRatio),
             0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
             4.0);
-    #endif
-    
+    }
     
     #ifdef HAS_ROTATION
         float rotation = -aRotation / 9362.0 - mapRotation * isRotateWithMap;

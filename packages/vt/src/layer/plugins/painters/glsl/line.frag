@@ -9,6 +9,7 @@ precision highp float;
 
 uniform lowp float blendSrcIsOne;
 uniform lowp float lineBlur;
+uniform float isRenderingTerrain;
 
 #ifdef HAS_COLOR
     varying vec4 vColor;
@@ -221,11 +222,12 @@ void main() {
         gl_FragColor.rgb = shadow_blend(gl_FragColor.rgb, shadowCoeff);
     #endif
 
-    #ifdef IS_RENDERING_TERRAIN
-        float perspectiveAlpha = 1.0;
-    #else
-        float perspectiveAlpha = clamp(cameraToCenterDistance * 1.5 / distance(vVertex, cameraPosition), 0.0, 1.0);
-    #endif
+    float perspectiveAlpha;
+    if (isRenderingTerrain == 1.0) {
+        perspectiveAlpha = 1.0;
+    } else {
+        perspectiveAlpha = clamp(cameraToCenterDistance * 1.5 / distance(vVertex, cameraPosition), 0.0, 1.0);
+    }
 
     if (blendSrcIsOne == 1.0) {
         gl_FragColor *= gl_FragColor.a;

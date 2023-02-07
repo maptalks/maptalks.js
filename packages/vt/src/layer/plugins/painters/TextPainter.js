@@ -106,6 +106,18 @@ export default class TextPainter extends CollisionPainter {
         this._genTextNames();
     }
 
+    needToRefreshTerrainTile() {
+        return this.symbolDef[0].textPitchAlignment === 'map' || isFunctionDefinition(this.symbolDef[0].textPitchAlignment);
+    }
+
+    isTerrainVector() {
+        return this.dataConfig.awareOfTerrain && !this.symbolDef[0].textPitchAlignment || this.symbolDef[0].textPitchAlignment === 'viewport';
+    }
+
+    isTerrainSkin() {
+        return super.isTerrainSkin() && this.needToRefreshTerrainTile();
+    }
+
     _genTextNames() {
         this._textNameFn = [];
         for (let i = 0; i < this.symbolDef.length; i++) {
@@ -248,11 +260,11 @@ export default class TextPainter extends CollisionPainter {
     }
 
     callRenderer(shader, uniforms, context) {
-        if (isFunctionDefinition(this.symbolDef.textPitchAlignment)) {
-            if (context.isTerrainSkinPlugin) {
+        if (context && context.isRenderingTerrain && isFunctionDefinition(this.symbolDef.textPitchAlignment)) {
+            if (context.isRenderingTerrainSkin) {
                 // 过滤掉 pitchAlignment 为 viewport 的数据
                 uniforms.textPitchFilter = 1;
-            } else if (context.isRenderingTerrain) {
+            } else {
                 // 过滤掉 pitchAlignment 为 map 的数据
                 uniforms.textPitchFilter = 2;
             }
@@ -788,18 +800,13 @@ export default class TextPainter extends CollisionPainter {
         return true;
     }
 
-    init(context) {
+    init() {
         // const map = this.getMap();
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
 
         const { uniforms, extraCommandProps } = createTextShader.call(this, this.canvas, this.sceneConfig);
-        const defines = {
-        };
-        if (context && context.isTerrainSkinPlugin) {
-            defines['IS_RENDERING_TERRAIN'] = 1;
-        }
 
         const canvas = this.canvas;
         // 地形瓦片中可能设置viewport
@@ -823,7 +830,6 @@ export default class TextPainter extends CollisionPainter {
         this.shader = new reshader.MeshShader({
             // vert: vertAlongLine, frag,
             vert, frag,
-            defines,
             uniforms,
             extraCommandProps
         });
@@ -838,7 +844,6 @@ export default class TextPainter extends CollisionPainter {
         this._shaderAlongLine = new reshader.MeshShader({
             vert: vertAlongLine, frag,
             uniforms,
-            defines,
             extraCommandProps: commandProps
         });
 
@@ -881,13 +886,13 @@ export default class TextPainter extends CollisionPainter {
     }
 
     getUniformValues(map, context) {
-        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
+        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
         const tileSize = this.layer.options.tileSize;
-        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
+        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
         const cameraToCenterDistance = map.cameraToCenterDistance;
         // const canvasSize = [map.width, map.height];
         const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
-        if (isTerrainSkinPlugin) {
+        if (isRenderingTerrainSkin) {
             vec2.set(canvasSize, tileSize, tileSize);
         }
         //手动构造map的x与z轴的三维旋转矩阵
@@ -923,7 +928,8 @@ export default class TextPainter extends CollisionPainter {
             altitudeScale: zScale,
             viewport: context && context.viewport,
             // 过滤 pitchAlignment 为特定值的text，0时不过滤; 1时，过滤掉viewport; 2时，过滤掉map
-            textPitchFilter: 0
+            textPitchFilter: 0,
+            isRenderingTerrain: +!!isRenderingTerrainSkin
             // planeMatrix
         };
     }

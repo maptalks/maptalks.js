@@ -463,9 +463,6 @@ class LinePainter extends BasicPainter {
         const uniforms = [];
         const defines = {
         };
-        if (context && context.isTerrainSkinPlugin) {
-            defines['IS_RENDERING_TERRAIN'] = 1;
-        }
         this.fillIncludes(defines, uniforms, context);
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
@@ -560,15 +557,15 @@ class LinePainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
+        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
         const tileSize = this.layer.options.tileSize;
 
-        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
+        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
         const viewMatrix = map.viewMatrix,
             cameraToCenterDistance = map.cameraToCenterDistance,
             resolution = map.getResolution();
         const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
-        if (isTerrainSkinPlugin) {
+        if (isRenderingTerrainSkin) {
             vec2.set(canvasSize, tileSize, tileSize);
         }
 
@@ -587,7 +584,8 @@ class LinePainter extends BasicPainter {
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
             blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
             cameraPosition: map.cameraPosition,
-            viewport: context && context.viewport
+            viewport: context && context.viewport,
+            isRenderingTerrain: +(!!isRenderingTerrainSkin)
             // projMatrix: map.projMatrix,
             // halton: context.jitter || [0, 0],
             // outSize: [this.canvas.width, this.canvas.height],

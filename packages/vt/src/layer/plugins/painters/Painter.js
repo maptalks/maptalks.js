@@ -128,6 +128,18 @@ class Painter {
         return this._needRetire;
     }
 
+    needToRefreshTerrainTile() {
+        return false;
+    }
+
+    isTerrainSkin() {
+        return this.dataConfig.awareOfTerrain;
+    }
+
+    isTerrainVector() {
+        return false;
+    }
+
     fillIncludes(defines, uniformDeclares, context) {
         const includes = context && context.includes;
         if (includes) {
@@ -249,7 +261,7 @@ class Painter {
                 continue;
             }
             const awareOfTerrain = this.dataConfig.awareOfTerrain;
-            if (awareOfTerrain && context && context.isRenderingTerrain && !context.isTerrainSkinPlugin) {
+            if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
                 const geometry = geometries[i];
                 this._updateTerrainAltitude(geometry && geometry.geometry, context);
             }

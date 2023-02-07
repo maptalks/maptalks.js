@@ -54,7 +54,7 @@ class NativeLinePainter extends BasicPainter {
     }
 
     init(context) {
-        const stencil = this.layer.getRenderer().isEnableTileStencil() && (!context || !context.isTerrainSkinPlugin);
+        const stencil = this.layer.getRenderer().isEnableTileStencil() && (!context || !context.isRenderingTerrain || !this.isTerrainSkin());
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
@@ -143,8 +143,8 @@ class NativeLinePainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const isTerrainSkinPlugin = context && context.isTerrainSkinPlugin;
-        const projViewMatrix = isTerrainSkinPlugin ? IDENTITY_ARR : map.projViewMatrix;
+        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
+        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
 
         return {
             projViewMatrix

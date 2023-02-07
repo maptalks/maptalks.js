@@ -20,15 +20,12 @@ const TERRAIN_CLEAR = {
     stencil: 0
 };
 
-const TERRAIN_SKIN_PAINTERS = new Set(['line', 'fill', 'native-line', 'line-gradient']);
 const terrainSkinFilter = plugin => {
-    const config = plugin.config;
-    // const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && plugin.painter && plugin.painter.isOnly2D();
-    if (config.type === 'text' && plugin.style && plugin.style.symbol && plugin.style.symbol.textPitchAlignment === 'map')  {
-        return true;
-    }
-    const is2D = TERRAIN_SKIN_PAINTERS.has(config.type) && config.dataConfig.awareOfTerrain;
-    return is2D;
+    return plugin.isTerrainSkin();
+}
+
+const terrainVectorFilter = plugin => {
+    return plugin.isTerrainVector();
 }
 
 class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
@@ -231,10 +228,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
         this._groundPainter = new GroundPainter(this.regl, this.layer);
-
-        if (this._terrainLayer && !this._terrainRegl) {
-            this._createTerrainSkinCanvas();
-        }
 
         if (!this.consumeTile) {
             const version = this.getMap().VERSION;
@@ -828,14 +821,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!visible) {
                 return;
             }
-            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
-            const pickingFBO = this.pickingFBO;
-            if (isTerrainSkinPlugin) {
-                // terrain Painter会创建picking，但pickingFBO和this.regl不同，导致报错
-                this.pickingFBO = null;
-            }
+            const regl = this.regl;
+            const gl = this.gl;
             const symbol = useDefault ? plugin.defaultSymbol : plugin.style && plugin.style.symbol;
             const context = {
                 regl,
@@ -843,7 +830,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 symbol,
                 gl,
                 isRenderingTerrain,
-                isTerrainSkinPlugin,
                 sceneConfig: plugin.config ? plugin.config.sceneConfig : null,
                 dataConfig: plugin.config ? plugin.config.dataConfig : null,
                 pluginIndex: idx,
@@ -853,7 +839,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 extend(context, parentContext);
             }
             plugin.startFrame(context);
-            this.pickingFBO = pickingFBO;
         });
     }
 
@@ -875,7 +860,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                     return;
                 }
-                if (isRenderingTerrain && terrainSkinFilter(plugin) && plugin.painter.dataConfig.awareOfTerrain) {
+                if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -890,7 +875,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                     return;
                 }
-                if (isRenderingTerrain && terrainSkinFilter(plugin) && plugin.painter.dataConfig.awareOfTerrain) {
+                if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -917,7 +902,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (mode && mode !== 'default' && !plugin.supportRenderMode(mode)) {
                 return;
             }
-            if (isRenderingTerrain && terrainSkinFilter(plugin)) {
+            if (isRenderingTerrain && !terrainVectorFilter(plugin)) {
                 return;
             }
             this.regl.clear({
@@ -992,15 +977,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _getPluginContext(plugin, polygonOffsetIndex, cameraPosition, timestamp) {
         const isRenderingTerrain = !!this._terrainLayer;
-        const isTerrainSkinPlugin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
-        const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
-        const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
+        const isRenderingTerrainSkin = isRenderingTerrain && plugin && terrainSkinFilter(plugin);
+        const regl = this.regl;
+        const gl = this.gl;
         const context = {
             regl,
             layer: this.layer,
             gl,
             isRenderingTerrain,
-            isTerrainSkinPlugin,
+            isRenderingTerrainSkin,
             sceneConfig: plugin && plugin.config.sceneConfig,
             pluginIndex: plugin && plugin.renderIndex,
             polygonOffsetIndex,
@@ -1096,24 +1081,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     setTerrainHelper(terrainLayer) {
         this._terrainLayer = terrainLayer;
-        this._createTerrainSkinCanvas();
     }
 
     getTerrainHelper() {
         return this._terrainLayer;
-    }
-
-    _createTerrainSkinCanvas() {
-        // const tileSize = this.layer.options.tileSize;
-        // const canvas = document.createElement('canvas');
-        // canvas.width = canvas.height = tileSize;
-
-        // const { gl, regl } = this._createREGLContext(canvas);
-        // this._terrainGL = gl;
-        // this._terrainRegl = regl;
-
-        this._terrainGL = this.gl;
-        this._terrainRegl = this.regl;
     }
 
     // 有地形时的tile draw 方法
@@ -1124,8 +1095,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     createTerrainTexture(width, height) {
-        const regl = this._terrainRegl;
-        const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const regl = this.regl;
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -1161,7 +1131,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _drawTerrainTiles(tiles, terrainTileInfo, terrainTexture) {
         TERRAIN_CLEAR.framebuffer = terrainTexture;
-        this._terrainRegl.clear(TERRAIN_CLEAR);
+        this.regl.clear(TERRAIN_CLEAR);
         const skinTiles = [];
         for (let i = 0; i < tiles.length; i++) {
             skinTiles[i] = this._drawOneTerrainTile(tiles[i], terrainTileInfo, terrainTexture);
@@ -1170,7 +1140,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _drawOneTerrainTile(tile, terrainTileInfo, terrainTexture) {
-        // const terrainCanvas = this._terrainGL.canvas;
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         this._parentContext = {
@@ -1187,9 +1156,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         //         image: tileTerrainCanvas
         //     };
         // }
-        this._startFrame(timestamp, terrainSkinFilter);
+        this._startFrame(timestamp);
         this.drawTile(info, image, terrainSkinFilter);
-        this._endTerrainFrame();
+        this._endTerrainFrame(terrainTexture);
         // const canvas = document.createElement('canvas');
         // canvas.width = terrainCanvas.width;
         // canvas.height = terrainCanvas.height;
@@ -1202,7 +1171,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         // };
     }
 
-    _endTerrainFrame() {
+    _endTerrainFrame(terrainTexture) {
         const plugins = this._getAllPlugins();
         const cameraPosition = this.getMap().cameraPosition;
         const timestamp = this._currentTimestamp || 0;
@@ -1217,6 +1186,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                context.isRenderingTerrainSkin = true;
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
             });
@@ -1229,6 +1199,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
+                context.isRenderingTerrainSkin = true;
                 plugin.prepareRender(context);
             });
         }
@@ -1238,12 +1209,14 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!hasMesh || !terrainSkinFilter(plugin)) {
                 return;
             }
-            this._terrainRegl.clear({
-                stencil: 0xFF
+            this.regl.clear({
+                stencil: 0xFF,
+                framebuffer: terrainTexture
             });
 
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
             const context = this._getPluginContext(plugin, polygonOffsetIndex, [0, 0, 0], this._currentTimestamp);
+            context.isRenderingTerrainSkin = true;
             plugin.endFrame(context);
         });
     }
@@ -1273,9 +1246,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!tileCache[idx]) {
                 return;
             }
-            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
+            const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
+            const regl = this.regl;
+            const gl = this.gl;
             const context = {
                 regl,
                 layer: this.layer,
@@ -1284,7 +1257,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex: idx,
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
-                tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
+                tileTransform: isRenderingTerrainSkin ? terrainTileTransform : tileTransform,
                 tileVectorTransform: tileTransform,
                 tileTranslationMatrix,
                 tileExtent: tileData.extent,
@@ -1293,7 +1266,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 tileZoom: this['_tileZoom'],
                 bloom: this._parentContext && this._parentContext.bloom,
                 isRenderingTerrain,
-                isTerrainSkinPlugin
+                isRenderingTerrainSkin
             };
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
@@ -1335,9 +1308,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!pluginData[idx]) {
                 return;
             }
-            const isTerrainSkinPlugin = isRenderingTerrain && terrainSkinFilter(plugin);
-            const regl = isTerrainSkinPlugin && this._terrainRegl || this.regl;
-            const gl = isTerrainSkinPlugin & this._terrainGL || this.gl;
+            const isRenderingTerrainSkin = isRenderingTerrain && terrainSkinFilter(plugin);
+            const regl = this.regl;
+            const gl = this.gl;
             if (!tileCache[idx]) {
                 tileCache[idx] = {};
             }
@@ -1349,10 +1322,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 pluginIndex: idx,
                 tileCache: tileCache[idx],
                 tileData: pluginData[idx],
-                tileTransform: isTerrainSkinPlugin ? terrainTileTransform : tileTransform,
+                tileTransform: isRenderingTerrainSkin ? terrainTileTransform : tileTransform,
                 tileVectorTransform: tileTransform,
                 isRenderingTerrain,
-                isTerrainSkinPlugin,
+                isRenderingTerrainSkin,
                 tileTranslationMatrix,
                 tileExtent: tileData.extent,
                 timestamp: this._frameTime,
@@ -1631,19 +1604,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'native-line':
             renderPlugin = {
                 type: 'native-line',
-                dataConfig: { type: 'native-line', only2D: true, isTerrainSkin: true }
+                dataConfig: { type: 'native-line', only2D: true, awareOfTerrain: true }
             };
             break;
         case 'native-point':
             renderPlugin = {
                 type: 'native-point',
-                dataConfig: { type: 'native-point', only2D: true, isTerrainSkin: true }
+                dataConfig: { type: 'native-point', only2D: true, awareOfTerrain: true }
             };
             break;
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true, isTerrainSkin: true },
+                dataConfig: { type: 'fill', only2D: true, awareOfTerrain: true },
                 sceneConfig: { antialias: true }
             };
             break;

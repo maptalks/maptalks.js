@@ -355,6 +355,28 @@ function createPainterPlugin(type, Painter) {
             return this.painter.needToRetireFrames();
         },
 
+        needToRefreshTerrainTile: function () {
+            if (!this.painter) {
+                return false;
+            }
+            return this.painter.needToRefreshTerrainTile();
+        },
+
+        isTerrainSkin: function () {
+            if (!this.painter) {
+                return false;
+            }
+            return this.painter.isTerrainSkin();
+        },
+
+        isTerrainVector: function () {
+            if (!this.painter) {
+                return false;
+            }
+            return this.painter.isTerrainVector();
+        },
+
+
         _generateColorArray: function (features, featureIndexes, indices, vertices, positionSize = 3) {
             if (!vertices || !features || !featureIndexes.length) {
                 return null;
