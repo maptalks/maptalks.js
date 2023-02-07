@@ -175,7 +175,7 @@ export const ResourceManager = {
                 const offscreenCanvas = createOffscreenCanvas();
                 function drawIcon() {
                     if (idx === icons.length) {
-                        resolve();
+                        resolve(json);
                         return;
                     }
                     const { name, spriteItem } = icons[idx];
@@ -183,11 +183,13 @@ export const ResourceManager = {
                     const ctx1 = getCtx(tempCanvas, width, height);
                     ctx1.drawImage(canvas, x, y, width, height, 0, 0, width, height);
                     const base64 = tempCanvas.toDataURL();
+                    json[name].base64 = base64;
                     let imgBitMap;
                     if (offscreenCanvas) {
                         const ctx2 = getCtx(offscreenCanvas, width, height);
                         ctx2.drawImage(canvas, x, y, width, height, 0, 0, width, height);
                         imgBitMap = offscreenCanvas.transferToImageBitmap();
+                        json[name].imgBitMap = imgBitMap;
                     }
                     ResourceManager.add(name, {
                         base64,
