@@ -72,9 +72,6 @@ const feature = {};
 const featureState = {};
 const availableImages = [];
 
-const PROJ_COORD = new maptalks.Coordinate(0, 0);
-const ANCHOR_POINT = new maptalks.Point(0, 0);
-const TILEPOINT = new maptalks.Point(0, 0);
 const ELEVATED_ANCHOR = [];
 
 const IDENTITY_ARR = mat4.identity([]);
@@ -248,6 +245,20 @@ export default class TextPainter extends CollisionPainter {
 
         this._shaderAlongLine.filter = context.sceneFilter ? [this._lineFilter1, context.sceneFilter] : this._lineFilter1;
         this.callRenderer(this._shaderAlongLine, uniforms, context);
+    }
+
+    callRenderer(shader, uniforms, context) {
+        if (isFunctionDefinition(this.symbolDef.textPitchAlignment)) {
+            if (context.isTerrainSkinPlugin) {
+                // 过滤掉 pitchAlignment 为 viewport 的数据
+                uniforms.textPitchFilter = 1;
+            } else if (context.isRenderingTerrain) {
+                // 过滤掉 pitchAlignment 为 map 的数据
+                uniforms.textPitchFilter = 2;
+            }
+        }
+        
+        super.callRenderer(shader, uniforms, context);
     }
 
     /**
@@ -790,6 +801,25 @@ export default class TextPainter extends CollisionPainter {
             defines['IS_RENDERING_TERRAIN'] = 1;
         }
 
+        const canvas = this.canvas;
+        // 地形瓦片中可能设置viewport
+        const viewport = {
+            x: (_, props) => {
+                return props.viewport ? props.viewport.x : 0;
+            },
+            y: (_, props) => {
+                return props.viewport ? props.viewport.y : 0;
+            },
+            width: (_, props) => {
+                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+            },
+            height: (_, props) => {
+                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+            },
+        };
+
+        extraCommandProps.viewport = viewport;
+
         this.shader = new reshader.MeshShader({
             // vert: vertAlongLine, frag,
             vert, frag,
@@ -890,7 +920,10 @@ export default class TextPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE * (this.layer.options['textGamma'] || 1),
             resolution: map.getResolution(),
-            altitudeScale: zScale
+            altitudeScale: zScale,
+            viewport: context && context.viewport,
+            // 过滤 pitchAlignment 为特定值的text，0时不过滤; 1时，过滤掉viewport; 2时，过滤掉map
+            textPitchFilter: 0
             // planeMatrix
         };
     }

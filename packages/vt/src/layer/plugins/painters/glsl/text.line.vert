@@ -53,6 +53,8 @@ uniform float tileRatio; //EXTENT / tileSize
 
 uniform float layerScale;
 
+uniform float textPitchFilter;
+
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
     varying float vGammaScale;
@@ -154,6 +156,12 @@ void main() {
 
     gl_Position.xy += vec2(myTextDx, -myTextDy) * 2.0 / canvasSize * projDistance;
 
+
+    if (textPitchFilter > 0.0) {
+        if (textPitchFilter == 1.0 && isPitchWithMap == 0.0 || textPitchFilter == 2.0 && isPitchWithMap == 1.0) {
+            gl_Position = vec4(-9999.0, -9999.0, 0.0, 1.0);
+        }
+    }
 
     #ifndef PICKING_MODE
         if (isPitchWithMap == 1.0) {

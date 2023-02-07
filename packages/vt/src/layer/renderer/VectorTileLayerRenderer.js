@@ -15,7 +15,7 @@ const CLEAR_COLOR = [0, 0, 0, 0];
 const TILE_POINT = new maptalks.Point(0, 0);
 
 const TERRAIN_CLEAR = {
-    color: CLEAR_COLOR,
+    // color: CLEAR_COLOR,
     depth: 1,
     stencil: 0
 };
@@ -203,6 +203,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return false;
     }
 
+    needToRefreshTerrainTile() {
+        const plugins = this._getFramePlugins();
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i] && plugins[i].needToRefreshTerrainTile()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     createContext() {
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
         if (inGroup) {
@@ -221,6 +231,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         this._debugPainter = new DebugPainter(this.regl, this.getMap());
         this._prepareWorker();
         this._groundPainter = new GroundPainter(this.regl, this.layer);
+
+        if (this._terrainLayer && !this._terrainRegl) {
+            this._createTerrainSkinCanvas();
+        }
 
         if (!this.consumeTile) {
             const version = this.getMap().VERSION;
@@ -1090,13 +1104,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _createTerrainSkinCanvas() {
-        const tileSize = this.layer.options.tileSize;
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = tileSize;
+        // const tileSize = this.layer.options.tileSize;
+        // const canvas = document.createElement('canvas');
+        // canvas.width = canvas.height = tileSize;
 
-        const { gl, regl } = this._createREGLContext(canvas);
-        this._terrainGL = gl;
-        this._terrainRegl = regl;
+        // const { gl, regl } = this._createREGLContext(canvas);
+        // this._terrainGL = gl;
+        // this._terrainRegl = regl;
+
+        this._terrainGL = this.gl;
+        this._terrainRegl = this.regl;
     }
 
     // 有地形时的tile draw 方法
@@ -1106,48 +1123,83 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData);
     }
 
-    renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
-        const skinTiles = this._drawTerrainTiles(tiles);
-        if (parentTile) {
-            parentTile = this._drawOneTerrainTile(parentTile);
-        }
-        super.renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, skinTiles, parentTile);
+    createTerrainTexture(width, height) {
+        const regl = this._terrainRegl;
+        const type = 'uint8';//colorType || regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
+        const color = regl.texture({
+            min: 'nearest',
+            mag: 'nearest',
+            type: 'uint8',
+            width,
+            height,
+            flipY: true
+        });
+        const renderbuffer = regl.renderbuffer({
+            width,
+            height,
+            format: 'depth24 stencil8'
+        });
+        const fboInfo = {
+            width,
+            height,
+            colors: [color],
+            // stencil: true,
+            // colorCount,
+            colorFormat: 'rgba'
+        };
+        fboInfo.depthStencil = renderbuffer;
+        return regl.framebuffer(fboInfo);
     }
 
-    _drawTerrainTiles(tiles) {
+    renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
+        this._drawTerrainTiles(tiles, terrainTileInfo, texture);
+        if (parentTile) {
+            this._drawOneTerrainTile(parentTile, terrainTileInfo, texture);
+        }
+        // super.renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, skinTiles, parentTile);
+    }
+
+    _drawTerrainTiles(tiles, terrainTileInfo, terrainTexture) {
+        TERRAIN_CLEAR.framebuffer = terrainTexture;
+        this._terrainRegl.clear(TERRAIN_CLEAR);
         const skinTiles = [];
         for (let i = 0; i < tiles.length; i++) {
-            skinTiles[i] = this._drawOneTerrainTile(tiles[i]);
+            skinTiles[i] = this._drawOneTerrainTile(tiles[i], terrainTileInfo, terrainTexture);
         }
         return skinTiles;
     }
 
-    _drawOneTerrainTile(tile) {
-        const terrainCanvas = this._terrainGL.canvas;
+    _drawOneTerrainTile(tile, terrainTileInfo, terrainTexture) {
+        // const terrainCanvas = this._terrainGL.canvas;
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
-        this._parentContext = null;
-        const { info, image, tileTerrainCanvas } = tile;
-        if (tileTerrainCanvas) {
-            return {
-                info,
-                image: tileTerrainCanvas
-            };
-        }
-        this._terrainRegl.clear(TERRAIN_CLEAR);
+        this._parentContext = {
+            renderTarget: {
+                fbo: terrainTexture
+            },
+            viewport: getTileViewport(tile, terrainTileInfo)
+        };
+        console.log(tile.info.id, this._parentContext.viewport);
+        const { info, image } = tile;
+        // if (tileTerrainCanvas) {
+        //     return {
+        //         info,
+        //         image: tileTerrainCanvas
+        //     };
+        // }
         this._startFrame(timestamp, terrainSkinFilter);
         this.drawTile(info, image, terrainSkinFilter);
         this._endTerrainFrame();
-        const canvas = document.createElement('canvas');
-        canvas.width = terrainCanvas.width;
-        canvas.height = terrainCanvas.height;
-        canvas.getContext('2d').drawImage(terrainCanvas, 0, 0);
-        tile.tileTerrainCanvas = canvas;
+        // const canvas = document.createElement('canvas');
+        // canvas.width = terrainCanvas.width;
+        // canvas.height = terrainCanvas.height;
+        // canvas.getContext('2d').drawImage(terrainCanvas, 0, 0);
+        // tile.tileTerrainCanvas = canvas;
         this._parentContext = parentContext;
-        return {
-            info,
-            image: canvas
-        };
+        // return {
+        //     info,
+        //     image: canvas
+        // };
     }
 
     _endTerrainFrame() {
@@ -1928,4 +1980,24 @@ function needRefreshStyle(symbol) {
         }
     }
     return false;
+}
+
+function getTileViewport(tile, terrainTileInfo) {
+    const { extent2d: extent, res, offset: terrainOffset } = terrainTileInfo;
+    const scale = tile.info.res / res;
+    const { info } = tile;
+    const offset = info.offset;
+    const width = info.extent2d.getWidth() * scale;
+    const height = info.extent2d.getHeight() * scale;
+    const xmin = info.extent2d.xmin * scale;
+    const ymax = info.extent2d.ymax * scale;
+    const left = xmin - extent.xmin;
+    const top = extent.ymax - ymax;
+    const dx = terrainOffset[0] - offset[0];
+    const dy = offset[1] - terrainOffset[1];
+    return {
+        x: left + dx,
+        y: extent.getHeight() - (top + dy + height),
+        width, height
+    };
 }

@@ -41,10 +41,7 @@ class LinePainter extends BasicPainter {
         }
     }
 
-    needToRedraw() {
-        if (super.needToRedraw()) {
-            return true;
-        }
+    isAnimating() {
         if (this._hasPatternAnim) {
             return true;
         }
@@ -59,7 +56,21 @@ class LinePainter extends BasicPainter {
                 return true;
             }
         }
+        return false; 
+    }
+
+    needToRedraw() {
+        if (super.needToRedraw()) {
+            return true;
+        }
+        if (this.isAnimating()) {
+            return true;
+        }
         return false;
+    }
+
+    needToRefreshTerrainTile() {
+        return this.isAnimating();
     }
 
     isBloom(mesh) {
@@ -485,14 +496,18 @@ class LinePainter extends BasicPainter {
         const stencil = this.layer.getRenderer().isEnableTileStencil && this.layer.getRenderer().isEnableTileStencil();
         const canvas = this.canvas;
         const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
+            x: (_, props) => {
+                return props.viewport ? props.viewport.x : 0;
             },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
+            y: (_, props) => {
+                return props.viewport ? props.viewport.y : 0;
+            },
+            width: (_, props) => {
+                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+            },
+            height: (_, props) => {
+                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+            },
         };
         const depthRange = this.sceneConfig.depthRange;
         return {
@@ -571,7 +586,8 @@ class LinePainter extends BasicPainter {
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
             blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
-            cameraPosition: map.cameraPosition
+            cameraPosition: map.cameraPosition,
+            viewport: context && context.viewport
             // projMatrix: map.projMatrix,
             // halton: context.jitter || [0, 0],
             // outSize: [this.canvas.width, this.canvas.height],
