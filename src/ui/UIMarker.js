@@ -276,6 +276,16 @@ class UIMarker extends Handlerable(UIComponent) {
         return this.options.altitude || 0;
     }
 
+    setAltitude(alt) {
+        if (isNumber(alt) && this._markerCoord) {
+            this._markerCoord.z = alt;
+            if (this._updatePosition) {
+                this._updatePosition();
+            }
+        }
+        return this;
+    }
+
     /**
      * Sets the content of the UIMarker
      * @param {String|HTMLElement} content - UIMarker's content
