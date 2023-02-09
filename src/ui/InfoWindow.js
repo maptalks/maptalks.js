@@ -1,5 +1,5 @@
 import { isFunction, isNumber, isObject, isString } from '../core/util';
-import { createEl, addDomEvent, removeDomEvent } from '../core/util/dom';
+import { createEl, addDomEvent, removeDomEvent, on, off } from '../core/util/dom';
 import Point from '../geo/Point';
 import Size from '../geo/Size';
 import { Geometry, Marker, MultiPoint, LineString, MultiLineString } from '../geometry';
@@ -159,6 +159,7 @@ class InfoWindow extends UIComponent {
                 return this.options['content'];
             }
         }
+        this._bindDomEvents(this.getDOM(), 'off');
         const dom = createEl('div');
         if (this.options['containerClass']) {
             dom.className = this.options['containerClass'];
@@ -192,6 +193,7 @@ class InfoWindow extends UIComponent {
         if (!isFunc) {
             this._replaceTemplate(msgContent);
         }
+        this._bindDomEvents(dom, 'on');
         return dom;
     }
 
@@ -283,6 +285,7 @@ class InfoWindow extends UIComponent {
     }
 
     onRemove() {
+        this._onDomMouseout();
         this.onDomRemove();
     }
 
@@ -396,6 +399,42 @@ class InfoWindow extends UIComponent {
             width = defaultWidth;
         }
         return width;
+    }
+
+    _bindDomEvents(dom, to) {
+        if (!dom) {
+            return;
+        }
+        const events = this._getDomEvents();
+        const bindEvent = to === 'on' ? on : off;
+        for (const eventName in events) {
+            bindEvent(dom, eventName, events[eventName], this);
+        }
+    }
+
+    _getDomEvents() {
+        return {
+            'mouseover': this._onDomMouseover,
+            'mouseout': this._onDomMouseout
+        };
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    _onDomMouseover(domEvent) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        map.options['preventWheelScroll'] = false;
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    _onDomMouseout(domEvent) {
+        const map = this.getMap();
+        if (!map) {
+            return;
+        }
+        map.options['preventWheelScroll'] = true;
     }
 }
 
