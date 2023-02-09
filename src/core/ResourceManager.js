@@ -240,7 +240,7 @@ export function checkResourceValue(url, geo) {
         const name = replaceVariable(key, properties || {});
         url[0] = name;
         if (name.indexOf('$') === 0) {
-            return ResourceManager.get(name.substring(1, key.length), Browser.decodeImageInWorker);
+            return ResourceManager.get(name.substring(1, name.length), Browser.decodeImageInWorker);
         }
     }
     return key;
