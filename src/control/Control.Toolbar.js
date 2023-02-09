@@ -8,7 +8,7 @@ import Control from './Control';
  * @property {String|Object}   [options.position="top-right"]          - position of the toolbar control.
  * @property {Boolean}  [options.vertical=true]                        - Whether the toolbar is a vertical one.
  * @property {Boolean}  [options.reverseMenu=false]                    - Whether to reverse direction of drop menu.
- * @property {Object[]} options.items                                  - items on the toolbar
+ * @property {Object[]} options.items                                  - items on the toolbar. 'item':content of button,support HTML.'height': height in pixels,'click':click function,'children': displayed menus by hovering
  * @memberOf control.Toolbar
  * @instance
  */
