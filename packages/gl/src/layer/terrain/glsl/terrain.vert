@@ -1,3 +1,5 @@
+#define SHADER_NAME TERRAIN_SKIN
+
 attribute vec3 aPosition;
 attribute vec2 aTexCoord;
 uniform mat4 projViewModelMatrix;

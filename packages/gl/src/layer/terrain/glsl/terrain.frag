@@ -1,3 +1,5 @@
+#define SHADER_NAME TERRAIN_SKIN
+
 precision mediump float;
 uniform sampler2D skins[SKIN_COUNT];
 uniform float opacity;
@@ -8,9 +10,11 @@ vec4 blend(vec4 src, vec4 dst) {
 }
 
 void main() {
+    vec2 uv = vec2(vUv);
+    uv.y = 1.0 - uv.y;
     vec4 color = vec4(0.0);
     for (int i = 0; i < SKIN_COUNT; i++) {
-        color = blend(texture2D(skins[i], vUv), color);
+        color = blend(texture2D(skins[i], uv), color);
     }
     gl_FragColor = color * opacity;
 }

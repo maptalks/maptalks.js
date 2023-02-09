@@ -5,6 +5,7 @@ import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes } from './TerrainTi
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
+const ALTITUDE = [];
 
 const options = {
     'forceRenderOnMoving': true,
@@ -15,7 +16,7 @@ const options = {
     'pyramidMode': 1,
     'tileSize': 512,
     'terrainWidth': 65,
-    'backZoomOffset': -5,
+    'backZoomOffset': 0,
     'depthMask': true,
     'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
@@ -198,7 +199,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         const config = this['_getTileConfig']();
         const tileIndex = config.getTileIndex(prjCoord, res, repeatWorld);
         const worldPos = map['_prjToPointAtRes'](prjCoord, res, POINT0);
-        return renderer._queryTerrain(tileIndex, worldPos, res, zoom);
+        return renderer._queryTerrain(ALTITUDE, tileIndex, worldPos, res, zoom);
     }
 
     queryTerrain(coordinate) {

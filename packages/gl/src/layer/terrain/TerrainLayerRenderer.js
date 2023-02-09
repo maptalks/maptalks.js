@@ -146,8 +146,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     renderSkin(skinLayer, tileInfo, tileImage, skinIndex) {
-        if (!tileImage.skinImages) {
-            tileImage.skinImages = [];
+        const renderer = skinLayer.getRenderer();
+        if (!renderer) {
+             return;
         }
         if (!tileImage.skins) {
              tileImage.skins = [];
@@ -159,12 +160,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             tileImage.skinTileIds = [];
         }
         const status = tileImage.skinStatus[skinIndex];
-        if (status) {
+        const needRefresh = renderer.needToRefreshTerrainTile && renderer.needToRefreshTerrainTile();
+        if (!needRefresh && status) {
             return;
-        }
-        const renderer = skinLayer.getRenderer();
-        if (!renderer) {
-             return;
         }
 
         const sr = skinLayer.getSpatialReference();
@@ -201,43 +199,56 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             tiles.push(cachedTile);
         }
 
-        let texture = tileImage.skinImages[skinIndex];
+        let texture = tileImage.skins[skinIndex];
         if (!texture) {
-            texture = document.createElement('canvas');
             if (!reshader.Util.isPowerOfTwo(w)) {
                 w = reshader.Util.floorPowerOfTwo(w);
             }
             if (!reshader.Util.isPowerOfTwo(h)) {
                 w = reshader.Util.floorPowerOfTwo(h);
             }
-            texture.width = w;
-            texture.height = h;
+            texture = renderer.createTerrainTexture(w, h);
         }
 
         renderer.renderTerrainSkin(this.regl, this.layer, tileInfo, texture, tiles, parentTile);
-        const debugCanvas = document.getElementById('terrain_skin_debug');
-        if (debugCanvas) {
-            debugCanvas.width = w;
-            debugCanvas.height = h;
-            debugCanvas.getContext('2d').drawImage(texture, 0, 0);
+        skinLayer.fire('renderterrainskin', { tile: tileInfo, skinTiles: tiles });
+
+        if (texture instanceof HTMLCanvasElement) {
+            const debugCanvas = document.getElementById('terrain_skin_debug');
+            if (debugCanvas) {
+                debugCanvas.width = w;
+                debugCanvas.height = h;
+                debugCanvas.getContext('2d').drawImage(texture, 0, 0);
+            }
         }
-        const config = {
-            data: texture,
-            width: w,
-            height: h
-        };
-        let tex = tileImage.skins[skinIndex];
-        if (!tex) {
-            tex = this.regl.texture(config);
+        
+        let tex;
+        if (!texture.destroy) {
+            // 有destroy说明是个regl对象，例如fbo或texture，则直接用它作为纹理
+            const config = {
+                data: texture,
+                width: w,
+                height: h,
+                flipY: true
+            };
+            tex = tileImage.skins[skinIndex];
+            if (!tex) {
+                tex = this.regl.texture(config);
+            } else {
+                tex(config);
+            }
         } else {
-            tex(config);
+            tex = texture;
         }
+
+        
         tileImage.skins[skinIndex] = tex;
         if (complete) {
             tileImage.skinStatus[skinIndex] = 1;
             // save some memory
-            tileImage.skinTileIds = [];
-            tileImage.skinImages[skinIndex] = null;
+            if (!needRefresh) {
+                tileImage.skinTileIds = [];
+            }
         }
     }
 
@@ -453,8 +464,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             image.terrainMesh.dispose();
         }
         delete image.skins;
-        delete image.skinStatus;
-        delete image.skinImages;
+        delete image.skinStatus;        
         delete image.skinTileIds;
         delete image.terrainMesh;
         delete image.mesh;
@@ -469,18 +479,22 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         super.abortTileLoading(tileImage, tileInfo);
     }
 
-    _queryTerrain(tileIndex, worldPos, res, z) {
+    _queryTerrain(out, tileIndex, worldPos, res, z) {
         const terrainData = this._findTerrainData(tileIndex.x, tileIndex.y, z, this.layer.options['backZoomOffset']);
-        if (terrainData && terrainData.image) {
+        if (terrainData && terrainData.image && terrainData.image.data) {
             const extent2d = terrainData.info.extent2d;
             const terrainRes = terrainData.info.res;
             const scale = terrainRes / res;
             const x = worldPos.x - extent2d.xmin * scale;
             const y = extent2d.ymax * scale - worldPos.y;
-            return this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
+            const altitude = this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
+            out[0] = altitude;
+            out[1] = 1;
         } else {
-            return 0;
+            out[0] = null;
+            out[1] = 0;
         }
+        return out;
     }
 
     _findTerrainData(x, y, z, limit) {
@@ -793,6 +807,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 func: { src: this.layer.options.blendSrc, dst: this.layer.options.blendDst },
                 equation: 'add'
             },
+            // polygonOffset: {
+            //     factor: () => {
+
+            //     },
+            //     units: () => {
+
+            //     }
+            // }
         };
 
         this._shader = new reshader.MeshShader({
@@ -873,7 +895,13 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
             const { width, height } = ctx.canvas;
             drawDebug(ctx, debugInfo, debugColor, 6, 0, 0, width, height);
         }
-        this.layer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
+    },
+
+    createTerrainTexture(width, height) {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
     }
 });
 
