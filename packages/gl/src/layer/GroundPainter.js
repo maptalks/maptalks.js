@@ -206,6 +206,9 @@ class GroundPainter {
             if (!this._iblTexes) {
                 this._iblTexes = createIBLTextures(this._regl, this.getMap());
             }
+            if (!this._dfgLUT) {
+                this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this._regl);
+            }
             uniforms = getPBRUniforms(this.getMap(), this._iblTexes, this._dfgLUT, context && context.ssr, context && context.jitter);
         } else {
             const map = this.getMap();
@@ -268,7 +271,6 @@ class GroundPainter {
         });
 
         this._createGround();
-        this._dfgLUT = reshader.pbr.PBRHelper.generateDFGLUT(this._regl);
         this.update();
     }
 
