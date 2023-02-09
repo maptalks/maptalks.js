@@ -29,6 +29,10 @@ import Geometry from '../geometry/Geometry';
  * @property {Number}  [options.animationOnHide=false]  - if calls animation on hiding.
  * @property {Boolean}  [options.pitchWithMap=false]    - whether tilt with map
  * @property {Boolean}  [options.rotateWithMap=false]  - whether rotate with map
+ * @property {Boolean}  [options.collision=false]  - whether collision
+ * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
+ * @property {Number}  [options.collisionWeight=0]  - Collision weight, large priority collision
+ * @property {Boolean}  [options.collisionFadeIn=false]  - Collision fade in animation
  * @memberOf ui.UIComponent
  * @instance
  */
@@ -46,7 +50,11 @@ const options = {
     'pitchWithMap': false,
     'rotateWithMap': false,
     'visible': true,
-    'roundPoint': false
+    'roundPoint': false,
+    'collision': false,
+    'collisionBufferSize': 2,
+    'collisionWeight': 0,
+    'collisionFadeIn': false
 };
 
 /**
@@ -124,6 +132,40 @@ class UIComponent extends Eventable(Class) {
         return this._owner.getMap();
     }
 
+    _collides() {
+        const map = this.getMap();
+        if (!map) {
+            return this;
+        }
+        map._addUI(this);
+        map._insertUICollidesQueue();
+        return this;
+    }
+
+    _collidesEffect(show) {
+        const dom = this.getDOM();
+        if (!dom) {
+            return this;
+        }
+        const visibility = show ? 'visible' : 'hidden';
+        dom.style.visibility = visibility;
+        if (!dom.classList || !dom.classList.add) {
+            return this;
+        }
+        if (!this.options['collisionFadeIn']) {
+            return this;
+        }
+        const classList = dom.classList;
+        const className = 'mtk-ui-fadein';
+        const hasClass = classList.contains(className);
+        if (show && !hasClass) {
+            dom.classList.add(className);
+        } else if (!show && hasClass) {
+            dom.classList.remove(className);
+        }
+        return this;
+    }
+
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
      * @param {Coordinate} [coordinate=null] - coordinate to show, default is owner's center
@@ -175,6 +217,7 @@ class UIComponent extends Eventable(Class) {
             if (!this._showBySymbolChange) {
                 this.fire('showend');
             }
+            this._collides();
             return this;
         }
 
@@ -243,6 +286,7 @@ class UIComponent extends Eventable(Class) {
         if (!this._showBySymbolChange) {
             this.fire('showend');
         }
+        this._collides();
         return this;
     }
 
@@ -290,6 +334,7 @@ class UIComponent extends Eventable(Class) {
         }
         //remove map bind events
         this._switchMapEvents('off');
+        this._collides();
         return this;
     }
 
@@ -316,6 +361,10 @@ class UIComponent extends Eventable(Class) {
         if (!this._owner) {
             return this;
         }
+        const map = this.getMap();
+        if (map) {
+            map._removeUI(this);
+        }
         this.hide();
         this._switchEvents('off');
         if (this.onRemove) {
@@ -334,6 +383,7 @@ class UIComponent extends Eventable(Class) {
          * @property {ui.UIComponent} target - UIComponent
          */
         this.fire('remove');
+        this._collides();
         return this;
     }
 
@@ -657,6 +707,7 @@ class UIComponent extends Eventable(Class) {
         if (this.isVisible()) {
             //when dom resize , update position
             this._setPosition();
+            this._collides();
         }
     }
 
@@ -706,7 +757,15 @@ class UIComponent extends Eventable(Class) {
         }
         this._resizeObserver = new ResizeObserver((entries) => {
             if (entries.length) {
-                this._domContentRect = entries[0].contentRect;
+                const borderBoxSize = entries[0].borderBoxSize;
+                if (borderBoxSize && borderBoxSize.length) {
+                    this._domContentRect = {
+                        width: borderBoxSize[0].inlineSize,
+                        height: borderBoxSize[0].blockSize
+                    };
+                } else {
+                    this._domContentRect = entries[0].contentRect;
+                }
             } else {
                 delete this._domContentRect;
             }

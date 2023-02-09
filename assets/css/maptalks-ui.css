@@ -3,8 +3,21 @@
   background: #fff;
   border: 1px solid #b4b3b3;
   padding: 0px 4px 0px 4px;
-  height:24px;
-  line-height:24px;
-  font-size:14px;
+  height: 24px;
+  line-height: 24px;
+  font-size: 14px;
   white-space: nowrap;
+}
+
+@keyframes maptalksfadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+.mtk-ui-fadein {
+  animation: maptalksfadeIn 2s;
 }
