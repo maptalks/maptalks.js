@@ -757,7 +757,15 @@ class UIComponent extends Eventable(Class) {
         }
         this._resizeObserver = new ResizeObserver((entries) => {
             if (entries.length) {
-                this._domContentRect = entries[0].contentRect;
+                const borderBoxSize = entries[0].borderBoxSize;
+                if (borderBoxSize && borderBoxSize.length) {
+                    this._domContentRect = {
+                        width: borderBoxSize[0].inlineSize,
+                        height: borderBoxSize[0].blockSize
+                    };
+                } else {
+                    this._domContentRect = entries[0].contentRect;
+                }
             } else {
                 delete this._domContentRect;
             }
