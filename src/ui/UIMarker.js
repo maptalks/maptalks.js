@@ -381,12 +381,12 @@ class UIMarker extends Handlerable(UIComponent) {
         if (horizontalAlignment === 'left') {
             offsetX = -size.width;
         } else if (horizontalAlignment === 'right') {
-            offsetX = size.width;
+            offsetX = 0;
         }
         if (verticalAlignment === 'top') {
             offsetY = -size.height;
         } else if (verticalAlignment === 'bottom') {
-            offsetY = size.height;
+            offsetY = 0;
         }
         return new Point(offsetX, offsetY);
     }
