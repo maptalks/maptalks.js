@@ -1,4 +1,4 @@
-import { getAbsoluteURL, isNil, isString, replaceVariable } from './util';
+import { getAbsoluteURL, isNil, isObject, isString, replaceVariable } from './util';
 import Browser from './Browser';
 import { createEl } from './util/dom';
 import Ajax from './Ajax';
@@ -71,7 +71,7 @@ export const ResourceManager = {
      */
     get(name, imgBitMap = false) {
         if (!ResourceManager.rootUrl) {
-            ResourceManager.setRootUrl(getAbsoluteURL('/'));
+            ResourceManager.setRootUrl(getAbsoluteURL('/res/'));
         }
         const img = ResourceManager.cache[name];
         if (!img) {
@@ -84,6 +84,9 @@ export const ResourceManager = {
             return img.imgBitMap;
         } else if (img.base64) {
             return img.base64;
+        }
+        if (isObject(img)) {
+            return img;
         }
         return `${ResourceManager.rootUrl}${img}`;
     },
