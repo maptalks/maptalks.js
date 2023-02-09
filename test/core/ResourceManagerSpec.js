@@ -33,7 +33,7 @@ describe('ResourceManager.Spec', function () {
     function getMarker(markerFile) {
         return new maptalks.Marker(center, {
             properties: {
-                iconName: 'tile.png'
+                iconName: '$tile.png'
             },
             symbol: {
                 markerFile: markerFile

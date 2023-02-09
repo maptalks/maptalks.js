@@ -239,7 +239,9 @@ export function checkResourceValue(url, geo) {
         const properties = geo.getProperties();
         const name = replaceVariable(key, properties || {});
         url[0] = name;
-        return ResourceManager.get(name, Browser.decodeImageInWorker);
+        if (name.indexOf('$') === 0) {
+            return ResourceManager.get(name.substring(1, key.length), Browser.decodeImageInWorker);
+        }
     }
     return key;
 }
