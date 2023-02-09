@@ -416,6 +416,7 @@ export function flash(interval, count, cb, context) {
         count = 4;
     }
     const me = this;
+    const initVisible = this.isVisible()
     count *= 2;
     if (this._flashTimeout) {
         clearTimeout(this._flashTimeout);
@@ -423,7 +424,11 @@ export function flash(interval, count, cb, context) {
 
     function flashGeo() {
         if (count === 0) {
-            me.show();
+            if (initVisible) {
+                me.show();
+            } else {
+                me.hide();
+            }
             if (cb) {
                 if (context) {
                     cb.call(context);
