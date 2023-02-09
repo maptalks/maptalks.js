@@ -416,7 +416,7 @@ export function flash(interval, count, cb, context) {
         count = 4;
     }
     const me = this;
-    const initVisible = this.isVisible()
+    const initVisible = this.isVisible();
     count *= 2;
     if (this._flashTimeout) {
         clearTimeout(this._flashTimeout);

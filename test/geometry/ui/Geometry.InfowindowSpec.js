@@ -428,7 +428,7 @@ describe('Geometry.InfoWindow', function () {
                     //hide animations
                     expect(infoWindow.getDOM().style.display).to.be.eql('none');
                     expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
-                    expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(0)');
+                    expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)');
                     expect(infoWindow.isVisible()).not.to.be.ok();
                     done();
                 }, options.animationDuration + 2);
