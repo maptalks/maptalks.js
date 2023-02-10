@@ -232,7 +232,7 @@ export const ResourceManager = {
     },
 };
 
-export function checkResourceValue(url, geo) {
+export function checkResourceValue(url, properties) {
     let key = url[0];
     if (isNil(key)) {
         return key;
@@ -242,10 +242,9 @@ export function checkResourceValue(url, geo) {
         const name = key.substring(1, key.length);
         return ResourceManager.get(name, Browser.decodeImageInWorker);
     } else if (resourceIsTemplate(key)) {
-        if (!geo) {
+        if (!properties) {
             return key;
         }
-        const properties = geo.getProperties();
         const name = replaceVariable(key, properties || {});
         url[0] = name;
         if (name.indexOf('$') === 0) {
@@ -258,7 +257,7 @@ export function checkResourceValue(url, geo) {
 
 export function resourceIsTemplate(key) {
     if (isNil(key)) {
-        return key;
+        return false;
     }
     key += '';
     return (key.indexOf('{') > -1 && key.indexOf('}') > -1);

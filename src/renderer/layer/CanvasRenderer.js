@@ -769,7 +769,7 @@ class CanvasRenderer extends Class {
 
     _promiseResource(url) {
         //当资源是{iconName}这样的模板时,url里关于资源的url会被替换的，比如{iconName} 会被替换为 url[0]= 真实的图片的名字
-        const imgUrl = checkResourceValue(url, url.geo);
+        const imgUrl = checkResourceValue(url, url.geo && url.geo.properties);
         delete url.geo;
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
@@ -778,7 +778,7 @@ class CanvasRenderer extends Class {
         const resKey = url[0];
 
         //check ResourceManager cache
-        //可以避免多个图层同一个资源的重复请求,当图层被移除后也不用再次请求资源
+        //可以避免多个图层同一个资源的重复请求,当图层被移除后然后再次添加也不用再次请求资源
         const res = ResourceManager.get(resKey);
         if ((res && res instanceof Image) || isImageBitMap(res)) {
             me._cacheResource(url, res);
@@ -802,13 +802,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (isImageBitMap(imgUrl)) {
-                me._cacheResource(url, imgUrl);
-                addToGlobalCache(imgUrl);
-                resolve(url);
-                return;
-            }
-            if (imgUrl instanceof Image) {
+            if (isImageBitMap(imgUrl) || (imgUrl instanceof Image)) {
                 me._cacheResource(url, imgUrl);
                 addToGlobalCache(imgUrl);
                 resolve(url);
