@@ -242,6 +242,7 @@ export function checkResourceValue(url, geo) {
         if (name.indexOf('$') === 0) {
             return ResourceManager.get(name.substring(1, name.length), Browser.decodeImageInWorker);
         }
+        return name;
     }
     return key;
 }
