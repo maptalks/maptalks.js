@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize, isObject } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -7,7 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { checkResourceValue, resourceIsTemplate } from '../../core/ResourceManager';
+import { checkResourceValue, resourceIsTemplate, ResourceManager } from '../../core/ResourceManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -774,6 +774,21 @@ class CanvasRenderer extends Class {
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         const renderer = this.layer.options['renderer'] || '';
+
+        const cacheKey = `${url[0]}`;
+        const cacheValue = ResourceManager.get(cacheKey);
+        //如果全局缓存命中,直接返回，避免多个图层资源的重复请求
+        if (cacheValue && isObject(cacheValue)) {
+            me._cacheResource(url, cacheValue);
+            return function (resolve) {
+                resolve(url);
+            };
+        }
+
+        const addToResourceManager = (imageData) => {
+            ResourceManager.update(cacheKey, imageData);
+        };
+
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
@@ -781,6 +796,7 @@ class CanvasRenderer extends Class {
             }
             if (imgUrl && Browser.decodeImageInWorker && imgUrl instanceof ImageBitmap) {
                 me._cacheResource(url, imgUrl);
+                addToResourceManager(imgUrl);
                 resolve(url);
                 return;
             }
@@ -796,6 +812,7 @@ class CanvasRenderer extends Class {
                     }
                     getImageBitMap(data, bitmap => {
                         me._cacheResource(url, bitmap);
+                        addToResourceManager(bitmap);
                         resolve(url);
                     });
                 });
@@ -813,6 +830,7 @@ class CanvasRenderer extends Class {
                 }
                 img.onload = function () {
                     me._cacheResource(url, img);
+                    addToResourceManager(img);
                     resolve(url);
                 };
                 img.onabort = function (err) {
