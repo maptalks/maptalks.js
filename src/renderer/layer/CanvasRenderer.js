@@ -984,7 +984,7 @@ export class ResourceCache {
             const res = this.resources[p];
             if (res && res.image && res.image.close) {
                 // close bitmap
-                res.image.close();
+                // res.image.close();
             }
         }
         this.resources = {};
