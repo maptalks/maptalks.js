@@ -44,8 +44,8 @@ function isAbsoluteURL(url) {
  *  ResourceManager.setRootUrl('http://abc.com/images/');
  *  var img = ResourceManager.get('hello.png');//http://abc.com/images/hello.png
  *
- *  ResourceManager.add('test','dog.png');
- *  var img = ResourceManager.get('test');//http://abc.com/images/dog.png
+ *  ResourceManager.add('dog','dog.png');
+ *  var img = ResourceManager.get('dog');//http://abc.com/images/dog.png
  *
  *
  *
@@ -56,7 +56,7 @@ export const ResourceManager = {
     cache: {},
 
     /**
-     * set image source root path
+     * set resource root path
      * @param {String} url
      */
     setRootUrl(url) {
@@ -64,10 +64,10 @@ export const ResourceManager = {
     },
 
     /**
-     * get image source
+     * get resource
      * @param {String} name
      * @param {Boolean} imgBitMap
-     * @returns {String} url/imgBitMap
+     * @returns {String} url/imgBitMap/Image
      */
     get(name, imgBitMap = false) {
         if (!ResourceManager.rootUrl) {
@@ -80,10 +80,18 @@ export const ResourceManager = {
         if (isString(img) && isAbsoluteURL(img)) {
             return img;
         }
-        if (img.imgBitMap && imgBitMap) {
-            return img.imgBitMap;
-        } else if (img.base64) {
-            return img.base64;
+        if (img instanceof Image) {
+            return img;
+        }
+        if (Browser.decodeImageInWorker && img instanceof ImageBitmap) {
+            return img;
+        }
+        if (img.isSprite) {
+            if (img.imgBitMap && imgBitMap) {
+                return img.imgBitMap;
+            } else if (img.base64) {
+                return img.base64;
+            }
         }
         if (isObject(img)) {
             return img;
@@ -92,7 +100,7 @@ export const ResourceManager = {
     },
 
     /**
-     * remove image source
+     * remove resource
      * @param {String} name
      */
     remove(name) {
@@ -100,37 +108,37 @@ export const ResourceManager = {
     },
 
     /**
-     * add image source
+     * add resource
      * @param {String} name
      * @param {String} imageUrl
      */
-    add(name, imgUrl) {
+    add(name, url) {
         if (ResourceManager.cache[name]) {
             console.warn(`${name} img Already exists,the ${name} Cannot be added`);
             return;
         }
-        ResourceManager.cache[name] = imgUrl;
+        ResourceManager.cache[name] = url;
     },
 
     /**
-    * update image source
+    * update  resource
      * @param {String} name
-     * @param {String} imageUrl
+     * @param {String} url
      */
-    update(name, imageUrl) {
-        ResourceManager.cache[name] = imageUrl;
+    update(name, url) {
+        ResourceManager.cache[name] = url;
     },
 
     /**
-     * get all images [key,value]
-     * @returns {Object} images
+     * get all resource [key,value]
+     * @returns {Object} source
      */
     all() {
         return ResourceManager.cache;
     },
 
     /**
-    * load sprite source
+    * load sprite resource
      * @param {Object} [options=null]      - sprite options
      * @param {String} [options.imgUrl]    - sprite image url
      * @param {String} [options.jsonUrl]  - sprite json url
@@ -195,6 +203,7 @@ export const ResourceManager = {
                         json[name].imgBitMap = imgBitMap;
                     }
                     ResourceManager.add(name, {
+                        isSprite: true,
                         base64,
                         imgBitMap
                     });
