@@ -808,6 +808,12 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
+            if (imgUrl instanceof Image) {
+                me._cacheResource(url, imgUrl);
+                addToGlobalCache(imgUrl);
+                resolve(url);
+                return;
+            }
             if (!isSVG(imgUrl) && me._resWorkerConn) {
                 const uri = getAbsoluteURL(imgUrl);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
@@ -856,7 +862,7 @@ class CanvasRenderer extends Class {
                     resources.markErrorResource(url);
                     resolve(url);
                 };
-                loadImage(img, url);
+                loadImage(img, [imgUrl]);
             }
 
         };
