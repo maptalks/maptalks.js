@@ -89,6 +89,7 @@ class UIComponent extends Eventable(Class) {
      */
     constructor(options) {
         super(options);
+        this.proxyOptions();
     }
 
     /**
@@ -783,6 +784,11 @@ class UIComponent extends Eventable(Class) {
 
     isSupportZoomFilter() {
         return false;
+    }
+
+    onConfig() {
+        this._updatePosition();
+        return this;
     }
 
     /*

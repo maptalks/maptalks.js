@@ -281,6 +281,7 @@ class UIMarker extends Handlerable(UIComponent) {
             this._markerCoord.z = alt;
             if (this._updatePosition) {
                 this._updatePosition();
+                this._collides();
             }
         }
         return this;
