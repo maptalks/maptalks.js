@@ -7,7 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import { checkResourceValue, resourceIsTemplate } from '../../core/ResourceManager';
+import { checkResourceValue, resourceIsTemplate, ResourceManager } from '../../core/ResourceManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -775,6 +775,28 @@ class CanvasRenderer extends Class {
             crossOrigin = this.layer.options['crossOrigin'];
         const renderer = this.layer.options['renderer'] || '';
 
+        const resKey = url[0];
+
+        //check ResourceManager cache
+        //可以避免多个图层同一个资源的重复请求,当图层被移除后也不用再次请求资源
+        const res = ResourceManager.get(resKey);
+        if ((res && res instanceof Image) || (res && Browser.decodeImageInWorker && res instanceof ImageBitmap)) {
+            me._cacheResource(url, res);
+            return function (resolve) {
+                resolve(url);
+            };
+        }
+
+        function addToGlobalCache(imgData) {
+            if (imgData instanceof Image) {
+                ResourceManager.update(resKey, imgData);
+            } else if (Browser.decodeImageInWorker && imgData instanceof ImageBitmap) {
+                ResourceManager.update(resKey, imgData);
+            } else {
+                console.warn('not support type:', imgData);
+            }
+        }
+
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
@@ -782,6 +804,7 @@ class CanvasRenderer extends Class {
             }
             if (imgUrl && Browser.decodeImageInWorker && imgUrl instanceof ImageBitmap) {
                 me._cacheResource(url, imgUrl);
+                addToGlobalCache(imgUrl);
                 resolve(url);
                 return;
             }
@@ -797,6 +820,7 @@ class CanvasRenderer extends Class {
                     }
                     getImageBitMap(data, bitmap => {
                         me._cacheResource(url, bitmap);
+                        addToGlobalCache(bitmap);
                         resolve(url);
                     });
                 });
@@ -814,6 +838,7 @@ class CanvasRenderer extends Class {
                 }
                 img.onload = function () {
                     me._cacheResource(url, img);
+                    addToGlobalCache(img);
                     resolve(url);
                 };
                 img.onabort = function (err) {
@@ -967,7 +992,7 @@ export class ResourceCache {
             const res = this.resources[p];
             if (res && res.image && res.image.close) {
                 // close bitmap
-                res.image.close();
+                // res.image.close();
             }
         }
         this.resources = {};
