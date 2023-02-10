@@ -80,12 +80,11 @@ export const ResourceManager = {
         if (isString(img) && isAbsoluteURL(img)) {
             return img;
         }
-        if (img instanceof Image) {
+        //imagebitmap or image
+        if (isImageBitMap(img) || (img instanceof Image)) {
             return img;
         }
-        if (isImageBitMap(img)) {
-            return img;
-        }
+        //sprite icon
         if (img.isSprite) {
             if (img.imgBitMap && imgBitMap) {
                 return img.imgBitMap;
@@ -93,6 +92,7 @@ export const ResourceManager = {
                 return img.base64;
             }
         }
+        //other data
         if (isObject(img)) {
             return img;
         }
@@ -114,14 +114,14 @@ export const ResourceManager = {
      */
     add(name, url) {
         if (ResourceManager.cache[name]) {
-            console.warn(`${name} img Already exists,the ${name} Cannot be added`);
+            console.warn(`${name} resource Already exists,the ${name} Cannot be added,the resource name Cannot repeat `);
             return;
         }
         ResourceManager.cache[name] = url;
     },
 
     /**
-    * update  resource
+    * update  resource (remove and add)
      * @param {String} name
      * @param {String} url
      */
