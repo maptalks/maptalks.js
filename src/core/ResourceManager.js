@@ -1,4 +1,4 @@
-import { getAbsoluteURL, isNil, isObject, isString, replaceVariable } from './util';
+import { getAbsoluteURL, isImageBitMap, isNil, isObject, isString, replaceVariable } from './util';
 import Browser from './Browser';
 import { createEl } from './util/dom';
 import Ajax from './Ajax';
@@ -83,7 +83,7 @@ export const ResourceManager = {
         if (img instanceof Image) {
             return img;
         }
-        if (Browser.decodeImageInWorker && img instanceof ImageBitmap) {
+        if (isImageBitMap(img)) {
             return img;
         }
         if (img.isSprite) {

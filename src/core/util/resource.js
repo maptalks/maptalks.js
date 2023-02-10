@@ -3,6 +3,7 @@ import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
+import Browser from '../Browser';
 
 
 /**
@@ -219,4 +220,8 @@ function _convertUrl(res) {
         res = extractCssUrl(res);
     }
     return res;
+}
+
+export function isImageBitMap(img) {
+    return img && Browser.decodeImageInWorker && img instanceof ImageBitmap;
 }

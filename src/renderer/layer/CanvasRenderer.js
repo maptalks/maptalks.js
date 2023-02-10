@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize, isImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -780,7 +780,7 @@ class CanvasRenderer extends Class {
         //check ResourceManager cache
         //可以避免多个图层同一个资源的重复请求,当图层被移除后也不用再次请求资源
         const res = ResourceManager.get(resKey);
-        if ((res && res instanceof Image) || (res && Browser.decodeImageInWorker && res instanceof ImageBitmap)) {
+        if ((res && res instanceof Image) || isImageBitMap(res)) {
             me._cacheResource(url, res);
             return function (resolve) {
                 resolve(url);
@@ -790,7 +790,7 @@ class CanvasRenderer extends Class {
         function addToGlobalCache(imgData) {
             if (imgData instanceof Image) {
                 ResourceManager.update(resKey, imgData);
-            } else if (Browser.decodeImageInWorker && imgData instanceof ImageBitmap) {
+            } else if (isImageBitMap(imgData)) {
                 ResourceManager.update(resKey, imgData);
             } else {
                 console.warn('not support type:', imgData);
@@ -802,7 +802,7 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (imgUrl && Browser.decodeImageInWorker && imgUrl instanceof ImageBitmap) {
+            if (isImageBitMap(imgUrl)) {
                 me._cacheResource(url, imgUrl);
                 addToGlobalCache(imgUrl);
                 resolve(url);
