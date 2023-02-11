@@ -777,6 +777,11 @@ class CanvasRenderer extends Class {
 
         const resKey = url[0];
 
+        //cache image data to ResourceManager
+        function addToGlobalCache(imgData) {
+            ResourceManager.update(resKey, imgData);
+        }
+
         const copyBitMapForLayer = (btiMap, resolve) => {
             createImageBitmap(btiMap).then(newbitmap => {
                 //新的数据为layer提供服务
@@ -797,17 +802,6 @@ class CanvasRenderer extends Class {
             return function (resolve) {
                 copyBitMapForLayer(res, resolve);
             };
-        }
-
-        //cache image data to ResourceManager
-        function addToGlobalCache(imgData) {
-            if (imgData instanceof Image) {
-                ResourceManager.update(resKey, imgData);
-            } else if (isImageBitMap(imgData)) {
-                ResourceManager.update(resKey, imgData);
-            } else {
-                console.warn('not support type:', imgData);
-            }
         }
 
         return function (resolve) {
