@@ -6,7 +6,6 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import { ResourceCache } from '../renderer/layer/CanvasRenderer';
 import Extent from '../geo/Extent';
 import Layer from './Layer';
-import { ResourceManager } from '../core/ResourceManager';
 
 /**
  * @property {Object}              options                     - ImageLayer's options
@@ -138,7 +137,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     }
 
     retireImage(image) {
-        if (ResourceManager.get(image.key) !== image && image.close) {
+        if (image.close) {
             image.close();
         }
 
@@ -242,7 +241,7 @@ export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRend
     }
 
     retireImage(image) {
-        if (ResourceManager.get(image.key) !== image && image.close) {
+        if (image.close) {
             image.close();
         }
         this.disposeImage(image);

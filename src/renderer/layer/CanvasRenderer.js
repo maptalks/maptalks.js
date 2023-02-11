@@ -777,26 +777,30 @@ class CanvasRenderer extends Class {
 
         const resKey = url[0];
 
+        const copyBitMapForLayer = (btiMap, resolve) => {
+            createImageBitmap(btiMap).then(newbitmap => {
+                //新的数据为layer提供服务
+                me._cacheResource(url, newbitmap);
+                //原始数据放在缓存
+                addToGlobalCache(btiMap);
+                resolve(url);
+            }).catch(err => {
+                console.error(err);
+                resolve(url);
+            });
+        };
+
         //check ResourceManager cache
         //可以避免多个图层同一个资源的重复请求,当图层被移除后然后再次添加也不用再次请求资源
         const res = ResourceManager.get(resKey);
         if (isImageBitMap(res)) {
             return function (resolve) {
-                // copy imagebitmap,
-                //图层如果需要销毁imagebitmap应该判断ResourceManager缓存里的数据是否和你需要销毁的数据是同一个实例，否则会把ResourceManager里缓存的数据给销毁了
-                createImageBitmap(res).then(bitmap => {
-                    me._cacheResource(url, bitmap);
-                    resolve(url);
-                }).catch(err => {
-                    console.error(err);
-                    resolve(url);
-                });
+                copyBitMapForLayer(res, resolve);
             };
         }
 
         //cache image data to ResourceManager
         function addToGlobalCache(imgData) {
-            imgData.key = resKey;
             if (imgData instanceof Image) {
                 ResourceManager.update(resKey, imgData);
             } else if (isImageBitMap(imgData)) {
@@ -811,10 +815,15 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            if (isImageBitMap(imgUrl) || (imgUrl instanceof Image)) {
+            if (imgUrl instanceof Image) {
                 me._cacheResource(url, imgUrl);
                 addToGlobalCache(imgUrl);
                 resolve(url);
+                return;
+            }
+
+            if (isImageBitMap(imgUrl)) {
+                copyBitMapForLayer(imgUrl, resolve);
                 return;
             }
             if (!isSVG(imgUrl) && me._resWorkerConn) {
@@ -828,9 +837,8 @@ class CanvasRenderer extends Class {
                         return;
                     }
                     getImageBitMap(data, bitmap => {
-                        me._cacheResource(url, bitmap);
-                        addToGlobalCache(bitmap);
-                        resolve(url);
+                        copyBitMapForLayer(bitmap, resolve);
+                        return;
                     });
                 });
             } else {
@@ -999,12 +1007,9 @@ export class ResourceCache {
     remove() {
         for (const p in this.resources) {
             const res = this.resources[p];
-            if (res && res.image) {
+            if (res && res.image && res.image.close) {
                 // close bitmap
-                const image = res.image;
-                if (ResourceManager.get(image.key) !== image && image.close) {
-                    image.close();
-                }
+                res.image.close();
             }
         }
         this.resources = {};
