@@ -780,14 +780,23 @@ class CanvasRenderer extends Class {
         //check ResourceManager cache
         //可以避免多个图层同一个资源的重复请求,当图层被移除后然后再次添加也不用再次请求资源
         const res = ResourceManager.get(resKey);
-        if ((res && res instanceof Image) || isImageBitMap(res)) {
-            me._cacheResource(url, res);
+        if (isImageBitMap(res)) {
             return function (resolve) {
-                resolve(url);
+                // copy imagebitmap,
+                //图层如果需要销毁imagebitmap应该判断ResourceManager缓存里的数据是否和你需要销毁的数据是同一个实例，否则会把ResourceManager里缓存的数据给销毁了
+                createImageBitmap(res).then(bitmap => {
+                    me._cacheResource(url, bitmap);
+                    resolve(url);
+                }).catch(err => {
+                    console.error(err);
+                    resolve(url);
+                });
             };
         }
 
+        //cache image data to ResourceManager
         function addToGlobalCache(imgData) {
+            imgData.key = resKey;
             if (imgData instanceof Image) {
                 ResourceManager.update(resKey, imgData);
             } else if (isImageBitMap(imgData)) {
@@ -990,9 +999,12 @@ export class ResourceCache {
     remove() {
         for (const p in this.resources) {
             const res = this.resources[p];
-            if (res && res.image && res.image.close) {
+            if (res && res.image) {
                 // close bitmap
-                // res.image.close();
+                const image = res.image;
+                if (ResourceManager.get(image.key) !== image && image.close) {
+                    image.close();
+                }
             }
         }
         this.resources = {};
