@@ -41,6 +41,18 @@ describe('ResourceManager.Spec', function () {
         });
     }
 
+    function setLayerImages(layer) {
+        var center = map.getCenter();
+        var x = center.x, y = center.y;
+        var images = [
+            {
+                url: '$tile.png',
+                extent: [x - 0.1, y - 0.1, x + 0.1, y + 0.1]
+            }
+        ];
+        layer.setImages(images);
+    }
+
     it('get image with not cache', function (done) {
         expect(getImage('tile.png')).to.equal(hostUrl + 'tile.png');
         done();
@@ -105,6 +117,67 @@ describe('ResourceManager.Spec', function () {
             done();
         });
         layer.addGeometry(marker);
+    });
+
+    it('layer remove and add', function (done) {
+        var marker = getMarker('$tile.png');
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted(0, -4);
+            layer.remove();
+            layer.once('layerload', function () {
+                expect(layer).to.be.painted(0, -4);
+                done();
+            });
+            layer.addTo(map);
+        });
+        layer.addGeometry(marker);
+    });
+
+    it('multi layer share imagebitmap', function (done) {
+        var marker = getMarker('$tile.png');
+        layer.once('layerload', function () {
+            expect(layer).to.be.painted(0, -4);
+            var marker1 = getMarker('$tile.png');
+            var layer1 = new maptalks.VectorLayer('layer1').addTo(map);
+            layer1.once('layerload', function () {
+                expect(layer1).to.be.painted(0, -4);
+                done();
+            });
+            layer1.addGeometry(marker1);
+        });
+        layer.addGeometry(marker);
+    });
+
+    it('imagelayer use $ express', function (done) {
+        var imageLayer = new maptalks.ImageLayer('images').addTo(map);
+        imageLayer.once('layerload', function () {
+            done();
+        });
+        setLayerImages(imageLayer);
+    });
+
+    it('imagelayer remove and add', function (done) {
+        var imageLayer = new maptalks.ImageLayer('images').addTo(map);
+        imageLayer.once('layerload', function () {
+            imageLayer.remove();
+            imageLayer.once('layerload', function () {
+                done();
+            });
+            imageLayer.addTo(map);
+        });
+        setLayerImages(imageLayer);
+    });
+
+    it('multi imagelayer share imagebitmap', function (done) {
+        var imageLayer = new maptalks.ImageLayer('images').addTo(map);
+        imageLayer.once('layerload', function () {
+            var imageLayer1 = new maptalks.ImageLayer('images1').addTo(map);
+            imageLayer1.once('layerload', function () {
+                done();
+            });
+            setLayerImages(imageLayer1);
+        });
+        setLayerImages(imageLayer);
     });
 
 });
