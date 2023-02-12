@@ -769,7 +769,7 @@ class CanvasRenderer extends Class {
 
     _promiseResource(url) {
         //当资源是{iconName}这样的模板时,url里关于资源的url会被替换的，比如{iconName} 会被替换为 url[0]= 真实的图片的名字
-        const imgUrl = checkResourceValue(url, url.geo && url.geo.properties);
+        let imgUrl = checkResourceValue(url, url.geo && url.geo.properties);
         delete url.geo;
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
@@ -815,9 +815,11 @@ class CanvasRenderer extends Class {
                 return;
             }
             if (imgUrl instanceof Image) {
-                me._cacheResource(url, imgUrl);
-                addToGlobalCache(imgUrl);
-                resolve(url);
+                if (Browser.decodeImageInWorker) {
+                    copyBitMapForLayer(imgUrl, resolve);
+                    return;
+                }
+                imgUrl = imgUrl.src;
                 return;
             }
 
