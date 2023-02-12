@@ -1,5 +1,5 @@
 import { isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
-import { getAlignPoint } from '../../../core/util/strings';
+import { getAlignPoint, replaceVariable } from '../../../core/util/strings';
 import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
 import PointExtent from '../../../geo/PointExtent';
@@ -33,7 +33,11 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         const img = this._getImage(resources);
         if (!img) {
             if (typeof console !== 'undefined') {
-                console.warn('no img found for ' + (this.style['markerFile'] || this._url[0]));
+                let url = this.style['markerFile'];
+                if (resourceIsTemplate(this.style['markerFile'])) {
+                    url = replaceVariable(this.style['markerFile'], this.geometry && this.geometry.properties);
+                }
+                console.warn('no img found for ' + (url || this._url[0]));
             }
             return;
         }
@@ -85,7 +89,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     _getImage(resources) {
-        return getImage(resources, this.style['markerFile'], resourceIsTemplate(this.style['markerFile']) && this.geometry);
+        return getImage(resources, this.style['markerFile'], resourceIsTemplate(this.style['markerFile']) && this.geometry && this.geometry.properties);
     }
 
     getFixedExtent(resources) {

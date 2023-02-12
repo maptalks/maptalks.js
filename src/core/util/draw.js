@@ -17,9 +17,9 @@ export function drawImageMarker(ctx, image, point, symbol) {
     Canvas.image(ctx, image, point, symbol['markerWidth'] || image.width, symbol['markerHeight'] || image.height);
 }
 
-export function getImage(resources, url, geometry) {
-    if (geometry) {
-        url = replaceVariable(url, geometry.getProperties());
+export function getImage(resources, url, properties) {
+    if (properties) {
+        url = replaceVariable(url, properties);
     }
     const img = resources && resources.getImage(url);
     return img || null;
