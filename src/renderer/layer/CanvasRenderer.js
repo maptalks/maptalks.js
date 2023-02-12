@@ -802,8 +802,13 @@ class CanvasRenderer extends Class {
             return function (resolve) {
                 copyBitMapForLayer(res, resolve);
             };
+        } else if (res instanceof Image && Browser.decodeImageInWorker) {
+            return function (resolve) {
+                copyBitMapForLayer(res, resolve);
+            };
         }
 
+        //First request for resources
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
