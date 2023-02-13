@@ -820,7 +820,6 @@ class CanvasRenderer extends Class {
                     return;
                 }
                 imgUrl = imgUrl.src;
-                return;
             }
 
             if (isImageBitMap(imgUrl)) {
