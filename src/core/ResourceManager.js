@@ -1,4 +1,4 @@
-import { getAbsoluteURL, isImageBitMap, isNil, isObject, isString, replaceVariable } from './util';
+import { getAbsoluteURL, isImageBitMap, isNil, isString, replaceVariable } from './util';
 import Browser from './Browser';
 import { createEl } from './util/dom';
 import Ajax from './Ajax';
@@ -73,30 +73,31 @@ export const ResourceManager = {
         if (!ResourceManager.rootUrl) {
             ResourceManager.setRootUrl(getAbsoluteURL('/res/'));
         }
-        const img = ResourceManager.cache[name];
-        if (!img) {
+        const res = ResourceManager.cache[name];
+        if (!res) {
             return `${ResourceManager.rootUrl}${name}`;
         }
-        if (isString(img) && isAbsoluteURL(img)) {
-            return img;
+        if (isString(res) && isAbsoluteURL(res)) {
+            return res;
         }
         //imagebitmap or image
-        if (isImageBitMap(img) || (img instanceof Image)) {
-            return img;
+        if (isImageBitMap(res) || (res instanceof Image)) {
+            return res;
         }
         //sprite icon
-        if (img.isSprite) {
-            if (img.imgBitMap && imgBitMap) {
-                return img.imgBitMap;
-            } else if (img.base64) {
-                return img.base64;
+        if (res.isSprite) {
+            if (res.imgBitMap && imgBitMap) {
+                return res.imgBitMap;
+            } else if (res.base64) {
+                return res.base64;
             }
         }
-        //other data
-        if (isObject(img)) {
-            return img;
+        if (isString(res)) {
+            return `${ResourceManager.rootUrl}${res}`;
         }
-        return `${ResourceManager.rootUrl}${img}`;
+        //other data
+        return res;
+
     },
 
     /**
