@@ -24,9 +24,10 @@ const style = [
         symbol: {
             fixSizeOnZoom: 19,
             url: 'file://' + path.resolve(__dirname, '../../../resources/gltf/box.glb'),
-            scale: [scale, scale, scale],
-            rotation: [90, 0, 0],
-            translation: [0, 0, 0],
+            scaleX: scale,
+            scaleY: scale,
+            scaleZ: scale,
+            rotationX: 90,
             polygonOpacity: 1,
             polygonFill: '#f00'
         }
