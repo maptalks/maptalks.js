@@ -4,7 +4,8 @@ const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer, PolygonLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
-
+const startServer = require('./server.js');
+const PORT = 4398;
 
 const DEFAULT_VIEW = {
     center: [0, 0],
@@ -69,12 +70,13 @@ const polygon = {
 };
 
 describe('update style specs', () => {
-    let container, map;
-    before(() => {
+    let container, map, server;
+    before(done => {
         container = document.createElement('div');
         container.style.width = '128px';
         container.style.height = '128px';
         document.body.appendChild(container);
+        server = startServer(PORT, done);
         // const canvas = document.createElement('canvas');
         // canvas.id = 'debug';
         // canvas.width = 128;
@@ -90,6 +92,10 @@ describe('update style specs', () => {
 
     afterEach(() => {
         map.remove();
+    });
+
+    after(() => {
+        server.close();
     });
 
     it('should update childLayer id and remove it', done => {
@@ -465,6 +471,16 @@ describe('update style specs', () => {
             });
             assert(layer.options.style[0].symbol.lineColor === '#0f0');
         }, false, null, 0, 2);
+    });
+
+    it('should can updateSymbol with a url style', done => {
+        const styleURL = `http://localhost:${PORT}/update-style.json`;
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbol(0, {
+                lineColor: '#0f0'
+            });
+            assert(layer.options.style === styleURL);
+        }, false, styleURL, 0, 2);
     });
 
     it('should can updateSymbol by name', done => {
@@ -1919,7 +1935,6 @@ describe('update style specs', () => {
         });
         layer.addTo(map);
     });
-
 
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [

@@ -552,6 +552,11 @@ class VectorTileLayer extends maptalks.TileLayer {
                 }
             }
             let styles = self.options.style;
+            if (isString(styles)) {
+                // style是个url，不用更新
+                return needRefresh;
+            }
+            // 更新options.style里的symbol
             if (!Array.isArray(styles)) {
                 styles = self._getTargetStyle(type, self.options.style);
             }
