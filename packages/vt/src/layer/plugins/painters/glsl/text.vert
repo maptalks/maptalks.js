@@ -67,6 +67,7 @@ uniform float zoomScale;
 uniform float tileRatio; //EXTENT / tileSize
 
 uniform float layerScale;
+uniform float isRenderingTerrain;
 
 #ifndef PICKING_MODE
     varying vec2 vTexCoord;
@@ -173,16 +174,23 @@ void main() {
     mat2 shapeMatrix = mat2(angleCos, -1.0 * angleSin, angleSin, angleCos);
     shape = shapeMatrix * (shape / glyphSize * myTextSize);
 
+    float cameraScale;
+    if (isRenderingTerrain == 1.0) {
+        cameraScale = 1.0;
+    } else {
+        cameraScale = projDistance / cameraToCenterDistance;
+    }
+    
     if (isPitchWithMap == 0.0) {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * projDistance;
     } else {
-        #ifdef IS_RENDERING_TERRAIN
-            float offsetScale = tileRatio;
-        #else
-            float cameraScale = projDistance / cameraToCenterDistance;
-            float offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
-        #endif
+        float offsetScale;
+        if (isRenderingTerrain == 1.0) {
+            offsetScale = tileRatio;
+        } else {
+            offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
+        }
         
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果

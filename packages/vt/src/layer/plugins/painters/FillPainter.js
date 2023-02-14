@@ -213,7 +213,21 @@ class FillPainter extends BasicPainter {
 
     init(context) {
         const regl = this.regl;
-
+        const canvas = this.canvas;
+        const viewport = {
+            x: (_, props) => {
+                return props.viewport ? props.viewport.x : 0;
+            },
+            y: (_, props) => {
+                return props.viewport ? props.viewport.y : 0;
+            },
+            width: (_, props) => {
+                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+            },
+            height: (_, props) => {
+                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+            },
+        };
 
         this.renderer = new reshader.Renderer(regl);
         const isRenderingTerrain = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
@@ -221,7 +235,7 @@ class FillPainter extends BasicPainter {
         const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
         const extraCommandProps = {
-            viewport: this.pickingViewport,
+            viewport,
             stencil: {
                 enable: !isRenderingTerrain,
                 func: {
@@ -319,12 +333,14 @@ class FillPainter extends BasicPainter {
     }
 
     getUniformValues(map, context) {
-        const projViewMatrix = context && context.isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
+        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
         const glScale = context && context.isRenderingTerrainSkin ? 1 : 1 / map.getGLScale();
         // const blendSrc = this.sceneConfig.blendSrc;
         const uniforms = {
             projViewMatrix,
             glScale,
+            viewport: isRenderingTerrainSkin && context && context.viewport,
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
         this.setIncludeUniformValues(uniforms, context);

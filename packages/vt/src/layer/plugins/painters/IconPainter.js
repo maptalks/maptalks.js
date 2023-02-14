@@ -2,7 +2,7 @@ import * as maptalks from 'maptalks';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { reshader } from '@maptalks/gl';
-import { mat4 } from '@maptalks/gl';
+import { vec2, mat4 } from '@maptalks/gl';
 import vert from './glsl/marker.vert';
 import frag from './glsl/marker.frag';
 import pickingVert from './glsl/marker.vert';
@@ -47,6 +47,9 @@ const EMPTY_COLLISION = {
 };
 
 const ICON_SIZE_ARR = [ICON_SIZE, ICON_SIZE];
+
+const IDENTITY_ARR = mat4.identity([]);
+const TEMP_CANVAS_SIZE = [];
 
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
@@ -661,17 +664,22 @@ class IconPainter extends CollisionPainter {
 
         this.renderer = new reshader.Renderer(regl);
 
+        // 地形瓦片中可能设置viewport
         const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return canvas ? canvas.width : 1;
+            x: (_, props) => {
+                return props.viewport ? props.viewport.x : 0;
             },
-            height: () => {
-                return canvas ? canvas.height : 1;
-            }
+            y: (_, props) => {
+                return props.viewport ? props.viewport.y : 0;
+            },
+            width: (_, props) => {
+                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+            },
+            height: (_, props) => {
+                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+            },
         };
-
+        
         const iconExtraCommandProps = {
             viewport,
             blend: {
@@ -787,10 +795,16 @@ class IconPainter extends CollisionPainter {
         };
     }
 
-    getUniformValues(map) {
-        const projViewMatrix = map.projViewMatrix;
+    getUniformValues(map, context) {
+        const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
+        const tileSize = this.layer.options.tileSize;
+        const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
+
         const cameraToCenterDistance = map.cameraToCenterDistance;
-        const canvasSize = [map.width, map.height];
+        const canvasSize = vec2.set(TEMP_CANVAS_SIZE, map.width, map.height);
+        if (isRenderingTerrainSkin) {
+            vec2.set(canvasSize, tileSize, tileSize);
+        }
         const blendFunc = this.getBlendFunc();
         const blendSrc = maptalks.Util.isFunction(blendFunc.src) ? blendFunc.src() : blendFunc.src;
         return {
@@ -808,7 +822,9 @@ class IconPainter extends CollisionPainter {
             // gammaScale : 0.64,
             gammaScale: GAMMA_SCALE,
 
-            blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
+            blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1)),
+            viewport: isRenderingTerrainSkin && context && context.viewport,
+            isRenderingTerrain: +!!isRenderingTerrainSkin
         };
     }
 

@@ -120,8 +120,12 @@ class Painter {
         return visible !== false && visible !== 0;
     }
 
+    isAnimating() {
+        return false;
+    }
+
     needToRedraw() {
-        return this._redraw;
+        return this.isAnimating() || this._redraw;
     }
 
     needToRetireFrames() {
@@ -129,7 +133,7 @@ class Painter {
     }
 
     needToRefreshTerrainTile() {
-        return false;
+        return this.isAnimating();
     }
 
     isTerrainSkin() {
@@ -301,7 +305,7 @@ class Painter {
         // }
         meshes = meshes.filter(m => this.isMeshVisible(m));
 
-        const isEnableBloom = !!context.bloom;
+        const isEnableBloom = !!(context && context.bloom);
         meshes.forEach(mesh => {
             const bloom = this.isBloom(mesh) && isEnableBloom;
             mesh.bloom = bloom;

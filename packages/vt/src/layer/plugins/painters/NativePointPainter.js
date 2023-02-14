@@ -17,6 +17,14 @@ class NativePointPainter extends BasicPainter {
         return 'points';
     }
 
+    isTerrainSkin() {
+        return false;
+    }
+
+    isTerrainVector() {
+        return this.dataConfig.awareOfTerrain;
+    }
+
     createMesh(geo, transform) {
         const { geometry, symbolIndex, ref } = geo;
         const symbol = this.getSymbol(symbolIndex);

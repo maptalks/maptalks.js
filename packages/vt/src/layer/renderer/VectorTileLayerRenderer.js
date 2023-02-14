@@ -15,7 +15,7 @@ const CLEAR_COLOR = [0, 0, 0, 0];
 const TILE_POINT = new maptalks.Point(0, 0);
 
 const TERRAIN_CLEAR = {
-    // color: CLEAR_COLOR,
+    color: CLEAR_COLOR,
     depth: 1,
     stencil: 0
 };
@@ -1104,11 +1104,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             height,
             flipY: true
         });
-        const renderbuffer = regl.renderbuffer({
-            width,
-            height,
-            format: 'depth24 stencil8'
-        });
+        if (!this._terrainDepthStencil) {
+            this._terrainDepthStencil = regl.renderbuffer({
+                width,
+                height,
+                format: 'depth24 stencil8'
+            });
+        }
         const fboInfo = {
             width,
             height,
@@ -1117,58 +1119,40 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             // colorCount,
             colorFormat: 'rgba'
         };
-        fboInfo.depthStencil = renderbuffer;
+        fboInfo.depthStencil = this._terrainDepthStencil;
         return regl.framebuffer(fboInfo);
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
+        const timestamp = this._currentTimestamp;
+        const parentContext = this._parentContext;
+        this._parentContext = {
+            renderTarget: {
+                fbo: texture
+            }
+        };
+        this._startFrame(timestamp);
         this._drawTerrainTiles(tiles, terrainTileInfo, texture);
         if (parentTile) {
             this._drawOneTerrainTile(parentTile, terrainTileInfo, texture);
         }
+        this._parentContext = parentContext;
         // super.renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, skinTiles, parentTile);
     }
 
     _drawTerrainTiles(tiles, terrainTileInfo, terrainTexture) {
         TERRAIN_CLEAR.framebuffer = terrainTexture;
         this.regl.clear(TERRAIN_CLEAR);
-        const skinTiles = [];
         for (let i = 0; i < tiles.length; i++) {
-            skinTiles[i] = this._drawOneTerrainTile(tiles[i], terrainTileInfo, terrainTexture);
+            this._drawOneTerrainTile(tiles[i], terrainTileInfo, terrainTexture);
         }
-        return skinTiles;
     }
 
     _drawOneTerrainTile(tile, terrainTileInfo, terrainTexture) {
-        const timestamp = this._currentTimestamp;
-        const parentContext = this._parentContext;
-        this._parentContext = {
-            renderTarget: {
-                fbo: terrainTexture
-            },
-            viewport: getTileViewport(tile, terrainTileInfo)
-        };
-        console.log(tile.info.id, this._parentContext.viewport);
+        this._parentContext.viewport = getTileViewport(tile, terrainTileInfo)
         const { info, image } = tile;
-        // if (tileTerrainCanvas) {
-        //     return {
-        //         info,
-        //         image: tileTerrainCanvas
-        //     };
-        // }
-        this._startFrame(timestamp);
         this.drawTile(info, image, terrainSkinFilter);
         this._endTerrainFrame(terrainTexture);
-        // const canvas = document.createElement('canvas');
-        // canvas.width = terrainCanvas.width;
-        // canvas.height = terrainCanvas.height;
-        // canvas.getContext('2d').drawImage(terrainCanvas, 0, 0);
-        // tile.tileTerrainCanvas = canvas;
-        this._parentContext = parentContext;
-        // return {
-        //     info,
-        //     image: canvas
-        // };
     }
 
     _endTerrainFrame(terrainTexture) {
@@ -1446,6 +1430,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (this._debugPainter) {
             this._debugPainter.delete();
+        }
+        if (this._terrainDepthStencil) {
+            this._terrainDepthStencil.destroy();
+            delete this._terrainDepthStencil;
         }
         if (super.onRemove) super.onRemove();
         this._clearPlugin();

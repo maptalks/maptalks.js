@@ -82,6 +82,8 @@ uniform float tileRatio;
 
 uniform float layerScale;
 
+uniform float isRenderingTerrain;
+
 #include <vt_position_vert>
 
 #ifndef PICKING_MODE
@@ -127,12 +129,19 @@ void main() {
     #endif
     gl_Position = projViewModelMatrix * positionMatrix * vec4(position, 1.0);
     float projDistance = gl_Position.w;
-    float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * markerPerspectiveRatio;
-    //通过distance动态调整大小
-    float perspectiveRatio = clamp(
-        0.5 + 0.5 * (1.0 - distanceRatio),
-        0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
-        4.0);
+    
+
+    float perspectiveRatio;
+    if (isRenderingTerrain == 1.0) {
+        perspectiveRatio = 1.0;
+    } else {
+        float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * markerPerspectiveRatio;
+        //通过distance动态调整大小
+        perspectiveRatio = clamp(
+            0.5 + 0.5 * (1.0 - distanceRatio),
+            0.0, // Prevents oversized near-field symbols in pitched/overzoomed tiles
+            4.0);
+    }
     #ifdef HAS_ROTATION
         float rotation = -aRotation / 9362.0 - mapRotation * isRotateWithMap;
     #else
@@ -162,7 +171,12 @@ void main() {
         vec2 offset = shape * 2.0 / canvasSize;
         gl_Position.xy += offset * perspectiveRatio * projDistance;
     } else {
-        float cameraScale = projDistance / cameraToCenterDistance;
+        float cameraScale;
+        if (isRenderingTerrain == 1.0) {
+            cameraScale = 1.0;
+        } else {
+            cameraScale = projDistance / cameraToCenterDistance;
+        }
         vec2 offset = shape;
         //乘以cameraScale可以抵消相机近大远小的透视效果
         gl_Position = projViewModelMatrix * positionMatrix * vec4(position + vec3(offset, 0.0) * tileRatio / zoomScale * cameraScale * perspectiveRatio, 1.0);

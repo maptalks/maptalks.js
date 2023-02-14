@@ -47,7 +47,7 @@ class LinePainter extends BasicPainter {
         }
         const symbols = this.getSymbols();
         const animation = this.sceneConfig.trailAnimation;
-        const needToRedraw = animation && animation.enable || super.needToRedraw();
+        const needToRedraw = animation && animation.enable;
         if (needToRedraw) {
             return true;
         }
@@ -67,10 +67,6 @@ class LinePainter extends BasicPainter {
             return true;
         }
         return false;
-    }
-
-    needToRefreshTerrainTile() {
-        return this.isAnimating();
     }
 
     isBloom(mesh) {
@@ -584,7 +580,7 @@ class LinePainter extends BasicPainter {
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
             blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
             cameraPosition: map.cameraPosition,
-            viewport: context && context.viewport,
+            viewport: isRenderingTerrainSkin && context && context.viewport,
             isRenderingTerrain: +(!!isRenderingTerrainSkin)
             // projMatrix: map.projMatrix,
             // halton: context.jitter || [0, 0],

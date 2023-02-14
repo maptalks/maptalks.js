@@ -932,7 +932,7 @@ export default class TextPainter extends CollisionPainter {
             gammaScale: GAMMA_SCALE * (this.layer.options['textGamma'] || 1),
             resolution: map.getResolution(),
             altitudeScale: zScale,
-            viewport: context && context.viewport,
+            viewport: isRenderingTerrainSkin && context && context.viewport,
             // 过滤 pitchAlignment 为特定值的text，0时不过滤; 1时，过滤掉viewport; 2时，过滤掉map
             textPitchFilter: 0,
             isRenderingTerrain: +!!isRenderingTerrainSkin

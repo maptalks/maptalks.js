@@ -58,16 +58,21 @@ class NativeLinePainter extends BasicPainter {
         const regl = this.regl;
 
         this.renderer = new reshader.Renderer(regl);
+        const canvas = this.canvas;
 
         const viewport = {
-            x: 0,
-            y: 0,
-            width: () => {
-                return this.canvas ? this.canvas.width : 1;
+            x: (_, props) => {
+                return props.viewport ? props.viewport.x : 0;
             },
-            height: () => {
-                return this.canvas ? this.canvas.height : 1;
-            }
+            y: (_, props) => {
+                return props.viewport ? props.viewport.y : 0;
+            },
+            width: (_, props) => {
+                return props.viewport ? props.viewport.width : (canvas ? canvas.width : 1);
+            },
+            height: (_, props) => {
+                return props.viewport ? props.viewport.height : (canvas ? canvas.height : 1);
+            },
         };
 
         const uniforms = [
@@ -145,9 +150,9 @@ class NativeLinePainter extends BasicPainter {
     getUniformValues(map, context) {
         const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
         const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
-
         return {
-            projViewMatrix
+            projViewMatrix,
+            viewport: isRenderingTerrainSkin && context && context.viewport,
         };
     }
 
