@@ -153,6 +153,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!tileImage.skins) {
              tileImage.skins = [];
         }
+        if (!tileImage.skinImages) {
+            tileImage.skinImages = [];
+        }
         if (!tileImage.skinStatus) {
             tileImage.skinStatus = [];
         }
@@ -199,7 +202,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             tiles.push(cachedTile);
         }
 
-        let texture = tileImage.skins[skinIndex];
+        let texture = tileImage.skinImages[skinIndex];
         if (!texture) {
             if (!reshader.Util.isPowerOfTwo(w)) {
                 w = reshader.Util.floorPowerOfTwo(w);
@@ -208,6 +211,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 w = reshader.Util.floorPowerOfTwo(h);
             }
             texture = renderer.createTerrainTexture(w, h);
+            tileImage.skinImages[skinIndex] = texture;
         }
 
         renderer.renderTerrainSkin(this.regl, this.layer, tileInfo, texture, tiles, parentTile);
@@ -248,6 +252,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             // save some memory
             if (!needRefresh) {
                 tileImage.skinTileIds = [];
+                tileImage.skinImages[skinIndex] = null;
             }
         }
     }
