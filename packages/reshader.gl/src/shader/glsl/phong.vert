@@ -113,8 +113,8 @@ void main()
         gl_Position = jitteredProjection * modelViewMatrix * localPositionMatrix * localPosition;
     #endif
     #ifdef HAS_MAP
-        vec2 TexCoord = getTexcoord(aTexCoord);
-        vTexCoord = TexCoord * uvScale + uvOffset;
+        vec2 decodedTexCoord = getTexcoord(aTexCoord);
+        vTexCoord = decodedTexCoord * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;

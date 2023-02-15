@@ -169,10 +169,10 @@ void main() {
     #else
 
     #if defined(HAS_MAP)
-        vec2 TexCoord = getTexcoord(aTexCoord);
+        vec2 decodedTexCoord = getTexcoord(aTexCoord);
         #ifdef HAS_RANDOM_TEX
             vec2 origin = uvOrigin;
-            vec2 texCoord = TexCoord * uvScale + uvOffset;
+            vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
             if (uvRotation != 0.0) {
                 origin = rotateUV(origin, uvRotation);
                 texCoord = rotateUV(texCoord, uvRotation);
@@ -180,7 +180,7 @@ void main() {
             vTexCoord = mod(origin, 1.0) + texCoord;
         #else
             vec2 origin = uvOrigin;
-            vec2 texCoord = TexCoord * uvScale;
+            vec2 texCoord = decodedTexCoord * uvScale;
             if (uvRotation != 0.0) {
                 origin = rotateUV(origin, uvRotation);
                 texCoord = rotateUV(texCoord, uvRotation);
