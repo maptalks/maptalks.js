@@ -645,7 +645,17 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var marker = new Marker([100, 0], {    'id' : 'marker0',    'symbol' : {        'markerFile'  : 'foo.png',        'markerWidth' : 20,        'markerHeight': 20,    },    'properties' : {        'foo' : 'value'    }});</code></pre>
+        <pre class="prettyprint"><code>var marker = new Marker([100, 0], {
+    'id' : 'marker0',
+    'symbol' : {
+        'markerFile'  : 'foo.png',
+        'markerWidth' : 20,
+        'markerHeight': 20,
+    },
+    'properties' : {
+        'foo' : 'value'
+    }
+});</code></pre>
     
 
 
@@ -3759,7 +3769,19 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var marker = new Marker([0, 0], {   symbol : {      markerType : 'ellipse',      markerWidth : 20,      markerHeight : 30   }});// update symbol's markerWidth to 40marker.updateSymbol({    markerWidth : 40});</code></pre>
+        <pre class="prettyprint"><code>var marker = new Marker([0, 0], {
+   symbol : {
+    // if has markerFile , the priority of the picture is greater than the vector and the path of svg
+    // svg image type:'path';vector type:'cross','x','diamond','bar','square','rectangle','triangle','ellipse','pin','pie'
+      markerType : 'ellipse',
+      markerWidth : 20,
+      markerHeight : 30
+   }
+});
+// update symbol's markerWidth to 40
+marker.updateSymbol({
+    markerWidth : 40
+});</code></pre>
     
 
 
@@ -4301,7 +4323,9 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var circle = new Circle([0, 0], 1000)    .addTo(layer);var contains = circle.containsPoint(new maptalks.Point(400, 300));</code></pre>
+        <pre class="prettyprint"><code>var circle = new Circle([0, 0], 1000)
+    .addTo(layer);
+var contains = circle.containsPoint(new maptalks.Point(400, 300));</code></pre>
     
 
 
@@ -4932,7 +4956,9 @@
 
 
 <div class="description">
-    Only set a new zIndex to Geometry without firing zindexchange event. <br>Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
+    Only set a new zIndex to Geometry without firing zindexchange event. <br>
+Can be useful to improve perf when a lot of geometries' zIndex need to be updated. <br>
+When updated N geometries, You can use setZIndexSilently with (N-1) geometries and use setZIndex with the last geometry for layer to sort and render.
 </div>
 
 
@@ -6134,14 +6160,18 @@
 
 
 <div class="description">
-    Export a profile json out of the geometry. <br>Besides exporting the feature object, a profile json also contains symbol, construct options and infowindow info.<br>The profile json can be stored somewhere else and be used to reproduce the geometry later.<br>Due to the problem of serialization for functions, event listeners and contextmenu are not included in profile json.
+    Export a profile json out of the geometry. <br>
+Besides exporting the feature object, a profile json also contains symbol, construct options and infowindow info.<br>
+The profile json can be stored somewhere else and be used to reproduce the geometry later.<br>
+Due to the problem of serialization for functions, event listeners and contextmenu are not included in profile json.
 </div>
 
 
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>// an example of a profile json.var profile = {
+        <pre class="prettyprint"><code>// an example of a profile json.
+var profile = {
             "feature": {
                   "type": "Feature",
                   "id" : "point1",
@@ -7689,7 +7719,18 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var player = marker.animate({    'symbol': {        'markerHeight': 82     }}, {    'duration': 2000}, function (frame) {    if (frame.state.playState === 'finished') {        console.log('animation finished');    }});player.pause();</code></pre>
+        <pre class="prettyprint"><code>var player = marker.animate({
+    'symbol': {
+        'markerHeight': 82
+     }
+}, {
+    'duration': 2000
+}, function (frame) {
+    if (frame.state.playState === 'finished') {
+        console.log('animation finished');
+    }
+});
+player.pause();</code></pre>
     
 
 
@@ -8069,7 +8110,10 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>geometry.setInfoWindow({    title    : 'This is a title',    content  : '&lt;div style="color:#f00">This is content of the InfoWindow&lt;/div>'});</code></pre>
+        <pre class="prettyprint"><code>geometry.setInfoWindow({
+    title    : 'This is a title',
+    content  : '&lt;div style="color:#f00">This is content of the InfoWindow&lt;/div>'
+});</code></pre>
     
 
 
@@ -10172,7 +10216,8 @@
 
 
 <div class="description">
-    It is a static method. <br>Register layer for JSON serialization and assign a JSON type.
+    It is a static method. <br>
+Register layer for JSON serialization and assign a JSON type.
 </div>
 
 
@@ -10297,7 +10342,8 @@
 
 
 <div class="description">
-    It is a static method. <br>Get class of input JSON type
+    It is a static method. <br>
+Get class of input JSON type
 </div>
 
 
@@ -10527,7 +10573,17 @@
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>foo.setMenu({ 'width'  : 160, 'custom' : false, 'items' : [     //return false to prevent event propagation    {'item': 'Query', 'click': function() {alert('Query Clicked!'); return false;}},    '-',    {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},    {'item': 'About', 'click': function() {alert('About Clicked!')}}   ]});</code></pre>
+        <pre class="prettyprint"><code>foo.setMenu({
+ 'width'  : 160,
+ 'custom' : false,
+ 'items' : [
+     //return false to prevent event propagation
+    {'item': 'Query', 'click': function() {alert('Query Clicked!'); return false;}},
+    '-',
+    {'item': 'Edit', 'click': function() {alert('Edit Clicked!')}},
+    {'item': 'About', 'click': function() {alert('About Clicked!')}}
+   ]
+});</code></pre>
     
 
 
@@ -11520,14 +11576,24 @@
 
 
 <div class="description">
-    1. Return object's options if no parameter is provided. <br/>2. update an option and enable/disable the handler if a handler with the same name existed.
+    1. Return object's options if no parameter is provided. <br/>
+
+2. update an option and enable/disable the handler if a handler with the same name existed.
 </div>
 
 
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>// Get marker's options;var options = marker.config();// Set map's option "draggable" to false and disable map's draggable handler.map.config('draggable', false);// You can update more than one options like this:map.config({    'scrollWheelZoom' : false,    'doubleClickZoom' : false});</code></pre>
+        <pre class="prettyprint"><code>// Get marker's options;
+var options = marker.config();
+// Set map's option "draggable" to false and disable map's draggable handler.
+map.config('draggable', false);
+// You can update more than one options like this:
+map.config({
+    'scrollWheelZoom' : false,
+    'doubleClickZoom' : false
+});</code></pre>
     
 
 
