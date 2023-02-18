@@ -1,5 +1,5 @@
 import { resourceIsTemplate } from '../../../core/ResourceManager';
-import { isArrayHasData, pushIn } from '../../../core/util';
+import { isArrayHasData, pushIn, replaceVariable } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 
 /**
@@ -38,14 +38,14 @@ class OverlayLayerRenderer extends CanvasRenderer {
                 resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
+                    if (res[i] && resourceIsTemplate(res[i][0])) {
+                        res[i][0] = replaceVariable(res[i][0], geo && geo.properties);
+                    }
                     const url = res[i][0];
                     if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
                         res[i].geo = geo;
                         resources.push(res[i]);
-                        //模板的资源不能缓存,比如 {iconName},因为资源是动态读取的，不能根据简单的字符串来缓存了,可能多个资源的名字都是{iconName}了
-                        if (!resourceIsTemplate(url)) {
-                            cache[url] = 1;
-                        }
+                        cache[url] = 1;
                     }
                 }
             }
