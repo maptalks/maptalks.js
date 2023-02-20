@@ -1,7 +1,7 @@
 // import VectorPack from './VectorPack';
 import StyledVector from './StyledVector';
 import VectorPack from './VectorPack';
-import { isNil, hasOwn, getAltitudeToLocal, normalizeColor } from '../style/Util';
+import { isNil, isNumber, getAltitudeToLocal, normalizeColor } from '../style/Util';
 import clipLine from './util/clip_line';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import Point from '@mapbox/point-geometry';
@@ -432,10 +432,9 @@ export default class LinePack extends VectorPack {
         this.scaledDistance = 0;
         this.totalDistance = 0;
         this.prevVertex = null;
-
         if (!!this.symbol['lineGradientProperty'] && !!feature.properties &&
-            hasOwn(feature.properties, 'mapbox_clip_start') &&
-            hasOwn(feature.properties, 'mapbox_clip_end')) {
+            isNumber(feature.properties['mapbox_clip_start']) &&
+            isNumber(feature.properties['mapbox_clip_end'])) {
 
             this.clipStart = +feature.properties['mapbox_clip_start'];
             this.clipEnd = +feature.properties['mapbox_clip_end'];
