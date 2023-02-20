@@ -185,14 +185,11 @@ export function normalizeColor(out, color) {
             return out;
         }
         const key = color;
-        color = colorCache[key] = colorCache[key] || Color(color).array();
-        for (let i = 0; i < color.length; i++) {
-            out[i] = color[i];
-        }
-    } else {
-        for (let i = 0; i < color.length; i++) {
-            out[i] = color[i] * 255;
-        }
+        color = colorCache[key] = colorCache[key] || Color(color).unitArray();
+        
+    }
+    for (let i = 0; i < color.length; i++) {
+        out[i] = color[i] * 255;
     }
     if (out.length === 3) {
         out.push(255);

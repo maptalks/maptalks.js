@@ -446,7 +446,7 @@ export function getTextFnTypeConfig(map, symbolDef) {
             evaluate: properties => {
                 let color = textHaloFillFn(map.getZoom(), properties);
                 if (!Array.isArray(color)) {
-                    color = colorCache[color] = colorCache[color] || Color(color).array();
+                    color = colorCache[color] = colorCache[color] || Color(color).unitArray();
                 }
                 color = toUint8ColorInGlobalVar(color);
                 return color;
