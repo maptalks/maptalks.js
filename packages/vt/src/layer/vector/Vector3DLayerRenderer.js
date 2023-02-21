@@ -828,6 +828,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         }
                     }
                 }
+                this.layer.fire('updatemesh');
                 this.setToRedraw();
             }
         });
