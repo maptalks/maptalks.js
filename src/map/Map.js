@@ -2357,7 +2357,7 @@ Map.include(/** @lends Map.prototype */{
                 const pCoordinate = projection.project(coordinates[i], prjOut);
                 let point = transformation.transform(pCoordinate, resolution);
                 point = point._multi(res);
-                this._toContainerPoint(point, isTransforming, res, 0, centerPoint);
+                this._toContainerPoint(point, isTransforming, coordinates[i].z, centerPoint);
                 pts.push(point);
             }
             return pts;

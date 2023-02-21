@@ -240,12 +240,11 @@ Map.include(/** @lends Map.prototype */{
         }
         point = this._pointAtResToPoint(point, res, out);
         const isTransforming = this.isTransforming();
-        const scale = res / this._getResolution();
         let centerPoint;
         if (!isTransforming && !altitude) {
             centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         }
-        this._toContainerPoint(out, isTransforming, scale, altitude, centerPoint);
+        this._toContainerPoint(out, isTransforming, altitude, centerPoint);
         return out;
     },
 
@@ -255,10 +254,11 @@ Map.include(/** @lends Map.prototype */{
      */
     _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
+        const scale = targetRes / this._getResolution();
         if (pitch === 0 && bearing === 0) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
             if (xmax > xmin && ymax > ymin) {
-                const res = targetRes / this._getResolution();
+
                 const { width, height } = this.getSize();
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 for (let i = 0, len = points.length; i < len; i++) {
@@ -269,7 +269,7 @@ Map.include(/** @lends Map.prototype */{
                     const pt = resultPoints[i];
                     pt.x = points[i].x;
                     pt.y = points[i].y;
-                    pt._multi(res);
+                    pt._multi(scale);
                     pt.x = (pt.x - xmin) * dxPerPixel;
                     pt.y = height - (pt.y - ymin) * dyPerPixel;
                 }
@@ -278,7 +278,6 @@ Map.include(/** @lends Map.prototype */{
         }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
-        const res = targetRes / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         for (let i = 0, len = points.length; i < len; i++) {
             if (!points[i]) {
@@ -288,21 +287,23 @@ Map.include(/** @lends Map.prototype */{
             const pt = resultPoints[i];
             pt.x = points[i].x;
             pt.y = points[i].y;
-            pt._multi(res);
+            pt._multi(scale);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-            this._toContainerPoint(pt, isTransforming, res, altitude, centerPoint);
+            this._toContainerPoint(pt, isTransforming, altitude, centerPoint);
         }
         return resultPoints;
     },
 
     _toContainerPoint: function () {
         const a = [0, 0, 0];
-        return function (out, isTransforming, res, altitude, centerPoint) {
+        return function (out, isTransforming, altitude, centerPoint) {
             const w2 = this.width / 2, h2 = this.height / 2;
             if (isTransforming || altitude) {
-                altitude *= res;
+                if (!this._altitudeScale) {
+                    this._altitudeScale = this.altitudeToPoint(100, this.getGLRes()) / 100;
+                }
                 const scale = this._glScale;
-                set(a, out.x * scale, out.y * scale, altitude * scale);
+                set(a, out.x * scale, out.y * scale, altitude * this._altitudeScale);
                 const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
                 applyMatrix(t, t, this.projViewMatrix);
                 out.x = (t[0] * w2) + w2;
@@ -690,7 +691,7 @@ Map.include(/** @lends Map.prototype */{
         const layers = this._getLayers();
         for (let i = 0; i < layers.length; i++) {
             if (layers[i].queryTerrainByProjCoord) {
-                return layers[i].queryTerrainByProjCoord(coord);
+                return layers[i].queryTerrainByProjCoord(coord)[0];
             }
         }
         return 0;
