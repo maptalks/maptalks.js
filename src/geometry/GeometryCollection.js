@@ -515,7 +515,7 @@ class GeometryCollection extends Geometry {
         }
         this._editing = true;
         const layer = this.getLayer();
-        const needShadow = layer.options['renderer'] === 'canvas';
+        const needShadow = layer && layer.options['renderer'] === 'canvas';
         if (needShadow) {
             this.hide();
         }
