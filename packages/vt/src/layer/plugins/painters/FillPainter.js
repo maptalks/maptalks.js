@@ -230,19 +230,22 @@ class FillPainter extends BasicPainter {
         };
 
         this.renderer = new reshader.Renderer(regl);
-        const isRenderingTerrain = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
+        const isRenderingTerrainSkin = !!(context && context.isRenderingTerrain && this.isTerrainSkin());
         const renderer = this.layer.getRenderer();
-        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
         const depthRange = this.sceneConfig.depthRange;
         const extraCommandProps = {
             viewport,
             stencil: {
-                enable: !isRenderingTerrain,
+                enable: () => {
+                    return !isRenderingTerrainSkin && renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+                },
                 func: {
                     cmp: () => {
+                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
                         return stencil ? '=' : '<=';
                     },
                     ref: (context, props) => {
+                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
                         return stencil ? props.stencilRef : props.level;
                     }
                 },
@@ -250,6 +253,7 @@ class FillPainter extends BasicPainter {
                     fail: 'keep',
                     zfail: 'keep',
                     zpass: () => {
+                        const stencil = renderer.isEnableTileStencil && renderer.isEnableTileStencil();
                         return stencil ? 'zero' : 'replace';
                     }
                 }
