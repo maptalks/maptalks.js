@@ -482,7 +482,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onConfig(conf) {
         const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
-        if (needUpdate) {
+        if (needUpdate && isNil(conf['animation'])) {
             const renderer = this.getRenderer();
             if (renderer) {
                 renderer.setToRedraw();
