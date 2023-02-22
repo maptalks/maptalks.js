@@ -562,7 +562,7 @@ export default class VectorPack {
 
     _placeVector(vector, scale) {
         const properties = vector.feature.properties;
-        if (this._visibleFn && this._visibleFn.isZoomConstant && !this._visibleFn(null, properties)) {
+        if (this._visibleFn && !this._visibleFn(this.options.zoom, properties)) {
             return;
         }
         this.placeVector(vector, scale, this.formatWidth);
