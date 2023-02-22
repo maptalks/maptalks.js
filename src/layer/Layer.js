@@ -481,7 +481,8 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     onConfig(conf) {
-        if (isNumber(conf['opacity']) || conf['cssFilter']) {
+        const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
+        if (needUpdate) {
             const renderer = this.getRenderer();
             if (renderer) {
                 renderer.setToRedraw();
