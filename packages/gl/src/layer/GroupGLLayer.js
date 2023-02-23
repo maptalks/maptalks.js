@@ -128,7 +128,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (layer.getMap()) {
             throw new Error(`layer(${layer.getId()}) is already added on map`);
         }
-        if (layer.options['renderer'] === 'canvas') {
+        if (layer.options['renderer'] !== 'gl') {
             throw new Error(`layer(${layer.getId()})'s renderer is canvas, not supported to be added to GroupGLLayer`);
         }
         if (idx === undefined) {
