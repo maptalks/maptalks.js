@@ -54,10 +54,10 @@ class MapCanvasRenderer extends MapRenderer {
         if (updated) {
             // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
             this.drawTops();
-            this._drawCenterCross();
-            if (map.options['debugSky']) {
-                this._debugSky();
-            }
+        }
+        this._drawCenterCross();
+        if (map.options['debugSky']) {
+            this._debugSky();
         }
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
@@ -389,6 +389,7 @@ class MapCanvasRenderer extends MapRenderer {
 
     setToRedraw() {
         const layers = this._getAllLayerToRender();
+        this.clearCanvas();
         for (let i = 0, l = layers.length; i < l; i++) {
             const renderer = layers[i].getRenderer();
             if (renderer && renderer.canvas && renderer.setToRedraw) {
