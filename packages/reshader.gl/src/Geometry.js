@@ -601,10 +601,15 @@ export default class Geometry {
 
         const min = bbox.min;
         const max = bbox.max;
+        const positionSize = this.desc.positionSize;
         for (let i = 0; i < data.length;) {
             const x = data[i++];
             const y = data[i++];
-            const z = data[i++];
+            let z = 0;
+            if (positionSize === 3) {
+                z = data[i++];
+            }
+
             if (x < min[0]) { min[0] = x; }
             if (y < min[1]) { min[1] = y; }
             if (z < min[2]) { min[2] = z; }

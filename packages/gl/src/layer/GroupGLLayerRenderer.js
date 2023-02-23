@@ -461,7 +461,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             stencil: true
         };
         attributes.preserveDrawingBuffer = true;
-        attributes.antialias = layer.options['antialias'];
+        attributes.antialias = !!layer.options['antialias'];
         this.glOptions = attributes;
         const gl = this.gl = this._createGLContext(this.canvas, attributes);        // this.gl = gl;
         this._initGL(gl);
