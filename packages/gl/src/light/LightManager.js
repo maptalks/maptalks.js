@@ -73,21 +73,47 @@ class LightManager {
 
     _initAmbientResources() {
         const resource = this._config.ambient.resource;
-        const props = {
-            url: resource.url,
-            arrayBuffer: true,
-            hdr: true,
-            // type: 'uint8',
-            // format: 'rgba',
-            flipY: true
-        };
-        this._hdr = new reshader.Texture2D(
-            props,
-            this._loader
-        );
-        this._hdr.once('complete', this.onHDRLoaded);
-        this._hdr.once('error', this.onHDRError);
-        return;
+        const url = resource && resource.url;
+        if (!url) {
+            return;
+        }
+        const images = [];
+        let count = 0;
+        let currentCount = 0;
+        const onload = () => {
+            currentCount++;
+            if (currentCount >= count) {
+                this._onSkyboxLoaded(images);
+            }
+        }
+        if (url.top) {
+            // ambient with 6 images
+            const { front, back, right, left, top, bottom } = url;
+            const envUrls = [front, back, right, left, top, bottom];
+            count = envUrls.length;
+            for (let i = 0; i < count; i++) {
+                const img = new Image();
+                img.onload = onload;
+                img.onerror = onload;
+                img.src = envUrls[i];
+                images[i] = img;
+            }
+        } else {
+            const props = {
+                url: resource.url,
+                arrayBuffer: true,
+                hdr: true,
+                // type: 'uint8',
+                // format: 'rgba',
+                flipY: true
+            };
+            this._hdr = new reshader.Texture2D(
+                props,
+                this._loader
+            );
+            this._hdr.once('complete', this.onHDRLoaded);
+            this._hdr.once('error', this.onHDRError);
+        }
     }
 
     dispose() {
@@ -107,13 +133,18 @@ class LightManager {
         this._map.fire('hdrerror');
     }
 
-    _createIBLMaps(hdr) {
+    _onSkyboxLoaded(images) {
+        this._iblMaps = this._createIBLMaps(images);
+        this._map.fire('updatelights', { 'ambientUpdate': true });
+    }
+
+    _createIBLMaps(envTexture) {
         const config = this._config.ambient.resource;
-        const cubeSize = this._config.ambient.prefilterCubeSize || PREFILTER_CUBE_SIZE;
+        const cubeSize = config.prefilterCubeSize || PREFILTER_CUBE_SIZE;
         const regl = this._tryToGetREGLContext(this._map);
         const maps = reshader.pbr.PBRHelper.createIBLMaps(regl, {
-            envTexture: hdr.getREGLTexture(regl),
-            rgbmRange: hdr.rgbmRange,
+            envTexture: Array.isArray(envTexture) ? envTexture : envTexture.getREGLTexture(regl),
+            rgbmRange: Array.isArray(envTexture) ? 9 : envTexture.rgbmRange,
             ignoreSH: !!config['sh'],
             envCubeSize: cubeSize,
             prefilterCubeSize: cubeSize,

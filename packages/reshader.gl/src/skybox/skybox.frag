@@ -1,3 +1,4 @@
+#define SHADER_NAME SKYBOX
 #if __VERSION__ == 100
     #ifdef GL_EXT_shader_texture_lod
         #extension GL_EXT_shader_texture_lod : enable
@@ -92,11 +93,8 @@ void main()
         if (length(hsv) > 0.0) {
             envColor.rgb = hsv_apply(envColor.rgb, hsv);
         }
-        #ifdef ENC_RGBM
-            envColor = encodeRGBM(envColor.rgb, rgbmRange);
-        #endif
     #else
-        envColor = textureCubeFixed(cubeMap, normalize(vWorldPos), size, bias);
+        envColor = textureCubeFixed(cubeMap, vWorldPos, size, bias);
     #endif
     envColor.rgb *= environmentExposure;
     #ifdef ENC_RGBM
@@ -105,8 +103,11 @@ void main()
                 envColor.rgb = hsv_apply(decodeRGBM(envColor, rgbmRange).rgb, hsv);
                 envColor = encodeRGBM(envColor.rgb, rgbmRange);
             }
+        #else
+            envColor = encodeRGBM(envColor.rgb, rgbmRange);
         #endif
-        glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0), 1.0);
+        // glFragColor = vec4(clamp(envColor.rgb, 0.0, 1.0), 1.0);
+        glFragColor = envColor;
     #elif !defined(USE_AMBIENT) && defined(INPUT_RGBM)
         glFragColor = vec4(decodeRGBM(envColor, rgbmRange), 1.0);
         if (length(hsv) > 0.0) {

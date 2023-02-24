@@ -48,8 +48,12 @@ export function createIBLMaps(regl, config = {}) {
     if (!Array.isArray(envTexture)) {
         envMap = createEquirectangularMapCube(regl, envTexture, envCubeSize, true);
     } else {
-        const cube = regl.cube(...envTexture);
-        envMap = createSkybox(regl, cube, envCubeSize, true);
+        const cube = regl.cube({
+            flipY: true,
+            faces: envTexture
+        });
+        // const cube = regl.cube(...envTexture);
+        envMap = createSkybox(regl, cube, envCubeSize, true, config.rgbmRange);
         cube.destroy();
     }
 
@@ -110,7 +114,7 @@ export function createIBLMaps(regl, config = {}) {
     return maps;
 }
 
-function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
+function createSkybox(regl, cubemap, size, encRgbm, rgbmRange) {
     const drawCube = regl({
         frag : encRgbm ? '#define ENC_RGBM 1\n' + skyboxFrag : skyboxFrag,
         vert : cubemapVS,
@@ -119,43 +123,39 @@ function createSkybox(regl, cubemap, envCubeSize, encRgbm) {
         },
         uniforms : {
             'hsv': [0, 0, 0],
-            'projMatrix' : regl.context('projMatrix'),
-            'viewMatrix' : regl.context('viewMatrix'),
-            'cubeMap' : cubemap,
+            'projMatrix': regl.context('projMatrix'),
+            'viewMatrix': regl.context('viewMatrix'),
+            'cubeMap': cubemap,
             'bias': 0,
-            'size': regl.prop('size'),
+            'size': cubemap.width,
             'environmentExposure': 1,
+            'rgbmRange': rgbmRange
         },
         elements : cubeData.indices
     });
-    // const color = regl.cube({
-    //     radius : envCubeSize,
-    //     min : 'linear',
-    //     mag : 'linear mipmap linear',
-    //     mipmap: true
-    //     // wrap : 'clamp',
-    //     // faces : mipmap
-    // });
-    const faces = [];
-    const tmpFBO = regl.framebufferCube({
-        radius: envCubeSize
-    });
-    renderToCube(regl, tmpFBO, drawCube, {
-        size : envCubeSize
-    }, function (/* context, props, batchId */) {
-        const pixels = regl.read();
-        faces.push(pixels);
-    });
     const color = regl.cube({
-        radius : envCubeSize,
-        min : 'linear mipmap linear',
-        mag : 'linear',
-        faces: faces,
-        // mipmap: true
+        width: size,
+        height: size,
+        min: 'linear',
+        mag: 'linear',
+        format: 'rgba',
     });
-    tmpFBO.destroy();
+    const envMapFBO = regl.framebufferCube({
+        radius: size,
+        color
+    });
+
+    // Equirectangular cube 每个面的朝向与skybox不同，所以skybox里每个面的up direction需要重新定义
+    renderToCube(regl, envMapFBO, drawCube, { size }, null, [
+        [0, 0, -1],
+        [0, 0, -1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, -1, 0],
+        [0, -1, 0],
+    ]);
     drawCube.destroy();
-    return color;
+    return envMapFBO;
 }
 
 function getEnvmapPixels(regl, cubemap, envCubeSize) {
@@ -188,38 +188,6 @@ function getEnvmapPixels(regl, cubemap, envCubeSize) {
     tmpFBO.destroy();
     return faces;
 }
-
-//solve diffuse integral by convolution to create an irradiance (cube)map.
-// function createIrradianceCube(regl, envCube, SIZE) {
-//     SIZE = SIZE || 32;
-//     const irradianceCube = regl.framebufferCube({
-//         radius : SIZE,
-//         color : regl.cube({
-//             radius : SIZE,
-//             wrap : 'clamp', // shortcut for both wrapS and wrapT
-//             min : 'linear',
-//             mag : 'linear'
-//         })
-//     });
-
-//     const drawCube = regl({
-//         frag : irradianceFS,
-//         vert : cubemapVS,
-//         attributes : {
-//             'aPosition' : cubeData.vertices
-//         },
-//         uniforms : {
-//             'projMatrix' : regl.context('projMatrix'),
-//             'viewMatrix' :  regl.context('viewMatrix'),
-//             'environmentMap' : envCube
-//         },
-//         elements : cubeData.indices
-//     });
-
-//     renderToCube(regl, irradianceCube, drawCube);
-
-//     return irradianceCube;
-// }
 
 /**
  * Create a texture cube map from an equirectangular texture

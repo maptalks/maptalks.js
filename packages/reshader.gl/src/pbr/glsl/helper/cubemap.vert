@@ -1,3 +1,4 @@
+#define SHADER_NAME CUBE_MAP
 attribute vec3 aPosition;
 
 varying vec3 vWorldPos;
