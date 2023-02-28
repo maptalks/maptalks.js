@@ -563,11 +563,11 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     resizeCanvas() {
-        super.resizeCanvas();
         const width = this.canvas.width;
         const height = this.canvas.height;
         if (this._targetFBO && (this._targetFBO.width !== width ||
             this._targetFBO.height !== height)) {
+            super.resizeCanvas();
             this._targetFBO.resize(width, height);
             this._noAaFBO.resize(width, height);
             this._pointFBO.resize(width, height);
@@ -577,13 +577,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (this._fxaaFBO) {
                 this._fxaaFBO.resize(width, height);
             }
+            this._clearFramebuffers();
+            this.forEachRenderer(renderer => {
+                if (renderer.canvas) {
+                    renderer.resizeCanvas();
+                }
+            });
         }
-        this._clearFramebuffers();
-        this.forEachRenderer(renderer => {
-            if (renderer.canvas) {
-                renderer.resizeCanvas();
-            }
-        });
+
     }
 
     getCanvasImage() {
