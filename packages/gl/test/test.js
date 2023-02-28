@@ -73,7 +73,7 @@ describe('gl tests', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     const altitude = group.queryTerrain(map.getCenter());
-                    expect(altitude).to.be.eql(4311.2001953125);
+                    expect(altitude).to.be.eql([3655.199951171875, 1]);
                     done();
                 });
             });
@@ -176,7 +176,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 } });
                         done();
                     });
                 });
@@ -212,7 +212,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 147, '1': 147, '2': 143, '3': 191 } });
+                        expect(pixel).to.be.eql({ data: { '0': 161, '1': 165, '2': 165, '3': 127 } });
                         done();
                     });
                 });
@@ -244,7 +244,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = group.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 }});
+                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 }});
                         done();
                     });
                 });
@@ -329,14 +329,88 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 141, '1': 138, '2': 133, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 } });
                         const altitude = group.queryTerrain(map.getCenter());
-                        expect(altitude).to.be.eql(4311.2001953125);
+                        expect(altitude).to.be.eql([3655.199951171875, 1]);
                         done();
                     });
                 });
             });
             group.addTo(map);
+        });
+    });
+
+    context('skybox tests', () => {
+        it('support skybox with 6 images', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const lights = {
+              ambient: {
+                resource: {
+                  // url: './resources/venice_sunset_2k.hdr',
+                  url: {
+                    front: '/resources/skybox_bridge/posx.jpg',
+                    back: '/resources/skybox_bridge/negx.jpg',
+                    right: '/resources/skybox_bridge/posy.jpg',
+                    left: '/resources/skybox_bridge/negy.jpg',
+                    top: '/resources/skybox_bridge/posz.jpg',
+                    bottom: '/resources/skybox_bridge/negz.jpg'
+                  },
+                  prefilterCubeSize: 512,
+                },
+                exposure: 1.5,
+                orientation: 0
+              },
+              directional: {
+                color : [0.1, 0.1, 0.1],
+                direction : [1, 0, -1]
+              }
+            };
+            map.setLights(lights);
+            map.setPitch(80);
+            const sceneConfig = {
+              environment: {
+                enable: true,
+                mode: 1,
+                level: 0
+              },
+              ground: {
+                enable: true,
+                renderPlugin: {
+                  type: 'lit'
+                },
+                symbol: {
+                  material: {
+                      'baseColorFactor': [1, 1, 1, 1],
+                      'roughnessFactor': 0.,
+                      'metalnessFactor': 1,
+                      'outputSRGB': 0,
+                      'hsv': [0, 0, 0],
+                      'contrast': 1.5
+                  },
+                  polygonFill: [1, 1, 1, 1],
+                  polygonOpacity: 1
+                }
+              },
+              postProcess: {
+                enable: true,
+              }
+            };
+            map.on('updatelights', () => {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const data = ctx.getImageData(192, 128, 5, 5);
+                    const expected = new Uint8ClampedArray([38, 79, 135, 255, 36, 78, 134, 255, 36, 78, 134, 255, 37, 79, 135, 255, 38, 79, 135, 255, 39, 80, 136, 255, 37, 79, 135, 255, 37, 79, 136, 255, 37, 79, 136, 255, 38, 80, 137, 255, 39, 80, 137, 255, 37, 79, 137, 255, 37, 79, 137, 255, 38, 80, 138, 255, 38, 80, 138, 255, 40, 81, 138, 255, 38, 79, 138, 255, 38, 80, 138, 255, 38, 80, 139, 255, 39, 81, 139, 255, 40, 81, 138, 255, 38, 80, 138, 255, 38, 80, 139, 255, 39, 80, 139, 255, 39, 81, 139, 255]);
+                    expect(data.data).to.be.eql(expected);
+                    done();
+                }, 200)
+            });
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+
         });
     });
 

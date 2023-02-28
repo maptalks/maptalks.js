@@ -86,6 +86,9 @@ class LightManager {
                 this._onSkyboxLoaded(images);
             }
         }
+        const onerror = function() {
+            throw new Error(`skybox image with url(${this.src}) failed to load, please check the image's url.`);
+        }
         if (url.top) {
             // ambient with 6 images
             const { front, back, right, left, top, bottom } = url;
@@ -94,7 +97,7 @@ class LightManager {
             for (let i = 0; i < count; i++) {
                 const img = new Image();
                 img.onload = onload;
-                img.onerror = onload;
+                img.onerror = onerror;
                 img.src = envUrls[i];
                 images[i] = img;
             }
