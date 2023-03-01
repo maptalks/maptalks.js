@@ -1,5 +1,6 @@
 import { extend } from './util/common';
 import Handler from '../handler/Handler';
+import Browser from './Browser';
 
 /**
  * This library uses ES2015 class system. <br />
@@ -44,6 +45,32 @@ class Class {
         }
         this.setOptions(options);
         this.callInitHooks();
+        this._isUpdating = false;
+    }
+
+    proxyOptions() {
+        if (!Browser.proxy) {
+            return this;
+        }
+        if (this.options.isExtensible) {
+            return this;
+        }
+        this.options = new Proxy(this.options, {
+            set: (target, key, value) => {
+                if (target[key] === value) {
+                    return true;
+                }
+                target[key] = value;
+                if (this._isUpdating) {
+                    return true;
+                }
+                const opts = {};
+                opts[key] = value;
+                this.config(opts);
+                return true;
+            }
+        });
+        return this;
     }
 
     /**
@@ -92,6 +119,7 @@ class Class {
      * @return {Class} this
      */
     config(conf) {
+        this._isUpdating = true;
         if (!conf) {
             const config = {};
             for (const p in this.options) {
@@ -99,6 +127,7 @@ class Class {
                     config[p] = this.options[p];
                 }
             }
+            this._isUpdating = false;
             return config;
         } else {
             if (arguments.length === 2) {
@@ -119,6 +148,7 @@ class Class {
             }
             // callback when set config
             this.onConfig(conf);
+            this._isUpdating = false;
         }
         return this;
     }

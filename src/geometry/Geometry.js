@@ -29,6 +29,7 @@ import { isFunctionDefinition } from '../core/mapbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
+const TEMP_PROPERTIES = {};
 
 /**
  * @property {Object} options                       - geometry options
@@ -1399,15 +1400,32 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
 
     //------------- altitude + layer.altitude -------------
-    getAltitude() {
+    //this is for vectorlayer
+    //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
+    _getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
             return 0;
         }
-        const layerOpts = layer.options,
-            properties = this.getProperties();
-        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        const layerOpts = layer.options;
         const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        const enableAltitude = layerOpts['enableAltitude'];
+        if (!enableAltitude) {
+            return layerAltitude;
+        }
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        //if properties.altitude is null
+        //for new Geometry([x,y,z])
+        if (isNil(altitude)) {
+            const alts = getGeometryCoordinatesAlts(this, layerAltitude, enableAltitude);
+            if (!isNil(alts)) {
+                return alts;
+            }
+            return layerAltitude;
+        }
+        //old,the altitude is bind properties
         if (Array.isArray(altitude)) {
             return altitude.map(alt => {
                 return alt + layerAltitude;
@@ -1416,8 +1434,60 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return altitude + layerAltitude;
     }
 
+    //this for user
+    getAltitude() {
+        const layer = this.getLayer();
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        if (!isNil(altitude)) {
+            return altitude;
+        }
+        const alts = getGeometryCoordinatesAlts(this, 0, false);
+        if (!isNil(alts)) {
+            return alts;
+        }
+        return 0;
+    }
+
+    setAltitude(alt) {
+        if (!isNumber(alt)) {
+            return this;
+        }
+        const layer = this.getLayer();
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        //update properties altitude
+        if (!isNil(altitude)) {
+            if (Array.isArray(altitude)) {
+                for (let i = 0, len = altitude.length; i < len; i++) {
+                    altitude[i] = alt;
+                }
+            } else {
+                properties[altitudeProperty] = alt;
+            }
+        }
+        const coordinates = this.getCoordinates ? this.getCoordinates() : null;
+        if (!coordinates) {
+            return this;
+        }
+        //update coordinates.z
+        setCoordinatesAlt(coordinates, alt);
+        if (layer) {
+            const render = layer.getRenderer();
+            //for webgllayer,pointlayer/linestringlayer/polygonlayer
+            if (render && render.gl) {
+                this.setCoordinates(coordinates);
+            } else if (render) {
+                this._repaint();
+            }
+        }
+        return this;
+    }
+
     _genMinMaxAlt() {
-        const altitude = this.getAltitude();
+        const altitude = this._getAltitude();
         if (Array.isArray(altitude)) {
             this._minAlt = Number.MAX_VALUE;
             this._maxAlt = Number.MIN_VALUE;
@@ -1458,6 +1528,71 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 }
 
 Geometry.mergeOptions(options);
+
+function getAltitudeProperty(layer) {
+    let altitudeProperty = 'altitude';
+    if (layer) {
+        const layerOpts = layer.options;
+        altitudeProperty = layerOpts['altitudeProperty'];
+    }
+    return altitudeProperty;
+}
+
+function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
+    const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
+    if (coordinates) {
+        const tempAlts = [];
+        coordinatesHasAlt(coordinates, tempAlts);
+        if (tempAlts.length) {
+            const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
+            if (geometry.getShell) {
+                return alts[0][0];
+            }
+            return alts;
+        }
+    }
+    return null;
+}
+
+function setCoordinatesAlt(coordinates, alt) {
+    if (Array.isArray(coordinates)) {
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            setCoordinatesAlt(coordinates[i], alt);
+        }
+    } else {
+        coordinates.z = alt;
+    }
+}
+
+function coordinatesHasAlt(coordinates, tempAlts) {
+    if (tempAlts.length) {
+        return;
+    }
+    if (Array.isArray(coordinates)) {
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            coordinatesHasAlt(coordinates[i], tempAlts);
+        }
+    } else if (isNumber(coordinates.z)) {
+        tempAlts.push(coordinates.z);
+    }
+}
+
+function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
+    if (Array.isArray(coordinates)) {
+        const alts = [];
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            alts.push(getCoordinatesAlts(coordinates[i], layerAlt, enableAltitude));
+        }
+        return alts;
+    }
+    if (isNumber(coordinates.z)) {
+        return enableAltitude ? layerAlt + coordinates.z : coordinates.z;
+    } else if (enableAltitude) {
+        return layerAlt;
+    } else {
+        return 0;
+    }
+}
 
 export default Geometry;
 

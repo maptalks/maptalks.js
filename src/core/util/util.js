@@ -416,6 +416,7 @@ export function flash(interval, count, cb, context) {
         count = 4;
     }
     const me = this;
+    const initVisible = this.isVisible();
     count *= 2;
     if (this._flashTimeout) {
         clearTimeout(this._flashTimeout);
@@ -423,7 +424,11 @@ export function flash(interval, count, cb, context) {
 
     function flashGeo() {
         if (count === 0) {
-            me.show();
+            if (initVisible) {
+                me.show();
+            } else {
+                me.hide();
+            }
             if (cb) {
                 if (context) {
                     cb.call(context);
@@ -478,19 +483,20 @@ export function getPointsResultPts(points = [], ptKey = '_pt') {
 }
 
 
-let BITMAP_CTX;
-if (Browser.decodeImageInWorker) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    BITMAP_CTX = canvas.getContext('2d');
-}
+// let BITMAP_CTX;
+// if (Browser.decodeImageInWorker) {
+//     const canvas = document.createElement('canvas');
+//     canvas.width = 1;
+//     canvas.height = 1;
+//     BITMAP_CTX = canvas.getContext('2d');
+// }
 export function getImageBitMap(data, cb) {
-    const imageData = BITMAP_CTX.createImageData(data.width, data.height);
-    imageData.data.set(data.data);
-    createImageBitmap(imageData).then(bitmap => {
-        cb(bitmap);
-    });
+    cb(data.data);
+    // const imageData = BITMAP_CTX.createImageData(data.width, data.height);
+    // imageData.data.set(data.data);
+    // createImageBitmap(imageData).then(bitmap => {
+    //     cb(bitmap);
+    // });
 }
 
 export function getAbsoluteURL(url) {
