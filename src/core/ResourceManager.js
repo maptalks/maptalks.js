@@ -4,6 +4,39 @@ import { createEl } from './util/dom';
 import Ajax from './Ajax';
 import promise from './Promise';
 
+const parser = new DOMParser();
+
+function parseSVG(str) {
+    const xmlDoc = parser.parseFromString(str, 'text/xml');
+    const root = xmlDoc.querySelector('svg');
+    if (!root) {
+        return null;
+    }
+    const paths = root.querySelectorAll('path');
+    const data = [];
+    for (let i = 0, len = paths.length; i < len; i++) {
+        const path = paths[i];
+        const attributes = path.attributes;
+        if (!attributes) {
+            continue;
+        }
+        const d = attributes.d.value;
+        const fill = attributes.fill && attributes.fill.value;
+        const stroke = attributes.stroke && attributes.stroke.value;
+        const pathData = {
+            path: d
+        };
+        if (fill) {
+            pathData.fill = fill;
+        }
+        if (stroke) {
+            pathData.stroke = stroke;
+        }
+        data.push(pathData);
+    }
+    return data;
+}
+
 function createCanvas() {
     let canvas;
     if (Browser.IS_NODE) {
@@ -41,11 +74,13 @@ function isAbsoluteURL(url) {
  * @static
  * @category core
  * @example
- *  ResourceManager.setRootUrl('http://abc.com/images/');
- *  var img = ResourceManager.get('hello.png');//http://abc.com/images/hello.png
+ *   ResourceManager.setRootUrl('http://abc.com/images/');
+ *  var img = ResourceManager.get('hello.png');
+ *  //http://abc.com/images/hello.png
  *
  *  ResourceManager.add('dog','dog.png');
- *  var img = ResourceManager.get('dog');//http://abc.com/images/dog.png
+ *  var img = ResourceManager.get('dog');
+ *  //http://abc.com/images/dog.png
  *
  *
  *
@@ -111,23 +146,23 @@ export const ResourceManager = {
     /**
      * add resource
      * @param {String} name
-     * @param {String} imageUrl
+     * @param {String} res
      */
-    add(name, url) {
+    add(name, res) {
         if (ResourceManager.cache[name]) {
             console.warn(`${name} resource Already exists,the ${name} Cannot be added,the resource name Cannot repeat `);
             return;
         }
-        ResourceManager.cache[name] = url;
+        ResourceManager.cache[name] = res;
     },
 
     /**
     * update  resource (remove and add)
      * @param {String} name
-     * @param {String} url
+     * @param {String} res
      */
-    update(name, url) {
-        ResourceManager.cache[name] = url;
+    update(name, res) {
+        ResourceManager.cache[name] = res;
     },
 
     /**
@@ -139,12 +174,17 @@ export const ResourceManager = {
     },
 
     /**
-    * load sprite resource
+    * load sprite resource,sprite icons auto add to ResourceManager cache
      * @param {Object} [options=null]      - sprite options
      * @param {String} [options.imgUrl]    - sprite image url
      * @param {String} [options.jsonUrl]  - sprite json url
     * @returns {Promise} promise
+    * @example
+    *  ResourceManager.loadSprite(
+    * {imgUrl:'./sprite.png,jsonUrl:'./sprite.json'}).then(icons=>{}).catch(erro=>{})
+    *
     */
+
     loadSprite(options = {}) {
         return new promise((resolve, reject) => {
             const { imgUrl, jsonUrl } = options;
@@ -231,14 +271,57 @@ export const ResourceManager = {
             });
         });
     },
+
+    /**
+    * load svgs resource,all svg auto add to ResourceManager ache,Note that all svg resources need to be placed in the rooturl directory
+    * @param {Array} [svgs=[]]  - svgs names
+    * @returns {Promise} promise
+    * @example
+    *  ResourceManager.loadSvgs(['dog.svg','cat.svg',.....]).then(svgs=>{}).catch(erro=>{})
+    *
+    */
+    loadSvgs(svgs = []) {
+        return new promise((resolve, reject) => {
+            if (!svgs || svgs.length === 0) {
+                reject('not find svgs');
+                return;
+            }
+            let idx = 0;
+            const result = [];
+            const loadSvg = () => {
+                if (idx < svgs.length) {
+                    const svgUrl = ResourceManager.get(svgs[idx]);
+                    fetch(svgUrl).then(res => res.text()).then(svgText => {
+                        const name = `${svgs[idx]}`;
+                        const paths = parseSVG(svgText);
+                        if (paths) {
+                            ResourceManager.add(name, paths);
+                        }
+                        result.push({
+                            name,
+                            paths
+                        });
+                        idx++;
+                        loadSvg();
+                    }).catch(err => {
+                        console.log(err);
+                        idx++;
+                        loadSvg();
+                    });
+                } else {
+                    resolve(result);
+                }
+            };
+            loadSvg();
+        });
+    }
 };
 
 export function checkResourceValue(url, properties) {
-    let key = url[0];
-    if (isNil(key)) {
+    const key = url[0];
+    if (isNil(key) || !isString(key)) {
         return key;
     }
-    key += '';
     if (key.indexOf('$') === 0) {
         const name = key.substring(1, key.length);
         return ResourceManager.get(name, Browser.decodeImageInWorker);

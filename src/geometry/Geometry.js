@@ -1127,7 +1127,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     //获取geometry样式中依赖的外部图片资源
     _getExternalResources() {
         const symbol = this._getInternalSymbol();
-        return getExternalResources(symbol);
+        return getExternalResources(symbol, this.properties);
     }
 
     _getPainter() {

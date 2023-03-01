@@ -802,7 +802,7 @@ class CanvasRenderer extends Class {
             return function (resolve) {
                 copyBitMapForLayer(res, resolve);
             };
-        } else if (res instanceof Image && Browser.decodeImageInWorker) {
+        } else if (res instanceof Image && Browser.decodeImageInWorker && !isSVG(res.src)) {
             return function (resolve) {
                 copyBitMapForLayer(res, resolve);
             };
@@ -815,7 +815,7 @@ class CanvasRenderer extends Class {
                 return;
             }
             if (imgUrl instanceof Image) {
-                if (Browser.decodeImageInWorker) {
+                if (Browser.decodeImageInWorker && !isSVG(imgUrl.src)) {
                     copyBitMapForLayer(imgUrl, resolve);
                     return;
                 }
