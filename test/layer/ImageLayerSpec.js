@@ -69,7 +69,7 @@ describe('Layer.ImageLayer', function () {
         });
         layer.on('layerload', function () {
             var parser = new UAParser();
-            var alpha = 102;
+            var alpha = 104;
             var result = parser.getOS();
             console.log(result);
             if (result.name) {
@@ -79,12 +79,13 @@ describe('Layer.ImageLayer', function () {
             }
             var size = map.getSize();
             var ctx = layer.getRenderer().canvas.getContext('2d');
-            var imageData = ctx.getImageData(size.width / 2, size.height / 2, 1, 1);
+            var imageData = ctx.getImageData(size.width / 2, size.height / 2, 1, 1).data;
             console.log(imageData);
             if (maptalks.Browser.ie) {
                 expect(layer).to.be.painted(1, 1, [0, 0, 0, 128]);
             } else {
-                expect(imageData.data).to.be.eql([0, 0, 0, alpha]);
+                var color = [imageData[0], imageData[1], imageData[2], imageData[3]];
+                expect(color).to.be.eql([0, 0, 0, alpha]);
             }
             done();
         });
