@@ -48,6 +48,10 @@ class MapCanvasRenderer extends MapRenderer {
         map._fireEvent('framestart');
         this.updateMapDOM();
         map.clearCollisionIndex();
+        if (this._needClear) {
+            this.clearCanvas();
+        }
+        this._needClear = false;
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
         const updated = this.drawLayerCanvas(layers);
@@ -389,7 +393,8 @@ class MapCanvasRenderer extends MapRenderer {
 
     setToRedraw() {
         const layers = this._getAllLayerToRender();
-        this.clearCanvas();
+        //set maprender for clear canvas
+        this._needClear = true;
         for (let i = 0, l = layers.length; i < l; i++) {
             const renderer = layers[i].getRenderer();
             if (renderer && renderer.canvas && renderer.setToRedraw) {
