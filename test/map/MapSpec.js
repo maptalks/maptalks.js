@@ -902,10 +902,10 @@ describe('Map.Spec', function () {
         map.options.centerCross=true;
         map.once('frameend',function(){
             expect(map).to.be.painted(0, 0); 
-        })
-        map.options.centerCross=false;
-        map.once('frameend',function(){
-            expect(map).not.to.be.painted(0, 0); 
+            map.options.centerCross=false;
+            map.once('frameend',function(){
+                expect(map).not.to.be.painted(0, 0); 
+            })
         })
     });
 });
