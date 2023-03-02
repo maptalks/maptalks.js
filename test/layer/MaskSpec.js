@@ -240,10 +240,10 @@ describe('Spec of Masks', function () {
         new maptalks.Marker(map.getCenter().toArray()).addTo(layer);
         var ring = createRing(0.2), hole = createRing(0.1);
         var polygon = new maptalks.Polygon([ring, hole]);
-        map.on('frameend', function () {
+        map.once('frameend', function () {
             expect(layer).to.be.painted(0, 0);
             layer.setMask(polygon);
-            map.on('frameend', function () {
+            map.once('frameend', function () {
                 expect(layer).to.be.painted(0, 0);
             })
         })
