@@ -37,7 +37,8 @@ const DEFAULT_DESC = {
     'uv1Attribute': 'aTexCoord1',
     'color0Attribute': 'aColor0',
     'tangentAttribute': 'aTangent',
-    'pickingIdAttribute': 'aPickingId'
+    'pickingIdAttribute': 'aPickingId',
+    'textureCoordMatrixAttribute': 'aTextureCoordMatrix'
 };
 
 let UID = 1;
@@ -151,7 +152,7 @@ export default class Geometry {
         if (updated) {
             const reglData = this._reglData[key] = {};
             const data = this.data;
-            const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute, color0Attribute, pickingIdAttribute } = this.desc;
+            const { positionAttribute, normalAttribute, uv0Attribute, uv1Attribute, tangentAttribute, color0Attribute, pickingIdAttribute, textureCoordMatrixAttribute } = this.desc;
             extend(reglData, this.data);
             reglData['aPosition'] = data[positionAttribute];
             if (data[normalAttribute]) {
@@ -171,6 +172,9 @@ export default class Geometry {
             }
             if (data[pickingIdAttribute]) {
                 reglData['aPickingId'] = data[pickingIdAttribute];
+            }
+            if (data[textureCoordMatrixAttribute]) {
+                reglData['aTextureCoordMatrix'] = data[textureCoordMatrixAttribute];
             }
         }
         return this._reglData[key];

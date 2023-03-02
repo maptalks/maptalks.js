@@ -207,6 +207,7 @@ export default class KHRTechniquesWebglManager {
                 uv1Attribute: attributeSemantics['TEXCOORD_1'],
                 color0Attribute: attributeSemantics['COLOR_0'],
                 tangentAttribute: attributeSemantics['TANGENT'],
+                textureCoordMatrixAttribute: attributeSemantics['TextureCoordMatrix'],//for s3m
                 primitive: gltfMesh.mode === undefined ? 'triangles' : getPrimitive(gltfMesh.mode)
             }
         );
