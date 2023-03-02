@@ -18,42 +18,23 @@ export default class Skin {
                 Float32Array.BYTES_PER_ELEMENT * 16 * i,
                 16));
         }
-        this.jointTexture = regl.texture();
         this.jointTextureSize = [4, 6];
     }
 
-    updateJointTexture(length) {
-        if (this.jointTexture) {
-            return;
-        }
-        this.jointTexture.texture({
-            width: 4,
-            height: length
-        });
-    }
-
-    setJointTexture(jointTexture) {
-        this.jointTexture = jointTexture;
-    }
-
-    update(nodeMatrix) {
+    update(nodeMatrix, nodeMatrixMap) {
         mat4.invert(globalWorldInverse, nodeMatrix);
         for (let j = 0; j < this.joints.length; ++j) {
             const joint = this.joints[j];
             const dst = this.jointMatrices[j];
-            mat4.multiply(dst, globalWorldInverse, joint.nodeMatrix);
+            mat4.multiply(dst, globalWorldInverse, nodeMatrixMap[joint.nodeIndex]);
             mat4.multiply(dst, dst, this.inverseBindMatrices[j]);
         }
         // const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
-        this.jointTexture({
+        return this._regl.texture({
             width: 4,
             type: 'float',
             height: this.joints.length,
             data: this.jointData
         });
-    }
-
-    dispose() {
-        this.jointTexture.destroy();
     }
 }

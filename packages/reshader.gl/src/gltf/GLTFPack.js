@@ -91,23 +91,10 @@ export default class GLTFPack {
                 tex.destroy();
             }
         }
-
-        for (const index in this._skinMap) {
-            const skin = this._skinMap[index];
-            if (skin.jointTexture && !skin.jointTexture[KEY_DISPOSED]) {
-                skin.jointTexture.destroy();
-            }
-        }
-        for (const index in this.gltf.nodes) {
-            const node = this.gltf.nodes[index];
-            if (node.skin && node.skin.jointTexture && !node.skin.jointTexture[KEY_DISPOSED]) {
-                node.skin.jointTexture.destroy();
-            }
-        }
         delete this.gltf;
     }
 
-    updateAnimation(time, loop, speed, animationName) {
+    updateAnimation(time, loop, speed, animationName, startTime, nodeMatrixMap, skinMap) {
         const json = this.gltf;
         if (!json) {
             return;
@@ -117,35 +104,45 @@ export default class GLTFPack {
         if (!timespan) {
             return;
         }
-        const animTime = (loop ? (time * speed * 0.001) % (timespan.max - timespan.min) + timespan.min : time * speed * 0.001 + timespan.min);
-        if (!this._startTime) {
-            this._startTime = time;
+        time = time - startTime;
+        let animTime = 0;
+        if (loop || (!loop && this._isFirstLoop(time, speed, animationName, startTime))) {
+            animTime = (time * speed * 0.001) % (timespan.max - timespan.min) + timespan.min;
+        } else {
+            animTime = time * speed * 0.001 + timespan.min;
         }
         json.scenes[0].nodes.forEach(node => {
-            this._updateNodeMatrix(animationName, animTime, node);
+            this._updateNodeMatrix(animationName, animTime, node, null, nodeMatrixMap);
         });
         for (const index in this.gltf.nodes) {
             const node = this.gltf.nodes[index];
-            if (node.skin) {
-                node.skin.update(node.nodeMatrix);
+            const nodeMatrix = nodeMatrixMap[node.nodeIndex];
+            if (node.skin && nodeMatrix) {
+                const jointTexture = node.skin.update(nodeMatrix, nodeMatrixMap);
+                skinMap[node.nodeIndex] = {
+                    jointTextureSize: [4, 6],
+                    numJoints: node.skin.joints.length,
+                    jointTexture
+                };
             }
         }
+        return;
     }
 
-    isFirstLoop(time, speed, animationName) {
+    _isFirstLoop(time, speed, animationName, startTime) {
         const json = this.gltf;
-        if (!this._startTime || !json) {
+        if (!startTime || !json) {
             return true;
         }
         timespan = json.animations ? gltf.GLTFLoader.getAnimationTimeSpan(json, animationName) : null;
-        return ((time - this._startTime) * speed * 0.001) / (timespan.max - timespan.min) < 1;
+        return (time* speed * 0.001) / (timespan.max - timespan.min) < 1;
     }
 
     hasSkinAnimation() {
         return !!this._isAnimation;
     }
 
-    _updateNodeMatrix(animationName, time, node, parentNodeMatrix) {
+    _updateNodeMatrix(animationName, time, node, parentNodeMatrix, nodeMatrixMap) {
         const trs = node.trs;
         if (trs) {
             const animation = gltf.GLTFLoader.getAnimationClip(this.gltf, Number(node.nodeIndex), time, animationName);
@@ -155,14 +152,13 @@ export default class GLTFPack {
             node.trs.update(animation);
         }
         if (parentNodeMatrix) {
-            mat4.multiply(node.nodeMatrix, parentNodeMatrix, node.matrix || node.trs.getMatrix());
+            nodeMatrixMap[node.nodeIndex] = mat4.multiply(nodeMatrixMap[node.nodeIndex] || [], parentNodeMatrix, node.matrix || node.trs.getMatrix());
         } else {
-            mat4.copy(node.nodeMatrix, node.matrix || node.trs.getMatrix());
+            nodeMatrixMap[node.nodeIndex] = mat4.copy(nodeMatrixMap[node.nodeIndex] || [], node.matrix || node.trs.getMatrix());
         }
-        const nodeMatrix = node.nodeMatrix;
         if (node.children) {
             node.children.forEach(child => {
-                this._updateNodeMatrix(animationName, time, child, nodeMatrix);
+                this._updateNodeMatrix(animationName, time, child, nodeMatrixMap[node.nodeIndex], nodeMatrixMap);
             });
         }
         this._updateSkinTexture(node);
@@ -294,7 +290,8 @@ export default class GLTFPack {
                     materialInfo,
                     extraInfo: this._createExtralInfo(primitive.material),
                     animationMatrix : node.trs.getMatrix(),
-                    morphWeights: node.weights
+                    morphWeights: node.weights,
+                    nodeIndex: node.nodeIndex
                 };
                 if (node.skin) {
                     info.skin = {

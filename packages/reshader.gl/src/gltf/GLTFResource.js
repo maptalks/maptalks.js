@@ -14,6 +14,7 @@ export default class GeometryResource {
         this.animationMatrix = resource.animationMatrix;
         this.morphWeights = resource.morphWeights;
         this.skin = resource.skin;
+        this.nodeIndex = resource.nodeIndex;
     }
 
     copy() {
