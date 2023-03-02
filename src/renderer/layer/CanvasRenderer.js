@@ -581,10 +581,13 @@ class CanvasRenderer extends Class {
                 painter.paint(null, context);
             });
             context.stroke();
-            delete context.isMultiClip;
+            context.isMultiClip = false;
         } else {
+            context.isClip = true;
+            context.beginPath();
             const painter = mask._getMaskPainter();
             painter.paint(null, context);
+            context.isClip = false;
         }
         if (dpr !== 1) {
             context.restore();

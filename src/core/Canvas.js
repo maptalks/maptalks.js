@@ -505,9 +505,15 @@ const Canvas = {
     },
 
     polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness) {
-        // if MultiClip
+        // if MultiPolygon clip
         if (ctx.isMultiClip) {
             Canvas._multiClip(ctx, points);
+            return;
+        }
+        //polygon clip
+        if (ctx.isClip) {
+            // if points[0] is array ,the polygon has hole,ignore holes
+            Canvas._multiClip(ctx, Array.isArray(points[0]) ? points : [points]);
             return;
         }
         if (!isArrayHasData(points)) {
