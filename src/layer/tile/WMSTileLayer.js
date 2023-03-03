@@ -1,3 +1,4 @@
+import Browser from '../../core/Browser';
 import { extend } from '../../core/util';
 import TileLayer from './TileLayer';
 
@@ -60,17 +61,22 @@ class WMSTileLayer extends TileLayer {
             wmsExcludeParams = extend({}, this.options);
         }
         this.wmsParams = extend({}, defaultWmsParams);
-        this._optionsHook(options);
         this.setOptions(options);
         this.setZIndex(options.zIndex);
+        if (!Browser.proxy) {
+            this._optionsHook(options);
+        }
     }
 
     _optionsHook(options = {}) {
         for (const p in options) {
+            //clear tilesize cache
+            if (p === 'tileSize') {
+                this._tileSize = null;
+            }
             if (!(p in wmsExcludeParams)) {
                 this.wmsParams[p] = options[p];
             }
-
         }
         const tileSize = this.getTileSize();
         this.wmsParams.width = tileSize.width;
