@@ -274,10 +274,11 @@ export const ResourceManager = {
 
     /**
     * load svgs resource,all svg auto add to ResourceManager ache,Note that all svg resources need to be placed in the rooturl directory
-    * @param {Array} [svgs=[]]  - svgs names
+    * @param {Array|String} [svgs=[]]  - svgs names or svgs json url
     * @returns {Promise} promise
     * @example
     *  ResourceManager.loadSvgs(['dog.svg','cat.svg',.....]).then(svgs=>{}).catch(erro=>{})
+    *  ResourceManager.loadSvgs('./svgs.json').then(svgs=>{}).catch(erro=>{})
     *
     */
     loadSvgs(svgs = []) {
@@ -286,21 +287,39 @@ export const ResourceManager = {
                 reject('not find svgs');
                 return;
             }
-            let idx = 0;
             const result = [];
+
+            const addToCache = (name, body) => {
+                const paths = parseSVG(body);
+                if (paths) {
+                    ResourceManager.add(name, paths);
+                }
+                result.push({
+                    name,
+                    paths,
+                    body: body
+                });
+            };
+            if (isString(svgs)) {
+                fetch(svgs).then(res => res.json()).then(json => {
+                    json.forEach(svg => {
+                        const { name, body } = svg;
+                        addToCache(name, body);
+                    });
+                    resolve(result);
+                }).catch(err => {
+                    console.log(err);
+                    reject('request svgs json data error');
+                });
+                return;
+            }
+            let idx = 0;
             const loadSvg = () => {
                 if (idx < svgs.length) {
                     const svgUrl = ResourceManager.get(svgs[idx]);
-                    fetch(svgUrl).then(res => res.text()).then(svgText => {
+                    fetch(svgUrl).then(res => res.text()).then(body => {
                         const name = `${svgs[idx]}`;
-                        const paths = parseSVG(svgText);
-                        if (paths) {
-                            ResourceManager.add(name, paths);
-                        }
-                        result.push({
-                            name,
-                            paths
-                        });
+                        addToCache(name, body);
                         idx++;
                         loadSvg();
                     }).catch(err => {
