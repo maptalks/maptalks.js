@@ -74,13 +74,13 @@ function isAbsoluteURL(url) {
  * @static
  * @category core
  * @example
- *   ResourceManager.setRootUrl('http://abc.com/images/');
+ *  ResourceManager.setRootUrl('http://abc.com/images/');
  *  var img = ResourceManager.get('hello.png');
  *  //http://abc.com/images/hello.png
  *
- *  ResourceManager.add('dog','dog.png');
+ *  ResourceManager.add('dog','39093023.png');
  *  var img = ResourceManager.get('dog');
- *  //http://abc.com/images/dog.png
+ *  //http://abc.com/images/39093023.png
  *
  *
  *
@@ -102,7 +102,7 @@ export const ResourceManager = {
      * get resource
      * @param {String} name
      * @param {Boolean} imgBitMap
-     * @returns {String} url/imgBitMap/Image
+     * @returns {Object} url/imgBitMap/Image
      */
     get(name, imgBitMap = false) {
         if (!ResourceManager.rootUrl) {
@@ -146,7 +146,7 @@ export const ResourceManager = {
     /**
      * add resource
      * @param {String} name
-     * @param {String} res
+     * @param {Object} res
      */
     add(name, res) {
         if (ResourceManager.cache[name]) {
@@ -159,7 +159,7 @@ export const ResourceManager = {
     /**
     * update  resource (remove and add)
      * @param {String} name
-     * @param {String} res
+     * @param {Object} res
      */
     update(name, res) {
         ResourceManager.cache[name] = res;
@@ -359,9 +359,8 @@ export function checkResourceValue(url, properties) {
 }
 
 export function resourceIsTemplate(key) {
-    if (isNil(key)) {
+    if (isNil(key) || !isString(key)) {
         return false;
     }
-    key += '';
     return (key.indexOf('{') > -1 && key.indexOf('}') > -1);
 }
