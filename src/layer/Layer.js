@@ -1,5 +1,5 @@
 import Class from '../core/Class';
-import { isNil, isNumber } from '../core/util';
+import { isFunction, isNil, isNumber } from '../core/util';
 import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
@@ -100,6 +100,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             }
             this.onLoadEnd();
         }
+        return this;
+    }
+
+
+    /**
+     * refresh layer
+     * @return {Layer} this
+     */
+    refresh() {
         return this;
     }
 
@@ -483,6 +492,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     onConfig(conf) {
         const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
         if (needUpdate && isNil(conf['animation'])) {
+            if (this._optionsHook && isFunction(this._optionsHook)) {
+                this._optionsHook(conf);
+            }
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {
                 renderer.setToRedraw();

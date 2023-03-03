@@ -18,7 +18,7 @@ import TileLayer from './TileLayer';
 const options = {
     crs: null,
     uppercase: false,
-    detectRetina : false
+    detectRetina: false
 };
 
 const defaultWmsParams = {
@@ -30,6 +30,7 @@ const defaultWmsParams = {
     transparent: false,
     version: '1.1.1'
 };
+let wmsExcludeParams;
 
 /**
  * @classdesc
@@ -55,19 +56,27 @@ class WMSTileLayer extends TileLayer {
 
     constructor(id, options) {
         super(id);
-        const wmsParams = extend({}, defaultWmsParams);
-        for (const p in options) {
-            if (!(p in this.options)) {
-                wmsParams[p] = options[p];
-            }
+        if (!wmsExcludeParams) {
+            wmsExcludeParams = extend({}, this.options);
         }
+        this.wmsParams = extend({}, defaultWmsParams);
+        this._optionsHook(options);
         this.setOptions(options);
         this.setZIndex(options.zIndex);
+    }
+
+    _optionsHook(options = {}) {
+        for (const p in options) {
+            if (!(p in wmsExcludeParams)) {
+                this.wmsParams[p] = options[p];
+            }
+
+        }
         const tileSize = this.getTileSize();
-        wmsParams.width = tileSize.width;
-        wmsParams.height = tileSize.height;
-        this.wmsParams = wmsParams;
-        this._wmsVersion = parseFloat(wmsParams.version);
+        this.wmsParams.width = tileSize.width;
+        this.wmsParams.height = tileSize.height;
+        this._wmsVersion = parseFloat(this.wmsParams.version);
+        return this;
     }
 
     onAdd() {
@@ -88,7 +97,7 @@ class WMSTileLayer extends TileLayer {
         const max = tileExtent.getMax(),
             min = tileExtent.getMin();
 
-        const bbox = (this._wmsVersion >= 1.3  && (this.wmsParams.crs === 'EPSG:4326' || this.wmsParams.crs === 'EPSG:4490') ?
+        const bbox = (this._wmsVersion >= 1.3 && (this.wmsParams.crs === 'EPSG:4326' || this.wmsParams.crs === 'EPSG:4490') ?
             [min.y, min.x, max.y, max.x] :
             [min.x, min.y, max.x, max.y]).join(',');
 

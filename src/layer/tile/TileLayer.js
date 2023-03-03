@@ -189,6 +189,16 @@ class TileLayer extends Layer {
         return new TileLayer(layerJSON['id'], layerJSON['options']);
     }
 
+    /**
+     * refresh tilelayer
+     * @return {Layer} this
+     */
+    refresh() {
+        this.clear();
+        this.load();
+        return this;
+    }
+
 
     /**
      * Get tile size of the tile layer
