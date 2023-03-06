@@ -45,7 +45,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
             // geojson-vt 在4326投影下的tileSystem
             this.options.tileSystem = [1, -1, -180, 90];
         }
-        super._initTileConfig();
+        super['_initTileConfig']();
     }
 
     setData(data) {
