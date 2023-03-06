@@ -35,7 +35,17 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.extent = this.options.extent;
         options.hasAltitude = this.options.enableAltitude;
         options.simplifyTolerance = this.options.simplifyTolerance;
+        options.projection = this.getSpatialReference().getProjection().code;
         return options;
+    }
+
+    _initTileConfig() {
+        const sr = this.getSpatialReference();
+        if (sr && sr.getProjection() && sr.getProjection().code === 'EPSG:4326') {
+            // geojson-vt 在4326投影下的tileSystem
+            this.options.tileSystem = [1, -1, -180, 90];
+        }
+        super._initTileConfig();
     }
 
     setData(data) {

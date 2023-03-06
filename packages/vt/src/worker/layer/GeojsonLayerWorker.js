@@ -55,6 +55,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             indexMaxPoints: 100000, // max number of points per tile in the index
             disableFilter: true
         };
+        if (this.options.projection) {
+            options.projection = this.options.projection;
+        }
         if (isString(data) && data.substring(0, 1) != '{' || data.url) {
             Ajax.getJSON(data.url ? data.url : data, data.url ? data : {}, (err, resp) => {
                 if (err) cb(err);
