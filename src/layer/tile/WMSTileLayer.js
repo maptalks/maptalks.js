@@ -68,6 +68,7 @@ class WMSTileLayer extends TileLayer {
         }
     }
 
+    //in Hook,Reset wmsParams
     _optionsHook(options = {}) {
         for (const p in options) {
             //clear tilesize cache

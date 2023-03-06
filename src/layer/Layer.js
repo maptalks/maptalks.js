@@ -492,6 +492,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     onConfig(conf) {
         const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
         if (needUpdate && isNil(conf['animation'])) {
+            // options change Hook,subLayers Can realize its own logic,such as tileSize/tileSystem etc change
             if (this._optionsHook && isFunction(this._optionsHook)) {
                 this._optionsHook(conf);
             }
