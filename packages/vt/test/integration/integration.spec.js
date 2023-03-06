@@ -327,6 +327,15 @@ describe('vector tile integration specs', () => {
             }
         }
     });
+
+    context('water specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'water'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
 });
 
 

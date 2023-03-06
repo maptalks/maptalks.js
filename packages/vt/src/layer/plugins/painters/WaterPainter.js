@@ -16,6 +16,7 @@ const DEFAULT_DIR_LIGHT = {
 const TIME_NOISE_TEXTURE_REPEAT = 0.3737;
 const SYMBOL_INDEX = { index: 0 };
 const EMPTY_HSV = [0, 0, 0];
+const WATER_UV_SIZE = [2, 2];
 
 const frag = `
     #define SHADER_NAME WATER_STENCIL
@@ -143,8 +144,10 @@ class WaterPainter extends BasicPainter {
 
     _loadTextures() {
         const regl = this.regl;
-        this._emptyTex = regl.texture(2);
-        this._uvSize = [2, 2];
+        if (!this._emptyTex) {
+            this._emptyTex = regl.texture(2);
+        }
+
 
         const symbol = this.getSymbol({ index: 0 });
         const normalUrl = symbol['texWaveNormal'];
@@ -152,16 +155,24 @@ class WaterPainter extends BasicPainter {
         const self = this;
 
         if (cachedNormalData) {
-            if (!cachedNormalData.loading) {
-                this._normalTex = this._createTex(regl, cachedNormalData);
+            if (!this._normalTex) {
+                if (!cachedNormalData.isLoading) {
+                    this._normalTex = this._createTex(regl, cachedNormalData);
+                } else {
+                    setTimeout(() => {
+                        if (!this.shader) {
+                            return;
+                        }
+                        this._loadTextures();
+                    }, 20);
+                }
             }
         } else {
             const img = new Image();
-            img.loading = true;
+            img.isLoading = true;
             img.onload = function () {
-                delete this.loading;
+                delete this.isLoading;
                 self._normalTex = self._createTex(regl, this);
-                this._uvSize = [this.width, this.height];
                 self.setToRedraw();
             };
             img.onerror = () => {
@@ -175,16 +186,25 @@ class WaterPainter extends BasicPainter {
         const cachedPertData = this.getCachedTexture(pertUrl);
 
         if (cachedPertData) {
-            if (!cachedPertData.loading) {
-                this._pertTex = this._createTex(regl, cachedPertData);
+            if (!this._pertTex) {
+                if (!cachedPertData.isLoading) {
+                    this._pertTex = this._createTex(regl, cachedPertData);
+                } else {
+                    setTimeout(() => {
+                        this._loadTextures();
+                        if (!this.shader) {
+                            return;
+                        }
+                    }, 20);
+                }
             }
+
         } else {
             const img = new Image();
-            img.loading = true;
+            img.isLoading = true;
             img.onload = function () {
-                delete this.loading;
+                delete this.isLoading;
                 self._pertTex = self._createTex(regl, this);
-                this._uvSize = [this.width, this.height];
                 self.setToRedraw();
             };
             img.onerror = () => {
@@ -200,8 +220,8 @@ class WaterPainter extends BasicPainter {
             return null;
         }
         return regl.texture({
-            width: this._uvSize[0],
-            height: this._uvSize[1],
+            width: data.width,
+            height: data.height,
             mag: 'linear',
             min: 'linear mipmap linear',
             wrapS: 'repeat',
@@ -408,6 +428,7 @@ class WaterPainter extends BasicPainter {
         }
         if (this.shader) {
             this.shader.dispose();
+            delete this.shader;
         }
         if (this._waterShader) {
             this._waterShader.dispose();
@@ -446,7 +467,8 @@ class WaterPainter extends BasicPainter {
         const xmin = center[0] - width;
         const ymax = center[1] + height;
 
-        const uvSize = this._uvSize;
+        // uvSize 是固定的值
+        const uvSize = WATER_UV_SIZE;
         const left = xmin / uvSize[0];
         const top = ymax / uvSize[1];
 
@@ -455,8 +477,8 @@ class WaterPainter extends BasicPainter {
         const noiseStartX = (left * TIME_NOISE_TEXTURE_REPEAT) % 1;
         const noiseStartY = (top * TIME_NOISE_TEXTURE_REPEAT) % 1;
 
-        const w = extent.getWidth() / uvSize[0] * 2;
-        const h = extent.getHeight() / uvSize[1] * 2;
+        const w = width / uvSize[0] * 2;
+        const h = height / uvSize[1] * 2;
 
         this._water.setUniform('uvOffset', [uvStartX, uvStartY]);
         this._water.setUniform('noiseUvOffset', [noiseStartX, noiseStartY]);
