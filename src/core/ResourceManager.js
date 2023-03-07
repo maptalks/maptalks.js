@@ -6,6 +6,13 @@ import promise from './Promise';
 
 const parser = new DOMParser();
 
+function getAttr(attributes, key) {
+    if (!attributes) {
+        return null;
+    }
+    return attributes[key] && attributes[key].value;
+}
+
 function parseSVG(str) {
     const xmlDoc = parser.parseFromString(str, 'text/xml');
     const root = xmlDoc.querySelector('svg');
@@ -15,18 +22,23 @@ function parseSVG(str) {
     //only support path parse
     const paths = root.querySelectorAll('path');
     const data = [];
-    const rootAttribute = root.attributes || {};
-    const rootFill = rootAttribute.fill && rootAttribute.fill.value;
-    const rootStroke = rootAttribute.stroke && rootAttribute.stroke.value;
+    const rootAttribute = root.attributes;
+    const rootFill = getAttr(rootAttribute, 'fill');
+    const rootStroke = getAttr(rootAttribute, 'stroke');
     for (let i = 0, len = paths.length; i < len; i++) {
         const path = paths[i];
         const attributes = path.attributes;
         if (!attributes || !attributes.d) {
             continue;
         }
-        const d = attributes.d.value;
-        const fill = (attributes.fill && attributes.fill.value) || rootFill;
-        const stroke = (attributes.stroke && attributes.stroke.value) || rootStroke;
+        const fillOpacity = getAttr(attributes, 'fill-opacity');
+        const strokeOpacity = getAttr(attributes, 'stroke-opacity');
+        if (fillOpacity === '0' || strokeOpacity === '0') {
+            continue;
+        }
+        const d = getAttr(attributes, 'd');
+        const fill = getAttr(attributes, 'fill') || rootFill;
+        const stroke = getAttr(attributes, 'stroke') || rootStroke;
         const pathData = {
             path: d
         };
@@ -179,6 +191,7 @@ export const ResourceManager = {
 
     /**
     * load sprite resource,sprite icons auto add to ResourceManager cache
+    * https://deyihu.github.io/sprite-creator/
      * @param {Object} [options=null]      - sprite options
      * @param {String} [options.imgUrl]    - sprite image url
      * @param {String} [options.jsonUrl]  - sprite json url
@@ -277,12 +290,14 @@ export const ResourceManager = {
     },
 
     /**
-    * load svgs resource,all svg auto add to ResourceManager ache,Note that all svg resources need to be placed in the rooturl directory
+    * load svgs resource,all svg auto add to ResourceManager cache,Note that all svg resources need to be placed in the rooturl directory
+    * https://deyihu.github.io/sprite-creator/svg.html
     * @param {Array|String} [svgs=[]]  - svgs names or svgs json url
     * @returns {Promise} promise
     * @example
     *  ResourceManager.loadSvgs(['dog.svg','cat.svg',.....]).then(svgs=>{}).catch(erro=>{})
     *  ResourceManager.loadSvgs('./svgs.json').then(svgs=>{}).catch(erro=>{})
+    *  ResourceManager.loadSvgs(document.body.childNodes[0].childNodes).then(svgs=>{}).catch(erro=>{})
     *
     */
     loadSvgs(svgs = []) {
