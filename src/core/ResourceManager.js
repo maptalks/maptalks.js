@@ -12,17 +12,21 @@ function parseSVG(str) {
     if (!root) {
         return null;
     }
+    //only support path parse
     const paths = root.querySelectorAll('path');
     const data = [];
+    const rootAttribute = root.attributes || {};
+    const rootFill = rootAttribute.fill && rootAttribute.fill.value;
+    const rootStroke = rootAttribute.stroke && rootAttribute.stroke.value;
     for (let i = 0, len = paths.length; i < len; i++) {
         const path = paths[i];
         const attributes = path.attributes;
-        if (!attributes) {
+        if (!attributes || !attributes.d) {
             continue;
         }
         const d = attributes.d.value;
-        const fill = attributes.fill && attributes.fill.value;
-        const stroke = attributes.stroke && attributes.stroke.value;
+        const fill = (attributes.fill && attributes.fill.value) || rootFill;
+        const stroke = (attributes.stroke && attributes.stroke.value) || rootStroke;
         const pathData = {
             path: d
         };
