@@ -300,6 +300,7 @@ export const ResourceManager = {
                     body: body
                 });
             };
+            //svg json collection
             if (isString(svgs)) {
                 fetch(svgs).then(res => res.json()).then(json => {
                     json.forEach(svg => {
@@ -311,6 +312,21 @@ export const ResourceManager = {
                     console.log(err);
                     reject('request svgs json data error');
                 });
+                return;
+            }
+            //support svg symbols
+            // https://developer.mozilla.org/en-US/docs/web/svg/element/symbol
+            if (svgs instanceof NodeList) {
+                for (let i = 0, len = svgs.length; i < len; i++) {
+                    const symbolNode = svgs[i];
+                    const name = symbolNode.id;
+                    const html = symbolNode.innerHTML;
+                    const body = `<xml><svg>${html}</svg></xml>`;
+                    if (name) {
+                        addToCache(name, body);
+                    }
+                }
+                resolve(result);
                 return;
             }
             let idx = 0;
