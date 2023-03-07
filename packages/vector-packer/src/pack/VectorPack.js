@@ -93,9 +93,11 @@ export default class VectorPack {
         // if (!this.options['center']) {
         //     this.options['center'] = [0, 0];
         // }
+        const params = [];
         this.symbolDef = symbol;
         this.symbol = loadFunctionTypes(symbol, () => {
-            return [options.zoom];
+            params[0] = options.zoom;
+            return params;
         });
         this.styledVectors = [];
         this.properties = {};
@@ -262,8 +264,10 @@ export default class VectorPack {
         if (!features || !features.length) return Promise.resolve(null);
         const iconReqs = {}, glyphReqs = {};
         const options = { zoom: this.options.zoom };
+        const params = [];
         const symbol = loadFunctionTypes(this.symbolDef, () => {
-            return [options.zoom];
+            params[0] = options.zoom;
+            return params;
         });
         let i = 0, l = features.length;
         const debugIndex = this.options.debugIndex;

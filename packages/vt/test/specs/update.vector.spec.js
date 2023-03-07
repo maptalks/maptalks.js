@@ -1638,6 +1638,70 @@ describe('vector layers update style specs', () => {
         }, 300);
     });
 
+    it('should can update marker opacity, fuzhenn/maptalks-ide#3060', done => {
+        const layerJSON = {
+          "type": "PointLayer",
+          "id": "point0",
+          "options": {
+            "collision": false
+          },
+          "geometries": [
+            {
+              "feature": {
+                "type": "Feature",
+                "geometry": {
+                  "type": "Point",
+                  "coordinates": [-74.00794082715453, 40.71149086790459]
+                },
+                "id": "data0",
+                "properties": null
+              },
+              "options": {
+                "maxMarkerHeight": 255,
+                "maxMarkerWidth": 255
+              },
+              "symbol": {
+                "markerFill": [0.53, 0.77, 0.94, 1],
+                "markerFillOpacity": 1,
+                "markerHeight": {
+                  "type": "exponential",
+                  "default": 20,
+                  "stops": [[16, 20]]
+                },
+                "markerHorizontalAlignment": "middle",
+                "markerIgnorePlacement": false,
+                "markerLineColor": [1, 1, 1, 1],
+                "markerLineDasharray": [0, 0, 0, 0],
+                "markerLineOpacity": 1,
+                "markerLineWidth": 3,
+                "markerOpacity": 0.82,
+                "markerPitchAlignment": "viewport",
+                "markerPlacement": "point",
+                "markerRotationAlignment": "viewport",
+                "markerType": "ellipse",
+                "markerVerticalAlignment": "middle",
+                "markerWidth": 20
+              }
+            }
+          ]
+        };
+        map.setCenter([-74.00794082715453, 40.71149086790459]);
+        const pointLayer = maptalks.Layer.fromJSON(layerJSON);
+        const geo = pointLayer.getGeometries()[0];
+        let count = 0;
+        pointLayer.on('canvasisdirty', () => {
+            count++;
+            geo.updateSymbol({
+              markerOpacity: 0.7
+            });
+            if (count === 2) {
+                done();
+            }
+
+        });
+        pointLayer.addTo(map);
+    });
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

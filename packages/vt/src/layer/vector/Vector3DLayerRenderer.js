@@ -631,6 +631,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (!Array.isArray(feature)) {
             feature = [feature];
         }
+        const params = [];
         const markerFeatures = [];
         const textFeatures = [];
         const zoom = this.getMap().getZoom();
@@ -639,12 +640,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             loadedSymbols = symbols.map(symbol => {
                 if (!symbol) { return symbol; }
                 return loadFunctionTypes(symbol, () => {
-                    return zoom;
+                    params[0] = zoom;
+                    return params;
                 });
             });
         } else {
             loadedSymbols = loadFunctionTypes(symbols, () => {
-                return zoom;
+                params[0] = zoom;
+                return params;
             });
         }
 
