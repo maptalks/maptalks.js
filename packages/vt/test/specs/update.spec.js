@@ -1936,6 +1936,73 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update normal texture, fuzhenn/maptalks-ide#3063', done => {
+        map.setLights({
+            "directional": {
+            "direction": [1, 1, -1],
+            "color": [1, 1, 1]
+          },
+          "ambient": {
+            "resource": null,
+            "exposure": 1,
+            "hsv": [0, 0, 0],
+            "orientation": 0
+          }
+        });
+        map.setPitch(70);
+        const plugin = {
+            type: 'lit',
+            dataConfig: {
+                type: '3d-extrusion',
+                altitudeScale: 5,
+                defaultAltitude: 10000
+            },
+            sceneConfig: {},
+        };
+        const material = {
+          "baseColorTexture": "http://localhost:" + PORT + "/textures/basecolor.jpg",
+          "baseColorFactor": [0.984313725490196, 0.984313725490196, 0.984313725490196, 1],
+        };
+        const style = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: { material }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt1', {
+            data: polygon,
+            style
+        });
+        let styleRefreshed = false;
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                layer.updateSymbol(0, {
+                    material: {
+                        "baseColorTexture": "http://localhost:" + PORT + "/textures/basecolor.jpg",
+                        "baseColorFactor": [0.984313725490196, 0.984313725490196, 0.984313725490196, 1],
+                        "normalTexture": "http://localhost:" + PORT + "/textures/normal.jpg",
+                        "normalMapFactor": 5
+                    }
+                });
+            } else if (count === 8) {
+                const pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
+                //[87, 140, 143, 255]
+                assert(styleRefreshed);
+                assert.deepEqual(pixel, [76, 97, 99, 255]);
+                done();
+            }
+        });
+        layer.on('refreshstyle', () => {
+            styleRefreshed = true;
+        });
+        layer.addTo(map);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [
             {

@@ -327,11 +327,16 @@ class MeshPainter extends Painter {
     }
 
     updateSymbol(symbol, all) {
+        let refreshMaterial = false;
+        if (symbol && symbol.material) {
+            // 检查材质的更新是否需要更新整个style
+            refreshMaterial = needRefreshMaterial(this.symbolDef[0].material || {}, symbol.material);
+        }
         const refresh = super.updateSymbol(symbol, all);
-        if (symbol.material) {
+        if (symbol && symbol.material) {
             this._updateMaterial(symbol.material);
         }
-        return refresh;
+        return refreshMaterial || refresh;
     }
 
     _isNeedRefreshStyle(oldSymbolDef, newSymbolDef) {
@@ -353,4 +358,21 @@ function hasTexture(symbolDef) {
         }
     }
     return false;
+}
+
+
+const MATERIAL_PROP_NEED_REBUILD_IN_VT = {
+    'normalTexture': 1,
+    'bumpTexture': 1
+};
+
+function needRefreshMaterial(oldSymbolDef, newSymbolDef) {
+    for (const p in newSymbolDef) {
+        // 指定的纹理从无到有，或从有到无时，需要刷新style
+        if (MATERIAL_PROP_NEED_REBUILD_IN_VT[p] && (newSymbolDef[p] !== oldSymbolDef[p] && (!oldSymbolDef[p] || !newSymbolDef[p]))) {
+            return true;
+        }
+    }
+    return false;
+
 }
