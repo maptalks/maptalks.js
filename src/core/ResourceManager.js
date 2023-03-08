@@ -19,24 +19,32 @@ function parseSVG(str) {
     if (!root) {
         return null;
     }
-    //only support path parse
-    const paths = root.querySelectorAll('path');
+    //parse all node,not only path node
+    const paths = root.childNodes;
     const data = [];
     const rootAttribute = root.attributes;
     const rootFill = getAttr(rootAttribute, 'fill');
+    const rootFillOpacity = getAttr(rootAttribute, 'fill-opacity');
     const rootStroke = getAttr(rootAttribute, 'stroke');
+    const rootStrokeOpacity = getAttr(rootAttribute, 'stroke-opacity');
+    const rootStrokeWidth = getAttr(rootAttribute, 'stroke-width');
     for (let i = 0, len = paths.length; i < len; i++) {
-        const path = paths[i];
-        const attributes = path.attributes;
-        if (!attributes || !attributes.d) {
+        const dom = paths[i];
+        const attributes = dom.attributes;
+        if (!attributes) {
             continue;
         }
-        const fillOpacity = getAttr(attributes, 'fill-opacity');
-        const strokeOpacity = getAttr(attributes, 'stroke-opacity');
-        if (fillOpacity === '0' || strokeOpacity === '0') {
+        let d;
+        const isPath = dom.tagName.toLowerCase() === 'path';
+        //非path节点直接拿dom节点 作为path参数
+        if (!isPath) {
+            d = dom;
+        } else {
+            d = getAttr(attributes, 'd');
+        }
+        if (!d) {
             continue;
         }
-        const d = getAttr(attributes, 'd');
         const fill = getAttr(attributes, 'fill') || rootFill;
         const stroke = getAttr(attributes, 'stroke') || rootStroke;
         const pathData = {
@@ -44,11 +52,24 @@ function parseSVG(str) {
         };
         if (fill) {
             pathData.fill = fill;
+            pathData['fill-opacity'] = getAttr(attributes, 'fill-opacity') || rootFillOpacity || 1;
         }
         if (stroke) {
             pathData.stroke = stroke;
+            pathData['stroke-opacity'] = getAttr(attributes, 'stroke-opacity') || rootStrokeOpacity || 1;
+            pathData['stroke-width'] = getAttr(attributes, 'stroke-width') || rootStrokeWidth || 1;
         }
         data.push(pathData);
+        if (!isPath) {
+            for (const p in pathData) {
+                if (p === 'path') {
+                    continue;
+                }
+                if (pathData.hasOwnProperty(p)) {
+                    dom.setAttribute(p, pathData[p]);
+                }
+            }
+        }
     }
     return data;
 }

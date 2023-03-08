@@ -103,6 +103,11 @@ export function getMarkerPathBase64(symbol, width, height) {
     svg.push('><defs></defs>');
 
     for (let i = 0; i < pathesToRender.length; i++) {
+        //非path节点的直接 out dom html,such: circle rect,polygon,polyline etc
+        if (pathesToRender[i].d instanceof Element) {
+            svg.push(pathesToRender[i].d.outerHTML);
+            continue;
+        }
         let strPath = '<path ';
         for (const p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
