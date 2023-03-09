@@ -103,15 +103,6 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this;
     }
 
-
-    /**
-     * refresh layer
-     * @return {Layer} this
-     */
-    refresh() {
-        return this;
-    }
-
     /**
      * Get the layer id
      * @returns {String} id

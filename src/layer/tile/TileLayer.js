@@ -190,10 +190,11 @@ class TileLayer extends Layer {
     }
 
     /**
-     * refresh tilelayer
-     * @return {Layer} this
+     * force Reload tilelayer.
+     * Note that this method will clear all cached tiles and reload them. It cannot be called in a large area, which is easy to cause performance problems
+     * @return {TileLayer} this
      */
-    refresh() {
+    forceReload() {
         this.clear();
         this.load();
         return this;
