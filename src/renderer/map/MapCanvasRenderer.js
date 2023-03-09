@@ -48,21 +48,18 @@ class MapCanvasRenderer extends MapRenderer {
         map._fireEvent('framestart');
         this.updateMapDOM();
         map.clearCollisionIndex();
-        if (this._needClear) {
-            this.clearCanvas();
-        }
-        this._needClear = false;
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
         const updated = this.drawLayerCanvas(layers);
         if (updated) {
             // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
             this.drawTops();
+            this._drawCenterCross();
+            if (map.options['debugSky']) {
+                this._debugSky();
+            }
         }
-        this._drawCenterCross();
-        if (map.options['debugSky']) {
-            this._debugSky();
-        }
+        this._needClear = false;
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -317,7 +314,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return false;
         }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
+        if (!this.isLayerCanvasUpdated() && !this.isViewChanged() && this._needClear === false) {
             return false;
         }
         if (!this.canvas) {
