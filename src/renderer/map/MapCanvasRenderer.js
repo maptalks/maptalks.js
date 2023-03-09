@@ -59,6 +59,7 @@ class MapCanvasRenderer extends MapRenderer {
                 this._debugSky();
             }
         }
+        this._needClear = false;
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -313,7 +314,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return false;
         }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
+        if (!this.isLayerCanvasUpdated() && !this.isViewChanged() && this._needClear === false) {
             return false;
         }
         if (!this.canvas) {
@@ -389,6 +390,8 @@ class MapCanvasRenderer extends MapRenderer {
 
     setToRedraw() {
         const layers = this._getAllLayerToRender();
+        //set maprender for clear canvas
+        this._needClear = true;
         for (let i = 0, l = layers.length; i < l; i++) {
             const renderer = layers[i].getRenderer();
             if (renderer && renderer.canvas && renderer.setToRedraw) {

@@ -895,4 +895,17 @@ describe('Map.Spec', function () {
         expect(map.isOffscreen([0, 100, 10, 110])).to.be.ok();
         expect(map.isOffscreen([0, -110, 10, -100])).to.be.ok();
     });
+
+    it('#centercross when map.layers=0', function () {
+        //clear all layers
+        map.removeLayer(baseLayer);
+        map.options.centerCross=true;
+        map.once('frameend',function(){
+            expect(map).to.be.painted(0, 0); 
+            map.options.centerCross=false;
+            map.once('frameend',function(){
+                expect(map).not.to.be.painted(0, 0); 
+            })
+        })
+    });
 });
