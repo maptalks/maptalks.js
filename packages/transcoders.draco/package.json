@@ -17,6 +17,9 @@
     "dist/transcoders.draco.js",
     "dist/transcoders.draco.mjs"
   ],
+  "dependencies": {
+    "@maptalks/gl": "^0.81.0"
+  },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
