@@ -237,7 +237,7 @@ class FillPainter extends BasicPainter {
             viewport,
             stencil: {
                 enable: () => {
-                    return !isRenderingTerrainSkin && renderer.isEnableTileStencil && renderer.isEnableTileStencil();
+                    return !!(!isRenderingTerrainSkin && renderer.isEnableTileStencil && renderer.isEnableTileStencil());
                 },
                 func: {
                     cmp: () => {
