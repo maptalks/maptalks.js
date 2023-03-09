@@ -274,7 +274,7 @@ export const ResourceManager = {
                     let imgBitMap;
                     if (offscreenCanvas) {
                         const ctx2 = getCtx(offscreenCanvas, width, height);
-                        ctx2.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+                        ctx2.drawImage(image, x, y, width, height, 0, 0, width, height);
                         imgBitMap = offscreenCanvas.transferToImageBitmap();
                         json[name].imgBitMap = imgBitMap;
                     }
