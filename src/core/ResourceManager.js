@@ -250,8 +250,6 @@ export const ResourceManager = {
                     });
                     return;
                 }
-                const ctx = getCtx(canvas, image.width, image.height);
-                ctx.drawImage(image, 0, 0);
                 const icons = [];
                 for (const name in json) {
                     const spriteItem = json[name];
@@ -261,7 +259,6 @@ export const ResourceManager = {
                     });
                 }
                 let idx = 0;
-                const tempCanvas = createCanvas();
                 const offscreenCanvas = createOffscreenCanvas();
                 function drawIcon() {
                     if (idx === icons.length) {
@@ -270,9 +267,9 @@ export const ResourceManager = {
                     }
                     const { name, spriteItem } = icons[idx];
                     const { x, y, width, height } = spriteItem;
-                    const ctx1 = getCtx(tempCanvas, width, height);
-                    ctx1.drawImage(canvas, x, y, width, height, 0, 0, width, height);
-                    const base64 = tempCanvas.toDataURL();
+                    const ctx = getCtx(canvas, width, height);
+                    ctx.drawImage(image, x, y, width, height, 0, 0, width, height);
+                    const base64 = canvas.toDataURL();
                     json[name].base64 = base64;
                     let imgBitMap;
                     if (offscreenCanvas) {
