@@ -8,13 +8,26 @@ describe('Spec of Masks', function () {
     var context = {
     };
 
+    function createRing(offset) {
+        var center = map.getCenter();
+        var x = center.x, y = center.y;
+        var minx = x - offset, maxx = x + offset, miny = y - offset, maxy = y + offset;
+        return [
+            [minx, miny],
+            [minx, maxy],
+            [maxx, maxy],
+            [maxx, miny],
+            [minx, miny]
+        ];
+    }
+
     beforeEach(function () {
         container = document.createElement('div');
         container.style.width = '150px';
         container.style.height = '150px';
         document.body.appendChild(container);
         var option = {
-            centerCross : true,
+            centerCross: true,
             zoom: 17,
             center: center
         };
@@ -52,38 +65,38 @@ describe('Spec of Masks', function () {
                 done();
             });
             layer.setMask(new maptalks.Marker(map.getCenter(), {
-                'symbol' : {
-                    'markerType' : 'ellipse',
-                    'markerWidth' : 20,
-                    'markerHeight' : 20,
-                    'markerFill' : '#fff',
-                    'markerFillOpacity' : 1,
-                    'markerLineWidth' : 3,
-                    'markerDy' : 5
+                'symbol': {
+                    'markerType': 'ellipse',
+                    'markerWidth': 20,
+                    'markerHeight': 20,
+                    'markerFill': '#fff',
+                    'markerFillOpacity': 1,
+                    'markerLineWidth': 3,
+                    'markerDy': 5
                 }
             }));
             done();
         });
         layer.setMask(new maptalks.Circle(map.getCenter(), 5, {
-            symbol : {
-                'polygonFill' : 'rgba(255, 255, 255, 0.1)'
+            symbol: {
+                'polygonFill': 'rgba(255, 255, 255, 0.1)'
             }
         }));
 
     }
 
     var tileLayer = new maptalks.TileLayer('tile', {
-        urlTemplate : TILE_IMAGE,
-        renderer:'canvas'
+        urlTemplate: TILE_IMAGE,
+        renderer: 'canvas'
     });
     //test tilelayer
     runTests(tileLayer, context);
 
     //test vectorlayer
     var vlayer = new maptalks.VectorLayer('v').addGeometry(new maptalks.Circle(center, 2000, {
-        symbol : {
-            'polygonFill' : 'rgba(0, 0, 0, 0.1)',
-            'polygonOpacity' : 1
+        symbol: {
+            'polygonFill': 'rgba(0, 0, 0, 0.1)',
+            'polygonOpacity': 1
         }
     }));
 
@@ -108,12 +121,12 @@ describe('Spec of Masks', function () {
 
             it('can remove mask,' + layerToTest.getJSONType(), function (done) {
                 layerToTest.setMask(new maptalks.Marker(map.getCenter(), {
-                    'symbol' : {
-                        'markerType' : 'ellipse',
-                        'markerWidth' : 10,
-                        'markerHeight' : 10,
-                        'markerFill' : '#000',
-                        'markerFillOpacity' : 1
+                    'symbol': {
+                        'markerType': 'ellipse',
+                        'markerWidth': 10,
+                        'markerHeight': 10,
+                        'markerFill': '#000',
+                        'markerFillOpacity': 1
                     }
                 }));
                 setTimeout(function () {
@@ -152,12 +165,12 @@ describe('Spec of Masks', function () {
 
     it('#713', function (done) {
         vlayer.setMask(new maptalks.Marker(map.getCenter(), {
-            'symbol' : {
-                'markerType' : 'ellipse',
-                'markerWidth' : 10,
-                'markerHeight' : 10,
-                'markerFill' : '#000',
-                'markerFillOpacity' : 1
+            'symbol': {
+                'markerType': 'ellipse',
+                'markerWidth': 10,
+                'markerHeight': 10,
+                'markerFill': '#000',
+                'markerFillOpacity': 1
             }
         }));
         map.addLayer(vlayer);
@@ -212,14 +225,28 @@ describe('Spec of Masks', function () {
             new maptalks.Circle(map.locate(map.getCenter(), 10, 0), 5).getShell()
         ]);
         var tileLayer = new maptalks.TileLayer('tile', {
-            urlTemplate : TILE_IMAGE,
-            renderer:'canvas'
+            urlTemplate: TILE_IMAGE,
+            renderer: 'canvas'
         });
         tileLayer.setMask(mask);
         map.addLayer(tileLayer);
         var extent = mask._getMaskPainter().get2DExtent();
         expect(extent.xmin).to.be.ok();
         expect(extent.ymin).to.be.ok();
+    });
+
+    it('mask has hole', function () {
+        var layer = new maptalks.VectorLayer('layer').addTo(map);
+        new maptalks.Marker(map.getCenter().toArray()).addTo(layer);
+        var ring = createRing(0.2), hole = createRing(0.1);
+        var polygon = new maptalks.Polygon([ring, hole]);
+        map.once('frameend', function () {
+            expect(layer).to.be.painted(0, 0);
+            layer.setMask(polygon);
+            map.once('frameend', function () {
+                expect(layer).to.be.painted(0, 0);
+            })
+        })
     });
 
 });

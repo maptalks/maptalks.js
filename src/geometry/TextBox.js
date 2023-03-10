@@ -292,10 +292,8 @@ class TextBox extends TextMarker {
 
     startEdit(opts) {
         const symbol = this._getCompiledSymbol();
-        console.log(symbol['markerWidth']);
         if (isFunctionDefinition(this._width)) {
             const markerWidth = symbol['markerWidth'];
-            console.log(markerWidth);
             this._oldWidth = this._width;
             this.setWidth(markerWidth);
         }
