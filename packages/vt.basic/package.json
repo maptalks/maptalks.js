@@ -3,6 +3,7 @@
   "version": "0.79.0",
   "description": "Basic rendering plugin for maptalks VectorTileLayer",
   "main": "dist/maptalks.vt.basic.js",
+  "private": true,
   "browser": "dist/maptalks.vt.basic.js",
   "scripts": {
     "build": "rollup --environment BUILD:production -c rollup.config.js",
