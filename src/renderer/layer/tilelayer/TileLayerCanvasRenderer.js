@@ -275,18 +275,18 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext) {
         if (parentTiles.length) {
             //closer the latter (to draw on top)
-            parentTiles.sort((t1, t2) => Math.abs(t2.info.z - this._tileZoom) - Math.abs(t1.info.z - this._tileZoom));
+            // parentTiles.sort((t1, t2) => Math.abs(t2.info.z - this._tileZoom) - Math.abs(t1.info.z - this._tileZoom));
+            parentTiles.sort(this._compareTiles);
             this._parentTiles = parentTiles;
         }
         if (childTiles.length) {
             this._childTiles = childTiles;
+            this._childTiles.sort(this._compareTiles);
         }
 
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
-        this._childTiles.sort(this._compareTiles);
-        this._parentTiles.sort(this._compareTiles);
         if (this.layer.options['opacity'] === 1) {
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));

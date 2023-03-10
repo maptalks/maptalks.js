@@ -38,8 +38,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     onDrawTileStart(context, parentContext) {
         const gl = this.gl;
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.POLYGON_OFFSET_FILL);
-        gl.depthFunc(gl.LEQUAL);
+
         const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
         gl.depthMask(depthMask);
         if (parentContext && parentContext.renderTarget) {

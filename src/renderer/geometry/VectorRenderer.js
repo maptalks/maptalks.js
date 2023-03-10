@@ -48,7 +48,7 @@ const el = {
 
     _paintAsPath: function () {
         const map = this.getMap();
-        const altitude = this.getAltitude();
+        const altitude = this._getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
         return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },

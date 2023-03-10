@@ -57,6 +57,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
             if (!this._getParent()) {
                 this.fire('editend');
             }
+            const map = this.getMap();
+            if (map) {
+                map.getRenderer().setToRedraw();
+            }
         }
         return this;
     },

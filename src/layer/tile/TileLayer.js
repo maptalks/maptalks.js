@@ -189,6 +189,18 @@ class TileLayer extends Layer {
         return new TileLayer(layerJSON['id'], layerJSON['options']);
     }
 
+    /**
+     * force Reload tilelayer.
+     * Note that this method will clear all cached tiles and reload them. It shouldn't be called frequently for performance reason.
+
+     * @return {TileLayer} this
+     */
+    forceReload() {
+        this.clear();
+        this.load();
+        return this;
+    }
+
 
     /**
      * Get tile size of the tile layer

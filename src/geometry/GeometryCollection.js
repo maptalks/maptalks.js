@@ -514,7 +514,11 @@ class GeometryCollection extends Geometry {
             geometries[i].startEdit(opts);
         }
         this._editing = true;
-        this.hide();
+        const layer = this.getLayer();
+        const needShadow = layer && layer.options['renderer'] === 'canvas';
+        if (needShadow) {
+            this.hide();
+        }
         setTimeout(() => {
             this.fire('editstart');
         }, 1);
