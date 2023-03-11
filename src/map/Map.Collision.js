@@ -70,7 +70,18 @@ Map.include(/** @lends Map.prototype */ {
             }
             //https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
             const bcRect = dom.getBoundingClientRect();
-            const { x, y, width, height } = bcRect;
+            const { x, y } = bcRect;
+            let { width, height } = bcRect;
+            // fix 1904
+            //in firefox,the dom init Cannot get width and height,why? I don't know either
+            //该问题仅仅发生在dom刚加入文档流,后期是可以正常获取到的
+            if (width === 0 || height === 0) {
+                const size = ui.getSize();
+                if (size) {
+                    width = size.width;
+                    height = size.height;
+                }
+            }
             const minX = x - collisionBufferSize, maxX = x + width + collisionBufferSize;
             const minY = y - collisionBufferSize, maxY = y + height + collisionBufferSize;
             ui.bbox[0] = minX;
