@@ -1401,13 +1401,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (this.pickingFBO && (this.pickingFBO.width !== canvas.width || this.pickingFBO.height !== canvas.height)) {
             this.pickingFBO.resize(canvas.width, canvas.height);
+                this._getFramePlugins().forEach(plugin => {
+                if (!plugin) {
+                    return;
+                }
+                plugin.resize(canvas.width, canvas.height);
+            });
         }
-        this._getFramePlugins().forEach(plugin => {
-            if (!plugin) {
-                return;
-            }
-            plugin.resize(canvas.width, canvas.height);
-        });
     }
 
     onRemove() {
