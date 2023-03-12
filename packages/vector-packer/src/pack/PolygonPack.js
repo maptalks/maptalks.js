@@ -235,7 +235,29 @@ export default class PolygonPack extends VectorPack {
                     flattened.push(x, y, z);
                 }
             }
-            const indices = earcut(flattened, holeIndices, 3);
+
+            let indices = earcut(flattened, holeIndices, 3);
+            if (flattened.length && !indices.length) {
+                // 在xy平面投影没有值时，无法生成结果，讨论：
+                // https://github.com/mapbox/earcut/issues/21
+                // 把面投影到xz平面上
+                const reprojected = [];
+                for (let i = 0; i < flattened.length; i += 3) {
+                    reprojected[i] = flattened[i];
+                    reprojected[i + 1] = flattened[i + 2];
+                    reprojected[i + 2] = flattened[i + 1];
+                }
+                indices = earcut(reprojected, holeIndices, 3);
+                // xz平面仍然没结果，投影到yz平面上
+                if (!indices.length) {
+                    for (let i = 0; i < flattened.length; i += 3) {
+                        reprojected[i] = flattened[i + 1];
+                        reprojected[i + 1] = flattened[i + 2];
+                        reprojected[i + 2] = flattened[i];
+                    }
+                    indices = earcut(reprojected, holeIndices, 3);
+                }
+            }
 
             for (let i = 0; i < indices.length; i += 3) {
                 this.addElements(
