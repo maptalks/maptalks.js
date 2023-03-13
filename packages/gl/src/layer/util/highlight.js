@@ -4,16 +4,71 @@ import * as reshader from '@maptalks/reshader.gl';
 
 const COLOR = [];
 
+
+export function clearShowOnly(mesh) {
+    if (!mesh.properties.showOnlyTimestamp) {
+        return;
+    }
+    delete mesh.properties.showOnlyTimestamp;
+    const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
+    if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
+        mesh.geometry.elements.destroy();
+        mesh.geometry.setElements(oldElementsBeforeHighlight);
+    }
+}
+
+export function showOnly(regl, mesh, items, timestamp, feaIdIndiceMap) {
+    const { showOnlyTimestamp } = mesh.properties;
+    if (!items) {
+        if (showOnlyTimestamp) {
+            clearShowOnly(mesh);
+        }
+        return;
+    }
+    if (timestamp === showOnlyTimestamp) {
+        return;
+    }
+    mesh.properties.showOnlyTimestamp = timestamp;
+    const ids = items.keys();
+    const elements = [];
+    for (const id of ids) {
+        if (!feaIdIndiceMap.has(id)) {
+            continue;
+        }
+        const indices = feaIdIndiceMap.get(id);
+        if (indices) {
+            pushIn(elements, indices);
+        }
+    }
+
+    if (!mesh.properties.oldElementsBeforeHighlight) {
+        mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
+    }
+    if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
+        mesh.geometry.elements.destroy();
+    }
+    const info = {
+        data: elements,
+        // type: mesh.geometry.getElementsType(elements),
+        primitive: mesh.geometry.getPrimitive()
+    };
+    mesh.geometry.setElements(regl.elements(info));
+    mesh.geometry.generateBuffers(regl);
+}
+
 export function clearHighlight(mesh) {
+    if (!mesh.properties.highlightTimestamp) {
+        return;
+    }
     const defines = mesh.defines;
     delete defines['HAS_HIGHLIGHT_COLOR'];
     delete defines['HAS_HIGHLIGHT_OPACITY'];
     mesh.setDefines(defines);
     delete mesh.properties.highlightTimestamp;
-    if (mesh.properties.oldElementsBeforeHighlight) {
+    const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
+    if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
         mesh.geometry.elements.destroy();
         mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
-        delete mesh.properties.oldElementsBeforeHighlight;
         delete mesh.properties.hasInvisible;
     }
     deleteHighlightBloomMesh(mesh);
@@ -150,7 +205,7 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
         }
         mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
         delete mesh.properties.hasInvisible;
-        delete mesh.properties.oldElementsBeforeHighlight;
+        // delete mesh.properties.oldElementsBeforeHighlight;
     }
     mesh.setDefines(defines);
     mesh.properties.highlightTimestamp = timestamp;

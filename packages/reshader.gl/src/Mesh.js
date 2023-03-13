@@ -1,6 +1,7 @@
 import { extend, isNil, isNumber, isFunction, isSupportVAO, hasOwn, defined } from './common/Util.js';
 import { mat4, vec3 } from 'gl-matrix';
 import BoundingBox from './BoundingBox.js';
+import { KEY_DISPOSED } from './common/Constants';
 
 const tempMat4 = [];
 
@@ -332,13 +333,13 @@ class Mesh {
 
     dispose() {
         const oldElements = this.properties.oldElementsBeforeHighlight;
-        if (oldElements) {
+        if (oldElements && !oldElements[KEY_DISPOSED] && oldElements !== this._geometry.elements) {
             if (oldElements.destroy) {
                 oldElements.destroy();
             }
-            delete this.properties.oldElementsBeforeHighlight;
-            delete this.properties.hasInvisible;
         }
+        delete this.properties.oldElementsBeforeHighlight;
+        delete this.properties.hasInvisible;
         delete this._geometry;
         delete this._material;
         this.uniforms = {};
