@@ -336,6 +336,7 @@ class Mesh {
         if (oldElements && !oldElements[KEY_DISPOSED] && oldElements !== this._geometry.elements) {
             if (oldElements.destroy) {
                 oldElements.destroy();
+                oldElements[KEY_DISPOSED] = true;
             }
         }
         delete this.properties.oldElementsBeforeHighlight;
