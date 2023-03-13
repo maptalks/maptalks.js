@@ -1166,7 +1166,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (!this._isVisible(plugin) || !hasMesh(plugin)) {
                     return;
                 }
-                if (!terrainSkinFilter(plugin) || !plugin.painter.dataConfig.awareOfTerrain) {
+                if (!terrainSkinFilter(plugin) || !this.layer.options.awareOfTerrain) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -1179,7 +1179,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (!this._isVisible(plugin) || !hasMesh(plugin)) {
                     return;
                 }
-                if (!terrainSkinFilter(plugin) || !plugin.painter.dataConfig.awareOfTerrain) {
+                if (!terrainSkinFilter(plugin) || !this.layer.options.awareOfTerrain) {
                     return;
                 }
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
@@ -1592,19 +1592,19 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         case 'native-line':
             renderPlugin = {
                 type: 'native-line',
-                dataConfig: { type: 'native-line', only2D: true, awareOfTerrain: true }
+                dataConfig: { type: 'native-line', only2D: true }
             };
             break;
         case 'native-point':
             renderPlugin = {
                 type: 'native-point',
-                dataConfig: { type: 'native-point', only2D: true, awareOfTerrain: true }
+                dataConfig: { type: 'native-point', only2D: true }
             };
             break;
         case 'fill':
             renderPlugin = {
                 type: 'fill',
-                dataConfig: { type: 'fill', only2D: true, awareOfTerrain: true },
+                dataConfig: { type: 'fill', only2D: true },
                 sceneConfig: { antialias: true }
             };
             break;

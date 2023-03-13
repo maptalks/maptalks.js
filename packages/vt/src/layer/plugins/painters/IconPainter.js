@@ -81,7 +81,7 @@ class IconPainter extends CollisionPainter {
     }
 
     isTerrainVector() {
-        return this.dataConfig.awareOfTerrain && !this.needToRefreshTerrainTile();
+        return this.layer.options.awareOfTerrain && !this.needToRefreshTerrainTile();
     }
 
     isTerrainSkin() {

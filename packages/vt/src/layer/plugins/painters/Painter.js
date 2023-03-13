@@ -137,7 +137,7 @@ class Painter {
     }
 
     isTerrainSkin() {
-        return this.dataConfig.awareOfTerrain;
+        return this.layer.options.awareOfTerrain;
     }
 
     isTerrainVector() {
@@ -259,12 +259,12 @@ class Painter {
     }
 
     createMeshes(geometries, transform, params, context) {
+        const awareOfTerrain = this.layer.options.awareOfTerrain;
         const meshes = [];
         for (let i = 0; i < geometries.length; i++) {
             if (!geometries[i]) {
                 continue;
             }
-            const awareOfTerrain = this.dataConfig.awareOfTerrain;
             if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
                 const geometry = geometries[i];
                 this._updateTerrainAltitude(geometry && geometry.geometry, context);

@@ -22,7 +22,7 @@ class NativePointPainter extends BasicPainter {
     }
 
     isTerrainVector() {
-        return this.dataConfig.awareOfTerrain;
+        return this.layer.options.awareOfTerrain;
     }
 
     createMesh(geo, transform) {

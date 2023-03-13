@@ -53,7 +53,8 @@ const defaultOptions = {
     fadeAnimation: false,
 
     debugTileData: false,
-    fetchOptions: null
+    fetchOptions: null,
+    awareOfTerrain: true
 };
 
 /**
