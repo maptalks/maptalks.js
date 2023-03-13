@@ -85,6 +85,7 @@ class TileHashset {
  * @property {Boolean}             [options.decodeImageInWorker=false]  - decode image in worker, for better performance if the server support
  * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
  * @property {Object}              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
+ * @property {Boolean}             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
  * @memberOf TileLayer
  * @instance
  */
@@ -140,7 +141,9 @@ const options = {
 
     'tileLimitPerFrame': 0,
 
-    'backZoomOffset': 0
+    'backZoomOffset': 0,
+
+    'awareOfTerrain': true
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
