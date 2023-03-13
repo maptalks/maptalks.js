@@ -33,7 +33,7 @@
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@maptalks/gl": "^0.81.0",
-    "@maptalks/gltf-layer": "0.34.2",
+    "@maptalks/gltf-layer": "0.36.1",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
