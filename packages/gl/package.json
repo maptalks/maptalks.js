@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gl",
-  "version": "0.81.0",
+  "version": "0.81.2",
   "description": "WebGL infrastrcture for maptalks",
   "main": "dist/maptalksgl.js",
   "browser": "dist/maptalksgl.js",
@@ -31,7 +31,7 @@
     "@mapbox/martini": "^0.2.0",
     "@maptalks/fusiongl": "^0.5.2",
     "@maptalks/regl": "^3.2.3",
-    "@maptalks/reshader.gl": "^0.81.0",
+    "@maptalks/reshader.gl": "^0.81.2",
     "color": "^3.0.0",
     "gl-matrix": "^2.6.1"
   },

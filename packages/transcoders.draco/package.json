@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.draco",
-  "version": "0.81.1",
+  "version": "0.81.2",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
   "module": "dist/transcoders.draco.mjs",
@@ -18,7 +18,7 @@
     "dist/transcoders.draco.mjs"
   ],
   "dependencies": {
-    "@maptalks/gl": "^0.81.0"
+    "@maptalks/gl": "^0.81.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",

@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.ktx2",
-  "version": "0.81.1",
+  "version": "0.81.2",
   "description": "ktx2 transcoder for @maptalks/gl",
   "main": "dist/transcoders.ktx2.js",
   "module": "dist/transcoders.ktx2.mjs",
@@ -22,7 +22,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "dependencies": {
-    "@maptalks/gl": "^0.81.0"
+    "@maptalks/gl": "^0.81.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
