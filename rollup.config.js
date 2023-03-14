@@ -5,6 +5,8 @@ const commonjs = require('rollup-plugin-commonjs'),
 const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
+const dev = process.env.BUILD === 'dev';
+console.log(process.env.BUILD);
 const plugins = testing ?
     [
         ['istanbul', {
@@ -32,13 +34,13 @@ const rollupPlugins = [
 ];
 const external = ['rbush', 'frustum-intersects', 'simplify-js', 'zousan'];
 
-module.exports = [
+const builds = [
     {
         input: 'src/index.js',
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': testing ? 'inline' : false,
+                'sourcemap': true,
                 'format': 'umd',
                 'name': 'maptalks',
                 banner,
@@ -73,3 +75,9 @@ module.exports = [
             }
         ]
     }];
+
+if (dev) {
+    module.exports = [builds[0]];
+} else {
+    module.exports = builds;
+}

@@ -25,7 +25,7 @@
     "build-dev": "rollup -c && gulp transform-proto",
     "build-test": "rollup -c --environment BUILD:test && gulp transform-proto",
     "build-styles": "gulp styles",
-    "dev": "rollup -c -w",
+    "dev": "rollup --environment BUILD:dev -c -w",
     "doc": "gulp doc",
     "lint": "eslint src/**/*.js test/**/*.js",
     "postversion": "gulp zip",
