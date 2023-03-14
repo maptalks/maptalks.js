@@ -286,7 +286,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context, parentContext);
 
 
-        if (this.layer.options['opacity'] === 1) {
+        if (this.layer.options['opacity'] >= 1) {
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
         }
