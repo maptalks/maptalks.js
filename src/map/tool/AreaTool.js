@@ -81,8 +81,9 @@ class AreaTool extends DistanceTool {
             units = [' sq.m', ' sq.km', ' sq.ft', ' sq.mi'];
         }
         let content = '';
+        const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
-            content += area < 1E6 ? area.toFixed(0) + units[0] : (area / 1E6).toFixed(2) + units[1];
+            content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
         }
         if (this.options['imperial']) {
             area *= 3.2808399;
@@ -90,7 +91,7 @@ class AreaTool extends DistanceTool {
                 content += '\n';
             }
             const sqmi = 5280 * 5280;
-            content += area < sqmi ? area.toFixed(0) + units[2] : (area / sqmi).toFixed(2) + units[3];
+            content += area < sqmi ? area.toFixed(decimals) + units[2] : (area / sqmi).toFixed(decimals) + units[3];
         }
         return content;
     }

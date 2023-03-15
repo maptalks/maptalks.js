@@ -15,10 +15,12 @@ import DrawTool from './DrawTool';
  * @property {Object}  options.symbol           - symbol of the line
  * @property {Object}  options.vertexSymbol     - symbol of the vertice
  * @property {Object}  options.labelOptions     - construct options of the vertice labels.
+ * @property {Number}  options.decimalPlaces     - The  decimal places of the measured value
  * @memberOf DistanceTool
  * @instance
  */
 const options = {
+    'decimalPlaces': 2,
     'mode': 'LineString',
     'language': 'zh-CN', //'en-US'
     'metric': true,
@@ -43,17 +45,17 @@ const options = {
             'textHorizontalAlignment': 'right',
             'textDx': 15
         },
-        'boxStyle' : {
-            'padding' : [6, 2],
-            'symbol' : {
-                'markerType' : 'square',
-                'markerFill' : '#fff',
-                'markerFillOpacity' : 0.9,
-                'markerLineColor' : '#b4b3b3',
+        'boxStyle': {
+            'padding': [6, 2],
+            'symbol': {
+                'markerType': 'square',
+                'markerFill': '#fff',
+                'markerFillOpacity': 0.9,
+                'markerLineColor': '#b4b3b3',
             }
         }
     },
-    'clearButtonSymbol' :[{
+    'clearButtonSymbol': [{
         'markerType': 'square',
         'markerFill': '#fff',
         'markerLineColor': '#b4b3b3',
@@ -190,15 +192,16 @@ class DistanceTool extends DrawTool {
             units = [' m', ' km', ' feet', ' mile'];
         }
         let content = '';
+        const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
-            content += length < 1000 ? length.toFixed(0) + units[0] : (length / 1000).toFixed(2) + units[1];
+            content += length < 1000 ? length.toFixed(decimals) + units[0] : (length / 1000).toFixed(decimals) + units[1];
         }
         if (this.options['imperial']) {
             length *= 3.2808399;
             if (content.length > 0) {
                 content += '\n';
             }
-            content += length < 5280 ? length.toFixed(0) + units[2] : (length / 5280).toFixed(2) + units[3];
+            content += length < 5280 ? length.toFixed(decimals) + units[2] : (length / 5280).toFixed(decimals) + units[3];
         }
         return content;
     }
@@ -326,15 +329,15 @@ class DistanceTool extends DrawTool {
     _addClearMarker(coordinates, prjCoord, dx) {
         let symbol = this.options['clearButtonSymbol'];
         let dxSymbol = {
-            'markerDx' : (symbol['markerDx'] || 0) + dx,
-            'textDx' : (symbol['textDx'] || 0) + dx
+            'markerDx': (symbol['markerDx'] || 0) + dx,
+            'textDx': (symbol['textDx'] || 0) + dx
         };
         if (Array.isArray(symbol)) {
             dxSymbol = symbol.map(s => {
                 if (s) {
                     return {
-                        'markerDx' : (s['markerDx'] || 0) + dx,
-                        'textDx' : (s['textDx'] || 0) + dx
+                        'markerDx': (s['markerDx'] || 0) + dx,
+                        'textDx': (s['textDx'] || 0) + dx
                     };
                 }
                 return null;
