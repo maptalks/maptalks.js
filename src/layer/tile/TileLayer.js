@@ -69,7 +69,6 @@ class TileHashset {
  * @property {Number}              [options.maxAvailableZoom=null] - Maximum zoom level for which tiles are available. Data from tiles at the maxAvailableZoom are used when displaying the map at higher zoom levels.
  * @property {Boolean}             [options.repeatWorld=true]  - tiles will be loaded repeatedly outside the world.
  * @property {Boolean}             [options.background=true]   - whether to draw a background during or after interacting, true by default
- * @property {Number}              [options.backgroundZoomDiff=6] - the zoom diff to find parent tile as background
  * @property {Boolean|Function}    [options.placeholder=false]    - a placeholder image to replace loading tile, can be a function with a parameter of the tile canvas
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]    - tile image's corssOrigin
@@ -99,7 +98,6 @@ const options = {
     'repeatWorld': true,
 
     'background': true,
-    'backgroundZoomDiff': 6,
 
     'loadingLimitOnInteracting': 3,
 
@@ -141,7 +139,8 @@ const options = {
 
     'tileLimitPerFrame': 0,
 
-    'backZoomOffset': 0,
+    'tileStackStartDepth': 7,
+    'tileStackDepth': 3,
 
     'awareOfTerrain': true
 };
@@ -393,9 +392,11 @@ class TileLayer extends Layer {
         const offsets = {
             0: offset0
         };
-        const preservedZoom = this.options['backZoomOffset'] + z;
+        const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
+        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
         const extent = new PointExtent();
         const tiles = [];
+        const parents = [];
         while (queue.length > 0) {
             const node = queue.pop();
             if (node.z === maxZoom) {
@@ -407,17 +408,18 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
-            if (preservedZoom < z && tiles[tiles.length - 1] !== node && preservedZoom === node.z) {
-                // extent._combine(node.extent2d);
-                tiles.push(node);
+            if (node.z >= stackMinZoom && node.z < stackMaxZoom) {
+                parents.push(node);
             }
         }
+        parents.sort(sortingTiles);
         return {
             tileGrids: [
                 {
                     extent,
                     count: tiles.length,
                     tiles,
+                    parents,
                     offset: [0, 0],
                     zoom: z
                 }
@@ -492,7 +494,6 @@ class TileLayer extends Layer {
                         error: node.error / 2,
                         res,
                         id: tileId,
-                        parentNodeId: node.id,
                         children: [],
                         url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
                         offset
@@ -1360,3 +1361,7 @@ function distanceToRect(min, max, xyz) {
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+
+function sortingTiles(t0, t1) {
+    return t0.z - t1.z;
+}
