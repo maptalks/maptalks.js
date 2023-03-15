@@ -38,7 +38,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     onDrawTileStart(context, parentContext) {
         const gl = this.gl;
         gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.ALWAYS);
+        gl.depthFunc(gl.LEQUAL);
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.enable(gl.STENCIL_TEST);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
@@ -92,7 +92,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.getTileOpacity(tileImage);
+        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
