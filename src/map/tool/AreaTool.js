@@ -81,7 +81,7 @@ class AreaTool extends DistanceTool {
             units = [' sq.m', ' sq.km', ' sq.ft', ' sq.mi'];
         }
         let content = '';
-        const decimals = this.options['decimalsLength'];
+        const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
             content += area < 1E6 ? area.toFixed(decimals) + units[0] : (area / 1E6).toFixed(decimals) + units[1];
         }

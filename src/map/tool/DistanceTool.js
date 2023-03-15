@@ -15,12 +15,12 @@ import DrawTool from './DrawTool';
  * @property {Object}  options.symbol           - symbol of the line
  * @property {Object}  options.vertexSymbol     - symbol of the vertice
  * @property {Object}  options.labelOptions     - construct options of the vertice labels.
- * @property {Number}  options.decimalsLength     - The length of the decimal places of the measured value
+ * @property {Number}  options.decimalPlaces     - The  decimal places of the measured value
  * @memberOf DistanceTool
  * @instance
  */
 const options = {
-    'decimalsLength': 2,
+    'decimalPlaces': 2,
     'mode': 'LineString',
     'language': 'zh-CN', //'en-US'
     'metric': true,
@@ -192,7 +192,7 @@ class DistanceTool extends DrawTool {
             units = [' m', ' km', ' feet', ' mile'];
         }
         let content = '';
-        const decimals = this.options['decimalsLength'];
+        const decimals = this.options['decimalPlaces'];
         if (this.options['metric']) {
             content += length < 1000 ? length.toFixed(decimals) + units[0] : (length / 1000).toFixed(decimals) + units[1];
         }
