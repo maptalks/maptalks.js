@@ -20,7 +20,7 @@ class Position {
             /**
              * @property z {Number} - z value, it's a pure property and doesn't take part in caculation for now.
              */
-            this.z = z || 0;
+            this.z = z;
         } else if (!isNil(x.x) && !isNil(x.y)) {
             this.x = +(x.x);
             this.y = +(x.y);
