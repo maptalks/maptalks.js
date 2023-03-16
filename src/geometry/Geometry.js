@@ -10,8 +10,7 @@ import {
     isNumber,
     isObject,
     forEachCoord,
-    flash,
-    sign
+    flash
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
 import { loadGeoSymbol } from '../core/mapbox';
