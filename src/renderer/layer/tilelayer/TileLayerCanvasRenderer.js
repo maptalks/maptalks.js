@@ -300,12 +300,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             delete this.drawingParentTiles;
         }
 
-        this.drawingTiles = true;
+        this.drawingCurrentTiles = true;
         tiles.sort(this._compareTiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
             this._drawTileAndCache(tiles[i], parentContext);
         }
-        delete this.drawingTiles;
+        delete this.drawingCurrentTiles;
 
         if (this.layer.options['opacity'] < 1) {
             this.drawingChildTiles = true;
@@ -332,11 +332,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _drawTileAndCache(tile, parentContext) {
-        this.drawingCurrentTile = true;
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
         this._drawTile(tile.info, tile.image, parentContext);
-        this.drawingCurrentTile = false;
     }
 
     drawOnInteracting(event, timestamp, context) {
@@ -621,7 +619,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
-        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         const alpha = ctx.globalAlpha;
         if (opacity < 1) {
             ctx.globalAlpha = opacity;

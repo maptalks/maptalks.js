@@ -90,7 +90,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
