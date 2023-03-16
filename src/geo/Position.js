@@ -258,7 +258,7 @@ class Position {
      * @private
      */
     _isNaN() {
-        return isNaN(this.x) || isNaN(this.y);
+        return isNaN(this.x) || isNaN(this.y) || isNumber(this.z) && isNaN(this.z);
     }
 
     /**
@@ -285,7 +285,7 @@ class Position {
      * @return {Coordinate}   fixed coordinate
      */
     toFixed(n) {
-        return new this.constructor(this.x.toFixed(n), this.y.toFixed(n));
+        return new this.constructor(this.x.toFixed(n), this.y.toFixed(n), isNumber(this.z) ? this.z.toFixed : undefined);
     }
 
     /**
@@ -293,10 +293,14 @@ class Position {
      * @return {Object} json
      */
     toJSON() {
-        return {
+        const json = {
             x: this.x,
             y: this.y
         };
+        if (isNumber(this.z)) {
+            json.z = this.z;
+        }
+        return json;
     }
 }
 
