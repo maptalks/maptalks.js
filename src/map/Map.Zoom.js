@@ -55,6 +55,7 @@ Map.include(/** @lends Map.prototype */{
         if (this._mapAnimPlayer) {
             this._stopAnim(this._mapAnimPlayer);
         }
+        delete this.cameraZenithDistance;
         this._zooming = true;
         this._startZoomVal = this.getZoom();
         this._startZoomCoord = this._containerPointToPrj(origin);
@@ -123,7 +124,9 @@ Map.include(/** @lends Map.prototype */{
         this._zoomTo(nextZoom, origin);
         this._zooming = false;
         this._getRenderer().onZoomEnd();
-
+        if (!this._suppressRecenter) {
+            this._recenterOnTerrain();
+        }
         /**
           * zoomend event
           * @event Map#zoomend

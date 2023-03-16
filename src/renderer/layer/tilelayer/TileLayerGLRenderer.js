@@ -42,9 +42,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.enable(gl.STENCIL_TEST);
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-        // for (let i = 0; i<8; i++) {
-        //     gl.disableVertexAttribArray(i);
-        // }
+
         const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
         gl.depthMask(depthMask);
         if (parentContext && parentContext.renderTarget) {
@@ -92,7 +90,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);

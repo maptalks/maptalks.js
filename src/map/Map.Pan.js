@@ -69,7 +69,6 @@ Map.include(/** @lends Map.prototype */ {
             console.warn('offset is limited to panBy when pitch is above maxPitch');
             // return this;
         }
-        this.onMoveStart();
         if (typeof (options['animation']) === 'undefined' || options['animation']) {
             offset = offset.multi(-1);
             // const point0 = this._prjToPoint(this._getPrjCenter());
@@ -80,8 +79,10 @@ Map.include(/** @lends Map.prototype */ {
             // const target = this.locateByPoint(this.getCenter(), offset.x, offset.y);
             this._panAnimation(target, options['duration'], step);
         } else {
+            this.onMoveStart();
             this._offsetCenterByPixel(offset);
-            this.onMoveEnd(this._parseEventFromCoord(this.getCenter()));
+            const endCoord = this.containerPointToCoord(new Point(this.width / 2, this.height / 2));
+            this.onMoveEnd(this._parseEventFromCoord(endCoord));
         }
         return this;
     },

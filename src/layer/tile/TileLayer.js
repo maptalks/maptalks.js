@@ -593,13 +593,16 @@ class TileLayer extends Layer {
             const glRes = map.getGLRes();
             this._zScale = map.altitudeToPoint(100, glRes) / 100;
         }
+        const renderer = this.getRenderer();
         const { xmin, ymin, xmax, ymax } = node.extent2d;
         TILE_BOX[0][0] = (xmin - offset[0]) * glScale;
         TILE_BOX[0][1] = (ymin - offset[1]) * glScale;
-        TILE_BOX[0][2] = (node.minAltitude || 0) * this._zScale;
+        const minAltitude = node.minAltitude || renderer && renderer.avgMinAltitude || 0;
+        TILE_BOX[0][2] = minAltitude * this._zScale;
         TILE_BOX[1][0] = (xmax - offset[0]) * glScale;
         TILE_BOX[1][1] = (ymax - offset[1]) * glScale;
-        TILE_BOX[1][2] = (node.maxAltitude || 0) * this._zScale;
+        const maxAltitude = node.maxAltitude || renderer && renderer.avgMaxAltitude || 0;
+        TILE_BOX[1][2] = maxAltitude * this._zScale;
         return intersectsBox(projectionView, TILE_BOX);
     }
 
@@ -1168,14 +1171,21 @@ class TileLayer extends Layer {
     }
 
     _getTileOffset(z) {
+        if (!this._tileOffsets) {
+            this._tileOffsets = {};
+        }
+        if (this._tileOffsets[z]) {
+            return this._tileOffsets[z];
+        }
         let offset = this.options['offset'];
         if (isFunction(offset)) {
             offset = offset.call(this, z);
         }
         if (isNumber(offset)) {
-            return [offset, offset];
+            offset = [offset, offset];
         }
-        return offset || [0, 0];
+        this._tileOffsets[z] = offset || [0, 0];
+        return this._tileOffsets[z];
     }
 
     _getTileId(x, y, zoom, id) {

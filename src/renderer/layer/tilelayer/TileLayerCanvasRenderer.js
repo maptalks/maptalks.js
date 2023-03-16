@@ -102,6 +102,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // 导致可能出现consumeTileQueue在fxaa阶段后调用，之后的阶段就不再绘制。
             // 改为consumeTileQueue只在finalRender时调用即解决问题
             this._consumeTileQueue();
+            this._computeAvgTileAltitude();
             this._renderTimestamp = timestamp;
         }
 
@@ -290,21 +291,30 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
-
-        if (this.layer.options['opacity'] >= 1 && !this.layer._hasOwnSR) {
-            // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting
+        if (this.layer.options['opacity'] === 1 && !this.layer._hasOwnSR) {
+            // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
+            this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingChildTiles;
+            this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingParentTiles;
         }
 
+        this.drawingCurrentTiles = true;
         tiles.sort(this._compareTiles);
         for (let i = 0, l = tiles.length; i < l; i++) {
             this._drawTileAndCache(tiles[i], parentContext);
         }
+        delete this.drawingCurrentTiles;
 
         if (this.layer.options['opacity'] < 1) {
+            this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingChildTiles;
+            this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingParentTiles;
         }
 
         placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
@@ -314,7 +324,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onDrawTileStart() { }
-    onDrawTileEnd() { }
+    onDrawTileEnd() {}
 
     _drawTile(info, image, parentContext) {
         if (image) {
@@ -323,11 +333,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _drawTileAndCache(tile, parentContext) {
-        this.drawingCurrentTile = true;
         tile.current = true;
         this.tilesInView[tile.info.id] = tile;
         this._drawTile(tile.info, tile.image, parentContext);
-        this.drawingCurrentTile = false;
     }
 
     drawOnInteracting(event, timestamp, context) {
@@ -509,6 +517,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         /* eslint-enable no-unmodified-loop-condition */
     }
 
+    _computeAvgTileAltitude() {
+        let sumMin = 0;
+        let sumMax = 0;
+        let count = 0;
+        for (const p in this.tilesInView) {
+            const info = this.tilesInView[p] && this.tilesInView[p].info;
+            if (info) {
+                sumMin += info.minAltitude || 0;
+                sumMax += info.maxAltitude || 0;
+                count++;
+            }
+        }
+        this.avgMinAltitude = sumMin / count;
+        this.avgMaxAltitude = sumMax / count;
+    }
+
     checkTileInQueue() {
         return true;
     }
@@ -596,7 +620,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
-        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         const alpha = ctx.globalAlpha;
         if (opacity < 1) {
             ctx.globalAlpha = opacity;
@@ -650,7 +674,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     getDebugInfo(tileId) {
         const xyz = tileId.split('_');
         const length = xyz.length;
-        return 'x:' + xyz[length - 2] + ', y:' + xyz[length - 3] + ', z:' + xyz[length - 1];
+        return xyz[length - 2] + '/' + xyz[length - 3] + '/' + xyz[length - 1];
     }
 
     _findChildTiles(info) {

@@ -26,6 +26,7 @@ import SpatialReference from './spatial-reference/SpatialReference';
 import { computeDomPosition } from '../core/util/dom';
 
 const TEMP_COORD = new Coordinate(0, 0);
+const TEMP_POINT = new Point(0, 0);
 const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky'];
 /**
  * @property {Object} options                                   - map's options, options must be updated by config method:<br> map.config('zoomAnimation', false);
@@ -469,7 +470,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return this._center;
         }
         const projection = this.getProjection();
-        return projection.unproject(this._prjCenter);
+        const center = projection.unproject(this._prjCenter);
+        if (this.centerAltitude) {
+            center.z = this.centerAltitude;
+        }
+        return center;
     }
 
     /**
@@ -1573,6 +1578,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
 
     onMoveEnd(param) {
         this._moving = false;
+        if (!this._suppressRecenter) {
+            this._recenterOnTerrain();
+        }
+
+
         this._trySetCursor('default');
         /**
          * moveend event
@@ -1963,7 +1973,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _setPrjCoordAtContainerPoint(coordinate, point) {
-        if (point.x === this.width / 2 && point.y === this.height / 2) {
+        if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
             return this;
         }
         const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
@@ -1993,10 +2003,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @returns {Coordinate} the new projected center.
      */
     _offsetCenterByPixel(pixel) {
-        const pos = new Point(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
-        const pCenter = this._containerPointToPrj(pos);
-        this._setPrjCenter(pCenter);
-        return pCenter;
+        const pos = TEMP_POINT.set(this.width / 2 - pixel.x, this.height / 2 - pixel.y);
+        const coord = this._containerPointToPrj(pos, TEMP_COORD);
+        const containerCenter = TEMP_POINT.set(this.width / 2, this.height / 2);
+        this._setPrjCoordAtContainerPoint(coord, containerCenter);
     }
 
     /**
@@ -2368,7 +2378,7 @@ Map.include(/** @lends Map.prototype */{
                 const pCoordinate = projection.project(coordinates[i], prjOut);
                 let point = transformation.transform(pCoordinate, resolution);
                 point = point._multi(res);
-                this._toContainerPoint(point, isTransforming, res, 0, centerPoint);
+                this._toContainerPoint(point, isTransforming, coordinates[i].z, centerPoint);
                 pts.push(point);
             }
             return pts;
@@ -2523,6 +2533,8 @@ Map.include(/** @lends Map.prototype */{
     pixelToDistance: function () {
         const COORD0 = new Coordinate(0, 0);
         const COORD1 = new Coordinate(0, 0);
+        const TARGET0 = new Coordinate(0, 0);
+        const TARGET1 = new Coordinate(0, 0);
         return function (width, height) {
             const projection = this.getProjection();
             if (!projection) {
@@ -2530,9 +2542,12 @@ Map.include(/** @lends Map.prototype */{
             }
             const fullExt = this.getFullExtent();
             const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
-            const target = COORD0.set(this.width / 2 + width, this.height / 2 + d * height);
-            const coord = this.containerPointToCoord(target, COORD1);
-            return projection.measureLength(this.getCenter(), coord);
+            const coord0 = COORD0.set(this.width / 2, this.height / 2);
+            const coord1 = COORD1.set(this.width / 2 + width, this.height / 2 + d * height);
+            // 考虑高度海拔后，容器中心点的坐标就不一定是center了
+            const target0 = this.containerPointToCoord(coord0, TARGET0);
+            const target1 = this.containerPointToCoord(coord1, TARGET1);
+            return projection.measureLength(target0, target1);
         };
     }(),
 
