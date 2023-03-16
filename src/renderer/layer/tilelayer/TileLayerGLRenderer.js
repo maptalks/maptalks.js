@@ -90,13 +90,13 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.getTileOpacity(tileImage);
+        const opacity = this.drawingCurrentTile ? this.getTileOpacity(tileImage) : 1;
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
         }
         const gl = this.gl;
-        gl.stencilFunc(gl.LEQUAL, this.tilesInView[tileInfo.id] ? 0 : Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
+        gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
         const layerPolygonOffset = this.layer.getPolygonOffset();
         const polygonOffset = this.tilesInView[tileInfo.id] ? layerPolygonOffset - 1 : layerPolygonOffset;
         gl.polygonOffset(polygonOffset, polygonOffset);

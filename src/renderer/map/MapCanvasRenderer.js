@@ -442,6 +442,9 @@ class MapCanvasRenderer extends MapRenderer {
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+        }
         delete this.context;
         delete this.canvas;
         delete this.map;
