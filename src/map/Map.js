@@ -1973,6 +1973,9 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     }
 
     _setPrjCoordAtContainerPoint(coordinate, point) {
+        if (!this.centerAltitude && point.x === this.width / 2 && point.y === this.height / 2) {
+            return this;
+        }
         const t = this._containerPointToPoint(point)._sub(this._prjToPoint(this._getPrjCenter()));
         const pcenter = this._pointToPrj(this._prjToPoint(coordinate).sub(t));
         this._setPrjCenter(pcenter);
