@@ -2545,8 +2545,8 @@ Map.include(/** @lends Map.prototype */{
             const coord0 = COORD0.set(this.width / 2, this.height / 2);
             const coord1 = COORD1.set(this.width / 2 + width, this.height / 2 + d * height);
             // 考虑高度海拔后，容器中心点的坐标就不一定是center了
-            const target0 = this.containerPointToCoord(TARGET0, coord0);
-            const target1 = this.containerPointToCoord(TARGET1, coord1);
+            const target0 = this.containerPointToCoord(coord0, TARGET0);
+            const target1 = this.containerPointToCoord(coord1, TARGET1);
             return projection.measureLength(target0, target1);
         };
     }(),
