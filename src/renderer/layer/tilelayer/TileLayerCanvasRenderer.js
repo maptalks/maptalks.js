@@ -291,7 +291,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
-        if (this.layer.options['opacity'] === 1 && !this.layer._hasOwnSR) {
+        if (this.layer.options['opacity'] === 1) {
             // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
