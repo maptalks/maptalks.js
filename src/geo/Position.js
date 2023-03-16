@@ -24,11 +24,11 @@ class Position {
         } else if (!isNil(x.x) && !isNil(x.y)) {
             this.x = +(x.x);
             this.y = +(x.y);
-            this.z = x.z || 0;
+            this.z = x.z;
         } else if (Array.isArray(x)) {
             this.x = +(x[0]);
             this.y = +(x[1]);
-            this.z = x[2] || 0;
+            this.z = x[2];
         }
         if (this._isNaN()) {
             throw new Error('Position is NaN');
