@@ -96,9 +96,9 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
         }
         const gl = this.gl;
-        gl.stencilFunc(gl.LESS, this.tilesInView[tileInfo.id] ? 0 : Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
+        gl.stencilFunc(gl.LESS, this.drawingCurrentTiles ? 0 : 1 + Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
         const layerPolygonOffset = this.layer.getPolygonOffset();
-        const polygonOffset = this.tilesInView[tileInfo.id] ? layerPolygonOffset - 1 : layerPolygonOffset;
+        const polygonOffset = this.drawingCurrentTiles ? layerPolygonOffset - 1 : layerPolygonOffset;
         gl.polygonOffset(polygonOffset, polygonOffset);
 
         this.drawGLImage(tileImage, x, y, w, h, scale, opacity, debugInfo);

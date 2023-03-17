@@ -5,6 +5,9 @@ import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
 
+// used to debug tiles
+const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
+
 const shaders = {
     'vertexShader': `
         attribute vec2 a_position;
@@ -29,6 +32,7 @@ const shaders = {
 
         uniform float u_opacity;
         uniform float u_debug_line;
+        uniform vec4 u_base_color;
 
         varying vec2 v_texCoord;
 
@@ -38,6 +42,7 @@ const shaders = {
             } else {
                 gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
             }
+            gl_FragColor *= u_base_color;
         }
     `
 };
@@ -65,7 +70,7 @@ const ImageGLRenderable = Base => {
          * @param {Number} h - height at map's gl zoom
          * @param {Number} opacity
          */
-        drawGLImage(image, x, y, w, h, scale, opacity, debug) {
+        drawGLImage(image, x, y, w, h, scale, opacity, debug, baseColor) {
             if (this.gl.program !== this.program) {
                 this.useProgram(this.program);
             }
@@ -88,6 +93,7 @@ const ImageGLRenderable = Base => {
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             gl.uniform1f(this.program['u_debug_line'], 0);
+            gl.uniform4fv(this.program['u_base_color'], baseColor || DEFAULT_BASE_COLOR);
 
             const { glBuffer } = image;
             if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
@@ -126,6 +132,7 @@ const ImageGLRenderable = Base => {
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], 1);
             gl.uniform1f(this.program['u_debug_line'], 1);
+            gl.uniform4fv(this.program['u_base_color'], DEFAULT_BASE_COLOR);
             gl.drawArrays(gl.LINE_STRIP, 0, 5);
             //draw debug info
             let canvas = this._debugInfoCanvas;
