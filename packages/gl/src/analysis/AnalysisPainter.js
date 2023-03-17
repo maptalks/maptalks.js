@@ -51,6 +51,12 @@ class AnalysisPainter {
         if (!this._hasAnalysis()) {
             return tex;
         }
+        this._regl.clear({
+            color: [0, 0, 0, 0],
+            depth: 1,
+            stencil : 0,
+            framebuffer : this._fbo
+        });
         delete this._shader.shaderDefines['HAS_FLOODANALYSE'];
         delete this._shader.shaderDefines['HAS_VIEWSHED'];
         delete this._shader.shaderDefines['HAS_SKYLINE'];

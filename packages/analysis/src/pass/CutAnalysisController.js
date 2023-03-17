@@ -487,7 +487,8 @@ export default class CutAnalysisController {
                     }
                 ]
             },
-            this.pickingFBO
+            this.pickingFBO,
+            this.map
         );
     }
 

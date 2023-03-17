@@ -86,6 +86,7 @@ export default class CrossCutAnalysis extends Analysis {
     }
 
     _setPickingFBO(renderer) {
+        const map = this.layer.getMap();
         this.pickingFBO = renderer.canvas.pickingFBO || renderer.regl.framebuffer(renderer.canvas.width, renderer.canvas.height);
         const pickRenderer = new reshader.Renderer(renderer.regl);
         this._picking = new reshader.FBORayPicking(
@@ -102,7 +103,8 @@ export default class CrossCutAnalysis extends Analysis {
                     }
                 ]
             },
-            this.pickingFBO
+            this.pickingFBO,
+            map
         );
     }
 

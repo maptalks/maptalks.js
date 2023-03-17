@@ -214,6 +214,7 @@ export default class ExcavateAnalysis extends Analysis {
     }
 
     _preparePickingContext(renderer) {
+        const map = this.layer.getMap();
         this.pickingFBO = renderer.regl.framebuffer(renderer.canvas.width, renderer.canvas.height);
         this.renderer = new reshader.Renderer(renderer.regl);
         this._picking = new reshader.FBORayPicking(
@@ -230,7 +231,8 @@ export default class ExcavateAnalysis extends Analysis {
                     }
                 ]
             },
-            this.pickingFBO
+            this.pickingFBO,
+            map
         );
     }
 

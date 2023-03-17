@@ -147,8 +147,14 @@ class WeatherPainter {
         if (!this._layer) {
             return 0;
         }
-        const render = this._layer.getRenderer();
-        return render.getFrameTime();
+        if (this._currentFrameTime === undefined) {
+            this._currentFrameTime = 0;
+        }
+        if (this.isPlaying()) {
+            const render = this._layer.getRenderer();
+            this._currentFrameTime = render.getFrameTime();
+        }
+        return  this._currentFrameTime;
     }
 
     isEnable() {
@@ -169,6 +175,16 @@ class WeatherPainter {
     isEnableSnow() {
         const weatherConfig = this._layer.getWeatherConfig();
         return weatherConfig && weatherConfig.enable && weatherConfig.snow && weatherConfig.snow.enable;
+    }
+
+    isPlaying() {
+        const weatherConfig = this._layer.getWeatherConfig();
+        if (weatherConfig) {
+            if (weatherConfig.playing === false) {//明确指定暂停天气动画
+                return false;
+            }
+            return true;
+        }
     }
 
     _hasWeather() {
