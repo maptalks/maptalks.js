@@ -3,6 +3,8 @@
 precision mediump float;
 uniform sampler2D skins[SKIN_COUNT];
 uniform float opacity;
+uniform vec4 debugColor;
+uniform float isParent;
 varying vec2 vUv;
 
 vec4 blend(vec4 src, vec4 dst) {
@@ -17,4 +19,7 @@ void main() {
         color = blend(texture2D(skins[i], uv), color);
     }
     gl_FragColor = color * opacity;
+    if (isParent == 1.0) {
+        gl_FragColor *= debugColor;
+    }
 }

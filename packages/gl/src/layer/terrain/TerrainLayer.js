@@ -60,11 +60,14 @@ export default class TerrainLayer extends maptalks.TileLayer {
     }
 
     _getTileZoom(zoom) {
+        // 防止触发
+        this['_isUpdating'] = true;
         const maxAvailableZoom = this.options['maxAvailableZoom'];
         // 忽略原有的 maxAvailableZoom 逻辑，改为如果zoom超过 maxAvailableZoom 则用父瓦片分割
         this.options['maxAvailableZoom'] = null;
         const tileZoom = super['_getTileZoom'](zoom);
         this.options['maxAvailableZoom'] = maxAvailableZoom;
+        this['_isUpdating'] = false;
         return tileZoom;
     }
 
@@ -103,17 +106,22 @@ export default class TerrainLayer extends maptalks.TileLayer {
         if (!tiles.length) {
             return EMPTY_TILE_GRIDS;
         }
+        const parents = grid.parents || EMPTY_ARRAY;
+        const parentCount = parents.length;
+        const allTiles = parents.concat(tiles);
+
         const sr = layer.getSpatialReference();
         const size = tiles[0].extent2d.getWidth();
 
         const dx = tileSysScale.x;
         const dy = tileSysScale.y;
 
+        const parentSkinTiles = [];
         const skinTiles = [];
         const allSkinTileIds = new Set();
 
-        for (let i = 0; i < tiles.length; i++) {
-            const info = tiles[i];
+        for (let i = 0; i < allTiles.length; i++) {
+            const info = allTiles[i];
             const { res } = info;
             const { res: skinRes, zoom } = getSkinTileRes(sr, info.z, res);
             const resScale = skinRes / res;
@@ -157,7 +165,11 @@ export default class TerrainLayer extends maptalks.TileLayer {
             const tileSkinTiles = info.skinTileIds[layerId];
             for (let j = 0; j < tileSkinTiles.length; j++ ){
                 if (!allSkinTileIds.has(tileSkinTiles[j].id)) {
-                    skinTiles.push(tileSkinTiles[j]);
+                    if (i < parentCount) {
+                        parentSkinTiles.push(tileSkinTiles[j]);
+                    } else {
+                        skinTiles.push(tileSkinTiles[j]);
+                    }
                     allSkinTileIds.add(tileSkinTiles[j].id);
                 }
             }
@@ -167,6 +179,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
                 {
                     extent: grid.extent,
                     tiles: skinTiles,
+                    parents: parentSkinTiles,
                     count: skinTiles.length
                 }
             ],
