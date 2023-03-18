@@ -45,7 +45,7 @@ class Class {
         }
         this.setOptions(options);
         this.callInitHooks();
-        this._isUpdating = false;
+        this._isUpdatingOptions = false;
     }
 
     proxyOptions() {
@@ -61,7 +61,7 @@ class Class {
                     return true;
                 }
                 target[key] = value;
-                if (this._isUpdating) {
+                if (this._isUpdatingOptions) {
                     return true;
                 }
                 const opts = {};
@@ -119,7 +119,7 @@ class Class {
      * @return {Class} this
      */
     config(conf) {
-        this._isUpdating = true;
+        this._isUpdatingOptions = true;
         if (!conf) {
             const config = {};
             for (const p in this.options) {
@@ -127,7 +127,7 @@ class Class {
                     config[p] = this.options[p];
                 }
             }
-            this._isUpdating = false;
+            this._isUpdatingOptions = false;
             return config;
         } else {
             if (arguments.length === 2) {
@@ -148,7 +148,7 @@ class Class {
             }
             // callback when set config
             this.onConfig(conf);
-            this._isUpdating = false;
+            this._isUpdatingOptions = false;
         }
         return this;
     }
