@@ -3,8 +3,9 @@ import "./zlib.min";
 import Martini from '@mapbox/martini';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
-const offscreenCanvas = new OffscreenCanvas(514, 514);
-const offscreenCanvasContext = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+
+let BITMAP_CANVAS = null;
+let BITMAP_CTX = null;
 
 const terrainRequests = {};
 
@@ -384,10 +385,17 @@ function bitmapToImageData(imgBitmap) {
     // const pow = Math.floor(Math.log(width) / Math.log(2));
     // width = height = Math.pow(2, pow) + 1;
 
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
-    offscreenCanvasContext.drawImage(imgBitmap, 0, 0, width, height);
-    return offscreenCanvasContext.getImageData(0, 0, width, height);
+    // TODO 需要解决OffscreenCanvas的兼容性：不支持时，在主线程里获取imageData
+    // const supportOffscreenCanvas = typeof OffscreenCanvas !== undefined;
+    if (!BITMAP_CANVAS) {
+        BITMAP_CANVAS = new OffscreenCanvas(1, 1);
+        BITMAP_CTX = BITMAP_CANVAS.getContext('2d', { willReadFrequently: true });
+    }
+
+    BITMAP_CANVAS.width = width;
+    BITMAP_CANVAS.height = height;
+    BITMAP_CTX.drawImage(imgBitmap, 0, 0, width, height);
+    return BITMAP_CTX.getImageData(0, 0, width, height);
 }
 
 function mapboxBitMapToHeights(imageData, terrainWidth) {
