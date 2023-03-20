@@ -978,24 +978,11 @@ function (exports) {
         }, fetchOptions);
     };
 
-    var offCanvas, offCtx;
     function requestImageOffscreen(url, cb, fetchOptions) {
-        if (!offCanvas) {
-            offCanvas = new OffscreenCanvas(2, 2);
-            offCtx = offCanvas.getContext('2d',{willReadFrequently: true });
-        }
         fetch(url, fetchOptions ? fetchOptions : {})
             .then(response => response.blob())
             .then(blob => createImageBitmap(blob))
             .then(bitmap => {
-                // var { width, height } = bitmap;
-                // offCanvas.width = width;
-                // offCanvas.height = height;
-                // offCtx.drawImage(bitmap, 0, 0);
-                // bitmap.close();
-                // var imgData = offCtx.getImageData(0, 0, width, height);
-                // debugger
-                // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects#supported_objects
                 cb(null, {data:bitmap});
             }).catch(err => {
                 console.warn('error when loading tile:', url);
