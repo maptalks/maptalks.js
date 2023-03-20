@@ -61,13 +61,13 @@ export default class TerrainLayer extends maptalks.TileLayer {
 
     _getTileZoom(zoom) {
         // 防止触发
-        this['_isUpdating'] = true;
+        this['_isUpdatingOptions'] = true;
         const maxAvailableZoom = this.options['maxAvailableZoom'];
         // 忽略原有的 maxAvailableZoom 逻辑，改为如果zoom超过 maxAvailableZoom 则用父瓦片分割
         this.options['maxAvailableZoom'] = null;
         const tileZoom = super['_getTileZoom'](zoom);
         this.options['maxAvailableZoom'] = maxAvailableZoom;
-        this['_isUpdating'] = false;
+        this['_isUpdatingOptions'] = false;
         return tileZoom;
     }
 
