@@ -85,9 +85,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 mesh.properties.skinCount = skinCount;
                 mesh.defines = defines;
             }
-            const maxZoom = this.layer.getSpatialReference().getMaxZoom();
+            // const maxZoom = this.layer.getSpatialReference().getMaxZoom();
             const isLeaf = this.drawingCurrentTiles === true;
-            mesh.setUniform('level', isLeaf ? 0 : maxZoom - tileInfo.z);
+            mesh.setUniform('stencilRef', isLeaf ? 0 : 1);
             mesh.setUniform('isParent', isLeaf ? 0 : 1);
             mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
             if (isLeaf) {
@@ -269,17 +269,41 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         //     this._bindCompare = terrainCompare.bind(this);
         // }
         // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
+        const fbo = this.getRenderFBO(context);
         uniforms.cullFace = 'front';
         uniforms.enableStencil = false;
         uniforms.colorMask = false;
-        this.renderer.render(this._shader, uniforms, this._parentScene, this.getRenderFBO(context));
+        this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
 
         uniforms.enableStencil = true;
         uniforms.colorMask = true;
         uniforms.cullFace = 'back';
 
-        this.renderer.render(this._shader, uniforms, this._leafScene, this.getRenderFBO(context));
-        this.renderer.render(this._shader, uniforms, this._parentScene, this.getRenderFBO(context));
+
+        // draw leafs terrain surface
+        this._leafScene.meshes.forEach(m => {
+            const skirtOffset = m.properties.skirtOffset;
+            m.geometry.setDrawOffset(0);
+            m.geometry.setDrawCount(skirtOffset);
+        });
+        this.renderer.render(this._shader, uniforms, this._leafScene, fbo);
+
+        // draw parent terrain
+        this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
+
+        // draw leafs skirts
+        this._leafScene.meshes.forEach(m => {
+            const { skirtOffset, skirtCount } = m.properties;
+            m.geometry.setDrawOffset(skirtOffset);
+            m.geometry.setDrawCount(skirtCount);
+        });
+        this.renderer.render(this._shader, uniforms, this._leafScene, fbo);
+
+        // reset leafs offset and count
+        this._leafScene.meshes.forEach(m => {
+            m.geometry.setDrawOffset(0);
+            m.geometry.setDrawCount(null);
+        });
 
         // this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
         if ((this._leafScene.meshes.length || this._parentScene.meshes.length) && !Object.keys(this.tilesLoading).length) {
@@ -288,12 +312,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     _createTerrainMesh(tileInfo, terrainGeo) {
-        const { positions, texcoords, triangles } = terrainGeo;
-
-        const heightScale = this._getPointZ(100) / 100;
-        for(let i = 2; i < positions.length; i = i + 3) {
-            positions[i] *= heightScale;
-        }
+        const { positions, texcoords, triangles, numTrianglesWithoutSkirts } = terrainGeo;
         const geo = new reshader.Geometry({
             POSITION: positions,
             TEXCOORD_0: texcoords
@@ -306,9 +325,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             uv0Attribute: 'TEXCOORD_0'
         });
 
-        // geo.properties.skirtOffset = numTriangles * 3;
-        // geo.properties.skirtCount = triangles.length - numTriangles * 3;
-
         geo.generateBuffers(this.regl);
 
         const skinCount = this.layer.getSkinCount();
@@ -317,6 +333,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             'SKIN_COUNT': skinCount
         });
         mesh.properties.skinCount = skinCount;
+        mesh.properties.skirtOffset = numTrianglesWithoutSkirts * 3;
+        mesh.properties.skirtCount = triangles.length - numTrianglesWithoutSkirts * 3;
         mesh.properties.z = tileInfo.z;
         // mesh.properties.tileInfo = tileInfo;
         const textures = [];
@@ -325,6 +343,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             textures[i] = emptyTexture;
         }
         mesh.setUniform('skins', textures);
+        mesh.setUniform('bias', 0);
 
         const map = this.getMap();
         const tileSize = this.layer.options['tileSize'];
@@ -800,7 +819,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                         return '<=';
                     },
                     ref: (context, props) => {
-                        return props.level;
+                        return props.stencilRef;
                     }
                 },
                 op: {
@@ -893,8 +912,13 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _getUniformValues() {
         const map = this.getMap();
         const projViewMatrix = map.projViewMatrix;
+        let heightScale = this._heightScale;
+        if (!heightScale) {
+            heightScale = this._heightScale = this._getPointZ(100) / 100;
+        }
         const uniforms = {
             projViewMatrix,
+            heightScale
         };
         return uniforms;
     }

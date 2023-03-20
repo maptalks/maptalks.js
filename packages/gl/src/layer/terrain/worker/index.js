@@ -461,56 +461,56 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
 }
 
-function createMartiniData(error, heights, width) {
-    const martini = new Martini(width);
-    const terrainTile = martini.createTile(heights);
-    const mesh = terrainTile.getMesh(error);
-    const { triangles, vertices } = mesh;
-    const positions = [], texcoords = [];
-    const skirtOffset = 0;//terrainStructure.skirtOffset;
-    for (let i = 0; i < vertices.length / 2; i++) {
-        const x = vertices[i * 2], y = vertices[i * 2 + 1];
-        positions.push(x * (1 + skirtOffset));
-        positions.push(-y * (1 + skirtOffset));
-        positions.push(heights[y * width + x]);
-        // if (i >= numVerticesWithoutSkirts) {
-        //     positions.push(0);
-        // } else {
-        //     positions.push(heights[y * width + x]);
-        // }
-        texcoords.push(x / width);
-        texcoords.push(y / width);
-    }
-    const terrain = {
-        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles
-    };
-    return terrain;
-}
-
 // function createMartiniData(error, heights, width) {
 //     const martini = new Martini(width);
 //     const terrainTile = martini.createTile(heights);
-//     const mesh = terrainTile.getMeshWithSkirts(error);
-//     const { triangles, vertices, numVerticesWithoutSkirts, numTriangles } = mesh;
+//     const mesh = terrainTile.getMesh(error);
+//     const { triangles, vertices } = mesh;
 //     const positions = [], texcoords = [];
 //     const skirtOffset = 0;//terrainStructure.skirtOffset;
 //     for (let i = 0; i < vertices.length / 2; i++) {
 //         const x = vertices[i * 2], y = vertices[i * 2 + 1];
 //         positions.push(x * (1 + skirtOffset));
 //         positions.push(-y * (1 + skirtOffset));
-//         if (i >= numVerticesWithoutSkirts) {
-//             positions.push(0);
-//         } else {
-//             positions.push(heights[y * width + x]);
-//         }
+//         positions.push(heights[y * width + x]);
+//         // if (i >= numVerticesWithoutSkirts) {
+//         //     positions.push(0);
+//         // } else {
+//         //     positions.push(heights[y * width + x]);
+//         // }
 //         texcoords.push(x / width);
 //         texcoords.push(y / width);
 //     }
 //     const terrain = {
-//         positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles, numTriangles
+//         positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles
 //     };
 //     return terrain;
 // }
+
+function createMartiniData(error, heights, width) {
+    const martini = new Martini(width);
+    const terrainTile = martini.createTile(heights);
+    const mesh = terrainTile.getMeshWithSkirts(error);
+    const { triangles, vertices, numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
+    const positions = [], texcoords = [];
+    const skirtOffset = 0;//terrainStructure.skirtOffset;
+    for (let i = 0; i < vertices.length / 2; i++) {
+        const x = vertices[i * 2], y = vertices[i * 2 + 1];
+        positions.push(x * (1 + skirtOffset));
+        positions.push(-y * (1 + skirtOffset));
+        if (i >= numVerticesWithoutSkirts) {
+            positions.push(0);
+        } else {
+            positions.push(heights[y * width + x]);
+        }
+        texcoords.push(x / width);
+        texcoords.push(y / width);
+    }
+    const terrain = {
+        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles, numTrianglesWithoutSkirts
+    };
+    return terrain;
+}
 
 // 把heights转换为width为terrainWidth的高程数组数据
 const cachedArray = {};
