@@ -29,7 +29,8 @@
             centerCross: true,
 
             //有裂缝
-            "center":[114.31135353780905,30.5437759669405,46.900001525878906],"zoom":18.20975314908587,"pitch":0,"bearing":0,
+            "center":[114.31135353780905,30.5437759669405,46.900001525878906],"zoom":10.20975314908587,"pitch":0,"bearing":0,
+            "center":[113.85080360115717,29.685772006274732,54.5],"zoom":16.68079641373733,"pitch":58.400000000000034,"bearing":129.8666666666665
             // pitch: 45,
             // spatialReference:{
             //     projection:'EPSG:4326'
@@ -110,13 +111,14 @@
             //mapbox服务
             debug: true,
             type: 'mapbox',
-            tileSize: 512,
-            spatialReference: 'preset-vt-3857',
-            // urlTemplate: 'https://api.mapbox.com/raster/v1/mapbox.mapbox-terrain-dem-v1/{z}/{x}/{y}.webp?access_token=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
-            // subdomains:['0', '1', '2', '3', '4', '5', '6'],
+            tileSize: 256,
+            terrainWidth: 257,
+            maxAvailableZoom: 14,
 
             urlTemplate: 'https://{s}.tiles.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=pk.eyJ1IjoibWFwYm94LWdsLWpzIiwiYSI6ImNram9ybGI1ajExYjQyeGxlemppb2pwYjIifQ.LGy5UGNIsXUZdYMvfYRiAQ',
-            subdomains:['a', 'b', 'c', 'd']
+            subdomains:['a', 'b', 'c', 'd'],
+
+            debugOutline:[ 1, 1, 0, 1]
         };
         const group = new maptalks.GroupGLLayer('group', skinLayers, {
             terrain
