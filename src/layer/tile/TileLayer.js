@@ -73,6 +73,7 @@ class TileHashset {
  * @property {String}              [options.fragmentShader=null]  - custom fragment shader, replace <a href="https://github.com/maptalks/maptalks.js/blob/master/src/renderer/layer/tilelayer/TileLayerGLRenderer.js#L8">the default fragment shader</a>
  * @property {String}              [options.crossOrigin=null]    - tile image's corssOrigin
  * @property {Boolean}             [options.fadeAnimation=true]  - fade animation when loading tiles
+ * @property {Number}              [options.fadeDuration=167]    - fading animation duration in ms, default is 167 (10 frames)
  * @property {Boolean}             [options.debug=false]         - if set to true, tiles will have borders and a title of its coordinates.
  * @property {String}              [options.renderer=gl]         - TileLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
  * @property {Number}              [options.maxCacheSize=256]    - maximum number of tiles to cache
@@ -114,6 +115,8 @@ const options = {
     'tileSystem': null,
 
     'fadeAnimation': !IS_NODE,
+
+    'fadeDuration': (1000 / 60 * 10),
 
     'debug': false,
 
@@ -346,7 +349,7 @@ class TileLayer extends Layer {
             z = this._getTileZoom(map.getZoom());
         }
         const sr = this.getSpatialReference();
-        const maxZoom = Math.min(z, this.getMaxZoom());
+        const maxZoom = Math.min(z, this.getMaxZoom(), this.options['maxAvailableZoom'] || Infinity);
         const projectionView = map.projViewMatrix;
         const fullExtent = this._getTileFullExtent();
 
@@ -392,8 +395,7 @@ class TileLayer extends Layer {
         const offsets = {
             0: offset0
         };
-        const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
-        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
+
         const extent = new PointExtent();
         const tiles = [];
         const parents = [];
@@ -408,7 +410,7 @@ class TileLayer extends Layer {
                 offsets[node.z + 1] = this._getTileOffset(node.z + 1);
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
-            if (node.z >= stackMinZoom && node.z < stackMaxZoom) {
+            if (this.isParentTile(z, maxZoom, node)) {
                 parents.push(node);
             }
         }
@@ -426,6 +428,13 @@ class TileLayer extends Layer {
             ],
             count: tiles.length
         };
+    }
+
+    isParentTile(z, maxZoom, tile) {
+        const stackMinZoom = Math.max(this.getMinZoom(), z - this.options['tileStackStartDepth']);
+        const stackMaxZoom = Math.min(maxZoom, stackMinZoom + this.options['tileStackDepth']);
+        return tile.z >= stackMinZoom && tile.z < stackMaxZoom;
+
     }
 
     _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer, glRes) {
@@ -1190,7 +1199,7 @@ class TileLayer extends Layer {
 
     _getTileId(x, y, zoom, id) {
         //id is to mark GroupTileLayer's child layers
-        return `${id || this.getId()}_${y}_${x}_${zoom}`;
+        return `${id || this.getId()}_${x}_${y}_${zoom}`;
     }
 
 
