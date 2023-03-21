@@ -456,7 +456,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _isSkinReady(tileImage) {
         if (!tileImage.skinStatus) {
-            return false;
+            // 还没有初始化
+            return true;
         }
         const skinCount = this.layer.getSkinCount();
         for (let i = 0; i < skinCount; i++) {

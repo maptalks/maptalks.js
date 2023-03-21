@@ -248,8 +248,9 @@ TerrainLayer.include({
     '_getTileId': (x, y, z) => {
         // always assume terrain layer is pyramid mode
         // 由字符串操作改为数值操作，提升性能
-        const row = Math.sqrt(Math.pow(4, z));
-        return '' + ((z === 0 ? 0 : Math.pow(4, z - 1)) + x * row + y);
+        const total = Math.pow(4, z + 1);
+        const row = Math.sqrt(total / 4);
+        return '' + (total + x * row + y);
     }
 })
 
