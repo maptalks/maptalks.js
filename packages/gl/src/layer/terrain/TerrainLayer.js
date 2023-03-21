@@ -11,6 +11,7 @@ const options = {
     'forceRenderOnMoving': true,
     'forceRenderOnZooming': true,
     'forceRenderOnRotating': true,
+    'fadeDuration': (1000 / 60 * 15),
     'opacity': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
@@ -20,7 +21,8 @@ const options = {
     'depthMask': true,
     'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
-    'requireSkuToken': true
+    'requireSkuToken': true,
+    'tileRetryCount': 0
 };
 
 const EMPTY_TILE_GRIDS = {

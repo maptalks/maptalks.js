@@ -73,7 +73,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!tileInfo || !map || !tileImage) {
             return;
         }
-        let opacity = 1;
+        let opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         opacity *= (this.layer.options.opacity || 1);
         const mesh = tileImage.terrainMesh;
         if (mesh) {
@@ -85,9 +85,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 mesh.properties.skinCount = skinCount;
                 mesh.defines = defines;
             }
-            // const maxZoom = this.layer.getSpatialReference().getMaxZoom();
+            const maxZoom = this.layer.getSpatialReference().getMaxZoom();
             const isLeaf = this.drawingCurrentTiles === true;
-            mesh.setUniform('stencilRef', isLeaf ? 0 : 1);
+            mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
             mesh.setUniform('isParent', isLeaf ? 0 : 1);
             mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
             if (isLeaf) {
@@ -239,7 +239,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 data: texture,
                 width: w,
                 height: h,
-                flipY: true
+                flipY: true,
+                mipmap: true,
+                min: 'mipmap',
+                mag: 'linear'
             };
             tex = tileImage.skins[skinIndex];
             if (!tex) {
@@ -264,21 +267,34 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     _endFrame(context) {
+        const enableFading = this.layer.options['fadeAnimation'] && this.layer.options['fadeDuration'] > 0;
+
         const uniforms = this._getUniformValues();
-        // if (!this._bindCompare) {
-        //     this._bindCompare = terrainCompare.bind(this);
-        // }
-        // 原始顺序是先画 parentTile，再画tile，所以这里要改为倒序绘制
+
         const fbo = this.getRenderFBO(context);
         uniforms.cullFace = 'front';
         uniforms.enableStencil = false;
         uniforms.colorMask = false;
+        uniforms.depthMask = true;
         this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
 
         uniforms.enableStencil = true;
         uniforms.colorMask = true;
         uniforms.cullFace = 'back';
 
+        this._parentScene.meshes.sort(terrainMeshCompare);
+
+        if (enableFading) {
+            // draw parent terrain surface，禁用深度值写入，作为叶子瓦片fading的背景
+            uniforms.depthMask = false;
+            this._parentScene.meshes.forEach(m => {
+                const skirtOffset = m.properties.skirtOffset;
+                m.geometry.setDrawOffset(0);
+                m.geometry.setDrawCount(skirtOffset);
+            });
+            this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
+            uniforms.depthMask = true;
+        }
 
         // draw leafs terrain surface
         this._leafScene.meshes.forEach(m => {
@@ -288,22 +304,30 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         });
         this.renderer.render(this._shader, uniforms, this._leafScene, fbo);
 
-        // draw parent terrain
+        // write parent terrain surface depth，因为上面已经绘制过，这里无需再次绘制
+        if (enableFading) {
+            uniforms.colorMask = false;
+        }
         this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
 
+        // draw parent terrain skirts
+        uniforms.colorMask = true;
+        this._parentScene.meshes.forEach(m => {
+            const { skirtOffset, skirtCount } = m.properties;
+            m.geometry.setDrawOffset(skirtOffset);
+            m.geometry.setDrawCount(skirtCount);
+        });
+        this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
+
+
         // draw leafs skirts
+
         this._leafScene.meshes.forEach(m => {
             const { skirtOffset, skirtCount } = m.properties;
             m.geometry.setDrawOffset(skirtOffset);
             m.geometry.setDrawCount(skirtCount);
         });
         this.renderer.render(this._shader, uniforms, this._leafScene, fbo);
-
-        // reset leafs offset and count
-        this._leafScene.meshes.forEach(m => {
-            m.geometry.setDrawOffset(0);
-            m.geometry.setDrawCount(null);
-        });
 
         // this.renderer.render(this._shader, uniforms, this._scene, this.getRenderFBO(context));
         if ((this._leafScene.meshes.length || this._parentScene.meshes.length) && !Object.keys(this.tilesLoading).length) {
@@ -422,6 +446,37 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         };
     }
 
+    getTileOpacity(tileImage) {
+        if (!this._isSkinReady(tileImage)) {
+            this.resetTileLoadTime(tileImage);
+            return 0;
+        }
+        return super.getTileOpacity(tileImage);
+    }
+
+    _isSkinReady(tileImage) {
+        if (!tileImage.skinStatus) {
+            return false;
+        }
+        const skinCount = this.layer.getSkinCount();
+        for (let i = 0; i < skinCount; i++) {
+            if (!tileImage.skinStatus[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    isValidCachedTile(tile) {
+        if (!tile.image) {
+            return false;
+        }
+        if (!this._isSkinReady(tile.image)) {
+            return false;
+        }
+        return true;
+    }
+
     loadTile(tile) {
         const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
         const sp = this.layer.getSpatialReference();
@@ -512,6 +567,11 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             }
         }
         super.abortTileLoading(tileImage, tileInfo);
+    }
+
+    onTileError(data, tile)  {
+        // TODO
+        super.onTileError(data, tile);
     }
 
     _queryTerrain(out, tileIndex, worldPos, res, z) {
@@ -836,9 +896,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             },
             depth: {
                 enable: true,
-                mask: () => {
+                mask: (_, props) => {
                     const depthMask = this.layer.options['depthMask'];
-                    return depthMask;
+                    return depthMask && props['depthMask'];
                 },
                 func: this.layer.options['depthFunc'] || '<='
                 // func: (_, props) => {
@@ -995,3 +1055,7 @@ function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height, t
     ctx.globalAlpha = 1;
 }
 
+
+function terrainMeshCompare(m0, m1) {
+    return m1.properties.z - m0.properties.z;
+}
