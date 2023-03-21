@@ -1,5 +1,6 @@
 import { Map, renderer } from 'maptalks';
 import createREGL from '@maptalks/regl';
+import PostProcess from '../layer/postprocess/PostProcess';
 
 let postCanvas;
 let regl;
@@ -104,7 +105,10 @@ function doPostProcess(renderer, canvas) {
         'enableLut': +!!lutConfig.enable,
         'lookupTable': context['lutTexture'] ? context['lutTexture'].texture : emptyLutTexture
     };
-    postProcess.postprocess(uniforms, texture({
+    if (!postProcess) {
+        postProcess = new PostProcess(regl);
+    }
+    postProcess.postprocess(null, uniforms, texture({
         width: postCanvas.width,
         height: postCanvas.height,
         data: canvas,

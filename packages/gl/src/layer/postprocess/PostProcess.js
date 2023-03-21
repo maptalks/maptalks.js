@@ -275,7 +275,7 @@ export default class PostProcess {
         if (!this._postProcessShader) {
             this._postProcessShader = new reshader.PostProcessShader();
         }
-        const renderer = this._layer.getRenderer();
+        const renderer = this._layer && this._layer.getRenderer();
         const source = src || renderer._getFBOColor(fbo);
         uniforms['resolution'] = vec2.set(RESOLUTION, source.width, source.height);
         uniforms['textureSource'] = source;
