@@ -64,6 +64,7 @@ import * as symbolizer from './renderer/geometry/symbolizers';
 /** @namespace animation */
 import * as animation from './core/Animation';
 export { symbolizer, animation };
+export { animate } from './core/Animation';
 
 export { registerWorkerAdapter } from './core/worker/Worker';
 
