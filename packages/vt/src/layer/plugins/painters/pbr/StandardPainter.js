@@ -1,5 +1,5 @@
 import { reshader, mat4 } from '@maptalks/gl';
-import { extend, hasOwn } from '../../Util';
+import { extend, hasOwn, isNil } from '../../Util';
 import MeshPainter from '../MeshPainter';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
@@ -175,7 +175,8 @@ class StandardPainter extends MeshPainter {
                 depth: {
                     enable: true,
                     range: this.sceneConfig.depthRange || [0, 1],
-                    func: this.sceneConfig.depthFunc || '<='
+                    func: this.sceneConfig.depthFunc || '<=',
+                    mask: isNil(this.sceneConfig.depthMask) ? true : this.sceneConfig.depthMask
                 }
             }
         };
