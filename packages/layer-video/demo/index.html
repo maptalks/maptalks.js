@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>视频图层</title>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
+    <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script type="text/javascript" src="../dist/maptalks.video.js"></script>
+  <style>
+    html,body{
+        margin:0px;
+        height:100%;
+        width: 100%;
+    }
+    #map { width: 100%; height: 100%; background-color : #000;}
+    .btn { position: absolute; top: 10px;left:10px;z-index: 9999}
+    #play { margin-left:50px;}
+    #audio { margin-left:100px;}
+  </style>
+</head>
+<body>
+<input id="stop" class="btn" type="button" value="停止"/>
+<input id="play" class="btn" type="button" value="播放"/>
+<input id="audio" class="btn" type="button" value="声音"/>
+<div id="map">
+
+</div>
+<script>
+var map = new maptalks.Map("map",{
+    center : [111.74424, 30.425457967790365],
+    zoom: 13,
+    minZoom: 1,
+    maxZoom: 19,
+    pitch : 45,
+    view: {
+        projection: 'baidu'
+    },
+    baseLayer: new maptalks.TileLayer('base', {
+        urlTemplate: 'http://api2.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&udt=20161109&scale=1&styles=t%3Awater%7Ce%3Aall%7Cc%3A%23044161%2Ct%3Aland%7Ce%3Aall%7Cc%3A%23091934%2Ct%3Aboundary%7Ce%3Ag%7Cc%3A%23064f85%2Ct%3Arailway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Ahighway%7Ce%3Ag%7Cc%3A%23004981%2Ct%3Ahighway%7Ce%3Ag.f%7Cc%3A%23005b96%7Cl%3A1%2Ct%3Ahighway%7Ce%3Al%7Cv%3Aon%2Ct%3Aarterial%7Ce%3Ag%7Cc%3A%23004981%7Cl%3A-39%2Ct%3Aarterial%7Ce%3Ag.f%7Cc%3A%2300508b%2Ct%3Agreen%7Ce%3Aall%7Cv%3Aoff%7Cc%3A%23056197%2Ct%3Asubway%7Ce%3Aall%7Cv%3Aoff%2Ct%3Amanmade%7Ce%3Aall%7Cv%3Aoff%2Ct%3Alocal%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aarterial%7Ce%3Al%7Cv%3Aon%2Ct%3Aboundary%7Ce%3Ag.f%7Cc%3A%23029fd4%2Ct%3Abuilding%7Ce%3Aall%7Cc%3A%231a5787%2Ct%3Apoi%7Ce%3Aall%7Cv%3Aoff%2Ct%3Aall%7Ce%3Al%7Cv%3Aoff',
+    })
+});
+
+const videoSurface = new maptalks.VideoSurface([[111.73424, 30.435457967790365, 1],[111.75424, 30.435457967790365, 1],[111.75424, 30.415457967790365, 1],[111.73424, 30.415457967790365, 1]], {
+    url: 'data/test1.mp4',
+    opacity: 1
+});
+const videoLayer = new maptalks.VideoLayer('video').addTo(map);
+videoSurface.addTo(videoLayer);
+document.getElementById('stop').onclick = function() {
+    videoSurface.pause();
+};
+document.getElementById('play').onclick = function() {
+    videoSurface.play();
+};
+let audioNumber = 0;
+document.getElementById('audio').onclick = function() {
+    if (audioNumber % 2) {
+        videoSurface.setAudio(true);
+    } else {
+        videoSurface.setAudio(false);
+    }
+    audioNumber++;
+};
+</script>
+</body>
+</html>

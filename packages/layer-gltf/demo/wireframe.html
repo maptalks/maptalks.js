@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>wireframe shader</title>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script>
+    <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl.js"></script>
+    <script type="text/javascript" src="../dist/maptalks.gltf-dev.js"></script>
+  <style>
+    html,body{
+        margin:0px;
+        height:100%;
+        width: 100%;
+    }
+    #map1 { position: absolute;width: 800px;height: 300px;right: 100px;top: 0px;}
+    #map { width: 100%; height: 100%; background-color : #000;}
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+var map = new maptalks.Map("map",{
+    center : [13.4169, 52.5295],
+    zoom   :  15,
+    pitch : 70,
+    bearing : 180,
+    centerCross : true,
+    doubleClickZoom : false,
+    attribution : {
+      'content' : '<span style="padding:4px;">&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://osmbuilding.org">osmbuilding.org</a></span>'
+    },
+    baseLayer : new maptalks.TileLayer('tile',{
+        'urlTemplate' : 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+        'subdomains'  : ['a','b','c','d']
+    })
+});
+var url ='gltf/cube-animation/cube.gltf';//gltf模型的路径
+var coordinate = map.getCenter();
+
+//添加一个gltfmarker到gltf图层中去
+var gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+var gltfMarker = new maptalks.GLTFMarker(coordinate, {
+    symbol : {
+        url : url
+    }
+});
+gltfMarker.setShader('wireframe');
+gltfMarker.addTo(gltflayer);
+</script>
+</body>
+</html>

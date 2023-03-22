@@ -1,0 +1,12 @@
+{
+    "env": {
+      "mocha": true
+    },
+    "globals": {
+      "expect": true,
+      "video" : true,
+      "maptalks" : true,
+      "maptalksgl" : true
+    },
+    "plugins": ["mocha"]
+  }

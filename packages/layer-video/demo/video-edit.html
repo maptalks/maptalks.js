@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>视频与倾斜模型叠加</title>
+  <script type="text/javascript" src="../node_modules/maptalks/dist/maptalks.js"></script>
+  <script type="text/javascript" src="../node_modules/@maptalks/gl/dist/maptalksgl.js"></script>
+  <script type="text/javascript" src="../dist/maptalks.video.js"></script>
+  <style>
+    html,body{
+        margin:0px;
+        height:100%;
+        width: 100%;
+    }
+    #map { width: 100%; height: 100%; background-color: black }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    var map = new maptalks.Map("map", {
+        center: [111.74422581529439, 30.425617933436598],
+        zoom : 19.93450274852584,
+        centerCross: true,
+        seamlessZoom: true,
+        spatialReference : {
+            'resolutions': (function () {
+                const resolutions = [];
+                const d = 2 * 6378137 * Math.PI;
+                for (let i = 0; i < 23; i++) {
+                    resolutions[i] = d / (256 * Math.pow(2, i));
+                }
+                return resolutions;
+            })(),
+            'fullExtent': {
+                'top': 6378137 * Math.PI,
+                'left': -6378137 * Math.PI,
+                'bottom': -6378137 * Math.PI,
+                'right': 6378137 * Math.PI
+            },
+            projection : 'EPSG:3857'
+        },
+
+        baseLayer: new maptalks.TileLayer('base', {
+        //   maxAvailableZoom : 15,
+          urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          subdomains: ['a','b','c','d'],
+          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        })
+    });
+
+    var sceneConfig = {
+        //阴影设置
+        shadow : {
+            type : 'esm',
+            // type : 'stencil',
+            enable : true,
+            quality : 'high',
+            opacity : 1,
+            color : [0, 0, 0]
+        },
+        //开启后处理
+        postProcess: {
+            enable: true,
+            //开启outline后处理
+            outline: {
+                enable: true
+            }
+        }
+    };
+
+    //光照设置
+    var lights = {
+      //环境光
+      ambient: {
+        color: [0.08, 0.08, 0.08],
+        exposure: 1.5
+      },
+      //有向光
+      directional: {
+        color : [0.1, 0.1, 0.1],
+        direction : [1, 1, -1],
+      }
+    };
+    map.setLights(lights);
+    const coordinates = [
+        //视频的4个顶点坐标，顺序依次为左上、右上、右下、左下。[lng, lat, height]。可以通过调整坐标点位置，来和倾斜模型更好的匹配位置
+        [111.74379318944148, 30.42549204112825, 20.0],
+        [111.7443329650971, 30.425892455826926, 5.0],
+        [111.74463850725806, 30.425604367155103, 10.0],
+        [111.74409535014115, 30.425203392356963, 15.0]
+    ];
+
+    const coordinates1 = [
+        //视频的4个顶点坐标，顺序依次为左上、右上、右下、左下。[lng, lat, height]。可以通过调整坐标点位置，来和倾斜模型更好的匹配位置
+        [111.74179318944148, 30.42549204112825, 20.0],
+        [111.7423329650971, 30.425892455826926, 5.0],
+        [111.74263850725806, 30.425604367155103, 10.0],
+        [111.74209535014115, 30.425203392356963, 15.0]
+    ];
+    //视频对象
+    const videoSurface = new maptalks.VideoSurface(coordinates,
+    {
+        url: 'data/test1.mp4',
+        opacity: 1.0
+    });
+
+    const videoSurface1 = new maptalks.VideoSurface(coordinates1,
+    {
+        url: 'data/test2.mp4',
+        opacity: 1.0
+    });
+    const videoLayer = new maptalks.VideoLayer('video');
+    //将视频对象添加到videolayer中
+    videoSurface.addTo(videoLayer);
+    videoSurface1.addTo(videoLayer);
+    //把图层放入GroupGLLayer，能与GroupGLLayer中的其他三维图层(例如ThreeLayer)保持正确的三维空间关系。
+    var groupLayer = new maptalks.GroupGLLayer('g', [videoLayer], { sceneConfig }).addTo(map);
+</script>
+</body>
+</html>

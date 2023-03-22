@@ -1,0 +1,212 @@
+{
+"id" : 0,
+"name" : "Gramps_RockWall",
+"layerType" : "IntegratedMesh",
+"spatialReference" : {
+"wkid" : 4326,
+"latestWkid" : 4326,
+"vcsWkid" : 3855,
+"latestVcsWkid" : 3855
+}
+,
+"alias" : "Gramps_RockWall",
+"description" : "This layer contains meshes created with Drone2Map for ArcGIS.",
+"serviceUpdateTimeStamp" : {
+"lastUpdate" : 1614825697000
+}
+,
+"capabilities" : ["View", "Query"],
+"store" : {
+"id" : "0",
+"profile" : "meshpyramids",
+"version" : "1.7",
+"resourcePattern" : ["3dNodeIndexDocument", "SharedResource", "Geometry", "Attributes"],
+"rootNode" : "./nodes/root",
+"extent" : [142.51531846885621, -37.172634150478295, 142.52020735047236, -37.168216616379425],
+"indexCRS" : "http://www.opengis.net/def/crs/EPSG/0/4326",
+"vertexCRS" : "http://www.opengis.net/def/crs/EPSG/0/4326",
+"normalReferenceFrame" : "east-north-up",
+"attributeEncoding" : "application/octet-stream; version=1.7",
+"textureEncoding" : ["image/jpeg"],
+"lodType" : "MeshPyramid",
+"lodModel" : "node-switching",
+"defaultGeometrySchema" : {
+"header" : [{
+"property" : "vertexCount",
+"type" : "UInt32"
+}
+, {
+"property" : "featureCount",
+"type" : "UInt32"
+}
+],
+"topology" : "PerAttributeArray",
+"ordering" : ["position", "normal", "uv0", "color"],
+"vertexAttributes" : {
+"position" : {
+"valueType" : "Float32",
+"valuesPerElement" : 3
+}
+,
+"normal" : {
+"valueType" : "Float32",
+"valuesPerElement" : 3
+}
+,
+"uv0" : {
+"valueType" : "Float32",
+"valuesPerElement" : 2
+}
+,
+"color" : {
+"valueType" : "UInt8",
+"valuesPerElement" : 4
+}
+
+}
+,
+"featureAttributeOrder" : ["id", "faceRange"],
+"featureAttributes" : {
+"id" : {
+"valueType" : "UInt64",
+"valuesPerElement" : 1
+}
+,
+"faceRange" : {
+"valueType" : "UInt32",
+"valuesPerElement" : 2
+}
+
+}
+
+}
+
+}
+,
+"heightModelInfo" : {
+"heightModel" : "orthometric",
+"vertCRS" : "GRS_1980",
+"heightUnit" : "meter"
+}
+,
+"nodePages" : {
+"nodesPerPage" : 64,
+"lodSelectionMetricType" : "maxScreenThresholdSQ"
+}
+,
+"materialDefinitions" : [{
+"doubleSided" : true,
+"pbrMetallicRoughness" : {
+"baseColorTexture" : {
+"textureSetDefinitionId" : 0
+}
+,
+"metallicFactor" : 0
+}
+
+}
+],
+"textureSetDefinitions" : [{
+"formats" : [{
+"name" : "0",
+"format" : "jpg"
+}
+, {
+"name" : "0_0_1",
+"format" : "dds"
+}
+]
+}
+],
+"geometryDefinitions" : [{
+"geometryBuffers" : [{
+"offset" : 8,
+"position" : {
+"type" : "Float32",
+"component" : 3
+}
+,
+"normal" : {
+"type" : "Float32",
+"component" : 3
+}
+,
+"uv0" : {
+"type" : "Float32",
+"component" : 2
+}
+,
+"color" : {
+"type" : "UInt8",
+"component" : 4
+}
+,
+"featureId" : {
+"type" : "UInt64",
+"component" : 1,
+"binding" : "per-feature"
+}
+,
+"faceRange" : {
+"type" : "UInt32",
+"component" : 2,
+"binding" : "per-feature"
+}
+
+}
+, {
+"compressedAttributes" : {
+"encoding" : "draco",
+"attributes" : ["position", "normal", "uv0", "feature-index"]
+}
+
+}
+]
+}
+, {
+"geometryBuffers" : [{
+"offset" : 8,
+"position" : {
+"type" : "Float32",
+"component" : 3
+}
+,
+"normal" : {
+"type" : "Float32",
+"component" : 3
+}
+,
+"uv0" : {
+"type" : "Float32",
+"component" : 2
+}
+,
+"color" : {
+"type" : "UInt8",
+"component" : 4
+}
+,
+"featureId" : {
+"type" : "UInt64",
+"component" : 1,
+"binding" : "per-feature"
+}
+,
+"faceRange" : {
+"type" : "UInt32",
+"component" : 2,
+"binding" : "per-feature"
+}
+
+}
+, {
+"compressedAttributes" : {
+"encoding" : "draco",
+"attributes" : ["position", "uv0", "feature-index"]
+}
+
+}
+]
+}
+]
+}

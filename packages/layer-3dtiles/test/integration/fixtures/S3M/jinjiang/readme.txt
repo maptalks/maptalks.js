@@ -1,0 +1,1 @@
+http://www.supermapol.com/realspace/services/3D-JingJiangQX/rest/realspace/datas/Combine/config

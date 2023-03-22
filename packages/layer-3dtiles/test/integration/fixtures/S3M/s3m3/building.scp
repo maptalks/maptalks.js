@@ -1,0 +1,118 @@
+{
+	"asset" : "SuperMap",
+	"compressedPackageType" : "Zip",
+	"crs" : "epsg:4326",
+	"dataType" : "ArtificialModel",
+	"extensions" : 
+	{
+		"attachFiles" : [],
+		"globeType" : "Ellipsoid_WGS84",
+		"hasSpatialIndex" : "TRUE",
+		"levels" : [],
+		"pointCloudLayers" : [],
+		"processType" : "Normal",
+		"renderMode" : "Batch",
+		"s3m:AttributeExtentName" : "s3md",
+		"s3m:FileType" : "OSGBCacheFile",
+		"s3m:MaterialType" : "Normal",
+		"s3m:TextureCompressionType" : "DXT",
+		"s3m:TextureSharing" : "FALSE",
+		"s3m:TileSplitType" : "GLOBAL",
+		"s3m:TransparencyOptimization" : "TRUE",
+		"s3m:VertexCompressionType" : "MESHOPT",
+		"s3m:VertexWeightMode" : "Height",
+		"scales" : 
+		[
+			{
+				"caption" : "254",
+				"tilewidth" : "17.25",
+				"value" : "0.003926787590618887"
+			}
+		],
+		"textureLOD" : "TRUE",
+		"vol" : []
+	},
+	"geoBounds" : 
+	{
+		"bottom" : 34.776037266311612,
+		"left" : 117.58445745789162,
+		"right" : 117.58538716270259,
+		"top" : 34.776337133465141
+	},
+	"heightRange" : 
+	{
+		"max" : 35.210822211578488,
+		"min" : -0.63303840532898903
+	},
+	"idFieldName" : "SmID",
+	"lodType" : "Replace",
+	"position" : 
+	{
+		"units" : "Degree",
+		"x" : 117.5849223102971,
+		"y" : 34.776187199888376,
+		"z" : 0.0
+	},
+	"pyramidSplitType" : "QuadTree",
+	"rootTiles" : 
+	[
+		{
+			"boundingbox" : 
+			{
+				"center" : 
+				{
+					"x" : 39.178485870295845,
+					"y" : -13.216214224124945,
+					"z" : 15.65751583047552
+				},
+				"xExtent" : 
+				{
+					"x" : 0.5335540771484375,
+					"y" : 0.0,
+					"z" : 0.0
+				},
+				"yExtent" : 
+				{
+					"x" : 0.0,
+					"y" : 0.66748046875,
+					"z" : 1.4523041224070615e-09
+				},
+				"zExtent" : 
+				{
+					"x" : 0.0,
+					"y" : -3.3976173895362726e-08,
+					"z" : 15.615484476089481
+				}
+			},
+			"url" : "./Tile_224434_758853_0000/Tile_224434_758853_0000_0000_0000.s3mb"
+		}
+	],
+	"version" : "3.0",
+	"vertexAttributeDescript" : 
+	[
+		{
+			"category" : "VertexWeight",
+			"range" : 
+			{
+				"dimension" : 1,
+				"max" : 
+				[
+					35.210822211578488
+				],
+				"min" : 
+				[
+					-0.63303840532898903
+				]
+			}
+		},
+		{
+			"category" : "TextureCoordMatrix",
+			"range" : 
+			{
+				"dimension" : 0,
+				"max" : [],
+				"min" : []
+			}
+		}
+	]
+}

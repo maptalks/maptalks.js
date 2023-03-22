@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>transformControl</title>
+  <style type="text/css">
+    html,body {
+        margin:0px;
+        height:100%;
+        width: 100%;
+    }
+    #map { width: 100%; height: 100%; background-color : #000;}
+    #info {position: absolute; top: 0px; width: 100%; padding: 10px; box-sizing: border-box; text-align: center;color:white; z-index: 9999; -moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;user-select: none;pointer-events: none;}
+  </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/gl/dist/maptalksgl.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@maptalks/gltf-layer/dist/maptalks.gltf.js" type="text/javascript"></script>
+    <script src="../dist/transform-control.js"></script>
+  <body>
+    <div id="map"></div>
+    <script type="module">
+        const { reshader } = maptalksgl;
+        var map = new maptalks.Map("map",{
+            center : [114.4169, 34.5295],
+            zoom   :  15,
+            pitch : 70,
+            centerCross : true,
+            doubleClickZoom : false,
+            lights: {
+                ambient: {
+                    resource: {
+                        url: `ibl/resources/env.hdr`,
+                        //可选，预先计算好的hdr的sh值
+                        // sh: [[0.31809728408416826,0.31401226619030004,0.3134470104662589],[0.008704758145334807,0.011318408263042232,0.013078388966477488],[-0.0022599058076237222,0.002440201090172905,0.008080601204569696],[-0.006376439243529652,-0.008455040017515722,-0.010142167789138118],[-0.0010644849511110555,0.00010224644653697268,0.00048268834013221514],[-0.0021339277623529307,-0.0012152300796112823,-0.001073690833185554],[-0.0035723423448581156,-0.0030887617072984245,-0.003414213495055618],[-0.014779247139674757,-0.016330747724572967,-0.021623674274630286],[-0.010174472132809637,-0.009184355154793666,-0.006837585033142022]]
+                    },
+                    color: [0.2, 0.2, 0.2],
+                    exposure: 1.5
+                },
+                directional: {
+                    color: [1.0, 0.2, 0.4],
+                    direction: [-1, 1, -0.2]
+                }
+            },
+            baseLayer: new maptalks.TileLayer('base', {
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ['a','b','c','d']
+            })
+        });
+        const center = map.getCenter();
+        const sceneConfig = {
+            shadow: {
+                type: 'esm',
+                enable: true,
+                quality: 'high',
+                opacity: 0.8,
+                color: [0, 0, 0],
+                blurOffset: 1.0
+            },
+            postProcess: {
+                enable: true,
+                antialias: {
+                    enable: true,
+                },
+                taa: {
+                    enable: true,
+                },
+                bloom: {
+                    enable: true,
+                    threshold: 0,
+                    factor: 1,
+                    radius: 0.4,
+                },
+                outline: {
+                    enable: true,
+                    outlineColor: [1.0, 0, 0],
+                    outlineWidth: 2
+                }
+            },
+            ground: {
+                enable: true,
+                renderPlugin: {
+                type: "fill",
+                },
+                symbol: {
+                    polygonFill: [
+                        0.21176470588235294,
+                        0.7647058823529411,
+                        0.4549019607843137,
+                        1,
+                    ],
+                    polygonOpacity: 0.73,
+                }
+            }
+        };
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const myMarker1 = new maptalks.GLTFMarker(center.add(-0.02, 0),
+        {
+            symbol: {
+                url: 'gltf/DamagedHelmet.glb',
+                translation: [0, 0, 10]
+            }
+        }
+        ).addTo(gltflayer);
+
+        const myMarker2 = new maptalks.GLTFMarker(center.add(0.02, 0), {
+            symbol: {
+                url: 'gltf/DamagedHelmet.glb',
+                shader: 'phong'
+            }
+        }).addTo(gltflayer);
+        const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        transformControl.on('transforming', e => {
+            const target = transformControl.getTransformTarget();
+            target.setTRS(e.translate, e.rotation, e.scale);
+        });
+        transformControl.on('positionchange', e => {
+            const target = transformControl.getTransformTarget();
+            target.setCoordinates(e.coordinate);
+        });
+
+        transformControl.on('transformend', e => {
+            console.log('transform end');
+        });
+
+        map.on('click', e => {
+            const identifyData = groupgllayer.identify(e.coordinate);
+            if (identifyData.length) {
+                transformControl.enable();
+                transformControl.transform(identifyData[0].data);
+            } else if (!transformControl.picked(e.coordinate)) {
+                transformControl.disable();
+            }
+        });
+        window.addEventListener( 'keydown', function ( event ) {
+            switch ( event.keyCode ) {
+                case 32: // Spacebar
+                    const enabled = transformControl.isEnable();
+                    if (enabled) {
+                        transformControl.disable();
+                    } else {
+                        transformControl.enable();
+                    }
+                break;
+                case 68: //D
+                    transformControl.remove();
+                break;
+                case 67: //C
+                    transformControl.reset();
+                break;
+            }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+{
+    "properties": {
+        "Latitude": {
+            "minimum": 0.498007,
+            "maximum": 0.498304
+        },
+        "Longitude": {
+            "minimum": -1.420471,
+            "maximum": -1.420199
+        },
+        "Height": {
+            "minimum": 0.000000,
+            "maximum": 1000.000000
+        }
+    },
+    "geometricError": 5000.000000,
+    "refine": "replace",
+    "root": {
+        "content": {
+            "url": "child/tileset.json?id=65",
+            "boundingVolume": {
+                "region": [
+                    -1.4204712416151453,
+                    0.49800679092376193,
+                    -1.4201987843013089,
+                    0.49830411301151378,
+                    -8.7278216997070359,
+                    182.92868769970704
+                ]
+            }
+        },
+        "boundingVolume": {
+            "region": [
+                -1.4204712416151453,
+                0.49800679092376193,
+                -1.4201987843013089,
+                0.49830411301151378,
+                -8.7278216997070359,
+                182.92868769970704
+            ]
+        },
+        "refine": "replace",
+        "geometricError": 256.000000
+    },
+    "asset": {
+        "version": "0.0"
+    }
+}

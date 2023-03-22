@@ -1,0 +1,88 @@
+{
+  "scenes" : [ {
+    "nodes" : [ 0 ]
+  } ],
+  "nodes" : [ {
+    "mesh" : 0
+  } ],
+  "meshes" : [ {
+    "primitives" : [ {
+      "attributes" : {
+        "POSITION" : 1,
+        "TEXCOORD_0" : 2
+      },
+      "indices" : 0,
+      "material" : 0
+    } ]
+  } ],
+
+  "materials" : [ {
+    "pbrMetallicRoughness" : {
+      "baseColorTexture" : {
+        "index" : 0
+      },
+      "metallicFactor" : 0.0,
+      "roughnessFactor" : 1.0
+    }
+  } ],
+
+  "textures" : [ {
+    "sampler" : 0,
+    "source" : 0
+  } ],
+  "images" : [ {
+    "uri" : "testTexture.png"
+  } ],
+  "samplers" : [ {
+    "magFilter" : 9729,
+    "minFilter" : 9987,
+    "wrapS" : 33648,
+    "wrapT" : 33648
+  } ],
+
+  "buffers" : [ {
+    "uri" : "texturedSquare.bin",
+    "byteLength" : 108
+  } ],
+  "bufferViews" : [ {
+    "buffer" : 0,
+    "byteOffset" : 0,
+    "byteLength" : 12,
+    "target" : 34963
+  }, {
+    "buffer" : 0,
+    "byteOffset" : 12,
+    "byteLength" : 96,
+    "byteStride" : 12,
+    "target" : 34962
+  } ],
+  "accessors" : [ {
+    "bufferView" : 0,
+    "byteOffset" : 0,
+    "componentType" : 5123,
+    "count" : 6,
+    "type" : "SCALAR",
+    "max" : [ 3 ],
+    "min" : [ 0 ]
+  }, {
+    "bufferView" : 1,
+    "byteOffset" : 0,
+    "componentType" : 5126,
+    "count" : 4,
+    "type" : "VEC3",
+    "max" : [ 1.0, 1.0, 0.0 ],
+    "min" : [ 0.0, 0.0, 0.0 ]
+  }, {
+    "bufferView" : 1,
+    "byteOffset" : 48,
+    "componentType" : 5126,
+    "count" : 4,
+    "type" : "VEC2",
+    "max" : [ 1.0, 1.0 ],
+    "min" : [ 0.0, 0.0 ]
+  } ],
+  
+  "asset" : {
+    "version" : "2.0"
+  }
+}

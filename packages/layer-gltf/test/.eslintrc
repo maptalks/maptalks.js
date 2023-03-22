@@ -1,0 +1,17 @@
+{
+    "env": {
+      "mocha": true
+    },
+    "globals": {
+      "expect": true,
+      "gltf" : true,
+      "maptalks" : true,
+      "maptalksgl" : true
+    },
+    "plugins": ["mocha"],
+    "rules": {
+      "no-var" : "error",
+      "prefer-const": "error",
+      "no-undef": 0
+    }
+  }
