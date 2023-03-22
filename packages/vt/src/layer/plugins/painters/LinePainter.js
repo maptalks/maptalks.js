@@ -41,6 +41,10 @@ class LinePainter extends BasicPainter {
         }
     }
 
+    needToRefreshTerrainTile() {
+        return true;
+    }
+
     isAnimating() {
         if (this._hasPatternAnim) {
             return true;

@@ -200,11 +200,12 @@ void main() {
     #endif
 
     float scale;
-    if (isRenderingTerrain == 1.0) {
-        scale = 1.0;
-    } else {
-        scale = tileResolution / resolution;
-    }
+    scale = tileResolution / resolution;
+    // if (isRenderingTerrain == 1.0) {
+    //     scale = 1.0;
+    // } else {
+    //     scale = tileResolution / resolution;
+    // }
 
     vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
     gl_Position = projViewModelMatrix * positionMatrix * localVertex;

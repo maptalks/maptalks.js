@@ -1095,6 +1095,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     createTerrainTexture(width, height) {
+        width *= 2;
+        height *= 2;
         const regl = this.regl;
         const color = regl.texture({
             min: 'nearest',
@@ -1857,7 +1859,7 @@ function getDefaultSymbol(type) {
         };
     case 'fill':
         return {
-            polygonFill: '#00f',
+            polygonFill: '#76a6f0',
             polygonOpacity: 0.6
         };
     }
@@ -1957,8 +1959,9 @@ function getTileViewport(tile, terrainTileInfo) {
     const dx = terrainOffset[0] - offset[0];
     const dy = offset[1] - terrainOffset[1];
     return {
-        x: left + dx,
-        y: extent.getHeight() - (top + dy + height),
-        width, height
+        x: (left + dx) * 2,
+        y: (extent.getHeight() - (top + dy + height)) * 2,
+        width: width * 2,
+        height: height * 2
     };
 }
