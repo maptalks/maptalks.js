@@ -1,6 +1,6 @@
 import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
-import Martini from '@mapbox/martini';
+import Martini from '@maptalks/martini';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 

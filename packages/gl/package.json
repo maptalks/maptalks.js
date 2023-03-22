@@ -28,7 +28,7 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@mapbox/martini": "^0.2.0",
+    "@maptalks/martini": "^0.3.0",
     "@maptalks/fusiongl": "^0.5.2",
     "@maptalks/regl": "^3.2.3",
     "@maptalks/reshader.gl": "^0.81.2",
