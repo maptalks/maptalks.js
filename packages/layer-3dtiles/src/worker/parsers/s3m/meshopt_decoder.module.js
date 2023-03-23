@@ -43,7 +43,7 @@ var MeshoptDecoder = (function() {
 			result[i] = ch > 96 ? ch - 71 : ch > 64 ? ch - 65 : ch > 47 ? ch + 4 : ch > 46 ? 63 : 62;
 		}
 		var write = 0;
-		for (var i = 0; i < data.length; ++i) {
+		for (let i = 0; i < data.length; ++i) {
 			result[write++] = (result[i] < 60) ? wasmpack[result[i]] : (result[i] - 60) * 64 + result[++i];
 		}
 		return result.buffer.slice(0, write);
@@ -65,7 +65,7 @@ var MeshoptDecoder = (function() {
 		if (res != 0) {
 			throw new Error("Malformed buffer data: " + res);
 		}
-	};
+	}
 
 	var filters = {
 		// legacy index-based enums for glTF

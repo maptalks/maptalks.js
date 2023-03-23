@@ -9,10 +9,10 @@ module.exports = function (config) {
             }
         },
         files: [
-            'node_modules/maptalks/dist/maptalks.min.js',
-            'node_modules/@maptalks/gl/dist/maptalksgl.js',
-            'node_modules/@maptalks/3dtiles/dist/maptalks.3dtiles.js',
-            'node_modules/@maptalks/transcoders.draco/dist/transcoders.draco.js',
+            '../../node_modules/maptalks/dist/maptalks.min.js',
+            '../gl/dist/maptalksgl.js',
+            '../layer-3dtiles/dist/maptalks.3dtiles.js',
+            '../transcoders.draco/dist/transcoders.draco.js',
             'dist/gltf-loader.js',
             'test/**/*.js',
             {

@@ -1,80 +1,13 @@
-const center = new maptalks.Coordinate([0, 0]);
-const sceneConfig = {
-    shadow: {
-        type: 'esm',
-        enable: true,
-        quality: 'high',
-        opacity: 1.0,
-        color: [0, 0, 0],
-        blurOffset: 1,
-        lightDirection: [0, 1, -1],
-    },
-    postProcess: {
-        enable: true,
-        antialias: {
-            enable: true,
-            taa: true
-        },
-        bloom: {
-            enable: true,
-            threshold: 0,
-            factor: 1,
-            radius: 0.4,
-        }
-    }
-};
-
-const lightConfig = {
-    ambient: {
-        color: [0.2, 0.2, 0.2],
-        exposure: 1.5
-    },
-    directional: {
-        color: [0.1, 0.1, 0.1],
-        specular: [0.8, 0.8, 0.8],
-        direction: [-1, -1, -1],
-    }
-};
-const modelUrl = 'models/terrain/terrain.glb';
-let map;
-beforeEach(function() {
-    const container = document.createElement('div');
-    const width = 400, height = 300;
-    container.style.width = width + 'px';
-    container.style.height = height + 'px';
-    container.style.backgroundColor = 'black';
-    document.body.appendChild(container);
-    map = new maptalks.Map(container, { //TODO,改成局部map
-        center,
-        zoom: 17,
-        lights: lightConfig
-    });
-});
-
-afterEach(function () {
-    map.remove();
-    document.body.innerHTML = '';
-});
-
-function pickPixel(map, x, y, width, height) {
-    const px = x || map.width / 2, py = y || map.height / 2;
-    const w = width || 1, h = height || 1;
-    const canvas = map.getRenderer().canvas;
-    const ctx = canvas.getContext("2d");
-    const pixel = ctx.getImageData(px, py, w, h).data;
-    return pixel;
-}
-
-function pixelMatch(expectedValue, pixelValue) {
-    for (let i = 0; i < expectedValue.length; i++) {
-        if (Math.abs(pixelValue[i] - expectedValue[i]) > 5) {
-            return false;
-        }
-    }
-    return true;
-}
-
 describe('add analysis', () => {
+    const modelUrl = 'models/terrain/terrain.glb';
+    let map;
+    beforeEach(function() {
+        map = createMap();
+    });
+
+    afterEach(function() {
+        removeMap(map);
+    });
     it('add ViewShedAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
@@ -109,190 +42,188 @@ describe('add analysis', () => {
         gllayer.addTo(map);
     });
 
-        it('add FloodAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl, //TODO,模型改成小一点的模型
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                const floodAnalysis = new maptalks.FloodAnalysis({
-                    waterHeight: 10,
-                    waterColor: [0.1, 0.5, 0.6]
-                });
-                floodAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
-                    expect(pixelMatch([101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
-                    const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 80, 2, 2);
-                    expect(pixelMatch([158, 158, 158, 255, 157, 157, 157, 255, 157, 157, 157, 255, 157, 157, 157, 255], pixel2)).to.be.eql(true);//非水淹区颜色
-                    done();
-                }, 100);
+    it('add FloodAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl, //TODO,模型改成小一点的模型
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const floodAnalysis = new maptalks.FloodAnalysis({
+                waterHeight: 10,
+                waterColor: [0.1, 0.5, 0.6]
             });
-            gllayer.addTo(map);
+            floodAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
+                expect(pixelMatch([101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 80, 2, 2);
+                expect(pixelMatch([158, 158, 158, 255, 157, 157, 157, 255, 157, 157, 157, 255, 157, 157, 157, 255], pixel2)).to.be.eql(true);//非水淹区颜色
+                done();
+            }, 100);
         });
-
-
-        it('add SkylineAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl,
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                map.setCenter([0.00007795844737756852, -0.002186416483624498]);
-                map.setPitch(77.6);
-                map.setZoom(18.9778);
-                const skylineAnalysis = new maptalks.SkylineAnalysis({
-                    lineColor: [1.0, 0.2, 0.0],
-                    lineWidth: 1.8
-                });
-                skylineAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const pixel1 = pickPixel(map, 145, 36, 1, 1);
-                    expect(pixelMatch([143, 29, 0, 255], pixel1)).to.be.eql(true);//天际线颜色
-                    const pixel2 = pickPixel(map, 200, 80, 1, 1);
-                    expect(pixelMatch([153, 153, 153, 255], pixel2)).to.be.eql(true);//无天际线颜色
-                    done();
-                }, 500);
-            });
-            gllayer.addTo(map);
-        });
-
-        it('add InSightAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl,
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                const inSightAnalysis = new maptalks.InSightAnalysis({
-                    eyePos: [center.x, center.y, 0],
-                    lookPoint: [center.x + 0.05, center.y + 0.05, 20],
-                    visibleColor: [0, 1, 0, 1],
-                    invisibleColor: [1, 0, 0, 1]
-                });
-                inSightAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const pixel1 = pickPixel(map, 302, 47, 1, 1);
-                    expect(pixelMatch([255, 0, 0, 255], pixel1)).to.be.eql(true);//非通视区颜色
-                    const pixel2 = pickPixel(map, 249, 100, 1, 1);
-                    expect(pixelMatch([0, 255, 0, 255], pixel2)).to.be.eql(true);//通视区颜色
-                    done();
-                }, 100);
-            });
-            gllayer.addTo(map);
-        });
-
-        it('add CutAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl,
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                const cutAnalysis = new maptalks.CutAnalysis({
-                    position: [center.x, center.y, 0],
-                    rotation: [45, 90, 45],
-                    scale: [1, 1, 1]
-                });
-                cutAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const renderer = gltflayer.getRenderer();
-                    const meshes = renderer.getAnalysisMeshes();
-                    const tempMap = cutAnalysis.exportAnalysisMap(meshes);
-                    const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
-                    const arr = tempMap.slice(index, index + 16);
-                    expect(pixelMatch([0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25], arr)).to.be.eql(true);
-                    done();
-                }, 100);
-            });
-            gllayer.addTo(map);
-        });
-
-        it('add ExcavateAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl,
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
-                    [-0.0013518333435058594, 0.00009655952453613281],
-                    [-0.0004184246063232422, -0.0005686283111288049],
-                    [0.0005471706390380859, 0.00006437301638584358],
-                    [0.0005042552947998047, 0.0006651878356649377]];
-                const excavateAnalysis = new maptalks.ExcavateAnalysis({
-                    boundary,
-                    textureUrl: './resources/ground.jpg'
-                });
-                excavateAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                    const pixel2 = pickPixel(map, 270, 100, 1, 1);
-                    expect(pixelMatch([120, 98, 85, 255], pixel1)).to.be.eql(true);//挖方区颜色
-                    expect(pixelMatch([255, 255, 255, 255], pixel2)).to.be.eql(true);//非挖方区颜色
-                    done();
-                }, 500);
-            });
-            gllayer.addTo(map);
-        });
-
-        it('add HeightLimitAnalysis', (done) => {
-            const gltflayer = new maptalks.GLTFLayer('gltf');
-            const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-            const marker = new maptalks.GLTFMarker(center, {
-                symbol : {
-                    url : modelUrl,
-                    scaleX: 2,
-                    scaleY: 2,
-                    scaleZ: 2
-                }
-            }).addTo(gltflayer);
-            marker.on('load', () => {
-                const heightLimitAnalysis = new maptalks.HeightLimitAnalysis({
-                    limitHeight: 15,
-                    limitColor: [0.9, 0.2, 0.2]
-                });
-                heightLimitAnalysis.addTo(gllayer);
-                setTimeout(function() {
-                    const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//未超过高度阈值的颜色
-                    const pixel2 = pickPixel(map, 160, 150, 1, 1);//超过高度阈值颜色
-                    expect(pixelMatch([151, 151, 151, 255], pixel1)).to.be.eql(true);
-                    expect(pixelMatch([179, 107, 107, 255], pixel2)).to.be.eql(true);
-                    done();
-                }, 100);
-            });
-            gllayer.addTo(map);
-        });
+        gllayer.addTo(map);
     });
 
-describe('api of analysis', () => {
+
+    it('add SkylineAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            map.setCenter([0.00007795844737756852, -0.002186416483624498]);
+            map.setPitch(77.6);
+            map.setZoom(18.9778);
+            const skylineAnalysis = new maptalks.SkylineAnalysis({
+                lineColor: [1.0, 0.2, 0.0],
+                lineWidth: 1.8
+            });
+            skylineAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, 145, 36, 1, 1);
+                expect(pixelMatch([143, 29, 0, 255], pixel1)).to.be.eql(true);//天际线颜色
+                const pixel2 = pickPixel(map, 200, 80, 1, 1);
+                expect(pixelMatch([153, 153, 153, 255], pixel2)).to.be.eql(true);//无天际线颜色
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('add InSightAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const inSightAnalysis = new maptalks.InSightAnalysis({
+                eyePos: [center.x, center.y, 0],
+                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                visibleColor: [0, 1, 0, 1],
+                invisibleColor: [1, 0, 0, 1]
+            });
+            inSightAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, 302, 47, 1, 1);
+                expect(pixelMatch([255, 0, 0, 255], pixel1)).to.be.eql(true);//非通视区颜色
+                const pixel2 = pickPixel(map, 249, 100, 1, 1);
+                expect(pixelMatch([0, 255, 0, 255], pixel2)).to.be.eql(true);//通视区颜色
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('add CutAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const cutAnalysis = new maptalks.CutAnalysis({
+                position: [center.x, center.y, 0],
+                rotation: [45, 90, 45],
+                scale: [1, 1, 1]
+            });
+            cutAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const renderer = gltflayer.getRenderer();
+                const meshes = renderer.getAnalysisMeshes();
+                const tempMap = cutAnalysis.exportAnalysisMap(meshes);
+                const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
+                const arr = tempMap.slice(index, index + 16);
+                expect(pixelMatch([0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25], arr)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('add ExcavateAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
+                [-0.0013518333435058594, 0.00009655952453613281],
+                [-0.0004184246063232422, -0.0005686283111288049],
+                [0.0005471706390380859, 0.00006437301638584358],
+                [0.0005042552947998047, 0.0006651878356649377]];
+            const excavateAnalysis = new maptalks.ExcavateAnalysis({
+                boundary,
+                textureUrl: './resources/ground.jpg'
+            });
+            excavateAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                const pixel2 = pickPixel(map, 270, 100, 1, 1);
+                expect(pixelMatch([120, 98, 85, 255], pixel1)).to.be.eql(true);//挖方区颜色
+                expect(pixelMatch([255, 255, 255, 255], pixel2)).to.be.eql(true);//非挖方区颜色
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('add HeightLimitAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const heightLimitAnalysis = new maptalks.HeightLimitAnalysis({
+                limitHeight: 15,
+                limitColor: [0.9, 0.2, 0.2]
+            });
+            heightLimitAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//未超过高度阈值的颜色
+                const pixel2 = pickPixel(map, 160, 150, 1, 1);//超过高度阈值颜色
+                expect(pixelMatch([151, 151, 151, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([179, 107, 107, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
@@ -464,9 +395,7 @@ describe('api of analysis', () => {
             }, 500);
         });
     });
-});
 
-describe('bugs', () => {
     it('update boundary for crosscut analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });

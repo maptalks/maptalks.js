@@ -285,9 +285,9 @@ export default function parse(data, maxTextureSize) {
     }
     var min = [minX, minY, minZ];
     var max = [maxX, maxY, maxZ];
-
+    const s3mVersion = result.version;
     // const gltfMeshPromise = generateGLTFObject(totalVerticesCount, indexArr, positionsArr, null, uvArr, colorArr, batchIdArr, result.texturePackage, mat, min, max, textureCodes, materialArr, maxTextureSize, mat);
-    const gltfMeshPromise = generateGLTFObject(totalVerticesCount, indexArr, positionsArr, null, uvArr,textureCoordMatrixArr, colorArr, batchIdArr, result.texturePackage, mat, min, max, textureCodes, materialArr, definesArr, uniformsArr, maxTextureSize, mat);
+    const gltfMeshPromise = generateGLTFObject(totalVerticesCount, indexArr, positionsArr, null, uvArr,textureCoordMatrixArr, colorArr, batchIdArr, result.texturePackage, mat, min, max, textureCodes, materialArr, definesArr, uniformsArr, maxTextureSize, mat, s3mVersion);
     return gltfMeshPromise.then(({ gltf, transferables }) => {
         return {
             gltf,
@@ -343,7 +343,8 @@ function generateGLTFObject(
     definesArr,
     uniformsArr,
     maxTextureSize,
-    mat
+    mat,
+    s3mVersion
     ) {
     let maxTexSize = 0;
     for (const p in texturePackage) {
@@ -560,7 +561,8 @@ function generateGLTFObject(
             gltf: {
                 "asset": {
                     "generator": "S3M",
-                    "version": "2.0"
+                    "version": "2.0",
+                    "s3mVersion": s3mVersion
                 },
                 "scene": 0,
                 "scenes": sceneNodes,

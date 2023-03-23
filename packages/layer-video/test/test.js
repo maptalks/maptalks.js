@@ -197,7 +197,7 @@ describe('maptalks.videolayer', () => {
         videoSurface.setVideo(url2);
     });
 
-    it('edit', () => {
+    it('edit', (done) => {
         map.setZoom(7);
         eventContainer = map._panels.canvasContainer;
         map.on('click', e => {

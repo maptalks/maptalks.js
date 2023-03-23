@@ -8,5 +8,10 @@
       "maptalks" : true,
       "maptalksgl" : true
     },
-    "plugins": ["mocha"]
+    "plugins": ["mocha"],
+    "rules": {
+      "no-var" : "error",
+      "prefer-const": "error",
+      "no-undef": 0
+    }
   }

@@ -1,5 +1,7 @@
-import vertContent from './s3m3.vert';
-import fragContent from './s3m3.frag';
+import vertContent from './s3m.vert';
+import fragContent from './s3m.frag';
+import vertContent3 from './s3m3.vert';
+import fragContent3 from './s3m3.frag';
 
 const extension = {
     "programs": [
@@ -132,4 +134,12 @@ const extension = {
     ]
 };
 
-export default extension;
+export function getKHR_techniques(version) {
+    if (version === 3) {
+        const extension3 = JSON.parse(JSON.stringify(extension));
+        extension3.shaders[0].content = vertContent3;
+        extension3.shaders[1].content = fragContent3;
+        return extension3;
+    }
+    return extension;
+}

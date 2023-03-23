@@ -90,7 +90,11 @@ precision highp float;
             }
             else
             {
-                color = texture2DLodEXT(curTexture, realTexCoord.xy, mipLevel);
+                #ifdef GL_EXT_shader_texture_lod
+                    color = texture2DLodEXT(curTexture, realTexCoord.xy, mipLevel);
+                #else
+                    color = texture2D(curTexture, realTexCoord.xy, mipLevel);
+                #endif
             }
         }
         
@@ -194,7 +198,7 @@ precision highp float;
         color = LINEARtoSRGB(color);
     #endif
         glFragColor = vec4(color, baseColorWithAlpha.a);
-#if __VERSION__ == 100
-    gl_FragColor = glFragColor;
-#endif
-    }
+    #if __VERSION__ == 100
+        gl_FragColor = glFragColor;
+    #endif
+}

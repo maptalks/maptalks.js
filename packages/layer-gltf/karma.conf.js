@@ -13,10 +13,11 @@ module.exports = function (config) {
             }
         },
         files: [
-            'node_modules/maptalks/dist/maptalks.js',
-            'node_modules/@maptalks/gl/dist/maptalksgl.js',
-            "node_modules/@maptalks/transcoders.draco/dist/transcoders.draco.js",
-            'node_modules/@maptalks/transform-control/dist/transform-control.js',
+            '../../node_modules/maptalks/dist/maptalks.js',
+            '../gl/dist/maptalksgl.js',
+            "../transcoders.draco/dist/transcoders.draco.js",
+            '../transform-control/dist/transform-control.js',
+            '../analysis/dist/maptalks.analysis.js',
             pkg.main,
             'test/test.config.js',
             'test/**/*.js',

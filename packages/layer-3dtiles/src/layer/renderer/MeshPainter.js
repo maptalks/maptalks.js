@@ -8,7 +8,7 @@ import pntsFrag from './glsl/pnts.frag';
 import { toDegree, isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
-import S3MTechnique from './s3m/S3MTechnique';
+import { getKHR_techniques } from './s3m/S3MTechnique';
 
 
 const { getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat, getPrimitive, getUniqueREGLBuffer } = reshader.REGLHelper;
@@ -958,7 +958,7 @@ export default class MeshPainter {
         const runShader = shader === 'phong' ? this._phongShader : this._standardShader;
         const defines = runShader.getGeometryDefines(geometry);
         if (gltf.asset && gltf.asset.generator === 'S3M') {
-            this._appendS3MDefines(defines, geometry, gltf);
+            this._appendS3MDefines(defines, geometry);
         }
         if (geometry.data.uvRegion) {
             defines['HAS_I3S_UVREGION'] = 1;
@@ -993,7 +993,7 @@ export default class MeshPainter {
         return defines;
     }
 
-    _appendS3MDefines(defines, geometry, gltf) {
+    _appendS3MDefines(defines, geometry) {
         if (geometry.data['aNormal']) {
             defines['VertexNormal'] = 1;
         }
@@ -1012,9 +1012,6 @@ export default class MeshPainter {
         if (geometry.data['uv2']) {
             defines['InstanceBim'] = 1;
         }
-        if (geometry.data['aTexCoord0'] && gltf.textures.length) {
-            defines['COMPUTE_TEXCOORD'] = 1;
-        }
     }
 
     _processGLTF(gltfMesh, meshId, primId, gltf, node, isI3DM, shader) {
@@ -1023,7 +1020,7 @@ export default class MeshPainter {
             isS3M = true;
             // is a s3mType
             gltf.extensions = gltf.extensions || {};
-            gltf.extensions['KHR_techniques_webgl'] = S3MTechnique;
+            gltf.extensions['KHR_techniques_webgl'] = getKHR_techniques(gltf.asset.s3mVersion);
         }
         const url = gltf.url + '-' + meshId + '-' + primId;
         if (this._cachedGLTF[url]) {

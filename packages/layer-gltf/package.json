@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",
-    "build": "rollup --environment BUILD:production -c rollup.config.js",
+    "build": "npm run lint && cd ../analysis && npm run build && cd ../layer-gltf && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "pretest": "npm run lint && npm run build",
     "test": "karma start --single-run",

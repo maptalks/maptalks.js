@@ -1,22 +1,27 @@
-const resolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const commonjs = require('rollup-plugin-commonjs');
-const uglify = require('rollup-plugin-uglify').uglify;
+const { nodeResolve: resolve } = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
 const outputFile = production ? 'dist/maptalks.video.js' : 'dist/maptalks.video-dev.js';
-const plugins = production ? [
-    uglify({
-        output : { comments : '/^!/' },
-        mangle: {
-            properties: {
-                'regex' : /^_/,
-                'keep_quoted' : true
-            }
+const plugins = [
+].concat(production ? [
+terser({
+    mangle: {
+        properties: {
+            'regex' : /^_/,
+            'keep_quoted' : true,
+            'reserved': ['on', 'once', 'off']
         }
-    })] : [];
+    },
+    output : {
+        keep_quoted_props: true,
+        beautify: false,
+        comments : '/^!/'
+    }
+})
+] : []);
 
 const banner = `/*!\n * ${pkg.name} v${pkg.version}\n * LICENSE : ${pkg.license}\n * (c) 2016-${new Date().getFullYear()} maptalks.org\n */`;
 
@@ -59,7 +64,7 @@ const basePlugins = [
 module.exports = [
     {
         input: 'index.js',
-        plugins: basePlugins.concat([babel()]).concat(plugins),
+        plugins: basePlugins.concat(plugins),
         external : ['maptalks', '@maptalks/gl'],
         output: {
             'sourcemap': production ? false : 'inline',

@@ -4,7 +4,7 @@
   "description": "",
   "module": "dist/gltf-loader.mjs",
   "scripts": {
-    "build": "npm run lint && rollup --environment BUILD:production -c",
+    "build": "npm run lint && cd ../layer-3dtiles && npm run build && cd ../gltf-loader && rollup --environment BUILD:production -c",
     "dev": "rollup -c -w",
     "pretest": "npm run build",
     "test": "karma start --single-run",

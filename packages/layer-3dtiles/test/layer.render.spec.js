@@ -369,6 +369,24 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
         });
 
+        it('texture0width', done => {
+            const resPath = 'S3M/texture0width';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/config.scp`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        maxTextureSize: 1024,
+                        maximumScreenSpaceError: 1.0,
+                        heightOffset: 0,
+                        alwaysShow: true
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
+        });
+
         it('s3m-compressed vertex', done => {
             const resPath = 'S3M/guanyin';
             const layer = new Geo3DTilesLayer('3d-tiles', {
