@@ -1,11 +1,18 @@
 .maptalks-zoom { text-align: center;}
-.maptalks-zoom .maptalks-zoom-zoomlevel { display: block; width: 29px; height: 29px; background: #172029; color: #fff;  line-height: 29px; font-size: 12px; transform: scale(.8); -ms-transform: scale(.8); transform-origin: bottom left; -ms-transform-origin: bottom left}
+.maptalks-zoom .maptalks-zoom-zoomlevel { display: block; width: 30px; height: 30px; background: #fff; color: #868686; border: 1px solid #9d9d9d;  line-height: 26px; text-align: center; box-sizing: border-box}
+.maptalks-zoom .maptalks-zoom-zoomlevel .maptalks-zoom-zoomlevel-text {display: inline-block; font-size: 12px; transform: scale(.8)}
 .maptalks-zoom-slider {margin-top: 6px;}
-.maptalks-zoom-slider a.maptalks-zoom-zoomin ,.maptalks-zoom-slider a.maptalks-zoom-zoomout {display: block; font-size: 16px; width: 21px; height: 21px; border: 1px solid #363539; background: #172029; color: #fff;  line-height: 19px; text-decoration: none;}
+.maptalks-zoom-slider a.maptalks-zoom-zoomin ,.maptalks-zoom-slider a.maptalks-zoom-zoomout {display: block; font-size: 16px; width: 30px; height: 30px; border: 1px solid #9d9d9d; background: #fff; line-height: 28px; text-decoration: none; background-repeat: no-repeat; background-position: center; box-sizing:border-box}
+.maptalks-zoom-slider a.maptalks-zoom-zoomin { background-image: url(images/control/zoomin.svg) }
+.maptalks-zoom-slider a.maptalks-zoom-zoomout { height: 29px; background-image: url(images/control/zoomout.svg); border-top: none }
 .maptalks-zoom-slider-box { width: 21px; height: 124px; background: #34495e; background:url(images/control/kedu.png) repeat-y; border: 1px solid #35383b; position: relative;}
 .maptalks-zoom-slider-box .maptalks-zoom-slider-ruler { width: 5px; height: 112px; background: #372e2b; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px; margin: 4px auto; position: relative;}
 .maptalks-zoom-slider-box .maptalks-zoom-slider-ruler .maptalks-zoom-slider-reading { width: 5px; height: 50%; position: absolute; bottom: 0; left: 0; background: #1bbc9b; border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px;}
 .maptalks-zoom-slider-box .maptalks-zoom-slider-dot { width: 15px; height: 15px; background: url(images/control/3.png) no-repeat; position: absolute; top: 50%; left: 3px; cursor: pointer;}
+
+.maptalks-compass { width: 30px; height: 30px; background: #fff; border: 1px solid #9d9d9d; border-radius: 50%; box-sizing: border-box; background-image: url(images/control/compass.svg); background-repeat: no-repeat; background-position: center; cursor: pointer}
+
+.maptalks-reset { width: 30px; height: 30px; background: #fff; border: 1px solid #9d9d9d; box-sizing: border-box; background-image: url(images/control/reset.svg); background-repeat: no-repeat; background-position: center; cursor: pointer }
 
 .maptalks-toolbar-vertical { /*border: 1px solid #3b3e44;*/margin: 0;overflow : visible;}
 .maptalks-toolbar-vertical ul ,.maptalks-toolbar-horizonal ul {margin: 0;padding: 0;}
@@ -48,8 +55,8 @@
 .maptalks-panel a.maptalks-close { display: block; width: 6px; height: 7px; background: url(images/control/close-2.png) no-repeat; position: absolute; top: 10px; right: 10px;}
 .maptalks-panel a.maptalks-close:hover { opacity: 0.5;}
 
-.maptalks-attribution {display: inline-block;opacity: 1;background:#fff; background-color: rgba(255,255,255,0.7);padding:0px;font-size:13px;font-family: "microsoft yahei","Helvetica Neue", Helvetica, sans-serif;}
-.maptalks-attribution a {text-decoration: none; color : #0078A8;}
+.maptalks-attribution {display: inline-block;opacity: 1; color: #aeaeae; background:#fff; background-color: rgba(255,255,255,0.7);padding:0px;font-size:13px;font-family: "microsoft yahei","Helvetica Neue", Helvetica, sans-serif;}
+.maptalks-attribution a {text-decoration: none; color : #8eafbe;}
 .maptalks-attribution a:hover {text-decoration: underline;}
 
 .maptalks-overview {background:#fff; border:1px solid #b4b3b3; width:100%;height:100%;}

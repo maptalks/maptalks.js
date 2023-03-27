@@ -89,10 +89,12 @@ const files = [
     './src/control/index.js',
     './src/control/Control.js',
     './src/control/Control.Zoom.js',
+    './src/control/Control.Compass.js',
     './src/control/Control.LayerSwitcher.js',
     './src/control/Control.Attribution.js',
     './src/control/Control.Scale.js',
     './src/control/Control.Panel.js',
+    './src/control/Control.Reset.js',
     './src/control/Control.Toolbar.js',
     './src/control/Control.Overview.js'
 ];
