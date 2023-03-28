@@ -50,7 +50,6 @@ class Reset extends Control {
     }
 
     onRemove() {
-        this.getMap().off('animating mousemove touchmove', this._rotateCompass, this);
         delete this._reset;
         delete this._view;
     }
