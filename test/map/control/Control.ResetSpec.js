@@ -23,7 +23,7 @@ describe('Control.Reset', function () {
 
     describe('Reset button', function () {
 
-        it('pass view param, when reset button clicked, change the view correctly', function (done) {
+        it('pass view param, when reset button clicked, change the view correctly', function () {
             var control = new maptalks.control.Reset({
                 view: {
                     center: [120, 20],
@@ -36,31 +36,25 @@ describe('Control.Reset', function () {
 
             happen.click(control._reset);
 
-            map.once('viewchange', function () {
-                expect(map.getView()).to.eql({
-                    center: [120, 20],
-                    zoom: 8,
-                    bearing: 10,
-                    pitch: 30
-                });
-                done();
+            expect(map.getView()).to.eql({
+                center: [120, 20],
+                zoom: 8,
+                bearing: 10,
+                pitch: 30
             });
         });
 
-        it('not pass view param, when reset button clicked, change the view correctly', function (done) {
+        it('not pass view param, when reset button clicked, change the view correctly', function () {
             var control = new maptalks.control.Reset();
             map.addControl(control);
 
             happen.click(control._reset);
 
-            map.once('viewchange', function () {
-                expect(map.getView()).to.eql({
-                    center: [118, 32],
-                    zoom: 5,
-                    bearing: 0,
-                    pitch: 0
-                });
-                done();
+            expect(map.getView()).to.eql({
+                center: [118, 32],
+                zoom: 5,
+                bearing: 0,
+                pitch: 0
             });
         })
 
@@ -69,7 +63,7 @@ describe('Control.Reset', function () {
             map.addControl(control);
 
             control.setView({
-                center: [120, 120],
+                center: [120, 20],
                 zoom: 10,
                 bearing: 2,
                 pitch: 1
@@ -79,7 +73,7 @@ describe('Control.Reset', function () {
 
             map.once('viewchange', function () {
                 expect(map.getView()).to.eql({
-                    center: [120, 120],
+                    center: [120, 20],
                     zoom: 10,
                     bearing: 2,
                     pitch: 1
