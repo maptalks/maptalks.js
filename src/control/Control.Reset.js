@@ -36,6 +36,10 @@ class Reset extends Control {
         this._view = !this.options.view ? this.getMap().getView() : this.options.view;
     }
 
+    setView(view) {
+        this._view = view;
+    }
+
     _getReset() {
         const reset = createEl('div', 'maptalks-reset');
         return reset;

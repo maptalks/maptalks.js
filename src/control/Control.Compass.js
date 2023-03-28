@@ -28,7 +28,7 @@ class Compass extends Control {
 
         this._registerDomEvents();
 
-        map.on('animating mousemove touchmove', this._rotateCompass, this);
+        map.on('resize moving moveend zooming zoomend rotate rotateend dragrotating dragrotateend viewchange', this._rotateCompass, this);
 
         return compass;
     }
