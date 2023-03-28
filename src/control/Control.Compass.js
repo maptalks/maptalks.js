@@ -65,8 +65,8 @@ class Compass extends Control {
     }
 
     _resetView() {
-        const view0 = { pitch: 0, bearing: 0 };
-        this.getMap().animateTo(view0);
+        const view = { bearing: 0 };
+        this.getMap().animateTo(view);
     }
 }
 
