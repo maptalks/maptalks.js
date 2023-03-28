@@ -2,28 +2,139 @@ import { reshader } from '@maptalks/gl';
 import { coordinateToWorld } from './common/Util';
 import Analysis from './Analysis';
 import InSightPass from './pass/InSightPass';
+import RayCaster from './RayCaster';
 
 export default class InSightAnalysis extends Analysis {
     constructor(options) {
         super(options);
+        this._inSightLineList = [];
+        this._inSightLineList.push({
+            eyePos: options.eyePos,
+            lookPoint: options.lookPoint
+        });
+        this._raycaster = new RayCaster(options.eyePos, options.lookPoint);
         this.type = 'insight';
     }
 
     update(name, value) {
         if (name === 'eyePos' || name === 'lookPoint') {
-            const map = this.layer.getMap();
-            this._renderOptions[name] = coordinateToWorld(map, ...value);
+            this._inSightLineList[0][name] = value;
         } else {
             this._renderOptions[name] = value;
         }
         super.update(name, value);
     }
 
+    addInSightLine(inSightLine) {
+        const { eyePos, lookPoint } = inSightLine;
+        if (eyePos && lookPoint) {
+            this._inSightLineList.push(inSightLine);
+        }
+        this._updateRenderOptions();
+    }
+
+    removeInSightLine(inSightLine) {
+        const index = this._inSightLineList.indexOf(inSightLine)
+        if (index > -1) {
+            this._inSightLineList.splice(index, 1);
+        }
+        this._updateRenderOptions();
+    }
+
+    getInSightLines() {
+        return this._inSightLineList;
+    }
+
+    setInSightLines(inSightLineList) {
+        this._inSightLineList = inSightLineList;
+        this._updateRenderOptions();
+    }
+
+    clearInSightLines() {
+        this._inSightLineList = [];
+        this._updateRenderOptions();
+    }
+
+    /**
+     * Get objects intersecting with all inSight lines
+     * The structure of data bellow here:
+     * [{
+     *    intersects: [{
+     *        data: maptalks object, like gltfmarker、polygon...,
+     *        coordinate: intersect coordinate
+     *    }],
+     *    inSightLine
+     * }]
+     * @return {Object}
+     * @function
+     */
+    getIntersetctResults() {
+        const results = [];
+        if (!this._meshes) {
+            return results;
+        }
+        const map = this.layer.getMap();
+        for (let i = 0; i < this._inSightLineList.length; i++) {
+            const { eyePos, lookPoint } = this._inSightLineList[i];
+            this._raycaster.setFromTo(eyePos, lookPoint);
+            const data = this._raycaster.test(this._meshes, map);
+            if (data && data.length) {
+                const intersectResult = {
+                    inSightLine: this._inSightLineList[i],
+                    intersects: []
+                };
+                data.forEach(item => {
+                    const dataItem = this._getRayCastData(item)
+                    intersectResult.intersects.push(dataItem);
+                });
+                results.push(intersectResult);
+            }
+        }
+        return results;
+    }
+
+    _getRayCastData(data) {
+        const results = [];
+        const layer = this.layer;
+        if (!layer) {
+            return results;
+        }
+        const { mesh, indices, coordinate } = data;
+        const excludeLayers = this.getExcludeLayers();
+        layer.getLayers().forEach(childLayer => {
+            const id = childLayer.getId();
+            const renderer = childLayer.getRenderer();
+            if (excludeLayers.indexOf(id) < 0 && renderer && renderer.getRayCastData) {
+                const raycastData = renderer.getRayCastData(mesh, indices[0]);
+                results.push({
+                    data: raycastData,
+                    coordinate
+                });
+            }
+        });
+        return results;
+    }
+
+    _updateRenderOptions() {
+        this._prepareRenderOptions();
+        const renderer = this.layer.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+    }
+
     _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
-        this._renderOptions['eyePos'] = coordinateToWorld(map, ...this.options.eyePos);
-        this._renderOptions['lookPoint'] = coordinateToWorld(map, ...this.options.lookPoint);
+        this._renderOptions['inSightLineList'] = this._inSightLineList.map(inSightLine => {
+            const { eyePos, lookPoint } = inSightLine;
+            const eyePosition = coordinateToWorld(map, ...eyePos);
+            const lookPosition = coordinateToWorld(map, ...lookPoint);
+            return {
+                eyePos: eyePosition,
+                lookPoint: lookPosition
+            };
+        });
         this._renderOptions['visibleColor'] = this.options.visibleColor;
         this._renderOptions['invisibleColor'] = this.options.invisibleColor;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
@@ -51,6 +162,7 @@ export default class InSightAnalysis extends Analysis {
 
     renderAnalysis(meshes) {
         const uniforms = {};
+        this._meshes = meshes;
         const insightMap =  this._pass.render(meshes, this._renderOptions);
         uniforms['insightMap'] = insightMap;
         uniforms['insight_visibleColor'] =  this._renderOptions['visibleColor'] || [0.0, 1.0, 0.0, 1.0];

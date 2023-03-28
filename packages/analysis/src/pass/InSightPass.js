@@ -60,10 +60,7 @@ export default class InSightPass extends AnalysisPass {
     }
 
     render(meshes, config) {
-        const { eyePos, lookPoint, horizontalAngle, verticalAngle } = config;
-        if (!this._validViewport(horizontalAngle, verticalAngle) || !eyePos || !lookPoint) {
-            return this._fbo;
-        }
+        const { inSightLineList, horizontalAngle, verticalAngle } = config;
         if (!this._depthShader) {
             this._createDepthShader(horizontalAngle, verticalAngle);
         }
@@ -75,12 +72,18 @@ export default class InSightPass extends AnalysisPass {
         });
         const modelMatrix = mat4.identity(MAT);
         this._helperMesh.localTransform = modelMatrix;
-        this._scene.setMeshes(meshes);
-        const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle);
-        this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
-        this._updateHelperGeometry(eyePos, lookPoint);
-        this._scene.setMeshes(this._helperMesh);
-        this._renderInsightMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
+        for (let i = 0; i < inSightLineList.length; i++) {
+            let { eyePos, lookPoint } = inSightLineList[i];
+            if (!this._validViewport(horizontalAngle, verticalAngle) || !eyePos || !lookPoint) {
+                continue;
+            }
+            const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle);
+            this._scene.setMeshes(meshes);
+            this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
+            this._updateHelperGeometry(eyePos, lookPoint);
+            this._scene.setMeshes(this._helperMesh);
+            this._renderInsightMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
+        }
         return this._fbo;
     }
 

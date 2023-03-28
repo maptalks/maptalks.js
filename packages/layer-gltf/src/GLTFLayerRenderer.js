@@ -501,6 +501,16 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         return this._getToRenderMeshes();
     }
 
+    getRayCastData(mesh) {
+        const markers = this.layer.getGeometries();
+        for (let i = 0; i < markers.length; i++) {
+            const meshes = markers[i]._meshes;
+            if (meshes && meshes.indexOf(mesh) > -1) {
+                return markers[i];
+            }
+        }
+    }
+
     drawOutline(fbo) {
         if (!this.extentShader) {
             this.extentShader = new reshader.MeshShader({

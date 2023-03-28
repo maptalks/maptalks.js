@@ -503,4 +503,114 @@ describe('add analysis', () => {
         });
         gllayer.addTo(map);
     });
+
+    it('add more than one insight lines', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const inSightAnalysis = new maptalks.InSightAnalysis({
+                eyePos: [center.x, center.y, 0],
+                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                visibleColor: [0, 1, 0, 1],
+                invisibleColor: [1, 0, 0, 1]
+            });
+            inSightAnalysis.addTo(gllayer);
+            inSightAnalysis.addInSightLine({
+                eyePos: [center.x, center.y, 10],
+                lookPoint: [center.x - 0.03, center.y - 0.05, 20],
+            });
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, 302, 47, 1, 1);
+                expect(pixelMatch([255, 0, 0, 255], pixel1)).to.be.eql(true);//非通视区颜色
+                const pixel2 = pickPixel(map, 249, 100, 1, 1);
+                expect(pixelMatch([0, 255, 0, 255], pixel2)).to.be.eql(true);//通视区颜色
+                //另一条通视线的颜色比对
+                const pixel3 = pickPixel(map, 140, 246, 4, 4);
+                expect(pixelMatch([255, 0, 0, 255], pixel3.slice(8, 12))).to.be.eql(true);//非通视区颜色
+                const pixel4 = pickPixel(map, 167, 201, 4, 4);
+                expect(pixelMatch([0, 255, 0, 255], pixel4.slice(8, 12))).to.be.eql(true);//通视区颜色
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('clear insight lines', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const inSightAnalysis = new maptalks.InSightAnalysis({
+                eyePos: [center.x, center.y, 0],
+                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                visibleColor: [0, 1, 0, 1],
+                invisibleColor: [1, 0, 0, 1]
+            });
+            inSightAnalysis.addTo(gllayer);
+            inSightAnalysis.addInSightLine({
+                eyePos: [center.x, center.y, 10],
+                lookPoint: [center.x - 0.03, center.y - 0.05, 20],
+            });
+            inSightAnalysis.clearInSightLines();
+            setTimeout(function() {
+                //清空后没有通视线了
+                const pixel1 = pickPixel(map, 302, 47, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, 249, 100, 1, 1);
+                expect(pixelMatch([146, 146, 146, 255], pixel2)).to.be.eql(true);
+                const pixel3 = pickPixel(map, 140, 246, 4, 4);
+                expect(pixelMatch([138, 138, 138, 255], pixel3.slice(8, 12))).to.be.eql(true);
+                const pixel4 = pickPixel(map, 167, 201, 4, 4);
+                expect(pixelMatch([152, 152, 152, 255], pixel4.slice(8, 12))).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+    });
+
+    it('get intersect data', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        gltflayer.on('modelload', () => {
+            const insightAnalysis = new maptalks.InSightAnalysis({
+                eyePos: [center.x + 0.002, center.y - 0.001, 50],
+                lookPoint: [center.x - 0.001, center.y + 0.0015, 50],
+                visibleColor: [0, 1, 0, 1],
+                invisibleColor: [1, 0, 0, 1]
+            }).addTo(gllayer);
+            setTimeout(function() {
+                const { inSightLine, intersects } = insightAnalysis.getIntersetctResults()[0];
+                expect(inSightLine).to.be.ok();
+                expect(intersects.length).to.be.eql(2);
+                expect(intersects[0][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+                expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+                expect(intersects[0][0].coordinate.x).to.be.eql(0.0007622108088298774);
+                expect(intersects[0][0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(intersects[0][0].coordinate.z).to.be.eql(50.00033);
+                expect(intersects[1][0].coordinate.x).to.be.eql(-0.0002377891911464758);
+                expect(intersects[1][0].coordinate.y).to.be.eql(0.0008648243260438448);
+                expect(intersects[1][0].coordinate.z).to.be.eql(50.00033);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+        new maptalks.GLTFMarker(center).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+    });
 });
