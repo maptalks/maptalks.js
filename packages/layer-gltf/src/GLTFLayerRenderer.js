@@ -509,6 +509,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
                 return markers[i];
             }
         }
+        return null;
     }
 
     drawOutline(fbo) {

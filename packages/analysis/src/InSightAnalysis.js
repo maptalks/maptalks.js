@@ -7,18 +7,14 @@ import RayCaster from './RayCaster';
 export default class InSightAnalysis extends Analysis {
     constructor(options) {
         super(options);
-        this._inSightLineList = [];
-        this._inSightLineList.push({
-            eyePos: options.eyePos,
-            lookPoint: options.lookPoint
-        });
-        this._raycaster = new RayCaster(options.eyePos, options.lookPoint);
+        this._inSightLineList = options.inSightLineList || [];
+        this._raycaster = new RayCaster();
         this.type = 'insight';
     }
 
     update(name, value) {
-        if (name === 'eyePos' || name === 'lookPoint') {
-            this._inSightLineList[0][name] = value;
+        if (name === 'inSightLineList') {
+            this.setInSightLines(value);
         } else {
             this._renderOptions[name] = value;
         }
@@ -34,7 +30,7 @@ export default class InSightAnalysis extends Analysis {
     }
 
     removeInSightLine(inSightLine) {
-        const index = this._inSightLineList.indexOf(inSightLine)
+        const index = this._inSightLineList.indexOf(inSightLine);
         if (index > -1) {
             this._inSightLineList.splice(index, 1);
         }
@@ -84,7 +80,7 @@ export default class InSightAnalysis extends Analysis {
                     intersects: []
                 };
                 data.forEach(item => {
-                    const dataItem = this._getRayCastData(item)
+                    const dataItem = this._getRayCastData(item);
                     intersectResult.intersects.push(dataItem);
                 });
                 results.push(intersectResult);

@@ -115,8 +115,10 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                eyePos: [center.x, center.y, 0],
-                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                inSightLineList: [{
+                    eyePos: [center.x, center.y, 0],
+                    lookPoint: [center.x + 0.05, center.y + 0.05, 20]
+                }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             });
@@ -517,8 +519,10 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                eyePos: [center.x, center.y, 0],
-                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                inSightLineList: [{
+                    eyePos: [center.x, center.y, 0],
+                    lookPoint: [center.x + 0.05, center.y + 0.05, 20]
+                }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             });
@@ -556,15 +560,17 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                eyePos: [center.x, center.y, 0],
-                lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                inSightLineList: [{
+                    eyePos: [center.x, center.y, 0],
+                    lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             });
             inSightAnalysis.addTo(gllayer);
             inSightAnalysis.addInSightLine({
                 eyePos: [center.x, center.y, 10],
-                lookPoint: [center.x - 0.03, center.y - 0.05, 20],
+                lookPoint: [center.x - 0.03, center.y - 0.05, 20]
             });
             inSightAnalysis.clearInSightLines();
             setTimeout(function() {
@@ -588,8 +594,10 @@ describe('add analysis', () => {
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         gltflayer.on('modelload', () => {
             const insightAnalysis = new maptalks.InSightAnalysis({
-                eyePos: [center.x + 0.002, center.y - 0.001, 50],
-                lookPoint: [center.x - 0.001, center.y + 0.0015, 50],
+                inSightLineList: [{
+                    eyePos: [center.x + 0.002, center.y - 0.001, 50],
+                    lookPoint: [center.x - 0.001, center.y + 0.0015, 50]
+                }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             }).addTo(gllayer);
