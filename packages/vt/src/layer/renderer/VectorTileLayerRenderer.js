@@ -1099,8 +1099,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const width = tileSize * 2;
         const height = tileSize * 2;
         const color = regl.texture({
-            min: 'nearest',
-            mag: 'nearest',
+            min: 'linear',
+            mag: 'linear',
             type: 'uint8',
             width,
             height,
@@ -1122,7 +1122,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             colorFormat: 'rgba'
         };
         fboInfo.depthStencil = this._terrainDepthStencil;
-        return regl.framebuffer(fboInfo);
+        const texture = regl.framebuffer(fboInfo)
+        texture.colorTex = color;
+        // 单独创建的 color 必须要手动destroy回收，光destroy framebuffer，color是不会销毁的
+        return texture;
+    }
+
+    deleteTerrainTexture(texture) {
+        texture.destroy();
+        if (texture.colorTex) {
+            texture.colorTex.destroy();
+            delete texture.colorTex;
+        }
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, skinImages) {
