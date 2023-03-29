@@ -1094,10 +1094,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData);
     }
 
-    createTerrainTexture(width, height) {
-        width *= 2;
-        height *= 2;
-        const regl = this.regl;
+    createTerrainTexture(regl) {
+        const tileSize = this.layer.getTileSize().width;
+        const width = tileSize * 2;
+        const height = tileSize * 2;
         const color = regl.texture({
             min: 'nearest',
             mag: 'nearest',
@@ -1125,39 +1125,33 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return regl.framebuffer(fboInfo);
     }
 
-    renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, tiles, parentTile) {
+    renderTerrainSkin(terrainRegl, terrainLayer, skinImages) {
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
-        this._parentContext = {
-            renderTarget: {
-                fbo: texture
-            }
-        };
+        const tileSize = this.layer.getTileSize().width;
         this._startFrame(timestamp);
-        this._drawTerrainTiles(tiles, terrainTileInfo, texture);
-        if (parentTile) {
-            this._drawOneTerrainTile(parentTile, terrainTileInfo, texture);
+        for (let i = 0; i < skinImages.length; i++) {
+            const texture = skinImages[i].texture;
+            this._parentContext = {
+                renderTarget: {
+                    fbo: texture
+                }
+            };
+            TERRAIN_CLEAR.framebuffer = texture;
+            terrainRegl.clear(TERRAIN_CLEAR);
+            this._parentContext.viewport = getTileViewport(tileSize);
+            this._drawTerrainTile(skinImages[i].tile, texture);
         }
+        this._endTerrainFrame(skinImages);
         this._parentContext = parentContext;
-        // super.renderTerrainSkin(terrainRegl, terrainLayer, terrainTileInfo, texture, skinTiles, parentTile);
     }
 
-    _drawTerrainTiles(tiles, terrainTileInfo, terrainTexture) {
-        TERRAIN_CLEAR.framebuffer = terrainTexture;
-        this.regl.clear(TERRAIN_CLEAR);
-        for (let i = 0; i < tiles.length; i++) {
-            this._drawOneTerrainTile(tiles[i], terrainTileInfo, terrainTexture);
-        }
-    }
-
-    _drawOneTerrainTile(tile, terrainTileInfo, terrainTexture) {
-        this._parentContext.viewport = getTileViewport(tile, terrainTileInfo)
+    _drawTerrainTile(tile) {
         const { info, image } = tile;
         this.drawTile(info, image, terrainSkinFilter);
-        this._endTerrainFrame(terrainTexture);
     }
 
-    _endTerrainFrame(terrainTexture) {
+    _endTerrainFrame(skinImages) {
         const plugins = this._getAllPlugins();
         const cameraPosition = this.getMap().cameraPosition;
         const timestamp = this._currentTimestamp || 0;
@@ -1195,10 +1189,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (!hasMesh || !terrainSkinFilter(plugin)) {
                 return;
             }
-            this.regl.clear({
-                stencil: 0xFF,
-                framebuffer: terrainTexture
-            });
+            for (let i = 0; i < skinImages.length; i++) {
+                const texture = skinImages[i].texture;
+                this.regl.clear({
+                    stencil: 0xFF,
+                    framebuffer: texture
+                });
+            }
 
             const polygonOffsetIndex = this._pluginOffsets[idx] || 0;
             const context = this._getPluginContext(plugin, polygonOffsetIndex, [0, 0, 0], this._currentTimestamp);
@@ -1216,6 +1213,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const tileTranslationMatrix = tileInfo.tileTranslationMatrix = tileInfo.tileTranslationMatrix || this.calculateTileTranslationMatrix(tilePoint, tileInfo.z);
         const terrainTileTransform = tileInfo.terrainTransform = tileInfo.terrainTransform || this.calculateTerrainTileMatrix(tilePoint, tileInfo.z, tileInfo.extent);
 
+        const parentContext = this._parentContext;
         const pluginData = [];
         pushIn(pluginData, tileData.data);
         pushIn(pluginData, tileData.featureData);
@@ -1254,6 +1252,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 isRenderingTerrain,
                 isRenderingTerrainSkin
             };
+            if (parentContext) {
+                extend(context, parentContext);
+            }
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {
                 this._needRetire = true;
@@ -1860,7 +1861,7 @@ function getDefaultSymbol(type) {
     case 'fill':
         return {
             polygonFill: '#76a6f0',
-            polygonOpacity: 0.6
+            polygonOpacity: 0.8
         };
     }
     return null;
@@ -1945,23 +1946,32 @@ function needRefreshStyle(symbol) {
     return false;
 }
 
-function getTileViewport(tile, terrainTileInfo) {
-    const { extent2d: extent, res, offset: terrainOffset } = terrainTileInfo;
-    const scale = tile.info.res / res;
-    const { info } = tile;
-    const offset = info.offset;
-    const width = info.extent2d.getWidth() * scale;
-    const height = info.extent2d.getHeight() * scale;
-    const xmin = info.extent2d.xmin * scale;
-    const ymax = info.extent2d.ymax * scale;
-    const left = xmin - extent.xmin;
-    const top = extent.ymax - ymax;
-    const dx = terrainOffset[0] - offset[0];
-    const dy = offset[1] - terrainOffset[1];
+// function getTileViewport(tile, terrainTileInfo) {
+//     const { extent2d: extent, res, offset: terrainOffset } = terrainTileInfo;
+//     const scale = tile.info.res / res;
+//     const { info } = tile;
+//     const offset = info.offset;
+//     const width = info.extent2d.getWidth() * scale;
+//     const height = info.extent2d.getHeight() * scale;
+//     const xmin = info.extent2d.xmin * scale;
+//     const ymax = info.extent2d.ymax * scale;
+//     const left = xmin - extent.xmin;
+//     const top = extent.ymax - ymax;
+//     const dx = terrainOffset[0] - offset[0];
+//     const dy = offset[1] - terrainOffset[1];
+//     return {
+//         x: (left + dx) * 2,
+//         y: (extent.getHeight() - (top + dy + height)) * 2,
+//         width: width * 2,
+//         height: height * 2
+//     };
+// }
+
+function getTileViewport(tileSize) {
     return {
-        x: (left + dx) * 2,
-        y: (extent.getHeight() - (top + dy + height)) * 2,
-        width: width * 2,
-        height: height * 2
+        x: 0,
+        y: 0,
+        width: tileSize * 2,
+        height: tileSize * 2
     };
 }

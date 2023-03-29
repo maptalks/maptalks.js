@@ -303,6 +303,7 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+        const fbo = this.getRenderFBO(context);
         meshes = meshes.filter(m => this.isMeshVisible(m));
 
         const isEnableBloom = !!(context && context.bloom);
@@ -328,6 +329,11 @@ class Painter {
             }
             if (updated) {
                 mesh.setDefines(defines);
+            }
+            if (!fbo) {
+                delete mesh.uniforms['framebuffer'];
+            } else {
+                mesh.setUniform('framebuffer', fbo);
             }
             this._highlightMesh(mesh);
         });

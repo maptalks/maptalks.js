@@ -467,12 +467,12 @@ class LinePainter extends BasicPainter {
         if (this.sceneConfig.trailAnimation && this.sceneConfig.trailAnimation.enable) {
             defines['HAS_TRAIL'] = 1;
         }
+        const projViewModelMatrix = [];
         uniforms.push(
             {
                 name: 'projViewModelMatrix',
                 type: 'function',
                 fn: function (context, props) {
-                    const projViewModelMatrix = [];
                     mat4.multiply(projViewModelMatrix, props['projViewMatrix'], props['modelMatrix']);
                     return projViewModelMatrix;
                 }
