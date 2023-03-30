@@ -46,7 +46,8 @@ export default class RayCaster {
             const mesh = meshes[i];
             const key = mesh.uuid + '-' + mesh.version + '-' + mesh.geometry.version + '-' + this._version;
             if (this._intersectCache[key]) {
-                return this._intersectCache[key];
+                results.push(this._intersectCache[key]);
+                continue;
             }
             if (!this._checkBBox(mesh.getBoundingBox(), map)) {
                 continue;
