@@ -96,11 +96,11 @@
   display: inline-block;
   font-size : 14px;
   white-space: nowrap;
-  color: #bbb;
+  color: #5a5a5a;
 }
 .maptalks-layer-switcher .group > label {
   font-weight: bold;
-  color: #ddd;
+  color: #5a5a5a;
   width: 100%;
 }
 .maptalks-layer-switcher .layer label {
@@ -124,15 +124,16 @@
 .maptalks-layer-switcher button {
   width: 28px;
   height: 28px;
-  background: url(images/control/layer.png) no-repeat 4px 4px;
-  background-color: #172029;
-  border: none;
+  background: url(images/control/layer.svg) no-repeat;
+  background-position: center;
+  background-color: #fff;
+  border: 1px solid #b8b8b8;
 }
 .maptalks-layer-switcher.shown button {
   display: none;
 }
 .maptalks-layer-switcher .panel {
-  background-color: #172029;
+  background-color: #fff;
   display: none;
   overflow-y: auto;
   overflow-x: hidden;
