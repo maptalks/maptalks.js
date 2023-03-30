@@ -171,7 +171,7 @@ class InfoWindow extends UIComponent {
         if (this.options['title']) {
             content += '<h2>' + this.options['title'] + '</h2>';
         }
-        content += '<a href="javascript:void(0);" class="maptalks-close"></a><div class="maptalks-msgContent"></div>';
+        content += '<a href="javascript:void(0);" class="maptalks-close">×</a><div class="maptalks-msgContent"></div>';
         dom.innerHTML = content;
         //reslove title
         this._replaceTemplate(dom);
