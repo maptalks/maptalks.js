@@ -115,9 +115,9 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                inSightLineList: [{
-                    eyePos: [center.x, center.y, 0],
-                    lookPoint: [center.x + 0.05, center.y + 0.05, 20]
+                lines: [{
+                    from: [center.x, center.y, 0],
+                    to: [center.x + 0.05, center.y + 0.05, 20]
                 }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
@@ -519,17 +519,17 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                inSightLineList: [{
-                    eyePos: [center.x, center.y, 0],
-                    lookPoint: [center.x + 0.05, center.y + 0.05, 20]
+                lines: [{
+                    from: [center.x, center.y, 0],
+                    to: [center.x + 0.05, center.y + 0.05, 20]
                 }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             });
             inSightAnalysis.addTo(gllayer);
-            inSightAnalysis.addInSightLine({
-                eyePos: [center.x, center.y, 10],
-                lookPoint: [center.x - 0.03, center.y - 0.05, 20],
+            inSightAnalysis.addLine({
+                from: [center.x, center.y, 10],
+                to: [center.x - 0.03, center.y - 0.05, 20],
             });
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 302, 47, 1, 1);
@@ -560,19 +560,19 @@ describe('add analysis', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
-                inSightLineList: [{
-                    eyePos: [center.x, center.y, 0],
-                    lookPoint: [center.x + 0.05, center.y + 0.05, 20],
+                lines: [{
+                    from: [center.x, center.y, 0],
+                    to: [center.x + 0.05, center.y + 0.05, 20],
                 }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             });
             inSightAnalysis.addTo(gllayer);
-            inSightAnalysis.addInSightLine({
-                eyePos: [center.x, center.y, 10],
-                lookPoint: [center.x - 0.03, center.y - 0.05, 20]
+            inSightAnalysis.addLine({
+                from: [center.x, center.y, 10],
+                to: [center.x - 0.03, center.y - 0.05, 20]
             });
-            inSightAnalysis.clearInSightLines();
+            inSightAnalysis.clearLines();
             setTimeout(function() {
                 //清空后没有通视线了
                 const pixel1 = pickPixel(map, 302, 47, 1, 1);
@@ -594,15 +594,15 @@ describe('add analysis', () => {
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         gltflayer.on('modelload', () => {
             const insightAnalysis = new maptalks.InSightAnalysis({
-                inSightLineList: [{
-                    eyePos: [center.x + 0.002, center.y - 0.001, 50],
-                    lookPoint: [center.x - 0.001, center.y + 0.0015, 50]
+                lines: [{
+                    from: [center.x + 0.002, center.y - 0.001, 50],
+                    to: [center.x - 0.001, center.y + 0.0015, 50]
                 }],
                 visibleColor: [0, 1, 0, 1],
                 invisibleColor: [1, 0, 0, 1]
             }).addTo(gllayer);
             setTimeout(function() {
-                const { inSightLine, intersects } = insightAnalysis.getIntersetctResults()[0];
+                const { inSightLine, intersects } = insightAnalysis.getIntersetction()[0];
                 expect(inSightLine).to.be.ok();
                 expect(intersects.length).to.be.eql(2);
                 expect(intersects[0][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
@@ -620,5 +620,38 @@ describe('add analysis', () => {
         new maptalks.GLTFMarker(center).addTo(gltflayer);
         new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
         new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+    });
+
+    it('raycaster\'s test method', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        new maptalks.GLTFMarker(center).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+        function getAllMeshes() {
+            let meshes = [];
+            const markers = gltflayer.getGeometries();
+            for (let i = 0; i < markers.length; i++) {
+                meshes = meshes.concat(markers[i].getMeshes());
+            }
+            return meshes;
+        }
+        gltflayer.on('modelload', () => {
+            setTimeout(function() {
+                const from = new maptalks.Coordinate(center.x + 0.002, center.y - 0.001, 50);
+                const to = new maptalks.Coordinate(center.x - 0.001, center.y + 0.0015, 50);
+                const raycaster = new maptalks.RayCaster(from, to);
+                const meshes = getAllMeshes();
+                const results = raycaster.test(meshes, map);
+                expect(results.length).to.be.eql(2);
+                expect(results[0].mesh).to.be.ok();
+                expect(results[0].indices).to.be.eql([0, 1, 2]);
+                expect(results[0].coordinate.x).to.be.eql(0.0007622108088298774);
+                expect(results[0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(results[0].coordinate.z).to.be.eql(50.00033);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
     });
 });

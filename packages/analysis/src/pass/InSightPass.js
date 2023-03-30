@@ -60,7 +60,7 @@ export default class InSightPass extends AnalysisPass {
     }
 
     render(meshes, config) {
-        const { inSightLineList, horizontalAngle, verticalAngle } = config;
+        const { lines, horizontalAngle, verticalAngle } = config;
         if (!this._depthShader) {
             this._createDepthShader(horizontalAngle, verticalAngle);
         }
@@ -72,31 +72,31 @@ export default class InSightPass extends AnalysisPass {
         });
         const modelMatrix = mat4.identity(MAT);
         this._helperMesh.localTransform = modelMatrix;
-        for (let i = 0; i < inSightLineList.length; i++) {
-            let { eyePos, lookPoint } = inSightLineList[i];
-            if (!this._validViewport(horizontalAngle, verticalAngle) || !eyePos || !lookPoint) {
+        for (let i = 0; i < lines.length; i++) {
+            let { from, to } = lines[i];
+            if (!this._validViewport(horizontalAngle, verticalAngle) || !from || !to) {
                 continue;
             }
-            const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(eyePos, lookPoint, horizontalAngle, verticalAngle);
+            const { projViewMatrixFromViewpoint, far } = this._createProjViewMatrix(from, to, horizontalAngle, verticalAngle);
             this._scene.setMeshes(meshes);
             this._renderDepth(this._scene, projViewMatrixFromViewpoint, far);
-            this._updateHelperGeometry(eyePos, lookPoint);
+            this._updateHelperGeometry(from, to);
             this._scene.setMeshes(this._helperMesh);
             this._renderInsightMap(this._scene, projViewMatrixFromViewpoint, config.projViewMatrix);
         }
         return this._fbo;
     }
 
-    _updateHelperGeometry(eyePos, lookPoint) {
+    _updateHelperGeometry(from, to) {
         if(this._helperGeometry) {
             this._helperGeometry.dispose();
             this._helperMesh.dispose();
-            helperPos[0] = eyePos[0];
-            helperPos[1] = eyePos[1];
-            helperPos[2] = eyePos[2];
-            helperPos[3] = lookPoint[0];
-            helperPos[4] = lookPoint[1];
-            helperPos[5] = lookPoint[2];
+            helperPos[0] = from[0];
+            helperPos[1] = from[1];
+            helperPos[2] = from[2];
+            helperPos[3] = to[0];
+            helperPos[4] = to[1];
+            helperPos[5] = to[2];
             this._helperGeometry = new reshader.Geometry({
                 POSITION: helperPos
             },
@@ -127,11 +127,11 @@ export default class InSightPass extends AnalysisPass {
     }
 
     //根据视点位置，方向，垂直角，水平角构建矩阵
-    _createProjViewMatrix(eyePos, lookPoint, verticalAngle, horizontalAngle) {
+    _createProjViewMatrix(from, to, verticalAngle, horizontalAngle) {
         const aspect =  verticalAngle / horizontalAngle;
-        const distance = Math.sqrt(Math.pow(eyePos[0] - lookPoint[0], 2) + Math.pow(eyePos[1] - lookPoint[1], 2) + Math.pow(eyePos[2] - lookPoint[2], 2));
+        const distance = Math.sqrt(Math.pow(from[0] - to[0], 2) + Math.pow(from[1] - to[1], 2) + Math.pow(from[2] - to[2], 2));
         const projMatrix = mat4.perspective([], horizontalAngle * Math.PI / 180, aspect, 1.0, distance + 1000);
-        const viewMatrix = mat4.lookAt([], eyePos, lookPoint, [0, 1, 0]);
+        const viewMatrix = mat4.lookAt([], from, to, [0, 1, 0]);
         const projViewMatrix = mat4.multiply([], projMatrix, viewMatrix);
         return { projViewMatrixFromViewpoint: projViewMatrix, far: distance };
     }

@@ -15,30 +15,39 @@ const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,
         16, 17, 18, 16, 18, 19,
         20, 21, 22, 20, 22, 23],
     BBOX_POSITIONS = [];
-const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [];
+const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], TEMP_POINT = new Point(0, 0);
 export default class RayCaster {
     constructor(from, to, options = {}) {
-        this.setFromTo(from, to);
-        this._options = options;
-    }
-
-    setFromTo(from, to) {
         this.setFromPoint(from);
         this.setToPoint(to);
+        this._options = options;
+        this._intersectCache = {};
+        this._version = 0;
     }
 
     setFromPoint(from) {
         this._from = this._adaptCoordinate(from);
+        this._incrVersion();
     }
 
     setToPoint(to) {
         this._to = this._adaptCoordinate(to);
+        this._incrVersion();
+    }
+
+    _incrVersion() {
+        this._intersectCache = {};
+        this._version++;
     }
 
     test(meshes, map) {
         const results = [];
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
+            const key = mesh.uuid + '-' + mesh.version + '-' + mesh.geometry.version + '-' + this._version;
+            if (this._intersectCache[key]) {
+                return this._intersectCache[key];
+            }
             if (!this._checkBBox(mesh.getBoundingBox(), map)) {
                 continue;
             }
@@ -53,11 +62,13 @@ export default class RayCaster {
             const intersect = this._testMesh(map, positions, geoIndices, localTransform);
             if (intersect) {
                 const { coordinate, indices } = intersect;
-                results.push({
+                const result = {
                     mesh,
                     coordinate,
                     indices
-                });
+                };
+                results.push(result);      
+                this._intersectCache[key] = result;
             }
         }
         return results;
@@ -81,7 +92,9 @@ export default class RayCaster {
                     continue;
                 }
                 const altitude = map.pointAtResToAltitude(intersectPoint[2], map.getGLRes());
-                const coord = map.pointAtResToCoordinate(new Point(intersectPoint[0], intersectPoint[1]), map.getGLRes());
+                TEMP_POINT.x = intersectPoint[0];
+                TEMP_POINT.y = intersectPoint[1];
+                const coord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
                 const coordinate = new Coordinate(coord.x, coord.y, altitude);
                 return {
                     coordinate,

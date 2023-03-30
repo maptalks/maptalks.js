@@ -7,47 +7,47 @@ import RayCaster from './RayCaster';
 export default class InSightAnalysis extends Analysis {
     constructor(options) {
         super(options);
-        this._inSightLineList = options.inSightLineList || [];
+        this._lines = options.lines || [];
         this._raycaster = new RayCaster();
         this.type = 'insight';
     }
 
     update(name, value) {
-        if (name === 'inSightLineList') {
-            this.setInSightLines(value);
+        if (name === 'lines') {
+            this.setLines(value);
         } else {
             this._renderOptions[name] = value;
         }
         super.update(name, value);
     }
 
-    addInSightLine(inSightLine) {
-        const { eyePos, lookPoint } = inSightLine;
-        if (eyePos && lookPoint) {
-            this._inSightLineList.push(inSightLine);
+    addLine(inSightLine) {
+        const { from, to } = inSightLine;
+        if (from && to) {
+            this._lines.push(inSightLine);
         }
         this._updateRenderOptions();
     }
 
-    removeInSightLine(inSightLine) {
-        const index = this._inSightLineList.indexOf(inSightLine);
+    removeLine(inSightLine) {
+        const index = this._lines.indexOf(inSightLine);
         if (index > -1) {
-            this._inSightLineList.splice(index, 1);
+            this._lines.splice(index, 1);
         }
         this._updateRenderOptions();
     }
 
-    getInSightLines() {
-        return this._inSightLineList;
+    getLines() {
+        return this._lines;
     }
 
-    setInSightLines(inSightLineList) {
-        this._inSightLineList = inSightLineList;
+    setLines(lines) {
+        this._lines = lines;
         this._updateRenderOptions();
     }
 
-    clearInSightLines() {
-        this._inSightLineList = [];
+    clearLines() {
+        this._lines = [];
         this._updateRenderOptions();
     }
 
@@ -64,19 +64,20 @@ export default class InSightAnalysis extends Analysis {
      * @return {Object}
      * @function
      */
-    getIntersetctResults() {
+    getIntersetction() {
         const results = [];
         if (!this._meshes) {
             return results;
         }
         const map = this.layer.getMap();
-        for (let i = 0; i < this._inSightLineList.length; i++) {
-            const { eyePos, lookPoint } = this._inSightLineList[i];
-            this._raycaster.setFromTo(eyePos, lookPoint);
+        for (let i = 0; i < this._lines.length; i++) {
+            const { from, to } = this._lines[i];
+            this._raycaster.setFromPoint(from);
+            this._raycaster.setToPoint(to);
             const data = this._raycaster.test(this._meshes, map);
             if (data && data.length) {
                 const intersectResult = {
-                    inSightLine: this._inSightLineList[i],
+                    inSightLine: this._lines[i],
                     intersects: []
                 };
                 data.forEach(item => {
@@ -122,13 +123,13 @@ export default class InSightAnalysis extends Analysis {
     _prepareRenderOptions() {
         const map = this.layer.getMap();
         this._renderOptions = {};
-        this._renderOptions['inSightLineList'] = this._inSightLineList.map(inSightLine => {
-            const { eyePos, lookPoint } = inSightLine;
-            const eyePosition = coordinateToWorld(map, ...eyePos);
-            const lookPosition = coordinateToWorld(map, ...lookPoint);
+        this._renderOptions['lines'] = this._lines.map(inSightLine => {
+            const { from, to } = inSightLine;
+            const fromition = coordinateToWorld(map, ...from);
+            const lookPosition = coordinateToWorld(map, ...to);
             return {
-                eyePos: eyePosition,
-                lookPoint: lookPosition
+                from: fromition,
+                to: lookPosition
             };
         });
         this._renderOptions['visibleColor'] = this.options.visibleColor;

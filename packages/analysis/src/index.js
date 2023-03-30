@@ -6,3 +6,4 @@ export { default as InSightAnalysis } from './InSightAnalysis.js';
 export { default as ExcavateAnalysis } from './ExcavateAnalysis.js';
 export { default as CrossCutAnalysis } from './CrossCutAnalysis.js';
 export { default as HeightLimitAnalysis } from './HeightLimitAnalysis.js';
+export { default as RayCaster } from './RayCaster.js';
