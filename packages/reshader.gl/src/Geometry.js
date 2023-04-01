@@ -309,10 +309,13 @@ export default class Geometry {
                 const buffer = regl.buffer(info);
                 buffer[REF_COUNT_KEY] = 1;
                 buffers[key] = {
-                    buffer
+                    buffer,
+                    array: data[key]
                 };
             }
-            delete data[key].array;
+            if (key !== 'POSITION') {//保存POSITION原始数据，用来做额外计算
+                delete data[key].array;
+            }
         }
         this.data = buffers;
         delete this._reglData;
@@ -327,6 +330,12 @@ export default class Geometry {
             const type = this.getElementsType(this.elements);
             if (type) {
                 info.type = type;
+            }
+            if (!this.elements.destroy) {
+                this.indices = new Uint16Array(this.elements.length);
+                for (let i = 0; i < this.elements.length; i++) {
+                    this.indices[i] = this.elements[i];
+                }
             }
             this.elements = this.elements.destroy ? this.elements : regl.elements(info);
             const elements = this.elements;
