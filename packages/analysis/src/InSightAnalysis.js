@@ -82,7 +82,9 @@ export default class InSightAnalysis extends Analysis {
                 };
                 data.forEach(item => {
                     const dataItem = this._getRayCastData(item);
-                    intersectResult.intersects.push(dataItem);
+                    if (dataItem) {
+                        intersectResult.intersects.push(dataItem);
+                    }
                 });
                 results.push(intersectResult);
             }
@@ -103,10 +105,12 @@ export default class InSightAnalysis extends Analysis {
             const renderer = childLayer.getRenderer();
             if (excludeLayers.indexOf(id) < 0 && renderer && renderer.getRayCastData) {
                 const raycastData = renderer.getRayCastData(mesh, indices[0]);
-                results.push({
-                    data: raycastData,
-                    coordinate
-                });
+                if (raycastData) {
+                    results.push({
+                        data: raycastData,
+                        coordinate
+                    });
+                }
             }
         });
         return results;

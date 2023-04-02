@@ -285,6 +285,7 @@ export default class Geometry {
             }
             delete allocatedBuffers[p].data;
         }
+        const positionName = this.desc.positionAttribute;
         const data = this.data;
         const vertexCount = this._vertexCount;
         const buffers = {};
@@ -309,11 +310,14 @@ export default class Geometry {
                 const buffer = regl.buffer(info);
                 buffer[REF_COUNT_KEY] = 1;
                 buffers[key] = {
-                    buffer,
-                    array: data[key]
+                    buffer
                 };
+                if (key === positionName) {
+                    buffers[key].array = data[key];
+                }
+
             }
-            if (key !== 'POSITION') {//保存POSITION原始数据，用来做额外计算
+            if (key !== positionName) {//保存POSITION原始数据，用来做额外计算
                 delete data[key].array;
             }
         }
