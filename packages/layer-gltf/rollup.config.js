@@ -5,7 +5,7 @@ const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = production ? 'dist/maptalks.gltf.js' : 'dist/maptalks.gltf-dev.js';
+const outputFile = pkg.main;
 const outputESFile = production ? pkg.module : 'dist/maptalks.gltf-dev.mjs';
 const plugins = [
     ].concat(production ? [

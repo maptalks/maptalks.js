@@ -4,7 +4,7 @@ const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = production ? 'dist/maptalks.analysis.js' : 'dist/maptalks.analysis-dev.js';
+const outputFile = pkg.main;
 const plugins = production ? [
     terser({
         output : { comments : '/^!/' },
