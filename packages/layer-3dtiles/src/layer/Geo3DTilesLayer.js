@@ -1040,8 +1040,12 @@ const CORNER_Xs = [];
 const CORNER_Ys = [];
 const CORNER_Zs = [];
 const HALF_AXES = [];
+const RADIUS = 6378137;
 function convertBoxToRegion(box, matrix) {
     for (let i = 0; i < 9; i++) {
+        if (box[i + 3] === Infinity || box[i + 3] === -Infinity) {
+            box[i + 3] = Math.sign(box[i + 3]) * RADIUS * 3;
+        }
         HALF_AXES[i] = box[i + 3];
     }
     const halfAxes = HALF_AXES;

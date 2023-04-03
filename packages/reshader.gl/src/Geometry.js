@@ -286,6 +286,7 @@ export default class Geometry {
             delete allocatedBuffers[p].data;
         }
         const positionName = this.desc.positionAttribute;
+        const altitudeName = this.desc.altitudeAttribute;
         const data = this.data;
         const vertexCount = this._vertexCount;
         const buffers = {};
@@ -312,7 +313,7 @@ export default class Geometry {
                 buffers[key] = {
                     buffer
                 };
-                if (key === positionName) {
+                if (key === positionName || key === altitudeName) {//vt中positionSize=2,z存在altitude中，也需要一并保存
                     buffers[key].array = data[key];
                 }
 

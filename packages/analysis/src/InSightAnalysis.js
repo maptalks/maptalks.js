@@ -57,7 +57,10 @@ export default class InSightAnalysis extends Analysis {
      * [{
      *    intersects: [{
      *        data: maptalks object, like gltfmarker、polygon...,
-     *        coordinate: intersect coordinate
+     *        coordinates: [{
+     *            coordinate: maptalks.Coordinate,
+     *            indices: [0, 1, 2]
+     *        },]
      *    }],
      *    inSightLine
      * }]
@@ -98,17 +101,18 @@ export default class InSightAnalysis extends Analysis {
         if (!layer) {
             return results;
         }
-        const { mesh, indices, coordinate } = data;
+        const { mesh, coordinates } = data;//对于某个mesh，可能有多个交点
         const excludeLayers = this.getExcludeLayers();
         layer.getLayers().forEach(childLayer => {
             const id = childLayer.getId();
             const renderer = childLayer.getRenderer();
-            if (excludeLayers.indexOf(id) < 0 && renderer && renderer.getRayCastData) {
+            if (excludeLayers.indexOf(id) < 0 && renderer && renderer.getRayCastData && coordinates.length) {
+                const indices = coordinates[0].indices;
                 const raycastData = renderer.getRayCastData(mesh, indices[0]);
                 if (raycastData) {
                     results.push({
                         data: raycastData,
-                        coordinate
+                        coordinates
                     });
                 }
             }
