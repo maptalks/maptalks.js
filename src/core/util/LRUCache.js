@@ -195,6 +195,9 @@ if (isMapSupported) {
                 }
             } else {
                 this.data.set(key, data);
+                if (this.data.size > this.max) {
+                    this.shrink();
+                }
             }
 
             return this;
