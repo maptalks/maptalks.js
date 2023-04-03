@@ -4,6 +4,7 @@ import { extend } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import { fromJSON } from './util/from_json';
+import { ID_PROP } from './util/convert_to_feature';
 
 class PolygonLayer extends Vector3DLayer {
     /**
@@ -103,6 +104,18 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
         });
     }
 
+    getAnalysisMeshes() {
+        return this.painter.getAnalysisMeshes();
+    }
+
+    getRayCastData(mesh, indiceIndex) {
+        const feature = this.painter.getRayCastData(mesh, indiceIndex);
+        if (!feature || !feature.feature) {
+            return null;
+        }
+        const uid = feature.feature[ID_PROP];
+        return this._geometries[uid];
+    }
 
     _groupPolygonFeatures(features) {
         const feas = [];

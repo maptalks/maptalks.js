@@ -18,6 +18,8 @@ const DEFAULT_UNIFORMS = {
     'uvOffset': [0, 0]
 };
 
+const EMPTY_ARRAY = [];
+
 class FillPainter extends BasicPainter {
     prepareSymbol(symbol) {
         const polygonFill = symbol.polygonFill;
@@ -45,6 +47,23 @@ class FillPainter extends BasicPainter {
 
     needPolygonOffset() {
         return true;
+    }
+
+    // getShadowMeshes() {
+    //     if (!this.isVisible()) {
+    //         return EMPTY_ARRAY;
+    //     }
+    //     const meshes = this.scene.getMeshes().filter(m => m.properties.level === 0 && !m.geometry.properties.is2D);
+    //     this.shadowCount = meshes.length;
+    //     return meshes;
+    // }
+
+    getAnalysisMeshes() {
+        if (!this.isVisible()) {
+            return EMPTY_ARRAY;
+        }
+        const meshes = this.scene.getMeshes().filter(m => m.properties.level === 0);
+        return meshes;
     }
 
     createMesh(geo, transform, params) {

@@ -20,7 +20,11 @@ export default class BasicPainter extends Painter {
             glData.glyphAtlas.image.type = 'glyph';
         }
         const data = extend({}, glData.data);
-        const geometry = new reshader.Geometry(data, glData.indices, 0, { primitive: this.getPrimitive(), positionSize: glData.positionSize });
+        const desc = { primitive: this.getPrimitive(), positionSize: glData.positionSize };
+        if (data.aAltitude) {
+            desc.altitudeAttribute = 'aAltitude';
+        }
+        const geometry = new reshader.Geometry(data, glData.indices, 0, desc);
         geometry.properties = {
             features,
             // Vector3DLayer中需要保存elements来实现show hide
@@ -49,6 +53,15 @@ export default class BasicPainter extends Painter {
             geometry,
             symbolIndex: glData.symbolIndex
         };
+    }
+
+    getRayCastData(mesh, indiceIndex) {
+        const { features, aFeaIds } = mesh.geometry.properties;
+        if (!features || !aFeaIds) {
+            return null;
+        }
+        const id = aFeaIds[indiceIndex];
+        return features[id];
     }
 
     getPrimitive() {

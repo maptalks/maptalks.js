@@ -207,6 +207,7 @@ class Painter {
 
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
+                    props.is2D = glData[i].is2D;
                     // props.elements = props.elements || geo.geometry.elements;
 
                     this.postCreateGeometry(geo, geometries);

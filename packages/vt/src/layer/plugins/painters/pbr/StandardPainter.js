@@ -44,9 +44,13 @@ class StandardPainter extends MeshPainter {
         if (!glData.data || !glData.data.aPosition || !glData.data.aPosition.length) {
             return null;
         }
-        const geometry = new reshader.Geometry(glData.data, glData.indices, 0, {
+        const desc = {
             uv0Attribute: 'aTexCoord0'
-        });
+        };
+        if (glData.aAltitude) {
+            desc.altitudeAttribute = 'aAltitude';
+        }
+        const geometry = new reshader.Geometry(glData.data, glData.indices, 0, desc);
         extend(geometry.properties, glData.properties);
         this._prepareFeatureIds(geometry, glData);
         return {

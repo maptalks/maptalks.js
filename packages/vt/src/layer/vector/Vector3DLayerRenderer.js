@@ -47,6 +47,7 @@ let meshUID = 1;
 const prefix = (SYMBOL_PREFIX + '').trim();
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 let EMPTY_POSITION = new Float32Array(1);
+const EMPTY_ARRAY = [];
 
 class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(...args) {
@@ -78,6 +79,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this._linePainter && this._linePainter.needToRedraw();
         }
         return redraw;
+    }
+
+    getAnalysisMeshes() {
+        return EMPTY_ARRAY;
+    }
+
+    getRayCastData() {
+        return null;
     }
 
     draw(timestamp, parentContext) {
