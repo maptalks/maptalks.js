@@ -1,5 +1,5 @@
 import { vec2, vec3, vec4 } from '@maptalks/gl';
-import { Coordinate, Point } from 'maptalks';
+import { Coordinate, Point, Util } from 'maptalks';
 import { coordinateToWorld } from './common/Util';
 
 const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,
@@ -15,7 +15,7 @@ const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,
         16, 17, 18, 16, 18, 19,
         20, 21, 22, 20, 22, 23],
     BBOX_POSITIONS = [];
-const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], TEMP_POINT = new Point(0, 0);
+const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
 export default class RayCaster {
     constructor(from, to, options = {}) {
         this.setFromPoint(from);
@@ -54,19 +54,19 @@ export default class RayCaster {
             }
             const localTransform = mesh.localTransform;
             const geometry = mesh.geometry;
-            const positions = geometry.data['POSITION'].array;
+            const positions = geometry.data[geometry.desc.positionAttribute].array;
+            const altitudes = (geometry.data[geometry.desc.altitudeAttribute] && geometry.data[geometry.desc.altitudeAttribute].array) || NULL_ALTITUDES;
             const geoIndices = geometry.indices;
             if (!positions || !geoIndices) {
                 console.warn('there are no POSITION or inidces in mesh');
                 continue;
             }
-            const intersect = this._testMesh(map, positions, geoIndices, localTransform);
-            if (intersect) {
-                const { coordinate, indices } = intersect;
+            const coordinates = this._testMesh(map, positions, altitudes, geoIndices, geometry.desc.positionSize, localTransform);
+            if (coordinates) {
+                // const { coordinate, indices } = intersect;
                 const result = {
                     mesh,
-                    coordinate,
-                    indices
+                    coordinates
                 };
                 results.push(result);      
                 this._intersectCache[key] = result;
@@ -75,17 +75,18 @@ export default class RayCaster {
         return results;
     }
 
-    _testMesh(map, positions, indices, localTransform) {
+    _testMesh(map, positions, altitudes, indices, positionSize, localTransform) {
         const from = coordinateToWorld(map, this._from.x, this._from.y, this._from.z);
         const to = coordinateToWorld(map, this._to.x, this._to.y, this._to.z);
         const line = vec2.set(LINE, from, to);
+        const coordinates = [];
         for (let j = 0; j < indices.length; j += 3) {
             const a = indices[j];
             const b = indices[j + 1];
             const c = indices[j + 2];
-            const pA = this._toWorldPosition(positions.slice(a * 3, a * 3 + 3), localTransform);
-            const pB = this._toWorldPosition(positions.slice(b * 3, b * 3 + 3), localTransform);
-            const pC = this._toWorldPosition(positions.slice(c * 3, c * 3 + 3), localTransform);
+            const pA = this._toWorldPosition(map, positions.slice(a * positionSize, a * positionSize + positionSize), altitudes[a] / 100, localTransform);
+            const pB = this._toWorldPosition(map, positions.slice(b * positionSize, b * positionSize + positionSize), altitudes[b] / 100, localTransform);
+            const pC = this._toWorldPosition(map, positions.slice(c * positionSize, c * positionSize + positionSize), altitudes[c] / 100, localTransform);
             const triangle = vec3.set(TRIANGLE, pA, pB, pC);
             const intersectPoint = this._testIntersection(triangle, line);
             if (intersectPoint) {
@@ -97,19 +98,28 @@ export default class RayCaster {
                 TEMP_POINT.y = intersectPoint[1];
                 const coord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
                 const coordinate = new Coordinate(coord.x, coord.y, altitude);
-                return {
+                coordinates.push({
                     coordinate,
                     indices: [a, b, c]
-                };
+                });
             }
         }
-        return null;
+        return coordinates.length ? coordinates : null;
     }
 
-    _toWorldPosition(pos, localTransform) {
-        const p = vec4.set([], pos[0], pos[1], pos[2], 1);
-        const wp = vec4.transformMat4([], p, localTransform);
-        return wp;
+    _toWorldPosition(map, pos, altitude, localTransform) {
+        let alt, p, wPosition;
+        if (Util.isNumber(altitude)) {
+            alt = map.altitudeToPoint(altitude, map.getGLRes());
+            p = vec4.set([], pos[0], pos[1], 0, 1);
+            wPosition = vec4.transformMat4([], p, localTransform);
+            wPosition[2] = alt;
+        } else {
+            alt = pos[2];
+            p = vec4.set([], pos[0], pos[1], alt, 1);
+            wPosition = vec4.transformMat4([], p, localTransform);
+        }
+        return wPosition;
     }
 
     _testIntersection(triangle, line) {
