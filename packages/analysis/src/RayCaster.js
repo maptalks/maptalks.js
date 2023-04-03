@@ -15,7 +15,7 @@ const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,
         16, 17, 18, 16, 18, 19,
         20, 21, 22, 20, 22, 23],
     BBOX_POSITIONS = [];
-const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
+const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], POS_A = [], POS_B = [], POS_C = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
 export default class RayCaster {
     constructor(from, to, options = {}) {
         this.setFromPoint(from);
@@ -84,9 +84,9 @@ export default class RayCaster {
             const a = indices[j];
             const b = indices[j + 1];
             const c = indices[j + 2];
-            const pA = this._toWorldPosition(map, positions.slice(a * positionSize, a * positionSize + positionSize), altitudes[a] / 100, localTransform);
-            const pB = this._toWorldPosition(map, positions.slice(b * positionSize, b * positionSize + positionSize), altitudes[b] / 100, localTransform);
-            const pC = this._toWorldPosition(map, positions.slice(c * positionSize, c * positionSize + positionSize), altitudes[c] / 100, localTransform);
+            const pA = this._toWorldPosition(POS_A, map, positions.slice(a * positionSize, a * positionSize + positionSize), altitudes[a] / 100, localTransform);
+            const pB = this._toWorldPosition(POS_B, map, positions.slice(b * positionSize, b * positionSize + positionSize), altitudes[b] / 100, localTransform);
+            const pC = this._toWorldPosition(POS_C, map, positions.slice(c * positionSize, c * positionSize + positionSize), altitudes[c] / 100, localTransform);
             const triangle = vec3.set(TRIANGLE, pA, pB, pC);
             const intersectPoint = this._testIntersection(triangle, line);
             if (intersectPoint) {
@@ -107,19 +107,19 @@ export default class RayCaster {
         return coordinates.length ? coordinates : null;
     }
 
-    _toWorldPosition(map, pos, altitude, localTransform) {
-        let alt, p, wPosition;
+    _toWorldPosition(out, map, pos, altitude, localTransform) {
+        let alt;
         if (Util.isNumber(altitude)) {
             alt = map.altitudeToPoint(altitude, map.getGLRes());
-            p = vec4.set([], pos[0], pos[1], 0, 1);
-            wPosition = vec4.transformMat4([], p, localTransform);
-            wPosition[2] = alt;
+            vec4.set(out, pos[0], pos[1], 0, 1);
+            vec4.transformMat4(out, out, localTransform);
+            out[2] = alt;
         } else {
             alt = pos[2];
-            p = vec4.set([], pos[0], pos[1], alt, 1);
-            wPosition = vec4.transformMat4([], p, localTransform);
+            vec4.set(out, pos[0], pos[1], alt, 1);
+            vec4.transformMat4(out, out, localTransform);
         }
-        return wPosition;
+        return out;
     }
 
     _testIntersection(triangle, line) {
