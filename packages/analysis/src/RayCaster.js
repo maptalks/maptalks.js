@@ -142,7 +142,11 @@ export default class RayCaster {
             C = (triangle[1][0] - triangle[0][0]) * (triangle[2][1] - triangle[0][1]) - (triangle[2][0] - triangle[0][0]) * (triangle[1][1] - triangle[0][1]);
         }
         const D = -(A * triangle[0][0] + B * triangle[0][1] + C * triangle[0][2]);
-        const t = -(A * a + B * b + C * c + D) / (A * m + B * n + C * p);
+        const den = (A * m + B * n + C * p);
+        if (den === 0) {//分母为0，直接除会报错，此时直线与平面平行
+            return null;
+        }
+        const t = -(A * a + B * b + C * c + D) / den;
         const x = m * t + a;
         const y = n * t + b;
         const z = p * t + c;

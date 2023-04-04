@@ -151,8 +151,8 @@ export default class InSightPass extends AnalysisPass {
     }
 
     _resize(horizontalAngle, verticalAngle) {
-        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : this._viewport.width;
-        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : this._viewport.height;
+        const width = Util.isFunction(this._viewport.width.data) ? this._viewport.width.data() : (Util.isFunction(this._viewport.width) ? this._viewport.width() : this._viewport.width);
+        const height = Util.isFunction(this._viewport.height.data) ? this._viewport.height.data() : (Util.isFunction(this._viewport.height) ? this._viewport.height() : this._viewport.height);
         if (this._fbo && (this._fbo.width !== width || this._fbo.height !== height)) {
             this._fbo.resize(width, height);
         }

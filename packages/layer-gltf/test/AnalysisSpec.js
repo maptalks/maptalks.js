@@ -654,4 +654,39 @@ describe('add analysis', () => {
         });
         gllayer.addTo(map);
     });
+
+    it('set lines for insightAnalysis', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        gltflayer.on('modelload', () => {
+            const insightAnalysis = new maptalks.InSightAnalysis({
+                lines: [],
+                visibleColor: [0, 1, 0, 1],
+                invisibleColor: [1, 0, 0, 1]
+            }).addTo(gllayer);
+            insightAnalysis.setLines([{
+                    from: [center.x + 0.002, center.y - 0.001, 50],
+                    to: [center.x - 0.001, center.y + 0.0015, 50]
+                }
+            ]);
+            setTimeout(function() {
+                const { inSightLine, intersects } = insightAnalysis.getIntersetction()[0];
+                expect(inSightLine).to.be.ok();
+                expect(intersects.length).to.be.eql(2);
+                expect(intersects[0][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+                expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+                expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0007622108088298774);
+                expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(intersects[0][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
+                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(-0.0002377891911464758);
+                expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.0008648243260438448);
+                expect(intersects[1][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
+                done();
+            }, 100);
+        });
+        gllayer.addTo(map);
+        new maptalks.GLTFMarker(center).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+    });
 });
