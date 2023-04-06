@@ -310,6 +310,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#symbolchange
      * @example
      * var marker = new Marker([0, 0], {
+     *  // if has markerFile , the priority of the picture is greater than the vector and the path of svg
+     *  // svg image type:'path';vector type:'cross','x','diamond','bar','square','rectangle','triangle','ellipse','pin','pie'
      *    symbol : {
      *       markerType : 'ellipse',
      *       markerWidth : 20,
