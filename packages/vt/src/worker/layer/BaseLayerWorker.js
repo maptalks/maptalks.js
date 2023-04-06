@@ -514,6 +514,8 @@ export default class BaseLayerWorker {
                 return new PointPack(features, symbol, options).load(tileRatio);
             }));
         } else if (type === 'native-point') {
+            const altitudeToTileScale = zScale * extent / this.options['tileSize'] / glScale;
+            options.altitudeToTileScale = altitudeToTileScale;
             return parseSymbolAndGenPromises(features, symbol, options, NativePointPack, extent / tileSize);
         } else if (type === 'line') {
             options = extend(options, {

@@ -54,7 +54,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
 }
 
 
-export function getFeatureAnchors(feature, placement, EXTENT) {
+export function getFeatureAnchors(feature, placement, EXTENT, hasRotation, zScale) {
     const anchors = [];
     if (feature.type === 3) {
         const rings = classifyRings(feature.geometry, 0);
@@ -66,6 +66,13 @@ export function getFeatureAnchors(feature, placement, EXTENT) {
                     for (let iii = 0; iii < ring.length; iii++) {
                         if (!isOut(ring[iii], EXTENT)) {
                             anchors.push(ring[iii]);
+                            if (hasRotation) {
+                                if (iii === 0) {
+                                    computeRotation(ring[iii], ring[iii], ring[ii + 1], zScale);
+                                } else {
+                                    computeRotation(ring[iii], ring[iii - 1], ring[iii], zScale);
+                                }
+                            }
                         }
                     }
                 }
@@ -73,12 +80,25 @@ export function getFeatureAnchors(feature, placement, EXTENT) {
                 const ring = polygon[0];
                 if (ring && ring[0] && !isOut(ring[0], EXTENT)) {
                     anchors.push(ring[0]);
+                    if (hasRotation) {
+                        computeRotation(ring[0], ring[0], ring[1], zScale);
+                    }
                 }
 
-            } else if (placement === 'vertex-last') {
+            } else if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
                 const ring = polygon[0];
+                if (placement === 'vertex-firstlast' && ring && ring[0] && !isOut(ring[0], EXTENT)) {
+                    anchors.push(ring[0]);
+                    if (hasRotation) {
+                        computeRotation(ring[0], ring[0], ring[1], zScale);
+                    }
+                }
                 if (ring && ring[ring.length - 1] && !isOut(ring[ring.length - 1], EXTENT)) {
-                    anchors.push(ring[ring.length - 1]);
+                    const index = ring.length - 1;
+                    anchors.push(ring[index]);
+                    if (hasRotation) {
+                        computeRotation(ring[index], ring[index - 1], ring[index], zScale);
+                    }
                 }
             } else {
                 // 16 here represents 2 pixels
@@ -96,15 +116,35 @@ export function getFeatureAnchors(feature, placement, EXTENT) {
                 for (let ii = 0; ii < line.length; ii++) {
                     if (!isOut(line[ii], EXTENT)) {
                         anchors.push(line[ii]);
+                        if (hasRotation) {
+                            if (ii === 0) {
+                                computeRotation(line[ii], line[ii], line[ii + 1], zScale);
+                            } else {
+                                computeRotation(line[ii], line[ii - 1], line[ii], zScale);
+                            }
+                        }
                     }
                 }
-            } else if (placement === 'vertex-last') {
+            } else if (placement === 'vertex-last' || placement === 'vertex-firstlast') {
+                if (placement === 'vertex-firstlast' && !isOut(line[0], EXTENT)) {
+                    anchors.push(line[0]);
+                    if (hasRotation) {
+                        computeRotation(line[0], line[0], line[1], zScale);
+                    }
+                }
                 if (line && line[line.length - 1] && !isOut(line[line.length - 1], EXTENT)) {
-                    anchors.push(line[line.length - 1]);
+                    const index = line.length - 1;
+                    anchors.push(line[index]);
+                    if (hasRotation) {
+                        computeRotation(line[index], line[index - 1], line[index], zScale);
+                    }
                 }
             } else {
                 if (!isOut(line[0], EXTENT)) {
                     anchors.push(line[0]);
+                    if (hasRotation) {
+                        computeRotation(line[0], line[0], line[1], zScale);
+                    }
                 }
             }
         }
@@ -114,10 +154,31 @@ export function getFeatureAnchors(feature, placement, EXTENT) {
             for (let ii = 0; ii < points.length; ii++) {
                 const point = points[ii];
                 if (!isOut(point, EXTENT)) {
+                    if (hasRotation) {
+                        point.xRotation = 0;
+                        point.yRotation = 0;
+                        point.zRotation = 0;
+                    }
                     anchors.push(point);
                 }
             }
         }
     }
     return anchors;
+}
+
+
+function computeRotation(out, p0, p1, zScale) {
+    if (out.xRotation || out.yRotation || out.zRotation) {
+        return out;
+    }
+    // debugger
+    const dx = p1.x - p0.x;
+    const dy = p0.y - p1.y;
+    const dz = (p1.z - p0.z) * zScale;
+    const zRotation = Math.atan2(dy, dx);
+    out.zRotation = zRotation;
+    const xyRotation = Math.atan2(dz, Math.sqrt(dx * dx + dy * dy));
+    out.xyRotation = xyRotation;
+    return out;
 }

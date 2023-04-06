@@ -13,7 +13,7 @@ const DEFAULT_ROTATION = [0, 0, 0];
 const DEFAULT_SCALE = [1, 1, 1];
 
 const EMPTY_ARRAY = [];
-const DEFAULT_POLYGON_FILL = [1, 1, 1, 1];
+const DEFAULT_MARKER_FILL = [1, 1, 1, 1];
 const TEMP_MATRIX = [];
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
@@ -89,7 +89,7 @@ const GLTFMixin = Base =>
             const map = this.getMap();
             const { geometry } = geo;
             const { positionSize, features } = geometry;
-            const { aPosition, aPickingId } = geometry.data;
+            const { aPosition, aPickingId, aXYRotation, aZRotation } = geometry.data;
             const count = aPosition.length / positionSize;
             if (count === 0) {
                 return null;
@@ -101,7 +101,7 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, positionSize, aPickingId, features);
+            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features);
             const instanceBuffers = {};
             //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
@@ -125,17 +125,17 @@ const GLTFMixin = Base =>
                     continue;
                 }
                 const { fixSizeOnZoom } = symbol;
-                let gltfMatrix = mat4.identity([]);
+                let trsMatrix = mat4.identity([]);
                 // let translationInMeters;
                 if (!hasFnType) {
-                    gltfMatrix = this._getSymbolTRSMatrix(gltfMatrix);
+                    trsMatrix = this._getSymbolTRSMatrix(trsMatrix);
                 }
 
                 let zOffset = 0;
                 //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
                 meshInfos.forEach(info => {
                     const { geometry, nodeMatrix } = info;
-                    const positionMatrix = mat4.multiply(TEMP_MATRIX, gltfMatrix, nodeMatrix);
+                    const positionMatrix = mat4.multiply(TEMP_MATRIX, trsMatrix, nodeMatrix);
                     const gltfBBox = geometry.boundingBox;
                     const meshBox = gltfBBox.copy();
                     meshBox.transform(positionMatrix);
@@ -175,11 +175,11 @@ const GLTFMixin = Base =>
                     }
                     // StandardPainter 需要hasAlpha决定是否开启stencil和blend
                     mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
-                    setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
-                    setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
-                    // mesh.setPositionMatrix(mat4.multiply([], gltfMatrix, nodeMatrix));
+                    setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'markerFill', DEFAULT_MARKER_FILL, createColorSetter(this.colorCache));
+                    setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'markerOpacity', 1);
+                    // mesh.setPositionMatrix(mat4.multiply([], trsMatrix, nodeMatrix));
                     const positionMatrix = mat4.multiply([], Y_TO_Z, nodeMatrix);
-                    mat4.multiply(positionMatrix, gltfMatrix, positionMatrix);
+                    mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
                     const matrix = [];
                     mat4.fromTranslation(matrix, anchorTranslation);
                     mat4.multiply(positionMatrix, matrix, positionMatrix);
@@ -310,7 +310,7 @@ const GLTFMixin = Base =>
             return symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index].hasSkinAnimation();
         }
 
-        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, positionSize, aPickingId, features) {
+        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features) {
             function setInstanceData(name, idx, matrix, col) {
                 instanceData[name][idx * 4] = matrix[col];
                 instanceData[name][idx * 4 + 1] = matrix[col + 4];
@@ -358,17 +358,38 @@ const GLTFMixin = Base =>
             const cz = minz + maxz / 2;
             const mat = [];
 
+            // 如果没有 fn type，trs会作为positionMatrix设置到mesh上
             const hasFnType = this._hasFuncType();
+            const zAxis = [0, 0, 1];
 
             for (let i = 0; i < count; i++) {
+                const x = aPosition[i * positionSize];
+                const y = aPosition[i * positionSize + 1];
                 const pos = vec3.set(
                     position,
-                    aPosition[i * positionSize] * tileScale  - cx,
+                    x * tileScale  - cx,
                     //vt中的y轴方向与opengl(maptalks世界坐标系)相反
-                    -aPosition[i * positionSize + 1] * tileScale - cy,
+                    -y * tileScale - cy,
                     positionSize === 2 ? 0 : (aPosition[i * positionSize + 2] + altitudeOffset) * zScale - cz
                 );
-                mat4.fromTranslation(mat, pos);
+
+                const xyRotation = aXYRotation && aXYRotation[i] || 0;
+                const zRotation = aZRotation && aZRotation[i] || 0;
+                if (!xyRotation && !zRotation) {
+                    mat4.fromTranslation(mat, pos);
+                } else {
+                    // const quaterion = quat.fromEuler([], xRotation * 180 / Math.PI, yRotation * 180 / Math.PI, zRotation * 180 / Math.PI);
+                    mat4.fromRotation(mat, zRotation, zAxis);
+
+                    const v = vec3.set(V3, x, y, 0);
+                    const axis = vec3.normalize(v, vec3.cross(v, v, zAxis));
+                    mat4.rotate(mat, mat, xyRotation, axis);
+
+                    // mat4.fromRotation(mat, 0, axis);
+                    const tMat = mat4.fromTranslation(TEMP_MATRIX, pos);
+                    mat4.multiply(mat, tMat, mat);
+                }
+
                 if (hasFnType) {
                     const trs = this._getSymbolTRSMatrix(TEMP_MATRIX, features, aPickingId, i);
                     mat4.multiply(mat, mat, trs);
