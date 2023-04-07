@@ -82,6 +82,8 @@ class Polygon extends Path {
                     holes.push(this._trimRing(rings[i]));
                 }
                 this._holes = holes;
+            } else {
+                this._holes = null;
             }
         }
 
