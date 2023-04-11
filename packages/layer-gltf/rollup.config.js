@@ -6,7 +6,7 @@ const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
-const outputESFile = production ? pkg.module : 'dist/maptalks.gltf-dev.mjs';
+const outputESFile = pkg.module;
 const plugins = [
     ].concat(production ? [
     removeGlobal(),
