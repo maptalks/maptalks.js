@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import { reshader } from '@maptalks/gl';
 import { Ajax } from '@maptalks/gltf-loader';
-import { createREGL } from '@maptalks/gl';
+import { createREGL, MaskRendererMixin } from '@maptalks/gl';
 import Geo3DTilesWorkerConnection from '../Geo3DTilesWorkerConnection';
 import LRUCache from './LRUCache';
 import MeshPainter from './MeshPainter';
@@ -14,7 +14,7 @@ import I3SNode from '../i3s/I3SNode';
 
 const EMPTY_ARRAY = [];
 
-export default class Geo3DTilesRenderer extends maptalks.renderer.CanvasRenderer {
+export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.CanvasRenderer) {
 
     constructor(layer) {
         super(layer);

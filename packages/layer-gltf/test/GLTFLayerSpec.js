@@ -374,11 +374,13 @@ describe('maptalks.gltf', function () {
                 gltflayer1.remove();
                 const gltflayer2 = maptalks.GLTFLayer.fromJSON(layerJSON);
                 gltflayer2.addTo(map);
-                setTimeout(function() {
-                    const pixel2 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                    expect(pixelMatch(pixel1, pixel2)).to.be.eql(true);
-                    done();
-                }, 100);
+                gltflayer2.on('modelload', () => {
+                    setTimeout(function() {
+                        const pixel2 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                        expect(pixelMatch(pixel1, pixel2)).to.be.eql(true);
+                        done();
+                    }, 100);
+                });
             }, 100);
         });
     });

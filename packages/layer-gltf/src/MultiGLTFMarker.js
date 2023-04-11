@@ -156,8 +156,11 @@ export default class MultiGLTFMarker extends GLTFMarker {
         if (!position) {
             return;
         }
+        const map = this.getMap();
+        position[2] = map.altitudeToPoint(data.coordinates.z, map.getGLRes());
         const sub = vec3.sub(EMPTY_VEC, position, this._centerPosition);
-        const translation = vec3.add(EMPTY_VEC, data['translation'] || this._defaultTRS.translation, sub || this._defaultTRS.translation);
+        const trans = this._translationToWorldPoint(data['translation'] || this._defaultTRS.translation);
+        const translation = vec3.add(EMPTY_VEC, trans || this._defaultTRS.translation, sub || this._defaultTRS.translation);
         const rotation = data['rotation'] || this._defaultTRS.rotation;
         const scale = data['scale'] || this._defaultTRS.scale;
         const eluerQuat = quat.fromEuler(EMPTY_QUAT, rotation[0] || 0, rotation[1] || 0, rotation[2] || 0);

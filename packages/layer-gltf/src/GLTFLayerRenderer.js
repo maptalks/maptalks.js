@@ -142,7 +142,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     needToRedraw() {
         if (super.needToRedraw()) {
-           return true; 
+           return true;
         }
         const geoList = this.layer.getGeometries();
         for (let i = 0; i < geoList.length; i++) {

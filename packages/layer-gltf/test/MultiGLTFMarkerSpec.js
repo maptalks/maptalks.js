@@ -41,6 +41,22 @@ describe('MultiGLTFMarker', () => {
         return data;
     }
 
+    function initInstanceData2(height) {
+        const data = [];
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                const coord = new maptalks.Coordinate(i * 0.0005 - 0.0025, j * 0.0005 - 0.0025, height);
+                data.push({
+                    coordinates: coord,
+                    translation: [0, 0, 0],
+                    scale: [0.5, 0.5, 0.5],
+                    color: [1.0, 1.0, 1.0, 0.6]
+                });
+            }
+        }
+        return data;
+    }
+
     it('addData', (done) => {//TODO 增加像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         const importData = initInstanceData0();
@@ -403,6 +419,27 @@ describe('MultiGLTFMarker', () => {
                 expect(infoWindowStyle.display).not.to.be.eql('none');
                 expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(35.7091px, 131.342px, 0px) scale(1); transform-origin: 113.688px bottom;');
                 done();
+            }, 100);
+        });
+    });
+
+    it('add multigltfmarker with altitude', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const importData = initInstanceData2(100);
+        const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
+            symbol: {
+                url: url2
+            }
+        }).addTo(gltflayer);
+        map.setPitch(75);
+        multigltfmarker.once('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(hasColor(pixel1)).to.be.eql(false);//增加高度后，没有颜色
+                const pixel2 = pickPixel(map, map.width / 2, 10, 1, 1);
+                expect(hasColor(pixel2)).to.be.eql(true);
+               done();
             }, 100);
         });
     });

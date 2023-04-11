@@ -1,6 +1,7 @@
 const supportAssign = typeof Object.assign === 'function';
 import { vec3, mat4 } from 'gl-matrix';
 import Color from 'color';
+import { Coordinate } from 'maptalks';
 
 /**
  * Merges the properties of sources into destination object.
@@ -104,4 +105,12 @@ export function normalizeColor255(out, color) {
         out.push(255);
     }
     return out;
+}
+
+export function coordinateToWorld(map, coordinate, z = 0) {
+    if (!map || !(coordinate instanceof Coordinate)) {
+        return null;
+    }
+    const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
+    return [p.x, p.y, z];
 }

@@ -208,6 +208,7 @@ export default class MeshPainter {
                 if (!leafs[node.id]) {
                     parentMeshes.push(mesh[ii]);
                 }
+                this._updateMaskDefines(mesh[ii]);
             }
         }
 
@@ -993,6 +994,13 @@ export default class MeshPainter {
         return defines;
     }
 
+    _updateMaskDefines(mesh) {
+        const renderer = this._layer.getRenderer();
+        if (renderer) {
+            renderer.updateMaskDefines(mesh);
+        }
+    }
+
     _appendS3MDefines(defines, geometry) {
         if (geometry.data['aNormal']) {
             defines['VertexNormal'] = 1;
@@ -1423,6 +1431,8 @@ export default class MeshPainter {
         const canvas = layer.getRenderer().canvas;
         const { iblTexes, dfgLUT } = getIBLResOnCanvas(canvas);
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
+        const renderer = this._layer.getRenderer();
+        const maskUniforms = renderer.getMaskUniforms();
         extend(uniforms, {
             czm_lightDirectionEC: uniforms['light0_viewDirection'],
             lightSpecular: [1.0, 1.0, 1.0],
@@ -1433,6 +1443,7 @@ export default class MeshPainter {
             polygonFill: [1, 1, 1, 1],
             polygonOpacity: 1
         });
+        extend(uniforms, maskUniforms);
         return uniforms;
     }
 

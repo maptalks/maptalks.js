@@ -1,7 +1,6 @@
 import * as maptalks from 'maptalks';
 import { createREGL, reshader, mat4, quat } from '@maptalks/gl';
 import { intersectsBox } from 'frustum-intersects';
-import earcut from 'earcut';
 
 const vert = `
     attribute vec3 aPosition;
@@ -67,6 +66,7 @@ const shaderConfig = {
     }
 };
 
+const triangles = [1, 0, 3, 3, 2, 1];
 class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
     constructor(layer) {
         super(layer);
@@ -240,7 +240,6 @@ class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _createGeometry(points) {
-        const triangles = earcut(points, null, 3);
         return new reshader.Geometry({
             POSITION : points,
             TEXCOORD : [

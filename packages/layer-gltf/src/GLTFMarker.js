@@ -216,17 +216,11 @@ export default class GLTFMarker extends Marker {
                 delete defines['HAS_IBL_LIGHTING'];
             }
         }
+        mesh.setDefines(defines);
         const renderer = this.getLayer().getRenderer();
         if (renderer) {
-            const maskUniforms = renderer.getMaskUniforms();
-            if (maskUniforms && Object.keys(maskUniforms).length > 0) {
-                const maskDefines = renderer.getMaskDefines();
-                Util.extend(defines, maskDefines);
-            } else {
-                delete defines['HAS_MASK_EXTENT'];
-            }
+            renderer.updateMaskDefines(mesh);
         }
-        mesh.setDefines(defines);
     }
 
     _updateGeometries(gltfManager, regl) {
@@ -1014,6 +1008,11 @@ export default class GLTFMarker extends Marker {
         if (!map) {
             return this._defaultTRS.translation;
         }
+        return this._translationToWorldPoint(translation);
+    }
+
+    _translationToWorldPoint(translation) {
+        const map = this.getMap();
         const point = map.distanceToPointAtRes(translation[0], translation[1], map.getGLRes());
         const z = map.altitudeToPoint(translation[2], map.getGLRes());
         return vec3.set([], getAbsoluteValue(point.x, translation[0]), getAbsoluteValue(point.y, translation[1]), getAbsoluteValue(z, translation[2]));

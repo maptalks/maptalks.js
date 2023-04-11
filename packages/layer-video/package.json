@@ -50,7 +50,6 @@
     "karma-happen": "^0.1.0"
   },
   "dependencies": {
-    "earcut": "^2.2.4",
     "frustum-intersects": "^0.2.2"
   }
 }

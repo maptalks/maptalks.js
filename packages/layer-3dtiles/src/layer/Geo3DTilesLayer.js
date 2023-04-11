@@ -3,7 +3,7 @@
 // region:
 
 import * as maptalks from 'maptalks';
-import { vec3, mat3, mat4 } from '@maptalks/gl';
+import { vec3, mat3, mat4, MaskLayerMixin } from '@maptalks/gl';
 import { intersectsSphere, intersectsBox, intersectsOrientedBox } from 'frustum-intersects';
 import { isFunction, extend, toRadian, toDegree, getAbsoluteURL, isBase64 } from '../common/Util';
 import { DEFAULT_MAXIMUMSCREENSPACEERROR } from '../common/Constants';
@@ -75,7 +75,7 @@ const EMPTY_COORD_OFFSET = [0, 0];
  * A layer to stream AnalyticalGraphicsInc's 3d-tiles geospatial data
  * 3d-tiles 规范：https://github.com/AnalyticalGraphicsInc/3d-tiles/
  */
-export default class Geo3DTilesLayer extends maptalks.Layer {
+export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
 
     constructor(id, options) {
