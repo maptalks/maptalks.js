@@ -105,23 +105,48 @@ export default class TextPainter extends CollisionPainter {
         this._genTextNames();
     }
 
-    needToRefreshTerrainTile() {
+    updateSymbol(...args) {
+        this._tagTerrainVector = undefined;
+        this._tagTerrainSkin = undefined;
+        return super.updateSymbol(...args);
+    }
+
+    isTerrainVector() {
+        if (!super.isTerrainSkin()) {
+            return false;
+        }
+        if (this._tagTerrainVector !== undefined) {
+            return this._tagTerrainVector;
+        }
+        for (let i = 0; i < this.symbolDef.length; i++) {
+            const symbolDef = this.symbolDef[i];
+            const pitchAlignment = symbolDef['textPitchAlignment'];
+            if (pitchAlignment !== 'map') {
+                this._tagTerrainVector = true;
+                return true;
+            }
+        }
+        this._tagTerrainVector = false;
+        return false;
+    }
+
+    isTerrainSkin() {
+        if (!super.isTerrainSkin()) {
+            return false;
+        }
+        if (this._tagTerrainSkin !== undefined) {
+            return this._tagTerrainSkin;
+        }
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
             const pitchAlignment = symbolDef['textPitchAlignment'];
             if (pitchAlignment === 'map' || isFunctionDefinition(pitchAlignment) || FilterUtil.isExpression(pitchAlignment)) {
+                this._tagTerrainSkin = true;
                 return true;
             }
         }
+        this._tagTerrainSkin = false;
         return false;
-    }
-
-    isTerrainVector() {
-        return this.dataConfig.awareOfTerrain && !this.needToRefreshTerrainTile();
-    }
-
-    isTerrainSkin() {
-        return super.isTerrainSkin() && this.needToRefreshTerrainTile();
     }
 
     _genTextNames() {

@@ -83,13 +83,18 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
 
     const renderer = vtLayer && vtLayer.getRenderer();
     const terrainHelper = renderer && renderer.getTerrainHelper();
+    const terrainTileInfos = mesh.properties.tile.terrainTileInfos;
+    // const terrainTileInfo = mesh.properties.tile.terrainTileInfo;
     if (!isPitchWithMap && terrainHelper) {
+        const { extent } = mesh.properties.tile;
+        const tileScale = vtLayer.options['tileSize'] / extent;
+        const map = vtLayer.getMap();
         const prevToCurrent = currentPoint.sub(prevPoint);
         let p = prevToCurrent.mult(segmentInterpolationT)._add(prevPoint);
 
-        current = elevate(CURRENT2, mesh, currentPoint, vtLayer, mvpMatrix);
-        prev = elevate(PREV2, mesh, prevPoint, vtLayer, mvpMatrix);
-        p = elevate(P2, mesh, p, vtLayer, mvpMatrix);
+        current = elevate(CURRENT2, map, mesh, currentPoint, tileScale, vtLayer, mvpMatrix, terrainTileInfos);
+        prev = elevate(PREV2, map, mesh, prevPoint, tileScale, vtLayer, mvpMatrix, terrainTileInfos);
+        p = elevate(P2, map, mesh, p, tileScale, vtLayer, mvpMatrix, terrainTileInfos);
 
         const segmentAngle = angle + Math.atan2(current[1] - prev[1], current[0] - prev[0]);
 
@@ -116,12 +121,24 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
 
 const TILEPOINT = new maptalks.Point(0, 0);
 const TEMP_V3 = [];
-function elevate(out, mesh, anchor, vtLayer, mvpMatrix) {
-    const map = vtLayer.getMap();
+const EMPTY_ALTITUDE = [0, 0];
+function elevate(out, map, mesh, anchor, tileScale, vtLayer, mvpMatrix, terrainTileInfos) {
     const { res, extent, extent2d } = mesh.properties.tile;
     const { xmin, ymax } = extent2d;
+    const x = xmin + anchor.x * tileScale;
+    const y = ymax - anchor.y * tileScale;
+    let terrainTileInfo = null;
+    if (terrainTileInfos) {
+        for (let i = 0; i < terrainTileInfos.length; i++) {
+            if (inTerrainTile(terrainTileInfos[i], x, y, res)) {
+                terrainTileInfo = terrainTileInfos[i];
+                break;
+
+            }
+        }
+    }
     const tilePoint = TILEPOINT.set(xmin, ymax);
-    const altitudeResult = vtLayer.queryTilePointTerrain(anchor, tilePoint, extent, res);
+    const altitudeResult = terrainTileInfo && vtLayer.queryTilePointTerrain(anchor, terrainTileInfo, tilePoint, extent, res) || EMPTY_ALTITUDE;
     const altitude = altitudeResult[0] || 0;
     if (altitude) {
         let elevatedAnchor = vec3.set(TEMP_V3, anchor.x, anchor.y, 0);
@@ -133,4 +150,11 @@ function elevate(out, mesh, anchor, vtLayer, mvpMatrix) {
         out[1] = anchor.y;
         return out;
     }
+}
+
+
+function inTerrainTile(tileInfo, x, y, res) {
+    const point0 = TILEPOINT.set(x, y);
+    const point1 = point0['_multi'](res / tileInfo.res);
+    return tileInfo.extent2d.contains(point1);
 }

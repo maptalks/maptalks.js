@@ -133,7 +133,7 @@ class Painter {
     }
 
     needToRefreshTerrainTile() {
-        return this.isAnimating();
+        return true;
     }
 
     isTerrainSkin() {
@@ -268,7 +268,7 @@ class Painter {
             }
             if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
                 const geometry = geometries[i];
-                this._updateTerrainAltitude(geometry && geometry.geometry, context);
+                this._updateTerrainAltitude(geometry && geometry.geometry, null, context);
             }
             let mesh = this.createMesh(geometries[i], transform, params, context || {});
             if (Array.isArray(mesh)) {
@@ -322,7 +322,7 @@ class Painter {
                 }
             }
             if (mesh.geometry.data.aTerrainAltitude) {
-                this._updateTerrainAltitude(mesh.geometry, context);
+                this._updateTerrainAltitude(mesh.geometry, null, context);
             }
             if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
                 defines['HAS_TERRAIN_ALTITUDE'] = 1;
@@ -332,7 +332,9 @@ class Painter {
                 mesh.setDefines(defines);
             }
             if (!fbo) {
-                delete mesh.uniforms['framebuffer'];
+                if (mesh.uniforms['framebuffer']) {
+                    mesh.uniforms['framebuffer'] = null;
+                }
             } else {
                 mesh.setUniform('framebuffer', fbo);
             }
@@ -1100,7 +1102,7 @@ class Painter {
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }
 
-    _updateTerrainAltitude(geometry, context) {
+    _updateTerrainAltitude(geometry, terrainTileInfo, context) {
         if (!geometry) {
             return;
         }
@@ -1119,10 +1121,10 @@ class Painter {
             geometry.updateData('aTerrainAltitude', aTerrainAltitude);
         }
         aTerrainAltitude.dirty = false;
-        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
+        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, terrainTileInfo, context.tileInfo, 0, aTerrainAltitude.length - 1);
     }
 
-    _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
+    _fillTerrainAltitude(aTerrainAltitude, aPosition, terrainTileInfo, tile, start, end) {
         const { res, extent, extent2d } = tile;
         const { xmin, ymax } = extent2d;
         const tilePoint = TILEPOINT.set(xmin, ymax);
@@ -1132,8 +1134,9 @@ class Painter {
             queryResult = aTerrainAltitude.queryResult = new Map();
         }
         for (let i = start; i <= end; i++) {
-            ANCHOR_POINT.set(aPosition[i * positionSize], aPosition[i * positionSize + 1]);
-            const index = ANCHOR_POINT[0] + ANCHOR_POINT[1] * extent;
+            const x = aPosition[i * positionSize];
+            const y = aPosition[i * positionSize + 1];
+            const index = x + y * extent;
             let altitude = queryResult.get(index);
             if (altitude || altitude === 0) {
                 if (aTerrainAltitude[i] !== altitude) {
@@ -1142,8 +1145,8 @@ class Painter {
                 }
                 continue;
             }
-
-            const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, tilePoint, extent, res);
+            ANCHOR_POINT.set(x, y);
+            const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTileInfo, tilePoint, extent, res);
             altitude = result[0] || 0;
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;

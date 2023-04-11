@@ -156,7 +156,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         return map['_pointToPrjAtRes'](srcPoint, res, out);
     }
 
-    queryTilePointTerrain(point, tilePoint, extent, res) {
+    queryTilePointTerrain(point, terrainTileInfo, tilePoint, extent, res) {
         const renderer = this.getRenderer();
         const terrainHelper = renderer && renderer.getTerrainHelper();
         if (!renderer || !terrainHelper) {
@@ -164,8 +164,14 @@ class VectorTileLayer extends maptalks.TileLayer {
             EMPTY_ALTITUDE[1] = 0;
             return EMPTY_ALTITUDE;
         }
-        const projCoord = this._tilePointToPrjCoord(PROJ_COORD, point, tilePoint, extent, res);
-        return terrainHelper.queryTerrainByProjCoord(projCoord);
+        const prjCoord = this._tilePointToPrjCoord(PROJ_COORD, point, tilePoint, extent, res);
+        if (terrainTileInfo && terrainHelper.queryTerrainByProjCoordAtTerrainTile) {
+            // faster
+            return terrainHelper.queryTerrainByProjCoordAtTerrainTile(prjCoord, terrainTileInfo.id, terrainTileInfo, res);
+        } else {
+            return terrainHelper.queryTerrainByProjCoord(prjCoord);
+        }
+
     }
 
     _setStyle(style) {
