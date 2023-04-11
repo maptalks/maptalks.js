@@ -112,12 +112,13 @@ export default class GLTFMarker extends Marker {
             this._setLoadState(false);
             delete this._meshes;
         }
-        if (symbol['shader'] && symbol['shader'] !== shader) {
+        if (this._shader && this._shader !== shader) {
             // 只有shader存在且和symbol不同时才更新
             // https://github.com/maptalks/issues/issues/271
             this._updateGeometries(gltfManager, this.regl);
             
         }
+        this._shader = shader;
         this._uniformDirty = true;
         this._dirty = true;
     }
