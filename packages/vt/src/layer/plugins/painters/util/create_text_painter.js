@@ -601,10 +601,11 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const anchor = getAnchor(ANCHOR, mesh, elements[start]);
     const { aProjectedAnchor } = mesh.geometry.properties;
     let projAnchor = PROJ_ANCHOR;
-    const anchorIndex = elements[start] * 2;
+    const anchorIndex = elements[start] * 3;
     if (aProjectedAnchor && aProjectedAnchor[anchorIndex] !== INVALID_PROJECTED_ANCHOR) {
         PROJ_ANCHOR[0] = aProjectedAnchor[anchorIndex];
         PROJ_ANCHOR[1] = aProjectedAnchor[anchorIndex + 1];
+        PROJ_ANCHOR[2] = aProjectedAnchor[anchorIndex + 2];
     } else {
         projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
     }

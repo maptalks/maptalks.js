@@ -561,7 +561,7 @@ export default class TextPainter extends CollisionPainter {
         const { aShape, aOffset, aAnchor, aAltitude, aPitchRotation } = geometry.properties;
         let { aProjectedAnchor } = geometry.properties;
         if (!aProjectedAnchor) {
-            aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 2);
+            aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 3);
         } else {
             aProjectedAnchor.fill(INVALID_PROJECTED_ANCHOR);
         }
@@ -620,11 +620,13 @@ export default class TextPainter extends CollisionPainter {
             labelAnchor = projLabelAnchor;
         }
         if (elevatedAnchor) {
-            aProjectedAnchor[index * 2] = elevatedAnchor[0];
-            aProjectedAnchor[index * 2 + 1] = elevatedAnchor[1];
+            aProjectedAnchor[index * 3] = elevatedAnchor[0];
+            aProjectedAnchor[index * 3 + 1] = elevatedAnchor[1];
+            aProjectedAnchor[index * 3 + 2] = elevatedAnchor[2];
         } else {
-            aProjectedAnchor[index * 2] = labelAnchor[0];
-            aProjectedAnchor[index * 2 + 1] = labelAnchor[1];
+            aProjectedAnchor[index * 3] = labelAnchor[0];
+            aProjectedAnchor[index * 3 + 1] = labelAnchor[1];
+            aProjectedAnchor[index * 3 + 2] = labelAnchor[2];
         }
 
         const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'];
