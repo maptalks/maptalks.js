@@ -338,11 +338,11 @@ class Painter {
                 mesh.setDefines(defines);
             }
             if (!fbo) {
-                if (mesh.uniforms['framebuffer']) {
-                    mesh.uniforms['framebuffer'] = null;
+                if (mesh.uniforms['targetFramebuffer']) {
+                    mesh.uniforms['targetFramebuffer'] = null;
                 }
             } else {
-                mesh.setUniform('framebuffer', fbo);
+                mesh.setUniform('targetFramebuffer', fbo);
             }
             this._highlightMesh(mesh);
         });
