@@ -153,7 +153,7 @@ function elevate(out, map, mesh, anchor, tileScale, vtLayer, mvpMatrix, terrainT
 }
 
 
-function inTerrainTile(tileInfo, x, y, res) {
+export function inTerrainTile(tileInfo, x, y, res) {
     const point0 = TILEPOINT.set(x, y);
     const point1 = point0['_multi'](res / tileInfo.res);
     return tileInfo.extent2d.contains(point1);

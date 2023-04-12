@@ -6,6 +6,7 @@ import { isFunctionDefinition, interpolated, piecewiseConstant } from '@maptalks
 import { extend, copyJSON, isNil, hasOwn } from '../Util';
 import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
+import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
 import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
 
@@ -268,7 +269,7 @@ class Painter {
             }
             if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
                 const geometry = geometries[i];
-                this._updateTerrainAltitude(geometry && geometry.geometry, null, context);
+                this._updateTerrainAltitude(geometry && geometry.geometry, context);
             }
             let mesh = this.createMesh(geometries[i], transform, params, context || {});
             if (Array.isArray(mesh)) {
@@ -304,8 +305,13 @@ class Painter {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+        const isRenderingTerrainVector = context.isRenderingTerrain && this.isTerrainVector();
         const fbo = this.getRenderFBO(context);
         meshes = meshes.filter(m => this.isMeshVisible(m));
+        if (isRenderingTerrainVector) {
+            // 只绘制加载了地形数据的mesh
+            meshes = meshes.filter(m => m.geometry && m.properties.tile.terrainTileInfos);
+        }
 
         const isEnableBloom = !!(context && context.bloom);
         meshes.forEach(mesh => {
@@ -322,7 +328,7 @@ class Painter {
                 }
             }
             if (mesh.geometry.data.aTerrainAltitude) {
-                this._updateTerrainAltitude(mesh.geometry, null, context);
+                this._updateTerrainAltitude(mesh.geometry, context);
             }
             if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
                 defines['HAS_TERRAIN_ALTITUDE'] = 1;
@@ -1102,7 +1108,7 @@ class Painter {
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }
 
-    _updateTerrainAltitude(geometry, terrainTileInfo, context) {
+    _updateTerrainAltitude(geometry, context) {
         if (!geometry) {
             return;
         }
@@ -1121,13 +1127,19 @@ class Painter {
             geometry.updateData('aTerrainAltitude', aTerrainAltitude);
         }
         aTerrainAltitude.dirty = false;
-        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, terrainTileInfo, context.tileInfo, 0, aTerrainAltitude.length - 1);
+        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
     }
 
-    _fillTerrainAltitude(aTerrainAltitude, aPosition, terrainTileInfo, tile, start, end) {
+    _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
+        const terrainTileInfos = tile.terrainTileInfos;
+        if (!terrainTileInfos) {
+            // 只有terrain加载才更新
+            return;
+        }
         const { res, extent, extent2d } = tile;
         const { xmin, ymax } = extent2d;
         const tilePoint = TILEPOINT.set(xmin, ymax);
+        const tileScale = this.layer.options['tileSize'] / tile.extent;
         const positionSize = aPosition.length / aTerrainAltitude.length;
         let queryResult = aTerrainAltitude.queryResult;
         if (!queryResult) {
@@ -1144,6 +1156,13 @@ class Painter {
                     aTerrainAltitude.dirty = true;
                 }
                 continue;
+            }
+            let terrainTileInfo;
+            for (let j = 0; j < terrainTileInfos.length; j++) {
+                if (inTerrainTile(terrainTileInfos[j], xmin + tileScale * x, ymax - tileScale * y, res)) {
+                    terrainTileInfo = terrainTileInfos[j];
+                    break;
+                }
             }
             ANCHOR_POINT.set(x, y);
             const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTileInfo, tilePoint, extent, res);

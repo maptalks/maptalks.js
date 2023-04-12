@@ -131,15 +131,23 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
 
 export function getAnchor(out, mesh, i) {
     const positionSize = mesh.geometry.desc.positionSize;
-    const { aAnchor, aAltitude } = mesh.geometry.properties;
+    const { aAnchor, aAltitude, aTerrainAltitude } = mesh.geometry.properties;
     const idx = i * positionSize;
     if (aAltitude) {
-        return vec3.set(out, aAnchor[idx], aAnchor[idx + 1], aAltitude[i]);
+        vec3.set(out, aAnchor[idx], aAnchor[idx + 1], aAltitude[i]);
     } else {
         if (positionSize === 3) {
-            return PackUtil.unpackPosition(out, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
+            PackUtil.unpackPosition(out, aAnchor[idx], aAnchor[idx + 1], aAnchor[idx + 2]);
         } else {
-            return vec3.set(out, aAnchor[idx], aAnchor[idx + 1], 0);
+            vec3.set(out, aAnchor[idx], aAnchor[idx + 1], 0);
         }
     }
+
+    if (aTerrainAltitude) {
+        const altitude = aTerrainAltitude[i * 2] * 100;
+        if (altitude) {
+            out[2] += altitude;
+        }
+    }
+    return out;
 }

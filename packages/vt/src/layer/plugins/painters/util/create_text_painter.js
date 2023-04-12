@@ -7,6 +7,7 @@ import { getAnchor, getLabelBox } from './get_label_box';
 import { projectPoint } from './projection';
 import { getLabelContent } from './get_label_content';
 import { createAtlasTexture } from './atlas_util';
+import { INVALID_PROJECTED_ANCHOR } from '../../../../common/Constant';
 
 const GAMMA_SCALE = 1;
 const BOX_ELEMENT_COUNT = 6;
@@ -598,7 +599,16 @@ export function isLabelCollides(hasCollides, mesh, elements, boxCount, start, en
     const haloRadius = aTextHaloRadius ? aTextHaloRadius[elements[start]] : mesh.properties.textHaloRadius;
 
     const anchor = getAnchor(ANCHOR, mesh, elements[start]);
-    const projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
+    const { aProjectedAnchor } = mesh.geometry.properties;
+    let projAnchor = PROJ_ANCHOR;
+    const anchorIndex = elements[start] * 2;
+    if (aProjectedAnchor && aProjectedAnchor[anchorIndex] !== INVALID_PROJECTED_ANCHOR) {
+        PROJ_ANCHOR[0] = aProjectedAnchor[anchorIndex];
+        PROJ_ANCHOR[1] = aProjectedAnchor[anchorIndex + 1];
+    } else {
+        projAnchor = projectPoint(PROJ_ANCHOR, anchor, matrix, map.width, map.height);
+    }
+
 
     const charCount = boxCount;
     // const boxes = [];

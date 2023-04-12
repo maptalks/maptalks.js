@@ -16,6 +16,7 @@ import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTex
 import { GLYPH_SIZE } from './Constant';
 import { TextUtil, PackUtil, FilterUtil } from '@maptalks/vector-packer';
 import { getCentiMeterScale } from '../../../common/Util';
+import { INVALID_PROJECTED_ANCHOR } from '../../../common/Constant';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -108,7 +109,9 @@ export default class TextPainter extends CollisionPainter {
     updateSymbol(...args) {
         this._tagTerrainVector = undefined;
         this._tagTerrainSkin = undefined;
-        return super.updateSymbol(...args);
+        const refresh = super.updateSymbol(...args);
+        this._genTextNames();
+        return refresh;
     }
 
     isTerrainVector() {
@@ -171,12 +174,6 @@ export default class TextPainter extends CollisionPainter {
                 this._textNameFn[i] = interpolated(symbolDef['textName']);
             }
         }
-    }
-
-    updateSymbol(...args) {
-        const refresh = super.updateSymbol(...args);
-        this._genTextNames();
-        return refresh;
     }
 
     shouldDeleteMeshOnUpdateSymbol(symbol) {
@@ -562,6 +559,12 @@ export default class TextPainter extends CollisionPainter {
         const positionSize = geometry.desc.positionSize;
 
         const { aShape, aOffset, aAnchor, aAltitude, aPitchRotation } = geometry.properties;
+        let { aProjectedAnchor } = geometry.properties;
+        if (!aProjectedAnchor) {
+            aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 2);
+        } else {
+            aProjectedAnchor.fill(INVALID_PROJECTED_ANCHOR);
+        }
         const aTextSize = geometry.properties['aTextSize'];
 
         // const layer = this.layer;
@@ -615,6 +618,13 @@ export default class TextPainter extends CollisionPainter {
         }
         if (isProjected) {
             labelAnchor = projLabelAnchor;
+        }
+        if (elevatedAnchor) {
+            aProjectedAnchor[index * 2] = elevatedAnchor[0];
+            aProjectedAnchor[index * 2 + 1] = elevatedAnchor[1];
+        } else {
+            aProjectedAnchor[index * 2] = labelAnchor[0];
+            aProjectedAnchor[index * 2 + 1] = labelAnchor[1];
         }
 
         const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'];
