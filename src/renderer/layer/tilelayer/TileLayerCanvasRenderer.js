@@ -683,7 +683,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     getDebugInfo(tileId) {
         const xyz = tileId.split('_');
         const length = xyz.length;
-        return xyz[length - 2] + '/' + xyz[length - 3] + '/' + xyz[length - 1];
+        return xyz[length - 3] + '/' + xyz[length - 2] + '/' + xyz[length - 1];
     }
 
     _findChildTiles(info) {
