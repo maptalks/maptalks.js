@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import Point from '@mapbox/point-geometry';
 import { projectPoint } from './projection';
 import { vec3 } from '@maptalks/gl';
+import { INVALID_ALTITUDE } from '../../../../common/Constant';
 
 const CURRENT2 = [];
 const PREV2 = [];
@@ -119,9 +120,10 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
     return out;
 }
 
+const INVALID_OFFSET = [-99999, -99999];
 const TILEPOINT = new maptalks.Point(0, 0);
 const TEMP_V3 = [];
-const EMPTY_ALTITUDE = [0, 0];
+
 function elevate(out, map, mesh, anchor, tileScale, vtLayer, mvpMatrix, terrainTileInfos) {
     const { res, extent, extent2d } = mesh.properties.tile;
     const { xmin, ymax } = extent2d;
@@ -137,9 +139,12 @@ function elevate(out, map, mesh, anchor, tileScale, vtLayer, mvpMatrix, terrainT
             }
         }
     }
+    if (!terrainTileInfo) {
+        return INVALID_OFFSET;
+    }
     const tilePoint = TILEPOINT.set(xmin, ymax);
-    const altitudeResult = terrainTileInfo && vtLayer.queryTilePointTerrain(anchor, terrainTileInfo, tilePoint, extent, res) || EMPTY_ALTITUDE;
-    const altitude = altitudeResult[0] || 0;
+    const altitudeResult = vtLayer.queryTilePointTerrain(anchor, terrainTileInfo, tilePoint, extent, res);
+    const altitude = altitudeResult[0] === null ? INVALID_ALTITUDE : altitudeResult[0];
     if (altitude) {
         let elevatedAnchor = vec3.set(TEMP_V3, anchor.x, anchor.y, 0);
         elevatedAnchor[2] += altitude * 100;
