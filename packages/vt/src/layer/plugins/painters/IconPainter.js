@@ -18,6 +18,7 @@ import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { GLYPH_SIZE, ICON_SIZE } from './Constant';
 import { createMarkerMesh, getMarkerFnTypeConfig, prepareMarkerGeometry, prepareLabelIndex, updateMarkerFitSize, BOX_VERTEX_COUNT, BOX_ELEMENT_COUNT } from './util/create_marker_painter';
 import { FilterUtil } from '@maptalks/vector-packer';
+import { INVALID_ALTITUDE } from '../../../common/Constant';
 
 const ICON_FILTER = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -43,7 +44,7 @@ const TEXT_FILTER_N = function (mesh) {
 const PROJ_MATRIX = [];
 
 const EMPTY_COLLISION = {
-    colliides: -1
+    collides: -1
 };
 
 const ICON_SIZE_ARR = [ICON_SIZE, ICON_SIZE];
@@ -597,6 +598,14 @@ class IconPainter extends CollisionPainter {
         }
         if (mesh.geometry.properties.isEmpty) {
             return EMPTY_COLLISION;
+        }
+
+        const { aTerrainAltitude } = mesh.geometry.properties;
+        if (aTerrainAltitude) {
+            const altitude = aTerrainAltitude[elements[start] * 2];
+            if (altitude === INVALID_ALTITUDE) {
+                return EMPTY_COLLISION;
+            }
         }
 
         const map = this.getMap();

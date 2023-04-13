@@ -16,7 +16,7 @@ import { createTextMesh, DEFAULT_UNIFORMS, createTextShader, GAMMA_SCALE, getTex
 import { GLYPH_SIZE } from './Constant';
 import { TextUtil, PackUtil, FilterUtil } from '@maptalks/vector-packer';
 import { getCentiMeterScale } from '../../../common/Util';
-import { INVALID_PROJECTED_ANCHOR } from '../../../common/Constant';
+import { INVALID_PROJECTED_ANCHOR, INVALID_ALTITUDE } from '../../../common/Constant';
 
 const shaderFilter0 = function (mesh) {
     const renderer = this.layer.getRenderer();
@@ -595,10 +595,13 @@ export default class TextPainter extends CollisionPainter {
         const aTerrainAltitude = geometry.properties.aTerrainAltitude;
         let elevatedAnchor;
         if (aTerrainAltitude) {
-            const altitude = aTerrainAltitude[index] * 100;
+            const altitude = aTerrainAltitude[index];
+            if (altitude === INVALID_ALTITUDE) {
+                return false;
+            }
             if (altitude) {
                 elevatedAnchor = vec3.set(ELEVATED_ANCHOR, ...labelAnchor);
-                elevatedAnchor[2] = altitude;
+                elevatedAnchor[2] = altitude * 100;
                 elevatedAnchor = projectPoint(elevatedAnchor, elevatedAnchor, mvpMatrix, map.width, map.height);
             } else {
                 elevatedAnchor = ANCHOR_BOX;

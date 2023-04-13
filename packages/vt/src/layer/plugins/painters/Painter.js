@@ -9,6 +9,7 @@ import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
 import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
+import { INVALID_ALTITUDE } from '../../../common/Constant';
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
@@ -1166,7 +1167,7 @@ class Painter {
             }
             ANCHOR_POINT.set(x, y);
             const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTileInfo, tilePoint, extent, res);
-            altitude = result[0] || 0;
+            altitude = result[0] === null ? INVALID_ALTITUDE : result[0];
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;
                 aTerrainAltitude.dirty = true;
