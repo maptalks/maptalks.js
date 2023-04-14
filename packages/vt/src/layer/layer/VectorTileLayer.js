@@ -9,7 +9,7 @@ import { PackUtil } from '@maptalks/vector-packer';
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
 const PROJ_COORD = new maptalks.Coordinate(0, 0);
-const EMPTY_ALTITUDE = [0, 0];
+const EMPTY_ALTITUDE = [null, 0];
 
 const defaultOptions = {
     renderer: 'gl',
@@ -160,16 +160,18 @@ class VectorTileLayer extends maptalks.TileLayer {
         const renderer = this.getRenderer();
         const terrainHelper = renderer && renderer.getTerrainHelper();
         if (!renderer || !terrainHelper) {
-            EMPTY_ALTITUDE[0] = 0;
+            EMPTY_ALTITUDE[0] = null;
             EMPTY_ALTITUDE[1] = 0;
             return EMPTY_ALTITUDE;
         }
         const prjCoord = this._tilePointToPrjCoord(PROJ_COORD, point, tilePoint, extent, res);
-        if (terrainTileInfo && terrainHelper.queryTerrainByProjCoordAtTerrainTile) {
+        if (terrainTileInfo && terrainHelper.queryTileTerrainByProjCoord) {
             // faster
-            return terrainHelper.queryTerrainByProjCoordAtTerrainTile(prjCoord, terrainTileInfo.id, terrainTileInfo, res);
+            return terrainHelper.queryTileTerrainByProjCoord(prjCoord, terrainTileInfo.id, terrainTileInfo);
         } else {
-            return terrainHelper.queryTerrainByProjCoord(prjCoord);
+            EMPTY_ALTITUDE[0] = null;
+            EMPTY_ALTITUDE[1] = 0;
+            return EMPTY_ALTITUDE;
         }
 
     }

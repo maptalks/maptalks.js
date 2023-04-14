@@ -102,6 +102,9 @@ const GLTFMixin = Base =>
                 'aPickingId': []
             };
             const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features);
+            if (geometry.data.aTerrainAltitude) {
+                instanceData.aTerrainAltitude = geometry.data.aTerrainAltitude;
+            }
             const instanceBuffers = {};
             //所有mesh共享一个 instance buffer，以节省内存
             for (const p in instanceData) {
@@ -151,12 +154,12 @@ const GLTFMixin = Base =>
                 // }
                 //
                 const childMeshes = meshInfos.map(info => {
-                    const { geometry, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
+                    const { geometry: gltfGeo, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
                     const MatClazz = this.getMaterialClazz(materialInfo);
                     const material = new MatClazz(materialInfo);
                     const defines = {};
                     // material.set('uOutputLinear', 1);
-                    const mesh = new reshader.InstancedMesh(instanceBuffers, count, geometry, material, {
+                    const mesh = new reshader.InstancedMesh(instanceBuffers, count, gltfGeo, material, {
                         transparent: false,
                         // castShadow: false,
                         picking: true
@@ -197,13 +200,17 @@ const GLTFMixin = Base =>
                     const localTransform = mat4.translate([], tileTranslationMatrix, instanceCenter);
                     mesh.setLocalTransform(localTransform);
 
-                    geometry.generateBuffers(this.regl, { excludeElementsInVAO: true });
+                    gltfGeo.generateBuffers(this.regl, { excludeElementsInVAO: true });
                     //上面已经生成了buffer，无需再生成
                     // mesh.generateInstancedBuffers(this.regl);
                     if (instanceData['instance_color']) {
                         defines['HAS_INSTANCE_COLOR'] = 1;
                     }
-                    mesh.properties.features = features;
+                    if (instanceData['aTerrainAltitude']) {
+                        defines['HAS_INSTANCE_TERRAIN_ALTITUDE'] = 1;
+                        mesh.setUniform('terrainAltitudeScale', this.layer.getRenderer().getZScale() * 100);
+                    }
+                    extend(mesh.properties, geometry.properties);
                     mesh.setDefines(defines);
                     mesh.properties.symbolIndex = {
                         index: i
@@ -247,7 +254,7 @@ const GLTFMixin = Base =>
             return zOffset;
         }
 
-        addMesh(meshes) {
+        addMesh(meshes, progress, context) {
             if (!meshes) {
                 return null;
             }
@@ -259,11 +266,21 @@ const GLTFMixin = Base =>
                 if (!meshes[i] || !meshes[i].geometry) {
                     continue;
                 }
+                if (meshes[i].instancedData.aTerrainAltitude) {
+                    this._updateTerrainAltitude(meshes[i], meshes[i].instancedData, meshes[i].properties, 3, context);
+                }
                 const isAnimated = this._isSkinAnimating(meshes[i].properties.symbolIndex.index);
                 meshes[i].setUniform('skinAnimation', +isAnimated);
             }
             this.scene.addMesh(meshes);
             return this;
+        }
+
+        _updateATerrainAltitude(mesh, aTerrainAltitude) {
+            if (!mesh) {
+                return;
+            }
+            mesh.updateInstancedData('aTerrainAltitude', aTerrainAltitude);
         }
 
         prepareRender(context) {

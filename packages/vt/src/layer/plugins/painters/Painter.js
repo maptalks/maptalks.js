@@ -270,7 +270,8 @@ class Painter {
             }
             if (awareOfTerrain && context && context.isRenderingTerrain && this.isTerrainVector()) {
                 const geometry = geometries[i];
-                this._updateTerrainAltitude(geometry && geometry.geometry, context);
+                const geo = geometry && geometry.geometry;
+                this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.positionSize || geo.desc.positionSize, context);
             }
             let mesh = this.createMesh(geometries[i], transform, params, context || {});
             if (Array.isArray(mesh)) {
@@ -329,7 +330,8 @@ class Painter {
                 }
             }
             if (mesh.geometry.data.aTerrainAltitude) {
-                this._updateTerrainAltitude(mesh.geometry, context);
+                const geo = mesh.geometry;
+                this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.desc.positionSize, context);
             }
             if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
                 defines['HAS_TERRAIN_ALTITUDE'] = 1;
@@ -1109,26 +1111,30 @@ class Painter {
         HighlightUtil.highlightMesh(this.regl, mesh, highlights, this._highlightTimestamp, pickingIdIndiceMap);
     }
 
-    _updateTerrainAltitude(geometry, context) {
-        if (!geometry) {
-            return;
-        }
-        let aAnchor = geometry.properties.aAnchor;
+    _updateTerrainAltitude(geometry, geoData, geoProperties, positionSize, context) {
+        let aAnchor = geoProperties.aAnchor;
         if (!aAnchor) {
-            const { aPosition } = geometry.data;
-            aAnchor = geometry.properties.aAnchor = aPosition.slice(0);
+            const { aPosition } = geoData;
+            aAnchor = geoProperties.aAnchor = aPosition.slice(0);
         }
-        let aTerrainAltitude = geometry.properties.aTerrainAltitude;
+        let aTerrainAltitude = geoProperties.aTerrainAltitude;
         if (!aTerrainAltitude) {
-            aTerrainAltitude = geometry.properties.aTerrainAltitude = new Float32Array(aAnchor.length / geometry.desc.positionSize);
+            aTerrainAltitude = geoProperties.aTerrainAltitude = new Float32Array(aAnchor.length / positionSize);
         }
-        if (!geometry.data.aTerrainAltitude) {
-            geometry.data.aTerrainAltitude = aTerrainAltitude;
+        if (!geoData.aTerrainAltitude) {
+            geoData.aTerrainAltitude = aTerrainAltitude;
         } else if (aTerrainAltitude.dirty) {
-            geometry.updateData('aTerrainAltitude', aTerrainAltitude);
+            this._updateATerrainAltitude(geometry, aTerrainAltitude);
         }
         aTerrainAltitude.dirty = false;
         this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
+    }
+
+    _updateATerrainAltitude(geometry, aTerrainAltitude) {
+        if (!geometry) {
+            return;
+        }
+        geometry.updateData('aTerrainAltitude', aTerrainAltitude);
     }
 
     _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
@@ -1155,6 +1161,7 @@ class Painter {
                 if (aTerrainAltitude[i] !== altitude) {
                     aTerrainAltitude[i] = altitude;
                     aTerrainAltitude.dirty = true;
+                    this.setToRedraw();
                 }
                 continue;
             }
@@ -1171,6 +1178,7 @@ class Painter {
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;
                 aTerrainAltitude.dirty = true;
+                this.setToRedraw();
             }
             if (result[1]) {
                 queryResult.set(index, altitude);

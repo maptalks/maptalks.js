@@ -25,6 +25,14 @@ class MeshPainter extends Painter {
         }
     }
 
+    isTerrainSkin() {
+        return false;
+    }
+
+    isTerrainVector() {
+        return this.layer.options.awareOfTerrain;
+    }
+
     isAnimating() {
         return false;
     }
@@ -82,6 +90,9 @@ class MeshPainter extends Painter {
         }
         if (geometry.data.aLineHeight) {
             defines['HAS_LINE_HEIGHT'] = 1;
+        }
+        if (geometry.data.aTerrainAltitude) {
+            defines['HAS_TERRAIN_ALTITUDE'] = 1;
         }
         if (geometry.data.aOpacity) {
             const aOpacity = geometry.data.aOpacity;
