@@ -1120,6 +1120,7 @@ class Painter {
         let aTerrainAltitude = geoProperties.aTerrainAltitude;
         if (!aTerrainAltitude) {
             aTerrainAltitude = geoProperties.aTerrainAltitude = new Float32Array(aAnchor.length / positionSize);
+            aTerrainAltitude.fill(INVALID_ALTITUDE);
         }
         if (!geoData.aTerrainAltitude) {
             geoData.aTerrainAltitude = aTerrainAltitude;

@@ -262,6 +262,12 @@ const GLTFMixin = Base =>
             if (level > 2) {
                 return null;
             }
+            // 这里可能是regl的bug: 如果启用下面的代码，aTerrainAltitude不会看作instance属性数据（divisor = 1），导致无法绘制，原因未知
+            //
+            // const isRenderingTerrainVector = context.isRenderingTerrain;
+            // if (isRenderingTerrainVector) {
+            //     meshes = meshes.filter(m => m.properties.tile.terrainTileInfos);
+            // }
             for (let i = 0; i < meshes.length; i++) {
                 if (!meshes[i] || !meshes[i].geometry) {
                     continue;
