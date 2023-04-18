@@ -20,6 +20,9 @@ const V3 = [];
 const TILEPOINT = new maptalks.Point(0, 0);
 const ANCHOR_POINT = new maptalks.Point(0, 0);
 
+const INVALID_ALTITUDE_RESULT = [INVALID_ALTITUDE, 0];
+const ALTITUDE32 = new Float32Array(1);
+
 const EMPTY_ARRAY = [];
 const level0Filter = mesh => {
     return mesh.properties.level === 0;
@@ -1140,7 +1143,7 @@ class Painter {
 
     _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
         const terrainTileInfos = tile.terrainTileInfos;
-        if (!terrainTileInfos) {
+        if (!terrainTileInfos || tile.completeTerrainQuery) {
             // 只有terrain加载才更新
             return;
         }
@@ -1153,9 +1156,20 @@ class Painter {
         if (!queryResult) {
             queryResult = aTerrainAltitude.queryResult = new Map();
         }
+        let complete = true;
         for (let i = start; i <= end; i++) {
-            const x = aPosition[i * positionSize];
-            const y = aPosition[i * positionSize + 1];
+            let x = aPosition[i * positionSize];
+            if (x < 0) {
+                x = 0;
+            } else if (x > extent) {
+                x = extent;
+            }
+            let y = aPosition[i * positionSize + 1];
+            if (y < 0) {
+                y = 0;
+            } else if (y > extent) {
+                y = extent;
+            }
             const index = x + y * extent;
             let altitude = queryResult.get(index);
             if (altitude || altitude === 0) {
@@ -1166,16 +1180,18 @@ class Painter {
                 }
                 continue;
             }
-            let terrainTileInfo;
+            let terrainTile;
             for (let j = 0; j < terrainTileInfos.length; j++) {
                 if (inTerrainTile(terrainTileInfos[j], xmin + tileScale * x, ymax - tileScale * y, res)) {
-                    terrainTileInfo = terrainTileInfos[j];
+                    terrainTile = terrainTileInfos[j];
                     break;
                 }
             }
             ANCHOR_POINT.set(x, y);
-            const result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTileInfo, tilePoint, extent, res);
+            const result = terrainTile ? this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTile, tilePoint, extent, res) : INVALID_ALTITUDE_RESULT;
             altitude = result[0] === null ? INVALID_ALTITUDE : result[0];
+            ALTITUDE32[0] = altitude;
+            altitude = ALTITUDE32[0];
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;
                 aTerrainAltitude.dirty = true;
@@ -1183,8 +1199,11 @@ class Painter {
             }
             if (result[1]) {
                 queryResult.set(index, altitude);
+            } else {
+                complete = false;
             }
         }
+        tile.completeTerrainQuery = complete;
     }
 }
 
