@@ -175,6 +175,15 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     }
 
+    queryTerrainTiles(tileInfo) {
+        const renderer = this.getRenderer();
+        const terrainHelper = renderer && renderer.getTerrainHelper();
+        if (!renderer || !terrainHelper) {
+            return null;
+        }
+        return terrainHelper.getTerrainTiles(tileInfo);
+    }
+
     _setStyle(style) {
         this._pathRoot = null;
         if (style && style['$root']) {

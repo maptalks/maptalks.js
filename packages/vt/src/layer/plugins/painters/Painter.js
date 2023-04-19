@@ -634,6 +634,7 @@ class Painter {
             }
             delete this._outlineShaders;
         }
+        delete this._terrainAltitudeCache;
         this.logoutTextureCache();
     }
 
@@ -1125,13 +1126,14 @@ class Painter {
             aTerrainAltitude = geoProperties.aTerrainAltitude = new Float32Array(aAnchor.length / positionSize);
             aTerrainAltitude.fill(INVALID_ALTITUDE);
         }
+        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
+
         if (!geoData.aTerrainAltitude) {
             geoData.aTerrainAltitude = aTerrainAltitude;
         } else if (aTerrainAltitude.dirty) {
             this._updateATerrainAltitude(geometry, aTerrainAltitude);
         }
         aTerrainAltitude.dirty = false;
-        this._fillTerrainAltitude(aTerrainAltitude, aAnchor, context.tileInfo, 0, aTerrainAltitude.length - 1);
     }
 
     _updateATerrainAltitude(geometry, aTerrainAltitude) {
@@ -1142,12 +1144,40 @@ class Painter {
     }
 
     _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {
-        const terrainTileInfos = tile.terrainTileInfos;
-        if (!terrainTileInfos || tile.completeTerrainQuery) {
-            // 只有terrain加载才更新
+        const { res, extent, extent2d, id } = tile;
+        if (!tile.completeTerrainQuery && this._terrainAltitudeCache && this._terrainAltitudeCache.has(id)) {
+            const cachedAltitude = this._terrainAltitudeCache.getAndRemove(id);
+            this._terrainAltitudeCache.add(id, cachedAltitude);
+            aTerrainAltitude.set(cachedAltitude);
+            aTerrainAltitude.dirty = true;
+            tile.completeTerrainQuery = true;
             return;
         }
-        const { res, extent, extent2d } = tile;
+        if (tile.completeTerrainQuery) {
+            return;
+        }
+        const renderer = this.layer.getRenderer();
+        const terrainHelper = renderer && renderer.getTerrainHelper();
+
+        let terrainTileInfos = tile.terrainTileInfos;
+        if (!terrainTileInfos) {
+            terrainTileInfos = tile.terrainTileInfos = this.layer.queryTerrainTiles(tile);
+        }
+        let terrainChanged = false;
+        let queryStatus = [];
+        // 查询地形瓦片是否有新的加载，如果没有则无需查询
+        for (let i = 0; i < tile.terrainTileInfos.length; i++) {
+            queryStatus[i] = (+terrainHelper.isTerrainTileLoaded(tile.terrainTileInfos[i].id));
+            if (queryStatus[i] && tile.terrainQueryStatus && !tile.terrainQueryStatus[i]) {
+                terrainChanged = true;
+                break;
+            }
+        }
+        if (!terrainChanged && tile.terrainQueryStatus) {
+            return;
+        }
+        tile.terrainQueryStatus = queryStatus;
+
         const { xmin, ymax } = extent2d;
         const tilePoint = TILEPOINT.set(xmin, ymax);
         const tileScale = this.layer.options['tileSize'] / tile.extent;
@@ -1187,23 +1217,35 @@ class Painter {
                     break;
                 }
             }
-            ANCHOR_POINT.set(x, y);
-            const result = terrainTile ? this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTile, tilePoint, extent, res) : INVALID_ALTITUDE_RESULT;
-            altitude = result[0] === null ? INVALID_ALTITUDE : result[0];
-            ALTITUDE32[0] = altitude;
-            altitude = ALTITUDE32[0];
+            let result;
+            if (terrainTile && (terrainHelper.getRenderer().isTileCached(terrainTile.id) || aTerrainAltitude[i] === INVALID_ALTITUDE)) {
+                ANCHOR_POINT.set(x, y);
+                result = this.layer.queryTilePointTerrain(ANCHOR_POINT, terrainTile, tilePoint, extent, res);
+            }
+            altitude = aTerrainAltitude[i];
+            if (result) {
+                altitude = result[0] === null ? INVALID_ALTITUDE : result[0];
+                ALTITUDE32[0] = altitude;
+                altitude = ALTITUDE32[0];
+            }
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;
                 aTerrainAltitude.dirty = true;
                 this.setToRedraw();
             }
-            if (result[1]) {
+            if (result && result[1]) {
                 queryResult.set(index, altitude);
             } else {
                 complete = false;
             }
         }
         tile.completeTerrainQuery = complete;
+        if (complete) {
+            if (!this._terrainAltitudeCache) {
+                this._terrainAltitudeCache = new maptalks.LRUCache(this.layer.options['maxCacheSize'] * 4);
+            }
+            this._terrainAltitudeCache.add(id, aTerrainAltitude);
+        }
     }
 }
 
