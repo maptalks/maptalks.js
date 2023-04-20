@@ -1088,10 +1088,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     // 有地形时的tile draw 方法
-    drawTileOnTerrain(tileInfo, tileData) {
+    drawTileOnTerrain(...args) {
         // drawTile 有可能在GroupGLLayer被替换，但prototype上的定义是不会被替换的
         // VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData, terrainSkinFilter);
-        VectorTileLayerRenderer.prototype.drawTile.call(this, tileInfo, tileData);
+        VectorTileLayerRenderer.prototype.drawTile.call(this, ...args);
     }
 
     createTerrainTexture(regl) {
