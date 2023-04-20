@@ -7,7 +7,7 @@ import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 const MASK_MODES = {
     'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5, 'video': 0.6
 };
-const MAT = [], QUAT = [], SCALE = [1, 1, 1];
+const QUAT = [], SCALE = [1, 1, 1];
 const DEFAULT_SYMBOL = {
     polygonFill: [255, 0, 0],
     polygonOpacity: 0.8
@@ -24,9 +24,8 @@ export default class Mask extends Polygon {
             return this;
         }
         layer.removeMask(this);
-        this['_fireEvent']('remove');
         this._dispose();
-        delete this._layer;
+        super.remove();
     }
 
     getMesh(regl, ratio, minHeight) {
@@ -113,7 +112,7 @@ export default class Mask extends Polygon {
     _setLocalTransform(mesh) {
         const map = this.getMap();
         const centerPos = coordinateToWorld(map, this.getCenter());
-        const mMatrix = mat4.fromRotationTranslationScale(MAT, quat.identity(QUAT), centerPos, SCALE);
+        const mMatrix = mat4.fromRotationTranslationScale(mesh.localTransform, quat.identity(QUAT), centerPos, SCALE);
         mesh.localTransform = mMatrix;
     }
 
@@ -124,7 +123,17 @@ export default class Mask extends Polygon {
         if (this._mesh.material) {
             this._mesh.material.dispose();
         }
-        this._mesh.geometry.dispose();
+        if (this._mesh.geometry) {
+            this._mesh.geometry.dispose();
+        }
         this._mesh.dispose();
+        delete this._mesh;
+    }
+
+    containsPoint(coordinate, layer) {
+        const coordinates = this.getCoordinates();
+        const polygon = new Polygon(coordinates);
+        polygon.addTo(layer);
+        return polygon.containsPoint(coordinate);
     }
 }

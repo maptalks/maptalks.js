@@ -1,7 +1,8 @@
 describe('setMask', () => {
-    let map;
+    let map, eventContainer;
     beforeEach(function() {
         map = createMap();
+        eventContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {
@@ -31,7 +32,7 @@ describe('setMask', () => {
             [0.00011523763828336087, -0.00014186472807864448],
             [0.0001621396710334011, 0.00012473630025056082]
         ]
-    ]
+    ];
 
     
     
@@ -192,9 +193,9 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([23, 156, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([23, 23, 23, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([12, 139, 11, 255], pixel2)).to.be.eql(true);
                 clearMask();
             }, 100);
         });
@@ -229,9 +230,9 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([46, 58, 61, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([150, 29, 31, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([139, 12, 11, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([29, 27, 24, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -246,9 +247,9 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([23, 156, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([46, 58, 61, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([23, 23, 23, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([12, 139, 11, 255], pixel2)).to.be.eql(true);
                 updateMask();
             }, 100);
         });
@@ -488,6 +489,70 @@ describe('setMask', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
         const mask = new maptalks.ClipInsideMask(holes);
+        gltflayer.setMask(mask);
+    });
+
+    it('click event', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url4,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.once('load', () => {
+            setTimeout(function() {
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
+                });
+            }, 500);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const mask = new maptalks.ColorMask(coord1);
+        mask.on('click', () => {
+            done();
+        });
+        gltflayer.setMask(mask);
+    });
+
+    it('mousemove event', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url4,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        let times = 0;
+        marker.once('load', () => {
+            setTimeout(function() {
+                for (let i = 0; i < 5; i++) {
+                    happen.mousemove(eventContainer, {
+                        'clientX':clickContainerPoint.x - 100 + i * 50,
+                        'clientY':clickContainerPoint.y
+                    });
+                }
+            }, 500);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const mask = new maptalks.ColorMask(coord1);
+        mask.on('mouseenter', () => {
+            times += 1;
+            if (times > 1) {
+                done();
+            }
+        });
+        mask.on('mouseout', () => {
+            times += 1;
+            if (times > 1) {
+                done();
+            }
+        });
         gltflayer.setMask(mask);
     });
 });

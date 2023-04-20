@@ -819,7 +819,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
      * @return {Object[]} data identified
      */
-    identifyAtPoint(point, options = {}) {
+    identifyAtPoint(point, options = {}, identifyCoordinate) {
+        if (!identifyCoordinate) {
+            const identifyMasks = this.identifyMask(point, options);
+            if (identifyMasks && identifyMasks.length) {
+                return identifyMasks;
+            }
+        }
         const map = this.getMap();
         const renderer = this.getRenderer();
         if (!map || !renderer) {
@@ -909,6 +915,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         renderer.cancelShowOnly(service);
         return this;
+    }
+
+    setServiceOpacity(idx, opacity) {
+        const service = this.options.services[idx];
+        if (service) {
+            service.opacity = opacity;
+        }
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.setToRedraw();
     }
 
 }

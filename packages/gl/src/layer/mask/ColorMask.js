@@ -1,5 +1,6 @@
 import * as reshader from '@maptalks/reshader.gl';
 import Mask from './Mask';
+import { isNumber } from '../util/util';
 
 export default class ColorMask extends Mask {
     constructor(coordinates, options) {
@@ -25,10 +26,12 @@ export default class ColorMask extends Mask {
         mesh.setUniform('maskMode', maskMode);
         const color = this._getMaskColor();
         mesh.setUniform('maskColor', color);
-        const heightRange = this._getHeightRange();
-        heightRange[0] = (heightRange[0] - minHeight) * ratio;
-        heightRange[1] = (heightRange[1] - minHeight) * ratio;
-        mesh.setUniform('heightRange', heightRange);
+        if (isNumber(ratio)) {
+            const heightRange = this._getHeightRange();
+            heightRange[0] = (heightRange[0] - minHeight) * ratio;
+            heightRange[1] = (heightRange[1] - minHeight) * ratio;
+            mesh.setUniform('heightRange', heightRange);
+        }
     }
 
     _setDefines(mesh) {

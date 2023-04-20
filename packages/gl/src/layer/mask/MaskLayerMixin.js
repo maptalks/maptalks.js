@@ -1,7 +1,8 @@
-import { Coordinate, Extent } from "maptalks";
+import { Coordinate, Extent, Point, VectorLayer } from "maptalks";
 import { mat4 } from 'gl-matrix';
 import Mask from "./Mask";
 
+const maskLayerEvents = ['shapechange', 'symbolchange', 'heightrangechange', 'flatheightchange'];
 export default function (Base) {
     return class extends Base {
 
@@ -27,15 +28,20 @@ export default function (Base) {
 
         setMask(masks) {
             this.removeMask();
+            if (!this._maskList) {
+                this._maskList = [];
+            }
             if (Array.isArray(masks)) {
-                this._maskList = masks
+               masks.forEach(mask => {
+                this._maskList.push(mask);
+               })
             } else {
-                this._maskList = [masks];
+                this._maskList.push(masks);
             }
             this._maskList.forEach(mask => {
                 mask['_bindLayer'](this);
             });
-            this._updateExtent();
+            this._updateExtent('shapechange');
             return this;
         }
 
@@ -43,19 +49,7 @@ export default function (Base) {
             return this._maskList;
         }
 
-        _clearMasks() {
-            if (!this._maskList) {
-                return this;
-            }
-            this._maskList.forEach(mask => {
-                mask.remove();
-            });
-            this._maskList = [];
-            this._updateExtent();
-            return this;
-        }
-
-        _updateExtent() {
+        _updateExtent(type) {
             if (!this._maskList) {
                 return;
             }
@@ -101,17 +95,33 @@ export default function (Base) {
             }
             const { ratio, minHeight } = this._normalizeHeight(minheight, maxheight);
             const extent = new Extent(xmin, ymin, xmax, ymax);
-            const { projViewMatrix, mapExtent } = this._getProjViewMatrixInOrtho(extent);
-            const extentPointMin = coordinateToWorld(map, new Coordinate(mapExtent.xmin, mapExtent.ymin));
-            const extentPointMax = coordinateToWorld(map, new Coordinate(mapExtent.xmax, mapExtent.ymax));
+            if (!this._projViewMatrix || type === 'shapechange') { //避免重复计算extent造成性能损失
+                const { projViewMatrix, mapExtent } = this._getProjViewMatrixInOrtho(extent);
+                this._projViewMatrix = projViewMatrix;
+                this._mapExtent = mapExtent;
+            }
+            const extentPointMin = coordinateToWorld(map, new Coordinate(this._mapExtent.xmin, this._mapExtent.ymin));
+            const extentPointMax = coordinateToWorld(map, new Coordinate(this._mapExtent.xmax, this._mapExtent.ymax));
             const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
             if (renderer) {
-                renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
+                renderer.setMask(extentInWorld, this._projViewMatrix, ratio, minHeight);
             } else {
                 this.once('renderercreate', e => {
-                    e.renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
+                    e.renderer.setMask(extentInWorld, this._projViewMatrix, ratio, minHeight);
                 });
             }
+        }
+
+        _clearMasks() {
+            if (!this._maskList) {
+                return this;
+            }
+            this._maskList.forEach(mask => {
+                mask.remove();
+            });
+            this._maskList = [];
+            this._updateExtent();
+            return this;
         }
 
         _normalizeHeight(minHeight, maxHeight) {
@@ -154,12 +164,58 @@ export default function (Base) {
             if (type === 'shapechange' && param['target'] instanceof Mask) {
                 param['target']._updateShape();
             }
-            if (param['target'] instanceof Mask) {
-                this._updateExtent();
+            if (param['target'] instanceof Mask && maskLayerEvents.indexOf(type) > -1) {
+                this._updateExtent(type);
             }
             if (super['_onGeometryEvent']) {
                 super['_onGeometryEvent'](param);
             }
+        }
+
+        identifyMask(point, options) {
+            const map = this.getMap();
+            if (!map) {
+                return null;
+            }
+            const identifyData = this.identifyAtPoint(point, options, true);
+            const pickedPoint = identifyData.length && identifyData[0].point;
+            if (pickedPoint) {
+                const altitude = map.pointAtResToAltitude(pickedPoint[2], map.getGLRes());
+                const coord = map.pointAtResToCoordinate(new Point(pickedPoint[0], pickedPoint[1]), map.getGLRes());
+                const coordinate = new Coordinate(coord.x, coord.y, altitude);
+                return this._hitMasks(coordinate);
+            }
+        }
+
+        _hitMasks(coordinate) {
+            const masks = this._maskList;
+            if (!masks) {
+                return null;
+            }
+            const map = this.getMap();
+            const hits = [];
+            if (!this._idetifyHelperLayer) {
+                const id = this.getId();
+                this._idetifyHelperLayer = new VectorLayer(`_${id}_identify_helperlayer`, { visible: false }).addTo(map);
+            }
+            for (let i = 0; i < masks.length; i++) {
+                if (masks[i].containsPoint(coordinate, this._idetifyHelperLayer)) {
+                    hits.push(masks[i]);
+                }
+            }
+            return hits;
+        }
+
+        remove() {
+            if (this._idetifyHelperLayer) {
+                this._idetifyHelperLayer.remove();
+            }
+            if (this._maskList && this._maskList.length) {
+                this._maskList.forEach(mask => {
+                    mask.remove();
+                });
+            }
+            super.remove();
         }
     };
 }

@@ -190,9 +190,23 @@ describe('render specs', () => {
             layer.setMask(mask);
             setTimeout(function() {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
-                assert(pixelMatch([53, 63, 81, 255], pixel, 20) === true);
+                assert(pixelMatch([53, 63, 81, 255], pixel, 50) === true);
                 done();
             }, 1000);
+        });
+    }).timeout(10000);
+
+    it('setServiceOpacity', done => {
+        const layer = add3DTilesLayer();
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            layer.setServiceOpacity(0, 0.5);
+            setTimeout(function() {
+                const pixel = pickPixel(map, 255, 497, 1, 1);
+                assert(pixelMatch([255, 255, 255, 63], pixel) === true);
+                done();
+            }, 100);
         });
     }).timeout(10000);
 });

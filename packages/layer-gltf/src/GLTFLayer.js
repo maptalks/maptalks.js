@@ -81,7 +81,13 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         return this.identifyAtPoint(containerPoint, options);
     }
 
-    identifyAtPoint(point, options) {
+    identifyAtPoint(point, options = {}, identifyCoordinate) {
+        if (!identifyCoordinate) {
+            const identifyMasks = this.identifyMask(point, options);
+            if (identifyMasks && identifyMasks.length) {
+                return identifyMasks;
+            }
+        }
         const map = this.getMap();
         if (!map) {
             return [];
@@ -128,7 +134,7 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const url = param.url;
         this._modelMap[url] = 1;
         this.getRenderer().setToRedraw();
-        if (this._isModelsLoadComplete()) {
+        if (this['_isModelsLoadComplete']()) {
             this.fire('modelload', { models: this.getGLTFUrls() });
         }
     }
