@@ -277,11 +277,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     removeTileCache(tileId) {
+        delete this.tilesInView[tileId];
         this.tileCache.remove(tileId);
     }
 
     isTileCachedOrLoading(tileId) {
         return this.tileCache.get(tileId) || this.tilesInView[tileId] || this.tilesLoading[tileId];
+    }
+
+    isTileCached(tileId) {
+        return !!(this.tileCache.get(tileId) || this.tilesInView[tileId]);
     }
 
     isTileFadingIn(tileImage) {
