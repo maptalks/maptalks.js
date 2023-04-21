@@ -429,17 +429,17 @@ describe('gltflayer set style', function () {
             }
         }).addTo(gltflayer);
         gltflayer.setStyle([{
-                'filter': ['==', 'count', 100],
-                'symbol': {
-                    shader: 'phong'
-                }
-            },
-            {
-                'filter': ['==', 'count', 200],
-                'symbol': {
-                    shader: 'pbr'
-                }
+            'filter': ['==', 'count', 100],
+            'symbol': {
+                shader: 'phong'
             }
+        },
+        {
+            'filter': ['==', 'count', 200],
+            'symbol': {
+                shader: 'pbr'
+            }
+        }
         ]);
         gltflayer.addTo(map);
         //TODO marker的symbol是否正确

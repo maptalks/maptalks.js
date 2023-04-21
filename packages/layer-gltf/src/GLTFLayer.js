@@ -81,8 +81,8 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         return this.identifyAtPoint(containerPoint, options);
     }
 
-    identifyAtPoint(point, options = {}, identifyCoordinate) {
-        if (!identifyCoordinate) {
+    identifyAtPoint(point, options = {}) {
+        if (!options['excludeMasks']) {
             const identifyMasks = this.identifyMask(point, options);
             if (identifyMasks && identifyMasks.length) {
                 return identifyMasks;
@@ -95,7 +95,7 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const dpr = map.getDevicePixelRatio();
         const x = point.x * dpr, y = point.y * dpr;
         const picked = this._pick(x, y, options);
-        return picked && picked.target ? [{ data: picked.target, point: picked.point }] : [];
+        return picked && picked.target ? [{ data: picked.target, point: picked.point, coordinate: picked.coordinate }] : [];
     }
 
     _updateMarkerMap() {

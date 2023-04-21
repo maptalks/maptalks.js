@@ -56,7 +56,7 @@ export default class GLTFMarker extends Marker {
     static fromJSON(json) {
         return new GLTFMarker(json.coordinates, json.options);
     }
-   
+
     getMeshes(gltfManager, regl, timestamp) {
         let meshes = [];
         const map = this.getMap();
@@ -116,7 +116,7 @@ export default class GLTFMarker extends Marker {
             // 只有shader存在且和symbol不同时才更新
             // https://github.com/maptalks/issues/issues/271
             this._updateGeometries(gltfManager, this.regl);
-            
+
         }
         this._shader = shader;
         this._uniformDirty = true;
@@ -174,7 +174,7 @@ export default class GLTFMarker extends Marker {
             this._setLoadState(true);
             this._createMeshes(resource, gltfManager, regl);
         }
-        
+
     }
 
     _updateUniforms(mesh, timestamp) {
@@ -964,7 +964,7 @@ export default class GLTFMarker extends Marker {
     }
 
     setTranslation(translationX, translationY, translationZ) {
-        super.updateSymbol({ 
+        super.updateSymbol({
             translationX,
             translationY,
             translationZ
@@ -974,17 +974,17 @@ export default class GLTFMarker extends Marker {
     }
 
     setRotation(rotationX, rotationY, rotationZ) {
-        super.updateSymbol({ 
+        super.updateSymbol({
             rotationX,
             rotationY,
             rotationZ
-         });
+        });
         this._updateMatrix();
         return this;
     }
 
     setScale(scaleX, scaleY, scaleZ) {
-        super.updateSymbol({ 
+        super.updateSymbol({
             scaleX,
             scaleY,
             scaleZ
@@ -1305,12 +1305,12 @@ export default class GLTFMarker extends Marker {
             return animations[0];
         }
         if (animations.indexOf(animationName) > -1) {
-           return animationName;
+            return animationName;
         }
     }
 
     setCurrentAnimation(animationName) {
-       this.updateSymbol({ animationName });
+        this.updateSymbol({ animationName });
     }
 
     _setAnimationStartTime(timestamp) {

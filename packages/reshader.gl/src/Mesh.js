@@ -161,12 +161,12 @@ class Mesh {
 
     _getDefines() {
         if (!this._defines) {
-           this._defines = {};
+            this._defines = {};
         }
         const geometry = this._geometry;
         const position = geometry.data[geometry.desc.positionAttribute],
-        texcoord = geometry.data[geometry.desc.uv0Attribute],
-        normal = geometry.data[geometry.desc.normalAttribute];
+            texcoord = geometry.data[geometry.desc.uv0Attribute],
+            normal = geometry.data[geometry.desc.normalAttribute];
         if (position && position.quantization) {
             this._defines['HAS_DECODE_POSITION'] = 1;
         }
@@ -269,8 +269,8 @@ class Mesh {
     _getUniformsForDraco() {
         const geometry = this._geometry;
         const position = geometry.data[geometry.desc.positionAttribute],
-        texcoord = geometry.data[geometry.desc.uv0Attribute],
-        normal = geometry.data[geometry.desc.normalAttribute];
+            texcoord = geometry.data[geometry.desc.uv0Attribute],
+            normal = geometry.data[geometry.desc.normalAttribute];
         if (position && position.quantization) {
             const quantization = position.quantization;
             const gltf_u_dec_position_normConstant = quantization.range / (1 << quantization.quantizationBits)

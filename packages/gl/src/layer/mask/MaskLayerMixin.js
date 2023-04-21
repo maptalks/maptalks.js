@@ -1,8 +1,11 @@
-import { Coordinate, Extent, Point, VectorLayer } from "maptalks";
+import { Coordinate, Extent } from "maptalks";
 import { mat4 } from 'gl-matrix';
 import Mask from "./Mask";
+import { extend } from "../util/util";
 
 const maskLayerEvents = ['shapechange', 'symbolchange', 'heightrangechange', 'flatheightchange'];
+const COORD_EXTENT = new Coordinate(0, 0);
+const EXTENT_MIN = [], EXTENT_MAX = [];
 export default function (Base) {
     return class extends Base {
 
@@ -32,9 +35,9 @@ export default function (Base) {
                 this._maskList = [];
             }
             if (Array.isArray(masks)) {
-               masks.forEach(mask => {
-                this._maskList.push(mask);
-               })
+                masks.forEach(mask => {
+                    this._maskList.push(mask);
+                });
             } else {
                 this._maskList.push(masks);
             }
@@ -100,8 +103,12 @@ export default function (Base) {
                 this._projViewMatrix = projViewMatrix;
                 this._mapExtent = mapExtent;
             }
-            const extentPointMin = coordinateToWorld(map, new Coordinate(this._mapExtent.xmin, this._mapExtent.ymin));
-            const extentPointMax = coordinateToWorld(map, new Coordinate(this._mapExtent.xmax, this._mapExtent.ymax));
+            COORD_EXTENT.x = this._mapExtent.xmin;
+            COORD_EXTENT.y = this._mapExtent.ymin;
+            const extentPointMin = coordinateToWorld(EXTENT_MIN, COORD_EXTENT, map);
+            COORD_EXTENT.x = this._mapExtent.xmax;
+            COORD_EXTENT.y = this._mapExtent.ymax;
+            const extentPointMax = coordinateToWorld(EXTENT_MAX, COORD_EXTENT, map);
             const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
             if (renderer) {
                 renderer.setMask(extentInWorld, this._projViewMatrix, ratio, minHeight);
@@ -134,7 +141,7 @@ export default function (Base) {
             const ratio = Math.pow(range, -1);
             return { ratio, minHeight: min };
         }
-    
+
         _getProjViewMatrixInOrtho(extent) {
             const map = this.getMap();
             const preView = map.getView();
@@ -177,12 +184,11 @@ export default function (Base) {
             if (!map) {
                 return null;
             }
-            const identifyData = this.identifyAtPoint(point, options, true);
-            const pickedPoint = identifyData.length && identifyData[0].point;
-            if (pickedPoint) {
-                const altitude = map.pointAtResToAltitude(pickedPoint[2], map.getGLRes());
-                const coord = map.pointAtResToCoordinate(new Point(pickedPoint[0], pickedPoint[1]), map.getGLRes());
-                const coordinate = new Coordinate(coord.x, coord.y, altitude);
+            const opts = extend({}, options);
+            opts['excludeMasks'] = true; //此处调用identifyAtPoint时，不需要去identifyMask
+            const identifyData = this.identifyAtPoint(point, opts);
+            const coordinate = identifyData.length && identifyData[0].coordinate;
+            if (coordinate) {
                 return this._hitMasks(coordinate);
             }
         }
@@ -192,14 +198,10 @@ export default function (Base) {
             if (!masks) {
                 return null;
             }
-            const map = this.getMap();
             const hits = [];
-            if (!this._idetifyHelperLayer) {
-                const id = this.getId();
-                this._idetifyHelperLayer = new VectorLayer(`_${id}_identify_helperlayer`, { visible: false }).addTo(map);
-            }
             for (let i = 0; i < masks.length; i++) {
-                if (masks[i].containsPoint(coordinate, this._idetifyHelperLayer)) {
+                const maskMode = masks[i].getMode();
+                if (masks[i].containsPoint(coordinate) && (maskMode === 'color' || maskMode === 'video')) {
                     hits.push(masks[i]);
                 }
             }
@@ -207,9 +209,6 @@ export default function (Base) {
         }
 
         remove() {
-            if (this._idetifyHelperLayer) {
-                this._idetifyHelperLayer.remove();
-            }
             if (this._maskList && this._maskList.length) {
                 this._maskList.forEach(mask => {
                     mask.remove();
@@ -220,10 +219,13 @@ export default function (Base) {
     };
 }
 
-function coordinateToWorld(map, coordinate, z = 0) {
+function coordinateToWorld(out, coordinate, map, z = 0) {
     if (!map || !(coordinate instanceof Coordinate)) {
         return null;
     }
     const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
-    return [p.x, p.y, z];
+    out[0] = p.x;
+    out[1] = p.y;
+    out[2] = z;
+    return out;
 }

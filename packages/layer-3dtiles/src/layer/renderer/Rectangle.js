@@ -12,26 +12,26 @@ export default class Rectangle {
 
     static contains(rectangle, cartographic) {
 
-      var longitude = cartographic[0];
-      var latitude = cartographic[1];
+        var longitude = cartographic[0];
+        var latitude = cartographic[1];
 
-      var west = rectangle.west;
-      var east = rectangle.east;
+        var west = rectangle.west;
+        var east = rectangle.east;
 
-      if (east < west) {
-        east += TWO_PI;
-        if (longitude < 0.0) {
-          longitude += TWO_PI;
+        if (east < west) {
+            east += TWO_PI;
+            if (longitude < 0.0) {
+                longitude += TWO_PI;
+            }
         }
-      }
-      return (
-        (longitude > west ||
-          equalsEpsilon(longitude, west, EPSILON14)) &&
+        return (
+            (longitude > west ||
+            equalsEpsilon(longitude, west, EPSILON14)) &&
         (longitude < east ||
-          equalsEpsilon(longitude, east, EPSILON14)) &&
+            equalsEpsilon(longitude, east, EPSILON14)) &&
         latitude >= rectangle.south &&
         latitude <= rectangle.north
-      );
+        );
     }
 
 

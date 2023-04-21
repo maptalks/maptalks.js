@@ -322,8 +322,8 @@ describe('add analysis', () => {
             skylineAnalysis.addTo(gllayer);
             setTimeout(function() {
                 skylineAnalysis.remove();
-                    const pixel = pickPixel(map, 145, 36, 1, 1);
-                    expect(pixelMatch([143, 29, 0, 255], pixel)).to.be.eql(false);//无天际线颜色
+                const pixel = pickPixel(map, 145, 36, 1, 1);
+                expect(pixelMatch([143, 29, 0, 255], pixel)).to.be.eql(false);//无天际线颜色
                 done();
             }, 100);
         });
@@ -412,15 +412,15 @@ describe('add analysis', () => {
         marker.on('load', () => {
             const crosscutAnalysis = new maptalks.CrossCutAnalysis({
                 cutLine: [[ -0.000847, 0.000815],
-                [-0.001351, 0.0000965],
-                [-0.000418, -0.000568]],
+                    [-0.001351, 0.0000965],
+                    [-0.000418, -0.000568]],
                 cutLineColor: [0.0, 1.0, 0.0, 1.0]
-              }).addTo(gllayer);
+            }).addTo(gllayer);
             crosscutAnalysis.addTo(gllayer);
             setTimeout(function() {
                 crosscutAnalysis.update('cutLine', [[ -0.00084, 0.00082],
-                [-0.001355, 0.0000960],
-                [-0.00042, -0.00057]]);
+                    [-0.001355, 0.0000960],
+                    [-0.00042, -0.00057]]);
                 done();
             }, 500);
         });
@@ -665,9 +665,9 @@ describe('add analysis', () => {
                 invisibleColor: [1, 0, 0, 1]
             }).addTo(gllayer);
             insightAnalysis.setLines([{
-                    from: [center.x + 0.002, center.y - 0.001, 50],
-                    to: [center.x - 0.001, center.y + 0.0015, 50]
-                }
+                from: [center.x + 0.002, center.y - 0.001, 50],
+                to: [center.x - 0.001, center.y + 0.0015, 50]
+            }
             ]);
             setTimeout(function() {
                 const { inSightLine, intersects } = insightAnalysis.getIntersetction()[0];

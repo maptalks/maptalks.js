@@ -296,7 +296,7 @@ describe('MultiGLTFMarker', () => {
             }, 100);
         });
     });
-    
+
     it('add data with outline and render correctly', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
@@ -439,7 +439,7 @@ describe('MultiGLTFMarker', () => {
                 expect(hasColor(pixel1)).to.be.eql(false);//增加高度后，没有颜色
                 const pixel2 = pickPixel(map, map.width / 2, 10, 1, 1);
                 expect(hasColor(pixel2)).to.be.eql(true);
-               done();
+                done();
             }, 100);
         });
     });

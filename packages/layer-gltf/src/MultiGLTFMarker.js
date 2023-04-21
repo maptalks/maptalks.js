@@ -127,8 +127,8 @@ export default class MultiGLTFMarker extends GLTFMarker {
 
     getCenter() {
         let sumX = 0,
-        sumY = 0,
-        counter = 0;
+            sumY = 0,
+            counter = 0;
         for (let i = 0, l = this._data.length; i < l; i++) {
             const coordinate = this._data[i].coordinates;
             sumX += coordinate.x;

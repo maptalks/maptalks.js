@@ -90,7 +90,7 @@ class WeatherPainter {
         } else {
             delete this._weatherShader.shaderDefines['HAS_SNOW'];
             meshes.forEach(mesh => {
-               delete mesh.defines['HAS_SNOW'];
+                delete mesh.defines['HAS_SNOW'];
             });
         }
         if (this.isEnableFog()) {

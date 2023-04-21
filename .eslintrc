@@ -16,5 +16,6 @@
     "Zlib": true
   },
   "rules": {
+    "indent": "error"
   }
 }

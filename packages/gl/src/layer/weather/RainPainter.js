@@ -7,9 +7,9 @@ const DEFALUT_SCALE = [0.03, 0.03, 0.03];
 const TEMP_ROTATE = [], TEMP_SCALE = [], TEMP_MAT = [];
 const DEFAULT_COLOR = [1, 1, 1];
 const DEFAULT_EXTENT = {
-    min:[-1200, -1200, 0],
-    max:[1200, 1200, 1000]
-}, DEFAULT_ZOOM = 16.685648411389433, extent = {min: [], max: []};
+        min:[-1200, -1200, 0],
+        max:[1200, 1200, 1000]
+    }, DEFAULT_ZOOM = 16.685648411389433, extent = {min: [], max: []};
 const Y_UP_TO_Z_UP = mat4.fromRotationTranslation([], quat.fromEuler([], 90, 0, 0), [0, 0, 0]);
 
 class RainPainer {
@@ -98,7 +98,7 @@ class RainPainer {
         const box = this._getFixExtent();
         // const box = DEFAULT_EXTENT;
         const rainDensity = this._rainDensity = rainConfig.density;
-        
+
         const rainWidth = this._rainWidth = rainConfig.rainWidth || 1;
         const rainHeight = this._rainHeight = rainConfig.rainHeight || 1;
         const vertices = [];
@@ -310,44 +310,44 @@ class RainPainer {
 class Clock {
     constructor(autoStart) {
         this.autoStart = (autoStart !== undefined ) ? autoStart : true;
-		this.startTime = 0;
-		this.oldTime = 0;
-		this.elapsedTime = 0;
-		this.running = false;
+        this.startTime = 0;
+        this.oldTime = 0;
+        this.elapsedTime = 0;
+        this.running = false;
     }
 
     start () {
-		this.startTime = ( typeof performance === 'undefined' ? Date : performance ).now();
-		this.oldTime = this.startTime;
-		this.elapsedTime = 0;
-		this.running = true;
-	}
+        this.startTime = ( typeof performance === 'undefined' ? Date : performance ).now();
+        this.oldTime = this.startTime;
+        this.elapsedTime = 0;
+        this.running = true;
+    }
 
-	stop () {
-		this.getElapsedTime();
-		this.running = false;
-		this.autoStart = false;
-	}
+    stop () {
+        this.getElapsedTime();
+        this.running = false;
+        this.autoStart = false;
+    }
 
-	getElapsedTime () {
-		this.getDelta();
-		return this.elapsedTime;
-	}
+    getElapsedTime () {
+        this.getDelta();
+        return this.elapsedTime;
+    }
 
-	getDelta () {
-		let diff = 0;
-		if ( this.autoStart && ! this.running ) {
-			this.start();
-			return 0;
-		}
+    getDelta () {
+        let diff = 0;
+        if ( this.autoStart && ! this.running ) {
+            this.start();
+            return 0;
+        }
 
-		if ( this.running ) {
-			let newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
-			diff = ( newTime - this.oldTime ) / 1000;
-			this.oldTime = newTime;
-			this.elapsedTime += diff;
-		}
-	}
+        if ( this.running ) {
+            let newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
+            diff = ( newTime - this.oldTime ) / 1000;
+            this.oldTime = newTime;
+            this.elapsedTime += diff;
+        }
+    }
 }
 
 export default RainPainer;

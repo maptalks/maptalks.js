@@ -142,7 +142,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     needToRedraw() {
         if (super.needToRedraw()) {
-           return true;
+            return true;
         }
         const geoList = this.layer.getGeometries();
         for (let i = 0; i < geoList.length; i++) {
@@ -619,7 +619,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             this._picking.render(meshes, uniforms, true);
             this._needRefreshPicking = false;
         }
-        const { meshId, pickingId, point } = this._picking.pick(
+        const { meshId, pickingId, point, coordinate } = this._picking.pick(
             x,   // 屏幕坐标 x轴的值
             y,  // 屏幕坐标 y轴的值
             options.tolerance || 3,
@@ -636,7 +636,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         const markerId = this._squeezeTarget(pickingId);
         const target = this.layer._getMarkerMap()[markerId];
         const index = pickingId - markerId;
-        return { meshId, target, pickingId, point, index };
+        return { meshId, target, pickingId, point, coordinate, index };
     }
     //根据pickingId,查找其所属于哪个marker, 返回marker的markerId, 其中pickingId是连续的，但如果图层上存在groupmarker, markerId不一定连续
     //pickingId : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

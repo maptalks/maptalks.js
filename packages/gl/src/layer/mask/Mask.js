@@ -12,6 +12,7 @@ const DEFAULT_SYMBOL = {
     polygonFill: [255, 0, 0],
     polygonOpacity: 0.8
 };
+const TRIANGLE_POINT_A = [], TRIANGLE_POINT_B = [], TRIANGLE = [];
 const TEMP_COORD = new Coordinate(0, 0);
 export default class Mask extends Polygon {
     getMode() {
@@ -118,7 +119,7 @@ export default class Mask extends Polygon {
 
     _dispose() {
         if (!this._mesh) {
-            return; 
+            return;
         }
         if (this._mesh.material) {
             this._mesh.material.dispose();
@@ -130,10 +131,25 @@ export default class Mask extends Polygon {
         delete this._mesh;
     }
 
-    containsPoint(coordinate, layer) {
-        const coordinates = this.getCoordinates();
-        const polygon = new Polygon(coordinates);
-        polygon.addTo(layer);
-        return polygon.containsPoint(coordinate);
+    containsPoint(coordinate) {
+        const coordinates = this.getShell();
+        const maskArea = this.getArea();
+        let totalArea = 0;
+        for (let i = 0; i < coordinates.length; i++) {
+            TRIANGLE_POINT_A[0] = coordinates[i].x;
+            TRIANGLE_POINT_A[1] = coordinates[i].y;
+            const index = i + 1 >= coordinates.length ? 0 : i + 1;
+            TRIANGLE_POINT_B[0] = coordinates[index].x;
+            TRIANGLE_POINT_B[1] = coordinates[index].y;
+            TRIANGLE[0] = coordinate;
+            TRIANGLE[1] = TRIANGLE_POINT_A;
+            TRIANGLE[2] = TRIANGLE_POINT_B;
+            const area = new Polygon(TRIANGLE).getArea();
+            totalArea += area;
+        }
+        if (totalArea > maskArea) {
+            return false;
+        }
+        return true;
     }
 }

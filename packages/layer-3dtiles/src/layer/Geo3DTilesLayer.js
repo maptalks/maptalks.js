@@ -510,7 +510,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         tileset.root.baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
         const isRealspace = url.indexOf("realspace/") > -1;
         if (parent._level === 0 && (tileset.asset && tileset.asset.s3mType && isRealspace || service.isSuperMapiServer)) {
-           tileset.root.baseUrl += 'data/path/';
+            tileset.root.baseUrl += 'data/path/';
         }
         const isI3S = tileset.asset.i3s;
         const isS3M = !!tileset.asset.s3mType;
@@ -819,8 +819,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * @param  {Object} [options.tolerance=0] - identify tolerance in pixel
      * @return {Object[]} data identified
      */
-    identifyAtPoint(point, options = {}, identifyCoordinate) {
-        if (!identifyCoordinate) {
+    identifyAtPoint(point, options = {}) {
+        if (!options['excludeMasks']) {
             const identifyMasks = this.identifyMask(point, options);
             if (identifyMasks && identifyMasks.length) {
                 return identifyMasks;

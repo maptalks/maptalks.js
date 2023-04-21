@@ -420,7 +420,7 @@ export default class MeshPainter {
             delete this._pntsShader;
         }
         if (this._regionShader) {
-             this._regionShader.dispose();
+            this._regionShader.dispose();
             delete this._regionShader;
         }
 
@@ -639,7 +639,7 @@ export default class MeshPainter {
             } else if (INSTANCE_ROTATION) {
                 getItemAtBufferData(instanceRotMat3, INSTANCE_ROTATION, index);
                 quat.fromMat3(quaternion, instanceRotMat3);
-             } else  {
+            } else  {
                 quat.identity(quaternion);
             }
             if (SCALE) {
@@ -789,9 +789,9 @@ export default class MeshPainter {
             if (compressUniforms) {
                 for (const u in compressUniforms) {
                     mesh.setUniform(u, compressUniforms[u]);
-                }    
+                }
             }
-            
+
             if (maxPrjExtent) {
                 defines['USE_MAX_EXTENT'] = 1;
                 mesh.setUniform('maxPrjExtent', maxPrjExtent);
@@ -1059,7 +1059,7 @@ export default class MeshPainter {
             const lights = this.getMap().getLightManager();
             const mapAmbient = lights && lights.getAmbientLight();
             if (ambientLight && (!mapAmbient || mapAmbient.color) && environmentExposure === undefined) {
-                 const ambientValue = mapAmbient && mapAmbient.color ? mapAmbient.color[0] : 0.2;
+                const ambientValue = mapAmbient && mapAmbient.color ? mapAmbient.color[0] : 0.2;
                 // 老的ambientLight设置的兼容性代码
                 environmentExposure = ambientLight[0] / ambientValue;
             }
