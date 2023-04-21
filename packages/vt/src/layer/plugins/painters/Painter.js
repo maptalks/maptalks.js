@@ -315,7 +315,7 @@ class Painter {
         meshes = meshes.filter(m => this.isMeshVisible(m));
         if (isRenderingTerrainVector) {
             // 只绘制加载了地形数据的mesh
-            meshes = meshes.filter(m => m.geometry && m.properties.tile.terrainTileInfos);
+            meshes = meshes.filter(m => m.geometry && m.geometry.data.aTerrainAltitude);
         }
 
         const isEnableBloom = !!(context && context.bloom);
@@ -1148,7 +1148,8 @@ class Painter {
         if (!tile.completeTerrainQuery && this._terrainAltitudeCache && this._terrainAltitudeCache.has(id)) {
             const cachedAltitude = this._terrainAltitudeCache.getAndRemove(id);
             this._terrainAltitudeCache.add(id, cachedAltitude);
-            aTerrainAltitude.set(cachedAltitude);
+            aTerrainAltitude.set(cachedAltitude.altitudes);
+            tile.terrainTileInfos = cachedAltitude.terrainTileInfos;
             aTerrainAltitude.dirty = true;
             tile.completeTerrainQuery = true;
             return;
@@ -1244,7 +1245,7 @@ class Painter {
             if (!this._terrainAltitudeCache) {
                 this._terrainAltitudeCache = new maptalks.LRUCache(this.layer.options['maxCacheSize'] * 4);
             }
-            this._terrainAltitudeCache.add(id, aTerrainAltitude);
+            this._terrainAltitudeCache.add(id, { altitude: aTerrainAltitude, terrainTileInfos });
         }
     }
 }
