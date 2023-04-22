@@ -12,7 +12,7 @@ const DEFAULT_SYMBOL = {
     polygonFill: [255, 0, 0],
     polygonOpacity: 0.8
 };
-const TRIANGLE_POINT_A = [], TRIANGLE_POINT_B = [], TRIANGLE = [];
+const TRIANGLE_POINT_A = new Coordinate(0, 0), TRIANGLE_POINT_B = new Coordinate(0, 0), TRIANGLE = [];
 const TEMP_COORD = new Coordinate(0, 0);
 export default class Mask extends Polygon {
     getMode() {
@@ -133,23 +133,52 @@ export default class Mask extends Polygon {
 
     containsPoint(coordinate) {
         const coordinates = this.getShell();
-        const maskArea = this.getArea();
+        const maskArea = this._calMaskArea();
         let totalArea = 0;
         for (let i = 0; i < coordinates.length; i++) {
-            TRIANGLE_POINT_A[0] = coordinates[i].x;
-            TRIANGLE_POINT_A[1] = coordinates[i].y;
+            TRIANGLE_POINT_A.x = coordinates[i].x;
+            TRIANGLE_POINT_A.y = coordinates[i].y;
             const index = i + 1 >= coordinates.length ? 0 : i + 1;
-            TRIANGLE_POINT_B[0] = coordinates[index].x;
-            TRIANGLE_POINT_B[1] = coordinates[index].y;
-            TRIANGLE[0] = coordinate;
+            TRIANGLE_POINT_B.x = coordinates[index].x;
+            TRIANGLE_POINT_B.y = coordinates[index].y;
+            TEMP_COORD.x = coordinate[0];
+            TEMP_COORD.y = coordinate[1];
+            TRIANGLE[0] = TEMP_COORD;
             TRIANGLE[1] = TRIANGLE_POINT_A;
             TRIANGLE[2] = TRIANGLE_POINT_B;
-            const area = new Polygon(TRIANGLE).getArea();
+            const area = this._calArea(TRIANGLE);
             totalArea += area;
         }
-        if (totalArea > maskArea) {
+        if (Math.abs(totalArea - maskArea) > 1e-8) {
             return false;
         }
         return true;
     }
+
+    _calMaskArea() {
+        const shell = this.getShell();
+        const holes = this.getHoles();
+        let area = this._calArea(shell);
+        for (let i = 0; i < holes.length; i++) {
+            area -= this._calArea(holes[i]);
+        }
+        return area;
+    }
+
+    _calArea(coordinates) {
+        const map = this.getMap();
+        let area = 0
+        const point0 = map.coordinateToPointAtRes(coordinates[0], map.getGLRes());
+        for (let i = 1; i < coordinates.length - 1; i++) {
+            const point1 = map.coordinateToPointAtRes(coordinates[i], map.getGLRes());
+            const point2 = map.coordinateToPointAtRes(coordinates[i + 1], map.getGLRes());
+            area += Math.abs(det(point0, point1, point2)) / 2;
+        }
+        return area;
+    }
+}
+
+//叉乘
+function det(p0, p1, p2) {
+    return (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
 }

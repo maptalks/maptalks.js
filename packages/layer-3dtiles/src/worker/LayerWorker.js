@@ -357,9 +357,9 @@ export default class BaseLayerWorker {
             iterateBufferData(data.POSITION, (vertex, idx) => {
                 vec3.add(v, vertex, rtcCenter);
                 eastNorthUpToFixedFrame(
-                  v,
-                  null,
-                  vertexRotMat
+                    v,
+                    null,
+                    vertexRotMat
                 );
                 mat3.fromMat4(vertexRotMa3, vertexRotMat);
                 const vertexMat3 = instanceRotation.subarray(idx * 9, (idx + 1) * 9);
@@ -676,7 +676,7 @@ export default class BaseLayerWorker {
         const projCenter = maptalksRTC.projCenter;
 
         const isTransformIdentity = transform && mat4.exactEquals(IDENTITY_MATRIX, transform);
-                // debugger
+        // debugger
         // let projPosition = new Array(array.length);
         // let max = 0;
         const min = vertices.min = vertices.min || [];
@@ -719,7 +719,7 @@ export default class BaseLayerWorker {
             }
             project(proj, degree, projection);
             // height = cartesian[2] ? projMeter(degree, proj, degree[2], projection) : 0;
-            
+
             if (vertex instanceof Float32Array) {
                 vertex[0] = proj[0] - projCenter[0];
                 vertex[1] = proj[1] - projCenter[1];

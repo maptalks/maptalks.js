@@ -84,7 +84,7 @@ describe('render specs', () => {
         [108.95766927615637, 34.21766446103831],
         [108.95802151065914, 34.217669278472016],
         [108.95802191505629, 34.21794493851476]
-    ]; 
+    ];
     const symbol = {
         polygonFill: "#f00",
         polygonOpacity: 0.8
@@ -160,7 +160,7 @@ describe('render specs', () => {
         });
     }).timeout(10000);
 
-    
+
     it('color mask', done => {
         const layer = add3DTilesLayer();
         layer.once('loadtileset', () => {
@@ -192,7 +192,7 @@ describe('render specs', () => {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
                 assert(pixelMatch([53, 63, 81, 255], pixel, 50) === true);
                 done();
-            }, 1000);
+            }, 1200);
         });
     }).timeout(10000);
 

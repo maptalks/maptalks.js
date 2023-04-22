@@ -12,11 +12,11 @@ export default class Rectangle {
 
     static contains(rectangle, cartographic) {
 
-        var longitude = cartographic[0];
-        var latitude = cartographic[1];
+        let longitude = cartographic[0];
+        const latitude = cartographic[1];
 
-        var west = rectangle.west;
-        var east = rectangle.east;
+        const west = rectangle.west;
+        let east = rectangle.east;
 
         if (east < west) {
             east += TWO_PI;

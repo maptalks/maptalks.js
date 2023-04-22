@@ -29,9 +29,9 @@ describe('render specs', () => {
             center: center || [0, 0],
             // centerCross: true
             baseLayer: new maptalks.TileLayer('base', {
-              urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-              subdomains: ['a','b','c','d'],
-              attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: ['a','b','c','d'],
+                attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
             }),
         };
         map = new maptalks.Map(container, option);
@@ -1385,7 +1385,7 @@ describe('render specs', () => {
         });
 
         it('Cesium3DTiles/PointCloud/BatchedWithBatchTable', done => {
-             const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+            const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {
@@ -1415,7 +1415,7 @@ describe('render specs', () => {
         });
 
         it('Cesium3DTiles/PointCloud/BatchedWithBatchTableBinary', done => {
-             const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTableBinary';
+            const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTableBinary';
             const layer = new Geo3DTilesLayer('3d-tiles', {
                 services : [
                     {

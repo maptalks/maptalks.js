@@ -137,28 +137,28 @@ const scratchPPrime = [];
 //from Cesium's OrientedBoundingBox.distanceSquaredTo
 function distanceSquaredTo(center, halfAxes, cartesian) {
     // See Geometric Tools for Computer Graphics 10.4.2
-    var offset = vec3.subtract(scratchOffset, cartesian, center);
+    let offset = vec3.subtract(scratchOffset, cartesian, center);
 
     // var halfAxes = halfAxes;
-    var u = getMatrix3Column(scratchCartesianU, halfAxes, 0);
-    var v = getMatrix3Column(scratchCartesianV, halfAxes, 1);
-    var w = getMatrix3Column(scratchCartesianW, halfAxes, 2);
+    let u = getMatrix3Column(scratchCartesianU, halfAxes, 0);
+    let v = getMatrix3Column(scratchCartesianV, halfAxes, 1);
+    let w = getMatrix3Column(scratchCartesianW, halfAxes, 2);
 
-    var uHalf = vec3.len(u);
-    var vHalf = vec3.len(v);
-    var wHalf = vec3.len(w);
+    let uHalf = vec3.len(u);
+    let vHalf = vec3.len(v);
+    let wHalf = vec3.len(w);
 
     vec3.normalize(u, u);
     vec3.normalize(v, v);
     vec3.normalize(w, w);
 
-    var pPrime = scratchPPrime;
+    let pPrime = scratchPPrime;
     pPrime[0] = vec3.dot(offset, u);
     pPrime[1] = vec3.dot(offset, v);
     pPrime[2] = vec3.dot(offset, w);
 
-    var distanceSquared = 0.0;
-    var d;
+    let distanceSquared = 0.0;
+    let d;
 
     if (pPrime[0] < -uHalf) {
         d = pPrime[0] + uHalf;

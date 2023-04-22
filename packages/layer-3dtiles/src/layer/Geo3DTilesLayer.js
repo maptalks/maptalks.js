@@ -5,7 +5,7 @@
 import * as maptalks from 'maptalks';
 import { vec3, mat3, mat4, MaskLayerMixin } from '@maptalks/gl';
 import { intersectsSphere, intersectsBox, intersectsOrientedBox } from 'frustum-intersects';
-import { isFunction, extend, toRadian, toDegree, getAbsoluteURL, isBase64 } from '../common/Util';
+import { isFunction, extend, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
 import { DEFAULT_MAXIMUMSCREENSPACEERROR } from '../common/Constants';
 import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
 import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
@@ -820,10 +820,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
      * @return {Object[]} data identified
      */
     identifyAtPoint(point, options = {}) {
+        const results = [];
         if (!options['excludeMasks']) {
             const identifyMasks = this.identifyMask(point, options);
             if (identifyMasks && identifyMasks.length) {
-                return identifyMasks;
+                pushIn(results, identifyMasks);
             }
         }
         const map = this.getMap();
@@ -832,7 +833,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return [];
         }
         const dpr = map.getDevicePixelRatio();
-        return renderer.pick(point.x * dpr, point.y * dpr, options);
+        const picked = renderer.pick(point.x * dpr, point.y * dpr, options);
+        pushIn(results, picked);
+        return results;
     }
 
     getCurrentBatchIDs() {

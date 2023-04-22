@@ -19,7 +19,7 @@ class Plane {
     }
 
     static fromPointNormal(point, normal, result) {
-        var distance = -vec3.dot(normal, point);
+        const distance = -vec3.dot(normal, point);
 
         vec3.copy(result.normal, normal);
         result.distance = distance;
@@ -62,60 +62,60 @@ export default class TileBoundingRegion {
     }
 
     distanceToCamera(cameraCartesianPosition, cameraCartographicPosition) {
-        var result = 0.0;
+        let result = 0.0;
         if (!Rectangle.contains(this.rectangle, cameraCartographicPosition)) {
-            var southwestCornerCartesian = this.southwestCornerCartesian;
-            var northeastCornerCartesian = this.northeastCornerCartesian;
-            var westNormal = this.westNormal;
-            var southNormal = this.southNormal;
-            var eastNormal = this.eastNormal;
-            var northNormal = this.northNormal;
+            const southwestCornerCartesian = this.southwestCornerCartesian;
+            const northeastCornerCartesian = this.northeastCornerCartesian;
+            const westNormal = this.westNormal;
+            const southNormal = this.southNormal;
+            const eastNormal = this.eastNormal;
+            const northNormal = this.northNormal;
 
-        // if (frameState.mode !== SceneMode.SCENE3D) {
-        //     southwestCornerCartesian = frameState.mapProjection.project(
-        //         Rectangle.southwest(this.rectangle),
-        //         southwestCornerScratch
-        //     );
-        //     southwestCornerCartesian.z = southwestCornerCartesian.y;
-        //     southwestCornerCartesian.y = southwestCornerCartesian.x;
-        //     southwestCornerCartesian.x = 0.0;
-        //     northeastCornerCartesian = frameState.mapProjection.project(
-        //         Rectangle.northeast(this.rectangle),
-        //         northeastCornerScratch
-        //     );
-        //     northeastCornerCartesian.z = northeastCornerCartesian.y;
-        //     northeastCornerCartesian.y = northeastCornerCartesian.x;
-        //     northeastCornerCartesian.x = 0.0;
-        //     westNormal = negativeUnitY;
-        //     eastNormal = Cartesian3.UNIT_Y;
-        //     southNormal = negativeUnitZ;
-        //     northNormal = Cartesian3.UNIT_Z;
-        // }
+            // if (frameState.mode !== SceneMode.SCENE3D) {
+            //     southwestCornerCartesian = frameState.mapProjection.project(
+            //         Rectangle.southwest(this.rectangle),
+            //         southwestCornerScratch
+            //     );
+            //     southwestCornerCartesian.z = southwestCornerCartesian.y;
+            //     southwestCornerCartesian.y = southwestCornerCartesian.x;
+            //     southwestCornerCartesian.x = 0.0;
+            //     northeastCornerCartesian = frameState.mapProjection.project(
+            //         Rectangle.northeast(this.rectangle),
+            //         northeastCornerScratch
+            //     );
+            //     northeastCornerCartesian.z = northeastCornerCartesian.y;
+            //     northeastCornerCartesian.y = northeastCornerCartesian.x;
+            //     northeastCornerCartesian.x = 0.0;
+            //     westNormal = negativeUnitY;
+            //     eastNormal = Cartesian3.UNIT_Y;
+            //     southNormal = negativeUnitZ;
+            //     northNormal = Cartesian3.UNIT_Z;
+            // }
 
-            var vectorFromSouthwestCorner = vec3.subtract(
+            const vectorFromSouthwestCorner = vec3.subtract(
                 vectorScratch,
                 cameraCartesianPosition,
                 southwestCornerCartesian
             );
-            var distanceToWestPlane = vec3.dot(
+            const distanceToWestPlane = vec3.dot(
                 vectorFromSouthwestCorner,
                 westNormal
             );
-            var distanceToSouthPlane = vec3.dot(
+            const distanceToSouthPlane = vec3.dot(
                 vectorFromSouthwestCorner,
                 southNormal
             );
 
-            var vectorFromNortheastCorner = vec3.subtract(
+            const vectorFromNortheastCorner = vec3.subtract(
                 vectorScratch,
                 cameraCartesianPosition,
                 northeastCornerCartesian
             );
-            var distanceToEastPlane = vec3.dot(
+            const distanceToEastPlane = vec3.dot(
                 vectorFromNortheastCorner,
                 eastNormal
             );
-            var distanceToNorthPlane = vec3.dot(
+            const distanceToNorthPlane = vec3.dot(
                 vectorFromNortheastCorner,
                 northNormal
             );
@@ -133,24 +133,24 @@ export default class TileBoundingRegion {
             }
         }
 
-        var cameraHeight;
-        var minimumHeight;
-        var maximumHeight;
-      // if (frameState.mode === SceneMode.SCENE3D) {
+        let cameraHeight;
+        let minimumHeight;
+        let maximumHeight;
+        // if (frameState.mode === SceneMode.SCENE3D) {
         cameraHeight = cameraCartographicPosition[2];
         minimumHeight = this.minimumHeight;
         maximumHeight = this.maximumHeight;
-      // } else {
-      //   cameraHeight = cameraCartesianPosition.x;
-      //   minimumHeight = 0.0;
-      //   maximumHeight = 0.0;
-      // }
+        // } else {
+        //   cameraHeight = cameraCartesianPosition.x;
+        //   minimumHeight = 0.0;
+        //   maximumHeight = 0.0;
+        // }
 
         if (cameraHeight > maximumHeight) {
-            var distanceAboveTop = cameraHeight - maximumHeight;
+            const distanceAboveTop = cameraHeight - maximumHeight;
             result += distanceAboveTop * distanceAboveTop;
         } else if (cameraHeight < minimumHeight) {
-            var distanceBelowBottom = minimumHeight - cameraHeight;
+            const distanceBelowBottom = minimumHeight - cameraHeight;
             result += distanceBelowBottom * distanceBelowBottom;
         }
 
@@ -172,13 +172,13 @@ export default class TileBoundingRegion {
         cartographicScratch[0] = rectangle.west;
         cartographicScratch[1] = (rectangle.south + rectangle.north) * 0.5;
         cartographicScratch[2] = 0.0;
-        var westernMidpointCartesian = cartographicToCartesian(
+        const westernMidpointCartesian = cartographicToCartesian(
             cartographicScratch,
             westernMidpointScratch
         );
 
         // Compute the normal of the plane on the western edge of the tile.
-        var westNormal = vec3.cross(
+        const westNormal = vec3.cross(
             cartesian3Scratch,
             westernMidpointCartesian,
             UNIT_Z
@@ -187,85 +187,85 @@ export default class TileBoundingRegion {
 
         // The middle latitude on the eastern edge.
         cartographicScratch[0] = rectangle.east;
-        var easternMidpointCartesian = cartographicToCartesian(
+        const easternMidpointCartesian = cartographicToCartesian(
             cartographicScratch,
             easternMidpointScratch
         );
 
         // Compute the normal of the plane on the eastern edge of the tile.
-        var eastNormal = vec3.cross(
+        const eastNormal = vec3.cross(
             cartesian3Scratch,
             UNIT_Z,
             easternMidpointCartesian
         );
         vec3.normalize(tileBB.eastNormal, eastNormal);
 
-      // Compute the normal of the plane bounding the southern edge of the tile.
-        var westVector = vec3.subtract(
+        // Compute the normal of the plane bounding the southern edge of the tile.
+        const westVector = vec3.subtract(
             cartesian3Scratch,
             westernMidpointCartesian,
             easternMidpointCartesian,
         );
-        var eastWestNormal = vec3.normalize(eastWestNormalScratch, westVector);
+        const eastWestNormal = vec3.normalize(eastWestNormalScratch, westVector);
 
-        var south = rectangle.south;
-        var southSurfaceNormal;
+        const south = rectangle.south;
+        let southSurfaceNormal;
 
-      if (south > 0.0) {
+        if (south > 0.0) {
         // Compute a plane that doesn't cut through the tile.
-        cartographicScratch[0] = (rectangle.west + rectangle.east) * 0.5;
-        cartographicScratch[1] = south;
-        var southCenterCartesian = cartographicToCartesian(
-            cartographicScratch,
-            rayOrigin
+            cartographicScratch[0] = (rectangle.west + rectangle.east) * 0.5;
+            cartographicScratch[1] = south;
+            const southCenterCartesian = cartographicToCartesian(
+                cartographicScratch,
+                rayOrigin
+            );
+            vec3.copy(rayDirection, eastWestNormal);
+            const westPlane = Plane.fromPointNormal(
+                tileBB.southwestCornerCartesian,
+                tileBB.westNormal,
+                planeScratch
+            );
+            // Find a point that is on the west and the south planes
+            rayPlane(
+                rayOrigin,
+                rayDirection,
+                westPlane,
+                tileBB.southwestCornerCartesian
+            );
+            southSurfaceNormal = geodeticSurfaceNormal(
+                southCenterCartesian,
+                cartesian3Scratch2
+            );
+        } else {
+            southSurfaceNormal = geodeticSurfaceNormalCartographic(
+                Rectangle.southeast(rectangle, cartographicScratch2),
+                cartesian3Scratch2
+            );
+        }
+        const southNormal = vec3.cross(
+            cartesian3Scratch3,
+            southSurfaceNormal,
+            westVector
         );
-        vec3.copy(rayDirection, eastWestNormal);
-        var westPlane = Plane.fromPointNormal(
-            tileBB.southwestCornerCartesian,
-            tileBB.westNormal,
-            planeScratch
-        );
-        // Find a point that is on the west and the south planes
-        rayPlane(
-            rayOrigin,
-            rayDirection,
-            westPlane,
-            tileBB.southwestCornerCartesian
-        );
-        southSurfaceNormal = geodeticSurfaceNormal(
-          southCenterCartesian,
-          cartesian3Scratch2
-        );
-      } else {
-        southSurfaceNormal = geodeticSurfaceNormalCartographic(
-          Rectangle.southeast(rectangle, cartographicScratch2),
-          cartesian3Scratch2
-        );
-      }
-      var southNormal = vec3.cross(
-          cartesian3Scratch3,
-          southSurfaceNormal,
-          westVector
-      );
-      vec3.normalize(tileBB.southNormal, southNormal);
+        vec3.normalize(tileBB.southNormal, southNormal);
 
         // Compute the normal of the plane bounding the northern edge of the tile.
-        var north = rectangle.north;
-        var northSurfaceNormal;
+        const north = rectangle.north;
+        let northSurfaceNormal;
         if (north < 0.0) {
             // Compute a plane that doesn't cut through the tile.
             cartographicScratch[0] = (rectangle.west + rectangle.east) * 0.5;
             cartographicScratch[1] = north;
-            var northCenterCartesian = cartographicToCartesian(
-              cartographicScratch,
-              rayOrigin
+            const northCenterCartesian = cartographicToCartesian(
+                cartographicScratch,
+                rayOrigin
             );
             // Cartesian3.negate(eastWestNormal, rayDirection);
             vec3.scale(rayDirection, eastWestNormal, -1);
-            var eastPlane = Plane.fromPointNormal(
-              tileBB.northeastCornerCartesian,
-              tileBB.eastNormal,
-              planeScratch
+            const eastPlane = Plane.fromPointNormal(
+                tileBB.northeastCornerCartesian,
+                tileBB.eastNormal,
+                planeScratch
             );
             // Find a point that is on the east and the north planes
             rayPlane(
@@ -275,8 +275,8 @@ export default class TileBoundingRegion {
                 tileBB.northeastCornerCartesian
             );
             northSurfaceNormal = geodeticSurfaceNormal(
-              northCenterCartesian,
-              cartesian3Scratch2
+                northCenterCartesian,
+                cartesian3Scratch2
             );
         } else {
             northSurfaceNormal = geodeticSurfaceNormalCartographic(
@@ -284,7 +284,7 @@ export default class TileBoundingRegion {
                 cartesian3Scratch2
             );
         }
-        var northNormal = vec3.cross(
+        const northNormal = vec3.cross(
             cartesian3Scratch3,
             westVector,
             northSurfaceNormal,
@@ -294,22 +294,22 @@ export default class TileBoundingRegion {
 }
 
 function rayPlane(rayOrigin, rayDirection, plane, result) {
-  var origin = rayOrigin;
-  var direction = rayDirection;
-  var normal = plane.normal;
-  var denominator = vec3.dot(normal, direction);
+    const origin = rayOrigin;
+    const direction = rayDirection;
+    const normal = plane.normal;
+    const denominator = vec3.dot(normal, direction);
 
-  if (Math.abs(denominator) < EPSILON15) {
+    if (Math.abs(denominator) < EPSILON15) {
     // Ray is parallel to plane.  The ray may be in the polygon's plane.
-    return undefined;
-  }
+        return undefined;
+    }
 
-  var t = (-plane.distance - vec3.dot(normal, origin)) / denominator;
+    const t = (-plane.distance - vec3.dot(normal, origin)) / denominator;
 
-  if (t < 0) {
-    return undefined;
-  }
+    if (t < 0) {
+        return undefined;
+    }
 
-  result = vec3.scale(result, direction, t);
-  return vec3.add(result, origin, result);
+    result = vec3.scale(result, direction, t);
+    return vec3.add(result, origin, result);
 }

@@ -124,7 +124,7 @@ const extension = {
                     'type': 35678
                 },
                 "uTexture2": {
-                   "type": 35678
+                    "type": 35678
                 },
                 "uTexture1Width": {
                     "type": 5126

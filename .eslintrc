@@ -16,6 +16,7 @@
     "Zlib": true
   },
   "rules": {
-    "indent": "error"
+    "indent": "error",
+    "no-var": "error"
   }
 }

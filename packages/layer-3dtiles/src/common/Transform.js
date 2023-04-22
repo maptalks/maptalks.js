@@ -215,28 +215,28 @@ export function normalizeCartesian(out, a) {
 
 export function geodeticSurfaceNormal(origin, out) {
     vec3.multiply(
-    out,
-    origin,
-    wgs84OneOverRadiiSquared
-  );
-  return vec3.normalize(out, out);
+        out,
+        origin,
+        wgs84OneOverRadiiSquared
+    );
+    return vec3.normalize(out, out);
 }
 
 
 export function geodeticSurfaceNormalCartographic(
-  cartographic,
-  result
+    cartographic,
+    result
 ) {
-  var longitude = cartographic[0];
-  var latitude = cartographic[1];
-  var cosLatitude = Math.cos(latitude);
+    let longitude = cartographic[0];
+    let latitude = cartographic[1];
+    let cosLatitude = Math.cos(latitude);
 
-  var x = cosLatitude * Math.cos(longitude);
-  var y = cosLatitude * Math.sin(longitude);
-  var z = Math.sin(latitude);
+    let x = cosLatitude * Math.cos(longitude);
+    let y = cosLatitude * Math.sin(longitude);
+    let z = Math.sin(latitude);
 
-  result.x = x;
-  result.y = y;
-  result.z = z;
-  return vec3.normalize(result, result);
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return vec3.normalize(result, result);
 }

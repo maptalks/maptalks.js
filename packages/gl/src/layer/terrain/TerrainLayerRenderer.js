@@ -154,10 +154,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     renderSkin(skinLayer, tileInfo, tileImage, skinIndex) {
         const renderer = skinLayer.getRenderer();
         if (!renderer) {
-             return;
+            return;
         }
         if (!tileImage.skins) {
-             tileImage.skins = [];
+            tileImage.skins = [];
         }
         if (!tileImage.skinImages) {
             tileImage.skinImages = [];
@@ -231,7 +231,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 debugCanvas.getContext('2d').drawImage(texture, 0, 0);
             }
         }
-        
+
         let tex;
         if (!texture.destroy) {
             // 有destroy说明是个regl对象，例如fbo或texture，则直接用它作为纹理
@@ -254,7 +254,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             tex = texture;
         }
 
-        
+
         tileImage.skins[skinIndex] = tex;
         if (complete) {
             tileImage.skinStatus[skinIndex] = 1;
@@ -555,7 +555,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             image.terrainMesh.dispose();
         }
         delete image.skins;
-        delete image.skinStatus;        
+        delete image.skinStatus;
         delete image.skinTileIds;
         delete image.terrainMesh;
         delete image.mesh;
@@ -669,9 +669,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 const terrainData = this.tileCache.get(tileId);
                 // 如果当前瓦片找不到，则查询父级瓦片
                 if (terrainData) {
-                   this._fillAltitudeData(out.array, terrainData, extent2d, terrainSize);
-                   out.dirty = true;
-                   tiles[tileId] = 1;
+                    this._fillAltitudeData(out.array, terrainData, extent2d, terrainSize);
+                    out.dirty = true;
+                    tiles[tileId] = 1;
                 } else {
                     out.dirty = out.dirty || out.tiles[tileId] !== undefined;
                     if (out.tiles[tileId]) {

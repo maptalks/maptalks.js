@@ -6,7 +6,7 @@ import defaultValue from "./defaultValue.js";
  * @exports CesiumMath
  * @alias Math
  */
-var CesiumMath = {};
+let CesiumMath = {};
 
 
 /**
@@ -36,19 +36,19 @@ CesiumMath.RADIANS_PER_DEGREE = Math.PI / 180.0;
  * var d = Cesium.Math.equalsEpsilon(3699175.1634344, 3699175.2, Cesium.Math.EPSILON9); // false
  */
 CesiumMath.equalsEpsilon = function (
-  left,
-  right,
-  relativeEpsilon,
-  absoluteEpsilon
+    left,
+    right,
+    relativeEpsilon,
+    absoluteEpsilon
 ) {
 
-  relativeEpsilon = defaultValue(relativeEpsilon, 0.0);
-  absoluteEpsilon = defaultValue(absoluteEpsilon, relativeEpsilon);
-  var absDiff = Math.abs(left - right);
-  return (
-    absDiff <= absoluteEpsilon ||
+    relativeEpsilon = defaultValue(relativeEpsilon, 0.0);
+    absoluteEpsilon = defaultValue(absoluteEpsilon, relativeEpsilon);
+    let absDiff = Math.abs(left - right);
+    return (
+        absDiff <= absoluteEpsilon ||
     absDiff <= relativeEpsilon * Math.max(Math.abs(left), Math.abs(right))
-  );
+    );
 };
 
 
@@ -61,7 +61,7 @@ CesiumMath.equalsEpsilon = function (
  *          whichever is closer, if the value is outside the range.
  */
 CesiumMath.asinClamped = function (value) {
-  return Math.asin(CesiumMath.clamp(value, -1.0, 1.0));
+    return Math.asin(CesiumMath.clamp(value, -1.0, 1.0));
 };
 
 
@@ -74,7 +74,7 @@ CesiumMath.asinClamped = function (value) {
  * @returns {Number} The value clamped so that min <= value <= max.
  */
 CesiumMath.clamp = function (value, min, max) {
-  return value < min ? min : value > max ? max : value;
+    return value < min ? min : value > max ? max : value;
 };
 
 export default CesiumMath;

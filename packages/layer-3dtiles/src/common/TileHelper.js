@@ -163,72 +163,72 @@ export function readFeatureTableBatchTable(view, byteOffset, transferables) {
 }
 
 
-var vectorProductLocalFrame = {
-  up: {
-    south: "east",
-    north: "west",
-    west: "south",
-    east: "north",
-  },
-  down: {
-    south: "west",
-    north: "east",
-    west: "north",
-    east: "south",
-  },
-  south: {
-    up: "west",
-    down: "east",
-    west: "down",
-    east: "up",
-  },
-  north: {
-    up: "east",
-    down: "west",
-    west: "up",
-    east: "down",
-  },
-  west: {
-    up: "north",
-    down: "south",
-    north: "down",
-    south: "up",
-  },
-  east: {
-    up: "south",
-    down: "north",
-    north: "up",
-    south: "down",
-  },
+let vectorProductLocalFrame = {
+    up: {
+        south: "east",
+        north: "west",
+        west: "south",
+        east: "north",
+    },
+    down: {
+        south: "west",
+        north: "east",
+        west: "north",
+        east: "south",
+    },
+    south: {
+        up: "west",
+        down: "east",
+        west: "down",
+        east: "up",
+    },
+    north: {
+        up: "east",
+        down: "west",
+        west: "up",
+        east: "down",
+    },
+    west: {
+        up: "north",
+        down: "south",
+        north: "down",
+        south: "up",
+    },
+    east: {
+        up: "south",
+        down: "north",
+        north: "up",
+        south: "down",
+    },
 };
 
-var degeneratePositionLocalFrame = {
-  north: [-1, 0, 0],
-  east: [0, 1, 0],
-  up: [0, 0, 1],
-  south: [1, 0, 0],
-  west: [0, -1, 0],
-  down: [0, 0, -1],
+let degeneratePositionLocalFrame = {
+    north: [-1, 0, 0],
+    east: [0, 1, 0],
+    up: [0, 0, 1],
+    south: [1, 0, 0],
+    west: [0, -1, 0],
+    down: [0, 0, -1],
 };
-var localFrameToFixedFrameCache = {};
-var scratchCalculateCartesian = {
-  east:[],
-  north:[],
-  up:[],
-  west:[],
-  south:[],
-  down:[],
+let localFrameToFixedFrameCache = {};
+let scratchCalculateCartesian = {
+    east:[],
+    north:[],
+    up:[],
+    west:[],
+    south:[],
+    down:[],
 };
-var scratchFirstCartesian = [];
-var scratchSecondCartesian = [];
-var scratchThirdCartesian = [];
+let scratchFirstCartesian = [];
+let scratchSecondCartesian = [];
+let scratchThirdCartesian = [];
 
 const ZERO = [0, 0, 0];
 
 function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
-  var thirdAxis = vectorProductLocalFrame[firstAxis][secondAxis];
+    let thirdAxis = vectorProductLocalFrame[firstAxis][secondAxis];
 
-  /**
+    /**
    * Computes a 4x4 transformation matrix from a reference frame
    * centered at the provided origin to the provided ellipsoid's fixed reference frame.
    * @callback Transforms.LocalFrameToFixedFrame
@@ -237,146 +237,146 @@ function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
    * @param {Matrix4} [result] The object onto which to store the result.
    * @returns {Matrix4} The modified result parameter or a new Matrix4 instance if none was provided.
    */
-  var resultat;
-  var hashAxis = firstAxis + secondAxis;
-  if (localFrameToFixedFrameCache[hashAxis]) {
-    resultat = localFrameToFixedFrameCache[hashAxis];
-  } else {
-    resultat = function (origin, ellipsoid, result) {
-      if (
-        vec3.equals(origin, ZERO)
-      ) {
-        // If x, y, and z are zero, use the degenerate local frame, which is a special case
-        vec3.copy(scratchFirstCartesian, degeneratePositionLocalFrame[firstAxis]);
-        vec3.copy(scratchSecondCartesian, degeneratePositionLocalFrame[secondAxis]);
-        vec3.copy(scratchThirdCartesian, degeneratePositionLocalFrame[thirdAxis]);
-      } else if (
-        equalsEpsilon(origin[0], 0.0, EPSILON14) &&
+    let resultat;
+    let hashAxis = firstAxis + secondAxis;
+    if (localFrameToFixedFrameCache[hashAxis]) {
+        resultat = localFrameToFixedFrameCache[hashAxis];
+    } else {
+        resultat = function (origin, ellipsoid, result) {
+            if (
+                vec3.equals(origin, ZERO)
+            ) {
+                // If x, y, and z are zero, use the degenerate local frame, which is a special case
+                vec3.copy(scratchFirstCartesian, degeneratePositionLocalFrame[firstAxis]);
+                vec3.copy(scratchSecondCartesian, degeneratePositionLocalFrame[secondAxis]);
+                vec3.copy(scratchThirdCartesian, degeneratePositionLocalFrame[thirdAxis]);
+            } else if (
+                equalsEpsilon(origin[0], 0.0, EPSILON14) &&
         equalsEpsilon(origin[1], 0.0, EPSILON14)
-      ) {
-        // If x and y are zero, assume origin is at a pole, which is a special case.
-        var sign = mathSign(origin[2]);
+            ) {
+                // If x and y are zero, assume origin is at a pole, which is a special case.
+                let sign = mathSign(origin[2]);
 
-        vec3.copy(scratchFirstCartesian, degeneratePositionLocalFrame[firstAxis]);
-        if (firstAxis !== "east" && firstAxis !== "west") {
-            vec3.scale(scratchFirstCartesian, scratchFirstCartesian, sign);
-        }
+                vec3.copy(scratchFirstCartesian, degeneratePositionLocalFrame[firstAxis]);
+                if (firstAxis !== "east" && firstAxis !== "west") {
+                    vec3.scale(scratchFirstCartesian, scratchFirstCartesian, sign);
+                }
 
-        vec3.copy(scratchSecondCartesian, degeneratePositionLocalFrame[secondAxis]);
-        if (secondAxis !== "east" && secondAxis !== "west") {
-           vec3.scale(scratchSecondCartesian, scratchSecondCartesian, sign);
-        }
+                vec3.copy(scratchSecondCartesian, degeneratePositionLocalFrame[secondAxis]);
+                if (secondAxis !== "east" && secondAxis !== "west") {
+                    vec3.scale(scratchSecondCartesian, scratchSecondCartesian, sign);
+                }
 
-        vec3.copy(scratchThirdCartesian, degeneratePositionLocalFrame[thirdAxis]);
-        if (thirdAxis !== "east" && thirdAxis !== "west") {
-          vec3.scale(scratchThirdCartesian, scratchThirdCartesian, sign);
-        }
-      } else {
-        geodeticSurfaceNormal(origin, scratchCalculateCartesian.up);
+                vec3.copy(scratchThirdCartesian, degeneratePositionLocalFrame[thirdAxis]);
+                if (thirdAxis !== "east" && thirdAxis !== "west") {
+                    vec3.scale(scratchThirdCartesian, scratchThirdCartesian, sign);
+                }
+            } else {
+                geodeticSurfaceNormal(origin, scratchCalculateCartesian.up);
 
-        var up = scratchCalculateCartesian.up;
-        var east = scratchCalculateCartesian.east;
-        east[0] = -origin[1];
-        east[1] = origin[0];
-        east[2] = 0.0;
-        vec3.normalize(scratchCalculateCartesian.east, east);
-        vec3.cross(scratchCalculateCartesian.north, up, east);
+                let up = scratchCalculateCartesian.up;
+                let east = scratchCalculateCartesian.east;
+                east[0] = -origin[1];
+                east[1] = origin[0];
+                east[2] = 0.0;
+                vec3.normalize(scratchCalculateCartesian.east, east);
+                vec3.cross(scratchCalculateCartesian.north, up, east);
 
-        vec3.scale(
-          scratchCalculateCartesian.down,
-          scratchCalculateCartesian.up,
-          -1
-        );
-        vec3.scale(
-          scratchCalculateCartesian.west,
-          scratchCalculateCartesian.east,
-          -1
-        );
-        vec3.scale(
-            scratchCalculateCartesian.south,
-            scratchCalculateCartesian.north,
-            -1
-        );
+                vec3.scale(
+                    scratchCalculateCartesian.down,
+                    scratchCalculateCartesian.up,
+                    -1
+                );
+                vec3.scale(
+                    scratchCalculateCartesian.west,
+                    scratchCalculateCartesian.east,
+                    -1
+                );
+                vec3.scale(
+                    scratchCalculateCartesian.south,
+                    scratchCalculateCartesian.north,
+                    -1
+                );
 
-        scratchFirstCartesian = scratchCalculateCartesian[firstAxis];
-        scratchSecondCartesian = scratchCalculateCartesian[secondAxis];
-        scratchThirdCartesian = scratchCalculateCartesian[thirdAxis];
-      }
-      result[0] = scratchFirstCartesian[0];
-      result[1] = scratchFirstCartesian[1];
-      result[2] = scratchFirstCartesian[2];
-      result[3] = 0.0;
-      result[4] = scratchSecondCartesian[0];
-      result[5] = scratchSecondCartesian[1];
-      result[6] = scratchSecondCartesian[2];
-      result[7] = 0.0;
-      result[8] = scratchThirdCartesian[0];
-      result[9] = scratchThirdCartesian[1];
-      result[10] = scratchThirdCartesian[2];
-      result[11] = 0.0;
-      result[12] = origin[0];
-      result[13] = origin[1];
-      result[14] = origin[2];
-      result[15] = 1.0;
-      return result;
-    };
-    localFrameToFixedFrameCache[hashAxis] = resultat;
-  }
-  return resultat;
+                scratchFirstCartesian = scratchCalculateCartesian[firstAxis];
+                scratchSecondCartesian = scratchCalculateCartesian[secondAxis];
+                scratchThirdCartesian = scratchCalculateCartesian[thirdAxis];
+            }
+            result[0] = scratchFirstCartesian[0];
+            result[1] = scratchFirstCartesian[1];
+            result[2] = scratchFirstCartesian[2];
+            result[3] = 0.0;
+            result[4] = scratchSecondCartesian[0];
+            result[5] = scratchSecondCartesian[1];
+            result[6] = scratchSecondCartesian[2];
+            result[7] = 0.0;
+            result[8] = scratchThirdCartesian[0];
+            result[9] = scratchThirdCartesian[1];
+            result[10] = scratchThirdCartesian[2];
+            result[11] = 0.0;
+            result[12] = origin[0];
+            result[13] = origin[1];
+            result[14] = origin[2];
+            result[15] = 1.0;
+            return result;
+        };
+        localFrameToFixedFrameCache[hashAxis] = resultat;
+    }
+    return resultat;
 }
 
 function multiplyByMatrix3 (matrix, rotation, result) {
-  //>>includeEnd('debug');
+    //>>includeEnd('debug');
 
-  var left0 = matrix[0];
-  var left1 = matrix[1];
-  var left2 = matrix[2];
-  var left4 = matrix[4];
-  var left5 = matrix[5];
-  var left6 = matrix[6];
-  var left8 = matrix[8];
-  var left9 = matrix[9];
-  var left10 = matrix[10];
+    let left0 = matrix[0];
+    let left1 = matrix[1];
+    let left2 = matrix[2];
+    let left4 = matrix[4];
+    let left5 = matrix[5];
+    let left6 = matrix[6];
+    let left8 = matrix[8];
+    let left9 = matrix[9];
+    let left10 = matrix[10];
 
-  var right0 = rotation[0];
-  var right1 = rotation[1];
-  var right2 = rotation[2];
-  var right4 = rotation[3];
-  var right5 = rotation[4];
-  var right6 = rotation[5];
-  var right8 = rotation[6];
-  var right9 = rotation[7];
-  var right10 = rotation[8];
+    let right0 = rotation[0];
+    let right1 = rotation[1];
+    let right2 = rotation[2];
+    let right4 = rotation[3];
+    let right5 = rotation[4];
+    let right6 = rotation[5];
+    let right8 = rotation[6];
+    let right9 = rotation[7];
+    let right10 = rotation[8];
 
-  var column0Row0 = left0 * right0 + left4 * right1 + left8 * right2;
-  var column0Row1 = left1 * right0 + left5 * right1 + left9 * right2;
-  var column0Row2 = left2 * right0 + left6 * right1 + left10 * right2;
+    let column0Row0 = left0 * right0 + left4 * right1 + left8 * right2;
+    let column0Row1 = left1 * right0 + left5 * right1 + left9 * right2;
+    let column0Row2 = left2 * right0 + left6 * right1 + left10 * right2;
 
-  var column1Row0 = left0 * right4 + left4 * right5 + left8 * right6;
-  var column1Row1 = left1 * right4 + left5 * right5 + left9 * right6;
-  var column1Row2 = left2 * right4 + left6 * right5 + left10 * right6;
+    let column1Row0 = left0 * right4 + left4 * right5 + left8 * right6;
+    let column1Row1 = left1 * right4 + left5 * right5 + left9 * right6;
+    let column1Row2 = left2 * right4 + left6 * right5 + left10 * right6;
 
-  var column2Row0 = left0 * right8 + left4 * right9 + left8 * right10;
-  var column2Row1 = left1 * right8 + left5 * right9 + left9 * right10;
-  var column2Row2 = left2 * right8 + left6 * right9 + left10 * right10;
+    let column2Row0 = left0 * right8 + left4 * right9 + left8 * right10;
+    let column2Row1 = left1 * right8 + left5 * right9 + left9 * right10;
+    let column2Row2 = left2 * right8 + left6 * right9 + left10 * right10;
 
-  result[0] = column0Row0;
-  result[1] = column0Row1;
-  result[2] = column0Row2;
-  result[3] = 0.0;
-  result[4] = column1Row0;
-  result[5] = column1Row1;
-  result[6] = column1Row2;
-  result[7] = 0.0;
-  result[8] = column2Row0;
-  result[9] = column2Row1;
-  result[10] = column2Row2;
-  result[11] = 0.0;
-  result[12] = matrix[12];
-  result[13] = matrix[13];
-  result[14] = matrix[14];
-  result[15] = matrix[15];
-  return result;
+    result[0] = column0Row0;
+    result[1] = column0Row1;
+    result[2] = column0Row2;
+    result[3] = 0.0;
+    result[4] = column1Row0;
+    result[5] = column1Row1;
+    result[6] = column1Row2;
+    result[7] = 0.0;
+    result[8] = column2Row0;
+    result[9] = column2Row1;
+    result[10] = column2Row2;
+    result[11] = 0.0;
+    result[12] = matrix[12];
+    result[13] = matrix[13];
+    result[14] = matrix[14];
+    result[15] = matrix[15];
+    return result;
 }
 
 // function fromRowMajor(
@@ -418,27 +418,27 @@ function multiplyByMatrix3 (matrix, rotation, result) {
 
 export function setTranslation(matrix, translation, result) {
 
-  result[0] = matrix[0];
-  result[1] = matrix[1];
-  result[2] = matrix[2];
-  result[3] = matrix[3];
+    result[0] = matrix[0];
+    result[1] = matrix[1];
+    result[2] = matrix[2];
+    result[3] = matrix[3];
 
-  result[4] = matrix[4];
-  result[5] = matrix[5];
-  result[6] = matrix[6];
-  result[7] = matrix[7];
+    result[4] = matrix[4];
+    result[5] = matrix[5];
+    result[6] = matrix[6];
+    result[7] = matrix[7];
 
-  result[8] = matrix[8];
-  result[9] = matrix[9];
-  result[10] = matrix[10];
-  result[11] = matrix[11];
+    result[8] = matrix[8];
+    result[9] = matrix[9];
+    result[10] = matrix[10];
+    result[11] = matrix[11];
 
-  result[12] = translation[0];
-  result[13] = translation[1];
-  result[14] = translation[2];
-  result[15] = matrix[15];
+    result[12] = translation[0];
+    result[13] = translation[1];
+    result[14] = translation[2];
+    result[15] = matrix[15];
 
-  return result;
+    return result;
 }
 
 export function getTranslation(out, matrix) {
@@ -468,7 +468,7 @@ export function basisTo2D(result, rtcCoord, matrix, projection, res, heightScale
     const rtcCenter = mat4.getTranslation(scratchCenter, matrix);
     const ellipsoid = projection.ellipsoid;
 
-    var cartographic;
+    let cartographic;
     if (vec3.len(rtcCenter) === 0) {
         cartographic = vec3.set(scratchCartographic, 0, 0, -6378137);
     } else {

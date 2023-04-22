@@ -21,7 +21,7 @@ export default class I3SNode {
         } else {
             this._index = url.substring('i3s:tileset:'.length);
             if (this._version > 1.6) {
-                 this._index = parseInt(this._index);
+                this._index = parseInt(this._index);
             }
         }
         this._url = url;
@@ -147,106 +147,106 @@ export default class I3SNode {
     _createTileset() {
         const inPlaceTileset = {
             asset: {
-              i3s: true,
-              version: "1.0",
-              gltfUpAxis: 'Z'
+                i3s: true,
+                version: "1.0",
+                gltfUpAxis: 'Z'
             },
             geometricError: Number.MAX_VALUE,
             root: this._convertNode(this._nodeJSON, true),
-          };
+        };
         return inPlaceTileset;
     }
 
     _convertNode(nodeJSON) {
         const version = this._version;
         const nodeCache = this._nodeCache;
-      const nodeData = nodeJSON;
-      var obb = nodeData.obb;
-      var mbs = nodeData.mbs;
+        const nodeData = nodeJSON;
+        let obb = nodeData.obb;
+        let mbs = nodeData.mbs;
 
-      var boundingVolume = {};
-      var position;
+        let boundingVolume = {};
+        let position;
 
-    if (mbs) {
-        position = _WGS84ToCartesian([], mbs[0], mbs[1], mbs[2]); // cartesian center of box
-        boundingVolume.sphere = [
-            ...position, // cartesian center of sphere
-            mbs[3] // radius of sphere
-        ];
-      } else if (obb) {
-        position = _WGS84ToCartesian([], obb.center[0], obb.center[1], obb.center[2]); // cartesian center of box;
-        const box = fromCenterHalfSizeQuaternion(
-            position, // cartesian center of box
-            obb.halfSize,
-            obb.quaternion
-        );
-        // 计算box的半径
-        const x = box[3] + box[6] + box[9];
-        const y = box[4] + box[7] + box[10];
-        const z = box[5] + box[8] + box[11];
-        vec3.set(TEMP_VEC3, x, y, z);
-        const radius = vec3.len(TEMP_VEC3);
-        boundingVolume.sphere = [
-            ...position,
-            radius
-        ];
-      }
+        if (mbs) {
+            position = _WGS84ToCartesian([], mbs[0], mbs[1], mbs[2]); // cartesian center of box
+            boundingVolume.sphere = [
+                ...position, // cartesian center of sphere
+                mbs[3] // radius of sphere
+            ];
+        } else if (obb) {
+            position = _WGS84ToCartesian([], obb.center[0], obb.center[1], obb.center[2]); // cartesian center of box;
+            const box = fromCenterHalfSizeQuaternion(
+                position, // cartesian center of box
+                obb.halfSize,
+                obb.quaternion
+            );
+            // 计算box的半径
+            const x = box[3] + box[6] + box[9];
+            const y = box[4] + box[7] + box[10];
+            const z = box[5] + box[8] + box[11];
+            vec3.set(TEMP_VEC3, x, y, z);
+            const radius = vec3.len(TEMP_VEC3);
+            boundingVolume.sphere = [
+                ...position,
+                radius
+            ];
+        }
 
-      // compute the geometric error
-      var metersPerPixel = Infinity;
+        // compute the geometric error
+        let metersPerPixel = Infinity;
 
-      var span = 0;
-      if (nodeData.mbs) {
-        span = nodeData.mbs[3];
-      } else if (nodeData.obb) {
-        span = Math.max(
-          Math.max(nodeData.obb.halfSize[0], nodeData.obb.halfSize[1]),
-          nodeData.obb.halfSize[2]
-        );
-      }
+        let span = 0;
+        if (nodeData.mbs) {
+            span = nodeData.mbs[3];
+        } else if (nodeData.obb) {
+            span = Math.max(
+                Math.max(nodeData.obb.halfSize[0], nodeData.obb.halfSize[1]),
+                nodeData.obb.halfSize[2]
+            );
+        }
 
-      // get the meters/pixel density required to pop the next LOD
-      if (nodeData.lodThreshold !== undefined) {
-        if (
-          nodeCache.lodSelectionMetricType ===
+        // get the meters/pixel density required to pop the next LOD
+        if (nodeData.lodThreshold !== undefined) {
+            if (
+                nodeCache.lodSelectionMetricType ===
           "maxScreenThresholdSQ"
-        ) {
-          var maxScreenThreshold =
+            ) {
+                let maxScreenThreshold =
             Math.sqrt(nodeData.lodThreshold) / (Math.PI * 0.25);
-          metersPerPixel = span / maxScreenThreshold;
-        } else {
-          console.error("Unsupported lodSelectionMetricType in Layer");
+                metersPerPixel = span / maxScreenThreshold;
+            } else {
+                console.error("Unsupported lodSelectionMetricType in Layer");
+            }
+        } else if (nodeData.lodSelection !== undefined) {
+            for (
+                let lodIndex = 0;
+                lodIndex < nodeData.lodSelection.length;
+                lodIndex++
+            ) {
+                if (
+                    nodeData.lodSelection[lodIndex].metricType === "maxScreenThreshold"
+                ) {
+                    metersPerPixel = span / nodeData.lodSelection[lodIndex].maxError;
+                }
+            }
         }
-      } else if (nodeData.lodSelection !== undefined) {
-        for (
-          var lodIndex = 0;
-          lodIndex < nodeData.lodSelection.length;
-          lodIndex++
-        ) {
-          if (
-            nodeData.lodSelection[lodIndex].metricType === "maxScreenThreshold"
-          ) {
-            metersPerPixel = span / nodeData.lodSelection[lodIndex].maxError;
-          }
+
+        if (metersPerPixel === Infinity || isNaN(metersPerPixel)) {
+            metersPerPixel = 100000;
         }
-      }
 
-      if (metersPerPixel === Infinity || isNaN(metersPerPixel)) {
-        metersPerPixel = 100000;
-      }
+        // calculate the length of 16 pixels in order to trigger the screen space error
+        let geometricError = metersPerPixel * 16;
 
-      // calculate the length of 16 pixels in order to trigger the screen space error
-      var geometricError = metersPerPixel * 16;
+        const globalTransforms = mat4.identity([]);
+        // globalTransforms[12] = position[0];
+        // globalTransforms[13] = position[1];
+        // globalTransforms[14] = position[2];
 
-      const globalTransforms = mat4.identity([]);
-      // globalTransforms[12] = position[0];
-      // globalTransforms[13] = position[1];
-      // globalTransforms[14] = position[2];
+        const localTransforms = globalTransforms;
 
-      const localTransforms = globalTransforms;
-
-      const children = nodeData.children;
-        var childrenDefinition;
+        const children = nodeData.children;
+        let childrenDefinition;
         // get children definition
         if (children) {
             childrenDefinition = [];
@@ -261,50 +261,50 @@ export default class I3SNode {
                     childrenDefinition = null;
                     break;
                 }
-          }
-      }
+            }
+        }
 
 
-      // Create a tile set
-      var inPlaceTileDefinition = {
-        refine: "REPLACE",
-        boundingVolume: boundingVolume,
-        transform: localTransforms,
-        geometricError: geometricError,
-      };
+        // Create a tile set
+        let inPlaceTileDefinition = {
+            refine: "REPLACE",
+            boundingVolume: boundingVolume,
+            transform: localTransforms,
+            geometricError: geometricError,
+        };
 
-      if (version <= 1.6) {
-          if (!nodeJSON.lodSelection) {
-              // 1.6的node即是个tileset，又是个mesh
-              // 因为只在3DNodeDocumentIndex中存了children信息
-              // 载入3DNodeDocumentIndex之前，是个tileset，载入后，就成为了mesh
-              // 如果没有lodSelection，说明是个tileset
-              inPlaceTileDefinition.content = {
-                  uri: 'i3s:tileset:' + (nodeJSON.id || nodeJSON.index),
-              };
-          } else if (nodeJSON.geometryData) {
-              inPlaceTileDefinition.content = {
-                  uri: 'i3s:mesh:' + (nodeJSON.id || nodeJSON.index),
-              };
-          }
-      } else {
-          if (children && children.length && !childrenDefinition) {
-              // a child
-              inPlaceTileDefinition.content = {
-                  uri: 'i3s:tileset:' + (nodeJSON.id || nodeJSON.index),
-              };
-          } else if (nodeData.mesh) {
-              inPlaceTileDefinition.content = {
-                  uri: 'i3s:mesh:' + (nodeJSON.id || nodeJSON.index),
-              };
-          }
-      }
+        if (version <= 1.6) {
+            if (!nodeJSON.lodSelection) {
+                // 1.6的node即是个tileset，又是个mesh
+                // 因为只在3DNodeDocumentIndex中存了children信息
+                // 载入3DNodeDocumentIndex之前，是个tileset，载入后，就成为了mesh
+                // 如果没有lodSelection，说明是个tileset
+                inPlaceTileDefinition.content = {
+                    uri: 'i3s:tileset:' + (nodeJSON.id || nodeJSON.index),
+                };
+            } else if (nodeJSON.geometryData) {
+                inPlaceTileDefinition.content = {
+                    uri: 'i3s:mesh:' + (nodeJSON.id || nodeJSON.index),
+                };
+            }
+        } else {
+            if (children && children.length && !childrenDefinition) {
+                // a child
+                inPlaceTileDefinition.content = {
+                    uri: 'i3s:tileset:' + (nodeJSON.id || nodeJSON.index),
+                };
+            } else if (nodeData.mesh) {
+                inPlaceTileDefinition.content = {
+                    uri: 'i3s:mesh:' + (nodeJSON.id || nodeJSON.index),
+                };
+            }
+        }
 
-      if (childrenDefinition && childrenDefinition.length) {
-          inPlaceTileDefinition.children = childrenDefinition;
-      }
+        if (childrenDefinition && childrenDefinition.length) {
+            inPlaceTileDefinition.children = childrenDefinition;
+        }
 
-      return inPlaceTileDefinition;
+        return inPlaceTileDefinition;
     }
 
     getJSON() {
@@ -315,7 +315,7 @@ export default class I3SNode {
 
 
 function _WGS84ToCartesian(out, long, lat, height) {
-  return radianToCartesian3(out, toRadian(long), toRadian(lat), height);
+    return radianToCartesian3(out, toRadian(long), toRadian(lat), height);
 }
 
 function fromCenterHalfSizeQuaternion(center ,halfSize, quaternion) {

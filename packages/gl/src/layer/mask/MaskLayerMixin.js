@@ -62,7 +62,7 @@ export default function (Base) {
                 renderer._clearMask();
                 return;
             }
-            if (renderer && !this._hasVisibleMask()) {
+            if (renderer && !this['_hasVisibleMask']()) {
                 renderer._deleteMaskUniforms();
                 renderer.setToRedraw();
                 return;
@@ -98,23 +98,25 @@ export default function (Base) {
             }
             const { ratio, minHeight } = this._normalizeHeight(minheight, maxheight);
             const extent = new Extent(xmin, ymin, xmax, ymax);
-            if (!this._projViewMatrix || type === 'shapechange') { //避免重复计算extent造成性能损失
-                const { projViewMatrix, mapExtent } = this._getProjViewMatrixInOrtho(extent);
-                this._projViewMatrix = projViewMatrix;
-                this._mapExtent = mapExtent;
+            if (!this['_projViewMatrix'] || type === 'shapechange') { //避免重复计算extent造成性能损失
+                const { projViewMatrix, mapExtent } = this['_getProjViewMatrixInOrtho'](extent);
+                this['_projViewMatrix'] = projViewMatrix;
+                this['_mapExtent'] = mapExtent;
             }
-            COORD_EXTENT.x = this._mapExtent.xmin;
-            COORD_EXTENT.y = this._mapExtent.ymin;
+            const mapExtent = this['_mapExtent'];
+            const projViewMatrix = this['_projViewMatrix'];
+            COORD_EXTENT.x = mapExtent.xmin;
+            COORD_EXTENT.y = mapExtent.ymin;
             const extentPointMin = coordinateToWorld(EXTENT_MIN, COORD_EXTENT, map);
-            COORD_EXTENT.x = this._mapExtent.xmax;
-            COORD_EXTENT.y = this._mapExtent.ymax;
+            COORD_EXTENT.x = mapExtent.xmax;
+            COORD_EXTENT.y = mapExtent.ymax;
             const extentPointMax = coordinateToWorld(EXTENT_MAX, COORD_EXTENT, map);
             const extentInWorld = [extentPointMin[0], extentPointMin[1], extentPointMax[0], extentPointMax[1]];
             if (renderer) {
-                renderer.setMask(extentInWorld, this._projViewMatrix, ratio, minHeight);
+                renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
             } else {
                 this.once('renderercreate', e => {
-                    e.renderer.setMask(extentInWorld, this._projViewMatrix, ratio, minHeight);
+                    e.renderer.setMask(extentInWorld, projViewMatrix, ratio, minHeight);
                 });
             }
         }
@@ -189,7 +191,7 @@ export default function (Base) {
             const identifyData = this.identifyAtPoint(point, opts);
             const coordinate = identifyData.length && identifyData[0].coordinate;
             if (coordinate) {
-                return this._hitMasks(coordinate);
+                return this['_hitMasks'](coordinate);
             }
         }
 

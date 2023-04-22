@@ -146,7 +146,7 @@ export function getI3SNodeInfo(url, nodeCache, regl, enableDraco, forceDraco) {
         } else {
             materialInfo = {
                 pbrMetallicRoughness: {
-                  metallicFactor: 0.0,
+                    metallicFactor: 0.0,
                 }
             };
         }
@@ -188,13 +188,13 @@ function resolveTextures(matInfo, textureSetDefinitions, baseUrl, resource, regl
             if (isESLPK) {
                 let ext = '';
                 switch(format.format) {
-                    case 'dds':
-                        ext = 'bin.dds';
-                        break;
-                    case 'jpg':
-                    case 'png':
-                        ext = format.format;
-                        break;
+                case 'dds':
+                    ext = 'bin.dds';
+                    break;
+                case 'jpg':
+                case 'png':
+                    ext = format.format;
+                    break;
                 }
                 texture.url += '.' + ext;
             }

@@ -8,7 +8,7 @@ const production = process.env.BUILD === 'production';
 const outputFile = pkg.main;
 const outputESFile = pkg.module;
 const plugins = [
-    ].concat(production ? [
+].concat(production ? [
     removeGlobal(),
     terser({
         mangle: {
@@ -115,11 +115,11 @@ module.exports = [
             resolve({}),
             commonjs(),
             replace({
-              // 'this.exports = this.exports || {}': '',
-              '(function (exports) {': 'function (exports) {',
-              '})(this.exports = this.exports || {});': '}',
-              preventAssignment: false,
-              delimiters: ['', '']
+                // 'this.exports = this.exports || {}': '',
+                '(function (exports) {': 'function (exports) {',
+                '})(this.exports = this.exports || {});': '}',
+                preventAssignment: false,
+                delimiters: ['', '']
             })
         ].concat(plugins).concat([transformBackQuote()]),
         output: {

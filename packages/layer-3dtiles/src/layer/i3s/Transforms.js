@@ -6,10 +6,10 @@ import { mat3, mat4, quat } from 'gl-matrix';
  *
  * @namespace Transforms
  */
-var Transforms = {};
+let Transforms = {};
 
-var scratchENUMatrix4 = [];
-var scratchHPRMatrix3 = [];
+let scratchENUMatrix4 = [];
+let scratchHPRMatrix3 = [];
 
 /**
  * Computes a quaternion from a reference frame with axes computed from the heading-pitch-roll angles
@@ -35,30 +35,30 @@ var scratchHPRMatrix3 = [];
  * var quaternion = Cesium.Transforms.headingPitchRollQuaternion(center, hpr);
  */
 Transforms.headingPitchRollQuaternion = function (
-  origin,
-  headingPitchRoll,
-  ellipsoid,
-  fixedFrameTransform,
-  result
-) {
-  if (!result) {
-    result = [];
-  }
-  var transform = Transforms.headingPitchRollToFixedFrame(
     origin,
     headingPitchRoll,
     ellipsoid,
     fixedFrameTransform,
-    scratchENUMatrix4
-  );
-  var rotation = mat3.fromMat4(scratchHPRMatrix3, transform);
-  return quat.fromMat3(result, rotation);
+    result
+) {
+    if (!result) {
+        result = [];
+    }
+    let transform = Transforms.headingPitchRollToFixedFrame(
+        origin,
+        headingPitchRoll,
+        ellipsoid,
+        fixedFrameTransform,
+        scratchENUMatrix4
+    );
+    let rotation = mat3.fromMat4(scratchHPRMatrix3, transform);
+    return quat.fromMat3(result, rotation);
 };
 
-var scratchHPRQuaternion = [];
-var scratchScale = [1.0, 1.0, 1.0];
-var scratchHPRMatrix4 = [];
-var ZERO_TRANSLATION = [0, 0, 0];
+let scratchHPRQuaternion = [];
+let scratchScale = [1.0, 1.0, 1.0];
+let scratchHPRMatrix4 = [];
+let ZERO_TRANSLATION = [0, 0, 0];
 /**
  * Computes a 4x4 transformation matrix from a reference frame with axes computed from the heading-pitch-roll angles
  * centered at the provided origin to the provided ellipsoid's fixed reference frame. Heading is the rotation from the local north
@@ -83,58 +83,58 @@ var ZERO_TRANSLATION = [0, 0, 0];
  * var transform = Cesium.Transforms.headingPitchRollToFixedFrame(center, hpr);
  */
 Transforms.headingPitchRollToFixedFrame = function (
-  origin,
-  headingPitchRoll,
-  ellipsoid,
-  fixedFrameTransform,
-  result
-) {
-  fixedFrameTransform = defaultValue(
-    fixedFrameTransform,
-    eastNorthUpToFixedFrame
-  );
-  var hprQuaternion = fromHeadingPitchRoll(
+    origin,
     headingPitchRoll,
-    scratchHPRQuaternion
-  );
+    ellipsoid,
+    fixedFrameTransform,
+    result
+) {
+    fixedFrameTransform = defaultValue(
+        fixedFrameTransform,
+        eastNorthUpToFixedFrame
+    );
+    let hprQuaternion = fromHeadingPitchRoll(
+        headingPitchRoll,
+        scratchHPRQuaternion
+    );
 
-  var hprMatrix = mat4.fromRotationTranslationScale(scratchHPRMatrix4, hprQuaternion, ZERO_TRANSLATION, scratchScale);
+    let hprMatrix = mat4.fromRotationTranslationScale(scratchHPRMatrix4, hprQuaternion, ZERO_TRANSLATION, scratchScale);
 
-  result = fixedFrameTransform(origin, ellipsoid, result);
-  return mat4.multiply(result, result, hprMatrix);
+    result = fixedFrameTransform(origin, ellipsoid, result);
+    return mat4.multiply(result, result, hprMatrix);
 };
 
 export default Transforms;
 
 
-var scratchHeadingQuaternion = [];
-var scratchPitchQuaternion = [];
-var scratchRollQuaternion = [];
+let scratchHeadingQuaternion = [];
+let scratchPitchQuaternion = [];
+let scratchRollQuaternion = [];
 
 
 function fromHeadingPitchRoll(headingPitchRoll, result) {
-  scratchRollQuaternion = quat.fromEuler(
-    scratchHPRQuaternion,
-    headingPitchRoll.roll,
-    0,
-    0
-  );
-  scratchPitchQuaternion = quat.fromEuler(
-    result,
-    0,
-    -headingPitchRoll.pitch,
-    0
-  );
-  result = quat.mul(
-    scratchPitchQuaternion,
-    scratchRollQuaternion,
-    scratchPitchQuaternion
-  );
-  scratchHeadingQuaternion = quat.fromEuler(
-    scratchHPRQuaternion,
-    0,
-    0,
-    -headingPitchRoll.heading,
-  );
-  return quat.mul(result, scratchHeadingQuaternion, result);
+    scratchRollQuaternion = quat.fromEuler(
+        scratchHPRQuaternion,
+        headingPitchRoll.roll,
+        0,
+        0
+    );
+    scratchPitchQuaternion = quat.fromEuler(
+        result,
+        0,
+        -headingPitchRoll.pitch,
+        0
+    );
+    result = quat.mul(
+        scratchPitchQuaternion,
+        scratchRollQuaternion,
+        scratchPitchQuaternion
+    );
+    scratchHeadingQuaternion = quat.fromEuler(
+        scratchHPRQuaternion,
+        0,
+        0,
+        -headingPitchRoll.heading,
+    );
+    return quat.mul(result, scratchHeadingQuaternion, result);
 }

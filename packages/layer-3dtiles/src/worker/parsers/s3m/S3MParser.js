@@ -15,24 +15,24 @@ const VertexCompressOption = {
     SVC_TexutreCoordIsW	: 32
 };
 function _fillBMPHeader(buffer,width,height){
-    var extraBytes = width%4;
-    var rgbSize = height * (4 * width + extraBytes);
-    var headerInfoSize = 108;
+    let extraBytes = width%4;
+    let rgbSize = height * (4 * width + extraBytes);
+    let headerInfoSize = 108;
 
     /******************header***********************/
     // var flag = "BM";
-    var reserved = 0;
-    var offset_header = 122;
-    var fileSize = rgbSize + offset;
-    var planes = 1;
-    var bitPP = 32;
+    let reserved = 0;
+    let offset_header = 122;
+    let fileSize = rgbSize + offset;
+    let planes = 1;
+    let bitPP = 32;
     // var compress = 3;
-    var hr = 2835;
-    var vr = 2835;
-    var colors = 0;
-    var importantColors = 0;
+    let hr = 2835;
+    let vr = 2835;
+    let colors = 0;
+    let importantColors = 0;
 
-    var view = new DataView(buffer);
+    let view = new DataView(buffer);
     var offset = 0;
     view.setUint16(offset, 0x4d42, true);offset += 2;
     view.setUint32(offset, fileSize, true);offset += 4;
@@ -174,13 +174,13 @@ function getCompressedUniforms(vertexPackage, uniformsArr) {
 
 
 S3MModelParser.multiplyByPoint = function(matrix, cartesian, result) {
-    var vX = cartesian.x;
-    var vY = cartesian.y;
-    var vZ = cartesian.z;
+    let vX = cartesian.x;
+    let vY = cartesian.y;
+    let vZ = cartesian.z;
 
-    var x = matrix[0] * vX + matrix[4] * vY + matrix[8] * vZ + matrix[12];
-    var y = matrix[1] * vX + matrix[5] * vY + matrix[9] * vZ + matrix[13];
-    var z = matrix[2] * vX + matrix[6] * vY + matrix[10] * vZ + matrix[14];
+    let x = matrix[0] * vX + matrix[4] * vY + matrix[8] * vZ + matrix[12];
+    let y = matrix[1] * vX + matrix[5] * vY + matrix[9] * vZ + matrix[13];
+    let z = matrix[2] * vX + matrix[6] * vY + matrix[10] * vZ + matrix[14];
 
     result.x = x;
     result.y = y;
@@ -190,52 +190,52 @@ S3MModelParser.multiplyByPoint = function(matrix, cartesian, result) {
 
 /* eslint-disable no-unused-vars */
 export default function parse(data, maxTextureSize) {
-    var bytesOffset = data.bytesOffset;
-    var result = S3MModelParser.parseBuffer(data.buffer, bytesOffset);
-    var geoPackage = result.geoPackage;
-    var pageLods = result.groupNode.pageLods;
-    var verticesCount;
-    var indices;
-    var positionsArr = [];
-    var positions_4;
-    var positions;
-    var indexArr = [];
-    var uvArr = [];
-    var colorArr = [];
-    var batchIdArr = [];
-    var materialArr = [];
-    var definesArr = [];
-    var uniformsArr = [];
-    var totalVerticesCount = [];
+    let bytesOffset = data.bytesOffset;
+    let result = S3MModelParser.parseBuffer(data.buffer, bytesOffset);
+    let geoPackage = result.geoPackage;
+    let pageLods = result.groupNode.pageLods;
+    let verticesCount;
+    let indices;
+    let positionsArr = [];
+    let positions_4;
+    let positions;
+    let indexArr = [];
+    let uvArr = [];
+    let colorArr = [];
+    let batchIdArr = [];
+    let materialArr = [];
+    let definesArr = [];
+    let uniformsArr = [];
+    let totalVerticesCount = [];
     if (!pageLods[0].geodes[0]) {
         return null;
     }
-    var mat = pageLods[0].geodes[0].matrix;
-    var textureCodes = [];
+    let mat = pageLods[0].geodes[0].matrix;
+    let textureCodes = [];
     const textureCoordMatrixArr = [];
-    var materialsMap = {}
-    for(var i = 0; i < result.materials.material.length; i++) {
+    let materialsMap = {}
+    for(let i = 0; i < result.materials.material.length; i++) {
         materialsMap[result.materials.material[i].material.id] = result.materials.material[i].material;
     }
 
-    var scratchCartesian = {
+    let scratchCartesian = {
         x: 0,
         y: 0,
         z: 0
     };
-    var indicesCount = 0;
-    var minX = Number.MAX_VALUE,
+    let indicesCount = 0;
+    let minX = Number.MAX_VALUE,
         minY = Number.MAX_VALUE,
         minZ = Number.MAX_VALUE;
-    var maxX = Number.MIN_VALUE,
+    let maxX = Number.MIN_VALUE,
         maxY = Number.MIN_VALUE,
         maxZ = Number.MIN_VALUE;
-    for(var geoName in geoPackage) {
-        var vertexPackage = geoPackage[geoName].vertexPackage;
+    for(let geoName in geoPackage) {
+        let vertexPackage = geoPackage[geoName].vertexPackage;
         verticesCount = vertexPackage.verticesCount;
-        var buffer = vertexPackage.vertexAttributes[0].typedArray.buffer;
-        var byteOffset = vertexPackage.vertexAttributes[0].typedArray.byteOffset;
-        var componentsPerAttribute = vertexPackage.vertexAttributes[0].componentsPerAttribute;
+        let buffer = vertexPackage.vertexAttributes[0].typedArray.buffer;
+        let byteOffset = vertexPackage.vertexAttributes[0].typedArray.byteOffset;
+        let componentsPerAttribute = vertexPackage.vertexAttributes[0].componentsPerAttribute;
         const componentDatatype = vertexPackage.vertexAttributes[0].componentDatatype;
         const TypedCtor = getTypedArrayCtor(componentDatatype);
         positions = new TypedCtor(buffer,
@@ -246,9 +246,9 @@ export default function parse(data, maxTextureSize) {
         
         const decode_position_normConstant = obj2arr(vertexPackage.vertCompressConstant) || 0;
         for(let i = 0; i < verticesCount; i++) {
-            var x = positions[i * componentsPerAttribute] * decode_position_normConstant + decode_position_min[0];
-            var y = positions[i * componentsPerAttribute + 1] * decode_position_normConstant + decode_position_min[1];
-            var z = positions[i * componentsPerAttribute + 2] * decode_position_normConstant + decode_position_min[2];
+            let x = positions[i * componentsPerAttribute] * decode_position_normConstant + decode_position_min[0];
+            let y = positions[i * componentsPerAttribute + 1] * decode_position_normConstant + decode_position_min[1];
+            let z = positions[i * componentsPerAttribute + 2] * decode_position_normConstant + decode_position_min[2];
 
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
@@ -270,9 +270,9 @@ export default function parse(data, maxTextureSize) {
         //     colorArr.push(undefined);
         // }
 
-        var indicesTypedArray = geoPackage[geoName].arrIndexPackage[0].indicesTypedArray;
-        var indiceItemWidth = indicesTypedArray.byteLength / geoPackage[geoName].arrIndexPackage[0].indicesCount;
-        var ctor = indiceItemWidth === 4 ? Uint32Array : indiceItemWidth === 2 ? Uint16Array : Uint8Array;
+        let indicesTypedArray = geoPackage[geoName].arrIndexPackage[0].indicesTypedArray;
+        let indiceItemWidth = indicesTypedArray.byteLength / geoPackage[geoName].arrIndexPackage[0].indicesCount;
+        let ctor = indiceItemWidth === 4 ? Uint32Array : indiceItemWidth === 2 ? Uint16Array : Uint8Array;
         indices = new ctor(indicesTypedArray.buffer,
             (geoPackage[geoName].arrIndexPackage[0].bytesOffset || 0) + indicesTypedArray.byteOffset,
             geoPackage[geoName].arrIndexPackage[0].indicesCount);
@@ -280,11 +280,11 @@ export default function parse(data, maxTextureSize) {
         indicesCount += indices.length;
         totalVerticesCount.push(verticesCount);
 
-        var materialCode = geoPackage[geoName].arrIndexPackage[0].materialCode;
+        let materialCode = geoPackage[geoName].arrIndexPackage[0].materialCode;
         materialArr.push(materialsMap[materialCode]);
     }
-    var min = [minX, minY, minZ];
-    var max = [maxX, maxY, maxZ];
+    let min = [minX, minY, minZ];
+    let max = [maxX, maxY, maxZ];
     const s3mVersion = result.version;
     // const gltfMeshPromise = generateGLTFObject(totalVerticesCount, indexArr, positionsArr, null, uvArr, colorArr, batchIdArr, result.texturePackage, mat, min, max, textureCodes, materialArr, maxTextureSize, mat);
     const gltfMeshPromise = generateGLTFObject(totalVerticesCount, indexArr, positionsArr, null, uvArr,textureCoordMatrixArr, colorArr, batchIdArr, result.texturePackage, mat, min, max, textureCodes, materialArr, definesArr, uniformsArr, maxTextureSize, mat, s3mVersion);
@@ -345,7 +345,7 @@ function generateGLTFObject(
     maxTextureSize,
     mat,
     s3mVersion
-    ) {
+) {
     let maxTexSize = 0;
     for (const p in texturePackage) {
         if (texturePackage[p].width * texturePackage[p].height * 4 > maxTexSize) {
@@ -539,7 +539,7 @@ function generateGLTFObject(
                     source: meshIndex
                 }
             }
-        ));
+            ));
     }
 
     return Promise.all(texPromises).then((textures) => {
@@ -606,13 +606,13 @@ function generateTexture(meshIndex, materialArr, textureCodes, texturePackage, m
     const bmpHeaderLength = BMP_HEADER_LENGTH;
     return new Promise(function(subResolve) {
         (function(k) {
-            var hasTexture = materialArr[k].textureunitstates[0];
+            let hasTexture = materialArr[k].textureunitstates[0];
             if(hasTexture) {
-                var textureId = materialArr[k].textureunitstates[0].textureunitstate.id;
-                var textureObj = texturePackage[textureId];
-                var imageBuffer = textureObj.arrayBufferView;
-                var pixelFormat = textureObj.nFormat;
-                var internalFormat = textureObj.internalFormat;
+                let textureId = materialArr[k].textureunitstates[0].textureunitstate.id;
+                let textureObj = texturePackage[textureId];
+                let imageBuffer = textureObj.arrayBufferView;
+                let pixelFormat = textureObj.nFormat;
+                let internalFormat = textureObj.internalFormat;
                 if (isCompressedFormat(internalFormat) && textureObj.width === textureObj.height) {
                     const decompressed = decompressTexture(imageBuffer, imageBuffer.byteOffset, internalFormat, pixelFormat, textureObj.width, textureObj.height);
                     if (decompressed) {
@@ -748,16 +748,16 @@ function isCompressedFormat(e) {
 }
 
 function parseAttrArr(name, vertexPackage, buffer, verticesCount, attrArr) {
-    var attrLocation = vertexPackage.attrLocation[name];
+    let attrLocation = vertexPackage.attrLocation[name];
     if(attrLocation) {
         const vertexAttribute = vertexPackage.vertexAttributes[attrLocation];
         if (vertexAttribute.typedArray.buffer !== buffer) {
             // batchId因为是单独构造的，直接添加它的typedArray
             attrArr.push(vertexAttribute.typedArray);
         } else {
-            var itemSize = vertexAttribute.componentsPerAttribute;
+            let itemSize = vertexAttribute.componentsPerAttribute;
             const ctor = getTypedArrayCtor(vertexAttribute.componentDatatype);
-            var array = new ctor(buffer,
+            let array = new ctor(buffer,
                 vertexAttribute.offsetInBytes + vertexAttribute.typedArray.byteOffset, verticesCount * itemSize
             );
             attrArr.push(array);

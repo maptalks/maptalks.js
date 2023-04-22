@@ -19,57 +19,57 @@ import defined from "./defined.js";
  * @see RuntimeError
  */
 function DeveloperError(message) {
-  /**
+    /**
    * 'DeveloperError' indicating that this exception was thrown due to a developer error.
    * @type {String}
    * @readonly
    */
-  this.name = "DeveloperError";
+    this.name = "DeveloperError";
 
-  /**
+    /**
    * The explanation for why this exception was thrown.
    * @type {String}
    * @readonly
    */
-  this.message = message;
+    this.message = message;
 
-  //Browsers such as IE don't have a stack property until you actually throw the error.
-  var stack;
-  try {
-    throw new Error();
-  } catch (e) {
-    stack = e.stack;
-  }
+    //Browsers such as IE don't have a stack property until you actually throw the error.
+    let stack;
+    try {
+        throw new Error();
+    } catch (e) {
+        stack = e.stack;
+    }
 
-  /**
+    /**
    * The stack trace of this exception, if available.
    * @type {String}
    * @readonly
    */
-  this.stack = stack;
+    this.stack = stack;
 }
 
 if (defined(Object.create)) {
-  DeveloperError.prototype = Object.create(Error.prototype);
-  DeveloperError.prototype.constructor = DeveloperError;
+    DeveloperError.prototype = Object.create(Error.prototype);
+    DeveloperError.prototype.constructor = DeveloperError;
 }
 
 DeveloperError.prototype.toString = function () {
-  var str = this.name + ": " + this.message;
+    let str = this.name + ": " + this.message;
 
-  if (defined(this.stack)) {
-    str += "\n" + this.stack.toString();
-  }
+    if (defined(this.stack)) {
+        str += "\n" + this.stack.toString();
+    }
 
-  return str;
+    return str;
 };
 
 /**
  * @private
  */
 DeveloperError.throwInstantiationError = function () {
-  throw new DeveloperError(
-    "This function defines an interface and should not be called directly."
-  );
+    throw new DeveloperError(
+        "This function defines an interface and should not be called directly."
+    );
 };
 export default DeveloperError;

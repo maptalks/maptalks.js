@@ -181,12 +181,12 @@ Ajax.getJSON = function (url, options = {}) {
 };
 
 
-    /**
-     * Get JSON data by jsonp
-     * from https://gist.github.com/gf3/132080/110d1b68d7328d7bfe7e36617f7df85679a08968
-     * @param  {String}   url - resource url
-     * @param  {Function} cb  - callback function when completed
-     */
+/**
+ * Get JSON data by jsonp
+ * from https://gist.github.com/gf3/132080/110d1b68d7328d7bfe7e36617f7df85679a08968
+ * @param  {String}   url - resource url
+ * @param  {Function} cb  - callback function when completed
+ */
 Ajax.jsonp = function (url) {
     // INIT
     const name = '_maptalks_jsonp_' + uid();

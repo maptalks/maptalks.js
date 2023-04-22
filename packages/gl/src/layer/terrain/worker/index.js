@@ -93,7 +93,7 @@ function createHeightMap(heightmap/*, exag*/) {
 
 function decZlibBuffer(zBuffer) {
     if (zBuffer.length < 1000) {
-         return;
+        return;
     }
     const inflate = new Zlib.Inflate(zBuffer);
 
@@ -162,130 +162,130 @@ function generateTiandituTerrain(buffer) {
 }
 
 function zigZagDecode(value) {
-  return (value >> 1) ^ -(value & 1);
+    return (value >> 1) ^ -(value & 1);
 }
 
 function lerp(p, q, time) {
-  return (1.0 - time) * p + time * q;
+    return (1.0 - time) * p + time * q;
 }
 
 function generateCesiumTerrain(buffer) {
-  let pos = 0;
-  const cartesian3Elements = 3;
-  const boundingSphereElements = cartesian3Elements + 1;
-  const cartesian3Length = Float64Array.BYTES_PER_ELEMENT * cartesian3Elements;
-  const boundingSphereLength =
+    let pos = 0;
+    const cartesian3Elements = 3;
+    const boundingSphereElements = cartesian3Elements + 1;
+    const cartesian3Length = Float64Array.BYTES_PER_ELEMENT * cartesian3Elements;
+    const boundingSphereLength =
     Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
-  const encodedVertexElements = 3;
-  const encodedVertexLength =
+    const encodedVertexElements = 3;
+    const encodedVertexLength =
     Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
-  const triangleElements = 3;
-  let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
+    const triangleElements = 3;
+    let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
 
-  const view = new DataView(buffer);
-  pos += cartesian3Length;
+    const view = new DataView(buffer);
+    pos += cartesian3Length;
 
-  const minimumHeight = view.getFloat32(pos, true);
-  pos += Float32Array.BYTES_PER_ELEMENT;
-  const maximumHeight = view.getFloat32(pos, true);
-  pos += Float32Array.BYTES_PER_ELEMENT;
-  pos += boundingSphereLength;
-  pos += cartesian3Length;
+    const minimumHeight = view.getFloat32(pos, true);
+    pos += Float32Array.BYTES_PER_ELEMENT;
+    const maximumHeight = view.getFloat32(pos, true);
+    pos += Float32Array.BYTES_PER_ELEMENT;
+    pos += boundingSphereLength;
+    pos += cartesian3Length;
 
-  const vertexCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const encodedVertexBuffer = new Uint16Array(buffer, pos, vertexCount * 3);
-  pos += vertexCount * encodedVertexLength;
+    const vertexCount = view.getUint32(pos, true);
+    pos += Uint32Array.BYTES_PER_ELEMENT;
+    const encodedVertexBuffer = new Uint16Array(buffer, pos, vertexCount * 3);
+    pos += vertexCount * encodedVertexLength;
 
-  if (vertexCount > 64 * 1024) {
-    bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
-  }
-
-  const uBuffer = encodedVertexBuffer.subarray(0, vertexCount);
-  const vBuffer = encodedVertexBuffer.subarray(vertexCount, 2 * vertexCount);
-  const heightBuffer = encodedVertexBuffer.subarray(
-    vertexCount * 2,
-    3 * vertexCount
-  );
-
-  zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
-
-  if (pos % bytesPerIndex !== 0) {
-    pos += bytesPerIndex - (pos % bytesPerIndex);
-  }
-
-  const triangleCount = view.getUint32(pos, true);
-  pos += Uint32Array.BYTES_PER_ELEMENT;
-  const indices = vertexCount > 65536 ? new Uint32Array(buffer, pos, triangleCount * triangleElements) : new Uint16Array(buffer, pos, triangleCount * triangleElements);
-
-  let highest = 0;
-  const length = indices.length;
-  for (let i = 0; i < length; ++i) {
-    const code = indices[i];
-    indices[i] = highest - code;
-    if (code === 0) {
-      ++highest;
+    if (vertexCount > 64 * 1024) {
+        bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
     }
-  }
-  const terrain = {
-    minimumHeight: minimumHeight,
-    maximumHeight: maximumHeight,
-    quantizedVertices: encodedVertexBuffer,
-    indices: indices,
-  };
 
-  const quantizedVertices = terrain.quantizedVertices;
-  const quantizedVertexCount = quantizedVertices.length / 3;
-  const uBuffer_1 = quantizedVertices.subarray(0, quantizedVertexCount);
-  const vBuffer_1 = quantizedVertices.subarray(
-    quantizedVertexCount,
-    2 * quantizedVertexCount
-  );
-  const heightBuffer_1 = quantizedVertices.subarray(
-    quantizedVertexCount * 2,
-    3 * quantizedVertexCount
-  );
-  const positions = new Float32Array(quantizedVertexCount * 3);
-  const uvs = new Float32Array(quantizedVertexCount * 2);
-  for (let i = 0; i < quantizedVertexCount; ++i) {
-    const rawU = uBuffer_1[i];
-    const rawV = vBuffer_1[i];
-
-    const u = rawU / maxShort;
-    const v = rawV / maxShort;
-    const height = lerp(
-      minimumHeight,
-      maximumHeight,
-      heightBuffer_1[i] / maxShort
+    const uBuffer = encodedVertexBuffer.subarray(0, vertexCount);
+    const vBuffer = encodedVertexBuffer.subarray(vertexCount, 2 * vertexCount);
+    const heightBuffer = encodedVertexBuffer.subarray(
+        vertexCount * 2,
+        3 * vertexCount
     );
-    uvs[i * 2] = u;
-    uvs[i * 2 + 1] = 1 - v;
-    positions[i * 3] = (u * 256);
-    positions[i * 3 + 1] = (-(1 - v) * 256);
-    positions[i * 3 + 2] = height;
-  }
-  return { positions, texcoords: uvs, triangles: indices}
+
+    zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
+
+    if (pos % bytesPerIndex !== 0) {
+        pos += bytesPerIndex - (pos % bytesPerIndex);
+    }
+
+    const triangleCount = view.getUint32(pos, true);
+    pos += Uint32Array.BYTES_PER_ELEMENT;
+    const indices = vertexCount > 65536 ? new Uint32Array(buffer, pos, triangleCount * triangleElements) : new Uint16Array(buffer, pos, triangleCount * triangleElements);
+
+    let highest = 0;
+    const length = indices.length;
+    for (let i = 0; i < length; ++i) {
+        const code = indices[i];
+        indices[i] = highest - code;
+        if (code === 0) {
+            ++highest;
+        }
+    }
+    const terrain = {
+        minimumHeight: minimumHeight,
+        maximumHeight: maximumHeight,
+        quantizedVertices: encodedVertexBuffer,
+        indices: indices,
+    };
+
+    const quantizedVertices = terrain.quantizedVertices;
+    const quantizedVertexCount = quantizedVertices.length / 3;
+    const uBuffer_1 = quantizedVertices.subarray(0, quantizedVertexCount);
+    const vBuffer_1 = quantizedVertices.subarray(
+        quantizedVertexCount,
+        2 * quantizedVertexCount
+    );
+    const heightBuffer_1 = quantizedVertices.subarray(
+        quantizedVertexCount * 2,
+        3 * quantizedVertexCount
+    );
+    const positions = new Float32Array(quantizedVertexCount * 3);
+    const uvs = new Float32Array(quantizedVertexCount * 2);
+    for (let i = 0; i < quantizedVertexCount; ++i) {
+        const rawU = uBuffer_1[i];
+        const rawV = vBuffer_1[i];
+
+        const u = rawU / maxShort;
+        const v = rawV / maxShort;
+        const height = lerp(
+            minimumHeight,
+            maximumHeight,
+            heightBuffer_1[i] / maxShort
+        );
+        uvs[i * 2] = u;
+        uvs[i * 2 + 1] = 1 - v;
+        positions[i * 3] = (u * 256);
+        positions[i * 3 + 1] = (-(1 - v) * 256);
+        positions[i * 3 + 2] = height;
+    }
+    return { positions, texcoords: uvs, triangles: indices}
 }
 
 function zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer) {
-  const count = uBuffer.length;
+    const count = uBuffer.length;
 
-  let u = 0;
-  let v = 0;
-  let height = 0;
+    let u = 0;
+    let v = 0;
+    let height = 0;
 
-  for (let i = 0; i < count; ++i) {
-    u += zigZagDecode(uBuffer[i]);
-    v += zigZagDecode(vBuffer[i]);
+    for (let i = 0; i < count; ++i) {
+        u += zigZagDecode(uBuffer[i]);
+        v += zigZagDecode(vBuffer[i]);
 
-    uBuffer[i] = u;
-    vBuffer[i] = v;
+        uBuffer[i] = u;
+        vBuffer[i] = v;
 
-    if (heightBuffer) {
-      height += zigZagDecode(heightBuffer[i]);
-      heightBuffer[i] = height;
+        if (heightBuffer) {
+            height += zigZagDecode(heightBuffer[i]);
+            heightBuffer[i] = height;
+        }
     }
-  }
 }
 
 function generateMapboxTerrain(buffer) {
@@ -345,9 +345,9 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 res.transferables.push(mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer);
                 cb({ data: terrain, mesh }, res.transferables);
             } else if (type === 'cesium') {
-              terrain = generateCesiumTerrain(buffer);
-              const transferables = [terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer];
-              cb(terrain, transferables)
+                terrain = generateCesiumTerrain(buffer);
+                const transferables = [terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer];
+                cb(terrain, transferables)
             } else if (type === 'mapbox') {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {

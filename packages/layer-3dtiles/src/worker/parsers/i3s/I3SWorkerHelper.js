@@ -16,14 +16,14 @@ const KTX2 = transcoders().ktx2;
 const DEFAULT_MATERIAL = {
     "pbrMetallicRoughness": {
         "baseColorFactor": [
-          0.5,
-          0.5,
-          0.5,
-          1.0
+            0.5,
+            0.5,
+            0.5,
+            1.0
         ],
         "metallicFactor": 0,
         "roughnessFactor": 0.5,
-  }
+    }
 };
 
 const COMPRESSED_ATTRIBUTES = {
@@ -239,7 +239,7 @@ function buildCompressedPrimitive(gltf, index, geometry, buffer, transform, cent
     });
 }
 
-var binaryAttributeDecoders = {
+let binaryAttributeDecoders = {
     position: function (decodedGeometry, data, offset) {
         const count = decodedGeometry.vertexCount * 3;
         const array = new Float32Array(data, offset, count);
@@ -258,7 +258,7 @@ var binaryAttributeDecoders = {
         return offset;
     },
     normal: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.vertexCount * 3;
+        let count = decodedGeometry.vertexCount * 3;
         const array = new Float32Array(data, offset, count);
         decodedGeometry.normal = {
             array,
@@ -271,7 +271,7 @@ var binaryAttributeDecoders = {
         return offset;
     },
     uv0: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.vertexCount * 2;
+        let count = decodedGeometry.vertexCount * 2;
         const array = new Float32Array(data, offset, count);
         decodedGeometry.uv0 = {
             array,
@@ -284,7 +284,7 @@ var binaryAttributeDecoders = {
         return offset;
     },
     color: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.vertexCount * 4;
+        let count = decodedGeometry.vertexCount * 4;
         const array = new Uint8Array(data, offset, count);
         decodedGeometry.color = {
             array,
@@ -298,18 +298,18 @@ var binaryAttributeDecoders = {
     },
     featureId: function (decodedGeometry, data, offset) {
         //We don't need to use this for anything so just increment the offset
-        var count = decodedGeometry.featureCount;
+        let count = decodedGeometry.featureCount;
         offset += count * 8;
         return offset;
     },
     id: function (decodedGeometry, data, offset) {
         //We don't need to use this for anything so just increment the offset
-        var count = decodedGeometry.featureCount;
+        let count = decodedGeometry.featureCount;
         offset += count * 8;
         return offset;
     },
     faceRange: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.featureCount * 2;
+        let count = decodedGeometry.featureCount * 2;
         const array = new Uint32Array(data, offset, count);
         decodedGeometry.faceRange = {
             array,
@@ -322,7 +322,7 @@ var binaryAttributeDecoders = {
         return offset;
     },
     uvRegion: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.vertexCount * 4;
+        let count = decodedGeometry.vertexCount * 4;
         const array = new Uint16Array(data, offset, count);
         decodedGeometry['uv-region'] = {
             array,
@@ -335,7 +335,7 @@ var binaryAttributeDecoders = {
         return offset;
     },
     region: function (decodedGeometry, data, offset) {
-        var count = decodedGeometry.vertexCount * 4;
+        let count = decodedGeometry.vertexCount * 4;
         const array = new Uint16Array(data, offset, count);
         decodedGeometry['uv-region'] = {
             array,
@@ -347,90 +347,90 @@ var binaryAttributeDecoders = {
         offset += count * 2;
         return offset;
     },
-  };
+};
 
 
 function buildPrimitive(gltf, index, geometry, buffer, transform, center, projection) {
     const decodedGeometry = {
-      vertexCount: 0,
+        vertexCount: 0,
     };
 
     const dataView = new DataView(buffer);
 
     try {
-      var offset = 0;
-      decodedGeometry.vertexCount = dataView.getUint32(offset, 1);
-      offset += 4;
+        let offset = 0;
+        decodedGeometry.vertexCount = dataView.getUint32(offset, 1);
+        offset += 4;
 
-      decodedGeometry.featureCount = dataView.getUint32(offset, 1);
-      offset += 4;
+        decodedGeometry.featureCount = dataView.getUint32(offset, 1);
+        offset += 4;
 
-      // 含有ordering时，说明是1.6的数据
-      const bufferInfo = geometry.info.ordering ? null : geometry.info;
-      if (bufferInfo) {
-          const attributes = [];
-          for (const attribute in bufferInfo) {
-            if (attribute !== "offset" && attribute !== '') {
-              attributes.push(attribute);
+        // 含有ordering时，说明是1.6的数据
+        const bufferInfo = geometry.info.ordering ? null : geometry.info;
+        if (bufferInfo) {
+            const attributes = [];
+            for (const attribute in bufferInfo) {
+                if (attribute !== "offset" && attribute !== '') {
+                    attributes.push(attribute);
+                }
             }
-          }
-          // 1.7 / 1.8
-        for (
-          var attrIndex = 0;
-          attrIndex < attributes.length;
-          attrIndex++
-        ) {
-          if (binaryAttributeDecoders[attributes[attrIndex]]) {
-            offset = binaryAttributeDecoders[attributes[attrIndex]](
-              decodedGeometry,
-              buffer,
-              offset
-            );
-          } else {
-            console.error(
-              "Unknown decoder for",
-              attributes[attrIndex]
-            );
-          }
-        }
-      } else {
-          const schema = geometry.info;
-          let ordering = schema.ordering;
-          let featureAttributeOrder = schema.featureAttributeOrder;
-          const featureData = null;
-        if (
-          featureData &&
+            // 1.7 / 1.8
+            for (
+                let attrIndex = 0;
+                attrIndex < attributes.length;
+                attrIndex++
+            ) {
+                if (binaryAttributeDecoders[attributes[attrIndex]]) {
+                    offset = binaryAttributeDecoders[attributes[attrIndex]](
+                        decodedGeometry,
+                        buffer,
+                        offset
+                    );
+                } else {
+                    console.error(
+                        "Unknown decoder for",
+                        attributes[attrIndex]
+                    );
+                }
+            }
+        } else {
+            const schema = geometry.info;
+            let ordering = schema.ordering;
+            let featureAttributeOrder = schema.featureAttributeOrder;
+            const featureData = null;
+            if (
+                featureData &&
           featureData.geometryData &&
           featureData.geometryData[0] &&
           featureData.geometryData[0].params
-        ) {
-          ordering = Object.keys(
-            featureData.geometryData[0].params.vertexAttributes
-          );
-          featureAttributeOrder = Object.keys(
-            featureData.geometryData[0].params.featureAttributes
-          );
-        }
+            ) {
+                ordering = Object.keys(
+                    featureData.geometryData[0].params.vertexAttributes
+                );
+                featureAttributeOrder = Object.keys(
+                    featureData.geometryData[0].params.featureAttributes
+                );
+            }
 
-        // use default geometry schema
-        for (var i = 0; i < ordering.length; i++) {
-          var decoder = binaryAttributeDecoders[ordering[i]];
-          if (!decoder) {
-            console.log(ordering[i]);
-          }
-          offset = decoder(decodedGeometry, buffer, offset);
-        }
+            // use default geometry schema
+            for (let i = 0; i < ordering.length; i++) {
+                let decoder = binaryAttributeDecoders[ordering[i]];
+                if (!decoder) {
+                    console.log(ordering[i]);
+                }
+                offset = decoder(decodedGeometry, buffer, offset);
+            }
 
-        for (var j = 0; j < featureAttributeOrder.length; j++) {
-          var curDecoder = binaryAttributeDecoders[featureAttributeOrder[j]];
-          if (!curDecoder) {
-            console.log(featureAttributeOrder[j]);
-          }
-          offset = curDecoder(decodedGeometry, buffer, offset);
+            for (let j = 0; j < featureAttributeOrder.length; j++) {
+                let curDecoder = binaryAttributeDecoders[featureAttributeOrder[j]];
+                if (!curDecoder) {
+                    console.log(featureAttributeOrder[j]);
+                }
+                offset = curDecoder(decodedGeometry, buffer, offset);
+            }
         }
-      }
     } catch (e) {
-      //console.warn(e);
+        //console.warn(e);
     }
 
     decodedGeometry.scale_x = 1;
@@ -570,7 +570,7 @@ function buildMaterial(index, gltf, material, buffers, supportedFormats, maxText
         });
     });
     return Promise.all(converted).then(texImages => {
-       _buildMaterial(index, gltf, material, texImages);
+        _buildMaterial(index, gltf, material, texImages);
     });
 
 }

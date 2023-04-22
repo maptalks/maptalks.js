@@ -141,7 +141,7 @@ export default class Accessor {
             if (this._enableInterleave) {
                 bufferData.byteStride = byteStride;
                 bufferData.byteOffset = start + (accessor.byteOffset || 0);
-               //如果有共用buffer
+                //如果有共用buffer
                 if (!byteStride || byteStride === itemSize * ctor.BYTES_PER_ELEMENT || name === 'indices' || name === 'input' || name === 'output' || name.indexOf('morph') >= 0) {
                     bufferData.array = this._typedArray(arrayBuffer, accessor.count, itemSize, start + (accessor.byteOffset || 0), ctor);
                     if (bufferData.array.buffer.byteLength === bufferData.byteLength) {

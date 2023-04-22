@@ -20,7 +20,7 @@ describe('3dtiles layer', () => {
     });
 
     function createMap(center) {
-        var option = {
+        const option = {
             zoom: 17,
             center: center || [0, 0]
         };
