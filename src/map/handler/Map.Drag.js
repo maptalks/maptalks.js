@@ -180,14 +180,14 @@ class MapDragHandler extends Handler {
         }
 
         if (this._rotateMode.indexOf('rotate') >= 0 && map.options['dragRotate']) {
-
+            const factor = 0.1;
             let db = 0;
             if (map.options['dragPitch'] || dx > dy) {
-                db = -0.6 * (this.preX - mx);
+                db = -factor * (this.preX - mx);
             } else if (mx > map.width / 2) {
-                db = 0.6 * (this.preY - my);
+                db = factor * (this.preY - my);
             } else {
-                db = -0.6 * (this.preY - my);
+                db = -factor * (this.preY - my);
             }
             const bearing = map.getBearing() + db;
             this._db = this._db || 0;
@@ -196,7 +196,7 @@ class MapDragHandler extends Handler {
             map._setBearing(bearing);
         }
         if (this._rotateMode.indexOf('pitch') >= 0 && map.options['dragPitch']) {
-            map._setPitch(map.getPitch() + (this.preY - my) * 0.4);
+            map._setPitch(map.getPitch() + (this.preY - my) * 0.1);
         }
         this.preX = mx;
         this.preY = my;

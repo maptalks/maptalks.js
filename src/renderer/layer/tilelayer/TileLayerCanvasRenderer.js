@@ -72,7 +72,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this._parentTiles = [];
         this._childTiles = [];
         this._tileQueue = [];
-        this.tileCache = new LRUCache(layer.options['maxCacheSize'], this.deleteTile.bind(this));
+        this.tileCache = new LRUCache(layer.options['maxCacheSize'], tile => {
+            this.deleteTile(tile);
+        });
         if (Browser.decodeImageInWorker && this.layer.options['decodeImageInWorker'] && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
             this._tileImageWorkerConn = new TileWorkerConnection();
         }
@@ -274,8 +276,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         };
     }
 
+    removeTileCache(tileId) {
+        delete this.tilesInView[tileId];
+        this.tileCache.remove(tileId);
+    }
+
     isTileCachedOrLoading(tileId) {
         return this.tileCache.get(tileId) || this.tilesInView[tileId] || this.tilesLoading[tileId];
+    }
+
+    isTileCached(tileId) {
+        return !!(this.tileCache.get(tileId) || this.tilesInView[tileId]);
     }
 
     isTileFadingIn(tileImage) {

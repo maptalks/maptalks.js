@@ -40,7 +40,7 @@ const builds = [
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': true,
+                'sourcemap': false,
                 'format': 'umd',
                 'name': 'maptalks',
                 banner,
