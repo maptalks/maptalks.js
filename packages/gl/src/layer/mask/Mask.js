@@ -133,6 +133,10 @@ export default class Mask extends Polygon {
 
     containsPoint(coordinate) {
         const coordinates = this.getShell();
+        const extent = this.getExtent();
+        if (coordinate.x < extent.x || coordinate.x > extent.x || coordinate.y < extent.y || coordinate.y > extent.y) {
+            return false;
+        }
         const maskArea = this._calMaskArea();
         let totalArea = 0;
         for (let i = 0; i < coordinates.length; i++) {
