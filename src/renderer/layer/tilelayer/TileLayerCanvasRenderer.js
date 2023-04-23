@@ -279,7 +279,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileFadingIn(tileImage) {
-        return this.getTileOpacity(tileImage) < 1;
+        return this._getTileFadingOpacity(tileImage) < 1;
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext) {
@@ -629,7 +629,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
-        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage, tileInfo) : 1;
         const alpha = ctx.globalAlpha;
         if (opacity < 1) {
             ctx.globalAlpha = opacity;
@@ -840,7 +840,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         };
     }
 
-    getTileOpacity(tileImage) {
+    getTileOpacity(tileImage, tileInfo) {
+        let opacity = this._getTileFadingOpacity(tileImage);
+        if (this.layer.getJSONType() === 'GroupTileLayer') {
+            // in GroupTileLayer
+            opacity *= this.layer.getLayer(tileInfo.layer).options['opacity'];
+        }
+        return opacity;
+    }
+
+    _getTileFadingOpacity(tileImage) {
         if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
         }
