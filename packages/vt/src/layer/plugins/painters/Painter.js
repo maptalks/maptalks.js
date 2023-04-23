@@ -1148,7 +1148,7 @@ class Painter {
         if (!tile.completeTerrainQuery && this._terrainAltitudeCache && this._terrainAltitudeCache.has(id)) {
             const cachedAltitude = this._terrainAltitudeCache.getAndRemove(id);
             this._terrainAltitudeCache.add(id, cachedAltitude);
-            aTerrainAltitude.set(cachedAltitude.altitudes);
+            aTerrainAltitude.set(cachedAltitude.altitudeData);
             tile.terrainTileInfos = cachedAltitude.terrainTileInfos;
             aTerrainAltitude.dirty = true;
             tile.completeTerrainQuery = true;
@@ -1157,7 +1157,10 @@ class Painter {
         if (tile.completeTerrainQuery) {
             return;
         }
-        const renderer = this.layer.getRenderer();
+        const layer = this.layer;
+        const map = layer.getMap();
+        const renderer = layer.getRenderer();
+
         const terrainHelper = renderer && renderer.getTerrainHelper();
 
         let terrainTileInfos = tile.terrainTileInfos;
@@ -1177,6 +1180,24 @@ class Painter {
         if (!terrainChanged && tile.terrainQueryStatus) {
             return;
         }
+
+        const layerClazz = layer.constructor;
+        if (map.isInteracting()) {
+            // 地图交互时，如果留给altitudeQuery的时间片用完，则不再继续
+            const timestamp = renderer.getFrameTimestamp();
+
+            if (layerClazz.altitudeQueryFrameTimestamp !== timestamp) {
+                layerClazz.altitudeQueryFrameTimestamp = timestamp;
+                layerClazz.altitudeQueryFrameTime = 0;
+            }
+            const timeLimit = layer.options['altitudeQueryTimeLimitPerFrame'];
+            if (layerClazz.altitudeQueryFrameTime > timeLimit) {
+                return;
+            }
+        }
+
+        const startTime = performance.now();
+
         tile.terrainQueryStatus = queryStatus;
 
         const { xmin, ymax } = extent2d;
@@ -1240,12 +1261,13 @@ class Painter {
                 complete = false;
             }
         }
+        layerClazz.altitudeQueryFrameTime = (layerClazz.altitudeQueryFrameTime || 0) + (performance.now() - startTime);
         tile.completeTerrainQuery = complete;
         if (complete) {
             if (!this._terrainAltitudeCache) {
                 this._terrainAltitudeCache = new maptalks.LRUCache(this.layer.options['maxCacheSize'] * 4);
             }
-            this._terrainAltitudeCache.add(id, { altitude: aTerrainAltitude, terrainTileInfos });
+            this._terrainAltitudeCache.add(id, { altitudeData: aTerrainAltitude, terrainTileInfos });
         }
     }
 }

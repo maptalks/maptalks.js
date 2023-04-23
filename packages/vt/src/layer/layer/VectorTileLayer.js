@@ -54,7 +54,9 @@ const defaultOptions = {
 
     debugTileData: false,
     fetchOptions: null,
-    awareOfTerrain: true
+    awareOfTerrain: true,
+
+    altitudeQueryTimeLimitPerFrame: 3,
 };
 
 /**
