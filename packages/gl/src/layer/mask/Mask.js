@@ -1,4 +1,4 @@
-import { Coordinate, Polygon } from "maptalks";
+import { Coordinate, Polygon, Point } from "maptalks";
 import * as reshader from '@maptalks/reshader.gl';
 import { mat4, quat } from 'gl-matrix';
 import earcut from 'earcut';
@@ -13,7 +13,7 @@ const DEFAULT_SYMBOL = {
     polygonOpacity: 0.8
 };
 const TRIANGLE_POINT_A = new Coordinate(0, 0), TRIANGLE_POINT_B = new Coordinate(0, 0), TRIANGLE = [];
-const TEMP_COORD = new Coordinate(0, 0);
+const TEMP_COORD = new Coordinate(0, 0), TEMP_POINT0 = new Point(0, 0), TEMP_POINT1 = new Point(0, 0), TEMP_POINT2 = new Point(0, 0);
 export default class Mask extends Polygon {
     getMode() {
         return this._mode;
@@ -132,12 +132,22 @@ export default class Mask extends Polygon {
     }
 
     containsPoint(coordinate) {
-        const coordinates = this.getShell();
         const extent = this.getExtent();
-        if (coordinate.x < extent.x || coordinate.x > extent.x || coordinate.y < extent.y || coordinate.y > extent.y) {
+        if (!extent.contains(coordinate)) {
             return false;
         }
-        const maskArea = this._calMaskArea();
+        const holes = this.getHoles();
+        for (let i = 0; i < holes.length; i++) {
+            if (this._contains(holes[i], coordinate)) {
+                return false;
+            }
+        }
+        const coordinates = this.getShell();
+        return this._contains(coordinates, coordinate);
+    }
+
+    _contains(coordinates, coordinate) {
+        const area = this._calArea(coordinates);
         let totalArea = 0;
         for (let i = 0; i < coordinates.length; i++) {
             TRIANGLE_POINT_A.x = coordinates[i].x;
@@ -153,29 +163,20 @@ export default class Mask extends Polygon {
             const area = this._calArea(TRIANGLE);
             totalArea += area;
         }
-        if (Math.abs(totalArea - maskArea) > 1e-8) {
+        if (Math.abs(totalArea - area) > 1e-8) {
             return false;
         }
         return true;
     }
 
-    _calMaskArea() {
-        const shell = this.getShell();
-        const holes = this.getHoles();
-        let area = this._calArea(shell);
-        for (let i = 0; i < holes.length; i++) {
-            area -= this._calArea(holes[i]);
-        }
-        return area;
-    }
-
     _calArea(coordinates) {
         const map = this.getMap();
-        let area = 0
-        const point0 = map.coordinateToPointAtRes(coordinates[0], map.getGLRes());
+        let area = 0;
+        const glRes = map.getGLRes();
+        const point0 = map.coordToPointAtRes(coordinates[0], glRes, TEMP_POINT0);
         for (let i = 1; i < coordinates.length - 1; i++) {
-            const point1 = map.coordinateToPointAtRes(coordinates[i], map.getGLRes());
-            const point2 = map.coordinateToPointAtRes(coordinates[i + 1], map.getGLRes());
+            const point1 = map.coordToPointAtRes(coordinates[i], glRes, TEMP_POINT1);
+            const point2 = map.coordToPointAtRes(coordinates[i + 1], glRes, TEMP_POINT2);
             area += Math.abs(det(point0, point1, point2)) / 2;
         }
         return area;

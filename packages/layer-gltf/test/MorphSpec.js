@@ -8,7 +8,7 @@ describe('morph', () => {
         removeMap(map);
     });
 
-    //TODO,增加矩阵判断
+    // TODO,增加矩阵判断
     it('add gltf marker with morph', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
         const marker = new maptalks.GLTFMarker(center, {
@@ -44,6 +44,7 @@ describe('morph', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             marker.setShader('phong');
+            marker.setUniform('materialShininess', 32);
             done();
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);

@@ -34,8 +34,8 @@ describe('setMask', () => {
         ]
     ];
 
-    
-    
+
+
     const symbol1 = {
         polygonFill: "#f00",
         polygonOpacity: 0.5
@@ -331,7 +331,7 @@ describe('setMask', () => {
                 scaleZ: 2
             }
         }).addTo(gltflayer);
-        
+
         function hide() {
             mask.hide();
             setTimeout(function() {
@@ -340,7 +340,7 @@ describe('setMask', () => {
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
                 expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
                 done();
-            }, 100);  
+            }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
@@ -368,7 +368,7 @@ describe('setMask', () => {
                 scaleZ: 2
             }
         }).addTo(gltflayer);
-        
+
         function pause() {
             mask.pause();
             setTimeout(function() {
@@ -377,7 +377,7 @@ describe('setMask', () => {
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
                 expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
                 done();
-            }, 100);  
+            }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
@@ -553,6 +553,34 @@ describe('setMask', () => {
                 done();
             }
         });
+        gltflayer.setMask(mask);
+    });
+
+    it('identify mask with holes', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url4,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.once('load', () => {
+            setTimeout(function() {
+                const resultsInHole = gltflayer.identify(center);
+                expect(resultsInHole.length).to.be.eql(1);
+                expect(resultsInHole[0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+
+                const resultsOutHole = gltflayer.identify(center.add(0.0004398822784423828, 0));
+                expect(resultsOutHole.length).to.be.eql(2);
+                expect(resultsOutHole[0] instanceof maptalks.ColorMask).to.be.eql(true);
+                expect(resultsOutHole[1].data instanceof maptalks.GLTFMarker).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const mask = new maptalks.ColorMask(holes);
         gltflayer.setMask(mask);
     });
 });
