@@ -279,7 +279,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isTileFadingIn(tileImage) {
-        return this.getTileOpacity(tileImage) < 1;
+        return this._getTileFadingOpacity(tileImage) < 1;
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, parentContext) {
@@ -298,6 +298,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context, parentContext);
 
         if (this.layer.options['opacity'] === 1) {
+            const fadingAnimation = this.layer.options['fadeAnimation'];
+            this.layer.options['fadeAnimation'] = false;
             // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
@@ -305,6 +307,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingParentTiles;
+            this.layer.options['fadeAnimation'] = fadingAnimation;
         }
 
         this.drawingCurrentTiles = true;
@@ -315,12 +318,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingCurrentTiles;
 
         if (this.layer.options['opacity'] < 1) {
+            const fadingAnimation = this.layer.options['fadeAnimation'];
+            this.layer.options['fadeAnimation'] = false;
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingChildTiles;
             this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingParentTiles;
+            this.layer.options['fadeAnimation'] = fadingAnimation;
         }
 
         placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
@@ -629,11 +635,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
-        const opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
+        const opacity = this.getTileOpacity(tileImage, tileInfo);
         const alpha = ctx.globalAlpha;
         if (opacity < 1) {
             ctx.globalAlpha = opacity;
-            this.setToRedraw();
         }
         if (!transformed) {
             cp._round();
@@ -840,7 +845,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         };
     }
 
-    getTileOpacity(tileImage) {
+    getTileOpacity(tileImage, tileInfo) {
+        let opacity = this._getTileFadingOpacity(tileImage);
+        if (this.layer.getJSONType() === 'GroupTileLayer') {
+            // in GroupTileLayer
+            const childLayer = this.layer.getLayer(tileInfo.layer);
+            if (childLayer) {
+                opacity *= childLayer.options['opacity'];
+            }
+        }
+        return opacity;
+    }
+
+    _getTileFadingOpacity(tileImage) {
         if (!this.layer.options['fadeAnimation'] || !tileImage.loadTime) {
             return 1;
         }

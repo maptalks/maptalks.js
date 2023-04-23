@@ -168,6 +168,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this._renderer) {
             this._renderer.setZIndex(zIndex);
         }
+        this.fire('setzindex', { zIndex });
         return this;
     }
 
