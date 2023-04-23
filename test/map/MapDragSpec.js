@@ -113,7 +113,7 @@ describe('Map.Drag', function () {
         map.on('animateend', function () {
             done();
         });
-        dragToRotate(20);
+        dragToRotate(40);
         expect(map.getBearing()).not.to.be.eql(bearing);
     });
 
