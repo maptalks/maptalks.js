@@ -330,10 +330,11 @@ describe('GroupTileLayer', function () {
         var group =  new maptalks.GroupTileLayer('base', [
            tileLayer1
         ], {
-            renderer : 'canvas'
+            renderer : 'canvas',
+            fadingAnimation: false
         });
         group.once('layerload', function () {
-            expect(group).to.be.painted(0, 0, [0, 255, 0, 127]);
+            expect(group).to.be.painted(0, 0, [255, 0, 0, 191]);
             done();
         });
         map.addLayer(group);
