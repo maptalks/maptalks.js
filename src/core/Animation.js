@@ -96,6 +96,14 @@ class Frame {
         this.state = state;
         this.styles = styles;
     }
+
+    get playState() {
+        return this.state.playState;
+    }
+
+    get symbol() {
+        return this.styles.symbol;
+    }
 }
 
 /**
@@ -542,5 +550,5 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
 
     }
 });
-
-export { Animation, Easing, Player, Frame };
+const animate = Animation.animate;
+export { Animation, Easing, Player, Frame, animate };

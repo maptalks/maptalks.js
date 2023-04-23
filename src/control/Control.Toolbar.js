@@ -164,14 +164,14 @@ class Toolbar extends Control {
         if (this.options['vertical']) {
             const width = liWidth < 95 ? 95 : liWidth;
             if (this.options['reverseMenu']) {
-                menuDom.style.right = -(width + 10 * 2) + 'px';
+                menuDom.style.right = -(width + 10 * 2 + 2) + 'px';
             } else {
-                menuDom.style.left = -(width + 10 * 2) + 'px'; // 10: padding in .maptalks-toolbar-vertical li
+                menuDom.style.left = -(width + 10 * 2 + 2) + 'px'; // 10: padding in .maptalks-toolbar-vertical li
             }
         } else if (this.options['reverseMenu']) {
             menuDom.style.bottom = '28px';
         } else {
-            menuDom.style.top = '28px';
+            menuDom.style.top = '29px';
         }
         menuDom.appendChild(menuUL);
         menuDom.style.display = 'none';

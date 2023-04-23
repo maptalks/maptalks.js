@@ -111,7 +111,7 @@ describe('Geometry.Marker', function () {
         it('can be icon', function (done) {
             var marker = new maptalks.Marker(center, {
                 symbol: {
-                    markerFile: 'images/control/infownd-close-hover.png',
+                    markerFile: 'resources/infownd-close-hover.png',
                     markerWidth: 30,
                     markerHeight: 22
                 }
@@ -180,7 +180,7 @@ describe('Geometry.Marker', function () {
             it('bottom-right', function (done) {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
-                        markerFile: 'images/control/infownd-close-hover.png',
+                        markerFile: 'resources/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
                         markerHorizontalAlignment: 'right',
@@ -199,7 +199,7 @@ describe('Geometry.Marker', function () {
             it('top-left', function (done) {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
-                        markerFile: 'images/control/infownd-close-hover.png',
+                        markerFile: 'resources/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
                         markerHorizontalAlignment: 'left',
@@ -218,7 +218,7 @@ describe('Geometry.Marker', function () {
             it('middle-middle', function (done) {
                 var marker = new maptalks.Marker(center, {
                     symbol: {
-                        markerFile: 'images/control/infownd-close-hover.png',
+                        markerFile: 'resources/infownd-close-hover.png',
                         markerWidth: 30,
                         markerHeight: 22,
                         markerHorizontalAlignment: 'middle',
@@ -421,7 +421,7 @@ describe('Geometry.Marker', function () {
 
         var geometry = new maptalks.Marker(center, {
             symbol: {
-                markerFile: 'images/control/infownd-close-hover.png',
+                markerFile: 'resources/infownd-close-hover.png',
                 markerHeight: 30,
                 markerWidth: 22,
                 dx: 0,
@@ -446,7 +446,7 @@ describe('Geometry.Marker', function () {
     it('get image marker\'s extent', function (done) {
         var geometry = new maptalks.Marker(map.getExtent().getMin().substract(1E-7, 0), {
             symbol: {
-                markerFile: 'images/control/infownd-close-hover.png'
+                markerFile: 'resources/infownd-close-hover.png'
             }
         });
         layer = new maptalks.VectorLayer('id').addGeometry(geometry);
@@ -843,7 +843,7 @@ describe('Geometry.Marker', function () {
             var marker = new maptalks.Marker(map.getCenter());
             marker.rotate(10, map.getCenter().sub(1, 1));
             var newCoords = marker.getCoordinates().toArray();
-            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579005]);
+            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579001]);
         });
     });
 });

@@ -471,6 +471,8 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         const projection = this.getProjection();
         const center = projection.unproject(this._prjCenter);
+        center.x = Math.round(center.x * 1E8) / 1E8;
+        center.y = Math.round(center.y * 1E8) / 1E8;
         if (this.centerAltitude) {
             center.z = this.centerAltitude;
         }

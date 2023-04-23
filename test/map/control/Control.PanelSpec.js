@@ -30,7 +30,7 @@ describe('Control.Panel', function () {
         });
         map.addControl(panel);
         expect(panel.getContainer().innerHTML).to.be.eql(
-            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">面板内容</div></div>');
+            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;">×</a><div class="maptalks-panel-content">面板内容</div></div>');
     });
 
     it('update a panel', function () {
@@ -49,7 +49,7 @@ describe('Control.Panel', function () {
         panel.setContent(content);
         expect(panel.getContent()).to.be.eql(content);
         expect(panel.getContainer().innerHTML).to.be.eql(
-            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;"></a><div class="maptalks-panel-content">changed</div></div>');
+            '<div class="maptalks-panel"><a class="maptalks-close" href="javascript:;">×</a><div class="maptalks-panel-content">changed</div></div>');
     });
 
     function dragPanel(panel) {

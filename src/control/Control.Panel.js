@@ -58,6 +58,7 @@ class Panel extends Control {
             dom = createEl('div', 'maptalks-panel');
             if (this.options['closeButton']) {
                 const closeButton = createEl('a', 'maptalks-close');
+                closeButton.innerText = '×';
                 closeButton.href = 'javascript:;';
                 closeButton.onclick = function () {
                     dom.style.display = 'none';

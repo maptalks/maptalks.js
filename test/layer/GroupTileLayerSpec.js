@@ -290,4 +290,53 @@ describe('GroupTileLayer', function () {
         });
         map.addLayer(group);
     });
+
+    it('respect zIndex of child layers', function (done) {
+        var tileLayer1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : 'resources/tile-red-256.png'
+        });
+
+        var tileLayer2 = new maptalks.TileLayer('tile2', {
+            urlTemplate : 'resources/tile-green-256.png',
+
+        });
+        var group =  new maptalks.GroupTileLayer('base', [
+           tileLayer1, tileLayer2
+        ], {
+            renderer : 'canvas'
+        });
+        var count = 0;
+        group.on('layerload', function () {
+            count++;
+            if (count === 1) {
+                expect(group).to.be.painted(0, 0, [0, 255, 0]);
+                tileLayer2.setZIndex(1);
+                tileLayer1.setZIndex(2);
+            } else if (count === 2) {
+                expect(group).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            }
+
+        });
+        map.addLayer(group);
+    });
+
+    it('respect opacity of child layers', function (done) {
+        var tileLayer1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : 'resources/tile-red-256.png',
+            opacity: 0.5
+        });
+
+        var group =  new maptalks.GroupTileLayer('base', [
+           tileLayer1
+        ], {
+            renderer : 'canvas',
+            fadingAnimation: false
+        });
+        group.once('layerload', function () {
+            expect(group).to.be.painted(0, 0, [255, 0, 0, 191]);
+            done();
+        });
+        map.addLayer(group);
+    });
 });

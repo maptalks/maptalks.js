@@ -242,7 +242,7 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x + 1,
+            'clientX':point.x + 2,
             'clientY':point.y
         });
         expect(spy.called).not.to.be.ok();

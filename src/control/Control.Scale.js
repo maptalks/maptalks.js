@@ -35,6 +35,8 @@ const options = {
  *     containerClass : null
  * }).addTo(map);
  */
+const EVENTS_TO_LISTEN = 'zoomend moving moveend';
+
 class Scale extends Control {
 
     /**
@@ -46,7 +48,7 @@ class Scale extends Control {
         this._map = map;
         this._scaleContainer = createEl('div', this.options['containerClass']);
         this._addScales();
-        map.on('zoomend', this._update, this);
+        map.on(EVENTS_TO_LISTEN, this._update, this);
         if (this._map._loaded) {
             this._update();
         }
@@ -54,7 +56,7 @@ class Scale extends Control {
     }
 
     onRemove() {
-        this.getMap().off('zoomend', this._update, this);
+        this.getMap().off(EVENTS_TO_LISTEN, this._update, this);
     }
 
     _addScales() {
