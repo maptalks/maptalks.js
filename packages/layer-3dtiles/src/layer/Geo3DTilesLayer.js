@@ -930,6 +930,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return this;
         }
         renderer.setToRedraw();
+        return this;
     }
 
 }
