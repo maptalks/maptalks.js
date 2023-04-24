@@ -20,7 +20,6 @@ const V3 = [];
 const TILEPOINT = new maptalks.Point(0, 0);
 const ANCHOR_POINT = new maptalks.Point(0, 0);
 
-const INVALID_ALTITUDE_RESULT = [INVALID_ALTITUDE, 0];
 const ALTITUDE32 = new Float32Array(1);
 
 const EMPTY_ARRAY = [];
