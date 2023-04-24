@@ -386,7 +386,8 @@ export default class GLTFLoader {
             const p = this._accessor._requestBufferOfBufferView(bufferView).then(buf => {
                 // debugger
                 const { buffer, byteOffset } = buf;
-                let { byteOffset: viewOffset, byteLength } = bufferView;
+                let { byteOffset: viewOffset } = bufferView;
+                const byteLength = bufferView.byteLength;
                 if (!viewOffset) {
                     viewOffset = 0;
                 }

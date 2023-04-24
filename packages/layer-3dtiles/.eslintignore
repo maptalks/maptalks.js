@@ -4,3 +4,4 @@ DXTTextureDecode.js
 S3MParser-cesium.js
 S3MParser-spec.js
 meshopt_decoder.module.js
+src/worker/parsers/s3m/

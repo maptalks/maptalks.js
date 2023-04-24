@@ -20,10 +20,10 @@ const plugins = [
 ];
 
 const getGlobal = function () {
-  if (typeof self !== 'undefined') { return self; }
-  if (typeof window !== 'undefined') { return window; }
-  if (typeof global !== 'undefined') { return global; }
-  throw new Error('unable to locate global object');
+    if (typeof self !== 'undefined') { return self; }
+    if (typeof window !== 'undefined') { return window; }
+    if (typeof global !== 'undefined') { return global; }
+    throw new Error('unable to locate global object');
 };
 
 const printVer = `typeof console !== 'undefined' && console.log('${pkg.name} v${pkg.version}');\n`;
@@ -89,10 +89,10 @@ if (production) {
             external : ['@maptalks/gl/dist/transcoders'],
             plugins : plugins.concat([
                 replace({
-                  // '(function(A) {': 'function (A) {',
-                  'export { promisify as default };': 'return promisify;',
-                  preventAssignment: false,
-                  delimiters: ['', '']
+                    // '(function(A) {': 'function (A) {',
+                    'export { promisify as default };': 'return promisify;',
+                    preventAssignment: false,
+                    delimiters: ['', '']
                 }),
                 terserPlugin
             ]),

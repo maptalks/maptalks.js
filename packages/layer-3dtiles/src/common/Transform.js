@@ -227,13 +227,13 @@ export function geodeticSurfaceNormalCartographic(
     cartographic,
     result
 ) {
-    let longitude = cartographic[0];
-    let latitude = cartographic[1];
-    let cosLatitude = Math.cos(latitude);
+    const longitude = cartographic[0];
+    const latitude = cartographic[1];
+    const cosLatitude = Math.cos(latitude);
 
-    let x = cosLatitude * Math.cos(longitude);
-    let y = cosLatitude * Math.sin(longitude);
-    let z = Math.sin(latitude);
+    const x = cosLatitude * Math.cos(longitude);
+    const y = cosLatitude * Math.sin(longitude);
+    const z = Math.sin(latitude);
 
     result.x = x;
     result.y = y;

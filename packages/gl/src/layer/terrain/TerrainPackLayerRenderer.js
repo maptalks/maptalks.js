@@ -100,7 +100,7 @@ export default class TerrainPackLayerRenderer extends maptalks.renderer.TileLaye
     _createTerrainMesh(tileInfo, terrainData) {
         // create mesh
         if (!tileInfo || !terrainData) {
-            return;
+            return null;
         }
         const { skins, terrainGeo } = terrainData;
         const geo = new reshader.Geometry({

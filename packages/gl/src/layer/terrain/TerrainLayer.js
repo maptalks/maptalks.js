@@ -140,7 +140,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
                 const layerTiles = [];
                 const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, offset, scale, 0);
                 for (let j = 0; j < tileIds.length; j++) {
-                    let skinTile = tileIds[j];
+                    const skinTile = tileIds[j];
                     if (skinTileIds.has(skinTile.id)) {
                         continue;
                     }

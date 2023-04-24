@@ -178,7 +178,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const { x, y, z, res, offset } = tileInfo;
         const tileSize = this.layer.getTileSize().width;
         let w = tileSize;
-        let h = tileSize;
+        const h = tileSize;
 
         // const zoom = this.getCurrentTileZoom();
         const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
@@ -375,7 +375,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         const scale = tileInfo.res / map.getGLRes();
 
-        let terrainScale = (tileSize + 2) / terrainWidth;
+        const terrainScale = (tileSize + 2) / terrainWidth;
 
         const { extent2d, offset } = tileInfo;
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
@@ -595,7 +595,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _findTerrainData(x, y, z, limit) {
         const tileId = this.layer['_getTileId'](x, y, z);
-        let terrainData = this.tilesInView[tileId] || this.tileCache.get(tileId);
+        const terrainData = this.tilesInView[tileId] || this.tileCache.get(tileId);
         if (!terrainData && limit <= 0) {
             return this._findTerrainData(Math.floor(x / 2), Math.floor(y / 2), z - 1, limit + 1);
         }

@@ -87,7 +87,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     _initRoots() {
-        let urls = this.options.services.map(service => service.url);
+        const urls = this.options.services.map(service => service.url);
         this._roots = urls.map((url, idx) => createRootTile(url, idx));
         this.fire('rootready', { roots : this._roots.slice(0) });
     }

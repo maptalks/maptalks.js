@@ -51,14 +51,14 @@ HeadingPitchRoll.fromQuaternion = function (quaternion, result) {
     if (!defined(result)) {
         result = new HeadingPitchRoll();
     }
-    let test = 2 * (quaternion.w * quaternion.y - quaternion.z * quaternion.x);
-    let denominatorRoll =
+    const test = 2 * (quaternion.w * quaternion.y - quaternion.z * quaternion.x);
+    const denominatorRoll =
     1 - 2 * (quaternion.x * quaternion.x + quaternion.y * quaternion.y);
-    let numeratorRoll =
+    const numeratorRoll =
     2 * (quaternion.w * quaternion.x + quaternion.y * quaternion.z);
-    let denominatorHeading =
+    const denominatorHeading =
     1 - 2 * (quaternion.y * quaternion.y + quaternion.z * quaternion.z);
-    let numeratorHeading =
+    const numeratorHeading =
     2 * (quaternion.w * quaternion.z + quaternion.x * quaternion.y);
     result.heading = -Math.atan2(numeratorHeading, denominatorHeading);
     result.roll = Math.atan2(numeratorRoll, denominatorRoll);

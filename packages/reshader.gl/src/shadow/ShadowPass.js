@@ -3,7 +3,7 @@ import { mat4, vec4, vec3 } from 'gl-matrix';
 import ShadowMapShader from './ShadowMapShader';
 import BoxShadowBlurShader from '../shader/BoxShadowBlurShader';
 
-let getFrustumWorldSpace, getDirLightCameraProjView;
+let getFrustumWorldSpace = null, getDirLightCameraProjView = null;
 
 class ShadowPass {
     constructor(renderer, { width, height, blurOffset, defines }) {
@@ -183,7 +183,7 @@ getDirLightCameraProjView = function () {
     const v3 = new Array(3);
     let lvMatrix = new Array(16);
     let lpMatrix = new Array(16);
-    let cropMatrix = new Array(16);
+    const cropMatrix = new Array(16);
     const scaleV = [1, 1, 1];
     const offsetV = [0, 0, 0];
     return function (cameraLookAt, frustum, lightDir) {

@@ -54,7 +54,7 @@ export default class RainRipplePass {
 
     _transformRipples(map) {
         const center = map.coordinateToPointAtRes(map.getCenter(), map.getGLRes());
-        let ratio = map.getGLScale() / map.getGLScale(this._fixZoom);
+        const ratio = map.getGLScale() / map.getGLScale(this._fixZoom);
         const v3 = vec3.set(TEMP_SCALE, ratio, ratio, ratio);
         const scale = vec3.multiply(v3, DEFALUT_SCALE, v3);
         const transformat = mat4.identity(TEMP_MAT);

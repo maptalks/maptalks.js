@@ -190,7 +190,7 @@ class ShadowProcess {
             return true;
         }
         const meshes = scene.getMeshes();
-        let changed = false;
+        const changed = false;
         for (let i = 0; i < meshes.length; i++) {
             const saved = this._renderedShadows[meshes[i].uuid];
             if (meshes[i].castShadow &&

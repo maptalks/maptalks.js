@@ -49,7 +49,7 @@ export default class TextureCache {
 
     addCachedTexture(target, url, config) {
         const key = getKey(url, config);
-        let cached = this._cache[key];
+        const cached = this._cache[key];
         if (!cached) {
             this._cache = {
                 data: this.regl.texture(config),

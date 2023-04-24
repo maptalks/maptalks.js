@@ -17,6 +17,8 @@
   },
   "rules": {
     "indent": "error",
-    "no-var": "error"
+    "no-var": "error",
+    "prefer-const": "error",
+    "consistent-return": "error"
   }
 }

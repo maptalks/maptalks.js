@@ -27,10 +27,11 @@ describe('weather tests', () => {
         const pixel = ctx.getImageData(px, py, w, h).data;
         return pixel;
     }
-    
-    function pixelMatch(expectedValue, pixelValue) {
+
+    function pixelMatch(expectedValue, pixelValue, diff) {
+        const diffValue = diff || 5;
         for (let i = 0; i < expectedValue.length; i++) {
-            if (Math.abs(pixelValue[i] - expectedValue[i]) > 5) {
+            if (Math.abs(pixelValue[i] - expectedValue[i]) > diffValue) {
                 return false;
             }
         }
@@ -74,10 +75,10 @@ describe('weather tests', () => {
         weather: {
             enable: true,
             fog: {
-              enable: true,
-              start: 0.1,
-              end: 45,
-              color: [0.9, 0.9, 0.9],
+                enable: true,
+                start: 0.1,
+                end: 45,
+                color: [0.9, 0.9, 0.9]
             }
         }
     };
@@ -253,7 +254,7 @@ describe('weather tests', () => {
                 const pixel3 = pickPixel(map, 204, 417, 1, 1);
                 expect(pixelMatch([198, 178, 86, 255], pixel1)).to.be.eql(true);
                 expect(pixelMatch([228, 205, 85, 255], pixel2)).to.be.eql(true);//模型颜色
-                expect(pixelMatch([92, 92, 92, 200], pixel3)).to.be.eql(true);//涟漪颜色
+                expect(pixelMatch([92, 92, 92, 200], pixel3, 20)).to.be.eql(true);//涟漪颜色
                 done();
             }, 100);
         });

@@ -28,7 +28,7 @@ export default function (Base) {
                 }
             } else {
                 this._renderExtentMap(extent, projViewMatrix, ratio, minHeight);
-            } 
+            }
         }
 
         needToRedraw() {
@@ -38,6 +38,7 @@ export default function (Base) {
             if (this._hasPlayingVideoMask()) {
                 return true;
             }
+            return false;
         }
 
         _renderExtentMap(extent, projViewMatrix, ratio, minHeight) {
@@ -96,7 +97,7 @@ export default function (Base) {
                 }
             }
         }
-    
+
         _hasOutMask(outType) {
             const masks = this.layer.getMasks();
             for (let i = 0; i < masks.length; i++) {

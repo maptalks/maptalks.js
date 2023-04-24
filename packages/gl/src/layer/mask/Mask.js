@@ -27,6 +27,7 @@ export default class Mask extends Polygon {
         layer.removeMask(this);
         this._dispose();
         super.remove();
+        return this;
     }
 
     getMesh(regl, ratio, minHeight) {

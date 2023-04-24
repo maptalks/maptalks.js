@@ -101,7 +101,9 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
     for (const id of ids) {
         if (feaIdIndiceMap.has(id)) {
             // update attribute data
-            let { color, opacity, bloom, visible } = highlighted.get(id);
+            const highlightedData = highlighted.get(id);
+            const { color, bloom, visible } = highlightedData;
+            let { opacity } = highlightedData;
             let normalizedColor;
             if (color) {
                 if (!hasColor) {

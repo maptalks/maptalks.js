@@ -106,7 +106,7 @@ class LRUCache {
         const keys = new Array(this.data.size);
         let i = 0;
         const iterator = this.data.keys();
-        for (let k of iterator) {
+        for (const k of iterator) {
             keys[i++] = k;
         }
         return keys;

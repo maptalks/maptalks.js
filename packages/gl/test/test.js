@@ -25,10 +25,10 @@ describe('gl tests', () => {
                 ground: {
                     enable: true,
                     renderPlugin: {
-                      type: 'fill'
+                        type: 'fill'
                     },
                     symbol: {
-                      polygonFill: '#f00'
+                        polygonFill: '#f00'
                     }
                 }
             };
@@ -347,56 +347,56 @@ describe('gl tests', () => {
                 zoom: 12
             });
             const lights = {
-              ambient: {
-                resource: {
-                  // url: './resources/venice_sunset_2k.hdr',
-                  url: {
-                    front: '/resources/skybox_bridge/posx.jpg',
-                    back: '/resources/skybox_bridge/negx.jpg',
-                    right: '/resources/skybox_bridge/posy.jpg',
-                    left: '/resources/skybox_bridge/negy.jpg',
-                    top: '/resources/skybox_bridge/posz.jpg',
-                    bottom: '/resources/skybox_bridge/negz.jpg'
-                  },
-                  prefilterCubeSize: 512,
+                ambient: {
+                    resource: {
+                        // url: './resources/venice_sunset_2k.hdr',
+                        url: {
+                            front: '/resources/skybox_bridge/posx.jpg',
+                            back: '/resources/skybox_bridge/negx.jpg',
+                            right: '/resources/skybox_bridge/posy.jpg',
+                            left: '/resources/skybox_bridge/negy.jpg',
+                            top: '/resources/skybox_bridge/posz.jpg',
+                            bottom: '/resources/skybox_bridge/negz.jpg'
+                        },
+                        prefilterCubeSize: 512,
+                    },
+                    exposure: 1.5,
+                    orientation: 0
                 },
-                exposure: 1.5,
-                orientation: 0
-              },
-              directional: {
-                color : [0.1, 0.1, 0.1],
-                direction : [1, 0, -1]
-              }
+                directional: {
+                    color : [0.1, 0.1, 0.1],
+                    direction : [1, 0, -1]
+                }
             };
             map.setLights(lights);
             map.setPitch(80);
             const sceneConfig = {
-              environment: {
-                enable: true,
-                mode: 1,
-                level: 0
-              },
-              ground: {
-                enable: true,
-                renderPlugin: {
-                  type: 'lit'
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
                 },
-                symbol: {
-                  material: {
-                      'baseColorFactor': [1, 1, 1, 1],
-                      'roughnessFactor': 0.,
-                      'metalnessFactor': 1,
-                      'outputSRGB': 0,
-                      'hsv': [0, 0, 0],
-                      'contrast': 1.5
-                  },
-                  polygonFill: [1, 1, 1, 1],
-                  polygonOpacity: 1
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'lit'
+                    },
+                    symbol: {
+                        material: {
+                            'baseColorFactor': [1, 1, 1, 1],
+                            'roughnessFactor': 0.,
+                            'metalnessFactor': 1,
+                            'outputSRGB': 0,
+                            'hsv': [0, 0, 0],
+                            'contrast': 1.5
+                        },
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    }
+                },
+                postProcess: {
+                    enable: true,
                 }
-              },
-              postProcess: {
-                enable: true,
-              }
             };
             map.on('updatelights', () => {
                 setTimeout(() => {

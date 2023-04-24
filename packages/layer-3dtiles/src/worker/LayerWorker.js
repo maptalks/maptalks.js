@@ -345,7 +345,7 @@ export default class BaseLayerWorker {
     _loadI3DMAndPNTS(content, transform, rootIdx) {
         const { featureTable } = content;
         const data = content.pnts || content.i3dm;
-        let rtcCenter = featureTable && featureTable['RTC_CENTER'] || [0, 0, 0];
+        const rtcCenter = featureTable && featureTable['RTC_CENTER'] || [0, 0, 0];
 
         if (featureTable['EAST_NORTH_UP'] && !data['NORMAL_UP'] && !data['NORMAL_UP_OCT32P']) {
             // 3 * 3 rotation matrix
@@ -463,7 +463,7 @@ export default class BaseLayerWorker {
     }
 
     _getModelCenter(gltf, featureTable, upAxis, transform) {
-        let rtcCenter = featureTable && featureTable['RTC_CENTER'] || gltf.extensions && gltf.extensions['CESIUM_RTC'] && gltf.extensions['CESIUM_RTC'].center;
+        const rtcCenter = featureTable && featureTable['RTC_CENTER'] || gltf.extensions && gltf.extensions['CESIUM_RTC'] && gltf.extensions['CESIUM_RTC'].center;
         let upAxisTransform = Y_TO_Z;
         upAxis = upAxis && upAxis.toUpperCase();
         if (upAxis === 'X') {
@@ -593,7 +593,7 @@ export default class BaseLayerWorker {
                 }
                 // debugger
                 const { newPositions } = this._projVertices(primitive.attributes['POSITION'], primitive.matrices, rtcCenter, gltf.extensions['MAPTALKS_RTC'], upAxis, transform, primitive.compressUniforms);
-                let { componentType } = primitive.attributes['POSITION'];
+                const { componentType } = primitive.attributes['POSITION'];
                 if (componentType !== 5126) {
                     primitive.attributes['POSITION'].array = new Float32Array(newPositions);
                 }
@@ -654,7 +654,7 @@ export default class BaseLayerWorker {
         // 多个primitive可能共享同一个POSITION，此时只需要遍历一次
         // 例子: Batched/BatchedColors
         if (vertices.array.buffer.projected && vertices.array.buffer.projected[vertices.byteOffset]) {
-            return;
+            return null;
         }
         const nodeMatrix = mat4.identity([]);
         getNodeMatrix(nodeMatrix, matrices);
@@ -670,8 +670,8 @@ export default class BaseLayerWorker {
         }
         // upAxisTransform = Y_UP_TO_Z_UP;
 
-        let cartesian = [0, 0, 0, 1],
-            degree = [0, 0, 0],
+        let cartesian = [0, 0, 0, 1];
+        const degree = [0, 0, 0],
             proj = [0, 0];
         const projCenter = maptalksRTC.projCenter;
 

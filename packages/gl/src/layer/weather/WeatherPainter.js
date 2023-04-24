@@ -117,7 +117,7 @@ class WeatherPainter {
         const config = this._layer.getWeatherConfig();
         const fogConfig = config.fog;
         if (!fogConfig) {
-            return;
+            return null;
         }
         const start = fogConfig.start || 0.1, end = fogConfig.end || 100;
         options['projMatrix'] = map.projMatrix;
@@ -185,6 +185,7 @@ class WeatherPainter {
             }
             return true;
         }
+        return false;
     }
 
     _hasWeather() {

@@ -92,7 +92,7 @@ class RainPainer {
         const map = this.getMap();
         const rainConfig = this._getRainConfig();
         if (!rainConfig) {
-            return;
+            return null;
         }
         this._fixZoom = map.getZoom();
         const box = this._getFixExtent();
@@ -228,7 +228,7 @@ class RainPainer {
     _transformRain(mesh) {
         const map = this.getMap();
         const center = map.coordinateToPointAtRes(map.getCenter(), map.getGLRes());
-        let ratio = map.getGLScale() / map.getGLScale(this._fixZoom);
+        const ratio = map.getGLScale() / map.getGLScale(this._fixZoom);
         const v3 = vec3.set(TEMP_SCALE, ratio, ratio, ratio);
         const scale = vec3.multiply(v3, DEFALUT_SCALE, v3);
         const transformat = mat4.identity(TEMP_MAT);
@@ -342,11 +342,12 @@ class Clock {
         }
 
         if ( this.running ) {
-            let newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
+            const newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
             diff = ( newTime - this.oldTime ) / 1000;
             this.oldTime = newTime;
             this.elapsedTime += diff;
         }
+        return 0;
     }
 }
 

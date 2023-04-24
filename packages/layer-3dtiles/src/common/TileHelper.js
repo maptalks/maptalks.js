@@ -112,7 +112,7 @@ export function getComponentCtor(componentType) {
 }
 
 export function getComponentFromCtor(ctor) {
-    for (let p in typeMap) {
+    for (const p in typeMap) {
         if (ctor === typeMap[p].ctor) {
             return typeMap[p].type;
         }
@@ -133,14 +133,14 @@ export function convertQuantizedPosition(out, arr, offset, scale) {
 
 
 export function readFeatureTableBatchTable(view, byteOffset, transferables) {
-    let featureTableJsonByteLength = view.getUint32(12, true);
-    let featureTableBinaryByteLength = view.getUint32(16, true);
-    let batchTableJsonByteLength = view.getUint32(20, true);
-    let batchTableBinaryByteLength = view.getUint32(24, true);
+    const featureTableJsonByteLength = view.getUint32(12, true);
+    const featureTableBinaryByteLength = view.getUint32(16, true);
+    const batchTableJsonByteLength = view.getUint32(20, true);
+    const batchTableBinaryByteLength = view.getUint32(24, true);
 
     const i3dmBuf = view.buffer;
     let featureTable = {}, featureTableBin;
-    let batchTable = {}, batchTableBin;
+    let batchTable = {}, batchTableBin = null;
     if (featureTableJsonByteLength > 0) {
         featureTable = readFeatureTableJSON(i3dmBuf, byteOffset, featureTableJsonByteLength);
         byteOffset += featureTableJsonByteLength;
@@ -163,7 +163,7 @@ export function readFeatureTableBatchTable(view, byteOffset, transferables) {
 }
 
 
-let vectorProductLocalFrame = {
+const vectorProductLocalFrame = {
     up: {
         south: "east",
         north: "west",
@@ -202,7 +202,7 @@ let vectorProductLocalFrame = {
     },
 };
 
-let degeneratePositionLocalFrame = {
+const degeneratePositionLocalFrame = {
     north: [-1, 0, 0],
     east: [0, 1, 0],
     up: [0, 0, 1],
@@ -210,8 +210,8 @@ let degeneratePositionLocalFrame = {
     west: [0, -1, 0],
     down: [0, 0, -1],
 };
-let localFrameToFixedFrameCache = {};
-let scratchCalculateCartesian = {
+const localFrameToFixedFrameCache = {};
+const scratchCalculateCartesian = {
     east:[],
     north:[],
     up:[],
@@ -226,7 +226,7 @@ let scratchThirdCartesian = [];
 const ZERO = [0, 0, 0];
 
 function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
-    let thirdAxis = vectorProductLocalFrame[firstAxis][secondAxis];
+    const thirdAxis = vectorProductLocalFrame[firstAxis][secondAxis];
 
     /**
    * Computes a 4x4 transformation matrix from a reference frame
@@ -238,7 +238,7 @@ function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
    * @returns {Matrix4} The modified result parameter or a new Matrix4 instance if none was provided.
    */
     let resultat;
-    let hashAxis = firstAxis + secondAxis;
+    const hashAxis = firstAxis + secondAxis;
     if (localFrameToFixedFrameCache[hashAxis]) {
         resultat = localFrameToFixedFrameCache[hashAxis];
     } else {
@@ -255,7 +255,7 @@ function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
         equalsEpsilon(origin[1], 0.0, EPSILON14)
             ) {
                 // If x and y are zero, assume origin is at a pole, which is a special case.
-                let sign = mathSign(origin[2]);
+                const sign = mathSign(origin[2]);
 
                 vec3.copy(scratchFirstCartesian, degeneratePositionLocalFrame[firstAxis]);
                 if (firstAxis !== "east" && firstAxis !== "west") {
@@ -274,8 +274,8 @@ function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
             } else {
                 geodeticSurfaceNormal(origin, scratchCalculateCartesian.up);
 
-                let up = scratchCalculateCartesian.up;
-                let east = scratchCalculateCartesian.east;
+                const up = scratchCalculateCartesian.up;
+                const east = scratchCalculateCartesian.east;
                 east[0] = -origin[1];
                 east[1] = origin[0];
                 east[2] = 0.0;
@@ -328,37 +328,37 @@ function localFrameToFixedFrameGenerator(firstAxis, secondAxis) {
 function multiplyByMatrix3 (matrix, rotation, result) {
     //>>includeEnd('debug');
 
-    let left0 = matrix[0];
-    let left1 = matrix[1];
-    let left2 = matrix[2];
-    let left4 = matrix[4];
-    let left5 = matrix[5];
-    let left6 = matrix[6];
-    let left8 = matrix[8];
-    let left9 = matrix[9];
-    let left10 = matrix[10];
+    const left0 = matrix[0];
+    const left1 = matrix[1];
+    const left2 = matrix[2];
+    const left4 = matrix[4];
+    const left5 = matrix[5];
+    const left6 = matrix[6];
+    const left8 = matrix[8];
+    const left9 = matrix[9];
+    const left10 = matrix[10];
 
-    let right0 = rotation[0];
-    let right1 = rotation[1];
-    let right2 = rotation[2];
-    let right4 = rotation[3];
-    let right5 = rotation[4];
-    let right6 = rotation[5];
-    let right8 = rotation[6];
-    let right9 = rotation[7];
-    let right10 = rotation[8];
+    const right0 = rotation[0];
+    const right1 = rotation[1];
+    const right2 = rotation[2];
+    const right4 = rotation[3];
+    const right5 = rotation[4];
+    const right6 = rotation[5];
+    const right8 = rotation[6];
+    const right9 = rotation[7];
+    const right10 = rotation[8];
 
-    let column0Row0 = left0 * right0 + left4 * right1 + left8 * right2;
-    let column0Row1 = left1 * right0 + left5 * right1 + left9 * right2;
-    let column0Row2 = left2 * right0 + left6 * right1 + left10 * right2;
+    const column0Row0 = left0 * right0 + left4 * right1 + left8 * right2;
+    const column0Row1 = left1 * right0 + left5 * right1 + left9 * right2;
+    const column0Row2 = left2 * right0 + left6 * right1 + left10 * right2;
 
-    let column1Row0 = left0 * right4 + left4 * right5 + left8 * right6;
-    let column1Row1 = left1 * right4 + left5 * right5 + left9 * right6;
-    let column1Row2 = left2 * right4 + left6 * right5 + left10 * right6;
+    const column1Row0 = left0 * right4 + left4 * right5 + left8 * right6;
+    const column1Row1 = left1 * right4 + left5 * right5 + left9 * right6;
+    const column1Row2 = left2 * right4 + left6 * right5 + left10 * right6;
 
-    let column2Row0 = left0 * right8 + left4 * right9 + left8 * right10;
-    let column2Row1 = left1 * right8 + left5 * right9 + left9 * right10;
-    let column2Row2 = left2 * right8 + left6 * right9 + left10 * right10;
+    const column2Row0 = left0 * right8 + left4 * right9 + left8 * right10;
+    const column2Row1 = left1 * right8 + left5 * right9 + left9 * right10;
+    const column2Row2 = left2 * right8 + left6 * right9 + left10 * right10;
 
     result[0] = column0Row0;
     result[1] = column0Row1;
@@ -521,7 +521,7 @@ export function getTypedArrayCtor(type) {
 }
 
 export function getComponentType(ctor) {
-    for (let p in component_ctors) {
+    for (const p in component_ctors) {
         if (ctor === component_ctors[p]) {
             return +p;
         }

@@ -132,14 +132,10 @@ export default class TileBoundingRegion {
                 result += distanceToNorthPlane * distanceToNorthPlane;
             }
         }
-
-        let cameraHeight;
-        let minimumHeight;
-        let maximumHeight;
         // if (frameState.mode === SceneMode.SCENE3D) {
-        cameraHeight = cameraCartographicPosition[2];
-        minimumHeight = this.minimumHeight;
-        maximumHeight = this.maximumHeight;
+        const cameraHeight = cameraCartographicPosition[2];
+        const minimumHeight = this.minimumHeight;
+        const maximumHeight = this.maximumHeight;
         // } else {
         //   cameraHeight = cameraCartesianPosition.x;
         //   minimumHeight = 0.0;

@@ -124,14 +124,14 @@ export default class MeshPainter {
         const filter = parentContext && parentContext.sceneFilter;
         const map = this.getMap();
         if (!tiles.length || !map) {
-            return;
+            return null;
         }
         const uniforms = this._getUniformValues();
         const projViewMatrix = map.projViewMatrix;
         const services = this._layer.options.services;
         const oneMeshArray = [];
         const parentMeshes = [];
-        let meshes = [];
+        const meshes = [];
         const pntsMeshes = [];
         const i3dmMeshes = [];
 
@@ -326,7 +326,7 @@ export default class MeshPainter {
             regionMesh.dispose();
             delete this._regionMeshes[id];
         }
-        let mesh = this._modelMeshes[id] || this._pntsMeshes[id] || this._i3dmMeshes[id] || this._cmptMeshes[id] || this._loading[id];
+        const mesh = this._modelMeshes[id] || this._pntsMeshes[id] || this._i3dmMeshes[id] || this._cmptMeshes[id] || this._loading[id];
         if (this._cmptMeshes[id]) {
             this._disposeCMPT(id);
         } else if (mesh) {
@@ -677,7 +677,7 @@ export default class MeshPainter {
         let ready = true;
         const meshes = [];
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            let { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader);
+            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader);
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
@@ -770,7 +770,7 @@ export default class MeshPainter {
         let ready = true;
 
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            let { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader);
+            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader);
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
@@ -809,7 +809,7 @@ export default class MeshPainter {
 
 
             // gltfMesh.matrices 已经在 layerWorker转换坐标时，加入计算了，所以这里不用再重复计算
-            let nodeMatrix = mat4.identity([]);
+            const nodeMatrix = mat4.identity([]);
             // mat4.multiply(mat, mat, node.matrix);
             if (gltf.asset.sharePosition && gltfMesh.matrices && gltfMesh.matrices.length) {
                 for (let i = 0; i < gltfMesh.matrices.length; i++) {
@@ -860,7 +860,7 @@ export default class MeshPainter {
         } else {
             heightScale = map.distanceToPointAtRes(100, 100, map.getGLRes(), centerCoord).y / 100;
         }
-        let nodeTransform = node.matrix ? mat4.copy(out, node.matrix) : mat4.identity(out);
+        const nodeTransform = node.matrix ? mat4.copy(out, node.matrix) : mat4.identity(out);
         if (rtcCenter) {
             const realCenter = vec3.transformMat4(TEMP_RTCCENTER, rtcCenter, nodeTransform);
             setTranslation(nodeTransform, realCenter, nodeTransform);
@@ -1714,7 +1714,7 @@ export default class MeshPainter {
         let levels = new Set();
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
-            let mesh = this._getMesh(node);
+            const mesh = this._getMesh(node);
             if (!mesh) {
                 continue;
             }

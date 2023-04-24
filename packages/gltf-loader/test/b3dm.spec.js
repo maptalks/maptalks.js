@@ -130,8 +130,8 @@ describe('3dtiles layer', () => {
                 expect(mesh.attributes.POSITION.array.length).to.be.eql(1530);
                 expect(mesh.attributes.POSITION.array instanceof Float32Array).to.be.ok();
                 const position = mesh.attributes.POSITION;
-                let count = position.count, size = position.itemSize, stride = position.byteStride, byteOffset = position.byteOffset, componentType = position.componentType;
-                let out = new Float32Array(count * size);
+                const count = position.count, size = position.itemSize, stride = position.byteStride, byteOffset = position.byteOffset, componentType = position.componentType;
+                const out = new Float32Array(count * size);
                 const interleavedPosition = gltf.GLTFLoader.readInterleavedArray(out, position.array.buffer, count, size, stride, byteOffset, componentType);
                 expect(interleavedPosition.length).to.be.eql(1530);
                 expect(interleavedPosition instanceof Float32Array).to.be.ok();

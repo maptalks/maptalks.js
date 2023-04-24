@@ -3,4 +3,5 @@ flow-typed/
 babel.config.js
 debug
 packages/layer-3dtiles/src/worker/parsers/s3m/
-packages/layer-3dtiles/src/common/
+packages/layer-3dtiles/src/common/txml.min.js
+demo

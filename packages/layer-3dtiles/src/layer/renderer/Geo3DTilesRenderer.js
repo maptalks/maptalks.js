@@ -323,7 +323,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (isBase64(url)) {
             const binary = base64URLToArrayBuffer(url);
             this._loadTileContent(url, binary, node);
-            return;
+            return null;
 
         }
 
@@ -362,6 +362,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         } else {
             this._loadTileContent(url, null, node);
         }
+        return null;
     }
 
     _loadTileContent(url, arraybuffer, tile) {

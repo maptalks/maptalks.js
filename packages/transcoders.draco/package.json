@@ -5,7 +5,6 @@
   "main": "dist/transcoders.draco.js",
   "module": "dist/transcoders.draco.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
     "dev": "rollup -w -c rollup.config.js",

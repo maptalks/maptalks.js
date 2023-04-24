@@ -96,8 +96,9 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const dpr = map.getDevicePixelRatio();
         const x = point.x * dpr, y = point.y * dpr;
         const picked = this._pick(x, y, options);
-        const result = picked && picked.target ? [{ data: picked.target, point: picked.point, coordinate: picked.coordinate }] : [];
-        maptalks.Util.pushIn(results, result);
+        if (picked && picked.data) {
+            results.push(picked);
+        }
         return results;
     }
 

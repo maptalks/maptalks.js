@@ -11,7 +11,7 @@ export function equalsEpsilon (
 
     relativeEpsilon = (relativeEpsilon || 0.0);
     absoluteEpsilon = (absoluteEpsilon || relativeEpsilon);
-    let absDiff = Math.abs(left - right);
+    const absDiff = Math.abs(left - right);
     return (
         absDiff <= absoluteEpsilon ||
     absDiff <= relativeEpsilon * Math.max(Math.abs(left), Math.abs(right))

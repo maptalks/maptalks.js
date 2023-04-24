@@ -376,12 +376,12 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
         }
         result.coordinate = e.coordinate;
         this._currentTargetId = null;
-        if (result.target && result.target.getGLTFMarkerType() === 'gltfmarker') {
-            this._currentTargetId = result.target._getPickingId();
-        } else if (result.target && result.target.getGLTFMarkerType() === 'multigltfmarker') {
-            this._currentTargetId = result.target._getPickingId() + result.index;
+        if (result.data && result.data.getGLTFMarkerType() === 'gltfmarker') {
+            this._currentTargetId = result.data._getPickingId();
+        } else if (result.data && result.data.getGLTFMarkerType() === 'multigltfmarker') {
+            this._currentTargetId = result.data._getPickingId() + result.index;
         }
-        this._currentTargetIndex = result.target ? result.index : null;
+        this._currentTargetIndex = result.data ? result.index : null;
         this._currentMeshId = result.meshId;
         this._currentPoint = JSON.stringify(result.point);
         this._currentPickingId = result.pickingId;
@@ -394,8 +394,8 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
                 }
                 e.target.fire(e.type, e);
             });
-        } else if (result.target) {
-            result.target.fire(event, result);
+        } else if (result.data) {
+            result.data.fire(event, result);
         }
     }
 
@@ -462,7 +462,7 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
 
     _getEventTarget(targetId, targetType) {
         if (!defined(targetId)) {
-            return;
+            return null;
         }
         if (targetType < 1) {
             const index = this._currentTargetIndex || 0;
@@ -510,7 +510,7 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
             geometry.cancelOutline();
         });
     }
-    
+
     setGltfCoordinateSystem(coordinateSystem) {
         this.options.gltfCoordinateSystem = coordinateSystem;
     }

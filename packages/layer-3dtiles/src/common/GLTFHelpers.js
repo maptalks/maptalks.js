@@ -80,7 +80,8 @@ function iterateNode(node, nodeMatrices, gltf, cb) {
 
 // 遍历 GLTF-Loader 返回的bufferData
 export function iterateBufferData(arr, cb) {
-    let { componentType, byteOffset, byteStride: stride, count, itemSize } = arr;
+    let { byteOffset, byteStride: stride, count } = arr;
+    const { componentType, itemSize } = arr;
     const arrayBuffer = arr.array.buffer;
     const ctor = componentType ? GLTFLoader.getTypedArrayCtor(componentType) : arr.array.constructor;
     byteOffset = byteOffset === undefined ? arr.array.byteOffset : byteOffset;
@@ -111,7 +112,8 @@ export function iterateBufferData(arr, cb) {
 
 // 从 GLTF-Loader 返回的bufferData获取指定位置的数据
 export function getItemAtBufferData(out, arr, index) {
-    let { componentType, byteOffset, byteStride: stride, itemSize } = arr;
+    let { byteOffset, byteStride: stride } = arr;
+    const { componentType, itemSize } = arr;
     const arrayBuffer = arr.array.buffer;
     const ctor = componentType ? GLTFLoader.getTypedArrayCtor(componentType) : arr.array.constructor;
     byteOffset = byteOffset === undefined ? arr.array.byteOffset : byteOffset;

@@ -91,7 +91,7 @@ export function loadI3STile(i3sInfo, supportedFormats, projection, maxTextureSiz
     const xhrs = [];
     for (let i = 0; i < i3sInfo.meshes.length; i++) {
         const { geometry, material } = i3sInfo.meshes[i];
-        let ajax = Ajax.getArrayBuffer(geometry.url);
+        const ajax = Ajax.getArrayBuffer(geometry.url);
         ajax.xhr.url = geometry.url;
         xhrs.push(ajax.xhr);
         const promise = ajax.then(buffer => { return { buffer };});
@@ -178,7 +178,8 @@ function buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection) 
     };
     const promises = [];
     for (let i = 0; i < i3sInfo.meshes.length; i++) {
-        let { geometry, material } = i3sInfo.meshes[i];
+        let { material } = i3sInfo.meshes[i];
+        const { geometry } = i3sInfo.meshes[i];
         let primPromise;
         const geoBuf = bins[i].geoBuffer.data;
         if (!geoBuf) {
@@ -239,7 +240,7 @@ function buildCompressedPrimitive(gltf, index, geometry, buffer, transform, cent
     });
 }
 
-let binaryAttributeDecoders = {
+const binaryAttributeDecoders = {
     position: function (decodedGeometry, data, offset) {
         const count = decodedGeometry.vertexCount * 3;
         const array = new Float32Array(data, offset, count);
@@ -258,7 +259,7 @@ let binaryAttributeDecoders = {
         return offset;
     },
     normal: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.vertexCount * 3;
+        const count = decodedGeometry.vertexCount * 3;
         const array = new Float32Array(data, offset, count);
         decodedGeometry.normal = {
             array,
@@ -271,7 +272,7 @@ let binaryAttributeDecoders = {
         return offset;
     },
     uv0: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.vertexCount * 2;
+        const count = decodedGeometry.vertexCount * 2;
         const array = new Float32Array(data, offset, count);
         decodedGeometry.uv0 = {
             array,
@@ -284,7 +285,7 @@ let binaryAttributeDecoders = {
         return offset;
     },
     color: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.vertexCount * 4;
+        const count = decodedGeometry.vertexCount * 4;
         const array = new Uint8Array(data, offset, count);
         decodedGeometry.color = {
             array,
@@ -298,18 +299,18 @@ let binaryAttributeDecoders = {
     },
     featureId: function (decodedGeometry, data, offset) {
         //We don't need to use this for anything so just increment the offset
-        let count = decodedGeometry.featureCount;
+        const count = decodedGeometry.featureCount;
         offset += count * 8;
         return offset;
     },
     id: function (decodedGeometry, data, offset) {
         //We don't need to use this for anything so just increment the offset
-        let count = decodedGeometry.featureCount;
+        const count = decodedGeometry.featureCount;
         offset += count * 8;
         return offset;
     },
     faceRange: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.featureCount * 2;
+        const count = decodedGeometry.featureCount * 2;
         const array = new Uint32Array(data, offset, count);
         decodedGeometry.faceRange = {
             array,
@@ -322,7 +323,7 @@ let binaryAttributeDecoders = {
         return offset;
     },
     uvRegion: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.vertexCount * 4;
+        const count = decodedGeometry.vertexCount * 4;
         const array = new Uint16Array(data, offset, count);
         decodedGeometry['uv-region'] = {
             array,
@@ -335,7 +336,7 @@ let binaryAttributeDecoders = {
         return offset;
     },
     region: function (decodedGeometry, data, offset) {
-        let count = decodedGeometry.vertexCount * 4;
+        const count = decodedGeometry.vertexCount * 4;
         const array = new Uint16Array(data, offset, count);
         decodedGeometry['uv-region'] = {
             array,
@@ -414,7 +415,7 @@ function buildPrimitive(gltf, index, geometry, buffer, transform, center, projec
 
             // use default geometry schema
             for (let i = 0; i < ordering.length; i++) {
-                let decoder = binaryAttributeDecoders[ordering[i]];
+                const decoder = binaryAttributeDecoders[ordering[i]];
                 if (!decoder) {
                     console.log(ordering[i]);
                 }
@@ -422,7 +423,7 @@ function buildPrimitive(gltf, index, geometry, buffer, transform, center, projec
             }
 
             for (let j = 0; j < featureAttributeOrder.length; j++) {
-                let curDecoder = binaryAttributeDecoders[featureAttributeOrder[j]];
+                const curDecoder = binaryAttributeDecoders[featureAttributeOrder[j]];
                 if (!curDecoder) {
                     console.log(featureAttributeOrder[j]);
                 }
@@ -521,8 +522,8 @@ function buildPrimitiveObject(data, gltf, index, transform, center, projection) 
 function projVertices(vertices, nodeMatrix, rtcCenter, projection) {
     const cesiumCenter = rtcCenter;
     let carto = [0, 0, 0, 1],
-        proj = [0, 0],
         height;
+    const proj = [0, 0];
     const projCenter = project([], rtcCenter, projection);
     projCenter[2] = rtcCenter[2];
 
@@ -672,6 +673,7 @@ function converToTexture(buffer, format, mimeType, supportedFormats, maxTextureS
             };
         });
     }
+    return null;
 }
 
 

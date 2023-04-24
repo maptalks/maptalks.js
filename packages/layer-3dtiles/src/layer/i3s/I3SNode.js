@@ -161,10 +161,10 @@ export default class I3SNode {
         const version = this._version;
         const nodeCache = this._nodeCache;
         const nodeData = nodeJSON;
-        let obb = nodeData.obb;
-        let mbs = nodeData.mbs;
+        const obb = nodeData.obb;
+        const mbs = nodeData.mbs;
 
-        let boundingVolume = {};
+        const boundingVolume = {};
         let position;
 
         if (mbs) {
@@ -211,7 +211,7 @@ export default class I3SNode {
                 nodeCache.lodSelectionMetricType ===
           "maxScreenThresholdSQ"
             ) {
-                let maxScreenThreshold =
+                const maxScreenThreshold =
             Math.sqrt(nodeData.lodThreshold) / (Math.PI * 0.25);
                 metersPerPixel = span / maxScreenThreshold;
             } else {
@@ -236,7 +236,7 @@ export default class I3SNode {
         }
 
         // calculate the length of 16 pixels in order to trigger the screen space error
-        let geometricError = metersPerPixel * 16;
+        const geometricError = metersPerPixel * 16;
 
         const globalTransforms = mat4.identity([]);
         // globalTransforms[12] = position[0];
@@ -266,7 +266,7 @@ export default class I3SNode {
 
 
         // Create a tile set
-        let inPlaceTileDefinition = {
+        const inPlaceTileDefinition = {
             refine: "REPLACE",
             boundingVolume: boundingVolume,
             transform: localTransforms,

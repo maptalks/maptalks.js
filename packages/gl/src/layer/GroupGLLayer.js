@@ -488,6 +488,7 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
         this.fire('terrainlayercreated');
+        return this;
     }
 
     queryTerrain(coord) {

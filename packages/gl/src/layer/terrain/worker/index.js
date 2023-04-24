@@ -93,13 +93,14 @@ function createHeightMap(heightmap/*, exag*/) {
 
 function decZlibBuffer(zBuffer) {
     if (zBuffer.length < 1000) {
-        return;
+        return null;
     }
     const inflate = new Zlib.Inflate(zBuffer);
 
     if (inflate) {
         return inflate.decompress();
     }
+    return null;
 }
 
 function transformBuffer(zlibData){
@@ -429,8 +430,8 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
             }
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {
-                    let x = tx * stride + k;
-                    let y = ty * stride + l;
+                    const x = tx * stride + k;
+                    const y = ty * stride + l;
                     const imageIndex = x + y * width;
                     const R = imgData[imageIndex * 4];
                     const G = imgData[imageIndex * 4 + 1];
@@ -538,8 +539,8 @@ function convertHeightWidth(heights, terrainWidth) {
             if (width > terrainWidth) {
                 for (let k = 0; k < stride; k++) {
                     for (let l = 0; l < stride; l++) {
-                        let x = tx * stride + k;
-                        let y = ty * stride + l;
+                        const x = tx * stride + k;
+                        const y = ty * stride + l;
 
                         const imageIndex = x + y * width;
                         height += data[imageIndex];
@@ -548,8 +549,8 @@ function convertHeightWidth(heights, terrainWidth) {
                 const count = stride * stride;
                 height = height / (count || 1);
             } else {
-                let x = Math.floor(tx / stride);
-                let y = Math.floor(ty / stride);
+                const x = Math.floor(tx / stride);
+                const y = Math.floor(ty / stride);
                 const imageIndex = x + y * width;
                 height = data[imageIndex];
             }

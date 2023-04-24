@@ -7,9 +7,9 @@
 import { vec3 } from 'gl-matrix';
 
 function harmonics(normal, index) {
-    var x = normal[0];
-    var y = normal[1];
-    var z = normal[2];
+    const x = normal[0];
+    const y = normal[1];
+    const z = normal[2];
     if (index === 0) {
         return 1.0;
     } else if (index === 1) {
@@ -31,7 +31,7 @@ function harmonics(normal, index) {
     }
 }
 
-var normalTransform = {
+const normalTransform = {
     px: [2, 1, 0, -1, -1, 1],
     nx: [2, 1, 0, 1, -1, -1],
     py: [0, 2, 1, 1, -1, -1],
@@ -40,26 +40,26 @@ var normalTransform = {
     nz: [0, 1, 2, 1, -1, 1]
 };
 
-var targets = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
+const targets = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
 
 // Project on cpu.
 export default function projectEnvironmentMapCPU(cubePixels, width, height) {
-    var coeff = new Array(9);
-    var normal = [];
-    var texel = [];
-    var fetchNormal = [];
-    for (var m = 0; m < 9; m++) {
-        var result = [0, 0, 0];
-        for (var k = 0; k < targets.length; k++) {
+    const coeff = new Array(9);
+    const normal = [];
+    const texel = [];
+    const fetchNormal = [];
+    for (let m = 0; m < 9; m++) {
+        const result = [0, 0, 0];
+        for (let k = 0; k < targets.length; k++) {
             // var pixels = cubePixels[targets[k]];
-            var pixels = cubePixels[k];
+            const pixels = cubePixels[k];
 
-            var sideResult = [0, 0, 0];
-            var divider = 0;
-            var i = 0;
-            var transform = normalTransform[targets[k]];
-            for (var y = 0; y < height; y++) {
-                for (var x = 0; x < width; x++) {
+            const sideResult = [0, 0, 0];
+            let divider = 0;
+            let i = 0;
+            const transform = normalTransform[targets[k]];
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
 
                     normal[0] = x / (width - 1.0) * 2.0 - 1.0;
                     // TODO Flip y?
@@ -75,7 +75,7 @@ export default function projectEnvironmentMapCPU(cubePixels, width, height) {
                     texel[1] = pixels[i++] / 255;
                     texel[2] = pixels[i++] / 255;
                     // RGBM Decode
-                    var scale = pixels[i++] / 255 * 7;
+                    const scale = pixels[i++] / 255 * 7;
                     texel[0] *= scale;
                     texel[1] *= scale;
                     texel[2] *= scale;

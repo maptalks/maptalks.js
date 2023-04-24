@@ -188,7 +188,8 @@ export default class PNTSLoader {
             };
             transferables.push(array.buffer);
         } else if (attribData['POSITION_QUANTIZED']) {
-            let { byteOffset, array } = attribData['POSITION_QUANTIZED'];
+            let { byteOffset } = attribData['POSITION_QUANTIZED'];
+            const { array } = attribData['POSITION_QUANTIZED'];
             byteOffset = byteOffset || 0;
             const offset = (array ? 0 : attrByteOffset);
             pnts['POSITION'] = {

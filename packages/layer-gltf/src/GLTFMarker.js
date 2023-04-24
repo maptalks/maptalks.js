@@ -726,7 +726,7 @@ export default class GLTFMarker extends Marker {
     _getMarkerContainerExtent() {
         const layer = this.getLayer();
         if (!layer) {
-            return;
+            return null;
         }
         const map = layer.getMap();
         if (!map) {
@@ -1307,6 +1307,7 @@ export default class GLTFMarker extends Marker {
         if (animations.indexOf(animationName) > -1) {
             return animationName;
         }
+        return null;
     }
 
     setCurrentAnimation(animationName) {

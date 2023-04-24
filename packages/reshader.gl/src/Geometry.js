@@ -871,6 +871,7 @@ function getTypeCtor(arr, byteWidth) {
     if (arr instanceof Float32Array || arr instanceof Float64Array) {
         return byteWidth === 4 ? Float32Array : Float64Array;
     }
+    return null;
 }
 
 // function buildTangents2(vertices, normals, uvs, indices) {

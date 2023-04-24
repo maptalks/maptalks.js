@@ -193,6 +193,7 @@ export default function (Base) {
             if (coordinate) {
                 return this['_hitMasks'](coordinate);
             }
+            return null;
         }
 
         _hitMasks(coordinate) {

@@ -154,7 +154,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
         const data = this._data[idx];
         const position = this._getPosition(data.coordinates);
         if (!position) {
-            return;
+            return null;
         }
         const map = this.getMap();
         position[2] = map.altitudeToPoint(data.coordinates.z, map.getGLRes());

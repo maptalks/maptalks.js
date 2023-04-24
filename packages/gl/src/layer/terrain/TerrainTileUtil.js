@@ -56,7 +56,7 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
             }
         ];
     }
-    let result = [];
+    const result = [];
     for (let i = xStart; i < xEnd; i++) {
         for (let j = yStart; j < yEnd; j++) {
             const tx = x * scale + i;

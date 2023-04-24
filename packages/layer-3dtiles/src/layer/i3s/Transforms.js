@@ -6,10 +6,10 @@ import { mat3, mat4, quat } from 'gl-matrix';
  *
  * @namespace Transforms
  */
-let Transforms = {};
+const Transforms = {};
 
-let scratchENUMatrix4 = [];
-let scratchHPRMatrix3 = [];
+const scratchENUMatrix4 = [];
+const scratchHPRMatrix3 = [];
 
 /**
  * Computes a quaternion from a reference frame with axes computed from the heading-pitch-roll angles
@@ -44,21 +44,21 @@ Transforms.headingPitchRollQuaternion = function (
     if (!result) {
         result = [];
     }
-    let transform = Transforms.headingPitchRollToFixedFrame(
+    const transform = Transforms.headingPitchRollToFixedFrame(
         origin,
         headingPitchRoll,
         ellipsoid,
         fixedFrameTransform,
         scratchENUMatrix4
     );
-    let rotation = mat3.fromMat4(scratchHPRMatrix3, transform);
+    const rotation = mat3.fromMat4(scratchHPRMatrix3, transform);
     return quat.fromMat3(result, rotation);
 };
 
-let scratchHPRQuaternion = [];
-let scratchScale = [1.0, 1.0, 1.0];
-let scratchHPRMatrix4 = [];
-let ZERO_TRANSLATION = [0, 0, 0];
+const scratchHPRQuaternion = [];
+const scratchScale = [1.0, 1.0, 1.0];
+const scratchHPRMatrix4 = [];
+const ZERO_TRANSLATION = [0, 0, 0];
 /**
  * Computes a 4x4 transformation matrix from a reference frame with axes computed from the heading-pitch-roll angles
  * centered at the provided origin to the provided ellipsoid's fixed reference frame. Heading is the rotation from the local north
@@ -93,12 +93,12 @@ Transforms.headingPitchRollToFixedFrame = function (
         fixedFrameTransform,
         eastNorthUpToFixedFrame
     );
-    let hprQuaternion = fromHeadingPitchRoll(
+    const hprQuaternion = fromHeadingPitchRoll(
         headingPitchRoll,
         scratchHPRQuaternion
     );
 
-    let hprMatrix = mat4.fromRotationTranslationScale(scratchHPRMatrix4, hprQuaternion, ZERO_TRANSLATION, scratchScale);
+    const hprMatrix = mat4.fromRotationTranslationScale(scratchHPRMatrix4, hprQuaternion, ZERO_TRANSLATION, scratchScale);
 
     result = fixedFrameTransform(origin, ellipsoid, result);
     return mat4.multiply(result, result, hprMatrix);
