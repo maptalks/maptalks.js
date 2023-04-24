@@ -579,7 +579,10 @@ describe('highlight specs', () => {
             } else if (!ended) {
                 ended = true;
                 //变成高亮的绿色
-                assert(pixel[1] > 10);
+                // assert(pixel[1] > 10);
+                pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                assert(pixel[0] === 0);
+                assert(pixel[1] > 5);
                 pixel = readPixel(renderer.canvas, x / 2, y / 2 - 60);
                 assert(pixel[1] > 10);
                 done();

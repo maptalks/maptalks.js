@@ -1263,8 +1263,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 isRenderingTerrain,
                 isRenderingTerrainSkin
             };
-            if (parentContext) {
-                extend(context, parentContext);
+            if (isRenderingTerrainSkin && parentContext && parentContext.renderTarget) {
+                // 渲染 terrain skin 时，每个瓦片需要绘制到各自的renderTarget里（terrain texture）
+                context.renderTarget = parentContext.renderTarget;
             }
             const status = plugin.paintTile(context);
             if (!this._needRetire && (status.retire || status.redraw) && plugin.supportRenderMode('taa')) {

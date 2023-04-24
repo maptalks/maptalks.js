@@ -1,4 +1,4 @@
-import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
+import { vec2, vec3, mat2, mat4, reshader, quat } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -51,7 +51,7 @@ const PROJ_MATRIX = [], CHAR_OFFSET = [];
 
 const PLANE_MATRIX = [];
 
-const ANCHOR = [], PROJ_ANCHOR = [], ANCHOR_BOX = [];
+const ANCHOR = [], PROJ_ANCHOR = [];
 
 const MAT2 = [];
 
@@ -562,9 +562,8 @@ export default class TextPainter extends CollisionPainter {
         let { aProjectedAnchor } = geometry.properties;
         if (!aProjectedAnchor) {
             aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 3);
-        } else {
-            aProjectedAnchor.fill(INVALID_PROJECTED_ANCHOR);
         }
+        aProjectedAnchor.fill(INVALID_PROJECTED_ANCHOR);
         const aTextSize = geometry.properties['aTextSize'];
 
         // const layer = this.layer;
@@ -590,7 +589,6 @@ export default class TextPainter extends CollisionPainter {
         }
 
         const projLabelAnchor = projectPoint(PROJ_ANCHOR, labelAnchor, mvpMatrix, map.width, map.height);
-        vec4.set(ANCHOR_BOX, projLabelAnchor[0], projLabelAnchor[1]);
 
         const aTerrainAltitude = geometry.properties.aTerrainAltitude;
         let elevatedAnchor;
@@ -604,11 +602,11 @@ export default class TextPainter extends CollisionPainter {
                 elevatedAnchor[2] = altitude * 100;
                 elevatedAnchor = projectPoint(elevatedAnchor, elevatedAnchor, mvpMatrix, map.width, map.height);
             } else {
-                elevatedAnchor = ANCHOR_BOX;
+                elevatedAnchor = projLabelAnchor;
             }
 
         } else {
-            elevatedAnchor = ANCHOR_BOX;
+            elevatedAnchor = projLabelAnchor;
         }
 
         if (map.isOffscreen(elevatedAnchor)) {
@@ -622,15 +620,9 @@ export default class TextPainter extends CollisionPainter {
         if (isProjected) {
             labelAnchor = projLabelAnchor;
         }
-        if (elevatedAnchor) {
-            aProjectedAnchor[index * 3] = elevatedAnchor[0];
-            aProjectedAnchor[index * 3 + 1] = elevatedAnchor[1];
-            aProjectedAnchor[index * 3 + 2] = elevatedAnchor[2];
-        } else {
-            aProjectedAnchor[index * 3] = labelAnchor[0];
-            aProjectedAnchor[index * 3 + 1] = labelAnchor[1];
-            aProjectedAnchor[index * 3 + 2] = labelAnchor[2];
-        }
+        aProjectedAnchor[index * 3] = elevatedAnchor[0];
+        aProjectedAnchor[index * 3 + 1] = elevatedAnchor[1];
+        aProjectedAnchor[index * 3 + 2] = elevatedAnchor[2];
 
         const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'];
 

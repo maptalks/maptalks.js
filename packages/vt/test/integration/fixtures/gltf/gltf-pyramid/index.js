@@ -24,8 +24,8 @@ const style = [
             scaleY: scale,
             scaleZ: scale,
             rotationX: 90,
-            polygonOpacity: 1,
-            polygonFill: '#f00'
+            markerOpacity: 1,
+            markerFill: '#f00'
         }
     }
 ];

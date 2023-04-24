@@ -116,7 +116,8 @@ describe('update style specs', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
             data: point,
-            style
+            style,
+            tileStackDepth: 0
         });
         const sceneConfig = {
             postProcess: {
@@ -800,7 +801,8 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: polygon,
-            style
+            style,
+            tileStackDepth: 0
         });
         const sceneConfig = {
             postProcess: {
@@ -1408,7 +1410,8 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: polygon.features[0],
-            style
+            style,
+            tileStackDepth: 0
         });
         let painted = false;
         layer.on('canvasisdirty', () => {
@@ -1972,7 +1975,8 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt1', {
             data: polygon,
-            style
+            style,
+            tileStackDepth: 0
         });
         let styleRefreshed = false;
         let count = 0;
@@ -2021,7 +2025,8 @@ describe('update style specs', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: line,
             style,
-            tileLimitPerFrame: 0
+            tileLimitPerFrame: 0,
+            tileStackDepth: 0
         });
         renderCount = renderCount || 0;
         doneRenderCount = doneRenderCount || 4;
