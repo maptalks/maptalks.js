@@ -132,7 +132,7 @@ void main() {
     
 
     float perspectiveRatio;
-    if (isRenderingTerrain == 1.0) {
+    if (isRenderingTerrain == 1.0 && isPitchWithMap == 1.0) {
         perspectiveRatio = 1.0;
     } else {
         float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * markerPerspectiveRatio;

@@ -1,4 +1,4 @@
-#define SHADER_NAME TEXT
+#define SHADER_NAME TEXT_VERT
 #define RAD 0.0174532925
 
 #ifdef HAS_ALTITUDE
@@ -144,7 +144,7 @@ void main() {
     // gl_Position /= gl_Position.w;
 
     float perspectiveRatio;
-    if (isRenderingTerrain == 1.0) {
+    if (isRenderingTerrain == 1.0 && isPitchWithMap == 1.0) {
         perspectiveRatio = 1.0;
     } else {
         float distanceRatio = (1.0 - cameraToCenterDistance / projDistance) * textPerspectiveRatio;
@@ -187,7 +187,7 @@ void main() {
     } else {
         float offsetScale;
         if (isRenderingTerrain == 1.0) {
-            offsetScale = tileRatio;
+            offsetScale = tileRatio / zoomScale;
         } else {
             offsetScale = tileRatio / zoomScale * cameraScale * perspectiveRatio;
         }

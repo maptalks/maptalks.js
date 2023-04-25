@@ -1119,7 +1119,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             colors: [color],
             // stencil: true,
             // colorCount,
-            colorFormat: 'rgba'
+            colorFormat: 'rgba',
+            ignoreStatusCheck: true
         };
         fboInfo.depthStencil = this._terrainDepthStencil;
         const texture = regl.framebuffer(fboInfo)

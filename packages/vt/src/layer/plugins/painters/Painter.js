@@ -1227,7 +1227,6 @@ class Painter {
                 if (aTerrainAltitude[i] !== altitude) {
                     aTerrainAltitude[i] = altitude;
                     aTerrainAltitude.dirty = true;
-                    this.setToRedraw();
                 }
                 continue;
             }
@@ -1252,7 +1251,6 @@ class Painter {
             if (aTerrainAltitude[i] !== altitude) {
                 aTerrainAltitude[i] = altitude;
                 aTerrainAltitude.dirty = true;
-                this.setToRedraw();
             }
             if (result && result[1]) {
                 queryResult.set(index, altitude);
