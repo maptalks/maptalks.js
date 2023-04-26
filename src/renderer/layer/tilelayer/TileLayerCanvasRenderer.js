@@ -528,9 +528,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _consumeTileQueue() {
-        const map = this.getMap();
         let count = 0;
-        const limit = map.isInteracting() && this.layer.options['tileLimitPerFrame'] || 0;
+        const limit = this.layer.options['tileLimitPerFrame'];
         const queue = this._tileQueue;
         /* eslint-disable no-unmodified-loop-condition */
         while (queue.length && (limit <= 0 || count < limit)) {
