@@ -488,6 +488,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (this._optionsHook && isFunction(this._optionsHook)) {
                 this._optionsHook(conf);
             }
+            if (this._silentConfig) {
+                return;
+            }
             const renderer = this.getRenderer();
             if (renderer && renderer.setToRedraw) {
                 renderer.setToRedraw();
