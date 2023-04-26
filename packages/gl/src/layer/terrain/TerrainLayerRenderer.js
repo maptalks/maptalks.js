@@ -698,7 +698,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                                 cached.skinMesh.dispose();
                                 delete cached.skinMesh;
                             }
-
                             if (renderer) {
                                 if (renderer.removeTileCache) {
                                     renderer.removeTileCache(skinTileId);
@@ -763,7 +762,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             const y = extent2d.ymax * scale - worldPos.y;
             const altitude = this._queryAltitudeInHeights(terrainData.image.data, x / (extent2d.getWidth() * scale), y / (extent2d.getHeight() * scale));
             out[0] = altitude;
-            out[1] = +(terrainData.info.z === tileIndex.z);
+            out[1] = altitude === null ? 0 : +(terrainData.info.z === tileIndex.z);
         } else {
             out[0] = null;
             out[1] = 0;
