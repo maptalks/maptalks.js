@@ -1,4 +1,5 @@
-import { isArrayHasData, pushIn } from '../../../core/util';
+import { resourceIsTemplate } from '../../../core/ResourceManager';
+import { isArrayHasData, pushIn, replaceVariable } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 
 /**
@@ -33,11 +34,16 @@ class OverlayLayerRenderer extends CanvasRenderer {
                 continue;
             }
             if (!this.resources) {
+                res.geo = geo;
                 resources.push.apply(resources, res);
             } else {
                 for (let i = 0; i < res.length; i++) {
+                    if (res[i] && resourceIsTemplate(res[i][0])) {
+                        res[i][0] = replaceVariable(res[i][0], geo && geo.properties);
+                    }
                     const url = res[i][0];
                     if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
+                        res[i].geo = geo;
                         resources.push(res[i]);
                         cache[url] = 1;
                     }

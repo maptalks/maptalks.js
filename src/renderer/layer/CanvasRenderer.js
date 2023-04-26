@@ -1,4 +1,4 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize, isImageBitMap } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
@@ -7,6 +7,7 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
+import { checkResourceValue, resourceIsTemplate, ResourceManager } from '../../core/ResourceManager';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {
@@ -366,7 +367,10 @@ class CanvasRenderer extends Class {
                 if (!url || !url.length || cache[url.join('-')]) {
                     continue;
                 }
-                cache[url.join('-')] = 1;
+                //模板的资源不能缓存,比如 {iconName},因为资源是动态读取的，不能根据简单的字符串来缓存了,可能多个资源的名字都是{iconName}了
+                if (!resourceIsTemplate(url[0])) {
+                    cache[url.join('-')] = 1;
+                }
                 if (!resources.isResourceLoaded(url, true)) {
                     //closure it to preserve url's value
                     promises.push(new Promise(this._promiseResource(url)));
@@ -767,16 +771,66 @@ class CanvasRenderer extends Class {
     }
 
     _promiseResource(url) {
+        //当资源是{iconName}这样的模板时,url里关于资源的url会被替换的，比如{iconName} 会被替换为 url[0]= 真实的图片的名字
+        let imgUrl = checkResourceValue(url, url.geo && url.geo.properties);
+        delete url.geo;
         const me = this, resources = this.resources,
             crossOrigin = this.layer.options['crossOrigin'];
         const renderer = this.layer.options['renderer'] || '';
+
+        const resKey = url[0];
+
+        //cache image data to ResourceManager
+        function addToGlobalCache(imgData) {
+            ResourceManager.update(resKey, imgData);
+        }
+
+        const copyBitMapForLayer = (btiMap, resolve) => {
+            createImageBitmap(btiMap).then(newbitmap => {
+                //新的数据为layer提供服务
+                me._cacheResource(url, newbitmap);
+                //原始数据放在缓存
+                addToGlobalCache(btiMap);
+                resolve(url);
+            }).catch(err => {
+                console.error(err);
+                resolve(url);
+            });
+        };
+
+        //check ResourceManager cache
+        //可以避免多个图层同一个资源的重复请求,当图层被移除后然后再次添加也不用再次请求资源
+        const res = ResourceManager.get(resKey);
+        if (isImageBitMap(res)) {
+            return function (resolve) {
+                copyBitMapForLayer(res, resolve);
+            };
+        } else if (res instanceof Image && Browser.decodeImageInWorker && !isSVG(res.src)) {
+            return function (resolve) {
+                copyBitMapForLayer(res, resolve);
+            };
+        }
+
+        //First request for resources
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
                 return;
             }
-            if (!isSVG(url[0]) && me._resWorkerConn) {
-                const uri = getAbsoluteURL(url[0]);
+            if (imgUrl instanceof Image) {
+                if (Browser.decodeImageInWorker && !isSVG(imgUrl.src)) {
+                    copyBitMapForLayer(imgUrl, resolve);
+                    return;
+                }
+                imgUrl = imgUrl.src;
+            }
+
+            if (isImageBitMap(imgUrl)) {
+                copyBitMapForLayer(imgUrl, resolve);
+                return;
+            }
+            if (!isSVG(imgUrl) && me._resWorkerConn) {
+                const uri = getAbsoluteURL(imgUrl);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
                         if (err && typeof console !== 'undefined') {
@@ -786,8 +840,8 @@ class CanvasRenderer extends Class {
                         return;
                     }
                     getImageBitMap(data, bitmap => {
-                        me._cacheResource(url, bitmap);
-                        resolve(url);
+                        copyBitMapForLayer(bitmap, resolve);
+                        return;
                     });
                 });
             } else {
@@ -797,17 +851,18 @@ class CanvasRenderer extends Class {
                 } else if (renderer !== 'canvas') {
                     img['crossOrigin'] = '';
                 }
-                if (isSVG(url[0]) && !IS_NODE) {
+                if (isSVG(imgUrl) && !IS_NODE) {
                     //amplify the svg image to reduce loading.
                     if (url[1]) { url[1] *= 2; }
                     if (url[2]) { url[2] *= 2; }
                 }
                 img.onload = function () {
                     me._cacheResource(url, img);
+                    addToGlobalCache(img);
                     resolve(url);
                 };
                 img.onabort = function (err) {
-                    if (console) { console.warn('image loading aborted: ' + url[0]); }
+                    if (console) { console.warn('image loading aborted: ' + imgUrl); }
                     if (err) {
                         if (console) { console.warn(err); }
                     }
@@ -821,7 +876,7 @@ class CanvasRenderer extends Class {
                     resources.markErrorResource(url);
                     resolve(url);
                 };
-                loadImage(img, url);
+                loadImage(img, [imgUrl]);
             }
 
         };

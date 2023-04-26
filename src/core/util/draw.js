@@ -3,6 +3,7 @@ import PointExtent from '../../geo/PointExtent';
 import { isGradient } from './style';
 import { isNumber } from './common';
 import Canvas from '../Canvas';
+import { replaceVariable } from './strings';
 
 export function drawImageMarker(ctx, image, point, symbol) {
     let w = symbol && symbol['markerWidth'];
@@ -16,7 +17,10 @@ export function drawImageMarker(ctx, image, point, symbol) {
     Canvas.image(ctx, image, point, symbol['markerWidth'] || image.width, symbol['markerHeight'] || image.height);
 }
 
-export function getImage(resources, url) {
+export function getImage(resources, url, properties) {
+    if (properties) {
+        url = replaceVariable(url, properties);
+    }
     const img = resources && resources.getImage(url);
     return img || null;
 }

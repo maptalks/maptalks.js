@@ -482,7 +482,7 @@ class GeometryCollection extends Geometry {
                 continue;
             }
             symbol = geometries[i]._getInternalSymbol();
-            res = getExternalResources(symbol);
+            res = getExternalResources(symbol, this.properties);
             for (let ii = 0, ll = res.length; ii < ll; ii++) {
                 key = res[ii].join();
                 if (!cache[key]) {

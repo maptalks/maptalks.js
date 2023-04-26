@@ -3,6 +3,8 @@ import { IS_NODE } from './env';
 import { extend, isNil, isNumber, isString } from './common';
 import { extractCssUrl, btoa } from './util';
 import { isFunctionDefinition, getFunctionTypeResources } from '../mapbox';
+import Browser from '../Browser';
+import { checkResourceValue } from '../ResourceManager';
 
 
 /**
@@ -101,6 +103,11 @@ export function getMarkerPathBase64(symbol, width, height) {
     svg.push('><defs></defs>');
 
     for (let i = 0; i < pathesToRender.length; i++) {
+        //非path节点的直接 out dom html,such: circle rect,polygon,polyline etc
+        if (pathesToRender[i].d instanceof Element) {
+            svg.push(pathesToRender[i].d.outerHTML);
+            continue;
+        }
         let strPath = '<path ';
         for (const p in pathesToRender[i]) {
             if (pathesToRender[i].hasOwnProperty(p)) {
@@ -122,7 +129,7 @@ export function getMarkerPathBase64(symbol, width, height) {
  * @return {String[]}           - resource urls
  * @memberOf Util
  */
-export function getExternalResources(symbol, toAbsolute) {
+export function getExternalResources(symbol, properties, toAbsolute) {
     if (!symbol) {
         return [];
     }
@@ -164,17 +171,24 @@ export function getExternalResources(symbol, toAbsolute) {
         if (symbol['markerType'] === 'path' && symbol['markerPath']) {
             w = isFunctionDefinition(symbol['markerWidth']) ? 200 : symbol['markerWidth'];
             h = isFunctionDefinition(symbol['markerHeight']) ? 200 : symbol['markerHeight'];
+            const path = symbol['markerPath'];
+            const checkMarkePath = (style) => {
+                const markerPath = style['markerPath'];
+                const url = checkResourceValue([markerPath], properties);
+                style['markerPath'] = url;
+            };
             if (isFunctionDefinition(symbol['markerPath'])) {
                 res = getFunctionTypeResources(symbol['markerPath']);
-                const path = symbol['markerPath'];
                 for (let iii = 0; iii < res.length; iii++) {
                     symbol['markerPath'] = res[iii];
+                    checkMarkePath(symbol);
                     resources.push([getMarkerPathBase64(symbol), w, h]);
                 }
-                symbol['markerPath'] = path;
             } else {
+                checkMarkePath(symbol);
                 resources.push([getMarkerPathBase64(symbol), w, h]);
             }
+            symbol['markerPath'] = path;
         }
     }
     return resources;
@@ -219,4 +233,8 @@ function _convertUrl(res) {
         res = extractCssUrl(res);
     }
     return res;
+}
+
+export function isImageBitMap(img) {
+    return img && Browser.decodeImageInWorker && img instanceof ImageBitmap;
 }
