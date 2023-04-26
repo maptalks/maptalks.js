@@ -309,6 +309,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.onDrawTileStart(context, parentContext);
 
         if (this.layer.options['opacity'] === 1) {
+            this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
             // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
@@ -319,6 +320,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingParentTiles;
             this.layer.options['fadeAnimation'] = fadingAnimation;
+            this.layer._silentConfig = false;
         }
 
         this.drawingCurrentTiles = true;
@@ -329,6 +331,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         delete this.drawingCurrentTiles;
 
         if (this.layer.options['opacity'] < 1) {
+            this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
             this.drawingChildTiles = true;
@@ -338,6 +341,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingParentTiles;
             this.layer.options['fadeAnimation'] = fadingAnimation;
+            this.layer._silentConfig = false;
         }
 
         placeholders.forEach(t => this._drawTile(t.info, t.image, parentContext));
