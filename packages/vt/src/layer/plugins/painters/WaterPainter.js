@@ -35,6 +35,14 @@ class WaterPainter extends BasicPainter {
         return true;
     }
 
+    isTerrainSkin() {
+        return false;
+    }
+
+    isTerrainVector() {
+        return true;
+    }
+
     needToRedraw() {
         if (super.needToRedraw()) {
             return true;

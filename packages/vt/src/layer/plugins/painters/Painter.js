@@ -149,6 +149,9 @@ class Painter {
     }
 
     fillIncludes(defines, uniformDeclares, context) {
+        if (context.isRenderingTerrain && this.isTerrainSkin()) {
+            return;
+        }
         const includes = context && context.includes;
         if (includes) {
             for (const p in includes) {
@@ -165,6 +168,9 @@ class Painter {
     }
 
     setIncludeUniformValues(uniforms, context) {
+        if (context.isRenderingTerrain && this.isTerrainSkin()) {
+            return;
+        }
         const includes = context && context.includes;
         if (includes) {
             for (const p in includes) {
