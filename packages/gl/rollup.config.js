@@ -29,7 +29,7 @@ const plugins = production ? [terser({
         properties: {
             'regex' : /^_/,
             'keep_quoted' : true,
-            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom'],
+            'reserved': ['on', 'once', 'off', '_getTilesInCurrentFrame', '_drawTiles', '_getTileZoom', '_onGeometryEvent']
         }
     },
     output : {
@@ -53,20 +53,20 @@ const configPlugins = [
 ];
 
 const pluginsWorker = production ? [
-terser({
-    module: true,
-    mangle: {
-        properties: {
-            'regex': /^_/,
-            'keep_quoted': true,
-            'reserved': ['on', 'once', 'off'],
+    terser({
+        module: true,
+        mangle: {
+            properties: {
+                'regex': /^_/,
+                'keep_quoted': true,
+                'reserved': ['on', 'once', 'off'],
+            }
+        },
+        output: {
+            beautify: false,
+            comments: '/^!/'
         }
-    },
-    output: {
-        beautify: false,
-        comments: '/^!/'
-    }
-})] : [];
+    })] : [];
 
 function transformBackQuote() {
     return {
@@ -77,7 +77,7 @@ function transformBackQuote() {
                 .replace(/\\/g, '\\\\')
                 .replace(/`/g, '\\`')
                 .replace(/\$\{/g, '${e}');
-            var transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
+            let transformedCode = 'const e = "${"; const code = `' + code + '`;\n';
             transformedCode += 'export default code';
             return {
                 code: transformedCode,
@@ -97,12 +97,12 @@ module.exports = [
             }),
             commonjs(),
             replace({
-              // 'this.exports = this.exports || {}': '',
-              '(function (exports) {': 'function (exports) {',
-              '})(this.exports = this.exports || {});': '}',
-              'Object.defineProperty(exports, \'__esModule\', { value: true });': '',
-              preventAssignment: false,
-              delimiters: ['', '']
+                // 'this.exports = this.exports || {}': '',
+                '(function (exports) {': 'function (exports) {',
+                '})(this.exports = this.exports || {});': '}',
+                'Object.defineProperty(exports, \'__esModule\', { value: true });': '',
+                preventAssignment: false,
+                delimiters: ['', '']
             }),
         ].concat(pluginsWorker).concat([transformBackQuote()]),
         output: {

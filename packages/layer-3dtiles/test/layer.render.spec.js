@@ -1013,7 +1013,7 @@ describe('render specs', () => {
                     }
                 ]
             });
-            // 因为颜色混合，diffCount 无法判定为0
+                // 因为颜色混合，diffCount 无法判定为0
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 500, renderCount: 1, threshold: 0.4 });
         });
 
@@ -1562,7 +1562,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758748734894, 40.04463327181864 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758749, 40.04463327 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformBox/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1579,7 +1579,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758747188696, 40.044633271818356 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758747, 40.04463327 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformRegion/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1596,7 +1596,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758750281098, 40.04463327181864 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.6175875, 40.04463327 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
