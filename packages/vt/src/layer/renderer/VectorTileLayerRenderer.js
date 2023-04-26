@@ -1138,6 +1138,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     renderTerrainSkin(terrainRegl, terrainLayer, skinImages) {
+        const res = this.getMap().getResolution();
         const timestamp = this._currentTimestamp;
         const parentContext = this._parentContext;
         const tileSize = this.layer.getTileSize().width;
@@ -1151,7 +1152,13 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             };
             TERRAIN_CLEAR.framebuffer = texture;
             terrainRegl.clear(TERRAIN_CLEAR);
+            const tileRes = skinImages[i].tile.info.res;
+            const scale = tileRes / res;
             this._parentContext.viewport = getTileViewport(tileSize);
+            // 如果矢量瓦片的目标绘制尺寸过大，拉伸后会过于失真，还不如不去绘制
+            if (scale > 8) {
+                continue;
+            }
             this._drawTerrainTile(skinImages[i].tile, texture);
         }
         this._endTerrainFrame(skinImages);
@@ -1394,6 +1401,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 });
             }
             tile.image.cache = {};
+        }
+        if (tile.info) {
+            delete tile.info.completeTerrainQuery;
+            delete tile.info.terrainQueryStatus;
         }
         //ask plugin to clear caches
         super.deleteTile(tile);
