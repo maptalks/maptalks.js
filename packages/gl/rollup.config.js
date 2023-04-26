@@ -23,7 +23,7 @@ function glsl() {
 }
 
 const production = process.env.BUILD === 'production';
-const outputFile = production ? pkg.main : 'dist/maptalksgl-dev.js';
+const outputFile = pkg.main;
 const plugins = production ? [terser({
     mangle: {
         properties: {
