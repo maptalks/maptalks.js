@@ -862,7 +862,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     getTileOpacity(tileImage, tileInfo) {
         let opacity = this._getTileFadingOpacity(tileImage);
-        if (this.layer.getJSONType() === 'GroupTileLayer') {
+        if (this.layer.getChildLayer) {
             // in GroupTileLayer
             const childLayer = this.layer.getLayer(tileInfo.layer);
             if (childLayer) {
