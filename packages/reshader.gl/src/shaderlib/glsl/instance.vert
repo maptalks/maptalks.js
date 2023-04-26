@@ -1,6 +1,10 @@
 attribute vec4 instance_vectorA;
 attribute vec4 instance_vectorB;
 attribute vec4 instance_vectorC;
+#ifdef HAS_INSTANCE_TERRAIN_ALTITUDE
+attribute float aTerrainAltitude;
+uniform float terrainAltitudeScale;
+#endif
 
 mat4 instance_getAttributeMatrix() {
     mat4 mat =  mat4(
@@ -9,6 +13,15 @@ mat4 instance_getAttributeMatrix() {
         instance_vectorA.z, instance_vectorB.z, instance_vectorC.z, 0.0,
         instance_vectorA.w, instance_vectorB.w, instance_vectorC.w, 1.0
     );
+    #ifdef HAS_INSTANCE_TERRAIN_ALTITUDE
+        mat4 terrainMat = mat4(
+            1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            0., 0., aTerrainAltitude * terrainAltitudeScale, 1.
+        );
+        mat = terrainMat * mat;
+    #endif
     return mat;
 }
 

@@ -1,3 +1,5 @@
+import * as maptalks from 'maptalks';
+
 export function getCascadeTileIds(layer, x, y, z, offset, scale, levelLimit) {
     const result = {};
     for (let i = 0; i < levelLimit; i++) {
@@ -13,10 +15,7 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
         return EMPTY_ARRAY;
     }
     // 这里假设 tile offset 还在tileSize范围内，而不是跨越或超过1整张瓦片的那种偏移方式
-    let tileSize = layer.options.tileSize;
-    if (Array.isArray(tileSize)) {
-        tileSize = tileSize[0];
-    }
+    const tileSize = layer.getTileSize().width;
     const layerOffset = layer['_getTileOffset'](z);
     const tileOffsetX = offset[0] - layerOffset[0];
     const tileOffsetY = layerOffset[1] - offset[1];
@@ -52,6 +51,7 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
                 y: ty,
                 z,
                 offset: layerOffset,
+                tileSize,
                 id: layer['_getTileId'](tx, ty, z)
             }
         ];
@@ -66,6 +66,7 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
                 y: ty,
                 z,
                 offset: layerOffset,
+                tileSize,
                 id: layer['_getTileId'](tx, ty, z)
             });
         }
@@ -102,4 +103,11 @@ export function getSkinTileRes(sr, z, terrainRes) {
     const zoom = z - Math.log(terrainRes / resAtZ) * Math.LOG2E;
     const myRes = sr.getResolution(zoom);
     return { zoom, res: myRes };
+}
+
+const TILEPOINT = new maptalks.Point(0, 0);
+export function inTerrainTile(tileInfo, x, y, res) {
+    const point0 = TILEPOINT.set(x, y);
+    const point1 = point0['_multi'](res / tileInfo.res);
+    return tileInfo.extent2d.contains(point1);
 }

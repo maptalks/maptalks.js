@@ -1,4 +1,4 @@
-#define SHADER_NAME TERRAIN_SKIN
+#define SHADER_NAME TERRAIN_MESH
 
 attribute vec3 aPosition;
 attribute vec2 aTexCoord;

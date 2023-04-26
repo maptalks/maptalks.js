@@ -65,7 +65,7 @@ class MeshShader extends Shader {
             return;
         }
         for (const p in this.context) {
-            if (!Object.getOwnPropertyDescriptor(v, p)) {
+            if (p !== 'framebuffer' && !Object.getOwnPropertyDescriptor(v, p)) {
                 Object.defineProperty(v, p, {
                     configurable: false,
                     enumerable: true,
@@ -75,6 +75,17 @@ class MeshShader extends Shader {
                 });
             }
         }
+
+        if (!Object.getOwnPropertyDescriptor(v, 'framebuffer')) {
+            Object.defineProperty(v, 'framebuffer', {
+                configurable: false,
+                enumerable: true,
+                get: function () {
+                    return this['targetFramebuffer'] || this.shaderContext && this.shaderContext['framebuffer'];
+                }
+            });
+        }
+
         v.contextKeys[this.uid] = this.contextKeys;
     }
 

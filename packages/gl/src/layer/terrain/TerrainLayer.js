@@ -1,6 +1,6 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
-import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes } from './TerrainTileUtil';
+import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
@@ -12,6 +12,8 @@ const options = {
     'forceRenderOnZooming': true,
     'forceRenderOnRotating': true,
     'fadeDuration': (1000 / 60 * 15),
+    'tileLimitPerFrame': 2,
+    'newTerrainTileRenderLimitPerFrameOnInteracting': 1,
     'opacity': 1.0,
     'renderer': 'gl',
     'pyramidMode': 1,
@@ -22,7 +24,8 @@ const options = {
     'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
     'requireSkuToken': true,
-    'tileRetryCount': 0
+    'tileRetryCount': 0,
+    'maxCacheSize': 512
 };
 
 const EMPTY_TILE_GRIDS = {
@@ -35,6 +38,11 @@ const SKU_ID = '01';
 const TOKEN_VERSION = '1';
 const base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+// terrain 的渲染流程：
+// 1. TerrainLayer 计算有哪些瓦片, terrainTiles
+// 2. 每个skinLayer根据 terrainTiles 计算出自己需求请求哪些瓦片 skinTiles（需要注意多个terrainTile可能共享skinTile）
+// 3. 遍历 skinTiles，为每个 skinTiles 创建必要的 skinTexture，并绘制 skinTiles 到 skinTexture 中，因为做过去重，每个skinTile只会绘制一次
+// 4. 遍历 terrainTiles， 为每个 terrainTiles 创建 terrainMesh，并在frag shader中合成 skinTiles 的 skinTexture，最终绘制到地图场景中
 export default class TerrainLayer extends maptalks.TileLayer {
     getTileUrl(x, y, z) {
         let terrainUrl = super.getTileUrl(x, y, z);
@@ -204,17 +212,41 @@ export default class TerrainLayer extends maptalks.TileLayer {
     queryTerrainByProjCoord(prjCoord) {
         const renderer = this.getRenderer();
         if (!renderer) {
-            return 0;
+            ALTITUDE[0] = null;
+            ALTITUDE[1] = 0;
+            return ALTITUDE;
         }
         const map = this.getMap();
-        const sr = this.getSpatialReference();
-        const zoom = renderer.getCurrentTileZoom();
-        const res = sr.getResolution(zoom);
-        const repeatWorld = this.options['repeatWorld'];
-        const config = this['_getTileConfig']();
-        const tileIndex = config.getTileIndex(prjCoord, res, repeatWorld);
-        const worldPos = map['_prjToPointAtRes'](prjCoord, res, POINT0);
-        return renderer._queryTerrain(ALTITUDE, tileIndex, worldPos, res, zoom);
+        const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
+        const tileInfo = renderer._getTerrainTileAtPoint(worldPos, 1);
+        if (!tileInfo) {
+            ALTITUDE[0] = null;
+            ALTITUDE[1] = 0;
+            return ALTITUDE;
+        }
+        return renderer._queryTerrain(ALTITUDE, tileInfo.id, tileInfo, worldPos, 1);
+    }
+
+    queryTileTerrainByProjCoord(prjCoord, tileId, tileIndex) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            ALTITUDE[0] = null;
+            ALTITUDE[1] = 0;
+            return ALTITUDE;
+        }
+        const map = this.getMap();
+        const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
+        return renderer._queryTerrain(ALTITUDE, tileId, tileIndex, worldPos, 1);
+    }
+
+    queryTileTerrainByPointAtRes(point, res, tileId, tileIndex) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            ALTITUDE[0] = null;
+            ALTITUDE[1] = 0;
+            return ALTITUDE;
+        }
+        return renderer._queryTerrain(ALTITUDE, tileId, tileIndex, point, res);
     }
 
     queryTerrain(coordinate) {
@@ -241,6 +273,35 @@ export default class TerrainLayer extends maptalks.TileLayer {
             return;
         }
         renderer._queryTileMesh(tile, cb);
+    }
+
+    getTerrainTiles(tileInfo) {
+        const { x, y, z, res, offset } = tileInfo;
+        const tileSize = tileInfo.extent2d.getWidth();
+        const tc = this['_getTileConfig']();
+        const sr = this.getSpatialReference();
+        const { res: terrainRes, zoom } = getSkinTileRes(sr, z, res);
+
+        const terrainTileSize = this.getTileSize().width;
+
+        const scale = getSkinTileScale(terrainRes, terrainTileSize, res, tileSize);
+
+        const terrainTiles = getCascadeTileIds(this, x, y, zoom, offset, scale, 1)[0];
+        for (let i = 0; i < terrainTiles.length; i++) {
+            const { x: tx, y: ty } = terrainTiles[i];
+            const nw = tc.getTilePointNW(tx, ty, terrainRes, POINT0);
+            terrainTiles[i].res = terrainRes;
+            terrainTiles[i].extent2d = new maptalks.PointExtent(nw.x, nw.y, nw.x + terrainTileSize, nw.y - terrainTileSize);
+        }
+        return terrainTiles;
+    }
+
+    isTerrainTileLoaded(tileId) {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return false;
+        }
+        return renderer.isTileCached(tileId);
     }
 }
 

@@ -34,6 +34,10 @@
     uniform vec4 morphWeights2;
 #endif
 
+#ifdef HAS_TERRAIN_ALTITUDE
+attribute float aTerrainAltitude;
+#endif
+
 mat4 getPositionMatrix() {
     mat4 worldMatrix;
     #ifdef HAS_INSTANCE
@@ -72,6 +76,9 @@ vec4 getPosition(vec3 aPosition) {
         , 1.0);
     #else
         vec4 POSITION = vec4(position, 1.0);
+    #endif
+    #ifdef HAS_TERRAIN_ALTITUDE
+        POSITION.z += aTerrainAltitude * 100.0;
     #endif
     return POSITION;
 }

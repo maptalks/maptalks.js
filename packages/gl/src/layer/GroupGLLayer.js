@@ -506,9 +506,6 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _updateTerrainSkinLayers() {
-        if (!this._skinBGOptions) {
-            this._skinBGOptions = {};
-        }
         const layers = this.layers;
         const skinLayers = [];
         for (let i = 0; i < layers.length; i++) {
@@ -518,9 +515,6 @@ export default class GroupGLLayer extends maptalks.Layer {
             const layer = layers[i];
             const renderer = layer.getRenderer();
             if (renderer.renderTerrainSkin) {
-                this._skinBGOptions[layer.getId()] = layer.options['background'];
-                // ignore finding child tiles and parent tiles in skin layers
-                layer.options['background'] = false;
                 layer.getTiles = () => {
                     // debugger
                     return this._terrainLayer.getSkinTiles(layer);
@@ -535,6 +529,8 @@ export default class GroupGLLayer extends maptalks.Layer {
                 } else {
                     renderer.drawTile = emptyMethod;
                 }
+                // skinLayer的deleteTile交由TerrainLayerRenderer.deleteTile中手动执行
+                renderer.deleteTile = () => {};
 
                 skinLayers.push(layers[i]);
             }
@@ -556,15 +552,6 @@ export default class GroupGLLayer extends maptalks.Layer {
 
         delete layer.getTiles;
         delete layer.isTerrainSkin;
-        if (this._skinBGOptions) {
-            const backOption = this._skinBGOptions[layer.getId()];
-            if (backOption !== undefined) {
-                layer.options['background'] = backOption;
-            } else {
-                delete layer.options['background'];
-            }
-            delete this._skinBGOptions[layer.getId()];
-        }
     }
 
     _resetTerrainSkinLayers() {
@@ -575,7 +562,6 @@ export default class GroupGLLayer extends maptalks.Layer {
             }
             this._resetSkinLayer(layers[i]);
         }
-        delete this._skinBGOptions;
     }
 
     _onTerrainTileLoad() {

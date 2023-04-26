@@ -66,14 +66,15 @@ describe('gl tests', () => {
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
             group.once('terrainlayercreated', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     const altitude = group.queryTerrain(map.getCenter());
-                    expect(altitude).to.be.eql([3655.199951171875, 1]);
+                    expect(altitude).to.be.eql([3654.39990234375, 1]);
                     done();
                 });
             });
@@ -89,8 +90,7 @@ describe('gl tests', () => {
                 postProcess: {
                     enable: true,
                     antialias: {
-                        enable: true,
-                        taa: true
+                        enable: true
                     }
                 }
             };
@@ -164,7 +164,8 @@ describe('gl tests', () => {
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, {
                 terrain
@@ -176,7 +177,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 } });
                         done();
                     });
                 });
@@ -200,6 +201,7 @@ describe('gl tests', () => {
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
                 urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
                 opacity: 0.5
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, {
@@ -212,7 +214,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 161, '1': 165, '2': 165, '3': 127 } });
+                        expect(pixel).to.be.eql({ data: { '0': 149, '1': 153, '2': 155, '3': 127 } });
                         done();
                     });
                 });
@@ -235,7 +237,8 @@ describe('gl tests', () => {
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers);
             group.once('terrainlayercreated', () => {
@@ -244,7 +247,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = group.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 }});
+                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 }});
                         done();
                     });
                 });
@@ -285,7 +288,8 @@ describe('gl tests', () => {
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
             group.once('terrainlayercreated', () => {
@@ -319,7 +323,8 @@ describe('gl tests', () => {
                 type: 'mapbox',
                 tileSize: 512,
                 spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp'
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
             group.once('terrainlayercreated', () => {
@@ -329,9 +334,9 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 160, '1': 164, '2': 165, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 152, '1': 156, '2': 157, '3': 255 } });
                         const altitude = group.queryTerrain(map.getCenter());
-                        expect(altitude).to.be.eql([3655.199951171875, 1]);
+                        expect(altitude).to.be.eql([3654.39990234375, 1]);
                         done();
                     });
                 });
