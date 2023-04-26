@@ -45,6 +45,10 @@ class FillPainter extends BasicPainter {
         return !!symbol['polygonBloom'];
     }
 
+    forbiddenTerrainUpscale() {
+        return true;
+    }
+
     needPolygonOffset() {
         return true;
     }

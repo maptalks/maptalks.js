@@ -149,7 +149,7 @@ class Painter {
     }
 
     fillIncludes(defines, uniformDeclares, context) {
-        if (context.isRenderingTerrain && this.isTerrainSkin()) {
+        if (context && context.isRenderingTerrain && this.isTerrainSkin()) {
             return;
         }
         const includes = context && context.includes;
@@ -168,7 +168,7 @@ class Painter {
     }
 
     setIncludeUniformValues(uniforms, context) {
-        if (context.isRenderingTerrain && this.isTerrainSkin()) {
+        if (context && context.isRenderingTerrain && this.isTerrainSkin()) {
             return;
         }
         const includes = context && context.includes;
@@ -309,12 +309,28 @@ class Painter {
         return !!this.getSymbol(mesh.properties.symbolIndex)['bloom'];
     }
 
+    // 不允许地形上的upscale放大
+    forbiddenTerrainUpscale() {
+        return true;
+    }
+
     addMesh(meshes, progress, context) {
         // console.log(meshes.map(m => m.properties.tile.id).join());
         // if (meshes[0].properties.tile.id === 'data_vt__85960__140839__19') {
         //     console.log(meshes[0].properties.tile.z, meshes[0].properties.level);
         //     this.scene.addMesh(meshes[0]);
         // }
+
+        const isRenderingTerrainSkin = context.isRenderingTerrain && this.isTerrainSkin();
+        if (isRenderingTerrainSkin && this.forbiddenTerrainUpscale()) {
+            const res = this.getMap().getResolution();
+            const tileRes = context.tileInfo.res;
+            const scale = tileRes / res;
+            if (scale > 4) {
+                // 过于放大
+                return;
+            }
+        }
         const isRenderingTerrainVector = context.isRenderingTerrain && this.isTerrainVector();
         const fbo = this.getRenderFBO(context);
         meshes = meshes.filter(m => this.isMeshVisible(m));
