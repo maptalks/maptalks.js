@@ -124,7 +124,7 @@ var COMMON_SYMBOL_TESTOR = {
     markerSymbols : [
         {
             'markerPlacement':'point', //point | line | interior
-            'markerFile'   : 'images/control/2.png',
+            'markerFile'   : 'resources/2.png',
             'markerRotation' : 30,
             //设定marker-file后, 只有下面的属性起作用
             'markerWidth'  : 20,
@@ -206,14 +206,14 @@ var COMMON_SYMBOL_TESTOR = {
     ],
 
     lineAndFill: {
-        'linePatternFile' : 'url(images/control/2.png)',
+        'linePatternFile' : 'url(resources/2.png)',
         // "lineColor"        : "#f00",
         'lineWidth'        : 5,
         'lineOpacity'      : 1,
         'lineJoin'         : 'miter', //round bevel
         'lineCap'          : 'round', //butt square
         'lineDasharray'    : [20, 5, 20],
-        'polygonPatternFile'  : 'url(images/control/2.png)',
+        'polygonPatternFile'  : 'url(resources/2.png)',
         'polygonFill'          : '#f00',
         'polygonOpacity'       : 1
     },

@@ -182,7 +182,7 @@ describe('DrawTool', function () {
                 mode : 'Point',
                 symbol : {
                     'markerPlacement':'point',
-                    'markerFile'   : 'images/control/2.png',
+                    'markerFile'   : 'resources/2.png',
                     'markerRotation' : 30,
                     'markerWidth'  : 20,
                     'markerHeight' : 20,
