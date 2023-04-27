@@ -34,7 +34,9 @@ class MapTouchZoomHandler extends Handler {
         off(document, 'touchend', this._onTouchEnd, this);
         addDomEvent(document, 'touchmove', this._onTouchMove, this);
         addDomEvent(document, 'touchend', this._onTouchEnd, this);
-        preventDefault(event);
+        if (map.options['preventTouch']) {
+            preventDefault(event);
+        }
 
         /**
           * touchactstart event

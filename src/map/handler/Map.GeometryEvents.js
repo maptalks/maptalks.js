@@ -199,7 +199,9 @@ class MapGeometryEventsHandler extends Handler {
         }
         const containerPoint = getEventContainerPoint(actual, map._containerDOM);
         if (eventType === 'touchstart') {
-            preventDefault(domEvent);
+            if (map.options['preventTouch']) {
+                preventDefault(domEvent);
+            }
         }
 
         let geometryCursorStyle = null;
