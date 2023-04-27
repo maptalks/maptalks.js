@@ -222,8 +222,9 @@ var COMMON_SYMBOL_TESTOR = {
         var counter = 0;
         function getLayer(id) {
             counter++;
-            var layer = map.getLayer(id) || new maptalks.VectorLayer(id, { 'debug' : true }).addTo(map);
+            var layer = new maptalks.VectorLayer(id, { 'debug' : true, 'drawImmediate': true });
             layer.on('layerload', onLayerLoad);
+            layer.addTo(map);
             return layer;
         }
         function onLayerLoad() {
