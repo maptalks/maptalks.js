@@ -1,5 +1,6 @@
 import { createEl, on } from '../core/util/dom';
 import Control from './Control';
+import Map from '../map/Map';
 
 /**
  * @property {Object}   options - options
@@ -13,7 +14,10 @@ import Control from './Control';
  */
 
 const options = {
-    position: 'top-left',
+    position: {
+        'top': 156,
+        'left': 20
+    },
     view: null
 };
 
@@ -60,5 +64,16 @@ class Reset extends Control {
 }
 
 Reset.mergeOptions(options);
+
+Map.mergeOptions({
+    'resetControl': false
+});
+
+Map.addOnLoadHook(function () {
+    if (this.options['resetControl']) {
+        this.resetControl = new Reset(this.options['resetControl']);
+        this.addControl(this.resetControl);
+    }
+});
 
 export default Reset;

@@ -1,5 +1,6 @@
 import { createEl, setStyle, on } from '../core/util/dom';
 import Control from './Control';
+import Map from '../map/Map';
 
 /**
  * @property {Object}   options - options
@@ -13,7 +14,10 @@ import Control from './Control';
  */
 
 const options = {
-    position: 'top-left',
+    position: {
+        'top': 120,
+        'left': 20
+    }
 };
 
 class Compass extends Control {
@@ -71,5 +75,16 @@ class Compass extends Control {
 }
 
 Compass.mergeOptions(options);
+
+Map.mergeOptions({
+    'compassControl': false
+});
+
+Map.addOnLoadHook(function () {
+    if (this.options['compassControl']) {
+        this.compassControl = new Compass(this.options['compassControl']);
+        this.addControl(this.compassControl);
+    }
+});
 
 export default Compass;
