@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/gltf-layer",
-  "version": "0.81.4",
+  "version": "0.82.0",
   "description": "A maptalks Layer to render gltf",
   "license": "UNLICENSED",
   "repository": {
@@ -32,9 +32,9 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gl": "^0.81.4",
-    "@maptalks/transcoders.draco": "^0.81.4",
-    "@maptalks/transform-control": "0.81.4",
+    "@maptalks/gl": "^0.82.0",
+    "@maptalks/transcoders.draco": "^0.82.0",
+    "@maptalks/transform-control": "^0.82.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
@@ -42,22 +42,22 @@
     "eslint": "^7.32.0",
     "eslint-plugin-mocha": "^9.0.0",
     "expect.js": "^0.3.1",
+    "happen": "^0.3.1",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
     "karma-expect": "^1.1.3",
+    "karma-happen": "^0.1.0",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.18",
     "mocha": "^9.0.3",
     "rollup": "^2.56.2",
-    "rollup-plugin-terser": "^5.3.1",
-    "happen": "^0.3.1",
-    "karma-happen": "^0.1.0"
+    "rollup-plugin-terser": "^5.3.1"
   },
   "dependencies": {
     "@maptalks/feature-filter": "^1.3.0",
     "@maptalks/function-type": "^1.3.1",
-    "@maptalks/gltf-loader": "^0.27.2",
+    "@maptalks/gltf-loader": "^0.82.0",
     "frustum-intersects": "^0.2.2"
   }
 }
