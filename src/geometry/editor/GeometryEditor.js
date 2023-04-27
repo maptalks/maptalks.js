@@ -891,8 +891,10 @@ class GeometryEditor extends Eventable(Class) {
             const isEnd = (geoToEdit instanceof LineString) && (index === 0 || index === prjCoordinates.length - 1);
             prjCoordinates.splice(index, 1);
             if (ringIndex > 0) {
+                //update hole prj
                 geoToEdit._prjHoles[ringIndex - 1] = prjCoordinates;
             } else {
+                //update shell prj
                 geoToEdit._setPrjCoordinates(prjCoordinates);
             }
             geoToEdit._updateCache();
@@ -912,6 +914,18 @@ class GeometryEditor extends Eventable(Class) {
             if (!isEnd) {
                 //add a new "new vertex" handle.
                 newVertexHandles[ringIndex].splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
+            }
+            if (ringIndex > 0) {
+                const coordiantes = geoToEdit.getCoordinates();
+                //fix hole Vertex delete
+                const ring = coordiantes[ringIndex];
+                if (ring && Array.isArray(ring) && ring.length > 1) {
+                    ring.splice(index, 1);
+                    //update shadow coordinates
+                    if (geoToEdit !== this._geometry) {
+                        geoToEdit.setCoordinates(coordiantes);
+                    }
+                }
             }
             onVertexAddOrRemove();
             me._updating = false;
