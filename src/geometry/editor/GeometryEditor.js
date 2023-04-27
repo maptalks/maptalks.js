@@ -915,14 +915,16 @@ class GeometryEditor extends Eventable(Class) {
                 //add a new "new vertex" handle.
                 newVertexHandles[ringIndex].splice(nextIndex, 0, createNewVertexHandle.call(me, nextIndex, ringIndex));
             }
-            const coordiantes = geoToEdit.getCoordinates();
-            //fix hole Vertex delete
-            const ring = coordiantes[ringIndex];
-            if (ring && Array.isArray(ring) && ring.length > 1) {
-                ring.splice(index, 1);
-                //update shadow coordinates
-                if (geoToEdit !== this._geometry) {
-                    geoToEdit.setCoordinates(coordiantes);
+            if (ringIndex > 0) {
+                const coordiantes = geoToEdit.getCoordinates();
+                //fix hole Vertex delete
+                const ring = coordiantes[ringIndex];
+                if (ring && Array.isArray(ring) && ring.length > 1) {
+                    ring.splice(index, 1);
+                    //update shadow coordinates
+                    if (geoToEdit !== this._geometry) {
+                        geoToEdit.setCoordinates(coordiantes);
+                    }
                 }
             }
             onVertexAddOrRemove();
