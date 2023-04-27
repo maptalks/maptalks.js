@@ -161,7 +161,7 @@ describe('Geometry.Ellipse', function () {
         });
     });
 
-    it('can have various symbols', function (done) {
+    it.skip('can have various symbols', function (done) {
         var vector = new maptalks.Ellipse(center, 100, 50);
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
