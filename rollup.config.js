@@ -7,6 +7,7 @@ const pkg = require('./package.json');
 const testing = process.env.BUILD === 'test';
 const dev = process.env.BUILD === 'dev';
 console.log(process.env.BUILD);
+const isDebug = testing || dev;
 const plugins = testing ?
     [
         ['istanbul', {
@@ -40,7 +41,7 @@ const builds = [
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': false,
+                'sourcemap': isDebug,
                 'format': 'umd',
                 'name': 'maptalks',
                 banner,
@@ -76,7 +77,7 @@ const builds = [
         ]
     }];
 
-if (dev) {
+if (isDebug) {
     module.exports = [builds[0]];
 } else {
     module.exports = builds;
