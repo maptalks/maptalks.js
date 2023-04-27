@@ -20,8 +20,6 @@
     "build-gl": "cd ../gl && npm run build",
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
-    "pretest": "npm run lint && npm run build-gl && npm run build",
-    "preversion": "npm test",
     "version": "npm run build",
     "lint": "eslint src/**/*.js",
     "prepare": "npm run lint && npm run build"
