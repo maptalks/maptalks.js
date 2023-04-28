@@ -7,8 +7,8 @@ describe('Geometry.LineString', function () {
 
     beforeEach(function () {
         var setups = COMMON_CREATE_MAP(center, null, {
-            width : 400,
-            height : 300
+            width : 200,
+            height : 150
         });
         container = setups.container;
         map = setups.map;
