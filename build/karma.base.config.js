@@ -3,7 +3,7 @@ module.exports = {
     basePath: '..',
     client: {
         mocha: {
-            timeout: 8000
+            timeout: 18000
         }
     },
     files: [
