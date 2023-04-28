@@ -26,6 +26,8 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Number} [options.altitude=0]           - layer altitude
  * @property {Boolean} [options.debug=false]         - whether the geometries on the layer is in debug mode.
  * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
+ * @property {Boolean}  [options.collision=false]  - whether collision
+ * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
  * @memberOf VectorLayer
  * @instance
  */
@@ -42,7 +44,9 @@ const options = {
     'roundPoint': false,
     'altitude': 0,
     'clipBBoxBufferSize': 3,
-    'geometryEventTolerance': 1
+    'geometryEventTolerance': 1,
+    'collision': false,
+    'collisionBufferSize': 2
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];

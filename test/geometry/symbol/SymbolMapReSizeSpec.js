@@ -47,7 +47,7 @@ describe('SymbolMapReSizeSpec', function () {
                 expect([mapImage[0], mapImage[1], mapImage[2], mapImage[3]]).to.be.eql([255, 0, 0, 255]);
                 done();
             }, 100);
-        }, 10);
+        }, 100);
     });
 
 
