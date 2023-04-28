@@ -5,10 +5,13 @@ import PointExtent from '../../../geo/PointExtent';
 import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
 import { getPointsResultPts } from '../../../core/util';
+import CollisionIndex from '../../../core/CollisionIndex';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
+const collisionIndex = new CollisionIndex();
+
 
 /**
  * @classdesc
@@ -20,6 +23,32 @@ const PLACEMENT_CENTER = 'center';
  * @param {VectorLayer} layer - layer to render
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
+
+    _geoIsCollision(geo) {
+        if (!geo) {
+            return false;
+        }
+        const type = geo.getType();
+        if (type === 'Point' && geo.getContainerExtent) {
+            if (!geo.bbox) {
+                geo.bbox = [0, 0, 0, 0];
+            }
+            const bufferSize = this.layer.options['collisionBufferSize'];
+            const extent = geo.getContainerExtent();
+            if (!extent) {
+                return false;
+            }
+            geo.bbox[0] = extent.xmin - bufferSize;
+            geo.bbox[1] = extent.ymin - bufferSize;
+            geo.bbox[2] = extent.xmax + bufferSize;
+            geo.bbox[3] = extent.ymax + bufferSize;
+            if (collisionIndex.collides(geo.bbox)) {
+                return true;
+            }
+            collisionIndex.insertBox(geo.bbox);
+        }
+        return false;
+    }
 
     getImageData() {
         //如果不开启geometry event 或者 渲染频率很高 不要取缓存了，因为getImageData是个很昂贵的操作
@@ -128,6 +157,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._drawnRes = res;
         }
         this._sortByDistanceToCamera(map.cameraPosition);
+        this._collidesGeos();
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
             if (!geo._isCheck) {
@@ -171,6 +201,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this.forEachGeo(this.checkGeo, this);
         }
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
+        this._collidesGeos();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
             this._geosToDraw[i]._paint();
             this._geosToDraw[i]._cPoint = undefined;
@@ -221,6 +252,23 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         geo._isCheck = true;
         this._geosToDraw.push(geo);
+    }
+
+    _collidesGeos() {
+        const collision = this.layer.options['collision'];
+        if (!collision) {
+            return this;
+        }
+        collisionIndex.clear();
+        const geos = this._geosToDraw;
+        this._geosToDraw = [];
+        for (let i = 0, len = geos.length; i < len; i++) {
+            if (this._geoIsCollision(geos[i])) {
+                continue;
+            }
+            this._geosToDraw.push(geos[i]);
+        }
+        return this;
     }
 
     onZoomEnd() {
