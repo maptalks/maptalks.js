@@ -163,7 +163,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             if (!this._lastCollisionTime) {
                 this._lastCollisionTime = time;
             }
-            if (collision && time - this._lastCollisionTime <= collisionDelay) {
+            if (time - this._lastCollisionTime <= collisionDelay) {
                 this._geosToDraw = this._lastGeosToDraw || this._geosToDraw;
             } else {
                 this._collidesGeos();
