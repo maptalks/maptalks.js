@@ -157,7 +157,20 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._drawnRes = res;
         }
         this._sortByDistanceToCamera(map.cameraPosition);
-        this._collidesGeos();
+        const { collision, collisionDelay } = this.layer.options;
+        if (collision) {
+            const time = now();
+            if (!this._lastCollisionTime) {
+                this._lastCollisionTime = time;
+            }
+            if (collision && time - this._lastCollisionTime <= collisionDelay) {
+                this._geosToDraw = this._lastGeosToDraw || this._geosToDraw;
+            } else {
+                this._collidesGeos();
+                this._lastCollisionTime = time;
+            }
+        }
+
         for (let i = 0, l = this._geosToDraw.length; i < l; i++) {
             const geo = this._geosToDraw[i];
             if (!geo._isCheck) {
@@ -174,6 +187,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._geosToDraw[i]._inCurrentView = undefined;
         }
         this.clearImageData();
+        this._lastGeosToDraw = this._geosToDraw;
     }
 
     /**
@@ -208,6 +222,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             this._geosToDraw[i]._inCurrentView = undefined;
         }
         this.clearImageData();
+        this._lastGeosToDraw = this._geosToDraw;
     }
 
     prepareToDraw() {
