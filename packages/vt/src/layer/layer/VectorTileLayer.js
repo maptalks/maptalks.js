@@ -1224,3 +1224,42 @@ function checkStyleExist(styles, idx) {
         throw new Error(`No plugin defined at style of ${idx}`);
     }
 }
+
+const MAX_ZOOM = 22;
+const preset4326 = {
+    'projection': 'EPSG:4326',
+    'fullExtent': {
+        'top': 90,
+        'left': -180,
+        'bottom': -90,
+        'right': 180
+    },
+    'resolutions': (function () {
+        const resolutions = [];
+        for (let i = 0; i < MAX_ZOOM; i++) {
+            resolutions[i] = 180 / 4 / (Math.pow(2, i) * 128);
+        }
+        return resolutions;
+    })()
+}
+
+// const preset3857 = {
+//     'projection': 'EPSG:3857',
+//     'resolutions': (function () {
+//         const resolutions = [];
+//         const d = 6378137 * Math.PI;
+//         for (let i = 0; i < MAX_ZOOM; i++) {
+//             resolutions[i] = d / (256 * Math.pow(2, i));
+//         }
+//         return resolutions;
+//     })(),
+//     'fullExtent': {
+//         'top': 6378137 * Math.PI,
+//         'left': -6378137 * Math.PI,
+//         'bottom': -6378137 * Math.PI,
+//         'right': 6378137 * Math.PI
+//     }
+// };
+
+maptalks.SpatialReference.registerPreset('preset-maptiler-4326', preset4326);
+// maptalks.SpatialReference.registerPreset('preset-vt-3857', preset3857);
