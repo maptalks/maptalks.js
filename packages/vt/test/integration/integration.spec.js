@@ -6,6 +6,8 @@ const fs = require('fs');
 const { match, readSpecs, writeImageData, hasOwn } = require('./util');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
+const startServer = require('../specs/server.js');
+const PORT = 4398;
 
 const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 
@@ -26,12 +28,17 @@ const DEFAULT_VIEW = {
 };
 
 describe('vector tile integration specs', () => {
-    let map, container;
-    before(() => {
+    let map, container, server;
+    before(done => {
         container = document.createElement('div');
         container.style.width = '128px';
         container.style.height = '128px';
         document.body.appendChild(container);
+        server = startServer(PORT, done);
+    });
+
+    after(() => {
+        server.close();
     });
 
     afterEach(() => {
@@ -59,7 +66,7 @@ describe('vector tile integration specs', () => {
             // disable parents tiles
             style.tileStackDepth = 0;
             // style.debug = true;
-            const layer = new GeoJSONVectorTileLayer('gvt', style);
+            const layer = new (style.ctor || GeoJSONVectorTileLayer)('gvt', style);
             let generated = false;
             let count = 0;
             layer.on(eventName, () => {

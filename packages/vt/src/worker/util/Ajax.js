@@ -111,14 +111,14 @@ const Ajax = {
                         }
                     }).catch(err => {
                         if (!err.code || err.code !== DOMException.ABORT_ERR) {
-                            console.error(err);
+                            console.error('Fetch error:', url, err);
                             cb(err);
                         }
                     });
                 }
             }).catch(err => {
                 if (!err.code || err.code !== DOMException.ABORT_ERR) {
-                    console.error(err);
+                    console.error('Fetch error:', url, err);
                     cb(err);
                 }
             });
