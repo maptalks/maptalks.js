@@ -460,6 +460,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
+    removeTerrain() {
+        return this.setTerrain(null);
+    }
+
     _initTerrainLayer() {
         const renderer = this.getRenderer();
         if (renderer) {
