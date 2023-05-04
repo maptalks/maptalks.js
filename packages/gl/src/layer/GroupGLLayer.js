@@ -525,7 +525,6 @@ export default class GroupGLLayer extends maptalks.Layer {
                     // debugger
                     return this._terrainLayer.getSkinTiles(layer);
                 };
-                layer.isTerrainSkin = 1;
                 // 重载原有的drawTile方法
                 // 如果renderer定义了drawTileOnTerrain，则代替原有的drawTile，否则用空方法代替
                 if (renderer.drawTileOnTerrain) {
@@ -548,7 +547,7 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _resetSkinLayer(layer) {
-        if (!layer.isTerrainSkin) {
+        if (!isTerrainSkin(layer)) {
             return;
         }
         const renderer = layer.getRenderer();
@@ -629,3 +628,13 @@ function sortLayersByZIndex(a, b) {
     return c;
 }
 
+function isTerrainSkin(layer) {
+    if (!layer) {
+        return false;
+    }
+    const renderer = layer.getRenderer();
+    if (!renderer) {
+        return false;
+    }
+    return !!renderer.renderTerrainSkin;
+}
