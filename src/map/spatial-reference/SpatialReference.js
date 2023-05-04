@@ -105,6 +105,14 @@ export default class SpatialReference {
         this._initSpatialRef();
     }
 
+    static registerPreset(name, value) {
+        name = name && name.toUpperCase();
+        if (DefaultSpatialReference[name]) {
+            throw new Error(`Spatial reference ${name} already existed.`);
+        }
+        DefaultSpatialReference[name] = value;
+    }
+
     static getPreset(preset) {
         return DefaultSpatialReference[preset.toUpperCase()];
     }
