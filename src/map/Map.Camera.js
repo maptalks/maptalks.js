@@ -3,7 +3,7 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
-import { clamp, interpolate, isNumber, wrap } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
@@ -624,20 +624,29 @@ Map.include(/** @lends Map.prototype */{
     }(),
 
     updateCenterAltitude() {
+        this.getRenderer().setToRedraw();
+        if (this.centerAltitude !== undefined) {
+            this._recenterOnTerrain();
+            return;
+        }
         const prjCenter = this._getPrjCenter();
         const altitude = this._queryTerrainByProjCoord(prjCenter);
         this.centerAltitude = altitude;
         this._calcMatrices();
-        this.getRenderer().setToRedraw();
     },
 
     _recenterOnTerrain() {
         if (this.centerAltitude === undefined) {
             return;
         }
+        let queriedAltitude = this._queryTerrainByProjCoord(this._prjCenter);
+        if (isNil(queriedAltitude) && this._hasAltitudeLayer()) {
+            // remains previous center altitude if queried altitude is null
+            queriedAltitude = this.centerAltitude;
+        }
+        const centerAltitude = queriedAltitude || 0;
         const pitch = this.getPitch() * RADIAN;
         const bearing = this.getBearing() * RADIAN;
-        const centerAltitude = this._queryTerrainByProjCoord(this._prjCenter);
         const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;
 
         const cameraToCenterDistance = this._getFovZ();
@@ -677,6 +686,9 @@ Map.include(/** @lends Map.prototype */{
         this.setCenter(newCenter);
         delete this._suppressRecenter;
         delete this._eventSilence;
+        if (isNil(queriedAltitude)) {
+            delete this.centerAltitude;
+        }
     },
     // _adjustZoomOnTerrain() {
     //     const z = this._eventCameraZ;
@@ -708,6 +720,16 @@ Map.include(/** @lends Map.prototype */{
             }
         }
         return 0;
+    },
+
+    _hasAltitudeLayer() {
+        const layers = this._getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            if (layers[i].getTerrainLayer && layers[i].getTerrainLayer()) {
+                return true;
+            }
+        }
+        return false;
     },
 
     _getFovRatio() {
