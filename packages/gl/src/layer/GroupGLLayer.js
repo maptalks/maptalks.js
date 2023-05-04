@@ -476,7 +476,6 @@ export default class GroupGLLayer extends maptalks.Layer {
             const options = this._terrainLayer.options;
             if (!info || options.urlTemplate !== info.urlTemplate || options.spatialReference !== info.spatialReference) {
                 this._removeTerrainLayer();
-                this._resetTerrainSkinLayers();
             } else {
                 for (const p in info) {
                     if (p !== 'urlTemplate' && p !== 'spatialReference') {
@@ -486,6 +485,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                 return this;
             }
         }
+        this._resetTerrainSkinLayers();
         if (!info) {
             return this;
         }
@@ -564,7 +564,6 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
 
         delete layer.getTiles;
-        delete layer.isTerrainSkin;
     }
 
     _resetTerrainSkinLayers() {
