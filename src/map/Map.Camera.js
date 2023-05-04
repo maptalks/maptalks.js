@@ -625,14 +625,10 @@ Map.include(/** @lends Map.prototype */{
 
     updateCenterAltitude() {
         this.getRenderer().setToRedraw();
-        if (this.centerAltitude !== undefined) {
-            this._recenterOnTerrain();
-            return;
+        if (!this.centerAltitude && this._hasAltitudeLayer()) {
+            this.centerAltitude = 0;
         }
-        const prjCenter = this._getPrjCenter();
-        const altitude = this._queryTerrainByProjCoord(prjCenter);
-        this.centerAltitude = altitude;
-        this._calcMatrices();
+        this._recenterOnTerrain();
     },
 
     _recenterOnTerrain() {
