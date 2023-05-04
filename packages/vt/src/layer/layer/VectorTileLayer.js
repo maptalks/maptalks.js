@@ -1243,6 +1243,8 @@ const preset4326 = {
     })()
 }
 
+maptalks.SpatialReference.registerPreset('preset-maptiler-4326', preset4326);
+
 // const preset3857 = {
 //     'projection': 'EPSG:3857',
 //     'resolutions': (function () {
@@ -1260,6 +1262,4 @@ const preset4326 = {
 //         'right': 6378137 * Math.PI
 //     }
 // };
-
-maptalks.SpatialReference.registerPreset('preset-maptiler-4326', preset4326);
 // maptalks.SpatialReference.registerPreset('preset-vt-3857', preset3857);

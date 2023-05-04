@@ -353,14 +353,20 @@ class Painter {
                     delete defines['HAS_BLOOM'];
                 }
             }
-            if (mesh.geometry.data.aTerrainAltitude) {
-                const geo = mesh.geometry;
-                this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.desc.positionSize, context);
-            }
-            if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
-                defines['HAS_TERRAIN_ALTITUDE'] = 1;
+            if (isRenderingTerrainVector) {
+                if (mesh.geometry.data.aTerrainAltitude) {
+                    const geo = mesh.geometry;
+                    this._updateTerrainAltitude(geo, geo.data, geo.properties, geo.desc.positionSize, context);
+                }
+                if (mesh.geometry.data.aTerrainAltitude && !defines['HAS_TERRAIN_ALTITUDE']) {
+                    defines['HAS_TERRAIN_ALTITUDE'] = 1;
+                    updated = true;
+                }
+            } else if (defines['HAS_TERRAIN_ALTITUDE']) {
+                delete defines['HAS_TERRAIN_ALTITUDE'];
                 updated = true;
             }
+
             if (updated) {
                 mesh.setDefines(defines);
             }
