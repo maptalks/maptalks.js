@@ -358,11 +358,26 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 });
             }
         }
-    }).catch(e => {
+    }).catch(() => {
         delete terrainRequests[url];
-        cb({ error: e});
+        const terrainData = createEmtpyTerrainImage(terrainWidth);
+        // console.warn(e);
+        triangulateTerrain(error, terrainData, terrainWidth, false, null, true, cb);
+        // cb({ error: e});
     });
 }
+
+function createEmtpyTerrainImage(size) {
+    const length = size * size;
+    return {
+        data: new Uint8Array(length),
+        width: size,
+        height: size,
+        max: 0,
+        min: 0
+    };
+}
+
 
 function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, transferData, cb) {
     const mesh = createMartiniData(error, terrainData.data, terrainWidth);
