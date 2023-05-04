@@ -523,7 +523,7 @@ export default class Geometry {
     }
 
     getDrawCount() {
-        return this.count1 || this.count;
+        return this.count1 >= 0 ? this.count1 : this.count;
     }
 
     setDrawOffset(offset) {

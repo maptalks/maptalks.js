@@ -85,7 +85,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             const maxZoom = this.layer.getSpatialReference().getMaxZoom();
             const isLeaf = this.drawingCurrentTiles === true;
             mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
-            mesh.setUniform('isParent', isLeaf ? 0 : 1);
             mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
             if (isLeaf) {
                 this._leafScene.addMesh(mesh);
@@ -127,7 +126,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!tileImage.skinImages) {
             if (map.isInteracting()) {
                 const limit = this.layer.options['newTerrainTileRenderLimitPerFrameOnInteracting'];
-                if (limit <= 0 || this._newTerrainTileCounter > limit) {
+                if (limit > 0 && this._newTerrainTileCounter > limit) {
                     return false;
                 }
             }
@@ -144,7 +143,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!needRefresh && status) {
             return false;
         }
-        this._newTerrainTileCounter++;
         const sr = skinLayer.getSpatialReference();
         const { x, y, z, res, offset } = terrainTileInfo;
         const tileSize = this.layer.getTileSize().width;
@@ -178,7 +176,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             // }
             tiles.push(cachedTile);
         }
-
+        let updated = false;
         const skinImages = tileImage.skinImages[skinIndex] || [];
         if (skinImages.length < tiles.length) {
             const set = new Set();
@@ -203,7 +201,11 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 }
                 cached.refCount++;
                 skinImages.push(cached);
+                updated = true;
             }
+        }
+        if (updated) {
+            this._newTerrainTileCounter++;
         }
         tileImage.skinImages[skinIndex] = skinImages;
 
@@ -232,7 +234,6 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     _renderChildTerrainSkin(skinIndex, terrainTiles, visitedSkinTiles) {
-
         const layerSkinImages = [];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { info, image } = terrainTiles[i];
@@ -560,7 +561,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _isSkinReady(tileImage) {
         if (!tileImage.skinStatus) {
             // 还没有初始化
-            return true;
+            return false;
         }
         const skinCount = this.layer.getSkinCount();
         for (let i = 0; i < skinCount; i++) {
@@ -585,14 +586,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         return false;
     }
 
-    isValidCachedTile(tile) {
-        if (!tile.image) {
-            return false;
-        }
-        if (!this._isSkinReady(tile.image)) {
-            return false;
-        }
-        return true;
+    isTileComplete(tile) {
+        return tile.image && this._isSkinReady(tile.image);
     }
 
     loadTile(tile) {
@@ -939,6 +934,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         if (this._emptyTileTexture) {
             this._emptyTileTexture.destroy();
+            delete this._emptyTileTexture;
         }
         super.onRemove();
     }
@@ -1065,7 +1061,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             },
             stencil: {
                 enable: (_, props) => {
-                    return props.enableStencil;
+                    return false && props.enableStencil;
                 },
                 func: {
                     cmp: () => {
@@ -1106,14 +1102,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 func: { src: this.layer.options.blendSrc, dst: this.layer.options.blendDst },
                 equation: 'add'
             },
-            // polygonOffset: {
-            //     factor: () => {
 
-            //     },
-            //     units: () => {
-
-            //     }
-            // }
         };
 
         this._shader = new reshader.MeshShader({

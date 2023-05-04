@@ -25,7 +25,7 @@ const options = {
     'blendDst': 'one minus src alpha',
     'requireSkuToken': true,
     'tileRetryCount': 0,
-    'maxCacheSize': 512
+    'maxCacheSize': 300
 };
 
 const EMPTY_TILE_GRIDS = {

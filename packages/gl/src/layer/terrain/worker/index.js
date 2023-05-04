@@ -335,7 +335,10 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
     }
     load(url, headers, origin).then(res => {
         if (!res || res.message) {
-            cb({ error: res || { canceled: true }});
+            // cb({ error: res || { canceled: true }});
+            const terrainData = createEmtpyTerrainImage(terrainWidth);
+            // console.warn(e);
+            triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, cb);
         } else {
             const buffer = res.data;
             let terrain = null;
@@ -354,7 +357,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 terrain.then(imgBitmap => {
                     const imageData = bitmapToImageData(imgBitmap);
                     const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
-                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, true, cb);
+                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, true, true, cb);
                 });
             }
         }
@@ -362,7 +365,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
         delete terrainRequests[url];
         const terrainData = createEmtpyTerrainImage(terrainWidth);
         // console.warn(e);
-        triangulateTerrain(error, terrainData, terrainWidth, false, null, true, cb);
+        triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, cb);
         // cb({ error: e});
     });
 }
@@ -379,8 +382,8 @@ function createEmtpyTerrainImage(size) {
 }
 
 
-function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, transferData, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth);
+function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, transferData, hasSkirts, cb) {
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     const data = { mesh};
     if (transferData) {
@@ -503,11 +506,16 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 //     return terrain;
 // }
 
-function createMartiniData(error, heights, width) {
+function createMartiniData(error, heights, width, hasSkirts) {
     const martini = new Martini(width);
     const terrainTile = martini.createTile(heights);
-    const mesh = terrainTile.getMeshWithSkirts(error);
-    const { triangles, vertices, numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
+    const mesh = hasSkirts ? terrainTile.getMeshWithSkirts(error) : terrainTile.getMesh(error);
+    const { triangles, vertices } = mesh;
+    let { numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
+    if (!numVerticesWithoutSkirts) {
+        numVerticesWithoutSkirts = vertices.legnth / 3;
+        numTrianglesWithoutSkirts = triangles.length / 3;
+    }
     const positions = [], texcoords = [];
     const skirtOffset = 0;//terrainStructure.skirtOffset;
     for (let i = 0; i < vertices.length / 2; i++) {
@@ -593,7 +601,7 @@ export const onmessage = function (message, postResponse) {
         if (terrainHeights.width !== terrainWidth) {
             terrainData = convertHeightWidth(terrainHeights, terrainWidth);
         }
-        triangulateTerrain(error, terrainData, terrainWidth, null, null, false, (data, transferables) => {
+        triangulateTerrain(error, terrainData, terrainWidth, null, null, false, true, (data, transferables) => {
             data.data = terrainHeights;
             transferables.push(terrainHeights.data.buffer);
             postResponse(data.error, data, transferables);
