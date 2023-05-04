@@ -393,6 +393,20 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         uniforms.depthMask = true;
         this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
 
+        //.绘制 parent 背面的 skirt，并开启颜色，避免下凹的地形（露出skirt时）会出现空白
+        uniforms.colorMask = true;
+        this._parentScene.meshes.forEach(m => {
+            const { skirtOffset, skirtCount } = m.properties;
+            // m.setUniform('opacity', 1);
+            m.geometry.setDrawOffset(skirtOffset);
+            if (m.getUniform('skin') === this._emptyTileTexture) {
+                m.geometry.setDrawCount(0);
+            } else {
+                m.geometry.setDrawCount(skirtCount);
+            }
+        });
+        this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
+
         uniforms.enableStencil = true;
         uniforms.colorMask = true;
         uniforms.cullFace = 'back';
@@ -430,17 +444,25 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         this._parentScene.meshes.forEach(m => {
             const { skirtOffset, skirtCount } = m.properties;
             m.geometry.setDrawOffset(skirtOffset);
-            m.geometry.setDrawCount(skirtCount);
+            if (m.getUniform('skin') === this._emptyTileTexture) {
+                m.geometry.setDrawCount(0);
+            } else {
+                m.geometry.setDrawCount(skirtCount);
+            }
         });
         this.renderer.render(this._shader, uniforms, this._parentScene, fbo);
-
 
         // draw leafs skirts
 
         this._leafScene.meshes.forEach(m => {
             const { skirtOffset, skirtCount } = m.properties;
+            m.setUniform('opacity', 1);
             m.geometry.setDrawOffset(skirtOffset);
-            m.geometry.setDrawCount(skirtCount);
+            if (m.getUniform('skin') === this._emptyTileTexture) {
+                m.geometry.setDrawCount(0);
+            } else {
+                m.geometry.setDrawCount(skirtCount);
+            }
         });
         this.renderer.render(this._shader, uniforms, this._leafScene, fbo);
 
@@ -1061,7 +1083,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             },
             stencil: {
                 enable: (_, props) => {
-                    return false && props.enableStencil;
+                    return props.enableStencil;
                 },
                 func: {
                     cmp: () => {
