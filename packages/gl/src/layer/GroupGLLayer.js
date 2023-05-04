@@ -42,6 +42,7 @@ const options = {
 
 //
 const emptyMethod = () => {};
+const EMPTY_ALTITUDE = [null, 0];
 
 export default class GroupGLLayer extends maptalks.Layer {
     /**
@@ -457,6 +458,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             return this;
         }
         this._initTerrainLayer();
+        this.getMap().updateCenterAltitude();
         return this;
     }
 
@@ -473,8 +475,8 @@ export default class GroupGLLayer extends maptalks.Layer {
         if (this._terrainLayer) {
             const options = this._terrainLayer.options;
             if (!info || options.urlTemplate !== info.urlTemplate || options.spatialReference !== info.spatialReference) {
-                this._resetTerrainSkinLayers();
                 this._removeTerrainLayer();
+                this._resetTerrainSkinLayers();
             } else {
                 for (const p in info) {
                     if (p !== 'urlTemplate' && p !== 'spatialReference') {
@@ -497,14 +499,14 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     queryTerrain(coord) {
         if (!this._terrainLayer) {
-            return 0;
+            return EMPTY_ALTITUDE;
         }
         return this._terrainLayer.queryTerrain(coord);
     }
 
     queryTerrainByProjCoord(projCoord) {
         if (!this._terrainLayer) {
-            return 0;
+            return EMPTY_ALTITUDE;
         }
         return this._terrainLayer.queryTerrainByProjCoord(projCoord);
     }
@@ -551,7 +553,14 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         const renderer = layer.getRenderer();
         if (renderer) {
+            if (renderer.setTerrainHelper) {
+                renderer.setTerrainHelper(null);
+            }
+            if (renderer.clear) {
+                renderer.clear();
+            }
             delete renderer.drawTile;
+            delete renderer.deleteTile;
         }
 
         delete layer.getTiles;
