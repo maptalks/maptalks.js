@@ -290,7 +290,7 @@ function zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer) {
 }
 
 function generateMapboxTerrain(buffer) {
-    const blob = new self.Blob([new Uint8Array(buffer)], {type: 'image/png'});
+    const blob = new self.Blob([new Uint8Array(buffer)]);
     return self.createImageBitmap(blob);
 }
 
@@ -356,6 +356,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
                     const imageData = bitmapToImageData(imgBitmap);
+                    imgBitmap.close();
                     const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
                     triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, true, true, cb);
                 });

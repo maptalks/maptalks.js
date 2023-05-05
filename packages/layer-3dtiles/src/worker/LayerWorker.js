@@ -68,13 +68,17 @@ export default class BaseLayerWorker {
         if (supportOffscreenLoad) {
             // cb(null, { width : 2, height : 2, data : new Uint8Array(4) });
             fetch(url)
-                .then(response => response.blob())
-                .then(blob => createImageBitmap(blob))
+                .then(res => res.arrayBuffer())
+                .then(buffer => {
+                    const blob = new self.Blob([new Uint8Array(buffer)]);
+                    return createImageBitmap(blob);
+                })
                 .then(bitmap => {
                     canvas.width = bitmap.width;
                     canvas.height = bitmap.height;
                     ctx.drawImage(bitmap, 0, 0);
                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    bitmap.close();
                     // debugger
                     cb(null, { width : bitmap.width, height : bitmap.height, data : new Uint8Array(imgData.data) });
                 });
