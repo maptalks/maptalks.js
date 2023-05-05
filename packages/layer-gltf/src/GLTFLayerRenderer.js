@@ -44,6 +44,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         const targetFBO = context && context.renderTarget ? context.renderTarget.fbo : null;
         //以shader为循环渲染对象，而不采用以marker为渲染对象，是因为一般来说运用到的shader都是有限的几个，而marker在图层中数量
         //可能会非常庞大，频繁的去render,会大量调用gl.useProgram
+        let drawCount = 0;
         for (const shaderName in this._shaderList) {
             if (shaderName === 'pointline') {
                 continue;
@@ -56,7 +57,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             const renderScene = this._createSceneByShader(shaderName);
             const shader = this._shaderList[shaderName].shader;
             shader.filter = context && context.sceneFilter || null;
-            this.renderer.render(shader, renderUniforms, renderScene, targetFBO);
+            drawCount += this.renderer.render(shader, renderUniforms, renderScene, targetFBO);
             renderCount++;
         }
         //非三角形的mesh直接统一用pointline shader渲染
@@ -65,8 +66,11 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             renderUniforms['pointSize'] = this.layer.options['pointSize'] || 1.0;
             const pointLineShader = this._shaderList['pointline'].shader;
             pointLineShader.filter = context && context.sceneFilter || null;
-            this.renderer.render(pointLineShader, renderUniforms, pointLineScene, targetFBO);
+            drawCount += this.renderer.render(pointLineShader, renderUniforms, pointLineScene, targetFBO);
             renderCount++;
+        }
+        if (drawCount) {
+            this.layer.fire('canvasisdirty', { renderCount: drawCount });
         }
         this._needRefreshPicking = true;
         if (!context || (context && context.isFinalRender)) {

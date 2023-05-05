@@ -370,7 +370,8 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
             this._currentPoint = null;
             return;
         }
-        const result = this._pick(x, y);
+        const dpr = map.getDevicePixelRatio();
+        const result = this._pick(x * dpr, y * dpr);
         if (!result) {
             return;
         }

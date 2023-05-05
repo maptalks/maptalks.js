@@ -18,6 +18,7 @@ module.exports = function (config) {
             "../transcoders.draco/dist/transcoders.draco.js",
             '../transform-control/dist/transform-control.js',
             '../analysis/dist/maptalks.analysis.js',
+            'test/js/flv.min.js',
             pkg.main,
             'test/test.config.js',
             'test/**/*.js',

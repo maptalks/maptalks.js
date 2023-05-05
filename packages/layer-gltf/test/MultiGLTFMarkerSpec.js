@@ -417,7 +417,7 @@ describe('MultiGLTFMarker', () => {
             setTimeout(function() {
                 const infoWindowStyle = multigltfmarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(35.7091px, 131.342px, 0px) scale(1); transform-origin: 113.688px bottom;');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(35.7091px, 131.095px, 0px) scale(1); transform-origin: 113.688px bottom;');
                 done();
             }, 100);
         });

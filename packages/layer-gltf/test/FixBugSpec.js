@@ -946,4 +946,30 @@ describe('bug', () => {
             }, 100);
         });
     });
+
+    it('canvasisdirty', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url2,
+                shadow: true
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            gltflayer.once('canvasisdirty', () => {
+                map.once('renderend', () => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext("2d");
+                    const width = map.width, height = map.height;
+                    const pixels = ctx.getImageData(0, 0, width, height).data;
+                    const index = width * (height / 2) * 4 + width / 2 * 4;
+                    expect(pixels.slice(index, index + 4)).to.be.eql([146, 146, 146, 255]);
+                    expect(pixels.slice(index + 4, index + 8)).to.be.eql([146, 146, 146, 255]);
+                    expect(pixels.slice(index + 8, index + 12)).to.be.eql([71, 104, 129, 255]);
+                    done();
+                });
+            });
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

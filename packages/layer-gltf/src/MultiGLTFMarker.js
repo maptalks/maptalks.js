@@ -85,6 +85,9 @@ export default class MultiGLTFMarker extends GLTFMarker {
 
     //查
     getData(idx) {
+        if (!defined(idx)) {
+            return this._data;
+        }
         return this._data[idx];
     }
 
@@ -145,6 +148,9 @@ export default class MultiGLTFMarker extends GLTFMarker {
     _calCenter() {
         const map = this.getMap();
         const center = this.getCenter();
+        if (!center) {
+            return;
+        }
         this._centerPosition = coordinateToWorld(map, center);
         const eluerQuat = quat.fromEuler(EMPTY_QUAT, 0, 0, 0);
         mat4.fromRotationTranslationScale(this._centerMatrix, eluerQuat, this._centerPosition, DEFAULT_SCALE);

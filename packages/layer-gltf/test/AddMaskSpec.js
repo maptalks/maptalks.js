@@ -583,4 +583,40 @@ describe('setMask', () => {
         const mask = new maptalks.ColorMask(holes);
         gltflayer.setMask(mask);
     });
+
+    it('flv video', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url4,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        const videoElement = document.createElement('video');
+        document.body.appendChild(videoElement);
+        videoElement.id = 'video';
+        videoElement.style.display = 'none';
+        const flvUrl = 'resources/test.flv';
+        const flvPlayer = window.flvjs.createPlayer({
+            type: "flv",
+            url: flvUrl
+        });
+        flvPlayer.attachMediaElement(videoElement);
+        flvPlayer.load();
+        flvPlayer.play();
+        marker.once('load', () => {
+            setTimeout(function() {
+                const mask = new maptalks.VideoMask(coord1, {
+                    elementId: 'video'
+                });
+                gltflayer.setMask(mask);
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([47, 59, 62, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

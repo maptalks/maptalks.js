@@ -37,7 +37,7 @@ export default class VideoMask extends Mask {
     _createMesh(regl) {
         const geometry = this._createGeometry(regl);
         const mesh = new reshader.Mesh(geometry);
-        const videoTexture = this._createVideoTexture(regl, this.options.url);
+        const videoTexture = this._createVideoTexture(regl);
         mesh.material = new reshader.Material({ maskTexture: videoTexture });
         this._setDefines(mesh);
         this._setLocalTransform(mesh);
@@ -57,17 +57,25 @@ export default class VideoMask extends Mask {
         mesh.setDefines(defines);
     }
 
-    _createVideoTexture(regl, url) {
-        this._createVideo(url);
+    _createVideoTexture(regl) {
+        this._createVideo();
         const videoTexture = regl.texture();
         return videoTexture;
     }
 
-    
-    _createVideo(url) {
+
+    _createVideo() {
         this._videoState = 'stop';
-        const video = document.createElement('video');
-        video.src = url;
+        const url = this.options.url;
+        const id = this.options.elementId;
+        let video = document.getElementById(id);
+        if (url) {
+            video = document.createElement('video');
+            video.src = url;
+        }
+        if (!video) {
+            throw new Error('there is no element or url setting for video mask');
+        }
         video.autoplay = this.options.autoplay || true;
         video.loop = this.options.loop || true;
         video.muted = this.options.muted || true;
