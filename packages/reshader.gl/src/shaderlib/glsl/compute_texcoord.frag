@@ -24,6 +24,6 @@ vec2 computeTexCoord() {
     #elif defined(HAS_KHR_TEXTURE_TRANSFORM)
         return khr_tex_transformTexCoord(vTexCoord, khr_offset, khr_rotation, khr_scale);
     #else
-        return vTexCoord;;
+        return vTexCoord;
     #endif
 }

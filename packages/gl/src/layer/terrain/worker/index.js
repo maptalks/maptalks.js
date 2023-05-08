@@ -335,8 +335,17 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
     }
     load(url, headers, origin).then(res => {
         if (!res || res.message) {
-            // aborted by user
-            cb({ error: res || { canceled: true }});
+            if (!res) {
+                // aborted by user
+                cb({ error: res || { canceled: true }});
+            } else {
+                const terrainData = createEmtpyTerrainImage(terrainWidth);
+                // console.warn(e);
+                triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, (data, transferables) => {
+                    data.originalError = res;
+                    cb(data, transferables);
+                });
+            }
         } else {
             const buffer = res.data;
             let terrain = null;
@@ -365,7 +374,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
         const terrainData = createEmtpyTerrainImage(terrainWidth);
         // console.warn(e);
         triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, (data, transferables) => {
-            data.error = e;
+            data.originalError = e;
             cb(data, transferables);
         });
         // cb({ error: e});

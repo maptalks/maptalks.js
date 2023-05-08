@@ -760,7 +760,6 @@ export default class Geometry {
                 throw new Error(name + ' must be array to build unique vertex.');
             }
             oldData[name] = attr;
-            oldData[name].size = size;
             data[name] = new attr.constructor(l * size);
         }
 
@@ -770,7 +769,7 @@ export default class Geometry {
             for (let ii = 0; ii < keys.length; ii++) {
                 const name = keys[ii];
                 const array = data[name];
-                const size = oldData[name].size;
+                const size = oldData[name].length / vertexCount;
 
                 for (let k = 0; k < size; k++) {
                     array[cursor * size + k] = oldData[name][idx * size + k];
@@ -778,6 +777,8 @@ export default class Geometry {
             }
             indices[i] = cursor++;
         }
+        pos = this.data[this.desc.positionAttribute];
+        this._vertexCount = Math.ceil(pos.length /  this.desc.positionSize);
         delete this._reglData;
     }
 

@@ -7,6 +7,7 @@ import skinFrag from './glsl/terrainSkin.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, inTerrainTile } from './TerrainTileUtil';
 import  { extend } from '../util/util';
 import TerrainPainter from './TerrainPainter';
+import TerrainLitPainter from './TerrainLitPainter';
 
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
@@ -817,9 +818,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         } else {
             this._createREGLContext();
         }
-        this._emptyTileTexture = this.regl.texture(2, 2);
-        this._resLoader = new reshader.ResourceLoader(this._emptyTileTexture);
-        this._painter = new TerrainPainter(this.layer);
+        // this._painter = new TerrainPainter(this.layer);
+        this._painter = new TerrainLitPainter(this.layer);
         this.renderer = new reshader.Renderer(this.regl);
     }
 
