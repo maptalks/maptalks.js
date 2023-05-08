@@ -1103,8 +1103,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             mag: 'linear',
             type: 'uint8',
             width,
-            height,
-            flipY: true
+            height
         });
         if (!this._terrainDepthStencil) {
             this._terrainDepthStencil = regl.renderbuffer({
