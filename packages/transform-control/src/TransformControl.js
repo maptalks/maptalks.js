@@ -379,7 +379,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             } else {
                 this.fire('transforming', { action: this._task, type: 'transforming', target: this._target, translate: currentTrans, rotation: targetRotation, scale: targetScale });
             }
-            
+
         }
         this.lastMousePosition = mousePosition;
         this.lastPickingObject = this.currentPickingObject;
@@ -716,7 +716,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
                 depth: {
                     enable: true,
                     func: 'always',
-                    mask: false,
+                    mask: true,
                     range: [0, 0]
                 },
                 blend: {

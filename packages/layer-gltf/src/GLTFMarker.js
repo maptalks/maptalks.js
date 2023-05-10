@@ -103,8 +103,8 @@ export default class GLTFMarker extends Marker {
 
     setSymbol(symbol) {
         const url = this.getUrl();
-        const shader = this.getShader();
         super.setSymbol(symbol);
+        const shader = this.getShader();
         const gltfManager = this._gltfManager;
         if (gltfManager && symbol.url !== url) {
             gltfManager.logoutGLTF(url);
@@ -201,6 +201,8 @@ export default class GLTFMarker extends Marker {
         }
         mesh.setUniform('uPickingId', this._getPickingId());
         mesh.properties.isAnimated = this.isAnimated();
+        const layer = this.getLayer();
+        mesh.properties.polygonOffset = layer._polygonOffset;
         this._setPolygonFill(mesh);
     }
 

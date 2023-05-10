@@ -9,7 +9,7 @@ const options = {
     markerTypes: ['gltfmarker', 'multigltfmarker'],
     pointSize: 1
 };
-
+const POLYGONOFFSET = {};
 export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
 
     static initDefaultShader() {
@@ -124,6 +124,8 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
             this._onMeshCreate(param);
         } else if (type === 'modelerror') {
             this._onModelError(param);
+        } else if (type === 'positionchange') {
+            this.getRenderer().setToRedraw();
         }
         super['_onGeometryEvent'](param);
     }
@@ -141,6 +143,14 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         if (this['_isModelsLoadComplete']()) {
             this.fire('modelload', { models: this.getGLTFUrls() });
         }
+    }
+
+    setPolygonOffset(offset) {
+        this._polygonOffset = offset;
+    }
+
+    getPolygonOffsetCount() {
+        return 1;
     }
 }
 
@@ -217,6 +227,14 @@ function getPBRShader() {
                     dstAlpha: 'one minus src alpha'
                 },
                 equation: 'add'
+            },
+            polygonOffset: {
+                enable: true,
+                offset: (_, props) => {
+                    POLYGONOFFSET.factor = -props.meshProperties.polygonOffset;
+                    POLYGONOFFSET.units = -props.meshProperties.polygonOffset;
+                    return POLYGONOFFSET;
+                }
             }
         }
     };

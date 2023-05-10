@@ -85,4 +85,24 @@ describe('skinning', () => {
             }, 4500);
         });
     });
+
+    it('setCurrentAnimation(maptalks-ide/issues/3127)', done => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                shader: 'phong',
+                url: url11,
+                animation: true,
+                loop: true
+            }
+        }).addTo(layer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                marker.setCurrentAnimation('Walk');
+                const pixel = pickPixel(map, 200, 150, 1, 1);
+                expect(hasColor(pixel)).to.be.ok();
+                done();
+            }, 100);
+        });
+    });
 });

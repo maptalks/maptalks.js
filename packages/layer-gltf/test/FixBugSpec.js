@@ -972,4 +972,50 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('update altitude(maptalks-ide/issues/3127)', done => {
+        map.setPitch(70);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url2
+            }
+        }).addTo(gltflayer);
+
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([130, 130, 130, 255]);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            const coord1 = new maptalks.Coordinate([center.x, center.y, 100])
+            marker.setCoordinates(coord1);//抬高
+            setTimeout(function() {
+                const coord2 = new maptalks.Coordinate([center.x, center.y, 0]);
+                marker.setCoordinates(coord2);//还原
+                checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('add gltf model without file extensions(maptalks/issues/issues/275)', done => {
+        map.setPitch(70);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: 'models/Duck/Duck'
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixel).to.be.eql([130, 130, 130, 255]);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

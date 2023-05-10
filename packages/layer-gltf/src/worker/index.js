@@ -32,25 +32,25 @@ function loadGLTF(root, data, options) {
 function load(actorId, url) {
     const index = url.lastIndexOf('/');
     const root = url.slice(0, index);
-    const postfix = url.slice(url.lastIndexOf('.')).toLowerCase();
     const imgRequest = requestImage.bind(this, actorId);
-    if (postfix.indexOf('.gltf') > -1) {
-        return getJSON(url, {}).then(res => {
-            //res.message存在，证明status!==200, 见https://github.com/fuzhenn/gltf-loader/blob/master/src/core/Ajax.js#L82
-            if (res.message) {
-                return res;
-            }
-            return loadGLTF(root, res, { requestImage: imgRequest, decoders, transferable: true });
-        });
-    } else if (postfix.indexOf('.glb') > -1) {
-        return getArrayBuffer(url, {}).then(res => {
-            if (res.message) {
-                return res;
-            }
+    return getArrayBuffer(url, {}).then(res => {
+        if (res.message) {
+            return res;
+        }
+        const data = res.data;
+        const dataView = new DataView(data, data.byteOffset, data.byteLength);
+        const version = dataView.getUint32(4, true);
+        if (version > 2) { //version is 1 or 2
+            return getJSON(url, {}).then(res => {
+                if (res.message) {
+                    return res;
+                }
+                return loadGLTF(root, res, { requestImage: imgRequest, decoders, transferable: true });
+            });
+        } else {
             return loadGLTF(root, { buffer: res.data, byteOffset: 0 }, { requestImage: imgRequest, decoders, transferable: true });
-        });
-    }
-    return null;
+        }
+    });
 }
 
 function requestImage(actorId, url, cb) {
