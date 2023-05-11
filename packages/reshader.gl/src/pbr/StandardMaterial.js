@@ -113,12 +113,16 @@ class StandardMaterial extends Material {
         if (uniforms['bumpTexture']) {
             defines['HAS_BUMP_MAP'] = 1;
         }
+        if (uniforms['skinTexture']) {
+            defines['HAS_SKIN_MAP'] = 1;
+        }
         if (defines['HAS_ALBEDO_MAP'] ||
             defines['HAS_METALLICROUGHNESS_MAP'] ||
             defines['HAS_AO_MAP'] ||
             defines['HAS_EMISSIVE_MAP'] ||
             defines['HAS_NORMAL_MAP'] ||
-            defines['HAS_BUMP_MAP']) {
+            defines['HAS_BUMP_MAP'] ||
+            defines['HAS_SKIN_MAP']) {
             defines['HAS_MAP'] = 1;
         }
         if (uniforms['noiseTexture']) {

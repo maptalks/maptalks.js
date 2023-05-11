@@ -30,6 +30,7 @@ import mask_vert from './glsl/mask.vert';
 import mask_frag from './glsl/mask.frag';
 
 import computeTexcoord_frag from './glsl/compute_texcoord.frag';
+import terrain_normal_frag from './glsl/terrain_normal.frag';
 //webgl 2.0中的函数实现
 // import fl_common_math_glsl from '../pbr/glsl/common_math.glsl';
 // import fl_uniforms_glsl from '../pbr/glsl/uniforms.glsl';
@@ -133,7 +134,9 @@ const ShaderChunk = {
     mask_vert,
     mask_frag,
 
-    computeTexcoord_frag
+    computeTexcoord_frag,
+
+    terrain_normal_frag
 };
 /* eslint-enable camelcase */
 

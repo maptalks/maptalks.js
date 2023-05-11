@@ -341,7 +341,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
             } else {
                 const terrainData = createEmtpyTerrainImage(terrainWidth);
                 // console.warn(e);
-                triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, (data, transferables) => {
+                triangulateTerrain(error, terrainData, terrainWidth, false, null, null, true, false, (data, transferables) => {
                     data.originalError = res;
                     cb(data, transferables);
                 });
@@ -363,17 +363,25 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
                     const imageData = bitmapToImageData(imgBitmap);
-                    imgBitmap.close();
                     const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
-                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, true, true, cb);
+                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imgBitmap, true, true, cb);
                 });
+
+                // terrain = generateMapboxTerrain(buffer);
+                // terrain.then(imgBitmap => {
+                //     const terrainData = createEmtpyTerrainImage(terrainWidth);
+                //     // console.warn(e);
+                //     triangulateTerrain(error, terrainData, terrainWidth, false, null, imgBitmap,  true, false, (data, transferables) => {
+                //         cb(data, transferables);
+                //     });
+                // });
             }
         }
     }).catch(e => {
         delete terrainRequests[url];
         const terrainData = createEmtpyTerrainImage(terrainWidth);
         // console.warn(e);
-        triangulateTerrain(error, terrainData, terrainWidth, false, null, true, false, (data, transferables) => {
+        triangulateTerrain(error, terrainData, terrainWidth, false, null, null,  true, false, (data, transferables) => {
             data.originalError = e;
             cb(data, transferables);
         });
@@ -393,11 +401,15 @@ function createEmtpyTerrainImage(size) {
 }
 
 
-function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, transferData, hasSkirts, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
+function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imageBitmap, isTransferData, hasSkirts, cb) {
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth, false);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
-    const data = { mesh};
-    if (transferData) {
+    if (imageBitmap) {
+        transferables.push(imageBitmap);
+    }
+    const data = { mesh };
+    data.image = imageBitmap;
+    if (isTransferData) {
         data.data = terrainData;
         if (maxAvailable) {
             const originalTerrainData = mapboxBitMapToHeights(imageData, imageData.width + 1);
@@ -437,7 +449,7 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
     let max = -Infinity;
 
 
-    const heights = new Float32Array(terrainWidth * terrainWidth);
+    const heights = new Float64Array(terrainWidth * terrainWidth);
 
     const stride = Math.round(width / terrainWidth);
 
@@ -612,7 +624,7 @@ export const onmessage = function (message, postResponse) {
         if (terrainHeights.width !== terrainWidth) {
             terrainData = convertHeightWidth(terrainHeights, terrainWidth);
         }
-        triangulateTerrain(error, terrainData, terrainWidth, null, null, false, true, (data, transferables) => {
+        triangulateTerrain(error, terrainData, terrainWidth, false, null, null, false, true, (data, transferables) => {
             data.data = terrainHeights;
             transferables.push(terrainHeights.data.buffer);
             postResponse(data.error, data, transferables);

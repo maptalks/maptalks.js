@@ -40,7 +40,7 @@ class TerrainPainter {
         this._parentScene.clear();
     }
 
-    createTerrainMesh(tileInfo, terrainGeo) {
+    createTerrainMesh(tileInfo, terrainGeo, terrainImage) {
         const { positions, texcoords, triangles } = terrainGeo;
         const geo = new reshader.Geometry({
             aPosition: positions,
@@ -54,6 +54,7 @@ class TerrainPainter {
         const mesh = new reshader.Mesh(geo);
         const emptyTexture = this.getEmptyTexture();
         mesh.setUniform('skin', emptyTexture);
+        mesh.setUniform('heightTexture', terrainImage);
         mesh.setUniform('bias', 0);
         this.prepareMesh(mesh, tileInfo, terrainGeo);
 
@@ -113,6 +114,7 @@ class TerrainPainter {
     }
 
     endFrame(context) {
+        this.updateIBLDefines(this.shader);
         let renderCount = 0;
 
         const enableFading = this.layer.options['fadeAnimation'] && this.layer.options['fadeDuration'] > 0;
@@ -324,6 +326,29 @@ class TerrainPainter {
 
     getEmptyTexture() {
         return this._emptyTileTexture;
+    }
+
+    hasIBL() {
+        const lightManager = this.getMap().getLightManager();
+        const resource = lightManager && lightManager.getAmbientResource();
+        return !!resource;
+    }
+
+    updateIBLDefines(shader) {
+        const shaderDefines = shader.shaderDefines;
+        let updated = false;
+        if (this.hasIBL()) {
+            if (!shaderDefines[['HAS_IBL_LIGHTING']]) {
+                shaderDefines['HAS_IBL_LIGHTING'] = 1;
+                updated = true;
+            }
+        } else if (shaderDefines[['HAS_IBL_LIGHTING']]) {
+            delete shaderDefines['HAS_IBL_LIGHTING'];
+            updated = true;
+        }
+        if (updated) {
+            shader.shaderDefines = shaderDefines;
+        }
     }
 }
 
