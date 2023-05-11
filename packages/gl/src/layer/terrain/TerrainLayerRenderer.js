@@ -16,6 +16,12 @@ const TEMP_POINT = new maptalks.Point(0, 0);
 
 const DEBUG_POINT = new maptalks.Point(20, 20);
 
+const TERRAIN_CLEAR = {
+    color: [0, 0, 0, 0],
+    depth: 1,
+    stencil: 0
+};
+
 class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     isDrawable() {
@@ -24,7 +30,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     consumeTile(tileImage, tileInfo) {
         if (tileImage && tileImage.mesh && !tileImage.terrainMesh) {
-            tileImage.terrainMesh = this._painter.createTerrainMesh(tileInfo, tileImage.mesh);
+            tileImage.terrainMesh = this._painter.createTerrainMesh(tileInfo, tileImage.mesh, tileImage.image);
             delete tileImage.mesh;
             tileInfo.minAltitude = tileImage.data.min;
             tileInfo.maxAltitude = tileImage.data.max;
@@ -244,6 +250,10 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         if (!tileImage.skin) {
             tileImage.skin = this._createTerrainTexture();
+
+        } else {
+            TERRAIN_CLEAR.framebuffer = tileImage.skin;
+            this.regl.clear(TERRAIN_CLEAR);
         }
         this._initSkinShader();
         const enableDebug = this.layer.options.debug;
