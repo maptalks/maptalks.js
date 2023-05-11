@@ -55,7 +55,7 @@
             (c + e + e + h) - (a + d + d + f),
             (f + g + g + h) - (a + b + b + c)
         );
-        return vec3(normalize(vec3(dxy / epsilon, 1.0 )));
+        return normalize(vec3(dxy / epsilon, terrainResolution ));
     }
 
     // vec3 convertTerrainHeightToNormalMap(vec2 uv) {
