@@ -22,10 +22,21 @@ class TerrainLitPainter extends TerrainPainter {
     }
 
     createTerrainMesh(tileInfo, terrainGeo, terrainImage) {
-        const { positions, texcoords, triangles } = terrainGeo;
+        const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts } = terrainGeo;
         const normals = new Int8Array(positions.length);
         for (let i = 2; i < normals.length; i += 3) {
-            normals[i] = 1;
+            if (i < numVerticesWithoutSkirts * 3) {
+                normals[i] = 1;
+            } else if (i < leftSkirtIndex / 2 * 3) {
+                normals[i - 2] = -1;
+            } else if (i < rightSkirtIndex / 2 * 3) {
+                normals[i - 2] = 1;
+            } else if (i < bottomSkirtIndex / 2 * 3) {
+                normals[i - 1] = -1;
+            } else {
+                // top
+                normals[i - 1] = 1;
+            }
         }
         const geo = new reshader.Geometry({
             aPosition: positions,
@@ -40,7 +51,7 @@ class TerrainLitPainter extends TerrainPainter {
         // geo.buildUniqueVertex();
         // geo.createNormal();
         geo.createTangent();
-        delete geo.data.normals;
+        delete geo.data.aNormal;
 
         geo.generateBuffers(this.regl);
 

@@ -185,7 +185,7 @@ class TerrainPainter {
                 m.geometry.setDrawCount(skirtCount);
             }
         });
-        this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
+        renderCount += this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
 
         // draw leafs skirts
 
@@ -199,7 +199,7 @@ class TerrainPainter {
                 m.geometry.setDrawCount(skirtCount);
             }
         });
-        this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
+        renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
         return renderCount;
     }
 

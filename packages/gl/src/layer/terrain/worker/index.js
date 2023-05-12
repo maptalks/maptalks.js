@@ -402,7 +402,7 @@ function createEmtpyTerrainImage(size) {
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imageBitmap, isTransferData, hasSkirts, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth, false);
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth, true);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     if (imageBitmap) {
         transferables.push(imageBitmap);
@@ -449,7 +449,7 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
     let max = -Infinity;
 
 
-    const heights = new Float64Array(terrainWidth * terrainWidth);
+    const heights = new Float32Array(terrainWidth * terrainWidth);
 
     const stride = Math.round(width / terrainWidth);
 
@@ -532,8 +532,10 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 function createMartiniData(error, heights, width, hasSkirts) {
     const martini = new Martini(width);
     const terrainTile = martini.createTile(heights);
-    const mesh = hasSkirts ? terrainTile.getMeshWithSkirts(error) : terrainTile.getMesh(error);
-    const { triangles, vertices } = mesh;
+    // 只有pbr渲染时，才需要把isolateSkirtVertices设成true
+    const isolateSkirtVertices = true;
+    const mesh = hasSkirts ? terrainTile.getMeshWithSkirts(error, isolateSkirtVertices) : terrainTile.getMesh(error);
+    const { triangles, vertices, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, topSkirtIndex } = mesh;
     let { numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
     if (!numVerticesWithoutSkirts) {
         numVerticesWithoutSkirts = vertices.legnth / 3;
@@ -541,20 +543,48 @@ function createMartiniData(error, heights, width, hasSkirts) {
     }
     const positions = [], texcoords = [];
     const skirtOffset = 0;//terrainStructure.skirtOffset;
-    for (let i = 0; i < vertices.length / 2; i++) {
+    const count = vertices.length / 2;
+    // debugger
+    for (let i = 0; i < count; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
-        positions.push(x * (1 + skirtOffset));
-        positions.push(-y * (1 + skirtOffset));
         if (i >= numVerticesWithoutSkirts) {
-            positions.push(0);
+            // positions.push(0);
+            const index = x / 2 * 3;
+            let height;
+            // 侧面因为顶底uv[1]相等，导致和normal合并计算tangent时会出现NaN，导致侧面的normal结果错误
+            // 给skirt顶面的uv的x和y都增加一点偏移量即能解决该问题
+            let texOffset = 0.001;
+            if (isolateSkirtVertices) {
+                const start = i < leftSkirtIndex / 2 ? numVerticesWithoutSkirts :
+                    i < rightSkirtIndex / 2 ? leftSkirtIndex / 2 :
+                        i < bottomSkirtIndex / 2 ? rightSkirtIndex / 2 : bottomSkirtIndex / 2;
+                if ((i - start) % 3 === 0) {
+                    height = 0;
+                    texOffset = 0;
+                } else {
+                    height = positions[index + 2];
+                }
+            } else {
+                height = 0;
+            }
+            positions.push(positions[index], positions[index + 1], height);
+            texcoords.push(positions[index] / width + texOffset);
+            texcoords.push(-positions[index + 1] / width + texOffset);
         } else {
+            positions.push(x * (1 + skirtOffset));
+            positions.push(-y * (1 + skirtOffset));
             positions.push(heights[y * width + x]);
+            texcoords.push(x / width);
+            texcoords.push(y / width);
         }
-        texcoords.push(x / width);
-        texcoords.push(y / width);
     }
     const terrain = {
-        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles, numTrianglesWithoutSkirts
+        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles,
+        leftSkirtIndex,
+        rightSkirtIndex,
+        bottomSkirtIndex,
+        topSkirtIndex,
+        numTrianglesWithoutSkirts, numVerticesWithoutSkirts
     };
     return terrain;
 }
