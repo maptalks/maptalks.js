@@ -28,6 +28,7 @@ const TEMP_EXTENT = new PointExtent();
  * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
  * @property {Boolean}  [options.collision=false]  - whether collision
  * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
+ * @property {Number}  [options.collisionDelay=250]  - collision delay time when map Interacting
  * @memberOf VectorLayer
  * @instance
  */
@@ -46,7 +47,8 @@ const options = {
     'clipBBoxBufferSize': 3,
     'geometryEventTolerance': 1,
     'collision': false,
-    'collisionBufferSize': 2
+    'collisionBufferSize': 2,
+    'collisionDelay': 250
 };
 // Polyline is for custom line geometry
 // const TYPES = ['LineString', 'Polyline', 'Polygon', 'MultiLineString', 'MultiPolygon'];
