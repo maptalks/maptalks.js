@@ -980,8 +980,11 @@ function (exports) {
 
     function requestImageOffscreen(url, cb, fetchOptions) {
         fetch(url, fetchOptions ? fetchOptions : {})
-            .then(response => response.blob())
-            .then(blob => createImageBitmap(blob))
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                const blob=new Blob([arrayBuffer]);
+                return createImageBitmap(blob);
+            })
             .then(bitmap => {
                 cb(null, {data:bitmap});
             }).catch(err => {
