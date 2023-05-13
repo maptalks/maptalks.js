@@ -10,7 +10,8 @@ const options = {
     tileBuffer: 64,
     extent: 8192,
     pyramidMode: 1,
-    simplifyTolerance: 3
+    simplifyTolerance: 3,
+    tileStackDepth: 0
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
