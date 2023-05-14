@@ -568,7 +568,7 @@ class LinePainter extends BasicPainter {
         if (isRenderingTerrainSkin) {
             vec2.set(canvasSize, tileSize, tileSize);
         }
-
+        const blendSrc = this.getBlendFunc().src();
         // const glScale = map.getGLScale();
         // const c = vec3.transformMat4([], map.cameraLookAt, projViewMatrix);
         // const unit = [resolution * 100 * glScale, 0, 0];
@@ -582,7 +582,7 @@ class LinePainter extends BasicPainter {
             trailLength: animation.trailLength || 500,
             trailCircle: animation.trailCircle || 1000,
             currentTime: this.layer.getRenderer().getFrameTimestamp() || 0,
-            blendSrcIsOne: +(!!(this.sceneConfig.blendSrc === 'one')),
+            blendSrcIsOne: +(!!(blendSrc === 1 || blendSrc === 'one')),
             cameraPosition: map.cameraPosition,
             viewport: isRenderingTerrainSkin && context && context.viewport,
             isRenderingTerrain: +(!!isRenderingTerrainSkin)

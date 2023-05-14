@@ -230,7 +230,7 @@ void main() {
     }
 
     if (blendSrcIsOne == 1.0) {
-        gl_FragColor *= gl_FragColor.a;
+        gl_FragColor.rgb *= gl_FragColor.a;
     }
 
     gl_FragColor *= perspectiveAlpha;
