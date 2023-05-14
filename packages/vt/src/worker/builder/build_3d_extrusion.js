@@ -23,7 +23,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
         tangent,
         uv, uvScale,
         topUVMode,
-        sideUVMode,
+        sideUVMode, sideVerticalUVMode,
         top, side,
         textureYOrigin,
         topThickness,
@@ -47,6 +47,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             uvOrigin,
             topUVMode,
             sideUVMode,
+            sideVerticalUVMode,
             textureYOrigin,
             //>> needed by uv computation
             glScale,

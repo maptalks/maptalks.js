@@ -55,7 +55,7 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale
     }
 }
 
-export function buildSideUV(mode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
+export function buildSideUV(mode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -99,11 +99,20 @@ export function buildSideUV(mode, textureYOrigin, uvs, vertices, indices, texWid
 
         const u = len * glScale * localScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
         let v;
-        if (textureYOrigin === 'bottom') {
-            v = (z === maxz ? h * vScale / texHeight : 0);
+
+        if (sideVerticalUVMode === 1) {
+
+            // 垂直平铺
+            // https://github.com/maptalks/issues/issues/294
+            v = z === maxz ? 1 : 0;
         } else {
-            v = (z === maxz ? 0 : h * vScale / texHeight);
+            if (textureYOrigin === 'bottom') {
+                v = (z === maxz ? h * vScale / texHeight : 0);
+            } else {
+                v = (z === maxz ? 0 : h * vScale / texHeight);
+            }
         }
+
         uvs[idx * 2] = u;
         uvs[idx * 2 + 1] = v;
 
