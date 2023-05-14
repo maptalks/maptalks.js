@@ -58,6 +58,7 @@ class MeshPainter extends Painter {
         const shader = this.getShader();
         const defines = shader.getGeometryDefines ? shader.getGeometryDefines(geometry) : {};
         const symbol = this.getSymbol(symbolIndex);
+        const colorSetter = createColorSetter(this.colorCache);
         if (geometry.data.aExtrude) {
             defines['IS_LINE_EXTRUSION'] = 1;
             const { tileResolution, tileRatio } = geometry.properties;
@@ -70,7 +71,7 @@ class MeshPainter extends Painter {
             });
             setUniformFromSymbol(mesh.uniforms, 'lineWidth', symbol, 'lineWidth', 4);
             setUniformFromSymbol(mesh.uniforms, 'lineOpacity', symbol, 'lineOpacity', 1);
-            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#fff', createColorSetter(this.colorCache));
+            setUniformFromSymbol(mesh.uniforms, 'lineColor', symbol, 'lineColor', '#fff', colorSetter);
             Object.defineProperty(mesh.uniforms, 'lineHeight', {
                 enumerable: true,
                 get: () => {
@@ -79,22 +80,22 @@ class MeshPainter extends Painter {
                 }
             });
         } else {
-            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
+            setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, colorSetter);
             setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
             const vertexColorTypes = [];
             Object.defineProperty(mesh.uniforms, 'vertexColorsOfType', {
                 enumerable: true,
                 get: () => {
-                    const bottomColor = symbol['bottomPolygonFill'] || DEFAULT_POLYGON_FILL;
-                    const topColor = symbol['topPolygonFill'] || DEFAULT_POLYGON_FILL;
+                    const bottomColor = colorSetter(symbol['bottomPolygonFill'] || DEFAULT_POLYGON_FILL);
+                    const topColor = colorSetter(symbol['topPolygonFill'] || DEFAULT_POLYGON_FILL);
                     vertexColorTypes[0] = bottomColor[0];
                     vertexColorTypes[1] = bottomColor[1];
                     vertexColorTypes[2] = bottomColor[2];
                     vertexColorTypes[3] = bottomColor[3];
-                    vertexColorTypes[4] = topColor[2];
-                    vertexColorTypes[5] = topColor[0];
-                    vertexColorTypes[6] = topColor[1];
-                    vertexColorTypes[7] = topColor[2];
+                    vertexColorTypes[4] = topColor[0];
+                    vertexColorTypes[5] = topColor[1];
+                    vertexColorTypes[6] = topColor[2];
+                    vertexColorTypes[7] = topColor[3];
                     return vertexColorTypes;
                 }
             });
