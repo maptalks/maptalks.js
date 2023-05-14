@@ -199,8 +199,7 @@ void main() {
         vec2 dist = outset * extrude;
     #endif
 
-    float scale;
-    scale = tileResolution / resolution;
+    float scale = tileResolution / resolution;
     // if (isRenderingTerrain == 1.0) {
     //     scale = 1.0;
     // } else {
@@ -247,7 +246,7 @@ void main() {
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);
         if (isRenderingTerrain == 1.0) {
-            vGammaScale = 1.0;
+            vGammaScale = 10.0;
         } else {
             vGammaScale = projDistance / cameraToCenterDistance;
         }

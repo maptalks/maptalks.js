@@ -102,6 +102,7 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
     const data =  {
         data: {
             data: {
+                aVertexColorType: faces.verticeTypes,
                 aPosition: faces.vertices,
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,

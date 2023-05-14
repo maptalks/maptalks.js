@@ -40,12 +40,14 @@ export function buildExtrudeFaces(
     const geoVertices = [];
     const vertices = [];
     const indices = [];
+    const verticeTypes = [];
     const generateUV = !!uv,
         generateTop = !!top,
         generateSide = !!side;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
     function fillData(start, offset, holes, height) {
+        let typeStartOffset = offset;
         //just ignore bottom faces never appear in sight
         if (generateTop) {
             const triangles = earcut(geoVertices, holes, 3); //vertices, holes, dimension(2|3)
@@ -53,7 +55,6 @@ export function buildExtrudeFaces(
                 return offset;
             }
             //TODO caculate earcut deviation
-
             pushIn(vertices, geoVertices);
             offset += geoVertices.length;
             //switch triangle's i + 1 and i + 2 to make it ccw winding
@@ -76,13 +77,22 @@ export function buildExtrudeFaces(
             if (topThickness > 0 && !generateSide) {
                 offset = buildSide(vertices, geoVertices, holes, indices, offset, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, textureYOrigin, uvs, uvSize, glScale, localScale, vScale);
             }
+            verticeTypes.length = offset / 3;
+            verticeTypes.fill(1, typeStartOffset / 3, offset / 3);
         }
         // debugger
         if (generateSide) {
             if (generateTop) {
                 topThickness = 0;
             }
+            typeStartOffset = offset;
             offset = buildSide(vertices, geoVertices, holes, indices, offset, topThickness, height, EXTENT, generateUV, sideUVMode || 0, textureYOrigin, uvs, uvSize, glScale, localScale, vScale);
+            verticeTypes.length = offset / 3;
+            const count = geoVertices.length / 3;
+            verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
+            verticeTypes.fill(0, typeStartOffset / 3 + count, typeStartOffset / 3 + 2 * count);
+            verticeTypes.fill(1, typeStartOffset / 3 + 2 * count, typeStartOffset / 3 + 3 * count);
+            verticeTypes.fill(0, typeStartOffset / 3 + 3 * count, offset / 3);
         }
         return offset;
     }
@@ -177,6 +187,7 @@ export function buildExtrudeFaces(
     const data = {
         maxAltitude,
         vertices: new posArrayType(vertices),        // vertexes
+        verticeTypes: new Uint8Array(verticeTypes),
         indices,                                    // indices for drawElements
         pickingIds: new pickingCtor(pickingIds),   // vertex index of each feature
         featureIndexes: featIndexes
@@ -200,6 +211,7 @@ function buildSide(vertices, topVertices, holes, indices, offset, topThickness, 
     const count = topVertices.length;
     const startIdx = offset / 3;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
+    //top vertexes
     for (let i = 2, l = count; i < l; i += 3) {
         vertices[offset + i - 2] = topVertices[i - 2];
         vertices[offset + i - 1] = topVertices[i - 1];

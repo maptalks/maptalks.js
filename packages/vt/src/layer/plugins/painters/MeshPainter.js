@@ -81,6 +81,23 @@ class MeshPainter extends Painter {
         } else {
             setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_POLYGON_FILL, createColorSetter(this.colorCache));
             setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'polygonOpacity', 1);
+            const vertexColorTypes = [];
+            Object.defineProperty(mesh.uniforms, 'vertexColorsOfType', {
+                enumerable: true,
+                get: () => {
+                    const bottomColor = symbol['bottomPolygonFill'] || DEFAULT_POLYGON_FILL;
+                    const topColor = symbol['topPolygonFill'] || DEFAULT_POLYGON_FILL;
+                    vertexColorTypes[0] = bottomColor[0];
+                    vertexColorTypes[1] = bottomColor[1];
+                    vertexColorTypes[2] = bottomColor[2];
+                    vertexColorTypes[3] = bottomColor[3];
+                    vertexColorTypes[4] = topColor[2];
+                    vertexColorTypes[5] = topColor[0];
+                    vertexColorTypes[6] = topColor[1];
+                    vertexColorTypes[7] = topColor[2];
+                    return vertexColorTypes;
+                }
+            });
         }
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
@@ -93,6 +110,9 @@ class MeshPainter extends Painter {
         }
         if (geometry.data.aTerrainAltitude) {
             defines['HAS_TERRAIN_ALTITUDE'] = 1;
+        }
+        if (geometry.data.aVertexColorType) {
+            defines['VERTEX_TYPES_COUNT'] = 2;
         }
         if (geometry.data.aOpacity) {
             const aOpacity = geometry.data.aOpacity;
