@@ -76,6 +76,8 @@ varying vec3 vModelVertex;
 #endif
 #include <heatmap_render_vert>
 
+#include <vertex_color_vert>
+
 #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
     varying vec3 vTangentViewPos;
     varying vec3 vTangentFragPos;
@@ -168,94 +170,98 @@ void main() {
         fbo_picking_setData(gl_Position.w, alpha != 0.0);
     #else
 
-    #if defined(HAS_MAP)
-        vec2 decodedTexCoord = getTexcoord(aTexCoord);
-        #ifdef HAS_RANDOM_TEX
-            vec2 origin = uvOrigin;
-            vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
-            if (uvRotation != 0.0) {
-                origin = rotateUV(origin, uvRotation);
-                texCoord = rotateUV(texCoord, uvRotation);
-            }
-            vTexCoord = mod(origin, 1.0) + texCoord;
-        #else
-            vec2 origin = uvOrigin;
-            vec2 texCoord = decodedTexCoord * uvScale;
-            if (uvRotation != 0.0) {
-                origin = rotateUV(origin, uvRotation);
-                texCoord = rotateUV(texCoord, uvRotation);
-            }
-            vTexCoord = mod(origin, 1.0) + texCoord + uvOffset;
-        #endif
-
-        #ifdef HAS_I3S_UVREGION
-            vUvRegion = uvRegion / 65535.0;
-        #endif
-
-    #endif
-
-
-    #if defined(HAS_TANGENT) || defined(HAS_NORMAL)
-        mat3 positionNormalMatrix = mat3(localPositionMatrix);
-        mat3 normalMatrix = modelNormalMatrix * positionNormalMatrix;
-        #if defined(HAS_TANGENT)
-            vec3 t;
-            toTangentFrame(aTangent, Normal, t);
-            // Tangent = vec4(t, aTangent.w);
-            // vec4 localTangent = Tangent;
-            // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
-            vModelTangent = vec4(normalMatrix * t, aTangent.w);
-        #else
-            #ifdef HAS_DECODE_NORMAL
-                Normal = getNormal(aNormal);
+        #if defined(HAS_MAP)
+            vec2 decodedTexCoord = getTexcoord(aTexCoord);
+            #ifdef HAS_RANDOM_TEX
+                vec2 origin = uvOrigin;
+                vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
+                if (uvRotation != 0.0) {
+                    origin = rotateUV(origin, uvRotation);
+                    texCoord = rotateUV(texCoord, uvRotation);
+                }
+                vTexCoord = mod(origin, 1.0) + texCoord;
             #else
-                Normal = aNormal;
+                vec2 origin = uvOrigin;
+                vec2 texCoord = decodedTexCoord * uvScale;
+                if (uvRotation != 0.0) {
+                    origin = rotateUV(origin, uvRotation);
+                    texCoord = rotateUV(texCoord, uvRotation);
+                }
+                vTexCoord = mod(origin, 1.0) + texCoord + uvOffset;
+            #endif
+
+            #ifdef HAS_I3S_UVREGION
+                vUvRegion = uvRegion / 65535.0;
+            #endif
+
+        #endif
+
+
+        #if defined(HAS_TANGENT) || defined(HAS_NORMAL)
+            mat3 positionNormalMatrix = mat3(localPositionMatrix);
+            mat3 normalMatrix = modelNormalMatrix * positionNormalMatrix;
+            #if defined(HAS_TANGENT)
+                vec3 t;
+                toTangentFrame(aTangent, Normal, t);
+                // Tangent = vec4(t, aTangent.w);
+                // vec4 localTangent = Tangent;
+                // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
+                vModelTangent = vec4(normalMatrix * t, aTangent.w);
+            #else
+                #ifdef HAS_DECODE_NORMAL
+                    Normal = getNormal(aNormal);
+                #else
+                    Normal = aNormal;
+                #endif
+            #endif
+            vec3 localNormal = Normal;
+            vModelNormal = normalMatrix * localNormal;
+        #else
+            Normal = vec3(0.0);
+            vModelNormal = vec3(0.0);
+        #endif
+
+        #if defined(HAS_TANGENT)
+            vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
+        #endif
+
+        #ifdef HAS_SSR
+            mat3 ssrNormalMatrix = modelViewNormalMatrix * positionNormalMatrix;
+            vViewNormal = ssrNormalMatrix * Normal;
+             #if defined(HAS_TANGENT)
+                // Tangent = vec4(t, aTangent.w);
+                vec4 localTangent = vec4(t, aTangent.w);;
+                vViewTangent = vec4(ssrNormalMatrix * localTangent.xyz, localTangent.w);
             #endif
         #endif
-        vec3 localNormal = Normal;
-        vModelNormal = normalMatrix * localNormal;
-    #else
-        Normal = vec3(0.0);
-        vModelNormal = vec3(0.0);
-    #endif
 
-    #if defined(HAS_TANGENT)
-        vModelBiTangent = cross(vModelNormal, vModelTangent.xyz) * sign(aTangent.w);
-    #endif
-
-    #ifdef HAS_SSR
-        mat3 ssrNormalMatrix = modelViewNormalMatrix * positionNormalMatrix;
-        vViewNormal = ssrNormalMatrix * Normal;
-         #if defined(HAS_TANGENT)
-            // Tangent = vec4(t, aTangent.w);
-            vec4 localTangent = vec4(t, aTangent.w);;
-            vViewTangent = vec4(ssrNormalMatrix * localTangent.xyz, localTangent.w);
+        #if defined(HAS_COLOR)
+            vColor = aColor / 255.0;
         #endif
-    #endif
 
-    #if defined(HAS_COLOR)
-        vColor = aColor / 255.0;
-    #endif
+        highlight_setVarying();
 
-    highlight_setVarying();
+        #if defined(HAS_COLOR0)
+            vColor0 = aColor0 / 255.0;
+        #endif
 
-    #if defined(HAS_COLOR0)
-        vColor0 = aColor0 / 255.0;
-    #endif
+        #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
+            shadow_computeShadowPars(position);
+        #endif
 
-    #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
-        shadow_computeShadowPars(position);
-    #endif
+        #ifdef HAS_HEATMAP
+            heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
+        #endif
 
-    #ifdef HAS_HEATMAP
-        heatmap_compute(projMatrix * modelViewMatrix * localPositionMatrix,localVertex);
-    #endif
+        #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
+            mat3 TBN = transposeMat3(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
+            vTangentViewPos = TBN * cameraPosition;
+            vTangentFragPos = TBN * vModelVertex;
+        #endif
 
-    #if defined(HAS_BUMP_MAP) && defined(HAS_TANGENT)
-        mat3 TBN = transposeMat3(mat3(vModelTangent.xyz, vModelBiTangent, vModelNormal));
-        vTangentViewPos = TBN * cameraPosition;
-        vTangentFragPos = TBN * vModelVertex;
-    #endif
+        #ifdef HAS_VERTEX_COLOR
+            vertexColor_update();
+        #endif
 
     //#ifdef PICKING_MODE的endif
     #endif

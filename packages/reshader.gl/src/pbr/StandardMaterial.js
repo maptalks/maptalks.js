@@ -92,6 +92,10 @@ class StandardMaterial extends Material {
             defines['HAS_NORMAL'] = 1;
         }
 
+        if (geometry.data['aVertexColorType']) {
+            defines['HAS_VERTEX_COLOR'] = 1;
+        }
+
         if (!geometry.data[geometry.desc.uv0Attribute]) {
             return defines;
         }

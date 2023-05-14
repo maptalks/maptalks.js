@@ -532,7 +532,7 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 function createMartiniData(error, heights, width, hasSkirts) {
     const martini = new Martini(width);
     const terrainTile = martini.createTile(heights);
-    // 只有pbr渲染时，才需要把isolateSkirtVertices设成true
+    //TODO 需要增加判断，只有pbr渲染时，才需要把isolateSkirtVertices设成true
     const isolateSkirtVertices = true;
     const mesh = hasSkirts ? terrainTile.getMeshWithSkirts(error, isolateSkirtVertices) : terrainTile.getMesh(error);
     const { triangles, vertices, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, topSkirtIndex } = mesh;
