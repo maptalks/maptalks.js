@@ -43,6 +43,7 @@ const TEMP_PROPERTIES = {};
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
  * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
  * @property {Boolean}  [options.antiMeridian=false]   - geometry's antiMeridian
+ * @property {Boolean}  [options.collision=true]   -  - whether collision
  * @memberOf Geometry
  * @instance
  */
@@ -53,6 +54,7 @@ const options = {
     'editable': true,
     'cursor': null,
     'antiMeridian': false,
+    'collision': true,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
 

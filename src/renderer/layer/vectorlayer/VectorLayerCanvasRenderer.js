@@ -28,6 +28,10 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!geo) {
             return false;
         }
+        const collision = geo.options.collision;
+        if (!collision) {
+            return false;
+        }
         const type = geo.getType();
         if (type === 'Point' && geo.getContainerExtent) {
             if (!geo.bbox) {
