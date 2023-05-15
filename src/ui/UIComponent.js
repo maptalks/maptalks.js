@@ -1,4 +1,4 @@
-import { extend, isFunction, isNumber, sign } from '../core/util';
+import { extend, isFunction, isNumber } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -479,8 +479,9 @@ class UIComponent extends Eventable(Class) {
     }
 
     _meterToPoint(center, altitude) {
-        const map = this.getMap();
-        return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
+        return altitude;
+        // const map = this.getMap();
+        // return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
     }
 
     _autoPan() {

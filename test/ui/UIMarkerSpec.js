@@ -20,7 +20,7 @@ describe('UI.UIMarker', function () {
 
     it('add', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>'
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         var m = document.getElementById('uimarker');
@@ -34,7 +34,7 @@ describe('UI.UIMarker', function () {
         dom.id = 'uimarker';
         dom.innerHTML = 'marker';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : dom
+            content: dom
         });
         marker.addTo(map);
         var m = document.getElementById('uimarker');
@@ -46,7 +46,7 @@ describe('UI.UIMarker', function () {
 
     it('show when zooming', function (done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>'
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         map.on('zoomstart', function () {
@@ -61,7 +61,7 @@ describe('UI.UIMarker', function () {
 
     it('can flash', function (done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>'
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).flash(100, 1, function () {
             expect(marker.isVisible()).to.be.ok();
@@ -71,8 +71,8 @@ describe('UI.UIMarker', function () {
 
     it('can hide', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>',
-            animation : null
+            content: '<div id="uimarker">marker</div>',
+            animation: null
         });
         marker.addTo(map).show();
         marker.hide();
@@ -85,7 +85,7 @@ describe('UI.UIMarker', function () {
 
     it('can remove', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<div id="uimarker">marker</div>'
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         marker.remove();
@@ -95,11 +95,11 @@ describe('UI.UIMarker', function () {
 
     it('is not single', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<svg>marker</svg>'
+            content: '<svg>marker</svg>'
         });
         marker.addTo(map).show();
         var marker2 = new maptalks.ui.UIMarker(map.getCenter(), {
-            content : '<svg>marker2</svg>'
+            content: '<svg>marker2</svg>'
         });
         marker2.addTo(map).show();
 
@@ -109,13 +109,13 @@ describe('UI.UIMarker', function () {
 
     it('can be set to single', function () {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : '<svg>marker</svg>'
+            single: true,
+            content: '<svg>marker</svg>'
         });
         marker.addTo(map).show();
         var marker2 = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : '<svg>marker2</svg>'
+            single: true,
+            content: '<svg>marker2</svg>'
         });
         marker2.addTo(map).show();
 
@@ -126,8 +126,8 @@ describe('UI.UIMarker', function () {
     it('can getContent', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : content
+            single: true,
+            content: content
         });
         marker.addTo(map).show();
         expect(marker.getContent()).to.be.eql(content);
@@ -136,8 +136,8 @@ describe('UI.UIMarker', function () {
     it('can setContent', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : '<div id="uimarker">marker</div>'
+            single: true,
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         var m = document.getElementById('uimarker');
@@ -151,8 +151,8 @@ describe('UI.UIMarker', function () {
     it('can getCoordinates', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : content
+            single: true,
+            content: content
         });
         marker.addTo(map).show();
         expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().toArray());
@@ -161,19 +161,19 @@ describe('UI.UIMarker', function () {
     it('can setCoordinates', function () {
         var content = '<svg>marker</svg>';
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
-            single : true,
-            content : content
+            single: true,
+            content: content
         });
         marker.addTo(map).show();
         marker.setCoordinates(map.getCenter().add(0.01, 0.01));
         expect(marker.getCoordinates().toArray()).to.be.eql(map.getCenter().add(0.01, 0.01).toArray());
     });
 
-    it('can be set to pitchWithMap', function(done) {
+    it('can be set to pitchWithMap', function (done) {
         var marker = new maptalks.ui.UIMarker(map.getCenter(), {
             pitchWithMap: true,
             rotateWithMap: true,
-            content : '<div id="uimarker">marker</div>'
+            content: '<div id="uimarker">marker</div>'
         });
         marker.addTo(map).show();
         var m = document.getElementById('uimarker');
@@ -183,12 +183,47 @@ describe('UI.UIMarker', function () {
         map.setPitch(40).setBearing(50);
 
         var renderer = map._getRenderer();
-        renderer.callInNextFrame(function() {
+        renderer.callInNextFrame(function () {
             var transform = m.parentElement.style.transform;
             var mapPitch = Math.round(map.getPitch());
             var mapBearing = Math.round(map.getBearing());
             expect(transform.indexOf('rotateX(' + mapPitch + 'deg) rotateZ(-' + mapBearing + 'deg)')).to.be.above(0);
             done();
+        });
+    });
+    it('has altitude', function (done) {
+        var marker = new maptalks.ui.UIMarker(map.getCenter(), {
+            content: '<div id="uimarker" class="text-marker" style="width:100px;height:40px;background:black;color:white;text-align:center;">maptalks</div>',
+            verticalAlignment: 'top',
+            altitude: 20,
+            dy: -5
+        });
+        marker.addTo(map).show();
+
+        setTimeout(function() {
+            var m = document.getElementById('uimarker');
+            expect(m).to.be.ok();
+            map.getContainer().style.width = '400px';
+            map.getContainer().style.height = '300px';
+            var renderer = map._getRenderer();
+            renderer.callInNextFrame(function () {
+                var rect = m.getBoundingClientRect();
+                var size = map.getSize();
+                var cy = size.height / 2;
+                expect(rect.height).to.be.equal(40);
+                cy -= 50;
+                var inRect = cy >= rect.top && cy <= rect.bottom;
+                expect(inRect).to.be.equal(true);
+                cy -= 40;
+                var inRect = cy >= rect.top && cy <= rect.bottom;
+                expect(inRect).to.be.equal(false);
+                done();
+            });
+        }, 200);
+
+        map.setView({
+            zoom: 18,
+            pitch: 60
         });
     });
 });
