@@ -98,11 +98,11 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const gl = this.gl;
         gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
         const layerPolygonOffset = this.layer.getPolygonOffset();
-        const polygonOffset = this.drawingCurrentTiles ? layerPolygonOffset - 1 : layerPolygonOffset;
+        const polygonOffset = this.drawingCurrentTiles ? -layerPolygonOffset - 1 : -layerPolygonOffset;
         gl.polygonOffset(polygonOffset, polygonOffset);
 
         this.drawGLImage(tileImage, x, y, w, h, scale, opacity, debugInfo);
-        if (opacity < 1) {
+        if (this._getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
         } else {
             this.setCanvasUpdated();
