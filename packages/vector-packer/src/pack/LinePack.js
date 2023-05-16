@@ -516,6 +516,10 @@ export default class LinePack extends VectorPack {
             if (currentVertex) prevVertex = currentVertex;
 
             currentVertex = vertices[i];
+            // 当xy相同，只有高度不同时，则添加一个像素的偏移，保证normal等能正确计算，但视觉上没有差别
+            if (nextVertex && currentVertex.x === nextVertex.x && currentVertex.y === nextVertex.y) {
+                currentVertex.x += 1;
+            }
 
             // Calculate the normal towards the next vertex in this line. In case
             // there is no next vertex, pretend that the line is continuing straight,
