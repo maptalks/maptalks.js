@@ -11,6 +11,7 @@ import {
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
+import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
@@ -310,10 +311,21 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._childTiles.sort(this._compareTiles);
         }
 
+        let drawBackground = true;
+        const backgroundTimestamp = this.canvas._parentTileTimestamp;
+        if (this.layer.constructor === TileLayer || this.layer.constructor === WMSTileLayer) {
+            // background tiles are only painted once for TileLayer and WMSTileLayer per frame.
+            if (this._renderTimestamp === backgroundTimestamp) {
+                drawBackground = false;
+            } else {
+                this.canvas._parentTileTimestamp = this._renderTimestamp;
+            }
+        }
+
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
-        if (this.layer.options['opacity'] === 1) {
+        if (drawBackground && this.layer.options['opacity'] === 1) {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
@@ -335,7 +347,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         delete this.drawingCurrentTiles;
 
-        if (this.layer.options['opacity'] < 1) {
+        if (drawBackground && this.layer.options['opacity'] < 1) {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
