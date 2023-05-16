@@ -55,7 +55,7 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale
     }
 }
 
-export function buildSideUV(mode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -75,7 +75,7 @@ export function buildSideUV(mode, sideVerticalUVMode, textureYOrigin, uvs, verti
         //  1 -- 2(3)
         //  |    |
         // 0(5)- 4
-        if (mode === 0) {
+        if (sideUVMode === 0) {
             //连续
             if (m === 5) {
                 seg = getSegLength(vertices, indices, i, x, y);
@@ -85,7 +85,7 @@ export function buildSideUV(mode, sideVerticalUVMode, textureYOrigin, uvs, verti
             } else {
                 len = lensofar + seg;
             }
-        } else if (mode === 1) {
+        } else if (sideUVMode === 1) {
             if (m === 2 || m === 3 || m === 4) {
                 len = 0;
             } else if (m === 5) {
@@ -101,7 +101,6 @@ export function buildSideUV(mode, sideVerticalUVMode, textureYOrigin, uvs, verti
         let v;
 
         if (sideVerticalUVMode === 1) {
-
             // 垂直平铺
             // https://github.com/maptalks/issues/issues/294
             v = z === maxz ? 1 : 0;
