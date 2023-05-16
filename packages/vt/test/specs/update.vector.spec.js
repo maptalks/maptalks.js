@@ -1702,6 +1702,31 @@ describe('vector layers update style specs', () => {
         pointLayer.addTo(map);
     });
 
+        //更新坐标
+    it('should can update Polygon coordinates immediately, maptalks/issues#301', () => {
+        const polygon = new maptalks.Polygon([[[-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]]);
+        const layer = new PolygonLayer('vector', polygon, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        polygonFill: '#f00'
+                    }
+                }
+            ]
+        });
+        const groupLayer = new GroupGLLayer("group", [layer]);
+        groupLayer.addTo(map);
+        const coord = polygon.getCoordinates()[0];
+        const coord2 = coord.map((s) => {
+          s.z = 500;
+          return s;
+        })
+
+        polygon.setCoordinates([coord2]);
+    });
+
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

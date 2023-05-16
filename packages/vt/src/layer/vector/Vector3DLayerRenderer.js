@@ -1168,9 +1168,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     onGeometryShapeChange(e) {
         const target = e.target['_getParent']() || e.target;
+        const uid = target[ID_PROP];
+        if (uid === undefined) {
+            return;
+        }
         const geojson = convertToFeature(target, { id: 0 });
         const coordJSON = geojson.geometry;
-        const uid = target[ID_PROP];
         const features = this.features[uid];
         const currentFea =  Array.isArray(features) ? features[0] : features;
         if (compareCoordSize(coordJSON, currentFea.geometry)) {
