@@ -43,7 +43,11 @@ class LineStringLayerRenderer extends Vector3DLayerRenderer {
                 lineGradientProperty: GRADIENT_PROP_KEY
             }, LINE_SYMBOL);
         this._defineSymbolBloom(this.painterSymbol, 'lineBloom');
-        const painter = new LineGradientPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
+        const sceneConfig = extend({}, this.layer.options.sceneConfig || {});
+        if (sceneConfig.depthMask === undefined) {
+            sceneConfig.depthMask = true;
+        }
+        const painter = new LineGradientPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0);
         return painter;
     }
 

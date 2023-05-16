@@ -1727,6 +1727,33 @@ describe('vector layers update style specs', () => {
     });
 
 
+    it('LineString with altitude on Polygon, maptalks/issues#266', done => {
+        const symbol = { lineColor: '#f00', lineWidth: 4 };
+        const line = new maptalks.LineString([[0.5, 0.5, 10000], [1, 0.5, 10000]], { symbol });
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#0f0'
+            }
+        });
+
+        const layer = new LineStringLayer('lines', [line]);
+        const polygonLayer = new PolygonLayer('polygons', [polygon]);
+        const group = new GroupGLLayer('group', [layer, polygonLayer]);
+        let count = 0;
+        const canvas = map.getRenderer().canvas;
+        group.on('layerload', () => {
+            count++;
+            if (count === 1) {
+                const expectedPath = path.join(__dirname, 'fixtures', 'line-altitude', 'expected.png');
+                compareExpected(canvas, { expectedPath }, done);
+            }
+        });
+        group.addTo(map);
+    });
+
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

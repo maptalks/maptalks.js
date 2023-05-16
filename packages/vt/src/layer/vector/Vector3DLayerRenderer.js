@@ -1277,7 +1277,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);
         this._defineSymbolBloom(lineSymbol, 'lineBloom');
-        this._linePainter = new LinePainter(this.regl, this.layer, lineSymbol, this.layer.options.sceneConfig, 0);
+        const lineSceneConfig = extend({}, this.layer.options.sceneConfig || {});
+        if (lineSceneConfig.depthMask === undefined) {
+            lineSceneConfig.depthMask = true;
+        }
+        this._linePainter = new LinePainter(this.regl, this.layer, lineSymbol, lineSceneConfig, 0);
 
         if (this.layer.getGeometries()) {
             this.onGeometryAdd(this.layer.getGeometries());
