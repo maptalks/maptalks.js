@@ -1482,7 +1482,7 @@ const lineWidthName = (prefix + 'lineWidth').trim();
 const lineGradientPropertyName = (LINE_GRADIENT_PROP_KEY + '').trim();
 
 function hasLineSymbol(fea) {
-    return fea.type === 2 && !fea.properties[lineGradientPropertyName] && (fea.properties[lineWidthName] !== undefined) || (fea.type === 3 && (fea.properties[lineWidthName] !== undefined));
+    return fea.type === 2 && !fea.properties[lineGradientPropertyName] || (fea.type === 3 && (fea.properties[lineWidthName] !== undefined));
 }
 
 function dashLength(dash) {
