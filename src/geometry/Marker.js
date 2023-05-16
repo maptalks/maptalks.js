@@ -11,6 +11,7 @@ const TEMP_EXTENT = new PointExtent();
 
 /**
  * @property {String} [options.hitTestForEvent=false] - use hit testing for events, be careful, it may fail due to tainted canvas.
+ * @property {Boolean}  [options.collision=true]   -  - whether collision
  * @memberOf Marker
  * @instance
  */
@@ -26,7 +27,8 @@ const options = {
         'markerWidth': 24,
         'markerHeight': 34
     },
-    'hitTestForEvent': false
+    'hitTestForEvent': false,
+    'collision': true
 };
 
 /**
