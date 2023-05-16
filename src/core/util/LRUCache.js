@@ -190,14 +190,14 @@ if (isMapSupported) {
             if (this.has(key)) {
                 this.data.delete(key);
                 this.data.set(key, data);
-                if (this.data.size > this.max) {
-                    this.shrink();
-                }
+                // if (this.data.size > this.max) {
+                //     this.shrink();
+                // }
             } else {
                 this.data.set(key, data);
-                if (this.data.size > this.max) {
-                    this.shrink();
-                }
+                // if (this.data.size > this.max) {
+                //     this.shrink();
+                // }
             }
 
             return this;

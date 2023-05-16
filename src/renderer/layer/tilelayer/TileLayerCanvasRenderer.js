@@ -214,6 +214,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                                 this.setToRedraw();
                             }
                             tiles.push(cached);
+                            if (!this.isTileComplete(cached)) {
+                                tileLoading = true;
+                            }
                         }
                     } else {
                         tileLoading = loading = true;
@@ -266,6 +269,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 }
             }
         }
+
+        this.tileCache.shrink();
 
         // if (parentTiles.length) {
         //     childTiles.length = 0;
@@ -824,7 +829,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return null;
     }
 
-    isValidCachedTile(/*tile*/) {
+    isValidCachedTile(tile) {
+        return !!tile.image;
+    }
+
+    isTileComplete(/*tile*/) {
         return true;
     }
 
