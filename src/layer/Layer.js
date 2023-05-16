@@ -168,6 +168,15 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this._renderer) {
             this._renderer.setZIndex(zIndex);
         }
+        /**
+         * setzindex event.
+         *
+         * @event Layer#setzindex
+         * @type {Object}
+         * @property {String} type - setzindex
+         * @property {Layer} target    - the layer fires the event
+         * @property {Number} zIndex        - value of the zIndex
+         */
         this.fire('setzindex', { zIndex });
         return this;
     }
@@ -215,6 +224,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setOpacity(op) {
         this.config('opacity', op);
+        /**
+        * setopacity event.
+        *
+        * @event Layer#setopacity
+        * @type {Object}
+        * @property {String} type - setopacity
+        * @property {Layer} target    - the layer fires the event
+        * @property {Number} opacity        - value of the opacity
+        */
+        this.fire('setopacity', { opacity: op });
         return this;
     }
 
