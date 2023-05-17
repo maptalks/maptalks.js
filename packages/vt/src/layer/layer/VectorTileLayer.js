@@ -24,7 +24,7 @@ const defaultOptions = {
     cascadeTiles: true,
     collision: true,
     picking: true,
-    pickingPoint: false,
+    pickingPoint: true,
     pickingGeometry: false,
     //每帧每个瓦片最多能绘制的sdf数量
     glyphSdfLimitPerFrame: 15,
