@@ -1285,6 +1285,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.painter = this.createPainter();
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
+        markerSymbol.markerPerspectiveRatio = this.layer.options['markerPerspectiveRatio'] || 0;
         this._defineSymbolBloom(markerSymbol, 'markerBloom');
         this._defineSymbolBloom(markerSymbol, 'textBloom');
         const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
