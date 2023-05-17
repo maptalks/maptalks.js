@@ -587,11 +587,16 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             image.terrainMesh.geometry.dispose();
             image.terrainMesh.dispose();
         }
+        if (image.image && image.image.close) {
+            // imageBitmap
+            image.image.close();
+        }
         delete image.skinImages;
         delete image.skin;
         delete image.skinStatus;        
         delete image.skinTileIds;
         delete image.terrainMesh;
+        delete image.image;
         delete image.data;
         delete image.rendered;
     }
