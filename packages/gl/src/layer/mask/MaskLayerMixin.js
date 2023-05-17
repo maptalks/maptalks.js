@@ -29,6 +29,9 @@ function updateExtent(type) {
             continue;
         }
         const extent = mask.getExtent();
+        if (!extent) {
+            return;
+        }
         if (extent.xmin < xmin) {
             xmin = extent.xmin;
         }

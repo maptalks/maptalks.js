@@ -21,7 +21,7 @@
             return false;
         }
     }
-    
+
     vec4 setMask(vec4 glFragColor) {
         vec4 extentColor = texture2D(mask_colorExtent, vUVInExtent);
         vec4 modeColor = texture2D(mask_modeExtent, vUVInExtent);
@@ -29,12 +29,24 @@
         float minHeight = modeColor.b / vHeightRatio + vHeightOffset;
         float maxHeight = modeColor.a / vHeightRatio + vHeightOffset;
         if (maskMode > CLIPINSIDE_MODE && maskMode <= CLIPOUTSIDE_MODE) {
-            return glFragColor;
+            if (minHeight == 0.0 && maxHeight == 0.0) {
+                return glFragColor;
+            } else if (vWorldPosition.z >= minHeight && vWorldPosition.z <= maxHeight) {
+                return glFragColor;
+            } else {
+              discard;
+            }
         } else if (mask_hasClipOut == 1.0) {
             discard;
         }
         if (isInExtent(extentColor) == true && maskMode <= CLIPINSIDE_MODE && maskMode > 0.0) {
-            discard;
+            if (minHeight == 0.0 && maxHeight == 0.0) {
+                discard;
+            } else if (vWorldPosition.z >= minHeight && vWorldPosition.z <= maxHeight) {
+                discard;
+            } else {
+              return glFragColor;
+            }
         } else if (isInExtent(extentColor) == true && maskMode <= VIDEO_MODE && maskMode > FLATOUTSIDE_MODE) {
             if (minHeight == 0.0 && maxHeight == 0.0) {
                 glFragColor = vec4(mix(extentColor.rgb, glFragColor.rgb, 1.0 - extentColor.a), glFragColor.a);

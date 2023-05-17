@@ -48,7 +48,7 @@ export default class InstancedMesh extends Mesh {
         const geoBuffers = this.geometry.getAttrData(activeAttributes);
         if (isSupportVAO(regl)) {
             const key = activeAttributes.key;
-            if (!this._vao[key] || this._instanceDataUpdated) {
+            if (!this._vao[key] || this._vao[key].dirty) {
                 const attributes = activeAttributes.map(attr => attr.name);
                 const buffers = [];
                 for (let i = 0; i < attributes.length; i++) {
@@ -82,7 +82,7 @@ export default class InstancedMesh extends Mesh {
                         vao: regl.vao(vaoData)
                     };
                 }
-                delete this._instanceDataUpdated;
+                delete this._vao[key].dirty;
             }
             return this._vao[key];
         } else {
@@ -124,7 +124,11 @@ export default class InstancedMesh extends Mesh {
         //     }
         //     this.instancedData[name] = buffer;
         // }
-        this._instanceDataUpdated = true;
+        if (this._vao) {
+            for (const key in this._vao) {
+                this._vao[key].dirty = true;
+            }
+        }
         return this;
     }
 

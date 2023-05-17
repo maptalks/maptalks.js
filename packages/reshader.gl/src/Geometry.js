@@ -186,7 +186,7 @@ export default class Geometry {
         //support vao
         if (isSupportVAO(regl) && !disableVAO) {
             const key = activeAttributes && activeAttributes.key || 'default';
-            if (!this._vao[key] || updated || this._elementsUpdated) {
+            if (!this._vao[key] || updated || this._vao[key].dirty) {
                 const reglData = this._reglData[activeAttributes.key];
                 const vertexCount = this._vertexCount;
                 const buffers = [];
@@ -252,8 +252,6 @@ export default class Geometry {
                 } else {
                     this._vao[key].vao(vaoData);
                 }
-                // delete this.elements;
-                delete this._elementsUpdated;
             }
             return this._vao[key];
         }
@@ -509,7 +507,11 @@ export default class Geometry {
         } else {
             this.elements = elements;
         }
-        this._elementsUpdated = true;
+        if (this._vao) {
+            for (const key in this._vao) {
+                this._vao[key].dirty = true;
+            }
+        }
         return this;
     }
 

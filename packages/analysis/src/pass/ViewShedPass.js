@@ -2,7 +2,7 @@ import { mat4, quat, vec3 } from 'gl-matrix';
 import { reshader } from '@maptalks/gl';
 import vert from './glsl/viewshed.vert';
 import frag from './glsl/viewshed.frag';
-import { Util } from 'maptalks';
+import { Util, Point } from 'maptalks';
 import AnalysisPass from './AnalysisPass';
 
 const helperPos = [
@@ -24,7 +24,7 @@ const helperIndices = [
     4, 1,
     0,5
 ];
-const MAT = [], QUAT1 = quat.identity([]), QUAT2 = quat.identity([]),  VEC3 = [], v1 = [1, 0, 0], VEC31 = [], VEC32 = [];
+const MAT = [], QUAT1 = quat.identity([]), QUAT2 = quat.identity([]),  VEC3 = [], v1 = [1, 0, 0], VEC31 = [], VEC32 = [], TEMP_POS = [], TEMP_POINT = new Point(0, 0);
 const clearColor = [0, 0, 0, 1];
 let near = 0.01;
 export default class ViewshedPass extends AnalysisPass {
@@ -115,6 +115,24 @@ export default class ViewshedPass extends AnalysisPass {
         quat.rotateY(rotation, rotation, angleY_Z);
         mat4.fromRotationTranslationScale(modelMatrix, rotation, eyePos, [distance, distance * Math.tan(halfHorizontalAngle), distance * Math.tan(halfVerticalAngle)]);
         return modelMatrix;
+    }
+
+    _getVertexCoordinates(map) {
+        const matrix = this._helperMesh.localTransform;
+        const coordinates = [];
+        const glRes = map.getGLRes();
+        for (let i = 1; i < (helperPos.length - 3) / 3; i++) {
+            TEMP_POS[0] = helperPos[i * 3];
+            TEMP_POS[1] = helperPos[i * 3 + 1];
+            TEMP_POS[2] = helperPos[i * 3 + 2];
+            const point = vec3.transformMat4([], TEMP_POS, matrix);
+            TEMP_POINT.set(point[0], point[1]);
+            const coordinate = map.pointAtResToCoord(TEMP_POINT, glRes)
+            const altitude = map.pointAtResToAltitude(point[2], glRes);
+            coordinate.z = altitude;
+            coordinates.push(coordinate);
+        }
+        return coordinates;
     }
 
     //渲染viewshed贴图

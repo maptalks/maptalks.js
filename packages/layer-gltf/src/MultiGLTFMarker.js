@@ -85,9 +85,6 @@ export default class MultiGLTFMarker extends GLTFMarker {
 
     //查
     getData(idx) {
-        if (!defined(idx)) {
-            return this._data;
-        }
         return this._data[idx];
     }
 
@@ -96,6 +93,10 @@ export default class MultiGLTFMarker extends GLTFMarker {
         this._data[idx][name] = value;
         this._dirty = true;
         return this;
+    }
+
+    getAllData() {
+        return this._data;
     }
 
     updateAllData(name, value) {
@@ -283,6 +284,17 @@ export default class MultiGLTFMarker extends GLTFMarker {
         }
         for (let i = 0; i < this._data.length; i++) {
             if (this._data[i].outline) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    _isTransparent() {
+        const data = this.getData();
+        for (let i = 0; i < data.length; i++) {
+            const color = data[i].color;
+            if (color && color[3] < 1) {
                 return true;
             }
         }

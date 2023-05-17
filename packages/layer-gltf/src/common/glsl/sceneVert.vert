@@ -2,6 +2,7 @@ attribute vec3 aPosition;
 attribute float aOutline;
 uniform mat4 projViewMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 modelViewMatrix;
 uniform mat4 positionMatrix;
 uniform float instance;
 #include <get_output>

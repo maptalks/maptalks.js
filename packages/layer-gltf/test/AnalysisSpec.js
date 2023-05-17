@@ -36,6 +36,19 @@ describe('add analysis', () => {
                 expect(pixelMatch([224, 45, 45, 255, 224, 45, 45, 255, 224, 45, 45, 255, 224, 45, 45, 255], pixel1)).to.be.eql(true);//不可视区域颜色
                 const pixel2 = pickPixel(map, 260, 115, 2, 2);
                 expect(pixelMatch([45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255], pixel2)).to.be.eql(true);//可视区域颜色
+                const vertexCoordinates = viewshedAnalysis.getVertexCoordinates();
+                expect(vertexCoordinates[0].x).to.be.eql(0);
+                expect(vertexCoordinates[0].y).to.be.eql(-0.001763269806815515);
+                expect(vertexCoordinates[0].z).to.be.eql(228.49549);
+                expect(vertexCoordinates[1].x).to.be.eql(0);
+                expect(vertexCoordinates[1].y).to.be.eql(0.001763269806815515);
+                expect(vertexCoordinates[1].z).to.be.eql(228.49549);
+                expect(vertexCoordinates[2].x).to.be.eql(0);
+                expect(vertexCoordinates[2].y).to.be.eql(0.001763269806815515);
+                expect(vertexCoordinates[2].z).to.be.eql(228.49549);
+                expect(vertexCoordinates[3].x).to.be.eql(0);
+                expect(vertexCoordinates[3].y).to.be.eql(-0.001763269806815515);
+                expect(vertexCoordinates[3].z).to.be.eql(228.49549);
                 done();
             }, 100);
         });

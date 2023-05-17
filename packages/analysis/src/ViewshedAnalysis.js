@@ -58,6 +58,15 @@ export default class ViewshedAnalysis extends Analysis {
         return uniforms;
     }
 
+    //获取viewshed棱锥的4个顶点的坐标
+    getVertexCoordinates() {
+        const map = this.layer.getMap();
+        if (!map) {
+            return null;
+        }
+        return this._pass._getVertexCoordinates(map);
+    }
+
     getDefines() {
         return {
             HAS_VIEWSHED: 1

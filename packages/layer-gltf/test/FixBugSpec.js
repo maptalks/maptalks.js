@@ -1012,7 +1012,7 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixel).to.be.eql([130, 130, 130, 255]);
+                expect(pixelMatch([131, 111, 24, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });

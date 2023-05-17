@@ -619,4 +619,30 @@ describe('setMask', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('box clip', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url4,
+                scaleX: 2,
+                scaleY: 2,
+                scaleZ: 2
+            }
+        }).addTo(gltflayer);
+        marker.once('load', () => {
+            new maptalks.BoxInsideClipper(center, {
+                width: 100,
+                length: 100,
+                height: 100,
+                rotation: 45
+            }).addTo(gltflayer);
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel));//has been clipped
+                done();
+            })
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    })
 });

@@ -1,6 +1,7 @@
 attribute vec3 aPosition;
 uniform mat4 lightProjViewModelMatrix;
 uniform mat4 positionMatrix;
+uniform mat4 modelViewMatrix;
 //引入fbo picking的vert相关函数
 #include <line_extrusion_vert>
 #include <get_output>
