@@ -1129,7 +1129,25 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         //TODO 判断properties中哪些只需要调用painter.updateSymbol
         // 如果有，则更新 this.painterSymbol 上的相应属性，以触发painter中的属性更新
         const geo = e.target['_getParent']() || e.target;
-        const props = e.properties;
+        let props = e.properties;
+        if (Array.isArray(props)) {
+            const allChangedProps = {};
+            for (let i = 0 ; i < props.length; i++) {
+                if (props[i]) {
+                    extend(allChangedProps, props[i]);
+                }
+            }
+            props = allChangedProps;
+        } else if (props[0] !== undefined) {
+            // a bug in maptalks, 数组类型的symbol会被转成对象形式返回
+            const allChangedProps = {};
+            for (const p in props) {
+                if (props[p]) {
+                    extend(allChangedProps, props[p]);
+                }
+            }
+            props = allChangedProps;
+        }
         for (const p in props) {
             if (hasOwn(props, p)) {
                 if (SYMBOLS_NEED_REBUILD_IN_VECTOR[p]) {
@@ -1138,6 +1156,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 }
             }
         }
+
         const id = geo[ID_PROP];
         const symbol = geo['_getInternalSymbol']();
         const feas = this.features[id];

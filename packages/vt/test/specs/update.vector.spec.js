@@ -1753,6 +1753,94 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('update PointLayer with style, maptalks/issues#263', done => {
+        container.style.width = '512px';
+        container.style.height = '512px';
+        map.setView({
+            center: [121.4954, 31.2385],
+            zoom: 14,
+        });
+
+        const pointLayer = new PointLayer("point");
+
+        pointLayer.setStyle({
+            symbol: [
+              {
+                markerFill: "#000",
+                markerFillOpacity: 0.1,
+                markerType: "ellipse",
+                markerWidth: 200,
+                markerHeight: 200,
+              },
+              {
+                textFaceName: "sans-serif",
+                textName: "300",
+                textFill: "#22be9e",
+                textHorizontalAlignment: "right",
+                textSize: 40,
+                textDx: 40,
+                textDy: -90,
+              },
+            ],
+          });
+
+          const marker1 = new maptalks.Marker([121.475542, 31.233812], {
+            id: 100,
+            properties: {
+              count: 100,
+            },
+          });
+
+          const marker2 = new maptalks.Marker([121.495542, 31.233812], {
+            id: 200,
+            properties: {
+              count: 200,
+            },
+          });
+
+          const marker3 = new maptalks.Marker([121.515542, 31.233812], {
+            id: 300,
+            properties: {
+              count: 300,
+            },
+          });
+
+          pointLayer.addGeometry([marker1, marker2, marker3]);
+          const groupLayer = new GroupGLLayer("group", [pointLayer]);
+          setTimeout(() => {
+            pointLayer.hide();
+            pointLayer.setStyle({
+              symbol: [
+                {
+                  markerFill: "#000",
+                  markerFillOpacity: 0.1,
+                  markerType: "ellipse",
+                  markerWidth: 200,
+                  markerHeight: 200,
+                },
+                {
+                  textFaceName: "sans-serif",
+                  textName: "300",
+                  textFill: "#22be9e",
+                  textHorizontalAlignment: "right",
+                  textSize: 40,
+                  textDx: 40,
+                  textDy: -90,
+                },
+              ],
+            });
+            pointLayer.show();
+            setTimeout(() => {
+                const canvas = groupLayer.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 200, canvas.height / 2);
+                assert(pixel[3] > 0);
+                done();
+            }, 60);
+
+          }, 60);
+          groupLayer.addTo(map);
+    });
+
 
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
