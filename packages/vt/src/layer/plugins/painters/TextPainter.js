@@ -624,7 +624,7 @@ export default class TextPainter extends CollisionPainter {
         aProjectedAnchor[index * 3 + 1] = elevatedAnchor[1];
         aProjectedAnchor[index * 3 + 2] = elevatedAnchor[2];
 
-        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.options['tileSize'];
+        const scale = isProjected ? 1 : geometry.properties.tileExtent / this.layer.getTileSize().width;
 
         let visible = true;
 
@@ -925,7 +925,7 @@ export default class TextPainter extends CollisionPainter {
 
     getUniformValues(map, context) {
         const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
-        const tileSize = this.layer.options.tileSize;
+        const tileSize = this.layer.getTileSize().width;
         const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
         const cameraToCenterDistance = map.cameraToCenterDistance;
         // const canvasSize = [map.width, map.height];

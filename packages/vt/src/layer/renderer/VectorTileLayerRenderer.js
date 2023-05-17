@@ -948,7 +948,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 if (transform && extent) {
                     const debugInfo = this.getDebugInfo(info.id);
                     const matrix = mat4.multiply(mat, projViewMatrix, transform);
-                    const tileSize = this.layer.options.tileSize;
+                    const tileSize = this.layer.getTileSize().width;
                     this._debugPainter.draw(
                         debugInfo, matrix,
                         tileSize, extent,
@@ -1824,7 +1824,7 @@ VectorTileLayerRenderer.include({
         return function (point, z, EXTENT) {
             const glScale = this.getTileGLScale(z);
             const tilePos = point;
-            const tileSize = this.layer.options.tileSize;
+            const tileSize = this.layer.getTileSize().width;
             const posMatrix = mat4.identity([]);
             //TODO 计算zScale时，zoom可能和tileInfo.z不同
             mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));

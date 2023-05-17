@@ -106,7 +106,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             debug: this.options['debug'],
             debugTile: this.options['debugTile'],
             altitudeProperty: this.options['altitudeProperty'],
-            tileSize: this.options['tileSize'],
+            tileSize: this.getTileSize().width,
             baseRes: map.getGLRes(),
             //default render时，this._vtStyle有可能被default render设值
             style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
@@ -151,7 +151,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _tilePointToPoint(out, point, tilePoint, extent) {
-        const tileSize = this.options['tileSize'];
+        const tileSize = this.getTileSize().width;
         const tileScale = extent / tileSize;
         const srcPoint = out.set(tilePoint.x + point.x / tileScale, tilePoint.y - point.y / tileScale);
         return srcPoint;
@@ -1052,7 +1052,7 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     _convertGeometryCoords(geometry, nw, extent, res) {
-        const tileSize = this.options.tileSize;
+        const tileSize = this.getTileSize().width;
         const tileScale = extent / tileSize;
         const map = this.getMap();
         const coords = [];

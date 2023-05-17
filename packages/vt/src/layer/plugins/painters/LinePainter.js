@@ -558,7 +558,7 @@ class LinePainter extends BasicPainter {
 
     getUniformValues(map, context) {
         const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
-        const tileSize = this.layer.options.tileSize;
+        const tileSize = this.layer.getTileSize().width;
 
         const projViewMatrix = isRenderingTerrainSkin ? IDENTITY_ARR : map.projViewMatrix;
         const viewMatrix = map.viewMatrix,

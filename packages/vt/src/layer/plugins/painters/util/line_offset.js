@@ -88,7 +88,7 @@ export function getLineOffset(out, mesh, line, projectedAnchor, anchor, glyphOff
     // const terrainTileInfo = mesh.properties.tile.terrainTileInfo;
     if (!isPitchWithMap && terrainHelper) {
         const { extent } = mesh.properties.tile;
-        const tileScale = vtLayer.options['tileSize'] / extent;
+        const tileScale = vtLayer.getTileSize().width / extent;
         const map = vtLayer.getMap();
         const prevToCurrent = currentPoint.sub(prevPoint);
         let p = prevToCurrent.mult(segmentInterpolationT)._add(prevPoint);

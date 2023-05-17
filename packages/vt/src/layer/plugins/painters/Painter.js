@@ -1237,7 +1237,7 @@ class Painter {
 
         const { xmin, ymax } = extent2d;
         const tilePoint = TILEPOINT.set(xmin, ymax);
-        const tileScale = this.layer.options['tileSize'] / tile.extent;
+        const tileScale = this.layer.getTileSize().width / tile.extent;
         const positionSize = aPosition.length / aTerrainAltitude.length;
         let queryResult = aTerrainAltitude.queryResult;
         if (!queryResult) {
