@@ -1,10 +1,15 @@
 #ifdef HAS_TERRAIN_ALTITUDE
-attribute float aTerrainAltitude;
+    attribute float aTerrainAltitude;
 #endif
 
 #ifdef HAS_ALTITUDE
     vec3 unpackVTPosition() {
-        return vec3(aPosition, aAltitude);
+        float altitude = aAltitude;
+        #ifdef HAS_TERRAIN_ALTITUDE
+            // aTerrainAltitude的单位是米，在vt中需要转换为厘米
+            altitude += aTerrainAltitude * 100.0;
+        #endif
+        return vec3(aPosition, altitude);
     }
 #else
     // 16384 is pow(2.0, 14.0)
