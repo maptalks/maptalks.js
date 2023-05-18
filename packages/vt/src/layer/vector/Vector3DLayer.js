@@ -19,6 +19,8 @@ const defaultOptions = {
     }
 };
 
+const VECTOR_TILE_SIZE = new maptalks.Size(1, 1);
+
 class Vector3DLayer extends maptalks.OverlayLayer {
 
     static registerPainter(name, clazz) {
@@ -172,6 +174,11 @@ class Vector3DLayer extends maptalks.OverlayLayer {
             profile.geometries.push(json);
         }
         return profile;
+    }
+
+    getTileSize() {
+        // default tile size for painters
+        return VECTOR_TILE_SIZE;
     }
 }
 
