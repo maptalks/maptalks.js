@@ -46,7 +46,7 @@ const material = {
     'roughnessFactor': 0,
     'metalnessFactor': 0,
     'outputSRGB': 0,
-    'normalTexture': 'file://' + path.resolve(__dirname, '../../../resources/brick_normal.jpg'),
+    'baseColorTexture': 'file://' + path.resolve(__dirname, '../../../resources/marker.png'),
     'uvScale': [0.001, 0.001]
 };
 const style = [{
@@ -61,8 +61,17 @@ module.exports = {
     style,
     data: data,
     view: {
-        pitch: 0,
+        pitch: 50,
         center: [0, 0],
-        zoom: 6.5
+        zoom: 6.5,
+        lights: {
+            ambient: {
+                color: [0.3, 0.3, 0.3]
+            },
+            directional: {
+                color: [0.1, 0.1, 0.1],
+                direction: [1, 0, -1],
+            }
+        }
     }
 };
