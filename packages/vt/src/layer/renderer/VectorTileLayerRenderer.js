@@ -907,7 +907,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             }
             this.regl.clear({
                 stencil: 0xFF,
-                fbo: targetFBO
+                framebuffer: targetFBO
             });
             if (this.isEnableTileStencil() && plugin.painter && !plugin.painter.needClearStencil()) {
                 this._drawTileStencil(targetFBO);
