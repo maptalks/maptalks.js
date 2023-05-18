@@ -61,6 +61,8 @@ class Painter {
         };
         this.sortByCommandKey = sortByCommandKey.bind(this);
         this.colorCache = {};
+        // 因为一开始visible为false的数据不会被创建，需要记录下来，updateSymbol时决定是否需要重新创建数据
+        this._invisibleWhenCreated = this.symbolDef.map(s => s.visible === false);
     }
 
     getMap() {
@@ -708,6 +710,10 @@ class Painter {
             return false;
         }
         const refresh = this._isNeedRefreshStyle(this.symbolDef[i] || {}, all);
+        if (this._invisibleWhenCreated[i] && all.visible !== false) {
+            this._invisibleWhenCreated[i] = false;
+            return true;
+        }
         this.symbolDef[i] = copyJSON(all);
         const symbol = this._symbol[i];
         for (const p in symbol) {

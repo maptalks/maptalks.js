@@ -1433,6 +1433,41 @@ describe('update style specs', () => {
         layer.addTo(map);
     }).timeout(10000);
 
+    it('should can update plugin visible to true, fuzhenn/maptalks-ide#3105', done => {
+        const plugin = {
+            type: 'fill',
+            dataConfig: {
+                type: 'fill'
+            },
+            sceneConfig: {},
+        };
+        const style = [
+            {
+                filter: true,
+                renderPlugin: plugin,
+                symbol: {
+                    visible: false,
+                    polygonFill: '#f00'
+                }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon.features[0],
+            style,
+            tileStackDepth: 0
+        });
+        layer.once('canvasisdirty', () => {
+            const canvas = layer.getRenderer().canvas;
+            const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
+            assert.deepEqual(pixel, [255, 0, 0, 255]);
+            done();
+        });
+        layer.addTo(map);
+        setTimeout(() => {
+            layer.updateSymbol(0, { visible: true });
+        }, 200);
+    });
+
     it('should can update textures for line extrusion, maptalks-studio#1923', done => {
         const plugin = {
             filter: true,
