@@ -155,6 +155,9 @@ const GLTFMixin = Base =>
                 //
                 const childMeshes = meshInfos.map(info => {
                     const { geometry: gltfGeo, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
+                    if (symbol.alphaTest) {
+                        materialInfo.alphaTest = symbol.alphaTest;
+                    }
                     const MatClazz = this.getMaterialClazz(materialInfo);
                     const material = new MatClazz(materialInfo);
                     const defines = {};
