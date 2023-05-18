@@ -217,7 +217,7 @@ class StandardPainter extends MeshPainter {
                 func: {
                     cmp: '<=',
                     ref: (_, props) => {
-                        return props.level;
+                        return props.stencilRef;
                     },
                 },
                 op: {

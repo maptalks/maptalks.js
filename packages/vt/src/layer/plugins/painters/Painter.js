@@ -1315,7 +1315,7 @@ function sortByCommandKey(a, b) {
 
 
 function sortByLevel(m0, m1) {
-    return m0.properties.level - m1.properties.level;
+    return m1.properties.tile.z - m0.properties.tile.z;
 }
 
 function hashCode(s) {

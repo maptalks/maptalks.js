@@ -185,6 +185,17 @@ class MeshPainter extends Painter {
                     mesh.material.uniforms.emissiveTexture);
             }
         });
+        const renderer = this.layer.getRenderer();
+        const maxZoom = this.layer.getMap().getMaxNativeZoom();
+        Object.defineProperty(mesh.uniforms, 'stencilRef', {
+            enumerable: true,
+            get: () => {
+                if (renderer.isForeground(mesh)) {
+                    return 0;
+                }
+                return maxZoom - mesh.properties.tile.z;
+            }
+        });
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
     }
