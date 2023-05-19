@@ -351,7 +351,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onDrawTileStart() { }
-    onDrawTileEnd() {}
+    onDrawTileEnd() { }
 
     _drawTile(info, image, parentContext) {
         if (image) {
@@ -468,9 +468,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     loadTile(tile) {
-        let tileImage;
-        if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
-            tileImage = {};
+        let tileImage = {};
+        if (this.loadTileBitMap) {
+            const onLoad = (bitmap) => {
+                this.onTileLoad(bitmap, tile);
+            };
+            this.loadTileBitMap(tile['url'], tile, onLoad);
+        } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             this._fetchImage(tileImage, tile);
         } else {
             const tileSize = this.layer.getTileSize(tile.layer);
