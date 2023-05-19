@@ -3,7 +3,7 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
-import { clamp, interpolate, wrap } from '../core/util';
+import { clamp, interpolate, isNumber, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
@@ -11,6 +11,19 @@ const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
+
+const altitudesHasData = (altitudes) => {
+    if (isNumber(altitudes)) {
+        return altitudes !== 0;
+    } else if (Array.isArray(altitudes) && altitudes.length > 0) {
+        for (let i = 0, len = altitudes.length; i < len; i++) {
+            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
 
 /*!
  * contains code from mapbox-gl-js
@@ -255,7 +268,7 @@ Map.include(/** @lends Map.prototype */{
     _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
         const pitch = this.getPitch(), bearing = this.getBearing();
         const scale = targetRes / this._getResolution();
-        if (pitch === 0 && bearing === 0) {
+        if (pitch === 0 && bearing === 0 && !altitudesHasData(altitudes)) {
             const { xmin, ymin, xmax, ymax } = this._get2DExtent();
             if (xmax > xmin && ymax > ymin) {
 
