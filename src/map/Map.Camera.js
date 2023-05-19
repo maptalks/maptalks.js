@@ -17,7 +17,7 @@ const altitudesHasData = (altitudes) => {
         return altitudes !== 0;
     } else if (Array.isArray(altitudes) && altitudes.length > 0) {
         for (let i = 0, len = altitudes.length; i < len; i++) {
-            if (altitudes[i] !== 0) {
+            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
                 return true;
             }
         }
