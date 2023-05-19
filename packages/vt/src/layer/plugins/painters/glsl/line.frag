@@ -146,7 +146,7 @@ void main() {
             #else
                 float myAnimSpeed = linePatternAnimSpeed;
             #endif
-            float patternWidth = ceil(uvSize.x * vWidth.s * 2.0 / uvSize.y);
+            float patternWidth = uvSize.x * vWidth.s * 2.0 / uvSize.y;
             float plusGapWidth = patternWidth * (1.0 + myGap);
             linesofar += mod(currentTime * -myAnimSpeed * 0.2, plusGapWidth);
             //vDirection在前后端点都是1(right)时，值为1，在前后端点一个1一个-1(left)时，值为-1到1之间，因此 0.9999 - abs(vDirection) > 0 说明是左右，< 0 说明都为右
