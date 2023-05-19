@@ -469,11 +469,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     loadTile(tile) {
         let tileImage = {};
-        if (this.loadTileBitMap) {
+        if (this.loadTileBitmap) {
             const onLoad = (bitmap) => {
                 this.onTileLoad(bitmap, tile);
             };
-            this.loadTileBitMap(tile['url'], tile, onLoad);
+            this.loadTileBitmap(tile['url'], tile, onLoad);
         } else if (this._tileImageWorkerConn && this.loadTileImage === this.constructor.prototype.loadTileImage) {
             this._fetchImage(tileImage, tile);
         } else {
