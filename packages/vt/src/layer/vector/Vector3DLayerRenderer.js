@@ -716,8 +716,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     continue;
                 }
                 const count = packData[i].data.featureIds.length;
+                const dynamicAttrs = packData[i].data.dynamicAttributes;
                 for (const p in packData[i].data.data) {
                     if (p === 'aPickingId') {
+                        continue;
+                    }
+                    if (dynamicAttrs[p]) {
                         continue;
                     }
                     const data = packData[i].data.data[p];
@@ -831,9 +835,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     }
                     mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * positionSize);
                 } else {
+                    const dynamicAttrs = packData[i].data.dynamicAttributes;
                     const count = packData[i].data.featureIds.length;
                     const datas = packData[i].data.data;
                     for (const p in datas) {
+                        if (dynamicAttrs[p]) {
+                            // 如果该属性是dynamic（值里包含了function-type），在之前的检查中会rebuild，所以这里不可能出现dynamic attribute
+                            continue;
+                        }
                         if (hasOwn(datas, p)) {
                             const data = datas[p];
                             mesh.geometry.updateSubData(p, data, startIndex * data.length / count);

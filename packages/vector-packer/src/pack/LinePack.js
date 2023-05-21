@@ -283,6 +283,7 @@ export default class LinePack extends VectorPack {
             // 为了支持和linePattern合成，把默认lineColor设为白色
             this.feaColor = lineColorFn(this.options['zoom'], properties) || [255, 255, 255, 255];
             if (isFunctionDefinition(this.feaColor)) {
+                this.dynamicAttrs['aColor'] = 1;
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaColor = [0, 0, 0, 0];
             } else {
@@ -292,6 +293,7 @@ export default class LinePack extends VectorPack {
         if (lineStrokeColorFn) {
             this.feaStrokeColor = lineStrokeColorFn(this.options['zoom'], properties) || [0, 0, 0, 255];
             if (isFunctionDefinition(this.feaStrokeColor)) {
+                this.dynamicAttrs['aStrokeColor'] = 1;
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 this.feaStrokeColor = [0, 0, 0, 0];
             } else {

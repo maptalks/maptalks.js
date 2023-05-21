@@ -425,6 +425,7 @@ export default class VectorPack {
         this.maxIndex = 0;
         this.maxPos = 0;
         this.maxAltitude = 0;
+        this.dynamicAttrs = {};
         const data = this.data = {};
         let elements = this.elements = [];
         //uniforms: opacity, u_size_t
@@ -541,7 +542,8 @@ export default class VectorPack {
             indices: this.hasElements() ? elements : null,
             positionSize,
             buffers,
-            symbolIndex: this.symbolDef.index || { index: 0 }
+            symbolIndex: this.symbolDef.index || { index: 0 },
+            dynamicAttributes: this.dynamicAttrs
         };
 
         if (this._packMarkerPlacement) {

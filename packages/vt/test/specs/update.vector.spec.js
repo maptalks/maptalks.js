@@ -432,6 +432,51 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update symbol with function-type lineColor, fuzhenn/maptalks-ide#3099', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        line.setSymbol({
+            lineColor: {
+              "type": "exponential",
+              "default": [
+                1,
+                0,
+                0,
+                1
+              ],
+              "stops": [
+                [
+                  16,
+                  [
+                    1,
+                    0,
+                    0,
+                    1
+                  ]
+                ]
+              ]
+            },
+            lineWidth: 20,
+            lineOpacity: 0.5
+        });
+        const layer = new LineStringLayer('vector', line);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                line.updateSymbol({
+                    lineOpacity: 1
+                });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
     //添加Geometry
     it('should can add lineString to LineStringLayer', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);

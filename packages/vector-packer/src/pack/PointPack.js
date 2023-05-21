@@ -433,6 +433,7 @@ export default class PointPack extends VectorPack {
             if (textFillFn) {
                 textFill = textFillFn(null, properties);
                 if (isFunctionDefinition(textFill)) {
+                    this.dynamicAttrs['aTextFill'] = 1;
                     // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                     textFill = [0, 0, 0, 0];
                 } else {

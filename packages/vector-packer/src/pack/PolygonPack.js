@@ -101,6 +101,7 @@ export default class PolygonPack extends VectorPack {
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], properties) || vec4.set([], 255, 255, 255, 255);
             if (isFunctionDefinition(dynFill)) {
+                this.dynamicAttrs['aColor'] = 1;
                 // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
                 dynFill = EMPTY_FILL;
             } else {
