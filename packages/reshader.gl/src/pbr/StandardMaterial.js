@@ -57,6 +57,7 @@ const DEFAULT_UNIFORMS = {
     'bumpScale': 0.05,
     'bumpMinLayers': 5,
     'bumpMaxLayers': 20,
+    'alphaTest': 0
 };
 
 class StandardMaterial extends Material {
