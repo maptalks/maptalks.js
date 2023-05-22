@@ -263,10 +263,10 @@ class UIComponent extends Eventable(Class) {
             on(dom, this.options['eventsToStop'], stopPropagation);
         }
 
-        //autoPan
-        if (this.options['autoPan']) {
-            this._autoPan();
-        }
+        // //autoPan
+        // if (this.options['autoPan']) {
+        //     this._autoPan();
+        // }
 
         const transition = anim.transition;
         if (anim.ok && transition) {
@@ -288,6 +288,13 @@ class UIComponent extends Eventable(Class) {
             this.fire('showend');
         }
         this._collides();
+        //autoPan
+        clearTimeout(this._autoPanId);
+        if (this.options['autoPan']) {
+            this._autoPanId = setTimeout(() => {
+                this._autoPan();
+            }, 32);
+        }
         return this;
     }
 
@@ -493,6 +500,35 @@ class UIComponent extends Eventable(Class) {
         const point = this._getViewPoint()._round();
         const mapWidth = map.width;
         const mapHeight = map.height;
+        if (dom && dom.getBoundingClientRect) {
+            const margin = 50;
+            const rect = dom.getBoundingClientRect();
+            let offsetX = 0, offsetY = 0;
+            const { left, right, top, bottom, width, height } = rect;
+            if (width > 0 && height > 0) {
+                if (left < margin) {
+                    offsetX = margin - left;
+                }
+                if (offsetX === 0 && (right + margin) > mapWidth) {
+                    offsetX = -((right + margin) - mapWidth);
+                }
+                if (top < margin) {
+                    offsetY = margin - top;
+                }
+                if (offsetY === 0 && (bottom + margin) > mapHeight) {
+                    offsetY = -((bottom + margin) - mapHeight);
+                }
+                if (offsetX !== 0 || offsetY !== 0) {
+                    const pitch = map.getPitch();
+                    if (pitch > 40 && offsetY !== 0 && this._coordinate) {
+                        map.animateTo({ center: this._coordinate }, { duration: map.options['panAnimationDuration'] });
+                    } else {
+                        map.panBy([Math.ceil(offsetX), Math.ceil(offsetY)]);
+                    }
+                }
+                return;
+            }
+        }
 
         const containerPoint0 = map.viewPointToContainerPoint(point);
         const offset = this.getOffset();
