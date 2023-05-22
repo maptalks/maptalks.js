@@ -494,7 +494,7 @@ class UIComponent extends Eventable(Class) {
     _autoPan() {
         const map = this.getMap(),
             dom = this.getDOM();
-        if (map.isMoving()) {
+        if (!dom || !map || map.isMoving()) {
             return;
         }
         const point = this._getViewPoint()._round();
