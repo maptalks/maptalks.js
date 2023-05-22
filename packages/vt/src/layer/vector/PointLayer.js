@@ -3,6 +3,7 @@ import Vector3DLayer from './Vector3DLayer';
 import Vector3DLayerRenderer from './Vector3DLayerRenderer';
 import { fromJSON } from './util/from_json';
 import { ICON_PAINTER_SCENECONFIG } from '../core/Constant';
+import { extend } from '../../common/Util';
 
 const defaultOptions = {
     glyphSdfLimitPerFrame: 15,
@@ -12,8 +13,7 @@ const defaultOptions = {
         'win-intel-gpu-crash': true
     },
     collision: false,
-    collisionFrameLimit: 1,
-    sceneConfig: ICON_PAINTER_SCENECONFIG
+    collisionFrameLimit: 1
 };
 
 class PointLayer extends Vector3DLayer {
@@ -27,6 +27,13 @@ class PointLayer extends Vector3DLayer {
      */
     static fromJSON(json) {
         return fromJSON(json, 'PointLayer', PointLayer);
+    }
+
+    constructor(...args) {
+        super(...args);
+        if (!this.options.sceneConfig) {
+            this.options.sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG);
+        }
     }
 }
 

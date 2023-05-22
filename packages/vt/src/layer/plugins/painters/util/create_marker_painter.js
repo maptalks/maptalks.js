@@ -11,7 +11,7 @@ export const BOX_VERTEX_COUNT = 4; //每个box有四个顶点数据
 const U8 = new Uint16Array(1);
 const I8 = new Int8Array(1);
 
-export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, visibleInCollision, enableUniquePlacement) {
+export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, fnTypeConfig, enableCollision, visibleInCollision) {
     if (geometry.isDisposed() || geometry.data.aPosition.length === 0) {
         return null;
     }
@@ -27,8 +27,8 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
         tileRatio: geometry.properties.tileRatio
     };
 
-    //!geometry.properties.aAnchor 以避免重复创建collision数据
-    if ((enableCollision || enableUniquePlacement) && !geometry.properties.aShape) {
+    //!geometry.properties.aShape 以避免重复创建collision数据
+    if (!geometry.properties.aShape) {
         const { aPosition, aShape } = geometry.data;
         const vertexCount = geometry.data.aPosition.length / geometry.desc.positionSize;
         //initialize opacity array

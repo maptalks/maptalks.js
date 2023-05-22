@@ -147,9 +147,9 @@ class IconPainter extends CollisionPainter {
     }
 
     _prepareCollideIndex(geo) {
-        if (!this.layer.options['collision']) {
-            return;
-        }
+        // if (!this.layer.options['collision']) {
+        //     return;
+        // }
         // collideIds 中存放的是 feature.id 的值
         // aPickingIds 中存放的 KEY_IDX 的值
         // Vector3DLayer 中，feature有多个symbol时，会有多个数据的 feature.id 相同，但KEY_IDX不同的情况存在
@@ -299,7 +299,7 @@ class IconPainter extends CollisionPainter {
     }
 
     addMesh(meshes) {
-        const isEnableCollision = this._needUpdateCollision();
+        const isEnableCollision = this.isEnableCollision();
         if (isEnableCollision && meshes.length > 0) {
             const group = new CollisionGroup(meshes);
             group.properties.uniqueCollideIds = meshes[0].geometry.properties.uniqueCollideIds;
@@ -352,7 +352,7 @@ class IconPainter extends CollisionPainter {
     }
 
     updateCollision(context) {
-        if (!this._needUpdateCollision()) {
+        if (!this.isEnableCollision()) {
             return;
         }
         super.updateCollision(context);
@@ -396,7 +396,7 @@ class IconPainter extends CollisionPainter {
      * @param {Number} timestamp
      */
     _updateIconCollision(/* timestamp */) {
-        if (!this._needUpdateCollision()) {
+        if (!this.isEnableCollision()) {
             return;
         }
         let meshes = this._meshesToCheck;

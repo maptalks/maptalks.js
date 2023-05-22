@@ -25,6 +25,8 @@ const COLLISION_OFFSET_THRESHOLD = 2;
 const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 
+const MESHES = [];
+
 export default class CollisionPainter extends BasicPainter {
 
     createGeometry(...args) {
@@ -51,6 +53,27 @@ export default class CollisionPainter extends BasicPainter {
         } else {
             return mode === 'fxaa' || mode === 'fxaaAfterTaa';
         }
+    }
+
+    addMesh(meshes, progress, context) {
+        if (meshes && !this.isEnableCollision()) {
+            let meshesToCheck = meshes;
+            if (!Array.isArray(meshesToCheck)) {
+                MESHES[0] = meshes;
+                meshesToCheck = MESHES;
+            }
+            for (let i = 0; i < meshesToCheck.length; i++) {
+                const defines = meshesToCheck[i].defines;
+                delete defines['ENABLE_COLLISION'];
+                meshesToCheck[i].setDefines(defines);
+                const { elements, visElemts } = meshesToCheck[i].geometry.properties;
+                if (visElemts && visElemts.count !== undefined && visElemts.count !== elements.length) {
+                    meshesToCheck[i].geometry.setElements(elements);
+                    visElemts.count = elements.length;
+                }
+            }
+        }
+        return super.addMesh(meshes, progress, context);
     }
 
     startMeshCollision(mesh) {
@@ -119,9 +142,6 @@ export default class CollisionPainter extends BasicPainter {
     }
 
     _endCollision() {
-        // 用来判断这一帧中是否需要计算collision
-        // 如果这一帧和上一帧的collision都是关闭的，则可以略过collision的计算，提升性能
-        this._enableCollisionInPreFrame = this.isEnableCollision();
     }
 
     _getCachedCollision(meshKey, boxIndex) {
@@ -651,10 +671,6 @@ export default class CollisionPainter extends BasicPainter {
             count + 3,
             count + 3, count
         );
-    }
-
-    _needUpdateCollision() {
-        return this.isEnableCollision() || this._enableCollisionInPreFrame;
     }
 
     updateCollision(context) {

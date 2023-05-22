@@ -157,6 +157,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (layer.options['collision']) {
                 layer.clearCollisionIndex();
             }
+            this._markerPainter.sceneConfig.collision = this.layer.options.sceneConfig.collision;
             this._markerPainter.startFrame(context);
             this._markerPainter.addMesh(this._markerMeshes, null, { bloom: this._parentContext.bloom });
             this._markerPainter.prepareRender(context);

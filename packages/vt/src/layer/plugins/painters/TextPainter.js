@@ -327,7 +327,7 @@ export default class TextPainter extends CollisionPainter {
                 visElemts.count = count;
             }
         };
-        const enableCollision = this._needUpdateCollision();
+        const enableCollision = this.isEnableCollision();
         const renderer = this.layer.getRenderer();
 
         // console.log('meshes数量', meshes.length, '字符数量', meshes.reduce((v, mesh) => {
@@ -451,7 +451,7 @@ export default class TextPainter extends CollisionPainter {
                 this._projectedLinesCache[id] = out;
             }
         }
-        const enableCollision = this._needUpdateCollision();
+        const enableCollision = this.isEnableCollision();
         const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
         if (enableCollision) {
             visElemts.count = 0;
@@ -553,7 +553,7 @@ export default class TextPainter extends CollisionPainter {
         const isPitchWithMap = uniforms['pitchWithMap'] === 1;
         const terrainHelper = !isPitchWithMap && renderer.getTerrainHelper && renderer.getTerrainHelper();
 
-        const enableCollision = this._needUpdateCollision();
+        const enableCollision = this.isEnableCollision();
         const map = this.getMap();
         const geometry = mesh.geometry;
         const positionSize = geometry.desc.positionSize;
