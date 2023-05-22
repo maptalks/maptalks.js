@@ -253,6 +253,7 @@ export default class Geometry {
                     this._vao[key].vao(vaoData);
                 }
             }
+            delete this._vao[key].dirty;
             return this._vao[key];
         }
         return this._reglData[activeAttributes.key];

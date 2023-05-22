@@ -62,7 +62,7 @@ export default class ViewshedAnalysis extends Analysis {
     getVertexCoordinates() {
         const map = this.layer.getMap();
         if (!map) {
-            return null;
+            return [];
         }
         return this._pass._getVertexCoordinates(map);
     }

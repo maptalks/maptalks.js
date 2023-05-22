@@ -16,10 +16,11 @@ import FlatInsideMask from './layer/mask/FlatInsideMask.js';
 import FlatOutsideMask from './layer/mask/FlatOutsideMask.js';
 import ColorMask from './layer/mask/ColorMask.js';
 import VideoMask from './layer/mask/VideoMask.js';
-import BoxInsideClipper from './layer/mask/BoxInsideClipper.js';
-import BoxOutsideClipper from './layer/mask/BoxOutsideClipper.js';
+import ElevateMask from './layer/mask/ElevateMask.js';
+import BoxInsideClipMask from './layer/mask/BoxInsideClipMask.js';
+import BoxOutsideClipMask from './layer/mask/BoxOutsideClipMask.js';
 export { MaskLayerMixin, MaskRendererMixin };
-export { ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ColorMask, VideoMask, BoxInsideClipper, BoxOutsideClipper };
+export { ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ElevateMask, ColorMask, VideoMask, BoxInsideClipMask, BoxOutsideClipMask };
 
 if (typeof window !== 'undefined') {
     // append GroupGLLayer on maptalks manually
@@ -29,9 +30,10 @@ if (typeof window !== 'undefined') {
         window.maptalks.ClipOutsideMask = ClipOutsideMask;
         window.maptalks.FlatInsideMask = FlatInsideMask;
         window.maptalks.FlatOutsideMask = FlatOutsideMask;
+        window.maptalks.ElevateMask = ElevateMask;
         window.maptalks.ColorMask = ColorMask;
         window.maptalks.VideoMask = VideoMask;
-        window.maptalks.BoxInsideClipper = BoxInsideClipper;
-        window.maptalks.BoxOutsideClipper = BoxOutsideClipper;
+        window.maptalks.BoxInsideClipMask = BoxInsideClipMask;
+        window.maptalks.BoxOutsideClipMask = BoxOutsideClipMask;
     }
 }

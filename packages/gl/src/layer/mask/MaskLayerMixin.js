@@ -160,6 +160,9 @@ export default function (Base) {
             }
             this['_maskList'].forEach(mask => {
                 mask['_bindLayer'](this);
+                if (mask._updateCoordinates) {
+                    mask._updateCoordinates();
+                }
             });
             updateExtent.call(this, 'shapechange');
             return this;

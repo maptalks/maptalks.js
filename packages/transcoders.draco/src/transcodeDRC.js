@@ -7,10 +7,10 @@ import wasmBinary from './lib/draco_decoder_base64.js';
 import DracoDecoderModule from './lib/draco_decoder.js';
 
 function createDecoderModule() {
-  // DracoModule is created.
-  return DracoDecoderModule({
-      wasmBinary
-  })
+    // DracoModule is created.
+    return DracoDecoderModule({
+        wasmBinary
+    })
 }
 
 const dataTypes = {
@@ -44,12 +44,18 @@ const accessorTypes = {
 };
 
 let dracoModule = null;
-
+let dracoModulePromise = null;
 export default function transcodeDRC(buffer, options) {
-    if (!dracoModule) {
-        return createDecoderModule({}).then((drcModule) => {
+    if (!dracoModule && !dracoModulePromise) {
+        dracoModulePromise = createDecoderModule({}).then((drcModule) => {
             dracoModule = drcModule;
-        }).then(() => {
+            dracoModulePromise = null;
+        });
+        return dracoModulePromise.then(() => {
+            return transcode(buffer, options);
+        });
+    } else if (dracoModulePromise) {
+        return dracoModulePromise.then(() => {
             return transcode(buffer, options);
         });
     }
@@ -165,14 +171,14 @@ function decodeAttribute(decoder, dracoGeometry, dataType, attribute, metadatas,
     let tr = transform.InitFromAttribute(attribute);
     if (tr) {
         const minValues = new Array(numComponents);
-        for (var i = 0; i < numComponents; ++i) {
-          minValues[i] = transform.min_value(i);
+        for (let i = 0; i < numComponents; ++i) {
+            minValues[i] = transform.min_value(i);
         }
         quantization = {
-          quantizationBits: transform.quantization_bits(),
-          minValues: minValues,
-          range: transform.range(),
-          octEncoded: false,
+            quantizationBits: transform.quantization_bits(),
+            minValues: minValues,
+            range: transform.range(),
+            octEncoded: false,
         };
     }
     dracoModule.destroy(transform);
@@ -181,8 +187,8 @@ function decodeAttribute(decoder, dracoGeometry, dataType, attribute, metadatas,
     tr = transform.InitFromAttribute(attribute);
     if (tr) {
         quantization = {
-          quantizationBits: transform.quantization_bits(),
-          octEncoded: true,
+            quantizationBits: transform.quantization_bits(),
+            octEncoded: true,
         };
     }
     dracoModule.destroy(transform);
@@ -308,38 +314,38 @@ function getIndexComponentType(max) {
 
 
 function decodeQuantizedDracoTypedArray(
-  dracoGeometry,
-  dracoDecoder,
-  dracoAttribute,
-  quantization,
-  vertexArrayLength
+    dracoGeometry,
+    dracoDecoder,
+    dracoAttribute,
+    quantization,
+    vertexArrayLength
 ) {
-  var vertexArray;
-  var attributeData;
-  if (quantization.quantizationBits <= 8) {
-    attributeData = new dracoModule.DracoUInt8Array();
-    vertexArray = new Uint8Array(vertexArrayLength);
-    dracoDecoder.GetAttributeUInt8ForAllPoints(
-      dracoGeometry,
-      dracoAttribute,
-      attributeData
-    );
-  } else {
-    attributeData = new dracoModule.DracoUInt16Array();
-    vertexArray = new Uint16Array(vertexArrayLength);
-    dracoDecoder.GetAttributeUInt16ForAllPoints(
-      dracoGeometry,
-      dracoAttribute,
-      attributeData
-    );
-  }
+    let vertexArray;
+    let attributeData;
+    if (quantization.quantizationBits <= 8) {
+        attributeData = new dracoModule.DracoUInt8Array();
+        vertexArray = new Uint8Array(vertexArrayLength);
+        dracoDecoder.GetAttributeUInt8ForAllPoints(
+            dracoGeometry,
+            dracoAttribute,
+            attributeData
+        );
+    } else {
+        attributeData = new dracoModule.DracoUInt16Array();
+        vertexArray = new Uint16Array(vertexArrayLength);
+        dracoDecoder.GetAttributeUInt16ForAllPoints(
+            dracoGeometry,
+            dracoAttribute,
+            attributeData
+        );
+    }
 
-  for (var i = 0; i < vertexArrayLength; ++i) {
-    vertexArray[i] = attributeData.GetValue(i);
-  }
+    for (let i = 0; i < vertexArrayLength; ++i) {
+        vertexArray[i] = attributeData.GetValue(i);
+    }
 
-  dracoModule.destroy(attributeData);
-  return vertexArray;
+    dracoModule.destroy(attributeData);
+    return vertexArray;
 }
 
 function getComponentType(arr) {

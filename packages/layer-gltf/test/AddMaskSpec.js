@@ -631,12 +631,13 @@ describe('setMask', () => {
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
-            new maptalks.BoxInsideClipper(center, {
+            const mask = new maptalks.BoxInsideClipMask(center, {
                 width: 100,
                 length: 100,
                 height: 100,
                 rotation: 45
-            }).addTo(gltflayer);
+            });
+            gltflayer.setMask(mask);
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel));//has been clipped

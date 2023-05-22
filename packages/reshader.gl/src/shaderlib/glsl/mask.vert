@@ -15,6 +15,7 @@
     const float CLIPINSIDE_MODE = 0.2;
     const float FLATINSIDE_MODE = 0.3;
     const float FLATOUTSIDE_MODE = 0.4;
+    const float ELEVATE_MODE = 0.7;
 
     float random (vec2 st) {
         return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123) * 0.1;
@@ -28,6 +29,14 @@
         }
     }
 
+    float getFlatHeight(float maskMode, float flatHeight, float height) {
+      if (maskMode <= ELEVATE_MODE && maskMode > 0.6) {
+          return flatHeight + height;
+      } else {
+        return flatHeight;
+      }
+    }
+
     vec4 getMaskPosition(vec4 position, mat4 modelMatrix) {
         vWorldPosition = modelMatrix * position;
         float w = mask_extent.z - mask_extent.x;
@@ -37,7 +46,7 @@
         vec3 maskOptionColor = texture2D(mask_modeExtent, uvInExtent).rgb;
         float maskMode = maskOptionColor.r;
         float flatHeight = maskOptionColor.g / mask_heightRatio + mask_heightOffset;
-        float height = flatHeight;
+        float height = getFlatHeight(maskMode, flatHeight, vWorldPosition.z);
         vec4 wPosition = vec4(vWorldPosition.x, vWorldPosition.y, height, vWorldPosition.w);
         vUVInExtent = uvInExtent;
         vHeightRatio = mask_heightRatio;
@@ -48,6 +57,8 @@
             return viewMatrix * wPosition;
         }
         if (isInExtent(extentColor) == true && maskMode <= FLATINSIDE_MODE && maskMode > CLIPINSIDE_MODE) {
+            return viewMatrix * wPosition;
+        } if (isInExtent(extentColor) == true && maskMode <= ELEVATE_MODE && maskMode > 0.6) {
             return viewMatrix * wPosition;
         } else {
             return modelViewMatrix * position;

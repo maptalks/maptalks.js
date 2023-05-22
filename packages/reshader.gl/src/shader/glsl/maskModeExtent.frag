@@ -10,7 +10,7 @@ uniform float maskMode;
 #endif
 void main() {
     #if defined(HAS_MASK_FLAT)
-        gl_FragColor = vec4(maskMode, flatHeight, 0.0, 0.0);
+        gl_FragColor = vec4(maskMode, flatHeight, 0.0, 1.0);
     #elif defined(HAS_MASK_COLOR)
         gl_FragColor = vec4(maskMode, 0.0, heightRange.x, heightRange.y);
     #else

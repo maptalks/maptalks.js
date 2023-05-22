@@ -5,7 +5,7 @@ import earcut from 'earcut';
 import { coordinateToWorld, normalizeColor, isNumber } from "../util/util";
 
 const MASK_MODES = {
-    'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5, 'video': 0.6
+    'clip-inside': 0.1, 'clip-outside': 0.2, 'flat-inside': 0.3, 'flat-outside': 0.4, 'color': 0.5, 'video': 0.6, 'elevate': 0.7
 };
 const QUAT = [], SCALE = [1, 1, 1];
 const DEFAULT_SYMBOL = {

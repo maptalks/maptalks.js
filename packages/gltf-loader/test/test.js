@@ -396,6 +396,22 @@ describe('get animation clip', () => {
             });
         });
     });
+
+    it('a large number of meshes', done => {
+        const root = 'models/258-Third';
+        gltf.Ajax.getArrayBuffer(root + '/258-Third.glb', {}).then(response => {
+            const loader = new gltf.GLTFLoader(root, { buffer : response.data, byteOffset : 0 }, { decoders, transferable: true });
+            loader.load({
+                skipAttributeTransform: true
+            })
+                .then(json => {
+                    expect(json).to.be.ok();
+                    expect(Object.keys(json.meshes).length).to.be.eql(1755);
+                    expect(Object.keys(json.nodes).length).to.be.eql(1887);
+                    done();
+                });
+        });
+    })
 });
 
 describe('gltf extensions', () => {
