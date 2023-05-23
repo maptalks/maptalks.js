@@ -291,6 +291,12 @@ class FillPainter extends BasicPainter {
                     if (!isNil(this.sceneConfig.depthMask)) {
                         return !!this.sceneConfig.depthMask;
                     }
+                    if (props.hasSSRGround) {
+                        // fuzhenn/maptalks-ide#3071
+                        // 解决没写depthMask，导致被ssr地面遮住的问题
+                        // 但这里会导致透明的polygon无法叠加绘制的问题
+                        return true;
+                    }
                     if (props.meshConfig.transparent) {
                         return false;
                     }
@@ -368,6 +374,7 @@ class FillPainter extends BasicPainter {
             projViewMatrix,
             glScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
+            hasSSRGround: context.hasSSRGround
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
         this.setIncludeUniformValues(uniforms, context);

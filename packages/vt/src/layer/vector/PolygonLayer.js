@@ -88,6 +88,7 @@ class PolygonLayerRenderer extends Vector3DLayerRenderer {
                         childMeshes[j].feaGroupIndex = i;
                         childMeshes[j].geometry.properties.originElements = childMeshes[j].geometry.properties.elements.slice();
                         if (i === 1) {
+                            // featureGroups中给透明Polygon单独分配的一组数据
                             childMeshes[j].transparent = true;
                         }
                     }
