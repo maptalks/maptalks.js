@@ -448,7 +448,13 @@ export default class PointPack extends VectorPack {
             }
             if (textHaloFillFn) {
                 textHaloFill = textHaloFillFn(null, properties);
-                textHaloFill = normalizeColor([], textHaloFill);
+                if (isFunctionDefinition(textHaloFill)) {
+                    this.dynamicAttrs['aTextHaloFill'] = 1;
+                    // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                    textHaloFill = [0, 0, 0, 0];
+                } else {
+                    textHaloFill = normalizeColor([], textHaloFill);
+                }
             }
             if (textHaloRadiusFn) {
                 textHaloRadius = textHaloRadiusFn(null, properties);
@@ -496,6 +502,43 @@ export default class PointPack extends VectorPack {
                 rotation = wrap(markerRotationFn(null, properties), 0, 360) * Math.PI / 180;
             }
         }
+        if (isFunctionDefinition(textSize)) {
+            this.dynamicAttrs['aTextSize'] = 1;
+        }
+        if (isFunctionDefinition(textHaloRadius)) {
+            this.dynamicAttrs['aTextHaloRadius'] = 1;
+        }
+        if (isFunctionDefinition(textHaloOpacity)) {
+            this.dynamicAttrs['aTextHaloOpacity'] = 1;
+        }
+        if (isFunctionDefinition(textDx)) {
+            this.dynamicAttrs['aTextDx'] = 1;
+        }
+        if (isFunctionDefinition(textDy)) {
+            this.dynamicAttrs['aTextDy'] = 1;
+        }
+        if (isFunctionDefinition(markerWidth)) {
+            this.dynamicAttrs['aMarkerWidth'] = 1;
+        }
+        if (isFunctionDefinition(markerHeight)) {
+            this.dynamicAttrs['aMarkerHeight'] = 1;
+        }
+        if (isFunctionDefinition(markerDx)) {
+            this.dynamicAttrs['aMarkerDx'] = 1;
+        }
+        if (isFunctionDefinition(markerDy)) {
+            this.dynamicAttrs['aMarkerDy'] = 1;
+        }
+        if (isFunctionDefinition(pitchAlign)) {
+            this.dynamicAttrs['aPitchAlign'] = 1;
+        }
+        if (isFunctionDefinition(rotateAlign)) {
+            this.dynamicAttrs['aRotationAlign'] = 1;
+        }
+        if (isFunctionDefinition(rotation)) {
+            this.dynamicAttrs['aRotation'] = 1;
+        }
+
         const allowOverlapFn = markerAllowOverlapFn || textAllowOverlapFn;
         if (allowOverlapFn) {
             allowOverlap = allowOverlapFn(null, properties) || 0;

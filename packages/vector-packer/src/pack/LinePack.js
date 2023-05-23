@@ -248,6 +248,10 @@ export default class LinePack extends VectorPack {
             //     }
             // }
             let lineWidth = lineWidthFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(lineWidth)) {
+                this.dynamicAttrs['aLineWidth'] = 1;
+                lineWidth = 4;
+            }
             if (isNil(lineWidth)) {
                 lineWidth = 4;
             }
@@ -257,6 +261,9 @@ export default class LinePack extends VectorPack {
         }
         if (lineHeightFn) {
             let lineHeight = lineHeightFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(lineHeight)) {
+                this.dynamicAttrs['aLineHeight'] = 1;
+            }
             if (isNil(lineHeight)) {
                 lineHeight = this.feaLineWidth;
             }
@@ -272,6 +279,10 @@ export default class LinePack extends VectorPack {
             //     }
             // }
             let lineStrokeWidth = lineStrokeWidthFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(lineStrokeWidth)) {
+                this.dynamicAttrs['aLineStrokeWidth'] = 1;
+                lineStrokeWidth = 0;
+            }
             if (isNil(lineStrokeWidth)) {
                 lineStrokeWidth = 0;
             }
@@ -302,6 +313,10 @@ export default class LinePack extends VectorPack {
         }
         if (lineOpacityFn) {
             let opacity = lineOpacityFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(opacity)) {
+                this.dynamicAttrs['aOpacity'] = 1;
+                opacity = 1;
+            }
             if (isNil(opacity)) {
                 opacity = 1;
             }
@@ -309,6 +324,10 @@ export default class LinePack extends VectorPack {
         }
         if (this.dasharrayFn) {
             let dasharray = this.dasharrayFn(this.options['zoom'], properties) || [0, 0, 0, 0];
+            if (isFunctionDefinition(dasharray)) {
+                this.dynamicAttrs['aDasharray'] = 1;
+                dasharray = [0, 0, 0, 0];
+            }
             if (dasharray.length < 4) {
                 const old = dasharray;
                 if (dasharray.length === 1) {
@@ -323,6 +342,11 @@ export default class LinePack extends VectorPack {
         }
         if (this.dashColorFn) {
             let dashColor = (this.dashColorFn ? this.dashColorFn(this.options['zoom'], properties) : this.symbol['lineDashColor']) || [0, 0, 0, 0];
+            if (isFunctionDefinition(dashColor)) {
+                this.dynamicAttrs['aDashColor'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                dashColor = [0, 0, 0, 0];
+            }
             dashColor = normalizeColor([], dashColor);
             this.feaDashColor = dashColor;
         }
@@ -346,6 +370,11 @@ export default class LinePack extends VectorPack {
         }
         if (lineDxFn) {
             let dx = lineDxFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(dx)) {
+                this.dynamicAttrs['aLineDxDy'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                dx = 0;
+            }
             if (isNil(dx)) {
                 dx = 0;
             }
@@ -353,6 +382,11 @@ export default class LinePack extends VectorPack {
         }
         if (lineDyFn) {
             let dy = lineDyFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(dy)) {
+                this.dynamicAttrs['aLineDxDy'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                dy = 0;
+            }
             if (isNil(dy)) {
                 dy = 0;
             }
@@ -360,6 +394,11 @@ export default class LinePack extends VectorPack {
         }
         if (linePatternAnimSpeedFn) {
             let speed = linePatternAnimSpeedFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(speed)) {
+                this.dynamicAttrs['aLinePatternAnimSpeed'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                speed = 0;
+            }
             if (isNil(speed)) {
                 speed = 0;
             }
@@ -370,6 +409,11 @@ export default class LinePack extends VectorPack {
         }
         if (linePatternGapFn) {
             let gap = linePatternGapFn(this.options['zoom'], properties);
+            if (isFunctionDefinition(gap)) {
+                this.dynamicAttrs['aLinePatternGap'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                gap = 0;
+            }
             if (isNil(gap)) {
                 gap = 0;
             }

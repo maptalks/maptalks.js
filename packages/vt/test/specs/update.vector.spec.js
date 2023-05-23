@@ -477,6 +477,44 @@ describe('vector layers update style specs', () => {
         layer.addTo(map);
     });
 
+
+    it('should can update symbol with function-type markerWidth, fuzhenn/maptalks-ide#3060', done => {
+        const marker = new maptalks.Marker([0, 0]);
+        marker.setSymbol({
+            "markerWidth": {
+              "type": "exponential",
+              "default": 20,
+              "stops": [
+                [
+                  16,
+                  100
+                ]
+              ]
+            },
+            markerHeight: 200,
+            markerType: 'ellipse',
+            markerFill: '#f00'
+        });
+        const layer = new PointLayer('points', marker);
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 1) {
+                marker.updateSymbol({
+                    markerOpacity: 0.5
+                });
+            } else if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2 - 10);
+                assert.deepEqual(pixel, [255, 0, 0, 127]);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+
     //添加Geometry
     it('should can add lineString to LineStringLayer', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);

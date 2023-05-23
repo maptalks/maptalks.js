@@ -111,25 +111,43 @@ export default class PolygonPack extends VectorPack {
         }
         if (polygonOpacityFn) {
             dynOpacity = polygonOpacityFn(this.options['zoom'], properties);
-            if (isNil(dynOpacity)) {
-                dynOpacity = 1;
+            if (isFunctionDefinition(dynOpacity)) {
+                this.dynamicAttrs['aOpacity'] = 1;
+                dynOpacity = 255;
+            } else {
+                if (isNil(dynOpacity)) {
+                    dynOpacity = 1;
+                }
+                dynOpacity *= 255;
             }
-            dynOpacity *= 255;
+
         }
         if (uvScaleFn) {
             dynUVScale = uvScaleFn(this.options['zoom'], properties);
-            if (isNil(dynUVScale)) {
-                dynUVScale = [1, 1];
+            if (isFunctionDefinition(dynUVScale)) {
+                dynUVScale = [255, 255];
+                this.dynamicAttrs['aUVScale'] = 1;
+            } else {
+                if (isNil(dynUVScale)) {
+                    dynUVScale = [1, 1];
+                }
+                dynUVScale = [dynUVScale[0] * 255, dynUVScale[1] * 255];
             }
-            dynUVScale = [dynUVScale[0] * 255, dynUVScale[1] * 255];
+
         }
         if (uvOffsetFn) {
             dynUVOffset = uvOffsetFn(this.options['zoom'], properties);
-            if (isNil(dynUVOffset)) {
+            if (isFunctionDefinition(dynUVOffset)) {
                 dynUVOffset = [0, 0];
+                this.dynamicAttrs['aUVOffset'] = 1;
+            } else {
+                if (isNil(dynUVOffset)) {
+                    dynUVOffset = [0, 0];
+                }
+                dynUVOffset = [dynUVOffset[0] * 255, dynUVOffset[1] * 255];
             }
-            dynUVOffset = [dynUVOffset[0] * 255, dynUVOffset[1] * 255];
         }
+
         const hasUV = !!this.iconAtlas;
         const rings = classifyRings(geometry, EARCUT_MAX_RINGS);
 
