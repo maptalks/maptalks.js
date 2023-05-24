@@ -840,19 +840,24 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     _createPainter() {
         const painter = this._painter;
         if (this.layer.options.shader === 'lit') {
-            if (painter instanceof TerrainPainter) {
-                painter.delete();
-                this.clear();
-                this.setToRedraw();
+            if (painter && painter.constructor === TerrainPainter || !painter) {
+                if (painter) {
+                    painter.delete();
+                    this.clear();
+                    this.setToRedraw();
+                }
+                this._painter = new TerrainLitPainter(this.layer);
             }
-            this._painter = new TerrainLitPainter(this.layer);
+
         } else {
-            if (painter instanceof TerrainLitPainter) {
-                painter.delete();
-                this.clear();
-                this.setToRedraw();
+            if (painter && painter.constructor === TerrainLitPainter || !painter) {
+                if (painter) {
+                    painter.delete();
+                    this.clear();
+                    this.setToRedraw();
+                }
+                this._painter = new TerrainPainter(this.layer);
             }
-            this._painter = new TerrainPainter(this.layer);
         }
     }
 

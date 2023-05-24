@@ -51,7 +51,6 @@ describe('gl tests', () => {
     });
 
     context('tilelayer tests', () => {
-
         it('GroupGLLayer.queryTerrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
@@ -147,7 +146,7 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
-        it.only('tilelayer order in GroupGLLayer, maptalks/issues#300', done => {
+        it('tilelayer order in GroupGLLayer, maptalks/issues#300', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
                 zoom: 12
@@ -162,12 +161,12 @@ describe('gl tests', () => {
             };
             const greenLayer = new maptalks.TileLayer('black', {
                 urlTemplate: './fixtures/tiles/tile-green-256.png',
-                index: 1,
+                zIndex: 1,
                 fadeAnimation: false
             });
             const redLayer = new maptalks.TileLayer('red', {
                 urlTemplate: './fixtures/tiles/tile-red-256.png',
-                index: 0,
+                zIndex: 0,
                 fadeAnimation: false
             });
             const group = new maptalks.GroupGLLayer('group', [greenLayer, redLayer], {
