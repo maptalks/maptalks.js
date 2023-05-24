@@ -801,7 +801,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         if (this._painter) {
             this._painter.delete();
-            delete this._painter();
+            delete this._painter;
         }
         super.onRemove();
     }
