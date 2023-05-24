@@ -8,8 +8,8 @@ module.exports = {
     },
     files: [
         '../../node_modules/maptalks/dist/maptalks.js',
-        './dist/maptalksgl-dev.js',
-        '../../node_modules/@maptalks/gltf-layer/dist/maptalks.gltf.js',
+        './dist/maptalksgl.js',
+        '../layer-gltf/dist/maptalks.gltf.js',
         'test/**/*.js',
         {
             pattern: 'test/fixtures/**/*',

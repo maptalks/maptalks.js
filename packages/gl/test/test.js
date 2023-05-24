@@ -160,17 +160,17 @@ describe('gl tests', () => {
                     }
                 }
             };
-            const blackLayer = new maptalks.TileLayer('black', {
-                urlTemplate: '/fixtures/tiles/tile-256.jpg',
-                index: 0,
-                fadeAnimation: false
-            });
-            const redLayer = new maptalks.TileLayer('red', {
-                urlTemplate: '/fixtures/tiles/tile-red-256.jpg',
+            const greenLayer = new maptalks.TileLayer('black', {
+                urlTemplate: './fixtures/tiles/tile-green-256.png',
                 index: 1,
                 fadeAnimation: false
             });
-            const group = new maptalks.GroupGLLayer('group', [redLayer, blackLayer], {
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: './fixtures/tiles/tile-red-256.png',
+                index: 0,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [greenLayer, redLayer], {
                 sceneConfig
             });
             group.addTo(map);
@@ -178,9 +178,9 @@ describe('gl tests', () => {
                 const canvas = map.getRenderer().canvas;
                 const ctx = canvas.getContext('2d');
                 const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                expect(pixel).to.be.eql({ data: { '0': 255, '1': 0, '2': 0, '3': 255 } });
+                expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                 done();
-            }, 400);
+            }, 500);
         });
     });
 
