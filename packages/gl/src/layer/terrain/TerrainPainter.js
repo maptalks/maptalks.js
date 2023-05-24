@@ -98,7 +98,7 @@ class TerrainPainter {
 
     addTerrainImage(tileInfo, tileImage, opacity) {
         const mesh = tileImage.terrainMesh;
-        if (mesh && tileImage.skin) {
+        if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
             mesh.setUniform('opacity', opacity);
             const maxZoom = this.layer.getSpatialReference().getMaxZoom();
@@ -176,16 +176,16 @@ class TerrainPainter {
 
         // draw parent terrain skirts
         uniforms.colorMask = true;
-        this._parentScene.meshes.forEach(m => {
-            const { skirtOffset, skirtCount } = m.properties;
-            m.geometry.setDrawOffset(skirtOffset);
-            if (m.getUniform('skin') === this._emptyTileTexture) {
-                m.geometry.setDrawCount(0);
-            } else {
-                m.geometry.setDrawCount(skirtCount);
-            }
-        });
-        renderCount += this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
+        // this._parentScene.meshes.forEach(m => {
+        //     const { skirtOffset, skirtCount } = m.properties;
+        //     m.geometry.setDrawOffset(skirtOffset);
+        //     if (m.getUniform('skin') === this._emptyTileTexture) {
+        //         m.geometry.setDrawCount(0);
+        //     } else {
+        //         m.geometry.setDrawCount(skirtCount);
+        //     }
+        // });
+        // renderCount += this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
 
         // draw leafs skirts
 

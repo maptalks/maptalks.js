@@ -111,7 +111,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const enableTAA = this.isEnableTAA();
         const jitter = drawContext.jitter;
         drawContext.jitter = NO_JITTER;
-        drawContext.ssrMode = ssrMode;
+        const groundConfig = this.layer.getGroundConfig();
+        drawContext.hasSSRGround = ssrMode && groundConfig.enable && groundConfig.symbol && groundConfig.symbol.ssr;
         fGL.resetDrawCalls();
         this._renderInMode(enableTAA ? 'fxaaBeforeTaa' : 'fxaa', this._targetFBO, methodName, args);
         this._fxaaDrawCount = fGL.getDrawCalls();

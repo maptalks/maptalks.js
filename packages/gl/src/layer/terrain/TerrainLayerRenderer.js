@@ -59,6 +59,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     draw(timestamp, parentContext) {
+        this._createPainter();
         this._painter.startFrame();
         super.draw(timestamp, parentContext);
         this._endFrame(parentContext);
@@ -833,9 +834,26 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         } else {
             this._createREGLContext();
         }
-        // this._painter = new TerrainPainter(this.layer);
-        this._painter = new TerrainLitPainter(this.layer);
         this.renderer = new reshader.Renderer(this.regl);
+    }
+
+    _createPainter() {
+        const painter = this._painter;
+        if (this.layer.options.shader === 'lit') {
+            if (painter instanceof TerrainPainter) {
+                painter.delete();
+                this.clear();
+                this.setToRedraw();
+            }
+            this._painter = new TerrainLitPainter(this.layer);
+        } else {
+            if (painter instanceof TerrainLitPainter) {
+                painter.delete();
+                this.clear();
+                this.setToRedraw();
+            }
+            this._painter = new TerrainPainter(this.layer);
+        }
     }
 
     _createREGLContext() {

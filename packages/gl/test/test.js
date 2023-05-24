@@ -146,6 +146,42 @@ describe('gl tests', () => {
             });
             group.addTo(map);
         });
+
+        it.only('tilelayer order in GroupGLLayer, maptalks/issues#300', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const blackLayer = new maptalks.TileLayer('black', {
+                urlTemplate: '/fixtures/tiles/tile-256.jpg',
+                index: 0,
+                fadeAnimation: false
+            });
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: '/fixtures/tiles/tile-red-256.jpg',
+                index: 1,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [redLayer, blackLayer], {
+                sceneConfig
+            });
+            group.addTo(map);
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 255, '1': 0, '2': 0, '3': 255 } });
+                done();
+            }, 400);
+        });
     });
 
     context('terrain tests', () =>{
