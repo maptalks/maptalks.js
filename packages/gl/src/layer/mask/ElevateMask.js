@@ -3,7 +3,7 @@ import FlatMask from './FlatMask';
 export default class ElevateMask extends FlatMask {
     constructor(coordinates, options) {
         super(coordinates, options);
-        this.setElevate(options.elevation);
+        this.setElevation(options.elevation);
         this._mode = 'elevate';
     }
 
