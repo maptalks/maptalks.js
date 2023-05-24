@@ -86,9 +86,11 @@ class TerrainLitPainter extends TerrainPainter {
 
     addTerrainImage(tileInfo, tileImage, opacity) {
         const mesh = tileImage.terrainMesh;
-        if (mesh && tileImage.skin) {
-            mesh.material.set('skinTexture', tileImage.skin);
-            mesh.material.set('polygonOpacity', opacity);
+        if (mesh) {
+            if (tileImage.skin) {
+                mesh.material.set('skinTexture', tileImage.skin);
+            }
+            mesh.setUniform('polygonOpacity', opacity);
             const maxZoom = this.layer.getSpatialReference().getMaxZoom();
             const isLeaf = this.layer.getRenderer().drawingCurrentTiles === true;
             mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
@@ -117,7 +119,6 @@ class TerrainLitPainter extends TerrainPainter {
             projViewMatrix : map.projViewMatrix,
             outSize: [canvas.width, canvas.height],
             polygonFill: [1, 1, 1, 1],
-            polygonOpacity: 1,
             terrainHeightMapResolution: [tileSize, tileSize],
             terrainResolution: [canvas.width, canvas.height],
             terrainHeightScale,

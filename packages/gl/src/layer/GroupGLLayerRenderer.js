@@ -445,6 +445,13 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (this._envPainter && this._envPainter.isEnable()) {
             return false;
         }
+        const terrainLayer = this.layer.getTerrainLayer();
+        if (terrainLayer) {
+            const renderer = terrainLayer.getRenderer();
+            if (renderer && !renderer.isBlank()) {
+                return false;
+            }
+        }
         const layers = this._getLayers();
         for (const layer of layers) {
             const renderer = layer.getRenderer();

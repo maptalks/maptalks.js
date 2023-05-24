@@ -243,9 +243,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             return;
         }
         const skinImages = tileImage.skinImages;
-        if (!skinImages) {
-            return;
-        }
+        // if (!skinImages) {
+        //     return;
+        // }
         if (tileImage.rendered && !this._needRefreshTerrainSkins()) {
             return;
         }
@@ -262,17 +262,19 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const debugMeshes = enableDebug && [];
 
         const tileSize = this.layer.getTileSize().width;
-        for (let i = 0; i < skinImages.length; i++) {
-            const layerSkinImages = skinImages[i];
-            for (let ii = 0; ii < layerSkinImages.length; ii++) {
-                const { tile, texture } = layerSkinImages[ii];
-                const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize);
-                const mesh = layerSkinImages[ii].skinMesh || new reshader.Mesh(this._skinGeometry);
-                mesh.setUniform('skinTexture', texture);
-                mesh.setUniform('skinDim', skinDim);
-                mesh.setUniform('tileSize', tileSize);
-                layerSkinImages[ii].skinMesh = mesh;
-                meshes.push(mesh);
+        if (skinImages) {
+            for (let i = 0; i < skinImages.length; i++) {
+                const layerSkinImages = skinImages[i];
+                for (let ii = 0; ii < layerSkinImages.length; ii++) {
+                    const { tile, texture } = layerSkinImages[ii];
+                    const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize);
+                    const mesh = layerSkinImages[ii].skinMesh || new reshader.Mesh(this._skinGeometry);
+                    mesh.setUniform('skinTexture', texture);
+                    mesh.setUniform('skinDim', skinDim);
+                    mesh.setUniform('tileSize', tileSize);
+                    layerSkinImages[ii].skinMesh = mesh;
+                    meshes.push(mesh);
+                }
             }
         }
         if (enableDebug) {
@@ -435,11 +437,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
     }
 
     _isSkinReady(tileImage) {
+        const skinCount = this.layer.getSkinCount();
+        if (!skinCount) {
+            return true;
+        }
         if (!tileImage.skinStatus) {
             // 还没有初始化
             return false;
         }
-        const skinCount = this.layer.getSkinCount();
         for (let i = 0; i < skinCount; i++) {
             if (!tileImage.skinStatus[i]) {
                 return false;

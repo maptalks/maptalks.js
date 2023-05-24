@@ -378,6 +378,41 @@ describe('gl tests', () => {
             });
             group.addTo(map);
         });
+
+        it('terrain with lit shader', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                shader: 'lit',
+                material: {
+                    baseColorFactor: [1, 1, 1, 1],
+                    roughnessFactor: 0.9,
+                    metallicFactor: 0
+                }
+            }
+            const group = new maptalks.GroupGLLayer('group', [], { terrain });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 125, '1': 125, '2': 125, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
     });
 
     context('skybox tests', () => {
