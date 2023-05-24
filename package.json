@@ -36,7 +36,8 @@
     "test": "karma start build/karma.cover.config.js",
     "testIE": "karma start build/karma.ie.config.js",
     "version": "npm run build && npm run doc && git add -A docs/api",
-    "publish-next": "npm publish --tag next"
+    "publish-next": "npm publish --tag next",
+    "tsc": "npx tsc"
   },
   "unpkg": "dist/maptalks.js",
   "jsdelivr": "dist/maptalks.js",
@@ -91,6 +92,7 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "sinon": "^3.2.1",
     "uglify-js": "^3.3.28",
-    "zlib": "^1.0.5"
+    "zlib": "^1.0.5",
+    "typescript": "^5.0.4"
   }
 }
