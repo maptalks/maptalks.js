@@ -26,7 +26,7 @@ const options = {
     'requireSkuToken': true,
     'tileRetryCount': 0,
     'maxCacheSize': 300,
-    'shader': 'lit'
+    'shader': 'default'
 };
 
 const EMPTY_TILE_GRIDS = {
