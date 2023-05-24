@@ -852,6 +852,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     this.setToRedraw();
                 }
                 this._painter = new TerrainLitPainter(this.layer);
+                this.layer.fire('paintercreated');
             }
 
         } else {
@@ -862,6 +863,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                     this.setToRedraw();
                 }
                 this._painter = new TerrainPainter(this.layer);
+                this.layer.fire('paintercreated');
             }
         }
     }
