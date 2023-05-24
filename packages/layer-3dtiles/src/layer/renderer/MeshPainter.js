@@ -1149,6 +1149,9 @@ export default class MeshPainter {
             geometry.properties.batchIdData = batchIdData;
             geometry.properties.batchIdMap = generateFeatureIndiceIndex(batchIdData, indices);
         }
+        if ((gltfMesh.mode > 3 || gltfMesh.mode === undefined) && !geometry.data['NORMAL']) {
+            geometry.createNormal('NORMAL');
+        }
         geometry.generateBuffers(this._regl, { excludeElementsInVAO: isI3DM });
         return geometry;
     }
