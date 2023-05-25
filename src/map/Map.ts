@@ -27,6 +27,10 @@ import { computeDomPosition } from '../core/util/dom';
 import MapRenderer from 'src/renderer/map/MapRenderer';
 import { Player } from 'src/core/Animation';
 import MapCanvasRenderer from 'src/renderer/map/MapCanvasRenderer';
+import MapCollision from './Map.Collision';
+import MapTopo from './Map.Topo';
+import { MapView } from 'src/types';
+
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -148,6 +152,53 @@ const options = {
     'preventTouch': true,
 };
 
+interface MapInterface {
+    getFov(): number;
+    setFov(fov: number);
+    getBearing(): number;
+    setBearing(bearing: number);
+    setPitch(pitch: number);
+    getPitch(): number;
+    isTransforming(): boolean;
+    getFrustumAltitude(): number;
+    updateCenterAltitude(): number;
+    getViewHistory(): Array<any>;
+    hasNextView(): boolean;
+    zoomToNextView();
+    hasPreviousView(): boolean;
+    zoomToPreviousView();
+    animateTo(view: MapView, options: object, step: Function);
+    flyTo(view: MapView, options: object, step: Function);
+    isAnimating(): boolean;
+    isRotating(): boolean;
+    isFullScreen(): boolean;
+    requestFullScreen(dom: HTMLElement): boolean;
+    cancelFullScreen();
+    panTo(coordinate: Coordinate, options?, step?);
+    panBy(offset: Point, options?, step?);
+    coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+    coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+    pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate;
+    pointAtResToCoordinate(point: Point, res?: number, out?: Coordinate): Coordinate;
+    coordinateToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point;
+    viewPointToCoordinate(viewPoint: Point, out?: Coordinate): Coordinate;
+    coordinateToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point;
+    coordinateToContainerPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point;
+    coordinatesToContainerPoints(coordinates: Array<Coordinate>, zoom?: number): Array<Point>;
+    coordinatesToContainerPointsAtRes(coordinates: Array<Coordinate>, resolution?: number): Array<Point>;
+    containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate;
+    containerToExtent(containerExtent: PointExtent): Extent;
+    distanceToPixel(xDist: number, yDist: number, zoom?: number): Size;
+    distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point;
+    distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point;
+    altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): number;
+    pointAtResToAltitude(point: number, res?: number, originCenter?: Coordinate): number;
+    pixelToDistance(width: number, height: number): number;
+    pointToDistance(dx: number, dy: number, zoom?: number): number;
+    pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number;
+    locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate;
+}
+
 /**
  * The central class of the library, to create a map on a container.
  * @category map
@@ -171,7 +222,8 @@ const options = {
  *      ]
  * });
  */
-class Map extends Handlerable(Eventable(Renderable(Class))) {
+
+class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class))))) implements MapInterface {
     static VERSION: string;
     VERSION: string;
     _loaded: boolean;
@@ -286,6 +338,11 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this.proxyOptions();
     }
 
+
+    static fromJSON(container, profile, options): Map {
+        return null;
+    }
+
     /**
      * Add hooks for additional codes when map's loading complete, useful for plugin developping.
      * Note that it can only be called before the map is created.
@@ -305,11 +362,15 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return this;
     }
 
+    toJSON(options?: object): object {
+        return null;
+    }
+
     /**
      * Whether the map is loaded or not.
      * @return {Boolean}
      */
-    isLoaded() {
+    isLoaded(): boolean {
         return !!this._loaded;
     }
 
@@ -317,7 +378,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's container
      * @returns {HTMLElement}
      */
-    getContainer() {
+    getContainer(): HTMLElement {
         return this._containerDOM;
     }
 
@@ -471,7 +532,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
      * @return {Extent}
      */
-    getFullExtent() {
+    getFullExtent(): Extent {
         if (!this._spatialReference) {
             return null;
         }
@@ -485,7 +546,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @example
      * map.setCursor('url(cursor.png) 4 12, auto');
      */
-    setCursor(cursor) {
+    setCursor(cursor: string) {
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
@@ -506,7 +567,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get center of the map.
      * @return {Coordinate}
      */
-    getCenter() {
+    getCenter(): Coordinate {
         if (!this._loaded || !this._prjCenter) {
             return this._center;
         }
@@ -525,7 +586,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Coordinate} center
      * @return {Map} this
      */
-    setCenter(center) {
+    setCenter(center: Coordinate | Array<number>) {
         if (!center) {
             return this;
         }
@@ -550,7 +611,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's size (width and height) in pixel.
      * @return {Size}
      */
-    getSize() {
+    getSize(): Size {
         if (isNil(this.width) || isNil(this.height)) {
             return this._getContainerDomSize();
         }
@@ -561,7 +622,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get container extent of the map
      * @return {PointExtent}
      */
-    getContainerExtent() {
+    getContainerExtent(): PointExtent {
         let visualHeight = this.height;
         //@ts-ignore
         const pitch = this.getPitch(),
@@ -598,7 +659,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      *
      * @return {Extent}
      */
-    getExtent() {
+    getExtent(): Extent {
         //@ts-ignore
         return this._pointToExtent(this._get2DExtent());
     }
@@ -608,7 +669,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      *
      * @return {Extent}
      */
-    getProjExtent() {
+    getProjExtent(): Extent {
         //@ts-ignore
         const extent2D = this._get2DExtent();
         return new Extent(
@@ -622,7 +683,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      *
      * @return {Extent}
      */
-    getPrjExtent() {
+    getPrjExtent(): Extent {
         return this.getProjExtent();
     }
 
@@ -630,7 +691,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the max extent that the map is restricted to.
      * @return {Extent}
      */
-    getMaxExtent() {
+    getMaxExtent(): Extent {
         if (!this.options['maxExtent']) {
             return null;
         }
@@ -644,7 +705,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @example
      * map.setMaxExtent(map.getExtent());
      */
-    setMaxExtent(extent) {
+    setMaxExtent(extent: Extent | Array<number>) {
         if (extent) {
             const maxExt = new Extent(extent, this.getProjection());
             this.options['maxExtent'] = maxExt;
@@ -670,7 +731,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's current zoom.
      * @return {Number}
      */
-    getZoom() {
+    getZoom(): number {
         return this._zoomLevel;
     }
 
@@ -738,7 +799,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Boolean} [options.animation=true] whether zoom is animation, true by default
      * @returns {Map} this
      */
-    setZoom(zoom, options = { 'animation': true }) {
+    setZoom(zoom: number, options = { 'animation': true }) {
         if (isNaN(zoom) || isNil(zoom)) {
             return this;
         }
@@ -757,7 +818,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the max zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMaxZoom() {
+    getMaxZoom(): number {
         if (!isNil(this.options['maxZoom'])) {
             return this.options['maxZoom'];
         }
@@ -769,7 +830,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} maxZoom
      * @returns {Map} this
      */
-    setMaxZoom(maxZoom) {
+    setMaxZoom(maxZoom: number) {
         const viewMaxZoom = this.getMaxNativeZoom();
         if (maxZoom > viewMaxZoom) {
             maxZoom = viewMaxZoom;
@@ -786,7 +847,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the min zoom that the map can be zoom to.
      * @return {Number}
      */
-    getMinZoom() {
+    getMinZoom(): number {
         if (!isNil(this.options['minZoom'])) {
             return this.options['minZoom'];
         }
@@ -798,7 +859,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} minZoom
      * @return {Map} this
      */
-    setMinZoom(minZoom) {
+    setMinZoom(minZoom: number) {
         if (minZoom !== null) {
             minZoom = +minZoom;
             const viewMinZoom = this._spatialReference.getMinZoom();
@@ -817,7 +878,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Maximum zoom the map has
      * @return {Number}
      */
-    getMaxNativeZoom() {
+    getMaxNativeZoom(): number {
         const ref = this.getSpatialReference();
         if (!ref) {
             return null;
@@ -829,7 +890,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Resolution for world point in WebGL context
      * @returns {Number}
      */
-    getGLRes() {
+    getGLRes(): number {
         if (this._glRes) {
             return this._glRes;
         }
@@ -849,7 +910,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * // convert to point in gl zoom
      * const glPoint = point.multi(this.getGLScale());
      */
-    getGLScale(zoom) {
+    getGLScale(zoom: number): number {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
@@ -876,7 +937,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Whether the map is zooming
      * @return {Boolean}
      */
-    isZooming() {
+    isZooming(): boolean {
         return !!this._zooming;
     }
 
@@ -884,7 +945,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Whether the map is being interacted
      * @return {Boolean}
      */
-    isInteracting() {
+    isInteracting(): boolean {
         //@ts-ignore
         return this.isZooming() || this.isMoving() || this.isRotating();
     }
@@ -895,7 +956,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom
      * @return {Map} this
      */
-    setCenterAndZoom(center, zoom) {
+    setCenterAndZoom(center: Coordinate | Array<number>, zoom: number) {
         if (!isNil(zoom) && this._zoomLevel !== zoom) {
             this.setCenter(center);
             this.setZoom(zoom, { animation: false });
@@ -936,7 +997,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's current view (center/zoom/pitch/bearing)
      * @return {Object} { center : *, zoom : *, pitch : *, bearing : * }
      */
-    getView() {
+    getView(): MapView {
         return {
             'center': this.getCenter().toArray(),
             'zoom': this.getZoom(),
@@ -952,7 +1013,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Object} view - a object containing center/zoom/pitch/bearing
      * return {Map} this
      */
-    setView(view) {
+    setView(view: MapView) {
         if (!view) {
             return this;
         }
@@ -978,7 +1039,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution
      */
-    getResolution(zoom) {
+    getResolution(zoom: number): number {
         return this._getResolution(zoom);
     }
 
@@ -987,7 +1048,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} scale
      */
-    getScale(zoom) {
+    getScale(zoom: number): number {
         const z = (isNil(zoom) ? this.getZoom() : zoom);
         const max = this._getResolution(this.getMaxNativeZoom()),
             res = this._getResolution(z);
@@ -1024,7 +1085,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get the base layer of the map.
      * @return {Layer}
      */
-    getBaseLayer() {
+    getBaseLayer(): Layer {
         return this._baseLayer;
     }
 
@@ -1037,7 +1098,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @fires Map#baselayerchangestart
      * @fires Map#baselayerchangeend
      */
-    setBaseLayer(baseLayer) {
+    setBaseLayer(baseLayer: Layer) {
         let isChange = false;
         if (this._baseLayer) {
             isChange = true;
@@ -1133,7 +1194,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers(filter?) {
+    getLayers(filter?): Array<Layer> {
         return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0) {
                 return false;
@@ -1150,7 +1211,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {String} id - layer id
      * @return {Layer}
      */
-    getLayer(id) {
+    getLayer(id): Layer {
         if (!id) {
             return null;
         }
@@ -1171,7 +1232,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#addlayer
      */
-    addLayer(layers) {
+    addLayer(layers: Layer | Array<Layer>) {
         if (!layers) {
             return this;
         }
@@ -1226,7 +1287,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Map} this
      * @fires Map#removelayer
      */
-    removeLayer(layers) {
+    removeLayer(layers: Layer | Array<Layer>) {
         if (!layers) {
             return this;
         }
@@ -1294,7 +1355,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * map.sortLayers([layer2, layer3, layer1]);
      * map.sortLayers(['3', '2', '1']); // sort by layer ids.
      */
-    sortLayers(layers) {
+    sortLayers(layers: Layer | Array<Layer>) {
         if (!layers || !Array.isArray(layers)) {
             return this;
         }
@@ -1329,7 +1390,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL(options) {
+    toDataURL(options): string {
         if (!options) {
             options = {};
         }
@@ -1369,7 +1430,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToPoint
      */
-    coordToPoint(coordinate, zoom?, out?) {
+    coordToPoint(coordinate, zoom?, out?): Point {
         //@ts-ignore
         return this.coordinateToPoint(coordinate, zoom, out);
     }
@@ -1377,7 +1438,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToPointAtRes
      */
-    coordToPointAtRes(coordinate, res, out) {
+    coordToPointAtRes(coordinate, res, out): Point {
         //@ts-ignore
         return this.coordinateToPointAtRes(coordinate, res, out);
     }
@@ -1385,7 +1446,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for pointToCoordinate
      */
-    pointToCoord(point, zoom, out) {
+    pointToCoord(point, zoom, out): Coordinate {
         //@ts-ignore
         return this.pointToCoordinate(point, zoom, out);
     }
@@ -1393,7 +1454,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for pointAtResToCoordinate
      */
-    pointAtResToCoord(point, res, out) {
+    pointAtResToCoord(point, res, out): Coordinate {
         //@ts-ignore
         return this.pointAtResToCoordinate(point, res, out);
     }
@@ -1402,7 +1463,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate, out, altitude) {
+    coordToViewPoint(coordinate, out, altitude): Point {
         //@ts-ignore
         return this.coordinateToViewPoint(coordinate, out, altitude);
     }
@@ -1410,7 +1471,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for viewPointToCoordinate
      */
-    viewPointToCoord(viewPoint, out) {
+    viewPointToCoord(viewPoint, out): Coordinate {
         //@ts-ignore
         return this.viewPointToCoordinate(viewPoint, out);
     }
@@ -1418,7 +1479,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for coordinateToContainerPoint
      */
-    coordToContainerPoint(coordinate, zoom, out) {
+    coordToContainerPoint(coordinate, zoom, out): Point {
         //@ts-ignore
         return this.coordinateToContainerPoint(coordinate, zoom, out);
     }
@@ -1427,7 +1488,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
     /**
      * shorter alias for containerPointToCoordinate
      */
-    containerPointToCoord(containerPoint, out) {
+    containerPointToCoord(containerPoint, out): Coordinate {
         //@ts-ignore
         return this.containerPointToCoordinate(containerPoint, out);
     }
@@ -1439,7 +1500,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    containerPointToViewPoint(containerPoint, out) {
+    containerPointToViewPoint(containerPoint, out): Point {
         if (out) {
             out.set(containerPoint.x, containerPoint.y);
         } else {
@@ -1455,7 +1516,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    viewPointToContainerPoint(viewPoint, out) {
+    viewPointToContainerPoint(viewPoint, out): Point {
         if (out) {
             out.set(viewPoint.x, viewPoint.y);
         } else {
@@ -1537,7 +1598,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Return map's main panel
      * @returns {HTMLElement}
      */
-    getMainPanel() {
+    getMainPanel(): HTMLElement {
         return this._getRenderer().getMainPanel();
     }
 
@@ -1589,7 +1650,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * whether the map is removed
      * @return {Boolean}
      */
-    isRemoved() {
+    isRemoved(): boolean {
         return !this._containerDOM;
     }
 
@@ -1597,7 +1658,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Whether the map is moving
      * @return {Boolean}
      */
-    isMoving() {
+    isMoving(): boolean {
         return !!this._moving;
     }
 
@@ -1727,7 +1788,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._fireEvent('dragrotateend', this._parseEvent(param ? param['domEvent'] : null, 'dragrotateend'));
     }
 
-    isDragRotating() {
+    isDragRotating(): boolean {
         return !!this._dragRotating;
     }
 
@@ -1737,7 +1798,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} padding - test padding
      * @returns {Boolean}
      */
-    isOffscreen(box, viewportPadding = 0) {
+    isOffscreen(box, viewportPadding = 0): boolean {
         const { width, height } = this;
         const screenRightBoundary = width + viewportPadding;
         const screenBottomBoundary = height + viewportPadding;
@@ -1748,7 +1809,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         return xmax < viewportPadding || xmin >= screenRightBoundary || ymax < viewportPadding || ymin > screenBottomBoundary;
     }
 
-    getRenderer() {
+    getRenderer(): MapCanvasRenderer {
         return this._getRenderer();
     }
 
@@ -1756,7 +1817,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's devicePixelRatio, you can override it by setting devicePixelRatio in options.
      * @returns {Number}
      */
-    getDevicePixelRatio() {
+    getDevicePixelRatio(): number {
         return this.options['devicePixelRatio'] || Browser.devicePixelRatio || 1;
     }
 
@@ -1765,7 +1826,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param {Number} dpr
      * @returns {Map} this
      */
-    setDevicePixelRatio(dpr) {
+    setDevicePixelRatio(dpr: number) {
         if (isNumber(dpr) && dpr > 0 && dpr !== this.options['devicePixelRatio']) {
             this.options['devicePixelRatio'] = dpr;
             this.checkSize(true);
@@ -2132,7 +2193,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * Get map's view point, adding in frame offset
      * @return {Point} map view point
      */
-    getViewPoint() {
+    getViewPoint(): Point {
         //@ts-ignore
         const offset = this._getViewPointFrameOffset();
         let panelOffset = this.offsetPlatform();
@@ -2140,6 +2201,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             //@ts-ignore
             panelOffset = panelOffset.add(offset);
         }
+        //@ts-ignore
         return panelOffset;
     }
 
@@ -2274,7 +2336,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj(containerPoint, out) {
+    _containerPointToPrj(containerPoint, out?) {
         //@ts-ignore
         return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
     }
@@ -2313,557 +2375,142 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         }
         return this;
     }
+
+    getFov(): number {
+        throw new Error('Method not implemented.');
+    }
+    setFov(fov: number) {
+        throw new Error('Method not implemented.');
+    }
+    getBearing(): number {
+        throw new Error('Method not implemented.');
+    }
+    setBearing(bearing: number) {
+        throw new Error('Method not implemented.');
+    }
+    setPitch(pitch: number) {
+        throw new Error('Method not implemented.');
+    }
+    getPitch(): number {
+        throw new Error('Method not implemented.');
+    }
+    isTransforming(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    getFrustumAltitude(): number {
+        throw new Error('Method not implemented.');
+    }
+    updateCenterAltitude(): number {
+        throw new Error('Method not implemented.');
+    }
+    getViewHistory(): any[] {
+        throw new Error('Method not implemented.');
+    }
+    hasNextView(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    zoomToNextView() {
+        throw new Error('Method not implemented.');
+    }
+    hasPreviousView(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    zoomToPreviousView() {
+        throw new Error('Method not implemented.');
+    }
+    animateTo(view: MapView, options: object, step: Function) {
+        throw new Error('Method not implemented.');
+    }
+    flyTo(view: MapView, options: object, step: Function) {
+        throw new Error('Method not implemented.');
+    }
+    isAnimating(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    isRotating(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    isFullScreen(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    requestFullScreen(dom: HTMLElement): boolean {
+        throw new Error('Method not implemented.');
+    }
+    cancelFullScreen() {
+        throw new Error('Method not implemented.');
+    }
+    panTo(coordinate: Coordinate, options?: any, step?: any) {
+        throw new Error('Method not implemented.');
+    }
+    panBy(offset: Point, options?: any, step?: any) {
+        throw new Error('Method not implemented.');
+    }
+
+    coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    coordinateToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    pointToCoordinate(point: Point, zoom?: number, out?: Coordinate): Coordinate {
+        throw new Error('Method not implemented.');
+    }
+    pointAtResToCoordinate(point: Point, res?: number, out?: Coordinate): Coordinate {
+        throw new Error('Method not implemented.');
+    }
+    coordinateToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point {
+        throw new Error('Method not implemented.');
+    }
+    viewPointToCoordinate(viewPoint: Point, out?: Coordinate): Coordinate {
+        throw new Error('Method not implemented.');
+    }
+    coordinateToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    coordinateToContainerPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    coordinatesToContainerPoints(coordinates: Coordinate[], zoom?: number): Point[] {
+        throw new Error('Method not implemented.');
+    }
+    coordinatesToContainerPointsAtRes(coordinates: Coordinate[], resolution?: number): Point[] {
+        throw new Error('Method not implemented.');
+    }
+    containerPointToCoordinate(containerPoint: Point, out?: Coordinate): Coordinate {
+        throw new Error('Method not implemented.');
+    }
+    containerToExtent(containerExtent: PointExtent): Extent {
+        throw new Error('Method not implemented.');
+    }
+    distanceToPixel(xDist: number, yDist: number, zoom?: number): Size {
+        throw new Error('Method not implemented.');
+    }
+    distanceToPoint(xDist: number, yDist: number, zoom?: number, paramCenter?: Coordinate): Point {
+        throw new Error('Method not implemented.');
+    }
+    distanceToPointAtRes(xDist: number, yDist: number, res?: number, paramCenter?: Coordinate, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    altitudeToPoint(altitude: number, res?: number, originCenter?: Coordinate): number {
+        throw new Error('Method not implemented.');
+    }
+    pointAtResToAltitude(point: number, res?: number, originCenter?: Coordinate): number {
+        throw new Error('Method not implemented.');
+    }
+    pixelToDistance(width: number, height: number): number {
+        throw new Error('Method not implemented.');
+    }
+    pointToDistance(dx: number, dy: number, zoom?: number): number {
+        throw new Error('Method not implemented.');
+    }
+    pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number {
+        throw new Error('Method not implemented.');
+    }
+    locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate {
+        throw new Error('Method not implemented.');
+    }
 }
 
-Map.include(/** @lends Map.prototype */{
-
-    /**
-     * Converts a coordinate to the 2D point in current zoom or in the specific zoom. <br>
-     * The 2D point's coordinate system's origin is the same with map's origin.
-     * Usually used in plugin development.
-     * @param  {Coordinate} coordinate - coordinate
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}  2D point
-     * @function
-     * @example
-     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
-     */
-    coordinateToPoint(coordinate, zoom, out) {
-        const res = this._getResolution(zoom);
-        return this.coordinateToPointAtRes(coordinate, res, out);
-    },
-
-    /**
-     * Converts a coordinate to the 2D point at specified resolution. <br>
-     * The 2D point's coordinate system's origin is the same with map's origin.
-     * Usually used in plugin development.
-     * @param  {Coordinate} coordinate - coordinate
-     * @param  {Number} [res=undefined]  - target resolution
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}  2D point
-     * @function
-     * @example
-     * var point = map.coordinateToPoint(new Coordinate(121.3, 29.1));
-     */
-    coordinateToPointAtRes: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, res, out) {
-            const prjCoord = this.getProjection().project(coordinate, COORD);
-            return this._prjToPointAtRes(prjCoord, res, out);
-        };
-    }(),
-
-    /**
-     * Converts a 2D point in current zoom or a specific zoom to a coordinate.
-     * Usually used in plugin development.
-     * @param  {Point} point - 2D point
-     * @param  {Number} zoom  - point's zoom level
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate} coordinate
-     * @function
-     * @example
-     * var coord = map.pointToCoordinate(new Point(4E6, 3E4));
-     */
-    pointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, zoom, out) {
-            const prjCoord = this._pointToPrj(point, zoom, COORD);
-            return this.getProjection().unproject(prjCoord, out);
-        };
-    }(),
-
-    /**
-     * Converts a 2D point at specific resolution to a coordinate.
-     * Usually used in plugin development.
-     * @param  {Point} point - 2D point
-     * @param  {Number} res  - point's resolution
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate} coordinate
-     * @function
-     * @example
-     * var coord = map.pointAtResToCoordinate(new Point(4E6, 3E4), map.getResolution());
-     */
-    pointAtResToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, res, out) {
-            const prjCoord = this._pointToPrjAtRes(point, res, COORD);
-            return this.getProjection().unproject(prjCoord, out);
-        };
-    }(),
-
-
-    /**
-     * Converts a geographical coordinate to view point.<br>
-     * A view point is a point relative to map's mapPlatform panel's position. <br>
-     * Usually used in plugin development.
-     * @param {Coordinate} coordinate
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @function
-     */
-    coordinateToViewPoint: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, out, altitude) {
-            return this._prjToViewPoint(this.getProjection().project(coordinate, COORD), out, altitude);
-        };
-    }(),
-
-    /**
-     * Converts a view point to the geographical coordinate.
-     * Usually used in plugin development.
-     * @param {Point} viewPoint
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate}
-     * @function
-     */
-    viewPointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (viewPoint, out) {
-            return this.getProjection().unproject(this._viewPointToPrj(viewPoint, COORD), out);
-        };
-    }(),
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate}                - coordinate
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @function
-     */
-    coordinateToContainerPoint(coordinate, zoom, out) {
-        const res = this._getResolution(zoom);
-        return this.coordinateToContainerPointAtRes(coordinate, res, out);
-    },
-
-    coordinateToContainerPointAtRes: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (coordinate, res, out) {
-            const pCoordinate = this.getProjection().project(coordinate, COORD);
-            return this._prjToContainerPointAtRes(pCoordinate, res, out);
-        };
-    }(),
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     * Batch conversion for better performance <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate[]}                - coordinates
-     * @param  {Number} [zoom=undefined]  - zoom level
-     * @return {Point[]}
-     * @function
-     */
-    coordinatesToContainerPoints(coordinates, zoom) {
-        const res = this._getResolution(zoom);
-        return this.coordinatesToContainerPointsAtRes(coordinates, res);
-    },
-
-    /**
-     * Convert a geographical coordinate to the container point. <br>
-     * Batch conversion for better performance <br>
-     *  A container point is a point relative to map container's top-left corner. <br>
-     * @param {Coordinate[]}                - coordinates
-     * @param  {Number} [resolution=undefined]  - container points' resolution
-     * @return {Point[]}
-     * @function
-     */
-    coordinatesToContainerPointsAtRes: function () {
-        return function (coordinates, resolution) {
-            const pts = [];
-            const transformation = this._spatialReference.getTransformation();
-            const res = resolution / this._getResolution();
-            const projection = this.getProjection();
-            const prjOut = new Coordinate(0, 0);
-            const isTransforming = this.isTransforming();
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-            for (let i = 0, len = coordinates.length; i < len; i++) {
-                const pCoordinate = projection.project(coordinates[i], prjOut);
-                let point = transformation.transform(pCoordinate, resolution);
-                point = point._multi(res);
-                this._toContainerPoint(point, isTransforming, coordinates[i].z, centerPoint);
-                pts.push(point);
-            }
-            return pts;
-        };
-    }(),
-
-    /**
-     * Converts a container point to geographical coordinate.
-     * @param {Point}
-     * @param  {Coordinate} [out=undefined]    - optional coordinate to receive result
-     * @return {Coordinate}
-     * @function
-     */
-    containerPointToCoordinate: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (containerPoint, out) {
-            const pCoordinate = this._containerPointToPrj(containerPoint, COORD);
-            return this.getProjection().unproject(pCoordinate, out);
-        };
-    }(),
-
-    /**
-     * Converts a container point extent to the geographic extent.
-     * @param  {PointExtent} containerExtent - containeproints extent
-     * @return {Extent}  geographic extent
-     * @function
-     */
-    containerToExtent: function () {
-        const POINT0 = new Point(0, 0);
-        const POINT1 = new Point(0, 0);
-        return function (containerExtent) {
-            const extent2D = new PointExtent(
-                this._containerPointToPoint(containerExtent.getMin(POINT0), undefined, POINT0),
-                this._containerPointToPoint(containerExtent.getMax(POINT1), undefined, POINT1)
-            );
-            return this._pointToExtent(extent2D);
-        };
-    }(),
-
-    /**
-     * Converts geographical distances to the pixel length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @return {Size} result.width: pixel length on X axis; result.height: pixel length on Y axis
-     * @function
-     */
-    distanceToPixel: function () {
-        const POINT0 = new Point(0, 0);
-        const POINT1 = new Point(0, 0);
-        return function (xDist, yDist, zoom) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const scale = this.getScale() / this.getScale(zoom);
-            const center = this.getCenter(),
-                target = projection.locate(center, xDist, yDist);
-            const p0 = this.coordToContainerPoint(center, undefined, POINT0),
-                p1 = this.coordToContainerPoint(target, undefined, POINT1);
-            p1._sub(p0)._multi(scale)._abs();
-            return new Size(p1.x, p1.y);
-        };
-    }(),
-
-    /**
-     * Converts geographical distances to the 2d point length.<br>
-     * The value varis with difference zoom level.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Point}
-     * @function
-     */
-    distanceToPoint(xDist, yDist, zoom, paramCenter) {
-        const res = this._getResolution(zoom);
-        return this.distanceToPointAtRes(xDist, yDist, res, paramCenter);
-    },
-
-    /**
-     * Converts geographical distances to the 2d point length at specified resolution.
-     *
-     * @param  {Number} xDist - distance on X axis.
-     * @param  {Number} yDist - distance on Y axis.
-     * @param  {Number} res - target resolution
-     * @return {Point}
-     * @function
-     */
-    distanceToPointAtRes: function () {
-        const POINT = new Point(0, 0);
-        const COORD = new Coordinate(0, 0);
-        return function (xDist, yDist, res, paramCenter, out) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const center = paramCenter || this.getCenter(),
-                target = projection.locate(center, xDist, yDist, COORD);
-            const p0 = this.coordToPointAtRes(center, res, POINT),
-                p1 = this.coordToPointAtRes(target, res, out);
-            p1._sub(p0)._abs();
-            return p1;
-        };
-    }(),
-
-
-    /**
-     * Converts height/altitude  to the 2d point
-     *
-     * @param  {Number} altitude - the value of altitude,suche as: map.altitudeToPoint(100);
-     * @param  {Number} res - target resolution
-     * @param  {Coordinate} [originCenter=null] - optional original coordinate for caculation
-     * @return {Number}
-     * @function
-     */
-    altitudeToPoint: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 40);
-        const POINT = new Point(0, 0);
-        return function (altitude = 0, res, originCenter) {
-            const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
-            if (altitude < 0 && p.x > 0) {
-                p.x = -p.x;
-            }
-            const heightFactor = this.options['heightFactor'];
-            if (heightFactor && heightFactor !== 1) {
-                p.x *= heightFactor;
-                p.y *= heightFactor;
-            }
-            return p.x;
-        };
-    }(),
-
-    pointAtResToAltitude: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 40);
-        return function (point = 0, res, originCenter) {
-            const altitude = this.pointAtResToDistance(point, 0, res, originCenter || DEFAULT_CENTER);
-            return altitude;
-        };
-    }(),
-
-
-    /**
-     * Converts pixel size to geographical distance.
-     *
-     * @param  {Number} width - pixel width
-     * @param  {Number} height - pixel height
-     * @return {Number}  distance - Geographical distance
-     * @function
-     */
-    pixelToDistance: function () {
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        const TARGET0 = new Coordinate(0, 0);
-        const TARGET1 = new Coordinate(0, 0);
-        return function (width, height) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const fullExt = this.getFullExtent();
-            const d = fullExt['top'] > fullExt['bottom'] ? -1 : 1;
-            const coord0 = COORD0.set(this.width / 2, this.height / 2);
-            const coord1 = COORD1.set(this.width / 2 + width, this.height / 2 + d * height);
-            // 考虑高度海拔后，容器中心点的坐标就不一定是center了
-            const target0 = this.containerPointToCoord(coord0, TARGET0);
-            const target1 = this.containerPointToCoord(coord1, TARGET1);
-            return projection.measureLength(target0, target1);
-        };
-    }(),
-
-    /**
-     * Converts 2d point distances to geographic length.<br>
-     *
-     * @param  {Number} dx - distance on X axis.
-     * @param  {Number} dy - distance on Y axis.
-     * @param  {Number} zoom - point's zoom
-     * @return {Number} distance
-     * @function
-     */
-    pointToDistance(dx, dy, zoom) {
-        const res = this.getResolution(zoom);
-        return this.pointAtResToDistance(dx, dy, res);
-    },
-
-    /**
-     * Converts 2d point distances to geographic length.<br>
-     *
-     * @param  {Number} dx - distance on X axis.
-     * @param  {Number} dy - distance on Y axis.
-     * @param  {Number} res - point's resolution
-     * @return {Number} distance
-     * @function
-     */
-    pointAtResToDistance: function () {
-        const POINT = new Point(0, 0);
-        const PRJ_COORD = new Coordinate(0, 0);
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        return function (dx, dy, res, paramCenter) {
-            const projection = this.getProjection();
-            if (!projection) {
-                return null;
-            }
-            const prjCoord = paramCenter ? projection.project(paramCenter, PRJ_COORD) : this._getPrjCenter();
-            const c = this._prjToPointAtRes(prjCoord, res, POINT);
-            c._add(dx, dy);
-            const target = this.pointAtResToCoord(c, res, COORD0);
-            const src = paramCenter ? paramCenter : projection.unproject(prjCoord, COORD1);
-            return projection.measureLength(src, target);
-        };
-    }(),
-
-
-    /**
-     * Computes the coordinate from the given pixel distance.
-     * @param  {Coordinate} coordinate - source coordinate
-     * @param  {Number} px           - pixel distance on X axis
-     * @param  {Number} py           - pixel distance on Y axis
-     * @return {Coordinate} Result coordinate
-     * @function
-     */
-    locateByPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (coordinate, px, py) {
-            const point = this.coordToContainerPoint(coordinate, undefined, POINT);
-            return this.containerPointToCoord(point._add(px, py));
-        };
-    }(),
-
-    /**
-     * Get map's extent in view points.
-     * @param {Number} zoom - zoom
-     * @return {PointExtent}
-     * @private
-     * @function
-     */
-    _get2DExtent(zoom, out) {
-        let cached;
-        if ((zoom === undefined || zoom === this._zoomLevel) && this._mapExtent2D) {
-            cached = this._mapExtent2D;
-        }
-        if (cached) {
-            if (out) {
-                out.set(cached['xmin'], cached['ymin'], cached['xmax'], cached['ymax']);
-                return out;
-            }
-            return cached.copy();
-        }
-        const res = this._getResolution(zoom);
-        return this._get2DExtentAtRes(res, out);
-    },
-
-    _get2DExtentAtRes: function () {
-        const POINT = new Point(0, 0);
-        return function (res, out) {
-            if (res === this._mapGlRes && this._mapGlExtent2D) {
-                return this._mapGlExtent2D;
-            }
-            const cExtent = this.getContainerExtent();
-            return cExtent.convertTo(c => this._containerPointToPointAtRes(c, res, POINT), out);
-        };
-    }(),
-
-    /**
-     * Converts a view point extent to the geographic extent.
-     * @param  {PointExtent} extent2D - view points extent
-     * @return {Extent}  geographic extent
-     * @protected
-     * @function
-     */
-    _pointToExtent: function () {
-        const COORD0 = new Coordinate(0, 0);
-        const COORD1 = new Coordinate(0, 0);
-        return function (extent2D) {
-            const min2d = extent2D.getMin(),
-                max2d = extent2D.getMax();
-            const fullExtent = this.getFullExtent();
-            const [minx, maxx] = (!fullExtent || fullExtent.left <= fullExtent.right) ? [min2d.x, max2d.x] : [max2d.x, min2d.x];
-            const [miny, maxy] = (!fullExtent || fullExtent.top > fullExtent.bottom) ? [max2d.y, min2d.y] : [min2d.y, max2d.y];
-            const min = min2d.set(minx, maxy);
-            const max = max2d.set(maxx, miny);
-            return new Extent(
-                this.pointToCoord(min, undefined, COORD0),
-                this.pointToCoord(max, undefined, COORD1),
-                this.getProjection()
-            );
-        };
-    }(),
-
-
-    /**
-     * When moving map, map's center is updated in real time, but platform will be moved in the next frame to keep syncing with other layers
-     * Get the offset in current frame and the next frame
-     * @return {Point} view point offset
-     * @private
-     * @function
-     */
-    _getViewPointFrameOffset: function () {
-        const POINT = new Point(0, 0);
-        return function () {
-            // when zooming, view point is not updated, and container is being transformed with matrix.
-            // so ignore the frame offset
-            if (this.isZooming()) {
-                return null;
-            }
-            const pcenter = this._getPrjCenter();
-            if (this._mapViewCoord && !this._mapViewCoord.equals(pcenter)) {
-                return this._prjToContainerPoint(this._mapViewCoord)._sub(this._prjToContainerPoint(pcenter, undefined, POINT));
-            }
-            return null;
-        };
-    }(),
-
-    /**
-     * transform view point to geographical projected coordinate
-     * @param  {Point} viewPoint
-     * @param  {Coordinate} [out=undefined]  - optional coordinate to receive result
-     * @return {Coordinate}
-     * @private
-     * @function
-     */
-    _viewPointToPrj: function () {
-        const POINT = new Point(0, 0);
-        return function (viewPoint, out) {
-            return this._containerPointToPrj(this.viewPointToContainerPoint(viewPoint, POINT), out);
-        };
-    }(),
-
-    /**
-     * transform geographical projected coordinate to container point
-     * @param  {Coordinate} pCoordinate
-     * @param  {Number} zoom target zoom
-     * @param  {Point} [out=undefined]    - optional point to receive result
-     * @return {Point}
-     * @private
-     * @function
-     */
-    _prjToContainerPoint(pCoordinate, zoom, out, altitude) {
-        const res = this._getResolution(zoom);
-        return this._prjToContainerPointAtRes(pCoordinate, res, out, altitude);
-    },
-
-    _prjToContainerPointAtRes: function () {
-        const POINT = new Point(0, 0);
-        return function (pCoordinate, res, out, altitude) {
-            return this._pointAtResToContainerPoint(this._prjToPointAtRes(pCoordinate, res, POINT), res, altitude || 0, out);
-        };
-    }(),
-
-    /**
-     * transform geographical projected coordinate to view point
-     * @param  {Coordinate} pCoordinate
-     * @return {Point}
-     * @private
-     * @function
-     */
-    _prjToViewPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (pCoordinate, out, altitude) {
-            const containerPoint = this._prjToContainerPoint(pCoordinate, undefined, POINT, altitude);
-            return this.containerPointToViewPoint(containerPoint, out);
-        };
-    }(),
-
-    _viewPointToPoint: function () {
-        const POINT = new Point(0, 0);
-        return function (viewPoint, zoom, out) {
-            return this._containerPointToPoint(this.viewPointToContainerPoint(viewPoint, POINT), zoom, out);
-        };
-    }(),
-
-    _pointToViewPoint: function () {
-        const COORD = new Coordinate(0, 0);
-        return function (point, zoom, out) {
-            return this._prjToViewPoint(this._pointToPrj(point, zoom, COORD), out);
-        };
-    }(),
-
-});
 
 Map.mergeOptions(options);
 

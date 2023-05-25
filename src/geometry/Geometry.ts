@@ -30,9 +30,11 @@ import { Player } from 'src/core/Animation';
 import Size from 'src/geo/Size';
 import GeometryInfoWindow from './ext/Geometry.InfoWindow';
 import GeometryAnimation from './ext/Geometry.Animation';
-import GeometryEdit from './ext/Geometry.Edit';
+// import GeometryEdit from './ext/Geometry.Edit';
 import GeometryEvent from './ext/Geometry.Events';
 import OverlayLayer from 'src/layer/OverlayLayer';
+import Menuable from 'src/ui/Menuable';
+import { Menu } from 'src/ui';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -52,6 +54,24 @@ export type GeometyOptionsType = {
     symbol?: any;
     properties?: object;
     defaultProjection?: string;
+}
+
+interface GeometryInterface {
+    startEdit(opts: object);
+    endEdit();
+    redoEdit();
+    undoEdit();
+    cancelEdit();
+    isEditing(): boolean;
+    setMenu(options: object);
+    getMenu(): Menu;
+    openMenu(coordinate: Coordinate);
+    setMenuItems(items);
+    getMenuItems();
+    closeMenu();
+    removeMenu();
+
+
 }
 
 /**
@@ -94,7 +114,7 @@ const options: GeometyOptionsType = {
  * @mixes ui.Menuable
  */
 
-class Geometry extends GeometryEvent(GeometryEdit(GeometryAnimation(GeometryInfoWindow(JSONAble(Eventable(Handlerable(Class))))))) {
+class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAble(Eventable(Handlerable(Class)))))) implements GeometryInterface {
 
     type: string;
     _layer: OverlayLayer;
@@ -155,6 +175,11 @@ class Geometry extends GeometryEvent(GeometryEdit(GeometryAnimation(GeometryInfo
         }
     }
 
+
+    isGeometry() {
+        return true;
+    }
+
     /**
      * Returns the first coordinate of the geometry.
      *
@@ -212,7 +237,7 @@ class Geometry extends GeometryEvent(GeometryEdit(GeometryAnimation(GeometryInfo
      * @return {Geometry} this
      * @fires Geometry#add
      */
-    addTo(layer: OverlayLayer, fitview) {
+    addTo(layer: OverlayLayer, fitview?) {
         layer.addGeometry(this, fitview);
         return this;
     }
@@ -1456,6 +1481,7 @@ class Geometry extends GeometryEvent(GeometryEdit(GeometryAnimation(GeometryInfo
     _exportGraphicOptions(options) {
         const json = {};
         if (isNil(options['options']) || options['options']) {
+            //@ts-ignore
             json['options'] = this.config();
         }
         if (isNil(options['symbol']) || options['symbol']) {
@@ -1625,6 +1651,46 @@ class Geometry extends GeometryEvent(GeometryEdit(GeometryAnimation(GeometryInfo
             return 0;
         }
         return this._maxAlt;
+    }
+
+    startEdit(opts: object) {
+        throw new Error('Method not implemented.');
+    }
+    endEdit() {
+        throw new Error('Method not implemented.');
+    }
+    redoEdit() {
+        throw new Error('Method not implemented.');
+    }
+    undoEdit() {
+        throw new Error('Method not implemented.');
+    }
+    cancelEdit() {
+        throw new Error('Method not implemented.');
+    }
+    isEditing(): boolean {
+        throw new Error('Method not implemented.');
+    }
+    setMenu(options: object) {
+        throw new Error('Method not implemented.');
+    }
+    getMenu(): Menu {
+        throw new Error('Method not implemented.');
+    }
+    openMenu(coordinate: Coordinate) {
+        throw new Error('Method not implemented.');
+    }
+    setMenuItems(items: any) {
+        throw new Error('Method not implemented.');
+    }
+    getMenuItems() {
+        throw new Error('Method not implemented.');
+    }
+    closeMenu() {
+        throw new Error('Method not implemented.');
+    }
+    removeMenu() {
+        throw new Error('Method not implemented.');
     }
 
 }

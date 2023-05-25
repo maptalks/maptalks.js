@@ -67,7 +67,7 @@ class WMSTileLayer extends TileLayer {
     _wmsVersion: number;
 
     constructor(id, options: WMSTileLayerOptionsType) {
-        super(id, options);
+        super(id);
         if (!wmsExcludeParams) {
             wmsExcludeParams = extend({}, this.options);
         }
@@ -143,6 +143,7 @@ class WMSTileLayer extends TileLayer {
         return {
             'type': 'WMSTileLayer',
             'id': this.getId(),
+            //@ts-ignore
             'options': this.config()
         };
     }

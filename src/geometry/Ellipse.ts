@@ -45,7 +45,7 @@ class Ellipse extends CenterMixin(Polygon) {
      * @param {Number} height - height of the ellipse, in meter
      * @param {Object}  [options=null] - construct options defined in [Ellipse]{@link Ellipse#options}
      */
-    constructor(coordinates, width: number, height: number, opts: EllipseOptionsType) {
+    constructor(coordinates, width: number, height: number, opts?: EllipseOptionsType) {
         super(null, opts);
         if (coordinates) {
             this.setCoordinates(coordinates);

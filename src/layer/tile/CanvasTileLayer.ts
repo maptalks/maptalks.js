@@ -40,6 +40,7 @@ class CanvasTileLayer extends TileLayer {
         return {
             'type': 'CanvasTileLayer',
             'id': this.getId(),
+             //@ts-ignore
             'options': this.config()
         };
     }

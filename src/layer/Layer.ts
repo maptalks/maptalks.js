@@ -93,6 +93,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _collisionIndex: CollisionIndex;
     _silentConfig: boolean;
 
+    static fromJSON(json: object): Layer {
+      return null;
+    }
+
     constructor(id: number | string, options?: LayerOptionsType) {
         let canvas;
         if (options) {
@@ -587,7 +591,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     onRemove() { }
 
-    _bindMap(map, zIndex) {
+    _bindMap(map, zIndex?) {
         if (!map) {
             return;
         }

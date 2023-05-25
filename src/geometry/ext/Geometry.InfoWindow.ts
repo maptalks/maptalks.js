@@ -1,5 +1,5 @@
 import { extend } from '../../core/util';
-import Geometry from '../Geometry';
+// import Geometry from '../Geometry';
 import InfoWindow from '../../ui/InfoWindow';
 type Constructor = new (...args: any[]) => {};
 export default function GeometryInfoWindow<TBase extends Constructor>(Base: TBase) {

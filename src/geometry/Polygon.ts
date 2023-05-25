@@ -35,7 +35,7 @@ class Polygon extends Path {
      * @param {Number[][]|Number[][][]|Coordinate[]|Coordinate[][]} coordinates - coordinates, shell coordinates or all the rings.
      * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
      */
-    constructor(coordinates, opts: PolygonOptionsType) {
+    constructor(coordinates, opts?: PolygonOptionsType) {
         super(opts);
         this.type = 'Polygon';
         if (coordinates) {

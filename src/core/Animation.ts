@@ -555,7 +555,7 @@ const Animation = {
      * @param  {Function} step  - callback function for animation steps
      * @return {Player} player
      */
-    animate(styles, options, step, target) {
+    animate(styles, options, step, target?) {
         if (!options) {
             options = {};
         }

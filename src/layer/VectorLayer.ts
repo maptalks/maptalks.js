@@ -229,6 +229,7 @@ class VectorLayer extends OverlayLayer {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
+             //@ts-ignore
             'options': this.config()
         };
         if (isNil(options['geometries']) || options['geometries']) {

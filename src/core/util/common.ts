@@ -18,7 +18,7 @@ export function now(): number {
  * @return {Object}
  * @memberOf Util
  */
-export function extend(...dest): object { // (Object[, Object, ...]) ->
+export function extend(dest, ...objects): object { // (Object[, Object, ...]) ->
     for (let i = 1; i < arguments.length; i++) {
         const src = arguments[i];
         for (const k in src) {

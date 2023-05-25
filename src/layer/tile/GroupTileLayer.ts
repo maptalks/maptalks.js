@@ -168,6 +168,7 @@ class GroupTileLayer extends TileLayer {
             'type': this.getJSONType(),
             'id': this.getId(),
             'layers': this.layers.map(layer => layer.toJSON()),
+             //@ts-ignore
             'options': this.config()
         };
         return profile;

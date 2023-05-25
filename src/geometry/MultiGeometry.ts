@@ -48,6 +48,7 @@ class MultiGeometry extends GeometryCollection {
         coordinates = coordinates || [];
         const geometries = [];
         for (let i = 0, l = coordinates.length; i < l; i++) {
+            //@ts-ignore
             const g = new this.GeometryType(coordinates[i], this.config());
             geometries.push(g);
         }

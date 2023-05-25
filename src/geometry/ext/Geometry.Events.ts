@@ -1,8 +1,9 @@
 import { isNumber } from '../../core/util';
 import { preventDefault, stopPropagation } from '../../core/util/dom';
-import Geometry from '../Geometry';
+// import Geometry from '../Geometry';
 
 type Constructor = new (...args: any[]) => {};
+
 export default function GeometryEvent<TBase extends Constructor>(Base: TBase) {
 
     return class extends Base {

@@ -48,8 +48,8 @@ import './geometry/editor/GeometryEditor';
 // import './geometry/editor/TextEditable';
 
 // import './geometry/ext/Geometry.Animation';
-// import './geometry/ext/Geometry.Drag';
-// import './geometry/ext/Geometry.Edit';
+import './geometry/ext/Geometry.Drag';
+import './geometry/ext/Geometry.Edit';
 // import './geometry/ext/Geometry.Events';
 // import './geometry/ext/Geometry.InfoWindow';
 

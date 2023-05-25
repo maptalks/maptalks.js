@@ -61,7 +61,7 @@ class Marker extends CenterMixin(Geometry) {
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
-    constructor(coordinates, opts: MarkerOptionsType) {
+    constructor(coordinates, opts?: MarkerOptionsType) {
         super(opts);
         this.type = 'Point';
         if (coordinates) {

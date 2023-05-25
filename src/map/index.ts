@@ -13,10 +13,11 @@ import './Map.DomEvents';
 import './Map.FullScreen';
 import './Map.Pan';
 import './Map.Profile';
-import './Map.Topo';
+// import './Map.Topo';
 import './Map.Zoom';
 import './Map.Camera';
 import './Map.ViewHistory';
-import './Map.Collision';
+// import './Map.Collision';
+import './Map.CoordTransform';
 
 export { Map };

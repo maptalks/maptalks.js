@@ -25,9 +25,13 @@ class Position {
              */
             //@ts-ignore
             this.z = z;
-        } else if (x instanceof Position && !isNil(x.x) && !isNil(x.y)) {
+            //@ts-ignore
+        } else if (!isNil(x.x) && !isNil(x.y)) {
+            //@ts-ignore
             this.x = +(x.x);
+            //@ts-ignore
             this.y = +(x.y);
+            //@ts-ignore
             this.z = x.z;
         } else if (Array.isArray(x)) {
             this.x = +(x[0]);
@@ -137,8 +141,11 @@ class Position {
 
     //destructive add
     _add(x: number | Array<number> | Position, y?: number) {
-        if (x instanceof Position && !isNil(x.x)) {
+        //@ts-ignore
+        if (!isNil(x.x)) {
+            //@ts-ignore
             this.x += x.x;
+            //@ts-ignore
             this.y += x.y;
         } else if (!isNil(x[0])) {
             this.x += x[0];
@@ -159,8 +166,11 @@ class Position {
      */
     add(x: number | Array<number> | Position, y?: number) {
         let nx, ny;
-        if (x instanceof Position && !isNil(x.x)) {
+        //@ts-ignore
+        if (!isNil(x.x)) {
+            //@ts-ignore
             nx = this.x + x.x;
+            //@ts-ignore
             ny = this.y + x.y;
         } else if (!isNil(x[0])) {
             nx = this.x + x[0];
@@ -177,8 +187,11 @@ class Position {
 
     //destructive substract
     _sub(x: number | Array<number> | Position, y?: number) {
-        if (x instanceof Position && !isNil(x.x)) {
+        //@ts-ignore
+        if (!isNil(x.x)) {
+            //@ts-ignore
             this.x -= x.x;
+            //@ts-ignore
             this.y -= x.y;
         } else if (!isNil(x[0])) {
             this.x -= x[0];
@@ -203,8 +216,11 @@ class Position {
      */
     sub(x: number | Array<number> | Position, y?: number) {
         let nx, ny;
-        if (x instanceof Position && !isNil(x.x)) {
+        //@ts-ignore
+        if (!isNil(x.x)) {
+            //@ts-ignore
             nx = this.x - x.x;
+            //@ts-ignore
             ny = this.y - x.y;
         } else if (!isNil(x[0])) {
             nx = this.x - x[0];
@@ -313,8 +329,7 @@ class Position {
     toJSON() {
         const json = {
             x: this.x,
-            y: this.y,
-            z: undefined
+            y: this.y
         };
         if (isNumber(this.z)) {
             //@ts-ignore

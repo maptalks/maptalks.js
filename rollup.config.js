@@ -1,12 +1,15 @@
-const commonjs = require('rollup-plugin-commonjs'),
-    resolve = require('rollup-plugin-node-resolve'),
-    babel = require('rollup-plugin-babel'),
-    json = require('rollup-plugin-json');
+
+const commonjs = require('@rollup/plugin-commonjs'),
+    resolve = require('@rollup/plugin-node-resolve'),
+    babel = require('@rollup/plugin-babel'),
+    json = require('@rollup/plugin-json'),
+    typescript = require('@rollup/plugin-typescript');
+
 const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
 const dev = process.env.BUILD === 'dev';
-console.log(process.env.BUILD);
+// console.log(process.env.BUILD);
 const isDebug = testing || dev;
 const plugins = testing ?
     [
@@ -29,6 +32,7 @@ const rollupPlugins = [
         main: true
     }),
     commonjs(),
+    typescript(),
     babel({
         plugins
     })
@@ -37,11 +41,11 @@ const external = ['rbush', 'frustum-intersects', 'simplify-js', 'zousan'];
 
 const builds = [
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         plugins: rollupPlugins,
         output: [
             {
-                'sourcemap': isDebug,
+                'sourcemap': true,
                 'format': 'umd',
                 'name': 'maptalks',
                 banner,
@@ -51,7 +55,7 @@ const builds = [
         ]
     },
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         plugins: rollupPlugins,
         external,
         output: [
@@ -65,7 +69,7 @@ const builds = [
     },
     //for browser esm
     {
-        input: 'src/index.js',
+        input: 'src/index.ts',
         plugins: rollupPlugins,
         output: [
             {

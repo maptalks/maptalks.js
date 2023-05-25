@@ -121,7 +121,7 @@ class Class {
      * @param  {Object} conf - config to update
      * @return {Class} this
      */
-    config(conf?) {
+    config(conf) {
         this._isUpdatingOptions = true;
         if (!conf) {
             const config = {};

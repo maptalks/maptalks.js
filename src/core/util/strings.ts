@@ -79,7 +79,7 @@ export function stringWidth(text: string, font?: any) {
  * @return {Size}
  * @memberOf StringUtil
  */
-export function stringLength(text: string, font, size) {
+export function stringLength(text: string, font, size?) {
     const w = stringWidth(text, font);
     // if (!font) {
     //     font = '_default_';

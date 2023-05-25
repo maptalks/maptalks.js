@@ -48,7 +48,7 @@ class Circle extends CenterMixin(Polygon) {
      * @param {Number} radius           - radius of the circle, in meter
      * @param {Object} [options=null]   - construct options defined in [Circle]{@link Circle#options}
      */
-    constructor(coordinates, radius: number, opts: PolygonOptionsType) {
+    constructor(coordinates, radius: number, opts?: PolygonOptionsType) {
         super(null, opts);
         if (coordinates) {
             this.setCoordinates(coordinates);

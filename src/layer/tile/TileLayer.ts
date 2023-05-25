@@ -229,7 +229,7 @@ class TileLayer extends Layer {
     _tileConfig: any;
     _polygonOffset: number;
 
-    constructor(id, options: TileLayerOptionsType) {
+    constructor(id, options?: TileLayerOptionsType) {
         super(id, options);
     }
 
@@ -863,6 +863,7 @@ class TileLayer extends Layer {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
+             //@ts-ignore
             'options': this.config()
         };
         return profile;

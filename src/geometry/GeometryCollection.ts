@@ -54,6 +54,7 @@ class GeometryCollection extends Geometry {
     setGeometries(_geometries) {
         const geometries = this._checkGeometries(_geometries || []);
         const symbol = this._getSymbol();
+        //@ts-ignore
         const options = this.config();
         //Set the collection as child geometries' parent.
         for (let i = geometries.length - 1; i >= 0; i--) {
