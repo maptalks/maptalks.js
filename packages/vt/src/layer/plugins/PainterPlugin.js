@@ -247,7 +247,12 @@ function createPainterPlugin(type, Painter) {
                 Object.defineProperty(mesh.uniforms, 'stencilRef', {
                     enumerable: true,
                     get: function () {
-                        return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
+                        // return mesh.properties.tile ? mesh.properties.tile.stencilRef : 255;
+                        if (mesh.properties.tile.stencilRef !== undefined) {
+                            return mesh.properties.tile.stencilRef;
+                        }
+                        // return maxZoom - mesh.properties.tile.z;
+                        return mesh.properties.level;
                     }
                 });
             }

@@ -48,7 +48,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             return 0;
         } else {
             const z = tileInfo.z;
-            return (z - currentTileZoom >= 0) ? 0 : (currentTileZoom - z);
+            const maxChildDepth = 5;
+            // 如果瓦片zoom比currentTileZoom大，则设为0-5之间的值，瓦片zoom越大，值越小
+            // 如果瓦片zoom比currentTileZoom小，则设为5以上的值，越接近，值越小
+            return (z - currentTileZoom >= 0) ? (currentTileZoom + maxChildDepth - z) : (maxChildDepth + (currentTileZoom - z));
         }
     }
 
