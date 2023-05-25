@@ -40,11 +40,11 @@ export default class SkylineAnalysis extends Analysis {
         const map = this.layer.getMap();
         this._transformGround(map);
         const uniforms = {};
-        let skylineMeshes = meshes.concat([this._ground]);
+        const skylineMeshes = meshes.concat([this._ground]);
         this.renderer.clear({
             color : [0, 0, 0, 1],
             depth : 1,
-        framebuffer : this._fbo
+            framebuffer : this._fbo
         });
         this._fbo = this._pass.render(skylineMeshes, this._renderOptions);
         uniforms['skylineMap'] = this._fbo;
@@ -83,9 +83,8 @@ export default class SkylineAnalysis extends Analysis {
             document.body.appendChild(dlLink);
             dlLink.click();
             document.body.removeChild(dlLink);
-        } else {
-            return url;
         }
+        return url;
     }
     update(name, value) {
         this._renderOptions[name] = value;

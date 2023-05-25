@@ -11,7 +11,7 @@ export default class AnalysisPass {
         this._viewport = viewport;
         this._init();
     }
-    
+
     _init() {
         this._depthFBO = this.renderer.regl.framebuffer({
             color: this.renderer.regl.texture({
@@ -83,8 +83,9 @@ export default class AnalysisPass {
                 return { width: RESOLUTION * horizontalAngle / verticalAngle, height: RESOLUTION };
             }
         }
+        return null;
     }
-    
+
     _validViewport(horizontalAngle, verticalAngle) {
         return horizontalAngle && verticalAngle && horizontalAngle * verticalAngle > 0;
     }

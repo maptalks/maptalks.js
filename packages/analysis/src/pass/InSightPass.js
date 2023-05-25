@@ -73,7 +73,7 @@ export default class InSightPass extends AnalysisPass {
         const modelMatrix = mat4.identity(MAT);
         this._helperMesh.localTransform = modelMatrix;
         for (let i = 0; i < lines.length; i++) {
-            let { from, to } = lines[i];
+            const { from, to } = lines[i];
             if (!this._validViewport(horizontalAngle, verticalAngle) || !from || !to) {
                 continue;
             }

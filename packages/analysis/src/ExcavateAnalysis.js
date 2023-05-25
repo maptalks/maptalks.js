@@ -97,7 +97,7 @@ export default class ExcavateAnalysis extends Analysis {
             for (let y = extentInContainerMax.y; y < extentInContainerMin.y; y++) {
                 const cp = [x, y], cpx = [x + 1, y], cpy = [x, y + 1];
                 const p = map.containerPointToCoordinate(new maptalks.Point(cp)), px = map.containerPointToCoordinate(new maptalks.Point(cpx)),
-                      py = map.containerPointToCoordinate(new maptalks.Point(cpy));
+                    py = map.containerPointToCoordinate(new maptalks.Point(cpy));
                 if (boundaryPolygon.containsPoint(p)) {
                     const cell = new maptalks.Polygon([[p.x, p.y], [px.x, px.y], [px.x, py.y], [py.x, py.y]]);
                     const area = cell.getArea();

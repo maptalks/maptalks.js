@@ -138,7 +138,6 @@ export default class CutAnalysisController {
         if (task === 'y-rotate') {
             startDirection = vec2.set(START, from[0] - center[0], from[2] - center[2]);
             endDirection = vec2.set(END, to[0] - center[0], to[2] - center[2]);
-           
         } else if (task === 'z-rotate') {
             startDirection = vec2.set(START, from[0] - center[0], from[1] - center[1]);
             endDirection = vec2.set(END, to[0] - center[0], to[1] - center[1]);
@@ -220,7 +219,7 @@ export default class CutAnalysisController {
         const planeMesh = this._pickHelperMesh;
         const translate = trans || planeMesh.originTranslation;
         const scaling = mat4.getScaling(SCALE, planeMesh.localTransform);
-        let r = quat.fromEuler(QUAT, 0, 0, 0);
+        const r = quat.fromEuler(QUAT, 0, 0, 0);
         mat4.fromRotationTranslationScale(planeMesh.localTransform, r, translate, scaling);
         if (rotated && !this._isInMapCenter()) {
             mat4.rotateZ(planeMesh.localTransform, planeMesh.localTransform, rotation[2]);

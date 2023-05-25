@@ -702,4 +702,30 @@ describe('add analysis', () => {
         new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
         new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
     });
+
+    it('add measure tool', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: modelUrl
+            }
+        }).addTo(gltflayer);
+        let measuretool = null;
+        function measure() {
+            measuretool.fire('drawstart', { coordinate: center });
+            measuretool.fire('mousemove', { coordinate: center.add(0.001, 0) });
+            const result = measuretool.getMeasureResult();
+            expect(result).to.be.eql(222.63898);
+            done();
+        }
+        marker.on('load', () => {
+            measuretool = new maptalks.Height3DTool({
+                enable: true
+            }).addTo(gllayer);
+            setTimeout(function () {
+                measure();
+            }, 100);
+        });
+    });
 });

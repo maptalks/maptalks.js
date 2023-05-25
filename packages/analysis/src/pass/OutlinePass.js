@@ -10,7 +10,7 @@ export default class OutlinePass extends AnalysisPass {
 
     render(meshes, { projViewMatrix, lineColor, lineWidth }) {
         if (!meshes || !meshes.length) {
-            return;
+            return null;
         }
         this._clear();
         this._resize();

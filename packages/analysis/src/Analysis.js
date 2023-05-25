@@ -104,10 +104,10 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
         if (!this.isEnable()) {
             return null;
         }
-       let fbo = this._pass.render(meshes, this._renderOptions);
-       fbo = fbo.meshesMap ? fbo.meshesMap : fbo;
-       const renderer = this.layer.getRenderer();
-       if (fbo && renderer) {
+        let fbo = this._pass.render(meshes, this._renderOptions);
+        fbo = fbo.meshesMap ? fbo.meshesMap : fbo;
+        const renderer = this.layer.getRenderer();
+        if (fbo && renderer) {
             const regl = renderer.regl;
             const width = fbo.width, height = fbo.height;
             const data = new Uint8Array(4 * width * height);
@@ -119,8 +119,8 @@ export default class Analysis extends Eventable(Handlerable(Class)) {
                 height
             });
             return data;
-       }
-       return null;
+        }
+        return null;
     }
 
     getAnalysisType() {
