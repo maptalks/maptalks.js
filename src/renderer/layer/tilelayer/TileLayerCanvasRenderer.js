@@ -688,9 +688,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.translate(x, y);
             if (bearing) {
                 ctx.rotate(-bearing * Math.PI / 180);
-                w += 0.1;
-                h += 0.1;
             }
+            w += 0.5;
+            h += 0.5;
             const res = map._getResolution();
             if (res !== tileInfo.res) {
                 const scale = tileInfo.res / res;
