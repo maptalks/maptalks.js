@@ -374,7 +374,7 @@ class FillPainter extends BasicPainter {
             projViewMatrix,
             glScale,
             viewport: isRenderingTerrainSkin && context && context.viewport,
-            hasSSRGround: context.hasSSRGround
+            hasSSRGround: context && context.hasSSRGround
             // blendSrcIsOne: +(!!(blendSrc === 'one' || blendSrc === 1))
         };
         this.setIncludeUniformValues(uniforms, context);

@@ -246,7 +246,7 @@ void main() {
     #ifndef PICKING_MODE
         vWidth = vec2(outset, inset);
         if (isRenderingTerrain == 1.0) {
-            vGammaScale = 10.0;
+            vGammaScale = 1.0;
         } else {
             vGammaScale = projDistance / cameraToCenterDistance;
         }

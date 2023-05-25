@@ -5,7 +5,7 @@ import { LRUCache } from '@maptalks/vector-packer';
 let callbackId = 0;
 
 //global level 1 cache for layers sharing the same urlTemplate
-const TILE_CACHE = new LRUCache(32);
+const TILE_CACHE = new LRUCache(128);
 // const TILE_LOADINGS = {};
 
 export default class Dispatcher {

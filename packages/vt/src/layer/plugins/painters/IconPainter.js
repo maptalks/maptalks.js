@@ -55,7 +55,6 @@ const TEMP_CANVAS_SIZE = [];
 class IconPainter extends CollisionPainter {
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
-
         this.propAllowOverlap = 'markerAllowOverlap';
         this.propIgnorePlacement = 'markerIgnorePlacement';
         // this._textFnTypeConfig = getTextFnTypeConfig(this.getMap(), this.symbolDef);
