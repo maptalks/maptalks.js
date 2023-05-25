@@ -37,6 +37,7 @@ class MapTouchZoomHandler extends Handler {
         this._startP1 = p1;
         this._startP2 = p2;
         this._startDist = p1.distanceTo(p2);
+        //@ts-ignore
         this._startVector = p1.sub(p2);
         this._startZoom = map.getZoom();
         this._startBearing = map.getBearing();
@@ -72,6 +73,7 @@ class MapTouchZoomHandler extends Handler {
             d2 = p2.sub(this._startP2),
             vector = p1.sub(p2),
             scale = p1.distanceTo(p2) / this._startDist,
+            //@ts-ignore
             bearing = vector.angleWith(this._startVector) * 180 / Math.PI,
             preY = this.preY || p1.y,
             pitch = (preY - p1.y) * 0.4;

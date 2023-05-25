@@ -233,21 +233,25 @@ class Panel extends Control {
             //top center
             //@ts-ignore
             map.containerPointToCoordinate(
+                //@ts-ignore
                 containerPoint.add(width / 2, 0)
             ),
             //middle right
             //@ts-ignore
             map.containerPointToCoordinate(
+                //@ts-ignore
                 containerPoint.add(width, height / 2)
             ),
             //bottom center
             //@ts-ignore
             map.containerPointToCoordinate(
+                //@ts-ignore
                 containerPoint.add(width / 2, height)
             ),
             //middle left
             //@ts-ignore
             map.containerPointToCoordinate(
+                //@ts-ignore
                 containerPoint.add(0, height / 2)
             )
 

@@ -1,5 +1,6 @@
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../util/common';
+import { Geometry } from 'src/geometry';
 
 /**
  * @classdesc
@@ -14,7 +15,7 @@ export * from '@maptalks/function-type';
 
 const arr = [],
     prop = {};
-export function loadGeoSymbol(symbol, geo) {
+export function loadGeoSymbol(symbol, geo: Geometry) {
     return loadFunctionTypes(symbol, () => {
         const map = geo.getMap();
         return set(arr, map ? map.getZoom() : 12,

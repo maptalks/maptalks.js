@@ -2184,6 +2184,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         } else {
             this._getRenderer().offsetPlatform(offset);
             this._mapViewCoord = this._getPrjCenter();
+            //@ts-ignore
             this._mapViewPoint = this._mapViewPoint.add(offset);
             return this;
         }

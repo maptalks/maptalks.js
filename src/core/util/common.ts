@@ -18,7 +18,7 @@ export function now(): number {
  * @return {Object}
  * @memberOf Util
  */
-export function extend(dest, ...objects): object { // (Object[, Object, ...]) ->
+export function extend(dest: object, ...objects): object { // (Object[, Object, ...]) ->
     for (let i = 1; i < arguments.length; i++) {
         const src = arguments[i];
         for (const k in src) {
@@ -114,7 +114,7 @@ export function hasOwn(obj, key) {
  * @private
  * @memberOf Util
  */
-export function join(arr, seperator) {
+export function join(arr: Array<any>, seperator: string) {
     if (arr.join) {
         return arr.join(seperator || ',');
     } else {
@@ -137,10 +137,10 @@ export function isEmpty(object) {
 
 const pi = Math.PI / 180;
 
-export function toRadian(d) {
+export function toRadian(d: number) {
     return d * pi;
 }
 
-export function toDegree(r) {
+export function toDegree(r: number) {
     return r / pi;
 }

@@ -83,7 +83,7 @@ export const CSSFILTER = testProp(
  * @returns {HTMLElement}
  * @memberOf DomUtil
  */
-export function createEl(tagName, className?: string): HTMLElement {
+export function createEl(tagName: string, className?: string): HTMLElement {
     const el = document.createElement(tagName);
     if (className) {
         setClass(el, className);
@@ -99,7 +99,7 @@ export function createEl(tagName, className?: string): HTMLElement {
  * @return {HTMLElement}
  * @memberOf DomUtil
  */
-export function createElOn(tagName, style, container): HTMLElement {
+export function createElOn(tagName: string, style?: string, container?: HTMLElement): HTMLElement {
     const el = createEl(tagName);
     if (style) {
         setStyle(el, style);
@@ -292,7 +292,7 @@ export function preventSelection(dom: HTMLElement) {
  * @return {Point} - dom element's current position if offset is null.
  * @memberOf DomUtil
  */
-export function offsetDom(dom: HTMLElement, offset) {
+export function offsetDom(dom: HTMLElement, offset: Point) {
     if (!dom) {
         return null;
     }
@@ -456,7 +456,7 @@ export function setOpacity(el: HTMLElement, value: string | number) {
  * @param {Point} offset
  * @memberOf DomUtil
  */
-export function setTransform(el: HTMLElement, offset) {
+export function setTransform(el: HTMLElement, offset: Point) {
     const pos = offset || new Point(0, 0);
     el.style[TRANSFORM] =
         Browser.any3d ?
