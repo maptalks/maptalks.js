@@ -229,9 +229,9 @@ void main() {
         perspectiveAlpha = clamp(cameraToCenterDistance * 1.5 / distance(vVertex, cameraPosition), 0.0, 1.0);
     }
 
-    if (blendSrcIsOne == 1.0) {
-        gl_FragColor.rgb *= gl_FragColor.a;
-    }
+    // if (blendSrcIsOne == 1.0) {
+    //     gl_FragColor.rgb *= gl_FragColor.a;
+    // }
 
     gl_FragColor *= perspectiveAlpha;
 

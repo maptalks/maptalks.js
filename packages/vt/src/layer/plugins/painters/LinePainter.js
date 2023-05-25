@@ -548,6 +548,7 @@ class LinePainter extends BasicPainter {
     getBlendFunc() {
         return {
             src: () => {
+                // src 设成 one 是因为 maptalks-designer#968
                 return this.sceneConfig.blendSrc || 'one';
             },
             dst: () => {

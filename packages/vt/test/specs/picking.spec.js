@@ -682,7 +682,7 @@ describe('picking specs', () => {
                         "id": 0,
                         "geometry": {
                             "type": "LineString",
-                            "coordinates": [[13.417139053344727,52.52956389180585],[13.417224884033203,52.52956389180585]]
+                            "coordinates": [[13.417135030031204,52.529566339396496],[13.41722622513771,52.529566339396496]]
                         },
                         "properties": {
                             "custom_prop_line_batch_id": "admin-0-boundary-bg",

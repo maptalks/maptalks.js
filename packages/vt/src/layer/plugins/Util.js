@@ -75,6 +75,9 @@ export function setUniformFromSymbol(uniforms, name, symbol, key, defaultValue, 
     // } else {
     //     uniforms[name] = fn ? fn(symbol[key]) : symbol[key];
     // }
+    if (name in uniforms) {
+        return;
+    }
     Object.defineProperty(uniforms, name, {
         enumerable: true,
         get: function () {

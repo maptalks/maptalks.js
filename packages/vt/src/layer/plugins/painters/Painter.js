@@ -62,7 +62,7 @@ class Painter {
         this.sortByCommandKey = sortByCommandKey.bind(this);
         this.colorCache = {};
         // 因为一开始visible为false的数据不会被创建，需要记录下来，updateSymbol时决定是否需要重新创建数据
-        this._invisibleWhenCreated = this.symbolDef.map(s => s.visible === false);
+        this._invisibleWhenCreated = this.symbolDef.map(s => !!(s && s.visible === false));
     }
 
     getMap() {
