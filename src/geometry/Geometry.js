@@ -1234,7 +1234,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const e = {};
         if (this._eventSymbolProperties) {
-            e.properties = extend({}, this._eventSymbolProperties);
+            e.properties = JSON.parse(JSON.stringify(this._eventSymbolProperties));
             delete this._eventSymbolProperties;
         } else {
             delete this._textDesc;
