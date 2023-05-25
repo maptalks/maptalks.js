@@ -17,7 +17,7 @@ class Sphere {
         this.radius = radius;
     }
 
-    measureLenBetween(c1, c2) {
+    measureLenBetween(c1: Coordinate, c2: Coordinate) {
         if (!c1 || !c2) {
             return 0;
         }
@@ -30,7 +30,7 @@ class Sphere {
         return Math.round(b * 1E5) / 1E5;
     }
 
-    measureArea(coordinates) {
+    measureArea(coordinates: Array<Coordinate>) {
         const a = toRadian(this.radius);
         let b = 0,
             c = coordinates,
@@ -44,19 +44,22 @@ class Sphere {
                 f = c[i + 1];
             b += e.x * a * Math.cos(toRadian(e.y)) * f.y * a - f.x * a * Math.cos(toRadian(f.y)) * e.y * a;
         }
+        //@ts-ignore
         d = c[i];
+        //@ts-ignore
         c = c[0];
+        //@ts-ignore
         b += d.x * a * Math.cos(toRadian(d.y)) * c.y * a - c.x * a * Math.cos(toRadian(c.y)) * d.y * a;
         return 0.5 * Math.abs(b);
     }
 
-    locate(c, xDist, yDist, out) {
+    locate(c: Coordinate, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
         return this._locate(out, xDist, yDist);
     }
 
-    _locate(c, xDist, yDist) {
+    _locate(c: Coordinate, xDist: number, yDist: number): Coordinate {
         if (!c) {
             return null;
         }

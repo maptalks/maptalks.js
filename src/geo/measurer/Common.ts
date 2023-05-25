@@ -12,7 +12,7 @@ export default {
      * @return {Number}    length
      * @function measurer.Common.measureLength
      */
-    measureLength: function (c1, c2) {
+    measureLength: function (c1, c2): number {
         if (!Array.isArray(c1)) {
             return this.measureLenBetween(c1, c2);
         }

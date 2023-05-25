@@ -25,7 +25,7 @@ export default extend(/** @lends measurer.Identity */{
      * @param  {Coordinate} c2
      * @return {Number}
      */
-    measureLenBetween: function (c1, c2) {
+    measureLenBetween: function (c1: Coordinate, c2: Coordinate) {
         if (!c1 || !c2) {
             return 0;
         }
@@ -40,7 +40,7 @@ export default extend(/** @lends measurer.Identity */{
      * @param  {Coordinate[]} coordinates
      * @return {number}
      */
-    measureArea: function (coordinates) {
+    measureArea: function (coordinates: Array<Coordinate>): number {
         if (!Array.isArray(coordinates)) {
             return 0;
         }
@@ -58,7 +58,7 @@ export default extend(/** @lends measurer.Identity */{
         return Math.abs(area / 2);
     },
 
-    locate : function (c, xDist, yDist, out) {
+    locate: function (c: Coordinate, xDist: number, yDist: number, out?: Coordinate) {
         out = out || new Coordinate(0, 0);
         out.set(c.x, c.y);
         return this._locate(out, xDist, yDist);
@@ -71,7 +71,7 @@ export default extend(/** @lends measurer.Identity */{
      * @param  {Number} yDist     - y-axis distance
      * @return {Coordinate}
      */
-    _locate: function (c, xDist, yDist) {
+    _locate: function (c: Coordinate, xDist: number, yDist: number): Coordinate {
         if (!c) {
             return null;
         }
@@ -89,7 +89,7 @@ export default extend(/** @lends measurer.Identity */{
         return c;
     },
 
-    rotate : function (c, pivot, angle) {
+    rotate: function (c, pivot, angle) {
         c = new Coordinate(c.x, c.y);
         return this._rotate(c, pivot, angle);
     },
@@ -101,7 +101,7 @@ export default extend(/** @lends measurer.Identity */{
      * @param {Number} angle - angle in degree
      * @return {Coordinate}
      */
-    _rotate : function () {
+    _rotate: function () {
         const tmp = new Point(0, 0);
         return function (c, pivot, angle) {
             tmp.x = c.x - pivot.x;

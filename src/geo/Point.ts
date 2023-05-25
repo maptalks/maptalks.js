@@ -45,7 +45,8 @@ class Point extends Position {
      * point to the 0, 0 coordinate will be the same as before.
      * @return {Point} unit vector point
      */
-    unit() {
+    unit(): Point {
+        //@ts-ignore
         return this.copy()._unit();
     }
 
@@ -60,7 +61,8 @@ class Point extends Position {
      * coordinate multiplied by -1
      * @return {Point} perpendicular point
      */
-    perp() {
+    perp(): Point {
+        //@ts-ignore
         return this.copy()._perp();
     }
 
@@ -116,7 +118,8 @@ class Point extends Position {
      * @param {Number} a angle to rotate around, in radians
      * @return {Point} output point
      */
-    rotate(a) {
+    rotate(a): Point {
+        //@ts-ignore
         return this.copy()._rotate(a);
     }
 }

@@ -43,7 +43,7 @@ class CRS {
         });
     }
 
-    static fromProjectionCode(code) {
+    static fromProjectionCode(code): CRS {
         if (!code) {
             return null;
         }

@@ -60,7 +60,7 @@ class Position {
      * Return abs value of the point
      * @return {Coordinate|Point} abs point
      */
-    abs() {
+    abs(): Position {
         //@ts-ignore
         return new this.constructor(Math.abs(this.x), Math.abs(this.y));
     }
@@ -82,7 +82,7 @@ class Position {
      * Like math.round, rounding the point's xy.
      * @return {Coordinate|Point} rounded point
      */
-    round() {
+    round(): Position {
         //@ts-ignore
         return new this.constructor(Math.round(this.x), Math.round(this.y));
     }
@@ -93,7 +93,7 @@ class Position {
         return this;
     }
 
-    ceil() {
+    ceil(): Position {
         //@ts-ignore
         return new this.constructor(Math.ceil(this.x), Math.ceil(this.y));
     }
@@ -125,7 +125,7 @@ class Position {
         return this;
     }
 
-    floor() {
+    floor(): Position {
         //@ts-ignore
         return new this.constructor(Math.floor(this.x), Math.floor(this.y));
     }
@@ -134,7 +134,7 @@ class Position {
      * Returns a copy of the coordinate
      * @return {Coordinate|Point} copy
      */
-    copy() {
+    copy(): Position {
         //@ts-ignore
         return new this.constructor(this.x, this.y, this.z);
     }
@@ -164,7 +164,7 @@ class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @return {Coordinate|Point} result
      */
-    add(x: number | Array<number> | Position, y?: number) {
+    add(x: number | Array<number> | Position, y?: number): Position {
         let nx, ny;
         //@ts-ignore
         if (!isNil(x.x)) {
@@ -214,7 +214,7 @@ class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @return {Coordinate|Point} result
      */
-    sub(x: number | Array<number> | Position, y?: number) {
+    sub(x: number | Array<number> | Position, y?: number): Position {
         let nx, ny;
         //@ts-ignore
         if (!isNil(x.x)) {
@@ -240,7 +240,7 @@ class Position {
      * @param {Number} [y=undefined] - optional, coordinate to add
      * @return {Coordinate|Point} result
      */
-    substract() {
+    substract(): Position {
         return this.sub.apply(this, arguments);
     }
 
@@ -249,7 +249,7 @@ class Position {
      * @param {Number} ratio - ratio to multi
      * @return {Coordinate|Point} result
      */
-    multi(ratio: number) {
+    multi(ratio: number): Position {
         //@ts-ignore
         return new this.constructor(this.x * ratio, this.y * ratio);
     }
@@ -317,7 +317,7 @@ class Position {
      * @param  {Number} n The number of digits to appear after the decimal point
      * @return {Coordinate}   fixed coordinate
      */
-    toFixed(n: number) {
+    toFixed(n: number): Position {
         //@ts-ignore
         return new this.constructor(this.x.toFixed(n), this.y.toFixed(n), isNumber(this.z) ? this.z.toFixed : undefined);
     }
