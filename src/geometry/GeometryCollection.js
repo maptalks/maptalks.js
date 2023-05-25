@@ -224,12 +224,14 @@ class GeometryCollection extends Geometry {
         if (s && s['children']) {
             this._symbol = null;
             this.forEach((g, i) => {
+                g._eventSymbolProperties = this._eventSymbolProperties;
                 g.setSymbol(s['children'][i]);
             });
         } else {
             const symbol = this._prepareSymbol(s);
             this._symbol = symbol;
             this.forEach(g => {
+                g._eventSymbolProperties = this._eventSymbolProperties;
                 g.setSymbol(symbol);
             });
         }
