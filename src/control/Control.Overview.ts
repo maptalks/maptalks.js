@@ -3,7 +3,7 @@ import { on, off, createEl, computeDomPosition } from '../core/util/dom';
 import Polygon from '../geometry/Polygon';
 import Layer from '../layer/Layer';
 import VectorLayer from '../layer/VectorLayer';
-import Map from '../map/Map';
+import Map, { MapOptionsType } from '../map/Map';
 import Control from './Control';
 
 /**
@@ -177,7 +177,7 @@ class Overview extends Control {
             'draggable': false,
             'maxExtent': null
         });
-        this._overview = new Map(dom, options);
+        this._overview = new Map(dom, (options as MapOptionsType));
         this._updateBaseLayer();
         this._perspective = new Polygon(this._getPerspectiveCoords(), {
             'draggable': true,

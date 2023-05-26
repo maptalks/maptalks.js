@@ -30,7 +30,7 @@ class MapTool extends Eventable(Class) {
      * @return {MapTool} this
      * @fires MapTool#add
      */
-    addTo(map) {
+    addTo(map: Map) {
         if (!map) {
             return this;
         }

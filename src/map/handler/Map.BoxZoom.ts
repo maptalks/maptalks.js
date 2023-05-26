@@ -4,6 +4,7 @@ import DrawTool from '../tool/DrawTool';
 import Extent from '../../geo/Extent';
 
 class MapBoxZoomHander extends Handler {
+    target: Map;
     drawTool: any;
 
     constructor(target) {

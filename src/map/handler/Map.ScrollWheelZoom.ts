@@ -17,6 +17,7 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 class MapScrollWheelZoomHandler extends Handler {
+    target: Map;
     _thisScrollZoom: Function;
     _wheelZoomRate: number;
     _defaultZoomRate: number;

@@ -5,6 +5,7 @@ import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
 import Geometry, { GeometyOptionsType } from './Geometry';
+import Point from 'src/geo/Point';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -37,7 +38,7 @@ class GeometryCollection extends Geometry {
         this.setGeometries(geometries);
     }
 
-    getContainerExtent(out) {
+    getContainerExtent(out?: PointExtent): PointExtent {
         const extent = out || new PointExtent();
         this.forEach(geo => {
             extent._combine(geo.getContainerExtent(TEMP_EXTENT));
@@ -51,7 +52,7 @@ class GeometryCollection extends Geometry {
      * @return {GeometryCollection} this
      * @fires GeometryCollection#shapechange
      */
-    setGeometries(_geometries) {
+    setGeometries(_geometries: Array<Geometry>) {
         const geometries = this._checkGeometries(_geometries || []);
         const symbol = this._getSymbol();
         //@ts-ignore
@@ -135,7 +136,8 @@ class GeometryCollection extends Geometry {
      * @param  {Coordinate} offset - translate offset
      * @return {GeometryCollection} this
      */
-    translate(offset) {
+    //@ts-ignore
+    translate(offset: Point) {
         if (!offset) {
             return this;
         }

@@ -93,7 +93,7 @@ class GroupTileLayer extends TileLayer {
      * add tilelayers
      * @param {TileLayer[]} tileLayers
      */
-    addLayer(tileLayers = []) {
+    addLayer(tileLayers: Array<TileLayer> = []) {
         tileLayers = checkLayers(tileLayers);
         const len = this.layers.length;
         tileLayers.forEach(tileLayer => {
@@ -117,7 +117,7 @@ class GroupTileLayer extends TileLayer {
      * remove tilelayers
      * @param {TileLayer[]} tileLayers
      */
-    removeLayer(tileLayers = []) {
+    removeLayer(tileLayers: Array<TileLayer> = []) {
         tileLayers = checkLayers(tileLayers);
         const len = this.layers.length;
         tileLayers.forEach(tileLayer => {
@@ -168,7 +168,7 @@ class GroupTileLayer extends TileLayer {
             'type': this.getJSONType(),
             'id': this.getId(),
             'layers': this.layers.map(layer => layer.toJSON()),
-             //@ts-ignore
+            //@ts-ignore
             'options': this.config()
         };
         return profile;
@@ -227,7 +227,7 @@ class GroupTileLayer extends TileLayer {
         super.onRemove();
     }
 
-    getLayer(id) {
+    getLayer(id): TileLayer {
         return this.getChildLayer(id);
     }
 

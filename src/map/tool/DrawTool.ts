@@ -132,7 +132,7 @@ class DrawTool extends MapTool {
      * Get current mode of draw tool
      * @return {String} mode
      */
-    getMode() {
+    getMode(): string {
         if (this.options['mode']) {
             return this.options['mode'].toLowerCase();
         }
@@ -144,7 +144,7 @@ class DrawTool extends MapTool {
      * @param {String} mode - mode of the draw tool
      * @expose
      */
-    setMode(mode) {
+    setMode(mode: string) {
         if (this._geometry) {
             this._geometry.remove();
             delete this._geometry;

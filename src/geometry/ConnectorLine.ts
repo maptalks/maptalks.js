@@ -37,7 +37,7 @@ function Connectable<TBase extends Constructor>(Base: TBase) {
          * @return {ConnectorLine} this
          * @function Connectable.setConnectSource
          */
-        setConnectSource(src) {
+        setConnectSource(src: Geometry) {
             const target = this._connTarget;
             this.onRemove();
             this._connSource = src;
@@ -61,7 +61,7 @@ function Connectable<TBase extends Constructor>(Base: TBase) {
          * @return {ConnectorLine} this
          * @function Connectable.setConnectTarget
          */
-        setConnectTarget(target) {
+        setConnectTarget(target: Geometry) {
             const src = this._connSource;
             this.onRemove();
             this._connSource = src;

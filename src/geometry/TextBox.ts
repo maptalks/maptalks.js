@@ -103,7 +103,7 @@ class TextBox extends TextMarker {
      * @param {Number} width
      * returns {TextBox} this
      */
-    setWidth(width) {
+    setWidth(width: number) {
         this._width = width;
         this._refresh();
         return this;
@@ -122,7 +122,7 @@ class TextBox extends TextMarker {
      * @param {Number} height
      * returns {TextBox} this
      */
-    setHeight(height) {
+    setHeight(height: number) {
         this._height = height;
         this._refresh();
         return this;
@@ -304,7 +304,7 @@ class TextBox extends TextMarker {
         this.updateSymbol(symbol);
         delete this._refreshing;
     }
-   //@ts-ignore
+    //@ts-ignore
     startEdit(opts) {
         const symbol = this._getCompiledSymbol();
         if (isFunctionDefinition(this._width)) {
@@ -320,7 +320,7 @@ class TextBox extends TextMarker {
         //@ts-ignore
         super.startEdit(opts);
     }
-   //@ts-ignore
+    //@ts-ignore
     endEdit() {
         const map = this.getMap();
         const zoom = map && map.getZoom();

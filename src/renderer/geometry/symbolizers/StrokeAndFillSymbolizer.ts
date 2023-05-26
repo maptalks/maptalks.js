@@ -1,11 +1,12 @@
+import { Point } from 'src/geo';
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';
 import PointExtent from '../../../geo/PointExtent';
 import CanvasSymbolizer from './CanvasSymbolizer';
 
-const TEMP_COORD0 = new Coordinate(0, 0);
-const TEMP_COORD1 = new Coordinate(0, 0);
+const TEMP_COORD0 = new Point(0, 0);
+const TEMP_COORD1 = new Point(0, 0);
 
 export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
     style: any;

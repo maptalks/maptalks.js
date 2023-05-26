@@ -1,3 +1,4 @@
+import { Geometry } from 'src/geometry';
 import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import { isString, isArrayHasData, pushIn } from '../core/util';
 import Coordinate from '../geo/Coordinate';
@@ -19,7 +20,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @example
          * var distance = map.computeLength([0, 0], [0, 20]);
          */
-        computeLength(coord1, coord2) {
+        computeLength(coord1: Coordinate, coord2: Coordinate) {
             //@ts-ignore
             if (!this.getProjection()) {
                 return null;
@@ -38,7 +39,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @param {Geometry} geometry - geometry to caculate
          * @return {Number} length, unit is meter
          */
-        computeGeometryLength(geometry) {
+        computeGeometryLength(geometry: Geometry) {
             //@ts-ignore
             return geometry._computeGeodesicLength(this.getProjection());
         }
@@ -48,7 +49,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @param  {Geometry} geometry - geometry to caculate
          * @return {Number} area, unit is sq.meter
          */
-        computeGeometryArea(geometry) {
+        computeGeometryArea(geometry: Geometry) {
             //@ts-ignore
             return geometry._computeGeodesicArea(this.getProjection());
         }

@@ -153,6 +153,7 @@ const MOUSEEVENT_ASSOCIATION_TABLE = {
 };
 
 class MapGeometryEventsHandler extends Handler {
+    target: Map;
     _mouseDownTime: number;
     _queryIdentifyTimeout: number;
 
@@ -271,6 +272,7 @@ class MapGeometryEventsHandler extends Handler {
         const callback = fireGeometryEvent.bind(this);
 
         if (eventType === 'mousemove' || eventType === 'touchmove') {
+            //@ts-ignore
             this._queryIdentifyTimeout = map.getRenderer().callInNextFrame(() => {
                 if (map.isInteracting()) {
                     return;

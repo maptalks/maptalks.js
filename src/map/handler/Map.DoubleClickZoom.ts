@@ -2,6 +2,7 @@ import Handler from '../../handler/Handler';
 import Map from '../Map';
 
 class MapDoubleClickZoomHandler extends Handler {
+    target: Map;
     addHooks() {
         if (!this.target) {
             return;

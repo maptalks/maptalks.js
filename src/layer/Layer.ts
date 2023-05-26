@@ -7,6 +7,7 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
+import { Map } from 'src/map';
 
 export type LayerOptionsType = {
     'attribution'?: string,
@@ -83,18 +84,18 @@ const options: LayerOptionsType = {
  * @mixes Renderable
  */
 class Layer extends JSONAble(Eventable(Renderable(Class))) {
-    _canvas: any;
-    _renderer: any;
+    _canvas: HTMLCanvasElement;
+    _renderer: CanvasRenderer;
     _id: number | string;
     _zIndex: number;
-    map: any;
+    map: Map;
     _mask: Geometry;
     _loaded: boolean;
     _collisionIndex: CollisionIndex;
     _silentConfig: boolean;
 
     static fromJSON(json: object): Layer {
-      return null;
+        return null;
     }
 
     constructor(id: number | string, options?: LayerOptionsType) {
@@ -128,6 +129,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this._initRenderer();
             const zIndex = this.getZIndex();
             if (!isNil(zIndex)) {
+                //@ts-ignore
                 this._renderer.setZIndex(zIndex);
                 if (!this.isCanvasRender()) {
                     this._renderer.render();
@@ -203,6 +205,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             this.map._sortLayersByZIndex();
         }
         if (this._renderer) {
+            //@ts-ignore
             this._renderer.setZIndex(zIndex);
         }
         /**
@@ -291,7 +294,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get the map that the layer added to
      * @returns {Map}
      */
-    getMap() {
+    getMap(): Map {
         if (this.map) {
             return this.map;
         }
@@ -466,6 +469,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
             throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
         }
+        //@ts-ignore
         mask._bindLayer(this);
         if (mask.type === 'Point') {
             mask.updateSymbol({
@@ -619,6 +623,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         }
         this._renderer = new clazz(this);
         this._renderer.layer = this;
+        //@ts-ignore
         this._renderer.setZIndex(this.getZIndex());
         this._switchEvents('on', this._renderer);
         // some plugin of dom renderer doesn't implement onAdd

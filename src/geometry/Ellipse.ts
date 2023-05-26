@@ -68,7 +68,7 @@ class Ellipse extends CenterMixin(Polygon) {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setWidth(width) {
+    setWidth(width: number) {
         this.width = width;
         this.onShapeChanged();
         return this;
@@ -88,7 +88,7 @@ class Ellipse extends CenterMixin(Polygon) {
      * @fires Ellipse#shapechange
      * @return {Ellipse} this
      */
-    setHeight(height) {
+    setHeight(height: number) {
         this.height = height;
         this.onShapeChanged();
         return this;
@@ -98,7 +98,7 @@ class Ellipse extends CenterMixin(Polygon) {
      * Gets the shell of the ellipse as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Circle#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell() {
+    getShell(): Array<Coordinate> {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'],

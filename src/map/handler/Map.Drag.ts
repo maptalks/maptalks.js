@@ -6,6 +6,7 @@ import Map from '../Map';
 import { Point } from 'src/geo';
 
 class MapDragHandler extends Handler {
+    target: Map;
     _dragHandler: DragHandler;
     startDragTime: number;
     _mode: string;
@@ -112,6 +113,7 @@ class MapDragHandler extends Handler {
         this.preY = param['mousePos'].y;
         this.startX = this.preX;
         this.startY = this.preY;
+        //@ts-ignore
         this._startPrjCenter = this.target._getPrjCenter().copy();
     }
 
@@ -120,6 +122,7 @@ class MapDragHandler extends Handler {
         const map = this.target;
         map.onMoveStart(param);
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
+       //@ts-ignore
         this.startPrjCoord = map._containerPointToPrj(p);
     }
 

@@ -35,6 +35,7 @@ import GeometryEvent from './ext/Geometry.Events';
 import OverlayLayer from 'src/layer/OverlayLayer';
 import Menuable from 'src/ui/Menuable';
 import { Menu } from 'src/ui';
+import { GeoPropertiesType } from 'src/types';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -278,7 +279,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @returns {Geometry} this
      * @fires Geometry#idchange
      */
-    setId(id) {
+    setId(id: string | number) {
         const oldId = this.getId();
         this._id = id;
         /**
@@ -304,7 +305,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @returns {Object} properties
      */
-    getProperties() {
+    getProperties(): GeoPropertiesType {
         if (!this.properties) {
             if (this._getParent()) {
                 return this._getParent().getProperties();
@@ -320,7 +321,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @returns {Geometry} this
      * @fires Geometry#propertieschange
      */
-    setProperties(properties) {
+    setProperties(properties: GeoPropertiesType) {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
         this._repaint();
@@ -533,6 +534,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         // const center = this.getCenter();
         const glRes = map.getGLRes();
         const minAltitude = this.getMinAltitude();
+
         const extent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, minAltitude, TEMP_POINT0), out);
         const maxAltitude = this.getMaxAltitude();
         if (maxAltitude !== minAltitude) {
@@ -614,7 +616,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *     .addTo(layer);
      * var contains = circle.containsPoint(new maptalks.Point(400, 300));
      */
-    containsPoint(containerPoint, t): boolean {
+    containsPoint(containerPoint: Point, t): boolean {
         if (!this.getMap()) {
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
@@ -732,7 +734,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @return {Geometry} this
      * @fires Geometry#zindexchange
      */
-    setZIndex(zIndex) {
+    setZIndex(zIndex: number) {
         const old = this.options['zIndex'];
         this.options['zIndex'] = zIndex;
         /**
@@ -812,7 +814,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @fires Geometry#positionchange
      * @fires Geometry#shapechange
      */
-    translate(x, y) {
+    translate(x: number, y: number) {
         if (isNil(x)) {
             return this;
         }
@@ -849,7 +851,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @param {*} [context=null]          - callback context
      * @return {Geometry} this
      */
-    flash(interval, count, cb, context) {
+    flash(interval: number, count: number, cb: Function, context?) {
         return flash.call(this, interval, count, cb, context);
     }
 
@@ -914,7 +916,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * Exports [geometry]{@link http://geojson.org/geojson-spec.html#feature-objects} out of a GeoJSON feature.
      * @return {Object} GeoJSON Geometry
      */
-    toGeoJSONGeometry() {
+    toGeoJSONGeometry(): object {
         const gJson = this._exportGeoJSONGeometry();
         return gJson;
     }
@@ -926,7 +928,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @param {Boolean} [opts.properties=true]  - whether export properties
      * @returns {Object} GeoJSON Feature
      */
-    toGeoJSON(opts): object {
+    toGeoJSON(opts?): object {
         if (!opts) {
             opts = {};
         }
@@ -1029,7 +1031,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * @param {Coordinate} [pivot=null]  - optional, will be the geometry's center by default
      * @returns {Geometry} this
      */
-    rotate(angle, pivot) {
+    rotate(angle: number, pivot) {
         if (this.type === 'GeometryCollection') {
             //@ts-ignore
             const geometries = this.getGeometries();
@@ -1091,7 +1093,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
     }
 
     //bind the geometry to a layer
-    _bindLayer(layer) {
+    _bindLayer(layer: OverlayLayer) {
         //check dupliaction
         if (this.getLayer()) {
             throw new Error('Geometry cannot be added to two or more layers at the same time.');
@@ -1162,7 +1164,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         return null;
     }
 
-    _getPrjExtent() {
+    _getPrjExtent(): PointExtent {
         const p = this._getProjection();
         this._verifyProjection();
         if (!this._extent && p) {
@@ -1245,7 +1247,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         return getExternalResources(symbol);
     }
 
-    _getPainter() {
+    _getPainter(): Painter {
         const layer = this.getLayer();
         if (!this._painter && layer) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
@@ -1561,7 +1563,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
     }
 
     //this for user
-    getAltitude() {
+    getAltitude(): number | Array<number> {
         const layer = this.getLayer();
         const altitudeProperty = getAltitudeProperty(layer);
         const properties = this.properties || TEMP_PROPERTIES;

@@ -44,7 +44,8 @@ class Rectangle extends Polygon {
      * Get coordinates of rectangle's northwest
      * @return {Coordinate}
      */
-    getCoordinates() {
+    //@ts-ignore
+    getCoordinates(): Coordinate {
         return this._coordinates;
     }
 

@@ -93,6 +93,7 @@ class ImageLayer extends Layer {
         this._images = images;
         const renderer = this.getRenderer();
         if (renderer) {
+            //@ts-ignore
             renderer.refreshImages();
         }
     }

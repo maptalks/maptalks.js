@@ -35,6 +35,7 @@ const options: LineStringOptionsType = {
  * ).addTo(layer);
  */
 class LineString extends Path {
+    _coordinates: Array<Coordinate>;
 
     /**
      * @param {Coordinate[]|Number[][]} coordinates - coordinates of the line string
@@ -58,12 +59,13 @@ class LineString extends Path {
      * @fires LineString#shapechange
      * @return {LineString} this
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: Array<Coordinate>) {
         if (!coordinates) {
             this._coordinates = null;
             this._setPrjCoordinates(null);
             return this;
         }
+        //@ts-ignore
         this._coordinates = Coordinate.toCoordinates(coordinates);
         if (this.getMap()) {
             this._setPrjCoordinates(this._projectCoords(this._coordinates));

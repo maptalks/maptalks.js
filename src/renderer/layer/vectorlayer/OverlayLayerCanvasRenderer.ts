@@ -87,28 +87,31 @@ class OverlayLayerRenderer extends CanvasRenderer {
         redraw(this);
     }
 
-    onGeometryShapeChange() {
+    onGeometryShapeChange(param) {
         redraw(this);
     }
 
-    onGeometryPositionChange() {
+    onGeometryPositionChange(param) {
         redraw(this);
     }
 
-    onGeometryZIndexChange() {
+    onGeometryZIndexChange(param) {
         redraw(this);
     }
 
-    onGeometryShow() {
+    onGeometryShow(param) {
         redraw(this);
     }
 
-    onGeometryHide() {
+    onGeometryHide(param) {
         redraw(this);
     }
 
-    onGeometryPropertiesChange() {
+    onGeometryPropertiesChange(param) {
         redraw(this);
+    }
+    identifyAtPoint(point, options = {}) {
+        
     }
 }
 

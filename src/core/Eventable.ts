@@ -90,7 +90,7 @@ function Eventable<TBase extends Constructor>(Base: TBase) {
          * foo.once('mousedown mousemove mouseup', onMouseEvent, foo);
          * @function Eventable.once
          */
-        once(eventTypes: string, handler: Function, context) {
+        once(eventTypes: string, handler: Function, context?) {
             if (!isString(eventTypes)) {
                 const once = {};
                 //@ts-ignore

@@ -49,6 +49,10 @@ class Extent {
     pymin: number;
     pxmax: number;
     pymax: number;
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
     /**
      * @param {Number} x1   - x of coordinate 1
      * @param {Number} y1   - y of coordinate 1

@@ -29,7 +29,7 @@ import { Player } from 'src/core/Animation';
 import MapCanvasRenderer from 'src/renderer/map/MapCanvasRenderer';
 import MapCollision from './Map.Collision';
 import MapTopo from './Map.Topo';
-import { MapView } from 'src/types';
+import { MapDataURLType, MapPanelsType, MapViewType } from 'src/types';
 
 
 const TEMP_COORD = new Coordinate(0, 0);
@@ -167,8 +167,8 @@ interface MapInterface {
     zoomToNextView();
     hasPreviousView(): boolean;
     zoomToPreviousView();
-    animateTo(view: MapView, options: object, step: Function);
-    flyTo(view: MapView, options: object, step: Function);
+    animateTo(view: MapViewType, options: object, step: Function);
+    flyTo(view: MapViewType, options: object, step: Function);
     isAnimating(): boolean;
     isRotating(): boolean;
     isFullScreen(): boolean;
@@ -197,6 +197,83 @@ interface MapInterface {
     pointToDistance(dx: number, dy: number, zoom?: number): number;
     pointAtResToDistance(dx: number, dy: number, res?: number, paramCenter?: Coordinate): number;
     locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate;
+    _pointAtResToContainerPoint(point: Point, res: number, altitude?: number, out?: Point): Point;
+    _containerPointToPoint(point: Point, zoom?: number, out?: Point): Point;
+    _pointToContainerPoint(point: Point, zoom?: number, altitude?: number, out?: Point): Point;
+    _get2DExtent(zoom?: number, out?: Extent): Extent;
+    _get2DExtentAtRes(res?: number, out?: Extent): Extent;
+    _pointsAtResToContainerPoints(cPoints: Array<Point>, glRes: number, altitudes: number | Array<number>, pts: Array<Point>): Array<Point>;
+    _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point;
+    _animateTo(view: MapViewType, options?: object, step?: Function);
+    onZoomStart(nextZoom: number, origin: Point);
+    onZooming(nextZoom: number, origin: Point, startScale?: number);
+    onZoomEnd(nextZoom: number, origin: Point);
+    _checkZoomOrigin(origin: Point): Point;
+    _checkZoom(nextZoom: number): number;
+    _ignoreEvent(domEvent: MouseEvent): boolean;
+    _stopAnim(player: Player);
+    _getActualEvent(e: MouseEvent): any;
+    _isEventOutMap(e: MouseEvent): boolean;
+    _panTo(prjCoord: Coordinate, options: object);
+    _setBearing(bearing: number);
+    _setPitch(pitch: number);
+    _zoomAnimation(nextZoom: number, origin: Point, startScale?: number);
+}
+
+export type MapOptionsType = {
+    centerCross?: boolean;
+    seamlessZoom?: boolean;
+    zoomInCenter?: boolean;
+    zoomOrigin: any;
+    zoomAnimation?: boolean;
+    zoomAnimationDuration?: number;
+    panAnimation?: boolean;
+    panAnimationDuration?: number;
+    rotateAnimation?: boolean;
+    rotateAnimationDuration?: number;
+    zoomable?: boolean;
+    enableInfoWindow?: boolean;
+    hitDetect?: boolean;
+    hitDetectLimit?: number;
+    fpsOnInteracting?: number;
+    layerCanvasLimitOnInteracting?: number;
+    maxZoom?: number;
+    minZoom?: number;
+    maxExtent?: Extent;
+    fixCenterOnResize?: boolean;
+    maxPitch?: number;
+    maxVisualPitch?: number;
+    viewHistory?: boolean;
+    viewHistoryCount?: number;
+    draggable?: boolean;
+    dragPan?: boolean;
+    dragRotate?: boolean;
+    dragPitch?: boolean;
+    dragRotatePitch?: boolean;
+    touchGesture?: boolean;
+    touchZoom?: boolean;
+    touchRotate?: boolean;
+    touchPitch?: boolean;
+    touchZoomRotate?: boolean;
+    doubleClickZoom?: boolean;
+    scrollWheelZoom?: boolean;
+    geometryEvents?: boolean;
+    clickTimeThreshold?: number;
+    control?: boolean;
+    attribution?: boolean;
+    zoomControl?: boolean;
+    scaleControl?: boolean;
+    overviewControl?: boolean;
+    fog?: boolean;
+    fogColor?: Array<number>;
+    renderer?: string;
+    devicePixelRatio?: number;
+    heightFactor?: number;
+    cameraInfiniteFar?: boolean;
+    stopRenderOnOffscreen?: boolean;
+    center: Array<number>;
+    zoom: number;
+    baseLayer?: Layer;
 }
 
 /**
@@ -227,14 +304,14 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     static VERSION: string;
     VERSION: string;
     _loaded: boolean;
-    _panels: object;
+    _panels: MapPanelsType;
     _baseLayer: Layer;
     _layers: Array<Layer>;
     _zoomLevel: number;
     _center: any;
     _mapViewPoint: Point;
     _containerDOM: HTMLElement;
-    _spatialReference: any;
+    _spatialReference: SpatialReference;
     _cursor: string;
     _prjCenter: Point;
     centerAltitude: number;
@@ -251,6 +328,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     renderer: MapRenderer;
     _moving: boolean;
     _mapAnimPlayer: Player;
+    _animPlayer: Player;
     _originCenter: Point;
     _suppressRecenter: boolean;
     _dragRotating: boolean;
@@ -259,6 +337,15 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     _renderer: MapCanvasRenderer;
     _containerDomContentRect: DOMRect;
     _mapRes: number;
+    cameraPosition: any;
+    projViewMatrix: any;
+    domCssMatrix: any;
+    cameraLookAt: any;
+    _glScale: number;
+    cascadeFrustumMatrix0: any;
+    cascadeFrustumMatrix1: any;
+    options: MapOptionsType;
+
 
     /**
      * @param {(string|HTMLElement|object)} container - The container to create the map on, can be:<br>
@@ -273,7 +360,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {Layer[]} [options.layers=null] - layers that will be added to map initially.
      * @param {*} options.* - any other option defined in [Map.options]{@link Map#options}      [description]
      */
-    constructor(container, options) {
+    constructor(container: string | HTMLDivElement | HTMLCanvasElement, options: MapOptionsType) {
         if (!options) {
             throw new Error('Invalid options when creating map.');
         }
@@ -339,6 +426,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     }
 
 
+
     static fromJSON(container, profile, options): Map {
         return null;
     }
@@ -386,7 +474,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * Get the spatial reference of the Map.
      * @return {SpatialReference} map's spatial reference
      */
-    getSpatialReference() {
+    getSpatialReference(): SpatialReference {
         return this._spatialReference;
     }
 
@@ -762,7 +850,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         }
     }
 
-    getZoomFromRes(res) {
+    getZoomFromRes(res: number): number {
         const resolutions = this._getResolutions(),
             minRes = this._getResolution(this.getMinZoom()),
             maxRes = this._getResolution(this.getMaxZoom());
@@ -910,7 +998,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * // convert to point in gl zoom
      * const glPoint = point.multi(this.getGLScale());
      */
-    getGLScale(zoom: number): number {
+    getGLScale(zoom?: number): number {
         if (isNil(zoom)) {
             zoom = this.getZoom();
         }
@@ -997,7 +1085,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * Get map's current view (center/zoom/pitch/bearing)
      * @return {Object} { center : *, zoom : *, pitch : *, bearing : * }
      */
-    getView(): MapView {
+    getView(): MapViewType {
         return {
             'center': this.getCenter().toArray(),
             'zoom': this.getZoom(),
@@ -1013,7 +1101,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {Object} view - a object containing center/zoom/pitch/bearing
      * return {Map} this
      */
-    setView(view: MapView) {
+    setView(view: MapViewType) {
         if (!view) {
             return this;
         }
@@ -1039,7 +1127,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} resolution
      */
-    getResolution(zoom: number): number {
+    getResolution(zoom?: number): number {
         return this._getResolution(zoom);
     }
 
@@ -1048,7 +1136,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {Number} zoom - zoom or current zoom if not given
      * @return {Number} scale
      */
-    getScale(zoom: number): number {
+    getScale(zoom?: number): number {
         const z = (isNil(zoom) ? this.getZoom() : zoom);
         const max = this._getResolution(this.getMaxNativeZoom()),
             res = this._getResolution(z);
@@ -1061,15 +1149,15 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {Number} zoomOffset - zoom offset
      * @return {Map} - this
      */
-    fitExtent(extent, zoomOffset, options = {}, step) {
+    fitExtent(extent: Extent | Array<number>, zoomOffset?: number, options?, step?) {
         if (!extent) {
             return this;
         }
+        options = options || {};
         extent = new Extent(extent, this.getProjection());
         const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
         const center = extent.getCenter();
         if (typeof (options['animation']) === 'undefined' || options['animation'])
-            //@ts-ignore
             return this._animateTo({
                 center,
                 zoom
@@ -1194,7 +1282,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      *     return (layer instanceof VectorLayer);
      * });
      */
-    getLayers(filter?): Array<Layer> {
+    getLayers(filter?: Function): Array<Layer> {
         return this._getLayers(function (layer) {
             if (layer === this._baseLayer || layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0) {
                 return false;
@@ -1211,7 +1299,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {String} id - layer id
      * @return {Layer}
      */
-    getLayer(id): Layer {
+    getLayer(id: string | number): Layer {
         if (!id) {
             return null;
         }
@@ -1364,6 +1452,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         for (let i = 0, l = layers.length; i < l; i++) {
             let layer = layers[i];
             if (isString(layers[i])) {
+                //@ts-ignore
                 layer = this.getLayer(layer);
             }
             if (!(layer instanceof Layer) || !layer.getMap() || layer.getMap() !== this) {
@@ -1390,7 +1479,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL(options): string {
+    toDataURL(options?: MapDataURLType): string {
         if (!options) {
             options = {};
         }
@@ -1430,7 +1519,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for coordinateToPoint
      */
-    coordToPoint(coordinate, zoom?, out?): Point {
+    coordToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point {
         //@ts-ignore
         return this.coordinateToPoint(coordinate, zoom, out);
     }
@@ -1438,7 +1527,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for coordinateToPointAtRes
      */
-    coordToPointAtRes(coordinate, res, out): Point {
+    coordToPointAtRes(coordinate: Coordinate, res?: number, out?: Point): Point {
         //@ts-ignore
         return this.coordinateToPointAtRes(coordinate, res, out);
     }
@@ -1446,7 +1535,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for pointToCoordinate
      */
-    pointToCoord(point, zoom, out): Coordinate {
+    pointToCoord(point: Point, zoom?: number, out?: Coordinate): Coordinate {
         //@ts-ignore
         return this.pointToCoordinate(point, zoom, out);
     }
@@ -1454,7 +1543,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for pointAtResToCoordinate
      */
-    pointAtResToCoord(point, res, out): Coordinate {
+    pointAtResToCoord(point: Point, res?: number, out?: Point): Coordinate {
         //@ts-ignore
         return this.pointAtResToCoordinate(point, res, out);
     }
@@ -1463,7 +1552,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for coordinateToViewPoint
      */
-    coordToViewPoint(coordinate, out, altitude): Point {
+    coordToViewPoint(coordinate: Coordinate, out?: Point, altitude?: number): Point {
         //@ts-ignore
         return this.coordinateToViewPoint(coordinate, out, altitude);
     }
@@ -1471,7 +1560,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for viewPointToCoordinate
      */
-    viewPointToCoord(viewPoint, out): Coordinate {
+    viewPointToCoord(viewPoint: Point, out?: Coordinate): Coordinate {
         //@ts-ignore
         return this.viewPointToCoordinate(viewPoint, out);
     }
@@ -1479,7 +1568,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for coordinateToContainerPoint
      */
-    coordToContainerPoint(coordinate, zoom, out): Point {
+    coordToContainerPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point {
         //@ts-ignore
         return this.coordinateToContainerPoint(coordinate, zoom, out);
     }
@@ -1488,7 +1577,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * shorter alias for containerPointToCoordinate
      */
-    containerPointToCoord(containerPoint, out): Coordinate {
+    containerPointToCoord(containerPoint: Point, out?: Coordinate): Coordinate {
         //@ts-ignore
         return this.containerPointToCoordinate(containerPoint, out);
     }
@@ -1500,10 +1589,11 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    containerPointToViewPoint(containerPoint, out): Point {
+    containerPointToViewPoint(containerPoint: Point, out?: Point): Point {
         if (out) {
             out.set(containerPoint.x, containerPoint.y);
         } else {
+            //@ts-ignore
             out = containerPoint.copy();
         }
         return out._sub(this.getViewPoint());
@@ -1516,10 +1606,11 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {Point} [out=undefined]    - optional point to receive result
      * @returns {Point}
      */
-    viewPointToContainerPoint(viewPoint, out): Point {
+    viewPointToContainerPoint(viewPoint: Point, out?: Point): Point {
         if (out) {
             out.set(viewPoint.x, viewPoint.y);
         } else {
+            //@ts-ignore
             out = viewPoint.copy();
         }
         return out._add(this.getViewPoint());
@@ -1530,7 +1621,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @return {Map} this
      * @fires Map#resize
      */
-    checkSize(force) {
+    checkSize(force?: boolean) {
         const justStart = ((now() - this._initTime) < 1500) && this.width === 0 || this.height === 0;
 
         const watched = this._getContainerDomSize(),
@@ -1589,7 +1680,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {Number} dy           - meter distance on Y axis
      * @return {Coordinate} Result coordinate
      */
-    locate(coordinate, dx, dy) {
+    locate(coordinate: Coordinate, dx: number, dy: number): Coordinate {
         return this.getProjection()._locate(new Coordinate(coordinate), dx, dy);
     }
 
@@ -1606,7 +1697,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * Returns map panels.
      * @return {Object}
      */
-    getPanels() {
+    getPanels(): MapPanelsType {
         return this._panels;
     }
 
@@ -2239,13 +2330,13 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @return {Point} 2D point
      * @private
      */
-    _prjToPoint(pCoord, zoom, out) {
+    _prjToPoint(pCoord: Coordinate, zoom?: number, out?: Point): Point {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._prjToPointAtRes(pCoord, res, out);
     }
 
-    _prjToPointAtRes(pCoord, res, out) {
+    _prjToPointAtRes(pCoord: Coordinate, res?: number, out?: Point): Point {
         return this._spatialReference.getTransformation().transform(pCoord, res, out);
     }
 
@@ -2256,9 +2347,10 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @return {Point} 2D point
      * @private
      */
-    _prjsToPointsAtRes(pCoords, res, resultPoints = []) {
+    _prjsToPointsAtRes(pCoords: Array<Coordinate>, res?: number, resultPoints?: Array<Point>): Array<Point> {
         const transformation = this._spatialReference.getTransformation();
         const pts = [];
+        resultPoints = resultPoints || [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
             const pt = transformation.transform(pCoords[i], res, resultPoints[i]);
             pts.push(pt);
@@ -2273,13 +2365,13 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @return {Coordinate} projected coordinate
      * @private
      */
-    _pointToPrj(point, zoom?, out?) {
+    _pointToPrj(point: Point, zoom?: number, out?: Coordinate): Coordinate {
         zoom = (isNil(zoom) ? this.getZoom() : zoom);
         const res = this._getResolution(zoom);
         return this._pointToPrjAtRes(point, res, out);
     }
 
-    _pointToPrjAtRes(point, res, out) {
+    _pointToPrjAtRes(point: Point, res?: number, out?: Coordinate): Coordinate {
         return this._spatialReference.getTransformation().untransform(point, res, out);
     }
 
@@ -2303,7 +2395,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         return out;
     }
 
-    _pointAtResToPoint(point, res, out) {
+    _pointAtResToPoint(point, res, out?) {
         if (out) {
             out.x = point.x;
             out.y = point.y;
@@ -2337,7 +2429,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @return {Coordinate}
      * @private
      */
-    _containerPointToPrj(containerPoint, out?) {
+    _containerPointToPrj(containerPoint: Point, out?: Coordinate): Coordinate {
         //@ts-ignore
         return this._pointToPrj(this._containerPointToPoint(containerPoint, undefined, out), undefined, out);
     }
@@ -2419,10 +2511,10 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     zoomToPreviousView() {
         throw new Error('Method not implemented.');
     }
-    animateTo(view: MapView, options: object, step: Function) {
+    animateTo(view: MapViewType, options: object, step: Function) {
         throw new Error('Method not implemented.');
     }
-    flyTo(view: MapView, options: object, step: Function) {
+    flyTo(view: MapViewType, options: object, step: Function) {
         throw new Error('Method not implemented.');
     }
     isAnimating(): boolean {
@@ -2510,6 +2602,70 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate {
         throw new Error('Method not implemented.');
     }
+    _containerPointToPoint(point: Point, zoom?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    _pointToContainerPoint(point: Point, zoom?: number, altitude?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    _pointAtResToContainerPoint(point: Point, res: number, altitude?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    _zoomAnimation(nextZoom: number, origin: Point, startScale?: number) {
+        throw new Error('Method not implemented.');
+    }
+    _setBearing(bearing: number) {
+        throw new Error('Method not implemented.');
+    }
+    _setPitch(pitch: number) {
+        throw new Error('Method not implemented.');
+    }
+    _isEventOutMap(e: MouseEvent): boolean {
+        throw new Error('Method not implemented.');
+    }
+    _panTo(prjCoord: Coordinate, options: object) {
+        throw new Error('Method not implemented.');
+    }
+    _getActualEvent(e: MouseEvent) {
+        throw new Error('Method not implemented.');
+    }
+    _stopAnim(player: Player) {
+        throw new Error('Method not implemented.');
+    }
+    _ignoreEvent(domEvent: MouseEvent): boolean {
+        throw new Error('Method not implemented.');
+    }
+    _checkZoom(nextZoom: number): number {
+        throw new Error('Method not implemented.');
+    }
+    _checkZoomOrigin(origin: Point): Point {
+        throw new Error('Method not implemented.');
+    }
+    onZoomStart(nextZoom: number, origin: Point) {
+        throw new Error('Method not implemented.');
+    }
+    onZooming(nextZoom: number, origin: Point, startScale?: number) {
+        throw new Error('Method not implemented.');
+    }
+    onZoomEnd(nextZoom: number, origin: Point) {
+        throw new Error('Method not implemented.');
+    }
+    _animateTo(view: MapViewType, options?: object, step?: Function) {
+        throw new Error('Method not implemented.');
+    }
+    _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point {
+        throw new Error('Method not implemented.');
+    }
+    _pointsAtResToContainerPoints(cPoints: Point[], glRes: number, altitudes: number | number[], pts: Point[]): Point[] {
+        throw new Error('Method not implemented.');
+    }
+    _get2DExtent(zoom?: number, out?: Extent): Extent {
+        throw new Error('Method not implemented.');
+    }
+    _get2DExtentAtRes(res?: number, out?: Extent): Extent {
+        throw new Error('Method not implemented.');
+    }
+
 }
 
 

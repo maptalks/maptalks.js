@@ -410,6 +410,7 @@ class Path extends Geometry {
     _get2DLength() {
         const vertexes = this._getPath2DPoints(this._getPrjCoordinates(), true);
         let len = 0;
+        //@ts-ignore
         for (let i = 1, l = vertexes.length; i < l; i++) {
             len += vertexes[i].distanceTo(vertexes[i - 1]);
         }

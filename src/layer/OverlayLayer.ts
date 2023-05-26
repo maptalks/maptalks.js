@@ -5,6 +5,7 @@ import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer, { LayerOptionsType } from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
+import { OverlayLayerCanvasRenderer } from 'src/renderer';
 
 export type OverlayLayerOptionsType = LayerOptionsType & {
     'drawImmediate'?: boolean;
@@ -36,6 +37,7 @@ const TMP_EVENTS_ARR = [];
  * @extends Layer
  */
 class OverlayLayer extends Layer {
+    _renderer: OverlayLayerCanvasRenderer;
     _maxZIndex: number;
     _minZIndex: number;
     _geoMap: any;
@@ -61,6 +63,14 @@ class OverlayLayer extends Layer {
         if (style) {
             this.setStyle(style);
         }
+    }
+
+    _getRenderer(): OverlayLayerCanvasRenderer {
+        return this._renderer;
+    }
+
+    getRenderer() {
+        return this._getRenderer();
     }
 
     /**
@@ -265,6 +275,7 @@ class OverlayLayer extends Layer {
                         center,
                         zoom: z,
                     }, extend({
+                        //@ts-ignore
                         duration: map.options.zoomAnimationDuration,
                         easing: 'out',
                     }, fitView), step);
@@ -390,9 +401,13 @@ class OverlayLayer extends Layer {
         this._geoList = [];
         const renderer = this._getRenderer();
         if (renderer) {
+            //@ts-ignore
             renderer.onGeometryRemove(old);
+            //@ts-ignore
             if (renderer.clearImageData) {
+                //@ts-ignore
                 renderer.clearImageData();
+                //@ts-ignore
                 delete renderer._lastGeosToDraw;
             }
         }
@@ -434,6 +449,7 @@ class OverlayLayer extends Layer {
             this._geoList.splice(idx, 1);
         }
         if (this._getRenderer()) {
+            //@ts-ignore
             this._getRenderer().onGeometryRemove([geometry]);
         }
     }

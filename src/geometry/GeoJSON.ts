@@ -74,7 +74,7 @@ const GeoJSON = {
      *  // A geometry array.
      *  const geometries = GeoJSON.toGeometry(collection, geometry => { geometry.config('draggable', true); });
      */
-    toGeometry: function (geoJSON, foreachFn?) {
+    toGeometry: function (geoJSON, foreachFn?): Geometry | Array<Geometry> {
         if (isString(geoJSON)) {
             geoJSON = parseJSON(geoJSON);
         }

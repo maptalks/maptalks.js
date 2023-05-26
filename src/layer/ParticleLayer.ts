@@ -50,6 +50,7 @@ class ParticleLayer extends CanvasLayer {
         if (!points || points.length === 0) {
             const renderer = this._getRenderer();
             if (renderer) {
+                //@ts-ignore
                 this._getRenderer()._shouldClear = true;
             }
             return;

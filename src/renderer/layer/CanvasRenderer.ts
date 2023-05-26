@@ -51,6 +51,7 @@ class CanvasRenderer extends Class {
     _renderZoom: number;
     gl: WebGL2RenderingContext;
     _maskExtent: any;
+    mapStateCache: any;
 
     /**
      * @param  {Layer} layer the layer to render
@@ -71,7 +72,7 @@ class CanvasRenderer extends Class {
      * Render the layer.
      * Call checkResources
      */
-    render(framestamp) {
+    render(framestamp?) {
         this.prepareRender();
         if (!this.getMap() || !this.layer.isVisible()) {
             return;
@@ -413,6 +414,7 @@ class CanvasRenderer extends Class {
         delete this._renderComplete;
         const map = this.getMap();
         this._renderZoom = map.getZoom();
+        //@ts-ignore
         this.canvasExtent2D = this._extent2D = map._get2DExtent();
         //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
         this.southWest = map._containerPointToPoint(new Point(0, map.height));

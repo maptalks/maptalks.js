@@ -272,7 +272,7 @@ export default class SpatialReference {
         return this._resolutions || [];
     }
 
-    getResolution(zoom) {
+    getResolution(zoom: number) {
         let z = (zoom | 0);
         if (z < 0) {
             z = 0;

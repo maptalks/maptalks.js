@@ -20,6 +20,7 @@ import Layer, { LayerOptionsType } from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
+import { CanvasRenderer, TileLayerCanvasRenderer } from 'src/renderer';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);
@@ -233,6 +234,7 @@ class TileLayer extends Layer {
         super(id, options);
     }
 
+
     /**
      * Reproduce a TileLayer from layer's profile JSON.
      * @param  {Object} layerJSON - layer's profile JSON
@@ -265,7 +267,7 @@ class TileLayer extends Layer {
      * Get tile size of the tile layer
      * @return {Size}
      */
-    getTileSize() {
+    getTileSize(): Size {
         if (this._tileSize) {
             return this._tileSize;
         }
@@ -277,7 +279,7 @@ class TileLayer extends Layer {
         return this._tileSize;
     }
 
-    getTiles(z?, parentLayer?) {
+    getTiles(z?: number, parentLayer?) {
         this._coordCache = {};
         if (this._isPyramidMode()) {
             return this._getPyramidTiles(z, parentLayer);
@@ -387,6 +389,7 @@ class TileLayer extends Layer {
         const widthZ = heightZ * aspectRatio;
         // 相机到容器右上角，斜对角线的距离
         const diagonalZ = Math.sqrt(cameraZ * cameraZ + heightZ * heightZ + widthZ * widthZ);
+        //@ts-ignore
         const fov0 = map._getFovZ(0);
         const error = fov0 * (diagonalZ / cameraZ);
 
@@ -660,10 +663,12 @@ class TileLayer extends Layer {
         const { xmin, ymin, xmax, ymax } = node.extent2d;
         TILE_BOX[0][0] = (xmin - offset[0]) * glScale;
         TILE_BOX[0][1] = (ymin - offset[1]) * glScale;
+        //@ts-ignore
         const minAltitude = node.minAltitude || renderer && renderer.avgMinAltitude || 0;
         TILE_BOX[0][2] = minAltitude * this._zScale;
         TILE_BOX[1][0] = (xmax - offset[0]) * glScale;
         TILE_BOX[1][1] = (ymax - offset[1]) * glScale;
+        //@ts-ignore
         const maxAltitude = node.maxAltitude || renderer && renderer.avgMaxAltitude || 0;
         TILE_BOX[1][2] = maxAltitude * this._zScale;
         return intersectsBox(projectionView, TILE_BOX);
@@ -863,7 +868,7 @@ class TileLayer extends Layer {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
-             //@ts-ignore
+            //@ts-ignore
             'options': this.config()
         };
         return profile;
@@ -873,7 +878,7 @@ class TileLayer extends Layer {
      * Get tilelayer's spatial reference.
      * @returns {SpatialReference} spatial reference
      */
-    getSpatialReference() {
+    getSpatialReference(): SpatialReference {
         const map = this.getMap();
         if (map && (!this.options['spatialReference'] || SpatialReference.equals(this.options['spatialReference'], map.options['spatialReference']))) {
             return map.getSpatialReference();
@@ -891,6 +896,7 @@ class TileLayer extends Layer {
         this._sr = new SpatialReference(config);
         this._srMinZoom = this._sr.getMinZoom();
         this._srMaxZoom = this._sr.getMaxZoom();
+        //@ts-ignore
         this._hasOwnSR = this._sr.toJSON().projection !== map.getSpatialReference().toJSON().projection;
         return this._sr;
     }

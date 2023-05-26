@@ -5,6 +5,7 @@ import Map from '../Map';
 
 //handler to zoom map by pinching
 class MapTouchZoomHandler extends Handler {
+    target: Map;
     preY: number;
     _startP1: Point;
     _startP2: Point;

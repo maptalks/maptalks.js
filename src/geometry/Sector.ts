@@ -1,3 +1,4 @@
+import Coordinate from 'src/geo/Coordinate';
 import { extend, isNil } from '../core/util';
 import Circle, { CirlceOptionsType } from './Circle';
 export type SectorOptionsType = CirlceOptionsType & {
@@ -63,7 +64,7 @@ class Sector extends Circle {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setStartAngle(startAngle) {
+    setStartAngle(startAngle: number) {
         this.startAngle = startAngle;
         this.onShapeChanged();
         return this;
@@ -83,7 +84,7 @@ class Sector extends Circle {
      * @return {Sector} this
      * @fires Sector#shapechange
      */
-    setEndAngle(endAngle) {
+    setEndAngle(endAngle: number) {
         this.endAngle = endAngle;
         this.onShapeChanged();
         return this;
@@ -93,7 +94,7 @@ class Sector extends Circle {
      * Gets the shell of the sector as a polygon, number of the shell points is decided by [options.numberOfShellPoints]{@link Sector#options}
      * @return {Coordinate[]} - shell coordinates
      */
-    getShell() {
+    getShell(): Array<Coordinate> {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'] - 2,

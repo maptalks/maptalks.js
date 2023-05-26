@@ -5,6 +5,7 @@ import Map from '../Map';
 const PANOFFSET = 30;
 
 class MapAutoPanAtEdgeHandler extends Handler {
+    target: Map;
     addHooks() {
         if (!this.target) {
             return;

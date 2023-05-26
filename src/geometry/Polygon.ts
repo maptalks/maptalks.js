@@ -65,7 +65,7 @@ class Polygon extends Path {
      * @return {Polygon} this
      * @fires Polygon#shapechange
      */
-    setCoordinates(coordinates) {
+    setCoordinates(coordinates: Array<Array<Coordinate | Array<number>>>) {
         if (!coordinates) {
             this._coordinates = null;
             this._holes = null;
@@ -102,7 +102,7 @@ class Polygon extends Path {
      *
      * @returns {Coordinate[][]}
      */
-    getCoordinates() {
+    getCoordinates(): Array<Array<Coordinate>> {
         if (!this._coordinates) {
             return [];
         }
@@ -131,7 +131,7 @@ class Polygon extends Path {
      *
      * @returns {Coordinate[]}
      */
-    getShell() {
+    getShell(): Array<Coordinate> {
         return this._coordinates || [];
     }
 
@@ -140,7 +140,7 @@ class Polygon extends Path {
      * Gets holes' coordinates of the polygon if it has.
      * @returns {Coordinate[][]}
      */
-    getHoles() {
+    getHoles(): Array<Array<Coordinate>> {
         return this._holes || [];
     }
 

@@ -129,6 +129,7 @@ class CanvasLayer extends Layer {
      */
     requestMapToRender() {
         if (this._getRenderer()) {
+            //@ts-ignore
             this._getRenderer().requestMapToRender();
         }
         return this;

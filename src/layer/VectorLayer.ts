@@ -147,6 +147,7 @@ class VectorLayer extends OverlayLayer {
         const tolerance = options['tolerance'];
         const map = this.getMap();
         const renderer = this.getRenderer();
+        //@ts-ignore
         const imageData = renderer && renderer.getImageData && renderer.getImageData();
         if (imageData) {
             let hitTolerance = 0;
@@ -222,14 +223,14 @@ class VectorLayer extends OverlayLayer {
      * @param  {Extent} [options.clipExtent=null] - if set, only the geometries intersectes with the extent will be exported.
      * @return {Object} layer's JSON
      */
-    toJSON(options) {
+    toJSON(options): object {
         if (!options) {
             options = {};
         }
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
-             //@ts-ignore
+            //@ts-ignore
             'options': this.config()
         };
         if (isNil(options['geometries']) || options['geometries']) {

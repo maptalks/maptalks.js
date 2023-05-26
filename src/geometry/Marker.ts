@@ -7,6 +7,7 @@ import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol, DYNA
 //@ts-ignore
 import { isFunctionDefinition, loadGeoSymbol } from '../core/mapbox';
 import { isNil } from '../core/util';
+import Coordinate from 'src/geo/Coordinate';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -57,6 +58,8 @@ const options: MarkerOptionsType = {
  */
 class Marker extends CenterMixin(Geometry) {
 
+    _coordinates: Coordinate;
+
     /**
      * @param {Coordinate} coordinates      - coordinates of the marker
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
@@ -67,6 +70,16 @@ class Marker extends CenterMixin(Geometry) {
         if (coordinates) {
             this.setCoordinates(coordinates);
         }
+
+    }
+
+    getCoordinates(): Coordinate {
+        return this._coordinates;
+    }
+
+    setCoordinates(coordinates: Coordinate | Array<number>) {
+        super.setCoordinates(coordinates);
+        return this;
     }
 
     getOutline() {
