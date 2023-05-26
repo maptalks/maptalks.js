@@ -26,6 +26,9 @@ const RADIAN = Math.PI / 180;
 const textOffsetY = 1;
 
 const Canvas = {
+    getCanvas2DContext(canvas) {
+        return canvas.getContext('2d', { willReadFrequently: true });
+    },
     setHitTesting(testing) {
         hitTesting = testing;
     },
@@ -69,7 +72,7 @@ const Canvas = {
             ctx.lineWidth = strokeWidth;
         }
         const strokePattern = style['linePatternFile'];
-        const strokeColor = style['lineColor'] || DEFAULT_STROKE_COLOR;
+        let strokeColor = style['lineColor'] || DEFAULT_STROKE_COLOR;
         if (testing) {
             ctx.strokeStyle = '#000';
         } else if (strokePattern && resources) {
@@ -87,6 +90,9 @@ const Canvas = {
                 ctx.strokeStyle = DEFAULT_STROKE_COLOR;
             }
         } else /*if (ctx.strokeStyle !== strokeColor)*/ {
+            if (Array.isArray(strokeColor)) {
+                strokeColor = Canvas.normalizeColorToRGBA(strokeColor);
+            }
             ctx.strokeStyle = strokeColor;
         }
         if (style['lineJoin']) {
@@ -99,7 +105,7 @@ const Canvas = {
             ctx.setLineDash(style['lineDasharray']);
         }
         const polygonPattern = style['polygonPatternFile'];
-        const fill = style['polygonFill'] || DEFAULT_FILL_COLOR;
+        let fill = style['polygonFill'] || DEFAULT_FILL_COLOR;
         if (testing) {
             ctx.fillStyle = '#000';
         } else if (polygonPattern && resources) {
@@ -135,6 +141,9 @@ const Canvas = {
                 ctx.fillStyle = 'rgba(255,255,255,0)';
             }
         } else /*if (ctx.fillStyle !== fill)*/ {
+            if (Array.isArray(fill)) {
+                fill = Canvas.normalizeColorToRGBA(fill);
+            }
             ctx.fillStyle = fill;
         }
     },
@@ -264,6 +273,9 @@ const Canvas = {
             op = 1;
         }
         if (color[0] !== '#') {
+            if (Array.isArray(color)) {
+                color = Canvas.normalizeColorToRGBA(color, op);
+            }
             return color;
         }
         let r, g, b;
@@ -277,6 +289,10 @@ const Canvas = {
             b = parseInt(color.substring(3, 4), 16) * 17;
         }
         return 'rgba(' + r + ',' + g + ',' + b + ',' + op + ')';
+    },
+
+    normalizeColorToRGBA(fill, opacity = 1) {
+        return `rgba(${fill[0] * 255},${fill[1] * 255},${fill[2] * 255},${(fill.length === 4 ? fill[3] : 1) * opacity})`;
     },
 
     image(ctx, img, x, y, width, height) {
@@ -339,6 +355,9 @@ const Canvas = {
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             ctx.lineWidth = textHaloRadius * 2;
+            if (Array.isArray(textHaloFill)) {
+                textHaloFill = Canvas.normalizeColorToRGBA(textHaloFill);
+            }
             ctx.strokeStyle = textHaloFill;
             ctx.strokeText(text, pt.x, pt.y + textOffsetY);
             ctx.miterLimit = 10; //default
@@ -486,9 +505,15 @@ const Canvas = {
     },
 
     polygon(ctx, points, lineOpacity, fillOpacity, lineDashArray, smoothness) {
-        // if MultiClip
+        // if MultiPolygon clip
         if (ctx.isMultiClip) {
             Canvas._multiClip(ctx, points);
+            return;
+        }
+        //polygon clip
+        if (ctx.isClip) {
+            // if points[0] is array ,the polygon has hole,ignore holes
+            Canvas._multiClip(ctx, Array.isArray(points[0]) ? points : [points]);
             return;
         }
         if (!isArrayHasData(points)) {
@@ -539,6 +564,7 @@ const Canvas = {
             }
             ctx.restore();
         }
+        const fillStyle = ctx.fillStyle;
         for (i = 0, len = points.length; i < len; i++) {
             if (!isArrayHasData(points[i])) {
                 continue;
@@ -567,6 +593,10 @@ const Canvas = {
                 }
             }
             Canvas._stroke(ctx, lineOpacity);
+        }
+        //还原fillStyle
+        if (ctx.fillStyle !== fillStyle) {
+            ctx.fillStyle = fillStyle;
         }
         if (points.length > 1 && !IS_NODE) {
             savedCtx.drawImage(TEMP_CANVAS, 0, 0);
@@ -879,10 +909,9 @@ const Canvas = {
     pixelRect(ctx, point, lineOpacity, fillOpacity) {
         const lineWidth = ctx.lineWidth;
         const alpha = ctx.globalAlpha;
+        let isStroke = false;
         if (lineWidth > 0 && lineOpacity > 0) {
-            if (ctx.fillStyle !== ctx.strokeStyle) {
-                ctx.fillStyle = ctx.strokeStyle;
-            }
+            isStroke = true;
             if (lineOpacity < 1) {
                 ctx.globalAlpha *= lineOpacity;
             }
@@ -894,7 +923,11 @@ const Canvas = {
             return;
         }
         ctx.canvas._drawn = true;
-        ctx.fillRect(point[0], point[1], 1, 1);
+        if (isStroke) {
+            ctx.strokeRect(point[0], point[1], 1, 1);
+        } else {
+            ctx.fillRect(point[0], point[1], 1, 1);
+        }
         if (ctx.globalAlpha !== alpha) {
             ctx.globalAlpha = alpha;
         }

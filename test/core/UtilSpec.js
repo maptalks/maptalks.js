@@ -19,6 +19,24 @@ describe('Util', function () {
             var r = maptalks.StringUtil.replaceVariable(str, null);
             expect(r).to.eql(' is not .');
         });
+
+        // it('replace variables with unicode name', function () {
+        //     var str = 'Be {🙂}, not be {😢}.';
+        //     var r = maptalks.StringUtil.replaceVariable(str, {'🙂': 'happy', '😢': 'sad'});
+        //     expect(r).to.eql('Be happy, not be sad.');
+        // });
+
+        // it('replace variables with chinese properties', function () {
+        //     var str = 'Be {心情0}, not be {心情1}.';
+        //     var r = maptalks.StringUtil.replaceVariable(str, {'心情0': 'happy', '心情1': 'sad'});
+        //     expect(r).to.eql('Be happy, not be sad.');
+        // });
+
+        // it('replace variables with chinese properties', function () {
+        //     var str = 'hello {属性+d_1}.';
+        //     var r = maptalks.StringUtil.replaceVariable(str, {'属性': 'world'});
+        //     expect(r).to.eql('hello');
+        // });
     });
 
     it('sign', function () {

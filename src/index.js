@@ -6,6 +6,7 @@ import * as DomUtil from './core/util/dom';
 import * as StringUtil from './core/util/strings';
 import * as MapboxUtil from './core/mapbox';
 export { Util, DomUtil, StringUtil, MapboxUtil };
+export { default as LRUCache } from './core/util/LRUCache';
 export { default as Ajax } from './core/Ajax';
 export { default as Canvas } from './core/Canvas';
 export { default as Promise } from './core/Promise';
@@ -14,6 +15,7 @@ export { default as Promise } from './core/Promise';
 export { default as Class } from './core/Class';
 export { default as Eventable } from './core/Eventable';
 export { default as JSONAble } from './core/JSONAble';
+export { default as CollisionIndex } from './core/CollisionIndex';
 
 export { default as Handlerable } from './handler/Handlerable';
 export { default as Handler } from './handler/Handler';
@@ -62,3 +64,17 @@ import * as symbolizer from './renderer/geometry/symbolizers';
 /** @namespace animation */
 import * as animation from './core/Animation';
 export { symbolizer, animation };
+export { animate } from './core/Animation';
+
+export { registerWorkerAdapter } from './core/worker/Worker';
+
+import Actor from './core/worker/Actor';
+
+/**
+ * @namespace worker
+ */
+const worker = {
+    Actor : Actor
+};
+
+export { worker };

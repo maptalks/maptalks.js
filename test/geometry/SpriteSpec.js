@@ -85,13 +85,14 @@ describe('Marker.Sprite', function () {
             var sprite = marker._getSprite(resources);
             var canvas = sprite.canvas;
             expect(canvas).to.be.ok();
-            expect(sprite.offset.x).to.be.eql(9.75);
+            expect(sprite.offset.x).to.be.eql(9.5);
             expect(sprite.offset.y).to.be.eql(0);
             if (!maptalks.Browser.ie) {
                 expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
             }
-            expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2);
-            expect(canvas.height).to.be.eql(71);
+            // the last 1 is the padding
+            expect(canvas.width).to.be.eql(80 / 2 + 50 + 20 / 2 + 1);
+            expect(canvas.height).to.be.eql(72);
             done();
         };
         image.src = url;
@@ -114,8 +115,8 @@ describe('Marker.Sprite', function () {
         expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
         expect(sprite.offset.x).to.be.eql(10);
         expect(sprite.offset.y).to.be.eql(5);
-        expect(canvas.width).to.be.eql(symbol.markerWidth + 1); // +1 cos of lineWidth
-        expect(canvas.height).to.be.eql(symbol.markerHeight + 1); // +1 cos of lineWidth
+        expect(canvas.width).to.be.eql(symbol.markerWidth + 2); // +1 cos of lineWidth
+        expect(canvas.height).to.be.eql(symbol.markerHeight + 2); // +1 cos of lineWidth
     });
 
     it('vector marker sprite: bar', function () {
@@ -134,9 +135,9 @@ describe('Marker.Sprite', function () {
         expect(canvas).to.be.ok();
         expect(canvas.getContext('2d').getImageData(40, 30, 1, 1).data[3]).to.be.above(0);
         expect(sprite.offset.x).to.be.eql(10);
-        expect(sprite.offset.y).to.be.eql(-34 + 5);
-        expect(canvas.width).to.be.eql(symbol.markerWidth + 1); // +1 cos of lineWidth
-        expect(canvas.height).to.be.eql(symbol.markerHeight + 1); // +1 cos of lineWidth
+        expect(sprite.offset.y).to.be.eql(-30.5);
+        expect(canvas.width).to.be.eql(symbol.markerWidth + 2); // +1 cos of lineWidth
+        expect(canvas.height).to.be.eql(symbol.markerHeight + 2); // +1 cos of lineWidth
     });
 
     it('vector path marker sprite', function (done) {
@@ -196,6 +197,6 @@ describe('Marker.Sprite', function () {
         // on different OS, the size of the texts are different
         expect(sprite.width).to.be.above(0);
         expect(sprite.height).to.be.above(0);
-        expect(sprite.getContext('2d').getImageData(10, 12, 1, 1).data[3]).to.be.above(0);
+        expect(sprite.getContext('2d').getImageData(42, 12, 1, 1).data[3]).to.be.above(0);
     });
 });

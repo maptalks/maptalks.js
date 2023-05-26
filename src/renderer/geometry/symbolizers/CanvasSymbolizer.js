@@ -1,5 +1,5 @@
-import { isNumber, extend } from '../../../core/util';
-import { loadFunctionTypes, isFunctionDefinition, interpolated } from '../../../core/mapbox';
+import { isArrayHasData, isNumber } from '../../../core/util';
+import { loadGeoSymbol, isFunctionDefinition, interpolated } from '../../../core/mapbox';
 import Symbolizer from './Symbolizer';
 import Canvas from '../../../core/Canvas';
 
@@ -35,45 +35,24 @@ class CanvasSymbolizer extends Symbolizer {
     }
 
     prepareCanvas(ctx, style, resources) {
-        Canvas.prepareCanvas(ctx, style, resources, this.getPainter().isHitTesting());
+        if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
+            ctx.setLineDash(style['lineDasharray']);
+        }
+        const isHitTesting = this.getPainter().isHitTesting();
+        Canvas.prepareCanvas(ctx, style, resources, isHitTesting);
     }
 
-    remove() {}
+    remove() { }
 
-    setZIndex() {}
+    setZIndex() { }
 
-    show() {}
+    show() { }
 
-    hide() {}
+    hide() { }
 
     _defineStyle(style) {
-        return function () {
-            const arr = [],
-                prop = {};
-            return loadFunctionTypes(style, () => {
-                const map = this.getMap();
-                return set(arr, map.getZoom(),
-                    extend({},
-                        this.geometry.getProperties(),
-                        setProp(prop, map.getBearing(), map.getPitch(), map.getZoom())
-                    )
-                );
-            });
-        }.bind(this)();
+        return loadGeoSymbol(style, this.geometry);
     }
-}
-
-function set(arr, a0, a1) {
-    arr[0] = a0;
-    arr[1] = a1;
-    return arr;
-}
-
-function setProp(prop, b, p, z) {
-    prop['{bearing}'] = b;
-    prop['{pitch}'] = p;
-    prop['{zoom}'] = z;
-    return prop;
 }
 
 export default CanvasSymbolizer;

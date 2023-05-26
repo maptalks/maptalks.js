@@ -25,7 +25,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         if (this._infoWindow) {
             this._infoWindow.setOptions(options);
         } else if (this.getMap()) {
-            this._bindInfoWindow(this._infoWinOptions);
+            this._bindInfoWindow();
         }
 
         return this;
@@ -56,7 +56,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         if (!this._infoWindow) {
             if (this._infoWinOptions && this.getMap()) {
-                this._bindInfoWindow(this._infoWinOptions);
+                this._bindInfoWindow();
                 this._infoWindow.show(coordinate);
             }
         } else {
@@ -87,7 +87,11 @@ Geometry.include(/** @lends Geometry.prototype */ {
         return this;
     },
 
-    _bindInfoWindow(options) {
+    _bindInfoWindow() {
+        const options = this._infoWinOptions;
+        if (!options) {
+            return this;
+        }
         this._infoWindow = new InfoWindow(options);
         this._infoWindow.addTo(this);
 

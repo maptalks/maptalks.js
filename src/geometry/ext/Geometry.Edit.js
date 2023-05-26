@@ -14,10 +14,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
      * @return {Geometry} this
      */
     startEdit(opts) {
-        if (!this.getMap() || !this.options['editable']) {
+        const map = this.getMap();
+        if (!map || !this.options['editable']) {
             return this;
         }
-        this.endEdit();
+        if (this._editor) {
+            this.endEdit();
+        }
         this._editor = new GeometryEditor(this, opts);
         this._editor.start();
         /**
@@ -28,7 +31,10 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - editstart
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('editstart');
+        if (!this._getParent()) {
+            this.fire('editstart');
+        }
+        map.getRenderer().setToRedraw();
         return this;
     },
 
@@ -48,7 +54,13 @@ Geometry.include(/** @lends Geometry.prototype */ {
              * @property {String} type - editend
              * @property {Geometry} target - the geometry fires the event
              */
-            this.fire('editend');
+            if (!this._getParent()) {
+                this.fire('editend');
+            }
+            const map = this.getMap();
+            if (map) {
+                map.getRenderer().setToRedraw();
+            }
         }
         return this;
     },
@@ -70,7 +82,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - redoedit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('redoedit');
+        if (!this._getParent()) {
+            this.fire('redoedit');
+        }
         return this;
     },
 
@@ -91,7 +105,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - undoedit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('undoedit');
+        if (!this._getParent()) {
+            this.fire('undoedit');
+        }
         return this;
     },
 
@@ -112,7 +128,9 @@ Geometry.include(/** @lends Geometry.prototype */ {
          * @property {String} type - canceledit
          * @property {Geometry} target - the geometry fires the event
          */
-        this.fire('canceledit');
+        if (!this._getParent()) {
+            this.fire('canceledit');
+        }
         return this;
     },
 

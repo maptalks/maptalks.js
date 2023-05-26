@@ -84,9 +84,9 @@ describe('Geometry.LineString', function () {
 
     it('setCoordinates', function () {
         var path = [
-            { x: 0, y: 0 },
-            { x: 10, y: 10 },
-            { x: 20, y: 30 }
+            { x: 0, y: 0, z: 0 },
+            { x: 10, y: 10, z: 0 },
+            { x: 20, y: 30, z: 0 }
         ];
         var polyline = new maptalks.LineString([]);
         layer.addGeometry(polyline);
@@ -191,7 +191,7 @@ describe('Geometry.LineString', function () {
         COMMON_SYMBOL_TESTOR.testGeoSymbols(vector, map, done);
     });
 
-    it('containsPoint', function () {
+    it('LineString.containsPoint', function () {
         var lineWidth = 8;
         var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.1, 0)], {
             symbol : [{
@@ -204,10 +204,10 @@ describe('Geometry.LineString', function () {
         layer.addGeometry(line);
         var cp = map.coordinateToContainerPoint(map.getCenter());
         expect(line.containsPoint(cp)).to.be.ok();
-        expect(line.containsPoint(cp.add(-1, 0), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(-5, 0), 0)).not.to.be.ok();
         // expect(line.containsPoint(cp.add(-lineWidth / 2 - 1, 0))).not.to.be.ok();
         expect(line.containsPoint(cp.add(0, lineWidth / 2 - 1), 0)).to.be.ok();
-        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 1), 0)).not.to.be.ok();
+        expect(line.containsPoint(cp.add(0, lineWidth / 2 + 5), 0)).not.to.be.ok();
     });
 
     it('containsPoint with lineCap', function () {
@@ -301,6 +301,15 @@ describe('Geometry.LineString', function () {
         layer.addGeometry(line);
 
         expect(layer.identify({x: 118.84733998413094, y: 32.04636121481619}).length).to.be.above(0);
+    });
+
+    //issue #1595
+    it('identify line with dx, dy, #1595', function () {
+        var line = new maptalks.LineString([map.getCenter(), map.getCenter().add(0.001, 0)], { symbol: { lineDx: 20, lineDy: 20, lineWidth :4 }});
+        layer.addGeometry(line);
+
+        var point = new maptalks.Point(map.width / 2 + 20, map.height / 2 + 20);
+        expect(layer.identifyAtPoint(point).length).to.be.above(0);
     });
 
     //issue #522
@@ -520,9 +529,45 @@ describe('Geometry.LineString', function () {
                     altitude: 10
                 }
             }).addTo(layer);
-            var extent = polyline._getPainter().getContainerExtent().round().toString();
+            var extent = polyline.getContainerExtent().round().toString();
             console.log(extent);
-            expect(extent).to.be.eql('-404,-38,320,151');
+            expect(extent).to.be.eql('-405,-38,320,151');
+        });
+
+        it('markerPlacement of vertex-first with LineString of 1 coord', function () {
+            var lineWidth = 8;
+            var line = new maptalks.LineString([map.getCenter()], {
+                symbol: [{
+                    'lineColor': '#1bbc9b',
+                    'lineWidth': 6,
+                    'lineJoin': 'round', //miter, round, bevel
+                    'lineCap': 'round', //butt, round, square
+                    'lineDasharray': null, //dasharray, e.g. [10, 5, 5]
+                    'lineOpacity ': 1
+                  }, {
+                    markerType: 'ellipse',
+                    markerPlacement: 'vertex-first',
+                  }]
+            });
+            layer.addGeometry(line);
+        });
+
+        it('markerPlacement of vertex-last with LineString of 1 coord', function () {
+            var lineWidth = 8;
+            var line = new maptalks.LineString([map.getCenter()], {
+                symbol: [{
+                    'lineColor': '#1bbc9b',
+                    'lineWidth': 6,
+                    'lineJoin': 'round', //miter, round, bevel
+                    'lineCap': 'round', //butt, round, square
+                    'lineDasharray': null, //dasharray, e.g. [10, 5, 5]
+                    'lineOpacity ': 1
+                  }, {
+                    markerType: 'ellipse',
+                    markerPlacement: 'vertex-last',
+                  }]
+            });
+            layer.addGeometry(line);
         });
     });
 

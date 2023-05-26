@@ -120,7 +120,7 @@ describe('Map View History', function () {
                     map.setCenterAndZoom([1, 1], zoom - 2);
                     renderer.callInNextFrame(function () {
 
-                        map.zoomToPreviousView({ animation : true, duration : 120 });
+                        map.zoomToPreviousView({ animation: true, duration: 120 });
                         map.on('animateend', function () {
                             expect(map.getViewHistory().length).to.be.eql(3);
                             done();
@@ -134,9 +134,9 @@ describe('Map View History', function () {
             var renderer = map._getRenderer();
             renderer.callInNextFrame(function () {
                 map.animateTo({
-                    center : center.add(0.3, 0.3).toArray()
+                    center: center.add(0.3, 0.3).toArray()
                 }, {
-                    duration : 100
+                    duration: 100
                 }, function (frame) {
                     renderer.callInNextFrame(function () {
                         if (frame.state.playState === 'finished') {

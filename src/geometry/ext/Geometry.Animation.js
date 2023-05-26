@@ -42,7 +42,6 @@ Geometry.include(/** @lends Geometry.prototype */ {
         }
         const map = this.getMap(),
             projection = this._getProjection(),
-            symbol = this.getSymbol() || {},
             stylesToAnimate = this._prepareAnimationStyles(styles);
         let preTranslate;
 
@@ -84,6 +83,7 @@ Geometry.include(/** @lends Geometry.prototype */ {
             }
             const dSymbol = styles['symbol'];
             if (dSymbol) {
+                const symbol = this.getSymbol() || {};
                 this.setSymbol(extendSymbol(symbol, dSymbol));
             }
             if (map && isFocusing) {

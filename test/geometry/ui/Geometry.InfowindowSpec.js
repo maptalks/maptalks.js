@@ -58,7 +58,7 @@ describe('Geometry.InfoWindow', function () {
         var options = {
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         map.setCenter(marker.getCenter());
@@ -75,7 +75,7 @@ describe('Geometry.InfoWindow', function () {
         var options = {
             title: 'title',
             content: '<div style="width:400px;height:100px;">this is a customized infowindow.</div>',
-            animation : false,
+            animation: false,
             custom: true
         };
         marker.setInfoWindow(options);
@@ -84,7 +84,7 @@ describe('Geometry.InfoWindow', function () {
         var w = marker.getInfoWindow();
         var position = w.getPosition();
         if (maptalks.Browser.ie) {
-            expect(position.round().toArray()).to.be.eql([433, -85]);
+            expect(position.round().toArray()).to.be.eql([433, -86]);
         } else {
             expect(position.round().toArray()).to.be.eql([433, -109]);
         }
@@ -96,8 +96,8 @@ describe('Geometry.InfoWindow', function () {
         var options = {
             title: 'title',
             content: 'content',
-            autoOpenOn : 'click',
-            animation : false
+            autoOpenOn: 'click',
+            animation: false
         };
         marker.setInfoWindow(options);
         marker._fireEvent('click');
@@ -115,8 +115,8 @@ describe('Geometry.InfoWindow', function () {
         var options = {
             title: 'title',
             content: 'content',
-            autoOpenOn : 'click',
-            animation : false
+            autoOpenOn: 'click',
+            animation: false
         };
         marker.setInfoWindow(options);
         marker._fireEvent('click');
@@ -134,7 +134,7 @@ describe('Geometry.InfoWindow', function () {
         var options = {
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         marker.openInfoWindow();
@@ -148,10 +148,10 @@ describe('Geometry.InfoWindow', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
-            autoCloseOn : 'click',
+            autoCloseOn: 'click',
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         marker.openInfoWindow();
@@ -172,10 +172,10 @@ describe('Geometry.InfoWindow', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
-            autoCloseOn : 'click',
+            autoCloseOn: 'click',
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         marker.openInfoWindow();
@@ -197,18 +197,18 @@ describe('Geometry.InfoWindow', function () {
         var marker = new maptalks.Marker(center);
         marker.addTo(layer);
         var options = {
-            autoCloseOn : 'touchstart',
+            autoCloseOn: 'touchstart',
             title: 'title',
             content: 'content',
-            animation : false
+            animation: false
         };
         marker.setInfoWindow(options);
         marker.openInfoWindow();
         var w = marker.getInfoWindow();
         expect(w.isVisible()).to.be.ok();
         happen.once(eventContainer, {
-            'type' : 'touchstart',
-            'touches' : [{
+            'type': 'touchstart',
+            'touches': [{
                 'clientX': 10,
                 'clientY': 10
             }]
@@ -248,7 +248,8 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null,
+                roundPoint: true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -263,7 +264,7 @@ describe('Geometry.InfoWindow', function () {
             var offset = infoWindow.getOffset().round();
             expect(!offset._isNaN()).to.be.ok();
             var p = infoWindow.getPosition();
-            expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y]);
+            expect(p.toArray()).to.be.eql([c.x + offset.x, c.y + offset.y, 0]);
             var t;
             if (maptalks.Browser.any3d) {
                 t = 'translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)';
@@ -277,7 +278,7 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
@@ -296,9 +297,9 @@ describe('Geometry.InfoWindow', function () {
 
         it('set and open/close and remove a customized infowindow', function () {
             var options = {
-                custom:true,
+                custom: true,
                 content: '<div style="width:400px;height:300;">this is a customized infowindow.</div>',
-                animation : null
+                animation: null
             };
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             layer.addGeometry(geometries);
@@ -319,7 +320,7 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new maptalks.Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -338,7 +339,7 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new maptalks.Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -357,7 +358,7 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -377,7 +378,7 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : null
+                animation: null
             };
             var geo = new maptalks.Marker(map.getCenter());
             layer.addGeometry(geo);
@@ -399,10 +400,11 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : 'fade,scale',
-                animationOnHide : true,
-                animationDuration : 50,
-                autoPan : false
+                animation: 'fade,scale',
+                animationOnHide: true,
+                animationDuration: 50,
+                autoPan: false,
+                roundPoint: true
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getCenter());
@@ -426,7 +428,7 @@ describe('Geometry.InfoWindow', function () {
                     //hide animations
                     expect(infoWindow.getDOM().style.display).to.be.eql('none');
                     expect(infoWindow.getDOM().style.opacity).to.be.eql(0);
-                    expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(0)');
+                    expect(infoWindow.getDOM().style[maptalks.DomUtil.TRANSFORM]).to.be.eql('translate3d(' + p.x + 'px, ' + p.y + 'px, 0px) scale(1)');
                     expect(infoWindow.isVisible()).not.to.be.ok();
                     done();
                 }, options.animationDuration + 2);
@@ -437,9 +439,9 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : false,
-                autoPan : true,
-                autoPanDuration : 100,
+                animation: false,
+                autoPan: true,
+                autoPanDuration: 100,
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var center = map.getCenter();
@@ -459,9 +461,9 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : false,
-                autoPan : false,
-                autoPanDuration : 100,
+                animation: false,
+                autoPan: false,
+                autoPanDuration: 100,
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var center = map.getCenter();
@@ -481,9 +483,9 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : false,
-                autoPan : false,
-                autoPanDuration : 100,
+                animation: false,
+                autoPan: false,
+                autoPanDuration: 100,
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getExtent().getMin());
@@ -503,10 +505,10 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : false,
-                autoPan : false,
-                autoPanDuration : 100,
-                single : false
+                animation: false,
+                autoPan: false,
+                autoPanDuration: 100,
+                single: false
             };
             var infoWindow = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getExtent().getMin());
@@ -526,9 +528,9 @@ describe('Geometry.InfoWindow', function () {
             var options = {
                 title: 'title',
                 content: 'content',
-                animation : false,
-                autoPan : false,
-                autoPanDuration : 100
+                animation: false,
+                autoPan: false,
+                autoPanDuration: 100
             };
             var infoWindow1 = new maptalks.ui.InfoWindow(options);
             var geo = new maptalks.Marker(map.getExtent().getMin());
@@ -541,9 +543,9 @@ describe('Geometry.InfoWindow', function () {
             infoWindow2.addTo(geo2);
 
             setTimeout(function () {
-               infoWindow2.show();
-               expect(infoWindow1.isVisible()).not.to.be.ok();
-               done();
+                infoWindow2.show();
+                expect(infoWindow1.isVisible()).not.to.be.ok();
+                done();
             }, 80);
             infoWindow2.addTo(geo2).show();
         });

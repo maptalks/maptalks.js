@@ -1,6 +1,8 @@
+import { isFunction } from '../core/util';
 import { createEl } from '../core/util/dom';
 import UIComponent from './UIComponent';
 
+const HIDEDOMEVENTS = 'remove hide shapechange positionchange dragend animatestart';
 
 /**
  * @property {Object} options
@@ -51,6 +53,7 @@ class ToolTip extends UIComponent {
         if (ToolTip.isSupport(owner)) {
             owner.on('mousemove', this.onMouseMove, this);
             owner.on('mouseout', this.onMouseOut, this);
+            owner.on(HIDEDOMEVENTS, this.hideDom, this);
             return super.addTo(owner);
         } else {
             throw new Error('Invalid geometry or UIMarker the tooltip is added to.');
@@ -95,7 +98,12 @@ class ToolTip extends UIComponent {
         if (!cssName && options.height) {
             dom.style.lineHeight = options.height + 'px';
         }
-        dom.innerHTML = `<div class="${cssName}">${this._content}</div>`;
+        if (isFunction(this._content)) {
+            //dymatic render dom content
+            this._content.bind(this)(dom);
+        } else {
+            dom.innerHTML = `<div class="${cssName}">${this._content}</div>`;
+        }
         return dom;
     }
 
@@ -104,6 +112,7 @@ class ToolTip extends UIComponent {
         if (this.isVisible()) {
             this._removePrevDOM();
         }
+        this._switchMapEvents('off');
     }
 
     onMouseMove(e) {
@@ -132,7 +141,18 @@ class ToolTip extends UIComponent {
         if (this._owner) {
             this._owner.off('mouseover', this.onMouseOver, this);
             this._owner.off('mouseout', this.onMouseOut, this);
+            this._owner.off(HIDEDOMEVENTS, this.hideDom, this);
         }
+    }
+
+    hideDom() {
+        return this.hide();
+    }
+
+    onEvent() {
+        super.onEvent();
+        this.hideDom();
+        return this;
     }
 
     /**

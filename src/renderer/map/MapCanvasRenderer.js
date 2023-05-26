@@ -1,4 +1,4 @@
-import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView } from '../../core/util';
+import { IS_NODE, isNumber, isFunction, requestAnimFrame, cancelAnimFrame, equalMapView, calCanvasSize } from '../../core/util';
 import { createEl, preventSelection, computeDomPosition, addDomEvent, removeDomEvent } from '../../core/util/dom';
 import Browser from '../../core/Browser';
 import Point from '../../geo/Point';
@@ -22,7 +22,6 @@ class MapCanvasRenderer extends MapRenderer {
         super(map);
         //container is a <canvas> element
         this._containerIsCanvas = !!map._containerDOM.getContext;
-        this._thisVisibilitychange = this._onVisibilitychange.bind(this);
         this._registerEvents();
         this._loopTime = 0;
     }
@@ -36,20 +35,31 @@ class MapCanvasRenderer extends MapRenderer {
      * @return {Boolean} return false to cease frame loop
      */
     renderFrame(framestamp) {
-        if (!this.map) {
+        const map = this.map;
+        if (!map || !map.options['renderable']) {
             return false;
+        }
+        //not render anything when map container is hide
+        if (map.options['stopRenderOnOffscreen'] && this._containerIsOffscreen()) {
+            return true;
         }
         this._updateDomPosition(framestamp);
         delete this._isViewChanged;
-        const map = this.map;
         map._fireEvent('framestart');
         this.updateMapDOM();
+        map.clearCollisionIndex();
         const layers = this._getAllLayerToRender();
         this.drawLayers(layers, framestamp);
         const updated = this.drawLayerCanvas(layers);
         if (updated) {
+            // when updated is false, should escape drawing tops and centerCross to keep handle's alpha
+            this.drawTops();
             this._drawCenterCross();
+            if (map.options['debugSky']) {
+                this._debugSky();
+            }
         }
+        this._needClear = false;
         // this._drawContainerExtent();
         // CAUTION: the order to fire frameend and layerload events
         // fire frameend before layerload, reason:
@@ -64,6 +74,8 @@ class MapCanvasRenderer extends MapRenderer {
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
         this._canvasUpdated = false;
+        //loop ui Collides
+        map.uiCollides();
         return true;
     }
 
@@ -302,7 +314,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map) {
             return false;
         }
-        if (!this.isLayerCanvasUpdated() && !this.isViewChanged()) {
+        if (!this.isLayerCanvasUpdated() && !this.isViewChanged() && this._needClear === false) {
             return false;
         }
         if (!this.canvas) {
@@ -349,15 +361,17 @@ class MapCanvasRenderer extends MapRenderer {
             }
         }
 
+        const targetWidth = this.canvas.width;
+        const targetHeight = this.canvas.height;
         if (baseLayerImage) {
-            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1]);
+            this._drawLayerCanvasImage(baseLayerImage[0], baseLayerImage[1], targetWidth, targetHeight);
             this._drawFog();
         }
 
         len = images.length;
         const start = interacting && limit >= 0 && len > limit ? len - limit : 0;
         for (let i = start; i < len; i++) {
-            this._drawLayerCanvasImage(images[i][0], images[i][1]);
+            this._drawLayerCanvasImage(images[i][0], images[i][1], targetWidth, targetHeight);
         }
 
         /**
@@ -376,6 +390,8 @@ class MapCanvasRenderer extends MapRenderer {
 
     setToRedraw() {
         const layers = this._getAllLayerToRender();
+        //set maprender for clear canvas
+        this._needClear = true;
         for (let i = 0, l = layers.length; i < l; i++) {
             const renderer = layers[i].getRenderer();
             if (renderer && renderer.canvas && renderer.setToRedraw) {
@@ -419,10 +435,15 @@ class MapCanvasRenderer extends MapRenderer {
 
     remove() {
         if (Browser.webgl && typeof document !== 'undefined') {
-            removeDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
+            removeDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
+        }
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
         }
         delete this.context;
         delete this.canvas;
@@ -440,6 +461,10 @@ class MapCanvasRenderer extends MapRenderer {
         let cursor = 'default';
         const limit = map.options['hitDetectLimit'] || 0;
         let counter = 0;
+        if (point && point._round) {
+            // map size is decimal,containerPoint.x/containerPoint.y is decimal
+            point._round();
+        }
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             // 此处如果未开启，无需执行后面判断
@@ -594,6 +619,9 @@ class MapCanvasRenderer extends MapRenderer {
             this._cancelFrameLoop();
             return;
         }
+        framestamp = framestamp || 0;
+        this._frameTimestamp = framestamp;
+        this._resizeCount = 0;
         this.renderFrame(framestamp);
         // Keep registering ourselves for the next animation frame
         this._animationFrame = requestAnimFrame((framestamp) => { this._frameLoop(framestamp); });
@@ -605,7 +633,7 @@ class MapCanvasRenderer extends MapRenderer {
         }
     }
 
-    _drawLayerCanvasImage(layer, layerImage) {
+    _drawLayerCanvasImage(layer, layerImage, targetWidth, targetHeight) {
         const ctx = this.context;
         const point = layerImage['point'].round();
         const dpr = this.map.getDevicePixelRatio();
@@ -664,7 +692,7 @@ class MapCanvasRenderer extends MapRenderer {
                 point.x + 18, point.y + 18);
         }*/
 
-        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, width, height);
+        ctx.drawImage(canvasImage, 0, 0, width, height, point.x, point.y, targetWidth, targetHeight);
         if (matrix) {
             ctx.restore();
         }
@@ -740,6 +768,21 @@ class MapCanvasRenderer extends MapRenderer {
         ctx.fillRect(0, top, Math.ceil(clipExtent.getWidth()) * r, Math.ceil(h + fogThickness));
     }
 
+    _debugSky() {
+        const map = this.map;
+        if (!map) {
+            return this;
+        }
+        const height = map.getContainerExtent().ymin;
+        if (height <= 0) {
+            return this;
+        }
+        const ctx = this.context;
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(0, 0, map.width, height);
+        return this;
+    }
+
     _getAllLayerToRender() {
         return this.map._getLayers();
     }
@@ -759,22 +802,27 @@ class MapCanvasRenderer extends MapRenderer {
             mapSize = map.getSize(),
             canvas = this.canvas,
             r = map.getDevicePixelRatio();
-        if (mapSize['width'] * r === canvas.width && mapSize['height'] * r === canvas.height) {
+        // width/height不变并不意味着 css width/height 不变
+        const { width, height, cssWidth, cssHeight } = calCanvasSize(mapSize, r);
+        if (canvas.style && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
+            canvas.style.width = cssWidth;
+            canvas.style.height = cssHeight;
+        }
+        if (width === canvas.width && height === canvas.height) {
             return false;
         }
         //retina屏支持
 
-        canvas.height = r * mapSize['height'];
-        canvas.width = r * mapSize['width'];
-        if (canvas.style) {
-            canvas.style.width = mapSize['width'] + 'px';
-            canvas.style.height = mapSize['height'] + 'px';
-        }
-
+        canvas.height = height;
+        canvas.width = width;
+        this.topLayer.width = canvas.width;
+        this.topLayer.height = canvas.height;
         return true;
     }
 
     createCanvas() {
+        this.topLayer = createEl('canvas');
+        this.topCtx = this.topLayer.getContext('2d');
         if (this._containerIsCanvas) {
             this.canvas = this.map._containerDOM;
         } else {
@@ -787,12 +835,13 @@ class MapCanvasRenderer extends MapRenderer {
 
     _updateDomPosition(framestamp) {
         if (this._checkPositionTime === undefined) {
-            this._checkPositionTime = framestamp;
+            this._checkPositionTime = -Infinity;
         }
-        if (framestamp - this._checkPositionTime >= 500) {
+        const dTime = Math.abs(framestamp - this._checkPositionTime);
+        if (dTime >= 500) {
             // refresh map's dom position
             computeDomPosition(this.map._containerDOM);
-            this._checkPositionTime = framestamp;
+            this._checkPositionTime = Math.min(framestamp, this._checkPositionTime);
         }
         return this;
     }
@@ -807,7 +856,7 @@ class MapCanvasRenderer extends MapRenderer {
     _setCheckSizeInterval(interval) {
         // ResizeObserver priority of use
         // https://developer.mozilla.org/zh-CN/docs/Web/API/ResizeObserver
-        if (typeof window !== 'undefined' && window.ResizeObserver) {
+        if (Browser.resizeObserver) {
             if (this._resizeObserver) {
                 this._resizeObserver.disconnect();
             }
@@ -817,7 +866,11 @@ class MapCanvasRenderer extends MapRenderer {
                     if (!this.map || this.map.isRemoved()) {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
+                        this.map._containerDomContentRect = entries[0].contentRect;
                         this._checkSize(entries[0].contentRect);
+                        this._resizeCount = this._resizeCount || 0;
+                        //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
+                        this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
@@ -867,7 +920,12 @@ class MapCanvasRenderer extends MapRenderer {
         });
 
         if (Browser.webgl && typeof document !== 'undefined') {
-            addDomEvent(document, 'visibilitychange', this._thisVisibilitychange, this);
+            addDomEvent(document, 'visibilitychange', this._thisDocVisibilitychange, this);
+            addDomEvent(document, 'dragstart', this._thisDocDragStart, this);
+            addDomEvent(document, 'dragend', this._thisDocDragEnd, this);
+        }
+        if (Browser.addDPRListening) {
+            Browser.addDPRListening(this.map);
         }
     }
 
@@ -888,12 +946,47 @@ class MapCanvasRenderer extends MapRenderer {
         return this.map._getLayers(layer => layer.isCanvasRender());
     }
 
-    _onVisibilitychange() {
-        if (document.visibilityState !== 'visible') {
+    //----------- top elements methods -------------
+    // edit handles or edit outlines
+    addTopElement(e) {
+        if (!this._tops) {
+            this._tops = [];
+        }
+        this._tops.push(e);
+    }
+
+    removeTopElement(e) {
+        if (!this._tops) {
             return;
         }
-        this.setToRedraw();
+        const idx = this._tops.indexOf(e);
+        if (idx >= 0) {
+            this._tops.splice(idx, 1);
+        }
     }
+
+    getTopElements() {
+        return this._tops || [];
+    }
+
+    drawTops() {
+        // clear topLayer
+        this.topCtx.clearRect(0, 0, this.topLayer.width, this.topLayer.height);
+        this.map.fire('drawtopstart');
+        this.map.fire('drawtops');
+        const tops = this.getTopElements();
+        let updated = false;
+        for (let i = 0; i < tops.length; i++) {
+            if (tops[i].render(this.topCtx)) {
+                updated = true;
+            }
+        }
+        if (updated) {
+            this.context.drawImage(this.topLayer, 0, 0);
+        }
+        this.map.fire('drawtopsend');
+    }
+
 }
 
 Map.registerRenderer('canvas', MapCanvasRenderer);

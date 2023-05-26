@@ -1,10 +1,22 @@
 import { pushIn } from '../../core/util';
 import Layer from '../Layer';
 import TileLayer from './TileLayer';
+import Size from '../../geo/Size';
 
 const options = {
     'maxCacheSize': 1024
 };
+
+
+const DEFAULT_TILESIZE = new Size(256, 256);
+const EVENTS = 'show hide remove setzindex';
+
+function checkLayers(tileLayers) {
+    if (!Array.isArray(tileLayers)) {
+        tileLayers = [tileLayers];
+    }
+    return tileLayers;
+}
 
 /**
  * @classdesc
@@ -73,6 +85,74 @@ class GroupTileLayer extends TileLayer {
     }
 
     /**
+     * add tilelayers
+     * @param {TileLayer[]} tileLayers
+     */
+    addLayer(tileLayers = []) {
+        tileLayers = checkLayers(tileLayers);
+        const len = this.layers.length;
+        tileLayers.forEach(tileLayer => {
+            if (!(tileLayer instanceof TileLayer)) {
+                return;
+            }
+            if (this.layers.indexOf(tileLayer) === -1 && !this.layerMap[tileLayer.getId()]) {
+                this.layers.push(tileLayer);
+            }
+        });
+        //layers change
+        if (len !== this.layers.length) {
+            this._sortLayers();
+            this._refresh();
+            this._renderLayers();
+        }
+        return this;
+    }
+
+    /**
+     * remove tilelayers
+     * @param {TileLayer[]} tileLayers
+     */
+    removeLayer(tileLayers = []) {
+        tileLayers = checkLayers(tileLayers);
+        const len = this.layers.length;
+        tileLayers.forEach(tileLayer => {
+            if (!(tileLayer instanceof TileLayer)) {
+                //if tilelayer is id
+                tileLayer = this.layerMap[tileLayer];
+            }
+            if (!(tileLayer instanceof TileLayer)) {
+                return;
+            }
+            const index = this.layers.indexOf(tileLayer);
+            if (index >= 0) {
+                this.layers.splice(index, 1);
+                tileLayer._doRemove();
+                tileLayer.off(EVENTS, this._onLayerShowHide, this);
+            }
+        });
+        //layers change
+        if (len !== this.layers.length) {
+            this._refresh();
+            this._renderLayers();
+        }
+        return this;
+    }
+
+    /**
+   * clear tilelayers
+   */
+    clearLayers() {
+        this.layers.forEach(layer => {
+            layer._doRemove();
+            layer.off(EVENTS, this._onLayerShowHide, this);
+        });
+        this.layers = [];
+        this._refresh();
+        this._renderLayers();
+        return this;
+    }
+
+    /**
      * Export the GroupTileLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
      * It can be used to reproduce the instance by [fromJSON]{@link Layer#fromJSON} method
@@ -82,10 +162,18 @@ class GroupTileLayer extends TileLayer {
         const profile = {
             'type': this.getJSONType(),
             'id': this.getId(),
-            'layers' : this.layers.map(layer => layer.toJSON()),
+            'layers': this.layers.map(layer => layer.toJSON()),
             'options': this.config()
         };
         return profile;
+    }
+
+    getTileSize(id) {
+        const layer = this.getLayer(id);
+        if (!layer) {
+            return DEFAULT_TILESIZE;
+        }
+        return layer.getTileSize();
     }
 
     /**
@@ -93,16 +181,16 @@ class GroupTileLayer extends TileLayer {
      * @param {Number} z
      * @returns {Object} tiles
      */
-    getTiles(z) {
+    getTiles(z, parentLayer) {
         const layers = this.layers;
         const tiles = [];
         let count = 0;
         for (let i = 0, l = layers.length; i < l; i++) {
             const layer = layers[i];
-            if (!layer.options['visible']) {
+            if (!layer || !layer.options['visible'] || !layer.isVisible() || !layer.getMap()) {
                 continue;
             }
-            const childGrid = layer.getTiles(z, this);
+            const childGrid = layer.getTiles(z, parentLayer || this);
             if (!childGrid || childGrid.count === 0) {
                 continue;
             }
@@ -111,32 +199,29 @@ class GroupTileLayer extends TileLayer {
         }
 
         return {
-            count : count,
-            tileGrids : tiles
+            count: count,
+            tileGrids: tiles
         };
     }
 
     onAdd() {
-        const map = this.getMap();
-        this.layers.forEach(layer => {
-            this.layerMap[layer.getId()] = layer;
-            if (layer.getChildLayer) {
-                this._groupChildren.push(layer);
-            }
-            layer._bindMap(map);
-            layer.on('show hide', this._onLayerShowHide, this);
-        });
+        this._sortLayers();
+        this._refresh();
         super.onAdd();
     }
 
     onRemove() {
         this.layers.forEach(layer => {
             layer._doRemove();
-            layer.off('show hide', this._onLayerShowHide, this);
+            layer.off(EVENTS, this._onLayerShowHide, this);
         });
         this.layerMap = {};
         this._groupChildren = [];
         super.onRemove();
+    }
+
+    getLayer(id) {
+        return this.getChildLayer(id);
     }
 
     getChildLayer(id) {
@@ -153,11 +238,46 @@ class GroupTileLayer extends TileLayer {
         return null;
     }
 
-    _onLayerShowHide() {
+    _onLayerShowHide(e) {
+        const { type, target } = e || {};
+        //listen tilelayer.remove() method fix #1629
+        if (type === 'remove' && target) {
+            this.layers.splice(this.layers.indexOf(target), 1);
+            target._doRemove();
+            target.off(EVENTS, this._onLayerShowHide, this);
+            this._refresh();
+        } else if (type === 'setzindex') {
+            this._sortLayers();
+        }
+        this._renderLayers();
+        return this;
+    }
+
+    // render all layers
+    _renderLayers() {
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
+        return this;
+    }
+
+    // reset layerMap,_groupChildren,listen tilelayers events
+    _refresh() {
+        const map = this.getMap();
+        this._groupChildren = [];
+        this.layerMap = {};
+        this.layers.forEach(layer => {
+            this.layerMap[layer.getId()] = layer;
+            if (layer.getChildLayer) {
+                this._groupChildren.push(layer);
+            }
+            if (!layer.getMap()) {
+                layer._bindMap(map);
+            }
+            layer.on(EVENTS, this._onLayerShowHide, this);
+        });
+        return this;
     }
 
     isVisible() {
@@ -182,6 +302,12 @@ class GroupTileLayer extends TileLayer {
             } else {
                 ids[layerId] = 1;
             }
+        });
+    }
+
+    _sortLayers() {
+        this.layers.sort(function (a, b) {
+            return a.options.zIndex - b.options.zIndex;
         });
     }
 }

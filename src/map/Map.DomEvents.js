@@ -189,10 +189,25 @@ Map.include(/** @lends Map.prototype */ {
     },
 
     _handleDOMEvent(e) {
+        const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
+        const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));
         // prevent default contextmenu
+        if (isMouseDown) {
+            this._domMouseDownTime = now();
+            this._domMouseDownView = this.getView();
+        }
+        const isRotating = type === 'contextmenu' && isRotatingMap(this);
         if (type === 'contextmenu') {
+            // prevent context menu, if duration from mousedown > 300ms
             preventDefault(e);
+            const downTime = this._domMouseDownTime;
+            const time = now();
+            if (time - downTime <= clickTimeThreshold && !isRotating) {
+                this._fireDOMEvent(this, e, 'dom:' + e.type);
+            }
+        } else {
+            this._fireDOMEvent(this, e, 'dom:' + e.type);
         }
         if (this._ignoreEvent(e)) {
             return;
@@ -200,7 +215,7 @@ Map.include(/** @lends Map.prototype */ {
         let mimicClick = false;
         // ignore click lasted for more than 300ms.
         // happen.js produce event without touches
-        if (type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1))) {
+        if (isMouseDown) {
             this._mouseDownTime = now();
         } else if ((type === 'click' || type === 'touchend' || type === 'contextmenu')) {
             if (!this._mouseDownTime) {
@@ -211,8 +226,12 @@ Map.include(/** @lends Map.prototype */ {
                 const downTime = this._mouseDownTime;
                 delete this._mouseDownTime;
                 const time = now();
-                if (time - downTime > 300) {
+                if (time - downTime > clickTimeThreshold) {
                     if (type === 'click' || type === 'contextmenu') {
+                        return;
+                    }
+                } else if (type === 'contextmenu') {
+                    if (isRotating) {
                         return;
                     }
                 } else if (type === 'touchend') {
@@ -220,15 +239,24 @@ Map.include(/** @lends Map.prototype */ {
                 }
             }
         }
-        this._fireDOMEvent(this, e, type);
+        let mimicEvent;
         if (mimicClick) {
-            if (this._clickTime && (now() - this._clickTime <= 300)) {
+            if (this._clickTime && (now() - this._clickTime <= clickTimeThreshold)) {
                 delete this._clickTime;
-                this._fireDOMEvent(this, e, 'dblclick');
+                mimicEvent = 'dblclick';
+                this._fireDOMEvent(this, e, 'dom:dblclick');
             } else {
                 this._clickTime = now();
-                this._fireDOMEvent(this, e, 'click');
+                mimicEvent = 'click';
+                this._fireDOMEvent(this, e, 'dom:click');
             }
+        }
+        if (this._ignoreEvent(e)) {
+            return;
+        }
+        this._fireDOMEvent(this, e, type);
+        if (mimicEvent) {
+            this._fireDOMEvent(this, e, mimicEvent);
         }
     },
 
@@ -245,7 +273,7 @@ Map.include(/** @lends Map.prototype */ {
         if (target) {
             while (target && target !== this._containerDOM) {
                 if (target.className && target.className.indexOf &&
-                    (target.className.indexOf('maptalks-control') >= 0  || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
+                    (target.className.indexOf('maptalks-control') >= 0 || (target.className.indexOf('maptalks-ui') >= 0 && preTarget && !preTarget['eventsPropagation']))) {
                     return true;
                 }
                 preTarget = target;
@@ -276,14 +304,20 @@ Map.include(/** @lends Map.prototype */ {
         };
         if (type !== 'keypress') {
             const actual = this._getActualEvent(e);
-            if (actual) {
+            if (actual && actual.clientX !== undefined) {
                 const containerPoint = getEventContainerPoint(actual, this._containerDOM);
                 eventParam = extend(eventParam, {
-                    'coordinate' : this.containerPointToCoord(containerPoint),
-                    'containerPoint' : containerPoint,
-                    'viewPoint' : this.containerPointToViewPoint(containerPoint),
-                    'point2d' : this._containerPointToPoint(containerPoint),
+                    'containerPoint': containerPoint,
+                    'viewPoint': this.containerPointToViewPoint(containerPoint)
                 });
+                const maxVisualPitch = this.options['maxVisualPitch'];
+                // ignore coorindate out of visual extent
+                if (this.getPitch() <= maxVisualPitch || containerPoint.y >= (this.height - this._getVisualHeight(maxVisualPitch))) {
+                    eventParam = extend(eventParam, {
+                        'coordinate': this.containerPointToCoord(containerPoint),
+                        'point2d': this._containerPointToPoint(containerPoint)
+                    });
+                }
             }
         }
         return eventParam;
@@ -293,10 +327,10 @@ Map.include(/** @lends Map.prototype */ {
         const containerPoint = this.coordToContainerPoint(coord),
             viewPoint = this.containerPointToViewPoint(containerPoint);
         const e = {
-            'coordinate' : coord,
-            'containerPoint' : containerPoint,
-            'viewPoint' : viewPoint,
-            'point2d' : this.coordToPoint(coord)
+            'coordinate': coord,
+            'containerPoint': containerPoint,
+            'viewPoint': viewPoint,
+            'point2d': this.coordToPoint(coord)
         };
         return e;
     },
@@ -313,13 +347,38 @@ Map.include(/** @lends Map.prototype */ {
         }
         const eventParam = this._parseEvent(e, type);
         this._fireEvent(type, eventParam);
-    }
+    },
 
     // _onKeyPress(e) {
     //     if (!this.isRemoved() && e.keyCode === 48 && e.ctrlKey) {
     //         this.setBearing(0);
     //     }
     // }
+
+    // Extract _ geteventparams is reused in other plug-ins,such as maptalks.three plugin
+    _getEventParams(e) {
+        const map = this;
+        const eventParam = {
+            'domEvent': e
+        };
+        const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
+        if (actual) {
+            const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+            eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
+            eventParam['containerPoint'] = containerPoint;
+            eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
+            eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
+        }
+        return eventParam;
+    }
 });
 
 Map.addOnLoadHook('_registerDomEvents');
+
+function isRotatingMap(map) {
+    if (!map._domMouseDownView) {
+        return true;
+    }
+    const view = map.getView(), mouseDownView = map._domMouseDownView;
+    return (view.bearing !== mouseDownView.bearing || view.pitch !== mouseDownView.pitch);
+}

@@ -114,7 +114,8 @@ Map.include(/** @lends Map.prototype */ {
         if (!isArrayHasData(reqLayers)) {
             return this;
         }
-        const layers = [];
+        const eventTypes = opts.eventTypes;
+        let layers = [];
         for (let i = 0, len = reqLayers.length; i < len; i++) {
             if (isString(reqLayers[i])) {
                 layers.push(this.getLayer(reqLayers[i]));
@@ -122,6 +123,15 @@ Map.include(/** @lends Map.prototype */ {
                 layers.push(reqLayers[i]);
             }
         }
+        if (eventTypes) {
+            layers = layers.filter(layer => {
+                if (!layer._hasGeoListeners) {
+                    return true;
+                }
+                return layer._hasGeoListeners(eventTypes);
+            });
+        }
+
 
         const hits = [];
         for (let i = layers.length - 1; i >= 0; i--) {

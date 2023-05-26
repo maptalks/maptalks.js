@@ -12,6 +12,7 @@ import MultiPoint from './MultiPoint';
 import MultiLineString from './MultiLineString';
 import MultiPolygon from './MultiPolygon';
 import GeometryCollection from './GeometryCollection';
+import Geometry from './Geometry';
 
 const types = {
     'Marker': Marker,
@@ -144,7 +145,13 @@ const GeoJSON = {
             const mGeos = [];
             const size = geometries.length;
             for (let i = 0; i < size; i++) {
-                mGeos.push(GeoJSON._convert(geometries[i]));
+                //circle ellipse etc...
+                //规范上geojson里是没有Circle等图形的，但是Circle json等的反序列化有用到该方法
+                if (geometries[i].subType) {
+                    mGeos.push(Geometry.getJSONClass(geometries[i].subType).fromJSON(geometries[i]));
+                } else {
+                    mGeos.push(GeoJSON._convert(geometries[i]));
+                }
             }
             const result = new GeometryCollection(mGeos);
             if (foreachFn) {

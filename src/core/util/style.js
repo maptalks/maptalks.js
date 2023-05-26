@@ -1,4 +1,4 @@
-import { extend, isNil, isString, isObject } from './common';
+import { extend, isNil, isString, isObject, isNumber } from './common';
 import { hashCode } from './strings';
 import { isFunctionDefinition } from '@maptalks/function-type';
 
@@ -44,20 +44,22 @@ export function getSymbolStamp(symbol, prefix) {
  * @return {String}        symbol's stamp
  * @memberOf Util
  */
-export function getSymbolHash(symbol) {
+export function getSymbolHash(symbol, prefix) {
     if (!symbol) {
         return 1;
     }
     const keys = [];
     if (Array.isArray(symbol)) {
         for (let i = 0; i < symbol.length; i++) {
-            keys.push(getSymbolHash(symbol[i]));
+            keys.push(getSymbolHash(symbol[i], prefix));
         }
         return keys.sort().join(',');
     }
     const sortedKeys = Object.keys(symbol).sort();
     const sortedSymbol = sortedKeys.reduce((accumulator, curValue) => {
-        accumulator[curValue] = symbol[curValue];
+        if (!prefix || curValue.indexOf(prefix) === 0) {
+            accumulator[curValue] = symbol[curValue];
+        }
         return accumulator;
     }, {});
     const hash = hashCode(JSON.stringify(sortedSymbol));
@@ -203,4 +205,26 @@ function parseStops(value, replacer) {
         }
     }
     return value;
+}
+
+/**
+ * geometry symbol has lineDasharray
+ */
+export function isDashLine(symbolizers = []) {
+    if (!Array.isArray(symbolizers)) {
+        symbolizers = [symbolizers];
+    }
+    const len = symbolizers.length;
+    for (let i = 0; i < len; i++) {
+        const symbolizer = symbolizers[i];
+        if (!symbolizer.style) {
+            continue;
+        }
+        const { lineDasharray, lineWidth } = symbolizer.style;
+        if (lineWidth && isNumber(lineWidth) && lineWidth > 0 && lineDasharray && Array.isArray(lineDasharray) && lineDasharray.length) {
+            return true;
+        }
+    }
+    return false;
+
 }

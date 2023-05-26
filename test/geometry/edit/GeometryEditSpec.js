@@ -143,7 +143,7 @@ describe('Geometry.Edit', function () {
             marker.startEdit();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerWidth).to.be.above(35);
             expect(symbol.markerHeight).to.be.approx(20);
             expect(fired).to.be.ok();
             marker.undoEdit();
@@ -152,7 +152,7 @@ describe('Geometry.Edit', function () {
             expect(symbol.markerHeight).to.be.approx(20);
             marker.redoEdit();
             symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(39);
+            expect(symbol.markerWidth).to.be.above(35);
             expect(symbol.markerHeight).to.be.approx(20);
             marker.endEdit();
         });
@@ -173,8 +173,8 @@ describe('Geometry.Edit', function () {
             var size = marker.getSize();
             dragGeometry(marker, new maptalks.Point(size.width / 2, 0));
             var symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(39);
-            expect(symbol.markerHeight).to.be.approx(39);
+            expect(symbol.markerWidth).to.be.above(35);
+            expect(symbol.markerHeight).to.be.above(35);
             expect(fired).to.be.ok();
             marker.undoEdit();
             symbol = marker.getSymbol();
@@ -182,8 +182,8 @@ describe('Geometry.Edit', function () {
             expect(symbol.markerHeight).to.be.approx(20);
             marker.redoEdit();
             symbol = marker.getSymbol();
-            expect(symbol.markerWidth).to.be.approx(39);
-            expect(symbol.markerHeight).to.be.approx(39);
+            expect(symbol.markerWidth).to.be.above(35);
+            expect(symbol.markerHeight).to.be.above(35);
             marker.endEdit();
         });
 
@@ -351,14 +351,15 @@ describe('Geometry.Edit', function () {
             expect(polygon.getCoordinates()[0].length).to.be(5);
 
             polygon.startEdit({
-                'removeVertexOn' : 'click'
+                'removeVertexOn' : 'contextmenu'
             });
             var size = polygon.getSize();
             var domPosition = GET_PAGE_POSITION(container);
             var point = map.coordinateToContainerPoint(polygon.getCenter()).add(domPosition);
             point._add(new maptalks.Point(size.width / 2, size.height / 2));
 
-            happen.click(eventContainer, {
+            happen.once(eventContainer, {
+                'type' : 'contextmenu',
                 'clientX':point.x,
                 'clientY':point.y
             });

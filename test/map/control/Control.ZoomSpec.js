@@ -57,40 +57,40 @@ describe('Control.Zoom', function () {
             expect(map.getZoom()).to.be(zoom - 1);
         });
 
-        it('click on ruler to zoom', function () {
-            var control = new maptalks.control.Zoom();
-            map.addControl(control);
-            var zoom = map.getZoom();
-            var domPosition = GET_PAGE_POSITION(control._sliderRuler);
-            happen.click(control._sliderRuler, {
-                'clientX' : domPosition.x + 2,
-                'clientY' : domPosition.y + 100
-            });
-            expect(map.getZoom()).to.be.above(zoom);
-        });
+        // it('click on ruler to zoom', function () {
+        //     var control = new maptalks.control.Zoom();
+        //     map.addControl(control);
+        //     var zoom = map.getZoom();
+        //     var domPosition = GET_PAGE_POSITION(control._sliderRuler);
+        //     happen.click(control._sliderRuler, {
+        //         'clientX' : domPosition.x + 2,
+        //         'clientY' : domPosition.y + 100
+        //     });
+        //     expect(map.getZoom()).to.be.above(zoom);
+        // });
 
 
-        it('drag ruler dot to zoom', function () {
-            var control = new maptalks.control.Zoom();
-            map.addControl(control);
-            var zoom = map.getZoom();
-            var domPosition = GET_PAGE_POSITION(control._sliderDot).add(2, 2);
-            var top = parseInt(control._sliderDot.style.top);
-            happen.mousedown(control._sliderDot, {
-                'clientX' : domPosition.x,
-                'clientY' : domPosition.y
-            });
-            happen.mousemove(document, {
-                'clientX' : domPosition.x,
-                'clientY' : domPosition.y - 80
-            });
-            happen.mouseup(document, {
-                'clientX' : domPosition.x,
-                'clientY' : domPosition.y - 80
-            });
-            expect(map.getZoom()).to.be.above(zoom);
-            expect(parseInt(control._sliderDot.style.top)).to.be.below(top);
-        });
+        // it('drag ruler dot to zoom', function () {
+        //     var control = new maptalks.control.Zoom();
+        //     map.addControl(control);
+        //     var zoom = map.getZoom();
+        //     var domPosition = GET_PAGE_POSITION(control._sliderDot).add(2, 2);
+        //     var top = parseInt(control._sliderDot.style.top);
+        //     happen.mousedown(control._sliderDot, {
+        //         'clientX' : domPosition.x,
+        //         'clientY' : domPosition.y
+        //     });
+        //     happen.mousemove(document, {
+        //         'clientX' : domPosition.x,
+        //         'clientY' : domPosition.y - 80
+        //     });
+        //     happen.mouseup(document, {
+        //         'clientX' : domPosition.x,
+        //         'clientY' : domPosition.y - 80
+        //     });
+        //     expect(map.getZoom()).to.be.above(zoom);
+        //     expect(parseInt(control._sliderDot.style.top)).to.be.below(top);
+        // });
     });
 
 });

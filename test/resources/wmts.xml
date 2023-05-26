@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wmts:Capabilities version="1.0.0" xmlns:wmts="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <ows:ServiceIdentification>
+        <ows:Title></ows:Title>
+        <ows:Abstract></ows:Abstract>
+        <ows:ServiceType>OGC WMTS</ows:ServiceType>
+        <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+        <ows:Fees>NONE</ows:Fees>
+        <ows:AccessConstraints>NONE</ows:AccessConstraints>
+    </ows:ServiceIdentification>
+    <ows:ServiceProvider>
+        <ows:ProviderName>MapTalks</ows:ProviderName>
+        <ows:ProviderSite xlink:href="https://maptalks.com"/>
+    </ows:ServiceProvider>
+    <ows:OperationsMetadata>
+        <ows:Operation name="GetCapabilities">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="http://127.0.0.1:9027/api/ogc/service/wmts?">
+                        <ows:Constraint name="GetEncoding">
+                            <ows:AllowedValues>
+                                <ows:Value>KVP</ows:Value>
+                            </ows:AllowedValues>
+                        </ows:Constraint>
+                    </ows:Get>
+                </ows:HTTP>
+            </ows:DCP>
+        </ows:Operation>
+        <ows:Operation name="GetTile">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="http://127.0.0.1:9027/api/ogc/service/wmts?">
+                        <ows:Constraint name="GetEncoding">
+                            <ows:AllowedValues>
+                                <ows:Value>KVP</ows:Value>
+                            </ows:AllowedValues>
+                        </ows:Constraint>
+                    </ows:Get>
+                </ows:HTTP>
+            </ows:DCP>
+        </ows:Operation>
+    </ows:OperationsMetadata>
+    <wmts:Contents>
+        <wmts:Layer>
+            <ows:Identifier>tilelayer1</ows:Identifier>
+            <wmts:Style isDefault="false">
+                <ows:Identifier>point</ows:Identifier>
+            </wmts:Style>
+            <wmts:Format>image/png</wmts:Format>
+            <wmts:Format>image/jpeg</wmts:Format>
+            <wmts:TileMatrixSetLink>
+                <wmts:TileMatrixSet>EPSG:4326</wmts:TileMatrixSet>
+            </wmts:TileMatrixSetLink>
+            <wmts:TileMatrixSetLink>
+                <wmts:TileMatrixSet>EPSG:3857</wmts:TileMatrixSet>
+            </wmts:TileMatrixSetLink>
+            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png"/>
+            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tilelayer1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg"/>
+        </wmts:Layer>
+        <wmts:Layer>
+            <ows:Identifier>tg1</ows:Identifier>
+            <wmts:Style isDefault="false">
+                <ows:Identifier>point</ows:Identifier>
+            </wmts:Style>
+            <wmts:Format>image/png</wmts:Format>
+            <wmts:Format>image/jpeg</wmts:Format>
+            <wmts:TileMatrixSetLink>
+                <wmts:TileMatrixSet>EPSG:4326</wmts:TileMatrixSet>
+            </wmts:TileMatrixSetLink>
+            <wmts:TileMatrixSetLink>
+                <wmts:TileMatrixSet>EPSG:3857</wmts:TileMatrixSet>
+            </wmts:TileMatrixSetLink>
+            <wmts:ResourceURL format="image/png" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/png"/>
+            <wmts:ResourceURL format="image/jpeg" resourceType="tile" template="http://127.0.0.1:9027/api/ogc/rest/wmts/tile/tg1/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?format=image/jpeg"/>
+        </wmts:Layer>
+        <wmts:TileMatrixSet>
+            <ows:Identifier>EPSG:4326</ows:Identifier>
+            <ows:SupportedCRS>urn:ogc:def:crs:EPSG::4326</ows:SupportedCRS>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:0</ows:Identifier>
+                <wmts:ScaleDenominator>2.795411320143589E8</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:1</ows:Identifier>
+                <wmts:ScaleDenominator>1.3977056600717944E8</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:2</ows:Identifier>
+                <wmts:ScaleDenominator>6.988528300358972E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:3</ows:Identifier>
+                <wmts:ScaleDenominator>3.494264150179486E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:4</ows:Identifier>
+                <wmts:ScaleDenominator>1.747132075089743E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:5</ows:Identifier>
+                <wmts:ScaleDenominator>8735660.375448715</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:6</ows:Identifier>
+                <wmts:ScaleDenominator>4367830.1877243575</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:7</ows:Identifier>
+                <wmts:ScaleDenominator>2183915.0938621787</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:8</ows:Identifier>
+                <wmts:ScaleDenominator>1091957.5469310894</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:9</ows:Identifier>
+                <wmts:ScaleDenominator>545978.7734655447</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:10</ows:Identifier>
+                <wmts:ScaleDenominator>272989.38673277234</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:11</ows:Identifier>
+                <wmts:ScaleDenominator>136494.69336638617</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:12</ows:Identifier>
+                <wmts:ScaleDenominator>68247.34668319309</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:13</ows:Identifier>
+                <wmts:ScaleDenominator>34123.67334159654</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:14</ows:Identifier>
+                <wmts:ScaleDenominator>17061.83667079827</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:15</ows:Identifier>
+                <wmts:ScaleDenominator>8530.918335399136</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:16</ows:Identifier>
+                <wmts:ScaleDenominator>4265.459167699568</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:17</ows:Identifier>
+                <wmts:ScaleDenominator>2132.729583849784</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:18</ows:Identifier>
+                <wmts:ScaleDenominator>1066.364791924892</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:19</ows:Identifier>
+                <wmts:ScaleDenominator>533.182395962446</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:20</ows:Identifier>
+                <wmts:ScaleDenominator>266.591197981223</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:4326:21</ows:Identifier>
+                <wmts:ScaleDenominator>133.2955989906115</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>90.0 -180.0</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>2</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+        </wmts:TileMatrixSet>
+        <wmts:TileMatrixSet>
+            <ows:Identifier>EPSG:3857</ows:Identifier>
+            <ows:SupportedCRS>urn:ogc:def:crs:EPSG::3857</ows:SupportedCRS>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:0</ows:Identifier>
+                <wmts:ScaleDenominator>5.590822639508929E8</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:1</ows:Identifier>
+                <wmts:ScaleDenominator>2.7954113197544646E8</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:2</ows:Identifier>
+                <wmts:ScaleDenominator>1.3977056598772323E8</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:3</ows:Identifier>
+                <wmts:ScaleDenominator>6.988528299386162E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:4</ows:Identifier>
+                <wmts:ScaleDenominator>3.494264149693081E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:5</ows:Identifier>
+                <wmts:ScaleDenominator>1.7471320748465404E7</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:6</ows:Identifier>
+                <wmts:ScaleDenominator>8735660.374232702</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:7</ows:Identifier>
+                <wmts:ScaleDenominator>4367830.187116351</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:8</ows:Identifier>
+                <wmts:ScaleDenominator>2183915.0935581755</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:9</ows:Identifier>
+                <wmts:ScaleDenominator>1091957.5467790877</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:10</ows:Identifier>
+                <wmts:ScaleDenominator>545978.7733895439</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:11</ows:Identifier>
+                <wmts:ScaleDenominator>272989.38669477194</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:12</ows:Identifier>
+                <wmts:ScaleDenominator>136494.69334738597</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:13</ows:Identifier>
+                <wmts:ScaleDenominator>68247.34667369298</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:14</ows:Identifier>
+                <wmts:ScaleDenominator>34123.67333684649</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:15</ows:Identifier>
+                <wmts:ScaleDenominator>17061.836668423246</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:16</ows:Identifier>
+                <wmts:ScaleDenominator>8530.918334211623</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:17</ows:Identifier>
+                <wmts:ScaleDenominator>4265.4591671058115</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:18</ows:Identifier>
+                <wmts:ScaleDenominator>2132.7295835529058</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:19</ows:Identifier>
+                <wmts:ScaleDenominator>1066.3647917764529</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:20</ows:Identifier>
+                <wmts:ScaleDenominator>533.1823958882264</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:21</ows:Identifier>
+                <wmts:ScaleDenominator>266.5911979441132</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:22</ows:Identifier>
+                <wmts:ScaleDenominator>133.2955989720566</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:23</ows:Identifier>
+                <wmts:ScaleDenominator>66.6477994860283</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:24</ows:Identifier>
+                <wmts:ScaleDenominator>33.32389974301415</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:25</ows:Identifier>
+                <wmts:ScaleDenominator>16.661949871507076</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:26</ows:Identifier>
+                <wmts:ScaleDenominator>8.330974935753538</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:27</ows:Identifier>
+                <wmts:ScaleDenominator>4.165487467876769</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:28</ows:Identifier>
+                <wmts:ScaleDenominator>2.0827437339383845</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:29</ows:Identifier>
+                <wmts:ScaleDenominator>1.0413718669691923</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+            <wmts:TileMatrix>
+                <ows:Identifier>EPSG:3857:30</ows:Identifier>
+                <wmts:ScaleDenominator>0.5206859334845961</wmts:ScaleDenominator>
+                <wmts:TopLeftCorner>-2.003750834E7 2.0037508E7</wmts:TopLeftCorner>
+                <wmts:TileWidth>256</wmts:TileWidth>
+                <wmts:TileHeight>256</wmts:TileHeight>
+                <wmts:MatrixWidth>1</wmts:MatrixWidth>
+                <wmts:MatrixHeight>1</wmts:MatrixHeight>
+            </wmts:TileMatrix>
+        </wmts:TileMatrixSet>
+    </wmts:Contents>
+</wmts:Capabilities>

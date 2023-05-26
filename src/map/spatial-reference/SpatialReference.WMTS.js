@@ -52,6 +52,18 @@ function getTransformValue(options) {
     return transformValue;
 }
 
+const ns = 'wmts';
+
+// try get by localName, ns:localName
+function getElementsByTagName(element, localName) {
+    const result = element.getElementsByTagName(localName);
+    if (result && result.length) {
+        return result;
+    }
+    const name = ns + ':' + localName;
+    return element.getElementsByTagName(name);
+}
+
 function getTileMatrixSet(TileMatrixSets, TileMatrixSetLink) {
     for (let i = 0; i < TileMatrixSets.length; i++) {
         let TileMatrixSet = TileMatrixSets[i];
@@ -79,13 +91,13 @@ function parseWMTSXML(str, requestUrl, options) {
     if (!content) {
         return [];
     }
-    const layers = content.getElementsByTagName('Layer');
+    const layers = getElementsByTagName(content, 'Layer');
     if (!layers.length) {
         return [];
     }
     const TileMatrixSets = [];
     for (let i = 0, len = content.childNodes.length; i < len; i++) {
-        if (content.childNodes[i].nodeName === 'TileMatrixSet') {
+        if (content.childNodes[i].localName === 'TileMatrixSet') {
             TileMatrixSets.push(content.childNodes[i]);
         }
     }
@@ -106,13 +118,13 @@ function parseWMTSXML(str, requestUrl, options) {
         if (layerName) {
             layerName = layerName.textContent;
         }
-        const tileMatrixSetLinks = layer.getElementsByTagName('TileMatrixSetLink');
+        const tileMatrixSetLinks = getElementsByTagName(layer, 'TileMatrixSetLink');
         if (tileMatrixSetLinks.length === 0) {
             continue;
         }
         for (let j = 0, len1 = tileMatrixSetLinks.length; j < len1; j++) {
             let tileMatrixSetLink = tileMatrixSetLinks[j];
-            tileMatrixSetLink = tileMatrixSetLink.getElementsByTagName('TileMatrixSet')[0];
+            tileMatrixSetLink = getElementsByTagName(tileMatrixSetLink, 'TileMatrixSet')[0];
             if (tileMatrixSetLink) {
                 tileMatrixSetLink = tileMatrixSetLink.textContent;
             }
@@ -163,7 +175,7 @@ function parseWMTSXML(str, requestUrl, options) {
 }
 
 function parseTileMatrixSet(TileMatrixSet, options = {}) {
-    const TileMatrixs = TileMatrixSet.getElementsByTagName('TileMatrix');
+    const TileMatrixs = getElementsByTagName(TileMatrixSet, 'TileMatrix');
     const resolutions = [], tileSystem = [], tileSize = [];
     let projection, tset, isGeoServer = false, levelStr;
     if (!projection) {
@@ -197,10 +209,10 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
             level = parseInt(level);
         }
         minLevel = Math.min(minLevel, level);
-        const ScaleDenominator = TileMatrix.getElementsByTagName('ScaleDenominator')[0].textContent;
-        const TopLeftCorner = TileMatrix.getElementsByTagName('TopLeftCorner')[0].textContent;
-        const TileWidth = TileMatrix.getElementsByTagName('TileWidth')[0].textContent;
-        const TileHeight = TileMatrix.getElementsByTagName('TileHeight')[0].textContent;
+        const ScaleDenominator = getElementsByTagName(TileMatrix, 'ScaleDenominator')[0].textContent;
+        const TopLeftCorner = getElementsByTagName(TileMatrix, 'TopLeftCorner')[0].textContent;
+        const TileWidth = getElementsByTagName(TileMatrix, 'TileWidth')[0].textContent;
+        const TileHeight = getElementsByTagName(TileMatrix, 'TileHeight')[0].textContent;
         if (tileSize.length === 0) {
             tileSize.push(parseInt(TileWidth), parseInt(TileHeight));
         }

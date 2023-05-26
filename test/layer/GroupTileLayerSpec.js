@@ -26,7 +26,51 @@ describe('GroupTileLayer', function () {
         }
         REMOVE_CONTAINER(container);
     });
+    it('addLayer/removeLayer/clearLayers', function (done) {
+        var layer1 = new maptalks.TileLayer('tile2', {
+            urlTemplate : TILE_IMAGE
+        });
+        var layer2 = new maptalks.TileLayer('boudaries', {
+            urlTemplate : TILE_IMAGE
+        })
 
+        var group = new maptalks.GroupTileLayer('base', [layer1
+        ], {
+            renderer: 'canvas'
+        });
+        setTimeout(function(){
+            expect(group.getLayers().length).to.be.eql(1);
+            //add layer
+            group.addLayer(layer2);
+            expect(group.getLayers().length).to.be.eql(2);
+            //id repeat
+            group.addLayer(layer2);
+            expect(group.getLayers().length).to.be.eql(2);
+
+            group.removeLayer(layer2);
+            expect(group.getLayers().length).to.be.eql(1);
+
+            group.addLayer(layer2);
+            expect(group.getLayers().length).to.be.eql(2);
+            //
+
+            setTimeout(function() {
+                // test layer.remove method
+                layer2.remove();
+                setTimeout(function () {
+                    expect(group.getLayers().length).to.be.eql(1);
+                    group.clearLayers();
+                    expect(group.getLayers().length).to.be.eql(0);
+                    setTimeout(function () {
+                        map.removeLayer(group);
+                        done();
+                    }, 200);
+                }, 200);
+            }, 200);
+        }, 80);
+        
+        map.addLayer(group);
+    });
     it('add to map', function (done) {
         var group = new maptalks.GroupTileLayer('group', [
             new maptalks.TileLayer('tile1', {
@@ -225,5 +269,74 @@ describe('GroupTileLayer', function () {
             expect(placeholders.length === allTiles.length / 4);
             done();
         };
+    });
+
+    it('should can use GroupTileLayer as child layer', function (done) {
+        var group =  new maptalks.GroupTileLayer('base', [
+            new maptalks.TileLayer('tile2', {
+                urlTemplate : TILE_IMAGE
+            }),
+
+            new maptalks.GroupTileLayer('test',[
+                new maptalks.TileLayer('boudaries', {
+                    urlTemplate : TILE_IMAGE
+                })
+            ])
+        ], {
+            renderer : 'canvas'
+        });
+        group.once('layerload', function () {
+            done();
+        });
+        map.addLayer(group);
+    });
+
+    it('respect zIndex of child layers', function (done) {
+        var tileLayer1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : 'resources/tile-red-256.png'
+        });
+
+        var tileLayer2 = new maptalks.TileLayer('tile2', {
+            urlTemplate : 'resources/tile-green-256.png',
+
+        });
+        var group =  new maptalks.GroupTileLayer('base', [
+           tileLayer1, tileLayer2
+        ], {
+            renderer : 'canvas'
+        });
+        var count = 0;
+        group.on('layerload', function () {
+            count++;
+            if (count === 1) {
+                expect(group).to.be.painted(0, 0, [0, 255, 0]);
+                tileLayer2.setZIndex(1);
+                tileLayer1.setZIndex(2);
+            } else if (count === 2) {
+                expect(group).to.be.painted(0, 0, [255, 0, 0]);
+                done();
+            }
+
+        });
+        map.addLayer(group);
+    });
+
+    it('respect opacity of child layers', function (done) {
+        var tileLayer1 = new maptalks.TileLayer('tile1', {
+            urlTemplate : 'resources/tile-red-256.png',
+            opacity: 0.5
+        });
+
+        var group =  new maptalks.GroupTileLayer('base', [
+           tileLayer1
+        ], {
+            renderer : 'canvas',
+            fadingAnimation: false
+        });
+        group.once('layerload', function () {
+            expect(group).to.be.painted(0, 0, [255, 0, 0, 191]);
+            done();
+        });
+        map.addLayer(group);
     });
 });

@@ -533,16 +533,34 @@ class Extent {
      * Get a coordinate array of extent's rectangle area, containing 5 coordinates in which the first equals with the last.
      * @return {Coordinate[]} coordinates array
      */
-    toArray() {
+    toArray(out) {
         const xmin = this['xmin'],
             ymin = this['ymin'],
             xmax = this['xmax'],
             ymax = this['ymax'];
-        return [
-            new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
-            new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
-            new this._clazz([xmin, ymax])
-        ];
+        if (!out) {
+            return [
+                new this._clazz([xmin, ymax]), new this._clazz([xmax, ymax]),
+                new this._clazz([xmax, ymin]), new this._clazz([xmin, ymin]),
+                new this._clazz([xmin, ymax])
+            ];
+        } else {
+            out[0].x = xmin;
+            out[0].y = ymax;
+
+            out[1].x = xmax;
+            out[1].y = ymax;
+
+            out[2].x = xmax;
+            out[2].y = ymin;
+
+            out[3].x = xmin;
+            out[3].y = ymin;
+
+            out[4].x = xmin;
+            out[4].y = ymax;
+            return out;
+        }
     }
 
     toString() {

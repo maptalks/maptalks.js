@@ -1,6 +1,7 @@
 import { extend, isNil } from '../core/util';
 import { escapeSpecialChars } from '../core/util/strings';
 import TextMarker from './TextMarker';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 /**
  * @property {Object} [options=null]                   - textbox's options, also including options of [Marker]{@link Marker#options}
@@ -187,9 +188,30 @@ class TextBox extends TextMarker {
 
     _refresh() {
         const textStyle = this.getTextStyle() || {},
-            padding = textStyle['padding'] || [12, 8],
-            maxWidth = this._width - 2 * padding[0],
+            padding = textStyle['padding'] || [12, 8];
+        let maxWidth, maxHeight;
+        if (isFunctionDefinition(this._width)) {
+            maxWidth = JSON.parse(JSON.stringify(this._width));
+            const stops = maxWidth.stops;
+            if (stops) {
+                for (let i = 0; i < stops.length; i++) {
+                    stops[i][1] = stops[i][1] - 2 * padding[0];
+                }
+            }
+        } else {
+            maxWidth = this._width - 2 * padding[0];
+        }
+        if (isFunctionDefinition(this._height)) {
+            maxHeight = JSON.parse(JSON.stringify(this._height));
+            const stops = maxHeight.stops;
+            if (stops) {
+                for (let i = 0; i < stops.length; i++) {
+                    stops[i][1] = stops[i][1] - 2 * padding[1];
+                }
+            }
+        } else {
             maxHeight = this._height - 2 * padding[1];
+        }
         const symbol = extend({},
             textStyle.symbol || this._getDefaultTextSymbol(),
             this.options.boxSymbol || this._getDefaultBoxSymbol(),
@@ -207,30 +229,110 @@ class TextBox extends TextMarker {
             symbol['textWrapWidth'] = maxWidth;
         }
 
+        // function-type markerWidth and markerHeight doesn't support left/right horizontalAlignment and top/bottom verticalAlignment now
         const hAlign = textStyle['horizontalAlignment'];
         symbol['textDx'] = symbol['markerDx'] || 0;
-        const offsetX = symbol['markerWidth'] / 2 - padding[0];
+        let offsetX;
+        if (isFunctionDefinition(this._width)) {
+            offsetX = JSON.parse(JSON.stringify(this._width));
+            const stops = offsetX.stops;
+            if (stops) {
+                for (let i = 0; i < stops.length; i++) {
+                    stops[i][1] = stops[i][1] / 2 - padding[0];
+                    if (hAlign === 'left') {
+                        stops[i][1] *= -1;
+                    }
+                }
+            }
+        } else {
+            offsetX = symbol['markerWidth'] / 2 - padding[0];
+            if (hAlign === 'left') {
+                offsetX *= -1;
+            }
+        }
         if (hAlign === 'left') {
             symbol['textHorizontalAlignment'] = 'right';
-            symbol['textDx'] = symbol['textDx'] - offsetX;
+            symbol['textDx'] = offsetX;
         } else if (hAlign === 'right') {
             symbol['textHorizontalAlignment'] = 'left';
-            symbol['textDx'] = symbol['textDx'] + offsetX;
+            symbol['textDx'] = offsetX;
         }
 
         const vAlign = textStyle['verticalAlignment'];
         symbol['textDy'] = symbol['markerDy'] || 0;
-        const offsetY = symbol['markerHeight'] / 2 - padding[1];
+        let offsetY;
+        if (isFunctionDefinition(this._height)) {
+            offsetY = JSON.parse(JSON.stringify(this._height));
+            const stops = offsetY.stops;
+            if (stops) {
+                for (let i = 0; i < stops.length; i++) {
+                    stops[i][1] = stops[i][1] / 2 - padding[1];
+                    if (vAlign === 'top') {
+                        stops[i][1] *= -1;
+                    }
+                }
+            }
+        } else {
+            offsetY = symbol['markerHeight'] / 2 - padding[1];
+            if (vAlign === 'top') {
+                offsetY *= -1;
+            }
+        }
         if (vAlign === 'top') {
             symbol['textVerticalAlignment'] = 'bottom';
-            symbol['textDy'] -= offsetY;
+            symbol['textDy'] = offsetY;
         } else if (vAlign === 'bottom') {
             symbol['textVerticalAlignment'] = 'top';
-            symbol['textDy'] += offsetY;
+            symbol['textDy'] = offsetY;
         }
         this._refreshing = true;
         this.updateSymbol(symbol);
         delete this._refreshing;
+    }
+
+    startEdit(opts) {
+        const symbol = this._getCompiledSymbol();
+        if (isFunctionDefinition(this._width)) {
+            const markerWidth = symbol['markerWidth'];
+            this._oldWidth = this._width;
+            this.setWidth(markerWidth);
+        }
+        if (isFunctionDefinition(this._height)) {
+            const markerHeight = symbol['markerHeight'];
+            this._oldHeight = this._height;
+            this.setHeight(markerHeight);
+        }
+        super.startEdit(opts);
+    }
+
+    endEdit() {
+        const map = this.getMap();
+        const zoom = map && map.getZoom();
+        if (this._oldWidth) {
+            const markerWidth = this._width;
+            const widthFn = interpolated(this._oldWidth);
+            const oldExpectedWidth = widthFn(zoom);
+            const scale = markerWidth / oldExpectedWidth;
+            const stops = this._oldWidth.stops;
+            for (let i = 0; i < stops.length; i++) {
+                stops[i][1] *= scale;
+            }
+            this.setWidth(this._oldWidth);
+            delete this._oldWidth;
+        }
+        if (this._oldHeight) {
+            const markerHeight = this._height;
+            const heightFn = interpolated(this._oldHeight);
+            const oldExpectedHeight = heightFn(zoom);
+            const scale = markerHeight / oldExpectedHeight;
+            const stops = this._oldHeight.stops;
+            for (let i = 0; i < stops.length; i++) {
+                stops[i][1] *= scale;
+            }
+            this.setHeight(this._oldHeight);
+            delete this._oldHeight;
+        }
+        super.endEdit();
     }
 }
 

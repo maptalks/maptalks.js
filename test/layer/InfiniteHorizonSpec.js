@@ -35,6 +35,7 @@ describe('Infinite Horizon Specs', function () {
         var cascadePitches = maptalks.Map.prototype.options['cascadePitches'];
         createMap(2, cascadePitches[0]);
         var tile = new maptalks.TileLayer('tile', {
+            pyramidMode: 0,
             renderer : 'canvas',
             urlTemplate : '#'
         }).addTo(map);
@@ -47,6 +48,7 @@ describe('Infinite Horizon Specs', function () {
         var cascadePitches = maptalks.Map.prototype.options['cascadePitches'];
         createMap(2, cascadePitches[1]);
         var tile = new maptalks.TileLayer('tile', {
+            pyramidMode: 0,
             renderer : 'canvas',
             urlTemplate : '#'
         }).addTo(map);
@@ -60,6 +62,7 @@ describe('Infinite Horizon Specs', function () {
         var cascadePitches = maptalks.Map.prototype.options['cascadePitches'];
         createMap(0, cascadePitches[1]);
         var tile = new maptalks.TileLayer('tile', {
+            pyramidMode: 0,
             renderer : 'canvas',
             urlTemplate : '#'
         }).addTo(map);
@@ -72,18 +75,21 @@ describe('Infinite Horizon Specs', function () {
         var maxVisualPitch = maptalks.Map.prototype.options['maxVisualPitch'];
         createMap(2, maxVisualPitch);
         var tile = new maptalks.TileLayer('tile', {
+            pyramidMode: 0,
             renderer : 'canvas',
             urlTemplate : '#'
         }).addTo(map);
         var tiles = tile.getTiles();
-        expect(tiles.tileGrids.length).to.be.eql(1);
+        expect(tiles.tileGrids.length).to.be.eql(2);
         expect(tiles.tileGrids[0].tiles.length).to.be.eql(36);
+        expect(tiles.tileGrids[1].tiles.length).to.be.eql(16);
     });
 
     it('cascade level 2 tiles', function () {
         var maxVisualPitch = maptalks.Map.prototype.options['maxVisualPitch'];
         createMap(5, maxVisualPitch);
         var tile = new maptalks.TileLayer('tile', {
+            pyramidMode: 0,
             renderer : 'canvas',
             urlTemplate : '#'
         }).addTo(map);

@@ -59,6 +59,7 @@ Geometry.fromJSON = function (json) {
             geometry.setId(json['feature']['id']);
         }
     } else {
+        //feature可能是GeometryCollection，里面可能包含Circle等
         geometry = GeoJSON.toGeometry(json['feature']);
         if (json['options']) {
             geometry.config(json['options']);

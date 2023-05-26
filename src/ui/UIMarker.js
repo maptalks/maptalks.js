@@ -1,4 +1,4 @@
-import { isString, flash, isNil, extend } from '../core/util';
+import { isString, flash, isNil, extend, isFunction, isNumber, now } from '../core/util';
 import { on, off, createEl, stopPropagation } from '../core/util/dom';
 import Browser from '../core/Browser';
 import Handler from '../handler/Handler';
@@ -10,10 +10,15 @@ import UIComponent from './UIComponent';
 
 /**
  * @property {Object} options - construct options
+ * @property {String} [options.containerClass=null]  - css class name applied to UIMarker's DOM container
  * @property {Boolean} [options.draggable=false]  - if the marker can be dragged.
  * @property {Number}  [options.single=false]     - if the marker is a global single one.
  * @property {String|HTMLElement}  options.content - content of the marker, can be a string type HTML code or a HTMLElement.
  * @property {Number}  [options.altitude=0] - altitude.
+ * @property {Number}  [options.minZoom=0] - the minimum zoom to display .
+ * @property {Number}  [options.maxZoom=null] - the maximum zoom to display.
+ * @property {String}  [options.horizontalAlignment=middle] - horizontal Alignment 'middle','left','right'
+ * @property {String}  [options.verticalAlignment=middle] - vertical Alignment 'middle','top','bottom'
  * @memberOf ui.UIMarker
  * @instance
  */
@@ -25,7 +30,9 @@ const options = {
     'content': null,
     'altitude': 0,
     'minZoom': 0,
-    'maxZoom': null
+    'maxZoom': null,
+    'horizontalAlignment': 'middle',
+    'verticalAlignment': 'middle'
 };
 
 const domEvents =
@@ -242,6 +249,7 @@ class UIMarker extends Handlerable(UIComponent) {
         if (this.isVisible()) {
             this._coordinate = this._markerCoord;
             this._setPosition();
+            this._collides();
         }
         return this;
     }
@@ -261,7 +269,22 @@ class UIMarker extends Handlerable(UIComponent) {
 
     // for infowindow
     getAltitude() {
+        const coordinates = this.getCoordinates() || {};
+        if (isNumber(coordinates.z)) {
+            return coordinates.z;
+        }
         return this.options.altitude || 0;
+    }
+
+    setAltitude(alt) {
+        if (isNumber(alt) && this._markerCoord) {
+            this._markerCoord.z = alt;
+            if (this._updatePosition) {
+                this._updatePosition();
+                this._collides();
+            }
+        }
+        return this;
     }
 
     /**
@@ -336,9 +359,16 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     buildOn() {
         let dom;
-        if (isString(this.options['content'])) {
+        const content = this.options['content'];
+        const isStr = isString(content);
+        if (isStr || isFunction(content)) {
             dom = createEl('div');
-            dom.innerHTML = this.options['content'];
+            if (isStr) {
+                dom.innerHTML = this.options['content'];
+            } else {
+                //dymatic render dom content
+                content.bind(this)(dom);
+            }
         } else {
             dom = this.options['content'];
         }
@@ -356,7 +386,20 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     getOffset() {
         const size = this.getSize();
-        return new Point(-size.width / 2, -size.height / 2);
+        //default is middle
+        let offsetX = -size.width / 2, offsetY = -size.height / 2;
+        const { horizontalAlignment, verticalAlignment } = this.options;
+        if (horizontalAlignment === 'left') {
+            offsetX = -size.width;
+        } else if (horizontalAlignment === 'right') {
+            offsetX = 0;
+        }
+        if (verticalAlignment === 'top') {
+            offsetY = -size.height;
+        } else if (verticalAlignment === 'bottom') {
+            offsetY = 0;
+        }
+        return new Point(offsetX, offsetY);
     }
 
     /**
@@ -390,11 +433,37 @@ class UIMarker extends Handlerable(UIComponent) {
 
     _onDomEvents(e) {
         const event = this.getMap()._parseEvent(e, e.type);
+        const type = e.type;
+        if (type === 'mousedown') {
+            this._mousedownEvent = e;
+        }
+        if (type === 'mouseup') {
+            this._mouseupEvent = e;
+        }
+        if (type === 'click' && this._mouseClickPositionIsChange()) {
+            return;
+        }
+        if (type === 'touchstart') {
+            this._touchstartTime = now();
+        }
         this.fire(e.type, event);
+        // Mobile device simulation click event
+        if (type === 'touchend' && Browser.touch) {
+            const clickTimeThreshold = this.getMap().options.clickTimeThreshold || 280;
+            if (now() - this._touchstartTime < clickTimeThreshold) {
+                this._onDomEvents(extend({}, e, { type: 'click' }));
+            }
+        }
     }
 
     _removeDOMEvents(dom) {
         off(dom, domEvents, this._onDomEvents, this);
+    }
+
+    _mouseClickPositionIsChange() {
+        const { x: x1, y: y1 } = this._mousedownEvent || {};
+        const { x: x2, y: y2 } = this._mouseupEvent || {};
+        return (x1 !== x2 || y1 !== y2);
     }
 
     /**
@@ -627,7 +696,9 @@ class UIMarkerDragHandler extends Handler {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        target.fire('dragend', eventParam);
+        if (target && target._mouseClickPositionIsChange && target._mouseClickPositionIsChange()) {
+            target.fire('dragend', eventParam);
+        }
 
     }
 

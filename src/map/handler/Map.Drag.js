@@ -2,7 +2,6 @@ import { now } from '../../core/util';
 import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
-import Point from '../../geo/Point';
 import Map from '../Map';
 
 class MapDragHandler extends Handler {
@@ -14,7 +13,7 @@ class MapDragHandler extends Handler {
         const dom = map._panels.mapWrapper || map._containerDOM;
         this._dragHandler = new DragHandler(dom, {
             'cancelOn': this._cancelOn.bind(this),
-            'rightclick' : true
+            'rightclick': true
         });
         this._dragHandler.on('mousedown', this._onMouseDown, this)
             .on('dragstart', this._onDragStart, this)
@@ -99,6 +98,7 @@ class MapDragHandler extends Handler {
         this.preY = param['mousePos'].y;
         this.startX = this.preX;
         this.startY = this.preY;
+        this._startPrjCenter = this.target._getPrjCenter().copy();
     }
 
     _moveStart(param) {
@@ -123,18 +123,24 @@ class MapDragHandler extends Handler {
         if (!this.startDragTime) {
             return;
         }
+        const isTouch = param.domEvent.type === 'touchend';
         const map = this.target;
         let t = now() - this.startDragTime;
         const mx = param['mousePos'].x,
             my = param['mousePos'].y;
         const dx = mx - this.startX;
         const dy = my - this.startY;
+        const currentCenter = map._getPrjCenter();
+        const dxy = currentCenter.sub(this._startPrjCenter);
 
         this._clear();
 
         if (map.options['panAnimation'] && !param.interupted && map._verifyExtent(map._getPrjCenter()) && t < 280 && Math.abs(dy) + Math.abs(dx) > 5) {
-            t = 5 * t * (Math.abs(dx) + Math.abs(dy)) / 500;
-            map.panBy(new Point(dx, dy), { 'duration' : t });
+            t = 5 * t;
+            const dscale = isTouch ? 5 : 2.8;
+            const targetPrjCoord = currentCenter.add(dxy._multi(dscale));
+            // map._fixPrjOnWorldWide(targetPrjCoord);
+            map._panTo(targetPrjCoord, { 'duration': isTouch ? t * 3 : t * 2, 'easing': 'outExpo' });
         } else {
             map.onMoveEnd(param);
         }
@@ -174,23 +180,23 @@ class MapDragHandler extends Handler {
         }
 
         if (this._rotateMode.indexOf('rotate') >= 0 && map.options['dragRotate']) {
-
+            const factor = 0.15;
             let db = 0;
             if (map.options['dragPitch'] || dx > dy) {
-                db = -0.6 * (this.preX - mx);
+                db = -factor * (this.preX - mx);
             } else if (mx > map.width / 2) {
-                db = 0.6 * (this.preY - my);
+                db = factor * (this.preY - my);
             } else {
-                db = -0.6 * (this.preY - my);
+                db = -factor * (this.preY - my);
             }
             const bearing = map.getBearing() + db;
             this._db = this._db || 0;
             this._db += db;
 
-            map.setBearing(bearing);
+            map._setBearing(bearing);
         }
         if (this._rotateMode.indexOf('pitch') >= 0 && map.options['dragPitch']) {
-            map.setPitch(map.getPitch() + (this.preY - my) * 0.4);
+            map._setPitch(map.getPitch() + (this.preY - my) * 0.15);
         }
         this.preX = mx;
         this.preY = my;
@@ -205,13 +211,13 @@ class MapDragHandler extends Handler {
         this._clear();
         const t = now() - this.startDragTime;
         map.onDragRotateEnd(param);
-        if (Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
+        if (map.options['rotateAnimation'] && Math.abs(bearing - this.startBearing) > 20 && (this._rotateMode === 'rotate' || this._rotateMode === 'rotate_pitch') && !param.interupted && t < 400) {
             const bearing = map.getBearing();
             map._animateTo({
-                'bearing' : bearing + this._db / 2
+                'bearing': bearing + this._db / 1.5
             }, {
-                'easing'  : 'out',
-                'duration' : 800
+                'easing': 'outQuint',
+                'duration': 1600
             });
         }
     }
@@ -227,10 +233,10 @@ class MapDragHandler extends Handler {
 
 Map.mergeOptions({
     'draggable': true,
-    'dragPan' : true,
-    'dragRotatePitch' : true,
-    'dragRotate' : true,
-    'dragPitch' : true
+    'dragPan': true,
+    'dragRotatePitch': true,
+    'dragRotate': true,
+    'dragPitch': true
 });
 
 Map.addOnLoadHook('addHandler', 'draggable', MapDragHandler);

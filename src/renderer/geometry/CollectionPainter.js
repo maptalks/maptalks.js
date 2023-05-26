@@ -48,17 +48,15 @@ export default class CollectionPainter extends Class {
         if (out) {
             out.set(null, null, null, null);
         }
+        // const extent = out || new PointExtent();
+        // const geometries = this.geometry.getGeometries();
+        // for (let i = 0, len = geometries.length; i < len; i++) {
+        //     extent._combine(geometries[i].get2DExtent());
+        // }
+        // return extent;
         let extent = out || new PointExtent();
         this._eachPainter(painter => {
             extent = extent._combine(painter.get2DExtent(resources, TEMP_EXTENT));
-        });
-        return extent;
-    }
-
-    getContainerExtent() {
-        let extent = new PointExtent();
-        this._eachPainter(painter => {
-            extent = extent.combine(painter.getContainerExtent());
         });
         return extent;
     }

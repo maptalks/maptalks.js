@@ -12,7 +12,7 @@ Hi! It's really really exciting that you are interested in contributing to mapta
 
 - Submit your PRs against the `master` branch.
 
-- **DO NOT** checkin `dist` in the commits.
+- **DO NOT** check in `dist` in the commits.
 
 - Make sure `npm test` passes. (see [development setup](#development-setup))
 
@@ -37,7 +37,7 @@ $ npm install
 ### Commonly used NPM scripts
 
 ``` bash
-# watch and auto re-build dist/maptalks.js, and serve dist on http://localhost:20000/
+# watch and auto re-build dist/maptalks.js
 $ npm run dev
 
 # build all dist files, including npm packages
@@ -81,7 +81,7 @@ maptalks's unit tests are run in the following CI servers:
 
 Common causes of CI failures:
 * If your PR failes in one or two CI tests but succeeds in the others, it usually indicated a browser compatible problem. 
-* If testing fails due to "timeout of 2000ms exceeded" errors in serverl cases which was passed in the previous testings, it's possible caused by server glitches and you can try to push more commits to trigger a re-testing.
+* If testing fails due to "timeout of 2000ms exceeded" errors in several cases which was passed in the previous testings, it's possible caused by server glitches and you can try to push more commits to trigger a re-testing.
 * Only failure of appveor may be caused by ES6 codes in unit tests, tests must be written in **ES5** as IE doesn't support ES2015 grammar.
 
 ## Project Structure
@@ -102,4 +102,4 @@ Common causes of CI failures:
 
 - **`src`**: contains the source code, obviously. The codebase is written in ES2015.
 
-- **`test`**: contains all tests written in **ES5**(for compatibility of IE). The unit tests are written with [Mocha](https://mochajs.org), [expect.js](https://github.com/Automattic/expect.js) for assertion, [happen](https://github.com/tmcw/happen) for event mocking and run with [Karma](http://karma-runner.github.io/0.13/index.html). 
+- **`test`**: contains all tests written in **ES5**(for compatibility of IE). The unit tests are written with [Mocha](https://mochajs.org), [expect.js](https://github.com/Automattic/expect.js) for assertion, [happen](https://github.com/tmcw/happen) for event mocking and run with [Karma](http://karma-runner.github.io/0.13/index.html).

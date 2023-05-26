@@ -20,7 +20,7 @@ const defaultOptions = {
     'animationOnHide': false,
     'autoPan': false,
     'width': 160,
-    'maxHeight' : 0,
+    'maxHeight': 0,
     'custom': false,
     'items': []
 };
@@ -58,6 +58,7 @@ class Menu extends UIComponent {
             owner.removeMenu();
         }
         owner._menu = this;
+        this._owner = owner;
         return UIComponent.prototype.addTo.apply(this, arguments);
     }
 
@@ -147,7 +148,7 @@ class Menu extends UIComponent {
 
     getEvents() {
         return {
-            '_zoomstart _zoomend _movestart _dblclick _click': this. _removePrevDOM
+            '_zoomstart _zoomend _movestart _dblclick _click': this._removePrevDOM
         };
     }
 
@@ -169,6 +170,9 @@ class Menu extends UIComponent {
                     return;
                 }
                 me.hide();
+                if (me._owner) {
+                    me._owner.fire('closemenu');
+                }
             };
         }
         let item, itemDOM;

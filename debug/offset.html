@@ -1,0 +1,63 @@
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="stylesheet" href="../dist/maptalks.css"/>
+  <script type="text/javascript" src="../dist/maptalks.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.js"></script> -->
+  <!-- <script type="text/javascript" src="https://maptalks.org/examples/cn/tilelayer-projection/tile-mask/raw/boundary.js"></script> -->
+  <title>Debug</title>
+  <script type="text/javascript" src="https://fuzhenn.github.io/chinese_coordinate_conversion/chncrs.js"></script>
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"></script> -->
+  <style>
+    html,
+    body {
+        margin: 0px;
+        height: 100%;
+        width: 100%;
+    }
+
+    .map {
+        width: 100%;
+        height: 100%;
+        border: 1px solid;
+    }
+</style>
+</head>
+  <body>
+  <div style="">
+    <div id="map" class="map"></div>
+  </div>
+    <script>
+    var center = new maptalks.Coordinate([121.49867630004883, 31.25405711739208])
+    var map = new maptalks.Map('map', {
+      "center": [121.50743103027344, 31.24734310997107], "zoom": 16, "pitch": 0, "bearing": 0,
+
+      baseLayer: new maptalks.TileLayer('base', {
+        'urlTemplate': 'http://t{s}.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=93df4a6f463722663374c255e2c9804f',
+        'subdomains': ['1', '2', '3', '4', '5'],
+        attribution: '&copy; Google Maps'
+      })
+    });
+
+    var wgslayer = new maptalks.TileLayer('base', {
+      pyramidMode: 1,
+      offset: function (z) {
+        //实时计算wgs84和gcj02瓦片的偏移量
+        const center = map.getCenter();
+        const c = maptalks.CRSTransform.transform(center.toArray(), 'GCJ02', 'WGS84');
+        const offset = map.coordToPoint(center, z).sub(map.coordToPoint(new maptalks.Coordinate(c), z));
+        return offset._round().toArray();
+      },
+      debug: true,
+      opacity: 0.5,
+      'urlTemplate': 'http://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+      'subdomains': ['01', '02', '03', '04'],
+      attribution: '&copy; Google Maps'
+    });
+
+    wgslayer.addTo(map);
+
+          </script>
+        </body>
+      </html>

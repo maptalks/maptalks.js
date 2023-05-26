@@ -45,6 +45,7 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map}         this
      */
     animateTo(view, options = {}, step) {
+        view = extend({}, this.getView(), view);
         // this._stopAnim(this._animPlayer);
         if (isFunction(options)) {
             step = options;
@@ -58,8 +59,8 @@ Map.include(/** @lends Map.prototype */{
             if (hasOwn(view, p) && !isNil(view[p]) && (p === 'prjCenter' || !isNil(currView[p]))) {
                 empty = false;
                 if (p === 'center') {
-                    const from = new Coordinate(currView[p]).toFixed(7),
-                        to = new Coordinate(view[p]).toFixed(7);
+                    const from = new Coordinate(currView[p]),
+                        to = new Coordinate(view[p]);
                     if (!from.equals(to)) {
                         props['center'] = [from, to];
                     }
@@ -98,7 +99,8 @@ Map.include(/** @lends Map.prototype */{
         const player = this._animPlayer = Animation.animate(props, {
             'easing': options['easing'] || 'out',
             'duration': options['duration'] || this.options['zoomAnimationDuration'],
-            'framer' : framer
+            'framer': framer,
+            'repeat': options['repeat']
         }, frame => {
             if (this.isRemoved()) {
                 player.finish();
@@ -124,10 +126,10 @@ Map.include(/** @lends Map.prototype */{
                     this.onZooming(frame.styles['zoom'], zoomOrigin);
                 }
                 if (!isNil(frame.styles['pitch'])) {
-                    this.setPitch(frame.styles['pitch']);
+                    this._setPitch(frame.styles['pitch']);
                 }
                 if (!isNil(frame.styles['bearing'])) {
-                    this.setBearing(frame.styles['bearing']);
+                    this._setBearing(frame.styles['bearing']);
                 }
                 // preView = this.getView();
                 /**
@@ -147,10 +149,10 @@ Map.include(/** @lends Map.prototype */{
                         this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (!isNil(props['pitch'])) {
-                        this.setPitch(props['pitch'][1]);
+                        this._setPitch(props['pitch'][1]);
                     }
                     if (!isNil(props['bearing'])) {
-                        this.setBearing(props['bearing'][1]);
+                        this._setBearing(props['bearing'][1]);
                     }
                 }
                 this._endAnim(player, props, zoomOrigin, options);
@@ -206,6 +208,7 @@ Map.include(/** @lends Map.prototype */{
         //
         // Where applicable, local variable documentation begins with the associated variable or
         // function in van Wijk (2003).
+        view = extend({}, this.getView(), view);
 
         if (this._animPlayer) {
             if (this._isInternalAnimation) {
@@ -320,7 +323,7 @@ Map.include(/** @lends Map.prototype */{
         const player = this._animPlayer = Animation.animate({ k: [0, 1] }, {
             'easing': options['easing'] || 'out',
             'duration': options['duration'] || 8,
-            'framer' : framer
+            'framer': framer
         }, frame => {
             if (this.isRemoved()) {
                 player.finish();
@@ -357,10 +360,10 @@ Map.include(/** @lends Map.prototype */{
                     this.onZooming(props['zoom'][1], zoomOrigin);
                 }
                 if (props['pitch']) {
-                    this.setPitch(props['pitch'][1]);
+                    this._setPitch(props['pitch'][1]);
                 }
                 if (props['bearing']) {
-                    this.setBearing(props['bearing'][1]);
+                    this._setBearing(props['bearing'][1]);
                 }
                 this._fireEvent('animating');
             } else if (player.playState !== 'paused' || player === this._mapAnimPlayer) {
@@ -369,10 +372,10 @@ Map.include(/** @lends Map.prototype */{
                         this._setPrjCenter(props['prjCenter'][1]);
                     }
                     if (props['pitch']) {
-                        this.setPitch(props['pitch'][1]);
+                        this._setPitch(props['pitch'][1]);
                     }
                     if (props['bearing']) {
-                        this.setBearing(props['bearing'][1]);
+                        this._setBearing(props['bearing'][1]);
                     }
                 }
                 this._endAnim(player, props, zoomOrigin, options);
@@ -448,10 +451,11 @@ Map.include(/** @lends Map.prototype */{
             this.onMoveEnd(event);
         }
         if (!isNil(props['zoom'])) {
+            // remove origin in onZoomEnd, because center may be updated during animation but zoomOrigin here may reset center to the center value when starting animation
             if (player._interupted) {
-                this.onZoomEnd(this.getZoom(), zoomOrigin);
+                this.onZoomEnd(this.getZoom());
             } else if (!options['wheelZoom']) {
-                this.onZoomEnd(props['zoom'][1], zoomOrigin);
+                this.onZoomEnd(props['zoom'][1]);
             } else {
                 this.onZooming(props['zoom'][1], zoomOrigin);
             }
@@ -464,14 +468,16 @@ Map.include(/** @lends Map.prototype */{
             //fix blank map when pitch changes to 0
             this.getRenderer().setToRedraw();
         }
-        this._resumePrev(player);
+        if (!options['wheelZoom']) {
+            this._resumePrev(player);
+        }
     },
 
     _startAnim(props, zoomOrigin) {
         if (!this._animPlayer) {
             return;
         }
-        if (props['center']) {
+        if (props['center'] || props['prjCenter']) {
             this.onMoveStart();
         }
         if (props['zoom'] && !this.isZooming()) {

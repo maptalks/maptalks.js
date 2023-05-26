@@ -13,12 +13,22 @@ import {
     flash
 } from '../core/util';
 import { extendSymbol, getSymbolHash } from '../core/util/style';
+import { loadGeoSymbol } from '../core/mapbox';
 import { convertResourceUrl, getExternalResources } from '../core/util/resource';
+import { replaceVariable, describeText } from '../core/util/strings';
+import { isTextSymbol } from '../core/util/marker';
 import Coordinate from '../geo/Coordinate';
+import Point from '../geo/Point';
 import Extent from '../geo/Extent';
+import PointExtent from '../geo/PointExtent';
 import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
+import { isFunctionDefinition } from '../core/mapbox';
+
+const TEMP_POINT0 = new Point(0, 0);
+const TEMP_EXTENT = new PointExtent();
+const TEMP_PROPERTIES = {};
 
 /**
  * @property {Object} options                       - geometry options
@@ -32,6 +42,7 @@ import SpatialReference from '../map/spatial-reference/SpatialReference';
  * @property {Boolean} [options.dragShadow=true]    - if true, during geometry dragging, a shadow will be dragged before geometry was moved.
  * @property {Boolean} [options.dragOnAxis=null]    - if set, geometry can only be dragged along the specified axis, possible values: x, y
  * @property {Number}  [options.zIndex=undefined]   - geometry's initial zIndex
+ * @property {Boolean}  [options.antiMeridian=false]   - geometry's antiMeridian
  * @memberOf Geometry
  * @instance
  */
@@ -41,6 +52,7 @@ const options = {
     'interactive': true,
     'editable': true,
     'cursor': null,
+    'antiMeridian': false,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
 
@@ -70,6 +82,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         super(opts);
         if (symbol) {
             this.setSymbol(symbol);
+        } else {
+            this._genSizeSymbol();
         }
         if (properties) {
             this.setProperties(properties);
@@ -269,9 +283,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#symbolchange
      */
     setSymbol(symbol) {
+        this._symbolUpdated = symbol;
         this._symbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
-        this._symbolHash = getSymbolHash(symbol);
+        delete this._compiledSymbol;
+        delete this._symbolHash;
         return this;
     }
 
@@ -280,6 +296,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @return {String}
      */
     getSymbolHash() {
+        if (!this._symbolHash) {
+            this._symbolHash = getSymbolHash(this._symbolUpdated);
+        }
         return this._symbolHash;
     }
 
@@ -291,6 +310,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @fires Geometry#symbolchange
      * @example
      * var marker = new Marker([0, 0], {
+     *  // if has markerFile , the priority of the picture is greater than the vector and the path of svg
+     *  // svg image type:'path';vector type:'cross','x','diamond','bar','square','rectangle','triangle','ellipse','pin','pie'
      *    symbol : {
      *       markerType : 'ellipse',
      *       markerWidth : 20,
@@ -312,19 +333,68 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 throw new Error('Parameter of updateSymbol is not an array.');
             }
             for (let i = 0; i < props.length; i++) {
+                if (isTextSymbol(props[i])) {
+                    delete this._textDesc;
+                }
                 if (s[i] && props[i]) {
                     s[i] = extendSymbol(s[i], props[i]);
                 }
             }
         } else if (Array.isArray(props)) {
             throw new Error('Geometry\'s symbol is not an array to update.');
-        } else if (s) {
-            s = extendSymbol(s, props);
         } else {
-            s = extendSymbol(this._getInternalSymbol(), props);
+            if (isTextSymbol(s)) {
+                delete this._textDesc;
+            }
+            if (s) {
+                s = extendSymbol(s, props);
+            } else {
+                s = extendSymbol(this._getInternalSymbol(), props);
+            }
         }
         this._eventSymbolProperties = props;
+        delete this._compiledSymbol;
         return this.setSymbol(s);
+    }
+
+    /**
+     * Get geometry's text content if it has
+     * @returns {String}
+     */
+    getTextContent() {
+        const symbol = this._getInternalSymbol();
+        if (Array.isArray(symbol)) {
+            const contents = [];
+            let has = false;
+            for (let i = 0; i < symbol.length; i++) {
+                contents[i] = replaceVariable(symbol[i] && symbol[i]['textName'], this.getProperties());
+                if (!isNil(contents[i])) {
+                    has = true;
+                }
+            }
+            return has ? contents : null;
+        }
+        return replaceVariable(symbol && symbol['textName'], this.getProperties());
+    }
+
+    getTextDesc() {
+        if (!this._textDesc) {
+            const textContent = this.getTextContent();
+            // if textName='',this is error
+            // if (!textContent) {
+            //     return null;
+            // }
+            const symbol = this._sizeSymbol;
+            const isArray = Array.isArray(textContent);
+            if (Array.isArray(symbol)) {
+                this._textDesc = symbol.map((s, i) => {
+                    return describeText(isArray ? textContent[i] : '', s);
+                });
+            } else {
+                this._textDesc = describeText(textContent, symbol);
+            }
+        }
+        return this._textDesc;
     }
 
     /**
@@ -359,8 +429,71 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {PointExtent}
      */
     getContainerExtent(out) {
-        const painter = this._getPainter();
-        return painter ? painter.getContainerExtent(out) : null;
+        const extent2d = this.get2DExtent();
+        if (!extent2d || !extent2d.isValid()) {
+            return null;
+        }
+        const map = this.getMap();
+        // const center = this.getCenter();
+        const glRes = map.getGLRes();
+        const minAltitude = this.getMinAltitude();
+        const extent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, minAltitude, TEMP_POINT0), out);
+        const maxAltitude = this.getMaxAltitude();
+        if (maxAltitude !== minAltitude) {
+            const extent2 = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
+            extent._combine(extent2);
+        }
+        const layer = this.getLayer();
+        if (layer && this.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
+            const groundExtent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, 0, TEMP_POINT0), TEMP_EXTENT);
+            extent._combine(groundExtent);
+        }
+        if (extent) {
+            extent._add(this._getFixedExtent());
+        }
+        const smoothness = this.options['smoothness'];
+        if (smoothness) {
+            extent._expand(extent.getWidth() * 0.15);
+        }
+        return extent;
+    }
+
+    _getFixedExtent() {
+        // only for LineString and Polygon, Marker's will be overrided
+        if (!this._fixedExtent) {
+            this._fixedExtent = new PointExtent();
+        }
+        const symbol = this._sizeSymbol;
+        const t = (symbol && symbol['lineWidth'] || 1) / 2;
+        this._fixedExtent.set(-t, -t, t, t);
+        const dx = (symbol && symbol['lineDx']) || 0;
+        this._fixedExtent._add([dx, 0]);
+        const dy = (symbol && symbol['lineDy']) || 0;
+        this._fixedExtent._add([0, dy]);
+        return this._fixedExtent;
+    }
+
+    get2DExtent() {
+        const map = this.getMap();
+        if (!map) {
+            return null;
+        }
+        if (this._extent2d) {
+            return this._extent2d;
+        }
+        const extent = this._getPrjExtent();
+        if (!extent || !extent.isValid()) {
+            return null;
+        }
+        const min = extent.getMin();
+        const max = extent.getMax();
+        const glRes = map.getGLRes();
+
+        map._prjToPointAtRes(min, glRes, min);
+        map._prjToPointAtRes(max, glRes, max);
+        this._extent2d = new PointExtent(min, max);
+        this._extent2d.z = map.getZoom();
+        return this._extent2d;
     }
 
     /**
@@ -400,8 +533,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (!painter) {
             return false;
         }
-        if (isNil(t) && this._hitTestTolerance) {
-            t = this._hitTestTolerance();
+        t = t || 0;
+        if (this._hitTestTolerance) {
+            t += this._hitTestTolerance();
         }
         return painter.hitTest(containerPoint, t);
     }
@@ -590,6 +724,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return this;
         }
         const coordinates = this.getCoordinates();
+        this._silence = true;
         if (coordinates) {
             if (Array.isArray(coordinates)) {
                 const translated = forEachCoord(coordinates, function (coord) {
@@ -600,6 +735,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 this.setCoordinates(coordinates.add(offset));
             }
         }
+        this._silence = false;
+        this._fireEvent('positionchange');
         return this;
     }
 
@@ -854,6 +991,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         this._layer = layer;
         this._clearCache();
+        this._bindInfoWindow();
+        this._bindMenu();
         // this._clearProjection();
         // this.callInitHooks();
     }
@@ -895,6 +1034,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      */
     _setExternSymbol(symbol) {
         this._eventSymbolProperties = symbol;
+        if (!this._symbol) {
+            delete this._textDesc;
+        }
         this._externSymbol = this._prepareSymbol(symbol);
         this.onSymbolChanged();
         return this;
@@ -929,7 +1071,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         if (this._animPlayer) {
             this._animPlayer.finish();
         }
-        this._clearHandlers();
+        // this._clearHandlers();
         //contextmenu
         this._unbindMenu();
         //infowindow
@@ -994,11 +1136,15 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             if (GEOMETRY_COLLECTION_TYPES.indexOf(this.type) !== -1) {
                 if (layer.constructor.getCollectionPainterClass) {
                     const clazz = layer.constructor.getCollectionPainterClass();
-                    this._painter = new clazz(this);
+                    if (clazz) {
+                        this._painter = new clazz(this);
+                    }
                 }
             } else if (layer.constructor.getPainterClass) {
                 const clazz = layer.constructor.getPainterClass();
-                this._painter = new clazz(this);
+                if (clazz) {
+                    this._painter = new clazz(this);
+                }
             }
         }
         return this._painter;
@@ -1035,10 +1181,12 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     _clearCache() {
         delete this._extent;
+        delete this._extent2d;
     }
 
     _clearProjection() {
         delete this._extent;
+        delete this._extent2d;
     }
 
     _repaint() {
@@ -1086,9 +1234,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         }
         const e = {};
         if (this._eventSymbolProperties) {
-            e.properties = extend({}, this._eventSymbolProperties);
+            e.properties = JSON.parse(JSON.stringify(this._eventSymbolProperties));
             delete this._eventSymbolProperties;
+        } else {
+            delete this._textDesc;
         }
+        this._genSizeSymbol();
+
         /**
          * symbolchange event.
          *
@@ -1099,6 +1251,47 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
          * @property {Object} properties - symbol properties to update if has
          */
         this._fireEvent('symbolchange', e);
+    }
+
+    _genSizeSymbol() {
+        const symbol = this._getInternalSymbol();
+        if (!symbol) {
+            delete this._sizeSymbol;
+            return;
+        }
+        if (Array.isArray(symbol)) {
+            this._sizeSymbol = [];
+            let dynamicSize = false;
+            for (let i = 0; i < symbol.length; i++) {
+                const s = this._sizeSymbol[i] = this._getSizeSymbol(symbol[i]);
+                if (!dynamicSize && s && s._dynamic) {
+                    dynamicSize = true;
+                }
+            }
+            this._sizeSymbol._dynamic = dynamicSize;
+        } else {
+            this._sizeSymbol = this._getSizeSymbol(symbol);
+        }
+    }
+
+    _getSizeSymbol(symbol) {
+        const symbolSize = loadGeoSymbol({
+            lineWidth: symbol['lineWidth'],
+            lineDx: symbol['lineDx'],
+            lineDy: symbol['lineDy']
+        }, this);
+        if (isFunctionDefinition(symbol['lineWidth']) || isFunctionDefinition(symbol['lineDx']) || isFunctionDefinition(symbol['lineDy'])) {
+            symbolSize._dynamic = true;
+        }
+        return symbolSize;
+    }
+
+    _getCompiledSymbol() {
+        if (this._compiledSymbol) {
+            return this._compiledSymbol;
+        }
+        this._compiledSymbol = loadGeoSymbol(this._getInternalSymbol(), this);
+        return this._compiledSymbol;
     }
 
     onConfig(conf) {
@@ -1141,6 +1334,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _fireEvent(eventName, param) {
+        if (this._silence) {
+            return;
+        }
         if (this.getLayer() && this.getLayer()._onGeometryEvent) {
             if (!param) {
                 param = {};
@@ -1196,17 +1392,39 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return properties;
     }
 
+    _hitTestTolerance() {
+        const layer = this.getLayer();
+        return layer && layer.options['geometryEventTolerance'] || 0;
+    }
+
 
     //------------- altitude + layer.altitude -------------
-    getAltitude() {
+    //this is for vectorlayer
+    //内部方法 for render,返回的值受layer和layer.options.enableAltitude,layer.options.altitude影响
+    _getAltitude() {
         const layer = this.getLayer();
         if (!layer) {
             return 0;
         }
-        const layerOpts = layer.options,
-            properties = this.getProperties();
-        const altitude = layerOpts['enableAltitude'] ? properties ? properties[layerOpts['altitudeProperty']] : 0 : 0;
+        const layerOpts = layer.options;
         const layerAltitude = layer.getAltitude ? layer.getAltitude() : 0;
+        const enableAltitude = layerOpts['enableAltitude'];
+        if (!enableAltitude) {
+            return layerAltitude;
+        }
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        //if properties.altitude is null
+        //for new Geometry([x,y,z])
+        if (isNil(altitude)) {
+            const alts = getGeometryCoordinatesAlts(this, layerAltitude, enableAltitude);
+            if (!isNil(alts)) {
+                return alts;
+            }
+            return layerAltitude;
+        }
+        //old,the altitude is bind properties
         if (Array.isArray(altitude)) {
             return altitude.map(alt => {
                 return alt + layerAltitude;
@@ -1215,8 +1433,165 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return altitude + layerAltitude;
     }
 
+    //this for user
+    getAltitude() {
+        const layer = this.getLayer();
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        if (!isNil(altitude)) {
+            return altitude;
+        }
+        const alts = getGeometryCoordinatesAlts(this, 0, false);
+        if (!isNil(alts)) {
+            return alts;
+        }
+        return 0;
+    }
+
+    setAltitude(alt) {
+        if (!isNumber(alt)) {
+            return this;
+        }
+        const layer = this.getLayer();
+        const altitudeProperty = getAltitudeProperty(layer);
+        const properties = this.properties || TEMP_PROPERTIES;
+        const altitude = properties[altitudeProperty];
+        //update properties altitude
+        if (!isNil(altitude)) {
+            if (Array.isArray(altitude)) {
+                for (let i = 0, len = altitude.length; i < len; i++) {
+                    altitude[i] = alt;
+                }
+            } else {
+                properties[altitudeProperty] = alt;
+            }
+        }
+        const coordinates = this.getCoordinates ? this.getCoordinates() : null;
+        if (!coordinates) {
+            return this;
+        }
+        //update coordinates.z
+        setCoordinatesAlt(coordinates, alt);
+        if (layer) {
+            const render = layer.getRenderer();
+            //for webgllayer,pointlayer/linestringlayer/polygonlayer
+            if (render && render.gl) {
+                this.setCoordinates(coordinates);
+            } else if (render) {
+                this._repaint();
+            }
+        }
+        return this;
+    }
+
+    _genMinMaxAlt() {
+        const altitude = this._getAltitude();
+        if (Array.isArray(altitude)) {
+            this._minAlt = Number.MAX_VALUE;
+            this._maxAlt = Number.MIN_VALUE;
+            altitude.forEach(alt => {
+                const a = alt;
+                if (a < this._minAlt) {
+                    this._minAlt = a;
+                }
+                if (a > this._maxAlt) {
+                    this._maxAlt = a;
+                }
+            });
+        } else {
+            this._minAlt = this._maxAlt = altitude;
+        }
+    }
+
+    getMinAltitude() {
+        if (this._minAlt === undefined) {
+            this._genMinMaxAlt();
+        }
+        if (!this._minAlt) {
+            return 0;
+        }
+        return this._minAlt;
+    }
+
+    getMaxAltitude() {
+        if (this._maxAlt === undefined) {
+            this._genMinMaxAlt();
+        }
+        if (!this._maxAlt) {
+            return 0;
+        }
+        return this._maxAlt;
+    }
+
 }
 
 Geometry.mergeOptions(options);
 
+function getAltitudeProperty(layer) {
+    let altitudeProperty = 'altitude';
+    if (layer) {
+        const layerOpts = layer.options;
+        altitudeProperty = layerOpts['altitudeProperty'];
+    }
+    return altitudeProperty;
+}
+
+function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
+    const coordinates = geometry.getCoordinates ? geometry.getCoordinates() : null;
+    if (coordinates) {
+        const tempAlts = [];
+        coordinatesHasAlt(coordinates, tempAlts);
+        if (tempAlts.length) {
+            const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
+            if (geometry.getShell) {
+                return alts[0][0];
+            }
+            return alts;
+        }
+    }
+    return null;
+}
+
+function setCoordinatesAlt(coordinates, alt) {
+    if (Array.isArray(coordinates)) {
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            setCoordinatesAlt(coordinates[i], alt);
+        }
+    } else {
+        coordinates.z = alt;
+    }
+}
+
+function coordinatesHasAlt(coordinates, tempAlts) {
+    if (tempAlts.length) {
+        return;
+    }
+    if (Array.isArray(coordinates)) {
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            coordinatesHasAlt(coordinates[i], tempAlts);
+        }
+    } else if (isNumber(coordinates.z)) {
+        tempAlts.push(coordinates.z);
+    }
+}
+
+function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
+    if (Array.isArray(coordinates)) {
+        const alts = [];
+        for (let i = 0, len = coordinates.length; i < len; i++) {
+            alts.push(getCoordinatesAlts(coordinates[i], layerAlt, enableAltitude));
+        }
+        return alts;
+    }
+    if (isNumber(coordinates.z)) {
+        return enableAltitude ? layerAlt + coordinates.z : coordinates.z;
+    } else if (enableAltitude) {
+        return layerAlt;
+    } else {
+        return 0;
+    }
+}
+
 export default Geometry;
+

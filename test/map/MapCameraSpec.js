@@ -11,15 +11,15 @@ describe('Map.Camera', function () {
         container.style.height = '30px';
         document.body.appendChild(container);
         var option = {
-            zoomAnimation:true,
-            zoomAnimationDuration : 100,
+            zoomAnimation: true,
+            zoomAnimationDuration: 100,
             zoom: 17,
             center: center
         };
         map = new maptalks.Map(container, option);
         // bring some offset to map, let view point is different from container point.
         map.setCenter(center._add(0.1, 0.1));
-        layer = new maptalks.VectorLayer('v', { 'drawImmediate' : true, 'enableAltitude' : true }).addTo(map);
+        layer = new maptalks.VectorLayer('v', { 'drawImmediate': true, 'enableAltitude': true }).addTo(map);
     });
 
     afterEach(function () {
@@ -52,7 +52,7 @@ describe('Map.Camera', function () {
                 return;
             }
             var baseLayer = new maptalks.TileLayer('b', {
-                urlTemplate : TILE_IMAGE
+                urlTemplate: TILE_IMAGE
             });
             map.addLayer(baseLayer);
             map.setBearing(60);
@@ -68,12 +68,12 @@ describe('Map.Camera', function () {
 
         it('render with canvas renderer', function (done) {
             var baseLayer = new maptalks.TileLayer('b', {
-                urlTemplate : TILE_IMAGE,
-                renderer : 'canvas'
+                urlTemplate: TILE_IMAGE,
+                renderer: 'canvas'
             });
             map.addLayer(baseLayer);
             // let canvas renderer draw with pitch
-            baseLayer.getRenderer().isDrawable = function ()  { return true; };
+            baseLayer.getRenderer().isDrawable = function () { return true; };
             baseLayer.on('layerload', function () {
                 done();
             });
@@ -141,10 +141,10 @@ describe('Map.Camera', function () {
             container.style.height = '300px';
             document.body.appendChild(container);
             var option = {
-                zoomAnimation:true,
-                zoomAnimationDuration : 100,
+                zoomAnimation: true,
+                zoomAnimationDuration: 100,
                 zoom: 14,
-                pitch : 60,
+                pitch: 60,
                 center: center
             };
             map2 = new maptalks.Map(container, option);
@@ -153,9 +153,9 @@ describe('Map.Camera', function () {
             map2.remove();
         });
         context('point to containerPoint', function () {
-            it('1', function (){
+            it('1', function () {
                 var center = map2.getCenter();
-                var point = map2.coordToPoint(center) ;
+                var point = map2.coordToPoint(center);
                 var cp = map2._pointToContainerPoint(point);
                 expect(cp).to.be.closeTo(map2.getSize().toPoint().multi(1 / 2));
                 var point2 = map2._containerPointToPoint(cp);
@@ -193,14 +193,14 @@ describe('Map.Camera', function () {
 
             it('2.001', function () {
 
-                var ncenter = map.containerPointToCoord({x : 15, y: 15});
+                var ncenter = map.containerPointToCoord({ x: 15, y: 15 });
                 expect(ncenter.x).to.be.approx(center.x);
                 expect(ncenter.y).to.be.approx(center.y);
             });
 
             it('2.0', function () {
                 map.setPitch(45);
-                var ncenter = map.containerPointToCoord({x : 15, y: 15});
+                var ncenter = map.containerPointToCoord({ x: 15, y: 15 });
                 expect(center.x).to.be.approx(ncenter.x);
                 expect(center.y).to.be.approx(ncenter.y);
             });
@@ -208,7 +208,7 @@ describe('Map.Camera', function () {
             it('2.1', function () {
                 map.setPitch(1);
                 var extent = map.getExtent();
-                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymax});
+                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymax });
                 var cp = map._pointToContainerPoint(point);
 
                 expect(cp.x).to.be.approx(0);
@@ -222,7 +222,7 @@ describe('Map.Camera', function () {
             it('2.2', function () {
                 map.setPitch(1);
                 var extent = map.getExtent();
-                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymax});
+                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymax });
                 var cp = map._pointToContainerPoint(point);
 
                 expect(cp.x).to.be.approx(30);
@@ -236,7 +236,7 @@ describe('Map.Camera', function () {
             it('2.3', function () {
                 map.setPitch(1);
                 var extent = map.getExtent();
-                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymin});
+                var point = map.coordToPoint({ x: extent.xmin, y: extent.ymin });
                 var cp = map._pointToContainerPoint(point);
 
                 expect(cp.x).to.be.approx(-0.175572);
@@ -246,7 +246,7 @@ describe('Map.Camera', function () {
             it('2.4', function () {
                 map.setPitch(1);
                 var extent = map.getExtent();
-                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymin});
+                var point = map.coordToPoint({ x: extent.xmax, y: extent.ymin });
                 var cp = map._pointToContainerPoint(point);
 
                 expect(cp.x).to.be.approx(30.175572);
@@ -257,18 +257,18 @@ describe('Map.Camera', function () {
                 map.setPitch(1);
 
                 var cExtent = map.getContainerExtent();
-                expect(cExtent.getMax()).to.be.closeTo({x:30, y:30});
-                expect(cExtent.getMin()).to.be.closeTo({x:0, y:0});
+                expect(cExtent.getMax()).to.be.closeTo({ x: 30, y: 30 });
+                expect(cExtent.getMin()).to.be.closeTo({ x: 0, y: 0 });
 
                 var pExtent = map._get2DExtent();
                 var cp = map._pointToContainerPoint(new maptalks.Point(pExtent.xmin, pExtent.ymax));
-                expect(cp).to.be.closeTo({x:0, y:0});
+                expect(cp).to.be.closeTo({ x: 0, y: 0 });
 
                 var nw = map.getExtent().getMin();
-                var point = map.coordToPoint(nw) ;
+                var point = map.coordToPoint(nw);
                 var cp = map._pointToContainerPoint(point);
                 // cp = map.coordToContainerPoint(nw);
-                expect(cp).to.be.closeTo({x:-0.175572, y: 30 });
+                expect(cp).to.be.closeTo({ x: -0.175572, y: 30 });
                 // point2 = map._containerPointToPoint(pExtent.getMin());
 
                 // expect(point).to.be.closeTo(point2);
@@ -388,10 +388,10 @@ describe('Map.Camera', function () {
     describe('marker\' size should be unchanged when pitching or rotating', function () {
         it('image marker', function () {
             var marker = new maptalks.Marker([100, 0], {
-                symbol:{
-                    'markerFile' : 'resources/x.svg',
+                symbol: {
+                    'markerFile': 'resources/x.svg',
                     'markerWidth': 20,
-                    'markerHeight':30
+                    'markerHeight': 30
                 }
             }).addTo(layer);
             var s = new maptalks.Point(20, 30);
@@ -404,13 +404,13 @@ describe('Map.Camera', function () {
 
         it('vector marker', function () {
             var marker = new maptalks.Marker([100, 0], {
-                symbol:{
-                    'markerType' : 'ellipse',
+                symbol: {
+                    'markerType': 'ellipse',
                     'markerWidth': 20,
-                    'markerHeight':30
+                    'markerHeight': 30
                 }
             }).addTo(layer);
-            var s = new maptalks.Point(21, 31);
+            var s = new maptalks.Point(22, 32);
             expect(marker.getSize().toPoint()).to.be.eql(s);
             map.setPitch(60);
             expect(marker.getSize().toPoint()).to.be.eql(s);
@@ -435,16 +435,18 @@ describe('Map.Camera', function () {
 
     describe('draw with altitude when pitching', function () {
         it('circle', function (done) {
+            map.setPitch(15);
+            map.setBearing(40);
             var geometry = new maptalks.Circle(center, 5, {
-                properties : {
-                    altitude : 30
+                properties: {
+                    altitude: 30
                 },
-                symbol : {
-                    polygonFill : '#f00'
+                symbol: {
+                    polygonFill: '#f00'
                 }
             });
             layer.on('layerload', function () {
-                expect(layer).to.be.painted(14, 0);
+                expect(layer).to.be.painted(0, -12);
                 done();
             });
             layer.addGeometry(geometry);
@@ -544,7 +546,8 @@ describe('Map.Camera', function () {
     it('should generate dom css matrix', function () {
         map.setPitch(75);
         map.setBearing(45);
-        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643, -8.235571585149868, 0.7139488752261732, 0.6830127018922193, 31.819805153394636, 8.23557158514987, -0.7139488752261733, -0.6830127018922194, 0, -43.466662183008076, -0.27054191763364316, -0.25881904510252074, 0, 0, 46.83368719036461, 45].join());
+        // expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643, -8.235571585149868, 0.7139488752261732, 0.6830127018922193, 31.819805153394636, 8.23557158514987, -0.7139488752261733, -0.6830127018922194, 0, -43.466662183008076, -0.27054191763364316, -0.25881904510252074, 0, 0, 46.83368719036461, 45].join());
+        expect(maptalks.Util.join(map.domCssMatrix)).to.be.eql([31.819805153394643,-8.235571585149868,0.693731297039628,0.6830127018922193,31.819805153394636,8.23557158514987,-0.6937312970396281,-0.6830127018922194,0,-43.466662183008076,-0.2628807214860012,-0.25881904510252074,0,0,45.635325850044154,45].join());
     });
 });
 

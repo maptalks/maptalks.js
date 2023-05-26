@@ -377,6 +377,17 @@ describe('Layer.Spec', function () {
         // }, 60);
     });
 
+    it('#getCollisionIndex', function () {
+        var layer = new maptalks.TileLayer('1', { renderer:'canvas' });
+        expect(layer.getCollisionIndex()).to.be.ok();
+
+        layer.config('collisionScope', 'map');
+        expect(layer.getCollisionIndex()).not.to.be.ok();
+
+        layer.addTo(map);
+        expect(layer.getCollisionIndex()).to.be.ok();
+    });
+
     describe('hitDetect', function () {
         var innerMap, eventContainer;
         var layer, center = new maptalks.Coordinate(-0.11304900000004636, 51.49855999999997), pixel;

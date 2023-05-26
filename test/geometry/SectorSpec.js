@@ -141,7 +141,7 @@ describe('#Sector', function () {
             evaluate();
             vector.remove();
             //canvas
-            layer = new maptalks.VectorLayer('canvas', { render:'canvas' });
+            layer = new maptalks.VectorLayer('canvas', { render: 'canvas' });
             layer.addGeometry(vector);
             map.addLayer(layer);
             evaluate();

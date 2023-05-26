@@ -1,9 +1,12 @@
-import { IS_NODE, extend, isInteger, log2 } from '../../core/util';
+import { IS_NODE, extend, isInteger, log2, isNil } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
 import Canvas from '../../core/Canvas';
 import Point from '../../geo/Point';
+
+// used to debug tiles
+const DEFAULT_BASE_COLOR = [1, 1, 1, 1];
 
 const shaders = {
     'vertexShader': `
@@ -29,6 +32,7 @@ const shaders = {
 
         uniform float u_opacity;
         uniform float u_debug_line;
+        uniform vec4 u_base_color;
 
         varying vec2 v_texCoord;
 
@@ -38,6 +42,7 @@ const shaders = {
             } else {
                 gl_FragColor = texture2D(u_image, v_texCoord) * u_opacity;
             }
+            gl_FragColor *= u_base_color;
         }
     `
 };
@@ -65,13 +70,20 @@ const ImageGLRenderable = Base => {
          * @param {Number} h - height at map's gl zoom
          * @param {Number} opacity
          */
-        drawGLImage(image, x, y, w, h, scale, opacity, debug) {
+        drawGLImage(image, x, y, w, h, scale, opacity, debug, baseColor) {
             if (this.gl.program !== this.program) {
                 this.useProgram(this.program);
             }
             const gl = this.gl;
             this.loadTexture(image);
-
+            const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+            if (inGroup) {
+                let layerOpacity = this.layer && this.layer.options['opacity'];
+                if (isNil(layerOpacity)) {
+                    layerOpacity = 1;
+                }
+                opacity *= layerOpacity;
+            }
             v3[0] = x || 0;
             v3[1] = y || 0;
             const uMatrix = mat4.identity(arr16);
@@ -81,6 +93,7 @@ const ImageGLRenderable = Base => {
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
             gl.uniform1f(this.program['u_opacity'], opacity);
             gl.uniform1f(this.program['u_debug_line'], 0);
+            gl.uniform4fv(this.program['u_base_color'], baseColor || DEFAULT_BASE_COLOR);
 
             const { glBuffer } = image;
             if (glBuffer && (glBuffer.width !== w || glBuffer.height !== h)) {
@@ -100,12 +113,13 @@ const ImageGLRenderable = Base => {
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             if (debug) {
-                this.drawDebug(uMatrix, v2, 0, 0, w, h, debug);
+                this.drawDebug(uMatrix, 0, 0, w, h, debug);
             }
         }
 
-        drawDebug(uMatrix, attrib, x, y, w, h, debugInfo) {
+        drawDebug(uMatrix, x, y, w, h, debugInfo) {
             const gl = this.gl;
+            gl.disable(gl.DEPTH_TEST);
             gl.bindBuffer(gl.ARRAY_BUFFER, this._debugBuffer);
             this.enableVertexAttrib(['a_position', 2, 'FLOAT']);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -116,7 +130,9 @@ const ImageGLRenderable = Base => {
                 x, y
             ]), gl.DYNAMIC_DRAW);
             gl.uniformMatrix4fv(this.program['u_matrix'], false, uMatrix);
+            gl.uniform1f(this.program['u_opacity'], 1);
             gl.uniform1f(this.program['u_debug_line'], 1);
+            gl.uniform4fv(this.program['u_base_color'], DEFAULT_BASE_COLOR);
             gl.drawArrays(gl.LINE_STRIP, 0, 5);
             //draw debug info
             let canvas = this._debugInfoCanvas;
@@ -136,10 +152,9 @@ const ImageGLRenderable = Base => {
             this.loadTexture(canvas);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
             w = 256;
-            h = 32;
             const x1 = x;
             const x2 = x + w;
-            const y1 = y;
+            const y1 = y - h + 32;
             const y2 = y - h;
             gl.bufferData(gl.ARRAY_BUFFER, this.set8(
                 x1, y1,
@@ -149,6 +164,7 @@ const ImageGLRenderable = Base => {
             ), gl.DYNAMIC_DRAW);
             gl.uniform1f(this.program['u_debug_line'], 0);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            gl.enable(gl.DEPTH_TEST);
         }
 
         bufferTileData(x, y, w, h, buffer) {
@@ -228,7 +244,7 @@ const ImageGLRenderable = Base => {
             const gl = this.gl;
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
 
-            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.STENCIL_TEST);
 
             gl.enable(gl.BLEND);
@@ -278,7 +294,11 @@ const ImageGLRenderable = Base => {
          */
         clearGLCanvas() {
             if (this.gl) {
+                this.gl.clearStencil(0xFF);
                 this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
+            }
+            if (!this.gl.wrap) {
+                this.gl.clear(this.gl.DEPTH_BUFFER_BIT);
             }
         }
 
@@ -368,6 +388,9 @@ const ImageGLRenderable = Base => {
          * @param {WebGLTexture} texture
          */
         saveImageBuffer(buffer) {
+            if (!this._imageBuffers) {
+                this._imageBuffers = [];
+            }
             this._imageBuffers.push(buffer);
         }
 

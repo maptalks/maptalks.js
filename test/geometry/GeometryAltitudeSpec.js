@@ -22,7 +22,7 @@ describe('Geometry.Altitude', function () {
 
     describe('render geometry with altitude', function () {
         it('circle', function (done) {
-            var circle = new maptalks.Circle(map.getCenter(), 2, {
+            var circle = new maptalks.Circle(map.getCenter(), 10, {
                 properties: { altitude: 200 },
                 symbol: {
                     'polygonFill': '#f00'
@@ -32,7 +32,7 @@ describe('Geometry.Altitude', function () {
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -192);
+                expect(layer).to.be.painted(0, -219);
                 done();
             });
             map.addLayer(layer);
@@ -43,15 +43,15 @@ describe('Geometry.Altitude', function () {
                 properties: { altitude: 100 },
                 symbol: {
                     'markerType': 'ellipse',
-                    'markeraltitude': 6,
-                    'markerWidth': 6
+                    'markerHeight': 10,
+                    'markerWidth': 10
                 }
             });
             layer.addGeometry(marker);
             map.setPitch(60);
             layer.once('layerload', function () {
                 expect(layer).not.to.be.painted(0, 0);
-                expect(layer).to.be.painted(0, -93);
+                expect(layer).to.be.painted(0, -103);
                 done();
             });
             map.addLayer(layer);
@@ -155,7 +155,7 @@ describe('Geometry.Altitude', function () {
             layer.addGeometry(line);
             layer.once('layerload', function () {
                 expect(layer).to.be.painted(0, 1/* , [255, 0, 0] */); // vertex text
-                expect(layer).to.be.painted(20, -10, [0, 0, 0]);
+                expect(layer).to.be.painted(40, -10, [0, 0, 0]);
                 done();
             });
             map.addLayer(layer);
@@ -198,7 +198,7 @@ describe('Geometry.Altitude', function () {
                 });
                 layer.addGeometry(line);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(50, -18);
+                    expect(layer).to.be.painted(50, -16);
                     done();
                 });
                 map.addLayer(layer);
@@ -219,7 +219,7 @@ describe('Geometry.Altitude', function () {
                 });
                 layer.addGeometry(line);
                 layer.once('layerload', function () {
-                    expect(layer).to.be.painted(86, -35);
+                    expect(layer).to.be.painted(86, -40);
                     done();
                 });
                 map.addLayer(layer);
@@ -271,6 +271,45 @@ describe('Geometry.Altitude', function () {
                 done();
             });
             map.addLayer(layer);
+        });
+
+        it('#1519', function (done) {
+            map.setView({"center":[120.16412861168442,30.239409643648713],"zoom":12,"pitch":56,"bearing":0});
+            var line = new maptalks.LineString([
+                [120.30774946474676, 30.326071649658527],
+                [120.17326800494756, 30.39428919301061],
+                [120.06585834847941, 30.36379693698641],
+                [120.03508554050325, 30.250010074675707],
+                [120.12216915755401, 30.130318799801504],
+                [120.28587517553532, 30.092816929028302],
+                [120.3374453251752, 30.169938194266646],
+                [120.36555022945609, 30.324137052892578],
+                [120.30774946474676, 30.326071649658527]
+            ], {
+              properties: {
+                  'altitude': [100, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200]
+              }
+            });
+
+            var layer = new maptalks.VectorLayer('vector', [line], {
+              style: {
+                  symbol: {
+                      lineDasharray: [5, 10, 30, 10], //**这个参数 */
+                      lineColor: '#ff0000'
+                  }
+              },
+              enableAltitude: true,
+              drawAltitude: {
+                  polygonFill: '#1bbc9b',
+                  polygonOpacity: 0.3,
+                  lineWidth: 0,
+                  'lineDasharray': [10, 5, 5],
+              }
+            });
+            layer.once('layerload', function () {
+                done();
+            });
+            layer.addTo(map);
         });
     });
 

@@ -1,4 +1,4 @@
-import { extend, isFunction, sign } from '../core/util';
+import { extend, isFunction, isNumber } from '../core/util';
 import { trim } from '../core/util/strings';
 import {
     on,
@@ -26,8 +26,13 @@ import Geometry from '../geometry/Geometry';
  * @property {Boolean} [options.single=true]    - whether the UI is a global single one, only one UI will be shown at the same time if set to true.
  * @property {Boolean} [options.animation=null]         - fade | scale | fade,scale, add animation effect when showing and hiding.
  * @property {Number}  [options.animationDuration=300]  - animation duration, in milliseconds.
+ * @property {Number}  [options.animationOnHide=false]  - if calls animation on hiding.
  * @property {Boolean}  [options.pitchWithMap=false]    - whether tilt with map
  * @property {Boolean}  [options.rotateWithMap=false]  - whether rotate with map
+ * @property {Boolean}  [options.collision=false]  - whether collision
+ * @property {Number}  [options.collisionBufferSize=2]  - collision buffer size
+ * @property {Number}  [options.collisionWeight=0]  - Collision weight, large priority collision
+ * @property {Boolean}  [options.collisionFadeIn=false]  - Collision fade in animation
  * @memberOf ui.UIComponent
  * @instance
  */
@@ -40,11 +45,16 @@ const options = {
     'autoPanDuration': 600,
     'single': true,
     'animation': 'scale',
-    'animationOnHide': true,
+    'animationOnHide': false,
     'animationDuration': 500,
     'pitchWithMap': false,
     'rotateWithMap': false,
-    'visible': true
+    'visible': true,
+    'roundPoint': false,
+    'collision': false,
+    'collisionBufferSize': 2,
+    'collisionWeight': 0,
+    'collisionFadeIn': false
 };
 
 /**
@@ -79,6 +89,7 @@ class UIComponent extends Eventable(Class) {
      */
     constructor(options) {
         super(options);
+        this.proxyOptions();
     }
 
     /**
@@ -122,6 +133,40 @@ class UIComponent extends Eventable(Class) {
         return this._owner.getMap();
     }
 
+    _collides() {
+        const map = this.getMap();
+        if (!map) {
+            return this;
+        }
+        map._addUI(this);
+        map._insertUICollidesQueue();
+        return this;
+    }
+
+    _collidesEffect(show) {
+        const dom = this.getDOM();
+        if (!dom) {
+            return this;
+        }
+        const visibility = show ? 'visible' : 'hidden';
+        dom.style.visibility = visibility;
+        if (!dom.classList || !dom.classList.add) {
+            return this;
+        }
+        if (!this.options['collisionFadeIn']) {
+            return this;
+        }
+        const classList = dom.classList;
+        const className = 'mtk-ui-fadein';
+        const hasClass = classList.contains(className);
+        if (show && !hasClass) {
+            dom.classList.add(className);
+        } else if (!show && hasClass) {
+            dom.classList.remove(className);
+        }
+        return this;
+    }
+
     /**
      * Show the UI Component, if it is a global single one, it will close previous one.
      * @param {Coordinate} [coordinate=null] - coordinate to show, default is owner's center
@@ -135,9 +180,6 @@ class UIComponent extends Eventable(Class) {
             return this;
         }
         this.options['visible'] = true;
-        if (!this._mapEventsOn) {
-            this._switchMapEvents('on');
-        }
 
         coordinate = coordinate || this._coordinate || this._owner.getCenter();
 
@@ -151,13 +193,19 @@ class UIComponent extends Eventable(Class) {
          * @property {String} type - showstart
          * @property {ui.UIComponent} target - UIComponent
          */
-        this.fire('showstart');
+        if (!this._showBySymbolChange) {
+            this.fire('showstart');
+        }
         const container = this._getUIContainer();
         this._coordinate = coordinate;
+        //when single will off map events
         this._removePrevDOM();
+        if (!this._mapEventsOn) {
+            this._switchMapEvents('on');
+        }
         const dom = this.__uiDOM = this.buildOn(map);
         dom['eventsPropagation'] = this.options['eventsPropagation'];
-
+        this._observerDomSize(dom);
         if (!dom) {
             /**
              * showend event.
@@ -167,13 +215,17 @@ class UIComponent extends Eventable(Class) {
              * @property {String} type - showend
              * @property {ui.UIComponent} target - UIComponent
              */
-            this.fire('showend');
+            if (!this._showBySymbolChange) {
+                this.fire('showend');
+            }
+            this._collides();
             return this;
         }
 
         this._measureSize(dom);
 
         if (this._singleton()) {
+            dom._uiComponent = this;
             map[this._uiDomKey()] = dom;
         }
 
@@ -211,10 +263,10 @@ class UIComponent extends Eventable(Class) {
             on(dom, this.options['eventsToStop'], stopPropagation);
         }
 
-        //autoPan
-        if (this.options['autoPan']) {
-            this._autoPan();
-        }
+        // //autoPan
+        // if (this.options['autoPan']) {
+        //     this._autoPan();
+        // }
 
         const transition = anim.transition;
         if (anim.ok && transition) {
@@ -232,8 +284,17 @@ class UIComponent extends Eventable(Class) {
                 dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(1)';
             }
         }
-
-        this.fire('showend');
+        if (!this._showBySymbolChange) {
+            this.fire('showend');
+        }
+        this._collides();
+        //autoPan
+        clearTimeout(this._autoPanId);
+        if (this.options['autoPan']) {
+            this._autoPanId = setTimeout(() => {
+                this._autoPan();
+            }, 32);
+        }
         return this;
     }
 
@@ -243,8 +304,11 @@ class UIComponent extends Eventable(Class) {
      * @fires ui.UIComponent#hide
      */
     hide() {
-        if (!this.getDOM() || !this.getMap()) {
+        if (!this.getDOM()) {
             return this;
+        }
+        if (this._onDomMouseout) {
+            this._onDomMouseout();
         }
         this.options['visible'] = false;
         const anim = this._getAnimation(),
@@ -279,6 +343,9 @@ class UIComponent extends Eventable(Class) {
         if (anim.scale) {
             dom.style[TRANSFORM] = this._toCSSTranslate(this._pos) + ' scale(0)';
         }
+        //remove map bind events
+        this._switchMapEvents('off');
+        this._collides();
         return this;
     }
 
@@ -305,6 +372,10 @@ class UIComponent extends Eventable(Class) {
         if (!this._owner) {
             return this;
         }
+        const map = this.getMap();
+        if (map) {
+            map._removeUI(this);
+        }
         this.hide();
         this._switchEvents('off');
         if (this.onRemove) {
@@ -323,6 +394,7 @@ class UIComponent extends Eventable(Class) {
          * @property {ui.UIComponent} target - UIComponent
          */
         this.fire('remove');
+        this._collides();
         return this;
     }
 
@@ -331,6 +403,11 @@ class UIComponent extends Eventable(Class) {
      * @return {Size} size
      */
     getSize() {
+        if (this._domContentRect && this._size) {
+            //update size by resizeObserver result
+            this._size.width = this._domContentRect.width;
+            this._size.height = this._domContentRect.height;
+        }
         if (this._size) {
             return this._size.copy();
         } else {
@@ -346,13 +423,20 @@ class UIComponent extends Eventable(Class) {
         return this.__uiDOM;
     }
 
+    _roundPoint(point) {
+        if (this.options.roundPoint) {
+            point = point._round();
+        }
+        return point;
+    }
+
     getPosition() {
         if (!this.getMap()) {
             return null;
         }
-        const p = this._getViewPoint()._round();
+        const p = this._roundPoint(this._getViewPoint());
         if (this.getOffset) {
-            const o = this.getOffset()._round();
+            const o = this._roundPoint(this.getOffset());
             if (o) {
                 p._add(o);
             }
@@ -388,31 +472,63 @@ class UIComponent extends Eventable(Class) {
     }
 
     _getViewPoint() {
-        let alt = 0;
-        if (this._owner && this._owner.getAltitude) {
-            const altitude = this._owner.getAltitude();
-            if (altitude > 0) {
-                alt = this._meterToPoint(this._coordinate, altitude);
-            }
+        let altitude = 0;
+        //后期有了地形后，拿到的数据会带altitude，这里适配下,以后点击地图拿到的数据应该带海拔的（lng,lat,alt）
+        const coordinates = this._coordinate || {};
+        if (isNumber(coordinates.z)) {
+            altitude = coordinates.z;
+        } else if (this._owner && this._owner.getAltitude) {
+            altitude = this._owner.getAltitude() || 0;
         }
+        const alt = this._meterToPoint(this._coordinate, altitude);
         return this.getMap().coordToViewPoint(this._coordinate, undefined, alt)
             ._add(this.options['dx'], this.options['dy']);
     }
 
     _meterToPoint(center, altitude) {
-        const map = this.getMap();
-        return map.distanceToPoint(altitude, 0, undefined, center).x * sign(altitude);
+        return altitude;
+        // const map = this.getMap();
+        // return map.altitudeToPoint(altitude, map._getResolution()) * sign(altitude);
     }
 
     _autoPan() {
         const map = this.getMap(),
             dom = this.getDOM();
-        if (map.isMoving()) {
+        if (!dom || !map || map.isMoving()) {
             return;
         }
         const point = this._getViewPoint()._round();
         const mapWidth = map.width;
         const mapHeight = map.height;
+        if (dom && dom.getBoundingClientRect) {
+            const margin = 50;
+            const rect = dom.getBoundingClientRect();
+            let offsetX = 0, offsetY = 0;
+            const { left, right, top, bottom, width, height } = rect;
+            if (width > 0 && height > 0) {
+                if (left < margin) {
+                    offsetX = margin - left;
+                }
+                if (offsetX === 0 && (right + margin) > mapWidth) {
+                    offsetX = -((right + margin) - mapWidth);
+                }
+                if (top < margin) {
+                    offsetY = margin - top;
+                }
+                if (offsetY === 0 && (bottom + margin) > mapHeight) {
+                    offsetY = -((bottom + margin) - mapHeight);
+                }
+                if (offsetX !== 0 || offsetY !== 0) {
+                    const pitch = map.getPitch();
+                    if (pitch > 40 && offsetY !== 0 && this._coordinate) {
+                        map.animateTo({ center: this._coordinate }, { duration: map.options['panAnimationDuration'] });
+                    } else {
+                        map.panBy([Math.ceil(offsetX), Math.ceil(offsetY)]);
+                    }
+                }
+                return;
+            }
+        }
 
         const containerPoint0 = map.viewPointToContainerPoint(point);
         const offset = this.getOffset();
@@ -429,10 +545,14 @@ class UIComponent extends Eventable(Class) {
         } else if ((containerPoint.x + domWidth) > mapWidth) {
             left = -((containerPoint.x + domWidth) - mapWidth) - margin;
         }
-        if (containerPoint.y < 0) {
-            top = -(containerPoint.y) + margin;
+        if (containerPoint.y - domHeight < 0) {
+            top = Math.abs(containerPoint.y - domHeight) + margin;
         } else if (containerPoint.y + domHeight > mapHeight) {
             top = (mapHeight - (containerPoint.y + domHeight)) - margin;
+        }
+        //if dom width > map width
+        if (domWidth >= mapWidth) {
+            left = mapWidth / 2 - containerPoint0.x;
         }
 
         if (top !== 0 || left !== 0) {
@@ -453,12 +573,17 @@ class UIComponent extends Eventable(Class) {
     _measureSize(dom) {
         const container = this._getUIContainer();
         dom.style.position = 'absolute';
-        dom.style.left = -99999 + 'px';
+        // dom.style.left = -99999 + 'px';
         const anchor = dom.style.bottom ? 'bottom' : 'top';
-        dom.style[anchor] = -99999 + 'px';
+        // dom.style[anchor] = -99999 + 'px';
         dom.style.display = '';
         container.appendChild(dom);
-        this._size = new Size(dom.clientWidth, dom.clientHeight);
+        if (dom.getBoundingClientRect) {
+            const rect = dom.getBoundingClientRect();
+            this._size = new Size(rect.width, rect.height);
+        } else {
+            this._size = new Size(dom.clientWidth, dom.clientHeight);
+        }
         dom.style.display = 'none';
         dom.style.left = '0px';
         dom.style[anchor] = '0px';
@@ -482,7 +607,16 @@ class UIComponent extends Eventable(Class) {
                 if (eventsToStop) {
                     off(map[key], eventsToStop, stopPropagation);
                 }
+                const uiComponent = map[key]._uiComponent;
+                //fire pre uicomponent(when it isVisible) hide event
+                if (uiComponent && uiComponent !== this && uiComponent.isVisible()) {
+                    uiComponent.fire('hide');
+                }
                 removeDomNode(map[key]);
+                //remove map bind events
+                if (uiComponent && !this.hideDom) {
+                    uiComponent._switchMapEvents('off');
+                }
                 delete map[key];
             }
             delete this.__uiDOM;
@@ -492,6 +626,12 @@ class UIComponent extends Eventable(Class) {
             }
             removeDomNode(this.__uiDOM);
             delete this.__uiDOM;
+        }
+        if (this._resizeObserver) {
+            //dispose resizeObserver
+            this._resizeObserver.disconnect();
+            delete this._resizeObserver;
+            delete this._domContentRect;
         }
     }
 
@@ -536,7 +676,8 @@ class UIComponent extends Eventable(Class) {
     }
 
     _switchEvents(to) {
-        this._switchMapEvents(to);
+        //At the beginning,not bind map events,bind evetns when show
+        // this._switchMapEvents(to);
         const ownerEvents = this._getOwnerEvents();
         if (this._owner) {
             for (const p in ownerEvents) {
@@ -552,6 +693,7 @@ class UIComponent extends Eventable(Class) {
             'zooming rotate pitch': this.onEvent,
             'zoomend': this.onZoomEnd,
             'moving': this.onMoving,
+            'moveend': this.onMoving,
             'resize': this.onResize
         };
     }
@@ -560,6 +702,7 @@ class UIComponent extends Eventable(Class) {
         const events = {};
         if (this._owner && (this._owner instanceof Geometry)) {
             events.positionchange = this.onGeometryPositionChange;
+            events.symbolchange = this._updatePosition;
         }
         if (this.getOwnerEvents) {
             extend(events, this.getOwnerEvents());
@@ -569,7 +712,9 @@ class UIComponent extends Eventable(Class) {
 
     onGeometryPositionChange(param) {
         if (this._owner && this.isVisible()) {
+            this._showBySymbolChange = true;
             this.show(param['target'].getCenter());
+            delete this._showBySymbolChange;
         }
     }
 
@@ -599,10 +744,22 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    onDomSizeChange() {
+        if (this.isVisible()) {
+            //when dom resize , update position
+            this._setPosition();
+            this._collides();
+        }
+    }
+
     _updatePosition() {
+        if (!this.getMap()) {
+            return this;
+        }
         // update position in the next frame to sync with layers
         const renderer = this.getMap()._getRenderer();
         renderer.callInNextFrame(this._setPosition.bind(this));
+        return this;
     }
 
     _setPosition() {
@@ -635,8 +792,40 @@ class UIComponent extends Eventable(Class) {
         }
     }
 
+    _observerDomSize(dom) {
+        if (!dom || !Browser.resizeObserver || this._resizeObserver) {
+            return this;
+        }
+        this._resizeObserver = new ResizeObserver((entries) => {
+            if (entries.length) {
+                const borderBoxSize = entries[0].borderBoxSize;
+                if (borderBoxSize && borderBoxSize.length) {
+                    this._domContentRect = {
+                        width: borderBoxSize[0].inlineSize,
+                        height: borderBoxSize[0].blockSize
+                    };
+                } else {
+                    this._domContentRect = entries[0].contentRect;
+                }
+            } else {
+                delete this._domContentRect;
+            }
+            //update dom position
+            if (this.onDomSizeChange) {
+                this.onDomSizeChange();
+            }
+        });
+        this._resizeObserver.observe(dom);
+        return this;
+    }
+
     isSupportZoomFilter() {
         return false;
+    }
+
+    onConfig() {
+        this._updatePosition();
+        return this;
     }
 
     /*

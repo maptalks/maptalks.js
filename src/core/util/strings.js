@@ -1,6 +1,5 @@
 import { DEFAULT_TEXT_SIZE } from '../Constants';
-import { isString, isNil } from './common';
-import { getDomRuler, removeDomNode } from './dom';
+import { isString, isNil, isNumber } from './common';
 import Point from '../../geo/Point';
 import Size from '../../geo/Size';
 
@@ -88,19 +87,19 @@ export function stringLength(text, font, size) {
     return new Size(w, size || DEFAULT_TEXT_SIZE);
 }
 
-export function getFontHeight(font) {
-    //dom
-    const domRuler = getDomRuler('span');
-    if (font !== '_default_') {
-        domRuler.style.font = font;
-    }
-    domRuler.innerHTML = '秦';
-    const h = domRuler.clientHeight;
-    //if not removed, the canvas container on chrome will turn to unexpected blue background.
-    // Reason is unknown.
-    removeDomNode(domRuler);
-    return h;
-}
+// export function getFontHeight(font) {
+//     //dom
+//     const domRuler = getDomRuler('span');
+//     if (font !== '_default_') {
+//         domRuler.style.font = font;
+//     }
+//     domRuler.innerHTML = '秦';
+//     const h = domRuler.clientHeight;
+//     //if not removed, the canvas container on chrome will turn to unexpected blue background.
+//     // Reason is unknown.
+//     removeDomNode(domRuler);
+//     return h;
+// }
 
 /**
  * Split text content by dom.
@@ -112,22 +111,22 @@ export function getFontHeight(font) {
  */
 export function splitContent(content, font, wrapWidth, textWidth) {
     if (!content || content.length === 0) {
-        return [{ 'text' : '', 'width' : 0 }];
+        return [{ 'text': '', 'width': 0 }];
     }
     const width = isNil(textWidth) ? stringWidth(content, font) : textWidth;
     const chrWidth = width / content.length,
         minChrCount = Math.floor(wrapWidth / chrWidth / 2);
     if (chrWidth >= wrapWidth || minChrCount <= 0) {
-        return [{ 'text' : '', 'width' : wrapWidth }];
+        return [{ 'text': '', 'width': wrapWidth }];
     }
-    if (width <= wrapWidth) return [{ 'text' : content, 'width' : width }];
+    if (width <= wrapWidth) return [{ 'text': content, 'width': width }];
     const result = [];
     let testStr = content.substring(0, minChrCount), prew = chrWidth * minChrCount;
     for (let i = minChrCount, l = content.length; i < l; i++) {
         const chr = content[i];
         const w = stringWidth(testStr + chr);
         if (w >= wrapWidth) {
-            result.push({ 'text' : testStr, 'width' : prew });
+            result.push({ 'text': testStr, 'width': prew });
             testStr = content.substring(i, minChrCount + i);
             i += (minChrCount - 1);
             prew = chrWidth * minChrCount;
@@ -137,13 +136,16 @@ export function splitContent(content, font, wrapWidth, textWidth) {
         }
         if (i >= l - 1) {
             prew = stringWidth(testStr);
-            result.push({ 'text' : testStr, 'width' : prew });
+            result.push({ 'text': testStr, 'width': prew });
         }
     }
     return result;
 }
 
-const contentExpRe = /\{([\w_]+)\}/g;
+// const contentExpRe = /\{([\w_]+)\}/g;
+// export const CONTENT_EXPRE = /{([^}.]+)}/;
+// export const CONTENT_EXPRE = /{([\u0000-\u0019\u0021-\uFFFF]+)}/g;
+export const CONTENT_EXPRE = /\{([\w_]+)\}/g;
 
 /**
  * Replace variables wrapped by square brackets ({foo}) with actual values in props.
@@ -159,7 +161,7 @@ export function replaceVariable(str, props) {
     if (!isString(str)) {
         return str;
     }
-    return str.replace(contentExpRe, function (str, key) {
+    return str.replace(CONTENT_EXPRE, function (str, key) {
         if (!props) {
             return '';
         }
@@ -171,6 +173,23 @@ export function replaceVariable(str, props) {
         }
         return value;
     });
+}
+
+/**
+ * Generate text descriptors according to symbols
+ * @return {Object} text descriptor
+ */
+export function describeText(textContent, symbol) {
+    if (isNumber(textContent)) {
+        textContent += '';
+    }
+    textContent = textContent || '';
+    const maxHeight = symbol['textMaxHeight'] || 0;
+    const textDesc = splitTextToRow(textContent, symbol);
+    if (maxHeight && maxHeight < textDesc.size.height) {
+        textDesc.size.height = maxHeight;
+    }
+    return textDesc;
 }
 
 /**

@@ -15,9 +15,12 @@ import GeoJSON from '../geometry/GeoJSON';
  * @instance
  */
 const options = {
-    'drawImmediate' : false
+    'drawImmediate': false,
+    'geometryEvents': true
 };
 
+
+const TMP_EVENTS_ARR = [];
 
 /**
  * @classdesc
@@ -368,8 +371,13 @@ class OverlayLayer extends Layer {
         this._geoMap = {};
         const old = this._geoList;
         this._geoList = [];
-        if (this._getRenderer()) {
-            this._getRenderer().onGeometryRemove(old);
+        const renderer = this._getRenderer();
+        if (renderer) {
+            renderer.onGeometryRemove(old);
+            if (renderer.clearImageData) {
+                renderer.clearImageData();
+                delete renderer._lastGeosToDraw;
+            }
         }
         this._clearing = false;
         /**
@@ -658,6 +666,27 @@ class OverlayLayer extends Layer {
         if (this._getRenderer()) {
             this._getRenderer().onGeometryPropertiesChange(param);
         }
+    }
+
+    _hasGeoListeners(eventTypes) {
+        if (!eventTypes) {
+            return false;
+        }
+        if (!Array.isArray(eventTypes)) {
+            TMP_EVENTS_ARR[0] = eventTypes;
+            eventTypes = TMP_EVENTS_ARR;
+        }
+        const geos = this.getGeometries() || [];
+        for (let i = 0, len = geos.length; i < len; i++) {
+            for (let j = 0, len1 = eventTypes.length; j < len1; j++) {
+                const eventType = eventTypes[j];
+                const listens = geos[i].listens(eventType);
+                if (listens > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 

@@ -3,13 +3,27 @@ import Point from '../geo/Point';
 import Coordinate from '../geo/Coordinate';
 import * as mat4 from '../core/util/mat4';
 import { subtract, add, scale, normalize, dot, set, distance } from '../core/util/vec3';
-import { clamp, interpolate, wrap } from '../core/util';
+import { clamp, interpolate, isNumber, isNil, wrap } from '../core/util';
 import { applyMatrix, matrixToQuaternion, quaternionToMatrix, lookAt, setPosition } from '../core/util/math';
 import Browser from '../core/Browser';
 
 const RADIAN = Math.PI / 180;
 const DEFAULT_FOV = 0.6435011087932844;
 const TEMP_COORD = new Coordinate(0, 0);
+const TEMP_POINT = new Point(0, 0);
+
+const altitudesHasData = (altitudes) => {
+    if (isNumber(altitudes)) {
+        return altitudes !== 0;
+    } else if (Array.isArray(altitudes) && altitudes.length > 0) {
+        for (let i = 0, len = altitudes.length; i < len; i++) {
+            if (isNumber(altitudes[i]) && altitudes[i] !== 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
 
 /*!
  * contains code from mapbox-gl-js
@@ -76,6 +90,13 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setBearing(bearing) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
+        return this._setBearing(bearing);
+    },
+
+    _setBearing(bearing) {
         if (Browser.ie9) {
             throw new Error('map can\'t rotate in IE9.');
         }
@@ -136,6 +157,13 @@ Map.include(/** @lends Map.prototype */{
      * @return {Map} this
      */
     setPitch(pitch) {
+        if (this._mapAnimPlayer) {
+            this._stopAnim(this._mapAnimPlayer);
+        }
+        return this._setPitch(pitch);
+    },
+
+    _setPitch(pitch) {
         if (Browser.ie9) {
             throw new Error('map can\'t tilt in IE9.');
         }
@@ -215,46 +243,80 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     _pointToContainerPoint: function (point, zoom, altitude = 0, out) {
+        const res = this._getResolution(zoom);
+        return this._pointAtResToContainerPoint(point, res, altitude, out);
+    },
+
+    _pointAtResToContainerPoint: function (point, res, altitude = 0, out) {
         if (!out) {
             out = new Point(0, 0);
         }
-        point = this._pointToPoint(point, zoom, out);
+        point = this._pointAtResToPoint(point, res, out);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
         let centerPoint;
         if (!isTransforming && !altitude) {
             centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         }
-        this._toContainerPoint(out, isTransforming, res, altitude, centerPoint);
+        this._toContainerPoint(out, isTransforming, altitude, centerPoint);
         return out;
     },
+
 
     /**
      *Batch conversion for better performance
      */
-    _pointsToContainerPoints: function (points, zoom, altitudes = []) {
+    _pointsAtResToContainerPoints: function (points, targetRes, altitudes = [], resultPoints = []) {
+        const pitch = this.getPitch(), bearing = this.getBearing();
+        const scale = targetRes / this._getResolution();
+        if (pitch === 0 && bearing === 0 && !altitudesHasData(altitudes)) {
+            const { xmin, ymin, xmax, ymax } = this._get2DExtent();
+            if (xmax > xmin && ymax > ymin) {
+
+                const { width, height } = this.getSize();
+                const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
+                for (let i = 0, len = points.length; i < len; i++) {
+                    if (!points[i]) {
+                        resultPoints[i] = null;
+                        continue;
+                    }
+                    const pt = resultPoints[i];
+                    pt.x = points[i].x;
+                    pt.y = points[i].y;
+                    pt._multi(scale);
+                    pt.x = (pt.x - xmin) * dxPerPixel;
+                    pt.y = height - (pt.y - ymin) * dyPerPixel;
+                }
+                return resultPoints;
+            }
+        }
         const altitudeIsArray = Array.isArray(altitudes);
         const isTransforming = this.isTransforming();
-        const res = this._getResolution(zoom) / this._getResolution();
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
-        const pts = [];
         for (let i = 0, len = points.length; i < len; i++) {
-            const point = points[i].copy()._multi(res);
+            if (!points[i]) {
+                resultPoints[i] = null;
+                continue;
+            }
+            const pt = resultPoints[i];
+            pt.x = points[i].x;
+            pt.y = points[i].y;
+            pt._multi(scale);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
-            this._toContainerPoint(point, isTransforming, res, altitude, centerPoint);
-            pts.push(point);
+            this._toContainerPoint(pt, isTransforming, altitude, centerPoint);
         }
-        return pts;
+        return resultPoints;
     },
 
     _toContainerPoint: function () {
         const a = [0, 0, 0];
-        return function (out, isTransforming, res, altitude, centerPoint) {
+        return function (out, isTransforming, altitude, centerPoint) {
             const w2 = this.width / 2, h2 = this.height / 2;
             if (isTransforming || altitude) {
-                altitude *= res;
+                if (!this._altitudeScale) {
+                    this._altitudeScale = this.altitudeToPoint(100, this.getGLRes()) / 100;
+                }
                 const scale = this._glScale;
-                set(a, out.x * scale, out.y * scale, altitude * scale);
+                set(a, out.x * scale, out.y * scale, altitude * this._altitudeScale);
                 const t = this._projIfBehindCamera(a, this.cameraPosition, this.cameraForward);
                 applyMatrix(t, t, this.projViewMatrix);
                 out.x = (t[0] * w2) + w2;
@@ -292,11 +354,16 @@ Map.include(/** @lends Map.prototype */{
      * @private
      * @function
      */
-    _containerPointToPoint: function () {
+    _containerPointToPoint: function (p, zoom, out) {
+        const res = this._getResolution(zoom);
+        return this._containerPointToPointAtRes(p, res, out);
+    },
+
+    _containerPointToPointAtRes: function () {
         const cp = [0, 0, 0],
             coord0 = [0, 0, 0, 1],
             coord1 = [0, 0, 0, 1];
-        return function (p, zoom, out) {
+        return function (p, res, out) {
             if (this.isTransforming()) {
                 const w2 = this.width / 2 || 1, h2 = this.height / 2 || 1;
                 set(cp, (p.x - w2) / w2, (h2 - p.y) / h2, 0);
@@ -324,10 +391,10 @@ Map.include(/** @lends Map.prototype */{
                     out = new Point(x, y);
                 }
                 out._multi(1 / this._glScale);
-                return ((zoom === undefined || this.getZoom() === zoom) ? out : this._pointToPointAtZoom(out, zoom, out));
+                return ((this._getResolution() === res) ? out : this._pointToPointAtRes(out, res, out));
             }
-            const centerPoint = this._prjToPoint(this._getPrjCenter(), zoom, out),
-                scale = (zoom !== undefined ? this._getResolution() / this._getResolution(zoom) : 1);
+            const centerPoint = this._prjToPointAtRes(this._getPrjCenter(), res, out),
+                scale = this._getResolution() / res;
             const x = scale * (p.x - this.width / 2),
                 y = scale * (p.y - this.height / 2);
             return centerPoint._add(x, -y);
@@ -336,7 +403,7 @@ Map.include(/** @lends Map.prototype */{
 
     /**
      * GL Matrices in maptalks (based on THREE):
-     * //based on point at map's gl world zoom, by map.coordToPoint(coord, map.getGLZoom())
+     * //based on point at map's gl world space, by map.coordToPointAtRes(coord, map.getGLRes()))
      * map.cameraPosition
      * map.cameraLookAt
      * map.cameraUp       //camera's up vector
@@ -371,7 +438,7 @@ Map.include(/** @lends Map.prototype */{
             const fov = this.getFov() * Math.PI / 180;
             const farZ = this._getCameraFar(fov, this.getPitch());
             this.cameraFar = farZ;
-            this.cameraNear = Math.max(this.cameraCenterDistance / 10, 0.1);
+            this.cameraNear = this.cameraCenterDistance / 20;
             // camera projection matrix
             const projMatrix = this.projMatrix || createMat4();
             mat4.perspective(projMatrix, fov, w / h, this.cameraNear, farZ);
@@ -388,9 +455,9 @@ Map.include(/** @lends Map.prototype */{
             this._frustumAltitude = this._calcFrustumAltitude();
             //缓存常用的值
             this._mapRes = this._getResolution();
-            this._mapGlRes = this._getResolution(this.getGLZoom());
+            this._mapGlRes = this.getGLRes();
             this._mapExtent2D = this._get2DExtent();
-            this._mapGlExtent2D = this._get2DExtent(this.getGLZoom());
+            this._mapGlExtent2D = this._get2DExtentAtRes(this._mapGlRes);
         };
     }(),
 
@@ -399,7 +466,7 @@ Map.include(/** @lends Map.prototype */{
         // return 4 * cameraCenterDistance;
         const cameraCenterDistance = this.cameraCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
         let farZ = cameraCenterDistance;
-        let y = 4 * cameraCenterDistance;
+        let y = (this.options['cameraInfiniteFar'] ? 10 : 4) * cameraCenterDistance;
         if (pitch > 0) {
             pitch = pitch * Math.PI / 180;
             if (2 / Math.PI - pitch > fov / 2) {
@@ -487,28 +554,52 @@ Map.include(/** @lends Map.prototype */{
         };
     }(),
 
+    _getFovZ(zoom) {
+        const scale = this.getGLScale(zoom);
+        const ratio = this._getFovRatio();
+        return scale * (this.height || 1) / 2 / ratio;
+    },
+
     _getCameraWorldMatrix: function () {
         const q = {};
         return function () {
-            const targetZ = this.getGLZoom();
+            const glRes = this.getGLRes();
+            if (!this._meterToGLPoint) {
+                this._meterToGLPoint = this.distanceToPointAtRes(100, 0, glRes).x / 100;
+            }
 
-            const size = this.getSize(),
-                scale = this.getGLScale();
-            const center2D = this._prjToPoint(this._prjCenter, targetZ);
-            this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, 0);
+            const center2D = this._prjToPointAtRes(this._prjCenter, glRes, TEMP_POINT);
+            const centerAltitude = this.centerAltitude || 0;
+            const centerPointZ = centerAltitude * this._meterToGLPoint;
+            this.cameraLookAt = set(this.cameraLookAt || [0, 0, 0], center2D.x, center2D.y, centerPointZ);
 
             const pitch = this.getPitch() * RADIAN;
             const bearing = this.getBearing() * RADIAN;
 
-            const ratio = this._getFovRatio();
-            const z = scale * (size.height || 1) / 2 / ratio;
-            const cz = z * Math.cos(pitch);
+            // const ratio = this._getFovRatio();
+            // const z = scale * (size.height || 1) / 2 / ratio;
+            // const cz = z * Math.cos(pitch);
+            const cameraToCenterDistance = this._getFovZ();
+            const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
+            const cameraToGroundDistance = cameraZenithDistance - centerPointZ;
+            const cz = cameraToGroundDistance * Math.cos(pitch);
             // and [dist] away from map's center on XY plane to tilt the scene.
-            const dist = Math.sin(pitch) * z;
+            const dist = Math.sin(pitch) * cameraToGroundDistance;
             // when map rotates, the camera's xy position is rotating with the given bearing and still keeps [dist] away from map's center
             const cx = center2D.x - dist * Math.sin(bearing);
             const cy = center2D.y - dist * Math.cos(bearing);
-            this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz);
+            this.cameraPosition = set(this.cameraPosition || [0, 0, 0], cx, cy, cz + centerPointZ);
+            // console.log('0.camera', this.cameraPosition);
+            // console.log('0.center', center2D, this.centerAltitude);
+            // console.log('0.cameraToGroundDistance', cameraToGroundDistance);
+
+            // const adjustedZoom = this._adjustZoomOnTerrain();
+            // if (adjustedZoom >= 0) {
+            //     this._zoom(adjustedZoom);
+            //     return this._getCameraWorldMatrix();
+            // }
+            // this.cameraToCenterDistance = distance(this.cameraPosition, this.cameraLookAt);
+            this.cameraToCenterDistance = cameraToCenterDistance;
             // when map rotates, camera's up axis is pointing to bearing from south direction of map
             // default [0,1,0] is the Y axis while the angle of inclination always equal 0
             // if you want to rotate the map after up an incline,please rotateZ like this:
@@ -531,6 +622,111 @@ Map.include(/** @lends Map.prototype */{
             return m;
         };
     }(),
+
+    updateCenterAltitude() {
+        this.getRenderer().setToRedraw();
+        if (!this.centerAltitude && this._hasAltitudeLayer()) {
+            this.centerAltitude = 0;
+        }
+        this._recenterOnTerrain();
+    },
+
+    _recenterOnTerrain() {
+        if (this.centerAltitude === undefined) {
+            return;
+        }
+        let queriedAltitude = this._queryTerrainByProjCoord(this._prjCenter);
+        if (isNil(queriedAltitude) && this._hasAltitudeLayer()) {
+            // remains previous center altitude if queried altitude is null
+            queriedAltitude = this.centerAltitude;
+        }
+        const centerAltitude = queriedAltitude || 0;
+        const pitch = this.getPitch() * RADIAN;
+        const bearing = this.getBearing() * RADIAN;
+        const altDist = (centerAltitude - this.centerAltitude) * this._meterToGLPoint;
+
+        const cameraToCenterDistance = this._getFovZ();
+        const cameraZenithDistance = this.cameraZenithDistance === undefined ? cameraToCenterDistance : this.cameraZenithDistance;
+
+        const cameraToGroundDistance = cameraZenithDistance - this.centerAltitude * this._meterToGLPoint;
+        const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.cos(pitch);
+
+
+        const cameraPosition = this.cameraPosition;
+        const dist = Math.sin(pitch) * newCameraToGroundDistance;
+        const center2D = TEMP_POINT;
+        center2D.x = cameraPosition[0] + dist * Math.sin(bearing);
+        center2D.y = cameraPosition[1] + dist * Math.cos(bearing);
+        // console.log(centerAltitude);
+        // centerAltitude = (cameraPosition[2] - Math.cos(pitch) * newCameraToGroundDistance) / this._meterToGLPoint;
+        // console.log(centerAltitude, (this.cameraToCenterDistance - newCameraToGroundDistance) / this._meterToGLPoint);
+        // centerAltitude = (this.cameraToCenterDistance - newCameraToGroundDistance) / this._meterToGLPoint;
+
+        const centerPointZ = centerAltitude * this._meterToGLPoint;
+        this.cameraZenithDistance = (cameraPosition[2] - centerPointZ) / Math.cos(pitch) + centerPointZ;
+
+        // const newCameraToGroundDistance = cameraToGroundDistance - altDist / Math.sin(pitch);
+        // console.log('1.camera', this.cameraPosition);
+        // console.log('1.center', center2D, centerAltitude);
+        // console.log('1.newCameraToGroundDistance', newCameraToGroundDistance);
+        // console.log(newCameraToGroundDistance, newCameraToGroundDistance1);
+
+        // const newPrjCenter = this._pointToPrjAtRes(center2D, this.getGLRes(), TEMP_COORD);
+
+
+        this.centerAltitude = centerAltitude;
+        // this._setPrjCenter(newPrjCenter);
+        const newCenter = this.pointAtResToCoordinate(center2D, this.getGLRes(), TEMP_COORD);
+        this._eventSilence = true;
+        this._suppressRecenter = true;
+        this.setCenter(newCenter);
+        delete this._suppressRecenter;
+        delete this._eventSilence;
+        if (isNil(queriedAltitude)) {
+            delete this.centerAltitude;
+        }
+    },
+    // _adjustZoomOnTerrain() {
+    //     const z = this._eventCameraZ;
+    //     const cameraDelta = 1E-10;
+    //     if (z === undefined || Math.abs(z - this.cameraPosition[2]) < cameraDelta) {
+    //         return -1;
+    //     }
+    //     if (!this._eventCenterAltitude) {
+    //         delete this._eventCameraZ;
+    //     }
+    //     const centerZ = this.cameraLookAt[2];
+    //     const cameraHeight = z - centerZ;
+    //     const pitch = this.getPitch() * RADIAN;
+
+    //     const newDistance = cameraHeight / Math.cos(pitch);
+    //     const ratio = this._getFovRatio();
+    //     const scale = newDistance * 2 * ratio / (this.height || 1);
+    //     const glRes = this.getGLRes();
+    //     const res = scale * glRes;
+    //     const zoom = this.getZoomFromRes(res);
+    //     return zoom;
+    // },
+
+    _queryTerrainByProjCoord(coord) {
+        const layers = this._getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            if (layers[i].queryTerrainByProjCoord) {
+                return layers[i].queryTerrainByProjCoord(coord)[0];
+            }
+        }
+        return 0;
+    },
+
+    _hasAltitudeLayer() {
+        const layers = this._getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            if (layers[i].getTerrainLayer && layers[i].getTerrainLayer()) {
+                return true;
+            }
+        }
+        return false;
+    },
 
     _getFovRatio() {
         const fov = this.getFov();

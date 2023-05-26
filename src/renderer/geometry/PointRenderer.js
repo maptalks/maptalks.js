@@ -9,7 +9,7 @@ import Polygon from '../../geometry/Polygon';
 // 有中心点的图形的共同方法
 const CenterPointRenderer = {
     _getRenderPoints() {
-        return [[this._getCenter2DPoint(this.getMap().getGLZoom())], null];
+        return [[this._getCenter2DPoint(this.getMap().getGLRes())], null];
     }
 };
 
@@ -27,15 +27,16 @@ Sector.include(CenterPointRenderer);
 Rectangle.include({
     _getRenderPoints(placement) {
         const map = this.getMap();
+        const glRes = map.getGLRes();
         if (placement === 'vertex') {
             const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
-                points.push(map.coordToPoint(shell[i], map.getGLZoom()));
+                points.push(map.coordToPointAtRes(shell[i], glRes));
             }
             return [points, null];
         } else {
-            const c = map.coordToPoint(this.getCenter(), map.getGLZoom());
+            const c = map.coordToPointAtRes(this.getCenter(), glRes);
             return [
                 [c], null
             ];
@@ -47,16 +48,16 @@ Rectangle.include({
 const PolyRenderer = {
     _getRenderPoints(placement) {
         const map = this.getMap();
-        const glZoom = map.getGLZoom();
+        const glRes = map.getGLRes();
         let points, rotations = null;
         if (placement === 'point') {
-            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom);
+            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes);
             if (points && points.length > 0 && Array.isArray(points[0])) {
                 //anti-meridian
                 points = points[0].concat(points[1]);
             }
         } else if (placement === 'vertex') {
-            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom);
+            points = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes);
             rotations = [];
             if (points && points.length > 0 && Array.isArray(points[0])) {
                 for (let i = 0, l = points.length; i < l; i++) {
@@ -81,8 +82,8 @@ const PolyRenderer = {
         } else if (placement === 'line') {
             points = [];
             rotations = [];
-            const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glZoom),
-                isSplitted =  vertice.length > 0 && Array.isArray(vertice[0]);
+            const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes),
+                isSplitted = vertice.length > 0 && Array.isArray(vertice[0]);
             if (isSplitted) {
                 //anti-meridian splitted
                 let ring;
@@ -108,18 +109,25 @@ const PolyRenderer = {
 
         } else if (placement === 'vertex-first') {
             const coords = this._getPrjCoordinates();
-            points = coords.length ? [map._prjToPoint(coords[0], glZoom)] : [];
-            rotations = coords.length ? [[map._prjToPoint(coords[0], glZoom), map._prjToPoint(coords[1], glZoom)]] : [];
+            const l = coords.length;
+            const point0 = l ? map._prjToPointAtRes(coords[0], glRes) : null;
+            points = l ? [point0] : [];
+            rotations = l ? [[point0, coords[1] ? map._prjToPointAtRes(coords[1], glRes) : point0]] : [];
         } else if (placement === 'vertex-last') {
             const coords = this._getPrjCoordinates();
             const l = coords.length;
-            points = l ? [map._prjToPoint(coords[l - 1], glZoom)] : [];
-            const current = l - 1,
-                previous = l > 1 ? l - 2 : l - 1;
-            rotations = l ? [[map._prjToPoint(coords[previous], glZoom), map._prjToPoint(coords[current], glZoom)]] : [];
+            const curretPoint = l ? map._prjToPointAtRes(coords[l - 1], glRes) : null;
+            points = l ? [curretPoint] : [];
+            const previous = l > 1 ? l - 2 : l - 1;
+            rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
         } else {
-            const pcenter = this._getProjection().project(this.getCenter());
-            points = [map._prjToPoint(pcenter, glZoom)];
+            const center = this.getCenter();
+            if (!center) {
+                points = [];
+            } else {
+                const pcenter = this._getProjection().project(center);
+                points = [map._prjToPointAtRes(pcenter, glRes)];
+            }
         }
         return [points, rotations];
     }

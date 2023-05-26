@@ -1,9 +1,26 @@
-import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn } from '../../core/util';
+import { now, isNil, isArrayHasData, isSVG, IS_NODE, loadImage, hasOwn, getImageBitMap, getAbsoluteURL, calCanvasSize } from '../../core/util';
 import Class from '../../core/Class';
 import Browser from '../../core/Browser';
 import Promise from '../../core/Promise';
 import Canvas2D from '../../core/Canvas';
+import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
+import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
+import { registerWorkerAdapter } from '../../core/worker/Worker';
+
+const EMPTY_ARRAY = [];
+class ResourceWorkerConnection extends Actor {
+    constructor() {
+        super(imageFetchWorkerKey);
+    }
+
+    fetchImage(url, cb) {
+        const data = {
+            url
+        };
+        this.send(data, EMPTY_ARRAY, cb);
+    }
+}
 
 /**
  * @classdesc
@@ -23,6 +40,9 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
+        if (Browser.decodeImageInWorker && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
+            this._resWorkerConn = new ResourceWorkerConnection();
+        }
         this.setToRedraw();
     }
 
@@ -45,6 +65,7 @@ class CanvasRenderer extends Class {
     }
 
     checkAndDraw(drawFn, ...args) {
+        this._toRedraw = false;
         if (this.checkResources) {
             const resources = this.checkResources();
             if (resources.length > 0) {
@@ -192,6 +213,9 @@ class CanvasRenderer extends Class {
         delete this.context;
         delete this.canvasExtent2D;
         delete this._extent2D;
+        if (this.resources) {
+            this.resources.remove();
+        }
         delete this.resources;
         delete this.layer;
     }
@@ -284,7 +308,7 @@ class CanvasRenderer extends Class {
      * @return {Boolean}
      */
     hitDetect(point) {
-        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown) {
+        if (!this.context || (this.layer.isEmpty && this.layer.isEmpty()) || this.isBlank() || this._errorThrown || (this.layer.isVisible && !this.layer.isVisible())) {
             return false;
         }
         const map = this.getMap();
@@ -292,6 +316,13 @@ class CanvasRenderer extends Class {
         const size = map.getSize();
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
+        }
+        const imageData = this.getImageData && this.getImageData();
+        if (imageData) {
+            const x = Math.round(r * point.x), y = Math.round(r * point.y);
+            const idx = y * imageData.width * 4 + x * 4;
+            //索引下标从0开始需要-1
+            return imageData.data[idx + 3] > 0;
         }
         try {
             const imgData = this.context.getImageData(r * point.x, r * point.y, 1, 1).data;
@@ -369,8 +400,8 @@ class CanvasRenderer extends Class {
         const map = this.getMap();
         const size = map.getSize();
         const r = map.getDevicePixelRatio(),
-            w = r * size.width,
-            h = r * size.height;
+            w = Math.round(r * size.width),
+            h = Math.round(r * size.height);
         if (this.layer._canvas) {
             const canvas = this.layer._canvas;
             canvas.width = w;
@@ -397,7 +428,7 @@ class CanvasRenderer extends Class {
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
         }
-        this.context = this.canvas.getContext('2d');
+        this.context = Canvas2D.getCanvas2DContext(this.canvas);
         if (!this.context) {
             return;
         }
@@ -429,18 +460,21 @@ class CanvasRenderer extends Class {
         }
         const size = canvasSize || this.getMap().getSize();
         const r = this.getMap().getDevicePixelRatio();
-        if (canvas.width === r * size.width && canvas.height === r * size.height) {
+        const { width, height, cssWidth, cssHeight } = calCanvasSize(size, r);
+        // width/height不变并不意味着 css width/height 不变
+        if (this.layer._canvas && (canvas.style.width !== cssWidth || canvas.style.height !== cssHeight)) {
+            canvas.style.width = cssWidth;
+            canvas.style.height = cssHeight;
+        }
+
+        if (canvas.width === width && canvas.height === height) {
             return;
         }
         //retina support
-        canvas.height = r * size.height;
-        canvas.width = r * size.width;
+        canvas.height = height;
+        canvas.width = width;
         if (r !== 1 && this.context) {
             this.context.scale(r, r);
-        }
-        if (this.layer._canvas && canvas.style) {
-            canvas.style.width = size.width + 'px';
-            canvas.style.height = size.height + 'px';
         }
     }
 
@@ -448,10 +482,14 @@ class CanvasRenderer extends Class {
      * Clear the canvas to blank
      */
     clearCanvas() {
-        if (!this.context) {
+        if (!this.context || !this.getMap()) {
             return;
         }
-        Canvas2D.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+        //fix #1597
+        const r = this.getMap().getDevicePixelRatio();
+        const rScale = 1 / r;
+        const w = this.canvas.width * rScale, h = this.canvas.height * rScale;
+        Canvas2D.clearRect(this.context, 0, 0, Math.max(w, this.canvas.width), Math.max(h, this.canvas.height));
     }
 
     /**
@@ -543,10 +581,13 @@ class CanvasRenderer extends Class {
                 painter.paint(null, context);
             });
             context.stroke();
-            delete context.isMultiClip;
+            context.isMultiClip = false;
         } else {
+            context.isClip = true;
+            context.beginPath();
             const painter = mask._getMaskPainter();
             painter.paint(null, context);
+            context.isClip = false;
         }
         if (dpr !== 1) {
             context.restore();
@@ -734,37 +775,55 @@ class CanvasRenderer extends Class {
                 resolve(url);
                 return;
             }
-            const img = new Image();
-            if (!isNil(crossOrigin)) {
-                img['crossOrigin'] = crossOrigin;
-            } else if (renderer !== 'canvas') {
-                img['crossOrigin'] = '';
-            }
-            if (isSVG(url[0]) && !IS_NODE) {
-                //amplify the svg image to reduce loading.
-                if (url[1]) { url[1] *= 2; }
-                if (url[2]) { url[2] *= 2; }
-            }
-            img.onload = function () {
-                me._cacheResource(url, img);
-                resolve(url);
-            };
-            img.onabort = function (err) {
-                if (console) { console.warn('image loading aborted: ' + url[0]); }
-                if (err) {
-                    if (console) { console.warn(err); }
+            if (!isSVG(url[0]) && me._resWorkerConn) {
+                const uri = getAbsoluteURL(url[0]);
+                me._resWorkerConn.fetchImage(uri, (err, data) => {
+                    if (err) {
+                        if (err && typeof console !== 'undefined') {
+                            console.warn(err);
+                        }
+                        resolve(url);
+                        return;
+                    }
+                    getImageBitMap(data, bitmap => {
+                        me._cacheResource(url, bitmap);
+                        resolve(url);
+                    });
+                });
+            } else {
+                const img = new Image();
+                if (!isNil(crossOrigin)) {
+                    img['crossOrigin'] = crossOrigin;
+                } else if (renderer !== 'canvas') {
+                    img['crossOrigin'] = '';
                 }
-                resolve(url);
-            };
-            img.onerror = function (err) {
-                // if (console) { console.warn('image loading failed: ' + url[0]); }
-                if (err && typeof console !== 'undefined') {
-                    console.warn(err);
+                if (isSVG(url[0]) && !IS_NODE) {
+                    //amplify the svg image to reduce loading.
+                    if (url[1]) { url[1] *= 2; }
+                    if (url[2]) { url[2] *= 2; }
                 }
-                resources.markErrorResource(url);
-                resolve(url);
-            };
-            loadImage(img, url);
+                img.onload = function () {
+                    me._cacheResource(url, img);
+                    resolve(url);
+                };
+                img.onabort = function (err) {
+                    if (console) { console.warn('image loading aborted: ' + url[0]); }
+                    if (err) {
+                        if (console) { console.warn(err); }
+                    }
+                    resolve(url);
+                };
+                img.onerror = function (err) {
+                    // if (console) { console.warn('image loading failed: ' + url[0]); }
+                    if (err && typeof console !== 'undefined') {
+                        console.warn(err);
+                    }
+                    resources.markErrorResource(url);
+                    resolve(url);
+                };
+                loadImage(img, url);
+            }
+
         };
 
     }
@@ -802,8 +861,21 @@ export class ResourceCache {
         this.resources[url[0]] = {
             image: img,
             width: +url[1],
-            height: +url[2]
+            height: +url[2],
+            refCnt: 0
         };
+        if (img && img.width && img.height && !img.close && Browser.imageBitMap && !Browser.safari && !Browser.iosWeixin) {
+            if (img.src && isSVG(img.src)) {
+                return;
+            }
+            createImageBitmap(img).then(imageBitmap => {
+                if (!this.resources[url[0]]) {
+                    //removed
+                    return;
+                }
+                this.resources[url[0]].image = imageBitmap;
+            });
+        }
     }
 
     isResourceLoaded(url, checkSVG) {
@@ -822,6 +894,23 @@ export class ResourceCache {
             return false;
         }
         return true;
+    }
+
+    login(url) {
+        const res = this.resources[url];
+        if (res) {
+            res.refCnt++;
+        }
+    }
+
+    logout(url) {
+        const res = this.resources[url];
+        if (res && res.refCnt-- <= 0) {
+            if (res.image && res.image.close) {
+                res.image.close();
+            }
+            delete this.resources[url];
+        }
     }
 
     getImage(url) {
@@ -865,4 +954,54 @@ export class ResourceCache {
         }
         return url[0];
     }
+
+    remove() {
+        for (const p in this.resources) {
+            const res = this.resources[p];
+            if (res && res.image && res.image.close) {
+                // close bitmap
+                res.image.close();
+            }
+        }
+        this.resources = {};
+    }
 }
+
+const workerSource = `
+function (exports) {
+    exports.onmessage = function (msg, postResponse) {
+        var url = msg.data.url;
+        var fetchOptions = msg.data.fetchOptions;
+        requestImageOffscreen(url, function (err, data) {
+            var buffers = [];
+            if (data && data.data) {
+                buffers.push(data.data);
+            }
+            postResponse(err, data, buffers);
+        }, fetchOptions);
+    };
+
+    function requestImageOffscreen(url, cb, fetchOptions) {
+        fetch(url, fetchOptions ? fetchOptions : {})
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                const blob=new Blob([arrayBuffer]);
+                return createImageBitmap(blob);
+            })
+            .then(bitmap => {
+                cb(null, {data:bitmap});
+            }).catch(err => {
+                console.warn('error when loading tile:', url);
+                console.warn(err);
+                cb(err);
+            });
+    }
+}`;
+
+function registerWorkerSource() {
+    if (!Browser.decodeImageInWorker) {
+        return;
+    }
+    registerWorkerAdapter(imageFetchWorkerKey, function () { return workerSource; });
+}
+registerWorkerSource();

@@ -1,10 +1,10 @@
-import { isNil, isNumber, isArrayHasData, isFunction } from '../core/util';
+import { isNil, isNumber, isArrayHasData, isFunction, getPointsResultPts } from '../core/util';
 import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
-import Polygon from './Polygon';
 import simplify from 'simplify-js';
+import Point from '../geo/Point';
 
 /**
  * @property {Object} options - configuration options
@@ -40,22 +40,6 @@ const options = {
  */
 class Path extends Geometry {
 
-    getOutline() {
-        const painter = this._getPainter();
-        if (!painter) {
-            return null;
-        }
-        // const map = this.getMap();
-        // const extent = painter.getContainerExtent().convertTo(c => map.containerPointToCoord(c));
-        const extent = this.getExtent();
-        return new Polygon(extent.toArray(), {
-            symbol: {
-                'lineWidth': 1,
-                'lineColor': '6b707b'
-            }
-        });
-    }
-
     /**
      * Show the linestring with animation
      * @param  {Object} [options=null] animation options
@@ -88,10 +72,10 @@ class Path extends Geometry {
         this._animLenSoFar = 0;
         this.show();
         const isPolygon = !!this.getShell;
-        const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : this.getCoordinates();
+        const animCoords = isPolygon ? this.getShell().concat(this.getShell()[0]) : coordinates;
         const projection = this._getProjection();
 
-        const prjAnimCoords = projection.projectCoords(animCoords);
+        const prjAnimCoords = projection.projectCoords(animCoords, this.options['antiMeridian']);
 
         this._prjAniShowCenter = this._getPrjExtent().getCenter();
         this._aniShowCenter = projection.unproject(this._prjAniShowCenter);
@@ -99,9 +83,17 @@ class Path extends Geometry {
             easing = options['easing'] || 'out';
         this.setCoordinates([]);
         let length = 0;
-        for (let i = 1; i < prjAnimCoords.length; i++) {
-            length += prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
+        if (prjAnimCoords.length) {
+            prjAnimCoords[0]._distance = 0;
         }
+        for (let i = 1; i < prjAnimCoords.length; i++) {
+            const distance = prjAnimCoords[i].distanceTo(prjAnimCoords[i - 1]);
+            // cache distance calc
+            prjAnimCoords[i]._distance = distance;
+            length += distance;
+        }
+        this._tempCoord = new Coordinate(0, 0);
+        this._tempPrjCoord = new Point(0, 0);
         const player = this._showPlayer = Animation.animate({
             't': duration
         }, {
@@ -126,6 +118,8 @@ class Path extends Geometry {
                 delete this._animIdx;
                 delete this._animLenSoFar;
                 delete this._animTailRatio;
+                delete this._tempCoord;
+                delete this._tempPrjCoord;
                 this.setCoordinates(coordinates);
             }
             if (cb) {
@@ -140,19 +134,20 @@ class Path extends Geometry {
         if (t === 0) {
             return coordinates[0];
         }
-        const projection = this._getProjection();
+        // const projection = this._getProjection();
         // const map = this.getMap();
         const targetLength = t / duration * length;
         let segLen = 0;
         let i, l;
-        for (i = this._animIdx, l = prjCoords.length; i < l - 1; i++) {
-            segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
+        for (i = this._animIdx + 1, l = prjCoords.length; i < l; i++) {
+            // segLen = prjCoords[i].distanceTo(prjCoords[i + 1]);
+            segLen = prjCoords[i]._distance;
             if (this._animLenSoFar + segLen > targetLength) {
                 break;
             }
             this._animLenSoFar += segLen;
         }
-        this._animIdx = i;
+        this._animIdx = i - 1;
         if (this._animIdx >= l - 1) {
             this.setCoordinates(coordinates);
             return coordinates[coordinates.length - 1];
@@ -164,15 +159,31 @@ class Path extends Geometry {
             r = span / segLen;
         this._animTailRatio = r;
         const x = p1.x + (p2.x - p1.x) * r,
-            y = p1.y + (p2.y - p1.y) * r,
-            lastCoord = new Coordinate(x, y);
-        const targetCoord = projection.unproject(lastCoord);
+            y = p1.y + (p2.y - p1.y) * r;
+        this._tempPrjCoord.x = x;
+        this._tempPrjCoord.y = y;
+        const lastCoord = this._tempPrjCoord;
+
+        const c1 = coordinates[idx], c2 = coordinates[idx + 1];
+        const cx = c1.x + (c2.x - c1.x) * r,
+            cy = c1.y + (c2.y - c1.y) * r;
+        this._tempCoord.x = cx;
+        this._tempCoord.y = cy;
+        // const targetCoord = projection.unproject(lastCoord, this._tempCoord);
+        const targetCoord = this._tempCoord;
         const isPolygon = !!this.getShell;
         if (!isPolygon && this.options['smoothness'] > 0) {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
-            const animCoords = coordinates.slice(0, this._animIdx + 3);
+            const animCoords = [], prjAnimCoords = [];
+            for (let i = 0; i <= this._animIdx; i++) {
+                animCoords.push(coordinates[i]);
+                prjAnimCoords.push(prjCoords[i]);
+            }
+            animCoords.push(targetCoord, targetCoord);
+            prjAnimCoords.push(lastCoord, lastCoord);
+            // const animCoords = coordinates.slice(0, this._animIdx + 3);
             this.setCoordinates(animCoords);
-            const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
+            // const prjAnimCoords = prjCoords.slice(0, this._animIdx + 3);
             this._setPrjCoordinates(prjAnimCoords);
         } else {
             const animCoords = coordinates.slice(0, this._animIdx + 1);
@@ -232,7 +243,7 @@ class Path extends Geometry {
      * @returns {Point[]}
      * @private
      */
-    _getPath2DPoints(prjCoords, disableSimplify, zoom) {
+    _getPath2DPoints(prjCoords, disableSimplify, res) {
         if (!isArrayHasData(prjCoords)) {
             return [];
         }
@@ -246,19 +257,23 @@ class Path extends Geometry {
             prjCoords = simplify(prjCoords, tolerance, false);
             this._simplified = prjCoords.length < count;
         }
-        if (isNil(zoom)) {
-            zoom = map.getZoom();
+        if (!res) {
+            res = map._getResolution();
         }
         if (!Array.isArray(prjCoords)) {
-            return map._prjToPoint(prjCoords, zoom);
+            return map._prjToPointAtRes(prjCoords, res);
         } else {
+            let resultPoints = [];
+            const glPointKey = '_glPt';
             if (!Array.isArray(prjCoords[0])) {
-                return map._prjsToPoints(prjCoords, zoom);
+                resultPoints = getPointsResultPts(prjCoords, glPointKey);
+                return map._prjsToPointsAtRes(prjCoords, res, resultPoints);
             }
             const pts = [];
             for (let i = 0, len = prjCoords.length; i < len; i++) {
                 const prjCoord = prjCoords[i];
-                const pt = map._prjsToPoints(prjCoord, zoom);
+                resultPoints = getPointsResultPts(prjCoord, glPointKey);
+                const pt = map._prjsToPointsAtRes(prjCoord, res, resultPoints);
                 pts.push(pt);
             }
             return pts;
@@ -269,7 +284,7 @@ class Path extends Geometry {
     _shouldSimplify() {
         const layer = this.getLayer(),
             properties = this.getProperties();
-        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]);
+        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]) && (properties[layer.options['altitudeProperty']] !== 0);
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
@@ -306,7 +321,7 @@ class Path extends Geometry {
     _projectCoords(points) {
         const projection = this._getProjection();
         if (projection) {
-            return projection.projectCoords(points);
+            return projection.projectCoords(points, this.options['antiMeridian']);
         }
         return [];
     }
@@ -384,7 +399,7 @@ class Path extends Geometry {
         } else {
             w = symbol['lineWidth'];
         }
-        return isNumber(w) ? w / 2 : 1.5;
+        return super._hitTestTolerance() + (isNumber(w) ? w / 2 : 1.5);
     }
 
     _coords2Extent(coords, proj) {

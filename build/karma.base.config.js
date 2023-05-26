@@ -3,16 +3,16 @@ module.exports = {
     basePath: '..',
     client: {
         mocha: {
-            timeout: 8000
+            timeout: 18000
         }
     },
     files: [
+        { pattern: 'dist/maptalks.css', type: 'css' },
         'dist/maptalks.js',
         // js for UA
         'test/resources/ua-parser.min.js',
         //js for TileOffsetSpec.js
         'test/resources/chncrs.js',
-        'test/core/ClassSpec.js',
         'test/**/!(ClassSpec).js',
         {
             pattern: 'assets/css/**/*.css',

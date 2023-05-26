@@ -19,7 +19,7 @@ const EVENTS = Browser.touch ? 'touchstart mousedown' : 'mousedown';
  * @extends Handler
  * @ignore
  */
-class GeometryDragHandler extends Handler  {
+class GeometryDragHandler extends Handler {
 
     /**
      * @param  {Geometry} target geometry target to drag
@@ -47,11 +47,14 @@ class GeometryDragHandler extends Handler  {
 
     _prepareShadow() {
         const target = this.target;
+        const needShadow = target.getLayer().options['renderer'] === 'canvas';
+        if (!needShadow) {
+            return;
+        }
         this._prepareDragStageLayer();
         if (this._shadow) {
             this._shadow.remove();
         }
-
         const shadow = this._shadow = target.copy();
         if (shadow.getGeometries) {
             const shadows = shadow.getGeometries();
@@ -120,8 +123,8 @@ class GeometryDragHandler extends Handler  {
         this._dragStageLayer = map.getLayer(DRAG_STAGE_LAYER_ID);
         if (!this._dragStageLayer) {
             this._dragStageLayer = new VectorLayer(DRAG_STAGE_LAYER_ID, {
-                enableAltitude : layer.options['enableAltitude'],
-                altitudeProperty : layer.options['altitudeProperty']
+                enableAltitude: layer.options['enableAltitude'],
+                altitudeProperty: layer.options['altitudeProperty']
             });
             map.addLayer(this._dragStageLayer);
         }
@@ -170,16 +173,21 @@ class GeometryDragHandler extends Handler  {
         if (domEvent.touches && domEvent.touches.length > 1) {
             return;
         }
-
+        const visualHeight = map._getVisualHeight(map.options['maxVisualPitch']);
+        if (e.containerPoint.y < map.height - visualHeight) {
+            return;
+        }
         if (!this._moved) {
             this._moved = true;
             target.on('symbolchange', this._onTargetUpdated, this);
             this._isDragging = true;
             this._prepareShadow();
-            if (!target.options['dragShadow']) {
-                target.hide();
+            if (this._shadow) {
+                if (!target.options['dragShadow']) {
+                    target.hide();
+                }
+                this._shadow._fireEvent('dragstart', e);
             }
-            this._shadow._fireEvent('dragstart', e);
             /**
              * drag start event
              * @event Geometry#dragstart
@@ -195,30 +203,42 @@ class GeometryDragHandler extends Handler  {
             delete this._startParam;
             return;
         }
-        if (!this._shadow) {
-            return;
-        }
-        const axis = this._shadow.options['dragOnAxis'],
-            coord = this._correctCoord(e['coordinate']),
+        const geo = this._shadow || target;
+        const axis = geo.options['dragOnAxis'],
+            dragOnScreenAxis = geo.options['dragOnScreenAxis'],
             point = e['containerPoint'];
+        let coord = e['coordinate'];
         this._lastPoint = this._lastPoint || point;
         this._lastCoord = this._lastCoord || coord;
+        // drag direction is ScreenCoordinates,The direction of the drag has nothing to do with the map rotation(bearing)
+        if (dragOnScreenAxis) {
+            if (axis === 'x') {
+                point.y = this._lastPoint.y;
+            } else if (axis === 'y') {
+                point.x = this._lastPoint.x;
+            }
+            coord = map.containerPointToCoord(point);
+        } else {
+            coord = this._correctCoord(coord);
+        }
         const pointOffset = point.sub(this._lastPoint);
         const coordOffset = coord.sub(this._lastCoord);
-        if (axis === 'x') {
-            pointOffset.y = coordOffset.y = 0;
-        } else if (axis === 'y') {
-            pointOffset.x = coordOffset.x = 0;
+        if (!dragOnScreenAxis) {
+            if (axis === 'x') {
+                pointOffset.y = coordOffset.y = 0;
+            } else if (axis === 'y') {
+                pointOffset.x = coordOffset.x = 0;
+            }
         }
         this._lastPoint = point;
         this._lastCoord = coord;
-        this._shadow.translate(coordOffset);
-        if (!target.options['dragShadow']) {
+        geo.translate(coordOffset);
+        if (geo !== target && !target.options['dragShadow']) {
             target.translate(coordOffset);
         }
         e['coordOffset'] = coordOffset;
         e['pointOffset'] = pointOffset;
-        this._shadow._fireEvent('dragging', e);
+        geo._fireEvent('dragging', e);
 
         /**
          * dragging event
@@ -231,8 +251,9 @@ class GeometryDragHandler extends Handler  {
          * @property {Point} viewPoint       - view point of the event
          * @property {Event} domEvent                 - dom event
          */
-        target._fireEvent('dragging', e);
-
+        if (geo !== target) {
+            target._fireEvent('dragging', e);
+        }
     }
 
     _endDrag(param) {
@@ -287,6 +308,9 @@ class GeometryDragHandler extends Handler  {
     }
 
     _updateTargetAndRemoveShadow(eventParam) {
+        if (!this._shadow) {
+            return;
+        }
         const target = this.target,
             map = target.getMap();
         if (!target.options['dragShadow']) {
@@ -314,6 +338,7 @@ class GeometryDragHandler extends Handler  {
             delete this._shadowConnectors;
         }
         if (this._dragStageLayer) {
+            this._dragStageLayer._getRenderer().resources = new ResourceCache();
             this._dragStageLayer.remove();
         }
     }
@@ -324,11 +349,11 @@ class GeometryDragHandler extends Handler  {
         if (!map.getPitch()) {
             return coord;
         }
-        const painter = this.target._getPainter();
-        if (!painter.getMinAltitude()) {
+        const target = this.target;
+        if (!target.getMinAltitude()) {
             return coord;
         }
-        const alt = (painter.getMinAltitude() + painter.getMaxAltitude()) / 2;
+        const alt = (target.getMinAltitude() + target.getMaxAltitude()) / 2;
         return map.locateByPoint(coord, 0, -alt);
     }
 }
@@ -336,7 +361,8 @@ class GeometryDragHandler extends Handler  {
 Geometry.mergeOptions({
     'draggable': false,
     'dragShadow': true,
-    'dragOnAxis': null
+    'dragOnAxis': null,
+    'dragOnScreenAxis': false
 });
 
 Geometry.addInitHook('addHandler', 'draggable', GeometryDragHandler);

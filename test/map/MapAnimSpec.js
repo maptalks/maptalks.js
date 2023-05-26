@@ -147,23 +147,25 @@ describe('Map.Anim', function () {
 
     it('interupt animateTo by scrollZoom', function (done) {
         map.config('zoomAnimationDuration', 100);
+        map.config('seamlessZoom', false);
         var cur = map.getZoom();
         var zoom = map.getZoom() - 4;
-        map.on('animateinterupted', function () {
+        map.on('animateinterrupted', function () {
             expect(map.getZoom()).not.to.be.eql(zoom);
         });
         var zoomendCount = 0;
         map.on('zoomend', function () {
             zoomendCount++;
             if (zoomendCount === 2) {
-                //zoomend fired by scrollzoom
+                expect(map.getZoom()).to.be.eql(zoom);
+                //zoomend fired by animation
                 done();
             }
         });
         map.animateTo({
             zoom : zoom
         }, {
-            'duration' : 2000
+            'duration' : 300
         });
         setTimeout(function () {
             happen.once(container, {

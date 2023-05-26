@@ -1,5 +1,7 @@
 import { IS_NODE } from './env';
+import Browser from '../Browser';
 import { isString, isNil } from './common';
+import Point from '../../geo/Point';
 
 // RequestAnimationFrame, inspired by Leaflet
 let requestAnimFrame, cancelAnimFrame;
@@ -303,8 +305,9 @@ const b64chrs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
  *     const encodedData = Util.btoa(stringToEncode);
  */
 /* istanbul ignore next */
+/* eslint-disable no-sequences */
 export function btoa(input) {
-    if ((typeof window !== 'undefined') && window.btoa) {
+    if (Browser.btoa) {
         return window.btoa(input);
     }
     const str = String(input);
@@ -327,7 +330,7 @@ export function btoa(input) {
     }
     return output;
 }
-
+/* eslint-enable no-sequences */
 export function b64toBlob(b64Data, contentType) {
     const byteCharacters = atob(b64Data);
     const arraybuffer = new ArrayBuffer(byteCharacters.length);
@@ -341,8 +344,10 @@ export function b64toBlob(b64Data, contentType) {
 
 /**
  * Compute degree bewteen 2 points.
- * @param  {Point} p1 point 1
- * @param  {Point} p2 point 2
+ * @param  {Number} x0
+ * @param  {Number} y0
+ * @param  {Number} x1
+ * @param  {Number} y1
  * @return {Number}    degree between 2 points
  * @memberOf Util
  */
@@ -411,6 +416,7 @@ export function flash(interval, count, cb, context) {
         count = 4;
     }
     const me = this;
+    const initVisible = this.isVisible();
     count *= 2;
     if (this._flashTimeout) {
         clearTimeout(this._flashTimeout);
@@ -418,7 +424,11 @@ export function flash(interval, count, cb, context) {
 
     function flashGeo() {
         if (count === 0) {
-            me.show();
+            if (initVisible) {
+                me.show();
+            } else {
+                me.hide();
+            }
             if (cb) {
                 if (context) {
                     cb.call(context);
@@ -451,4 +461,66 @@ export function _defaults(obj, defaults) {
         }
     }
     return obj;
+}
+
+export function getPointsResultPts(points = [], ptKey = '_pt') {
+    const resultPoints = [];
+    for (let i = 0, len = points.length; i < len; i++) {
+        const point = points[i];
+        if (!point) {
+            resultPoints.push(null);
+            continue;
+        }
+        if (!point[ptKey]) {
+            point[ptKey] = new Point(0, 0);
+        }
+        const pt = point[ptKey];
+        pt.x = 0;
+        pt.y = 0;
+        resultPoints.push(pt);
+    }
+    return resultPoints;
+}
+
+
+// let BITMAP_CTX;
+// if (Browser.decodeImageInWorker) {
+//     const canvas = document.createElement('canvas');
+//     canvas.width = 1;
+//     canvas.height = 1;
+//     BITMAP_CTX = canvas.getContext('2d');
+// }
+export function getImageBitMap(data, cb) {
+    cb(data.data);
+    // const imageData = BITMAP_CTX.createImageData(data.width, data.height);
+    // imageData.data.set(data.data);
+    // createImageBitmap(imageData).then(bitmap => {
+    //     cb(bitmap);
+    // });
+}
+
+export function getAbsoluteURL(url) {
+    if (url && url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+        return url;
+    }
+    let a = document.createElement('a');
+    a.href = url;
+    url = a.href;
+    a = null;
+    return url;
+}
+
+const CANVAS_SIZE_TEMP = {
+    cssWidth: '1px',
+    cssHeight: '1px',
+    width: 1,
+    height: 1
+};
+export function calCanvasSize(size, devicePixelRatio = 1) {
+    const { width, height } = size;
+    CANVAS_SIZE_TEMP.cssWidth = width + 'px';
+    CANVAS_SIZE_TEMP.cssHeight = height + 'px';
+    CANVAS_SIZE_TEMP.width = Math.round(width * devicePixelRatio);
+    CANVAS_SIZE_TEMP.height = Math.round(height * devicePixelRatio);
+    return CANVAS_SIZE_TEMP;
 }

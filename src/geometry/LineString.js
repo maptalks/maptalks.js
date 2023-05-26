@@ -1,6 +1,7 @@
 import Coordinate from '../geo/Coordinate';
 import { clipLine } from '../core/util/path';
 import Path from './Path';
+import Polygon from './Polygon';
 
 /**
  * @property {Object} [options=null]
@@ -40,6 +41,10 @@ class LineString extends Path {
         if (coordinates) {
             this.setCoordinates(coordinates);
         }
+    }
+
+    getOutline() {
+        return Polygon.prototype.getOutline.call(this);
     }
 
     /**

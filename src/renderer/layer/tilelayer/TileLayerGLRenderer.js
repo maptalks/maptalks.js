@@ -1,9 +1,15 @@
+import {
+    isNil
+} from '../../../core/util';
 import TileLayer from '../../../layer/tile/TileLayer';
 import TileLayerCanvasRenderer from './TileLayerCanvasRenderer';
 import ImageGLRenderable from '../ImageGLRenderable';
 import Point from '../../../geo/Point';
 
+
 const TILE_POINT = new Point(0, 0);
+
+const MESH_TO_TEST = { properties: {}};
 
 /**
  * @classdesc
@@ -29,16 +35,49 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         return super.needToRedraw();
     }
 
-    drawTile(tileInfo, tileImage) {
+    onDrawTileStart(context, parentContext) {
+        const gl = this.gl;
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.enable(gl.STENCIL_TEST);
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+
+        const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
+        gl.depthMask(depthMask);
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                const framebuffer = parentContext.renderTarget.getFramebuffer(fbo);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            }
+        }
+    }
+
+    onDrawTileEnd(context, parentContext) {
+        const gl = this.gl;
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            }
+        }
+    }
+
+    drawTile(tileInfo, tileImage, parentContext) {
+        if (parentContext && parentContext.sceneFilter) {
+            if (!parentContext.sceneFilter(MESH_TO_TEST)) {
+                return;
+            }
+        }
         const map = this.getMap();
         if (!tileInfo || !map || !tileImage) {
             return;
         }
 
-        const scale = tileInfo._glScale = tileInfo._glScale || map.getGLScale(tileInfo.z);
-        const size = this.layer.getTileSize();
-        const w = size.width;
-        const h = size.height;
+        const scale = tileInfo._glScale = tileInfo._glScale || tileInfo.res / map.getGLRes();
+        const w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
+        const h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
@@ -51,43 +90,23 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const point = TILE_POINT.set(extent2d.xmin - offset[0], tileInfo.extent2d.ymax - offset[1]);
         const x = point.x * scale,
             y = point.y * scale;
-        const opacity = this.getTileOpacity(tileImage);
+        const opacity = this.getTileOpacity(tileImage, tileInfo);
         let debugInfo = null;
         if (this.layer.options['debug']) {
             debugInfo =  this.getDebugInfo(tileInfo.id);
         }
+        const gl = this.gl;
+        gl.stencilFunc(gl.LEQUAL, Math.abs(this.getCurrentTileZoom() - tileInfo.z), 0xFF);
+        const layerPolygonOffset = this.layer.getPolygonOffset();
+        const polygonOffset = this.drawingCurrentTiles ? -layerPolygonOffset - 1 : -layerPolygonOffset;
+        gl.polygonOffset(polygonOffset, polygonOffset);
+
         this.drawGLImage(tileImage, x, y, w, h, scale, opacity, debugInfo);
-        if (opacity < 1) {
+        if (this._getTileFadingOpacity(tileImage) < 1) {
             this.setToRedraw();
         } else {
             this.setCanvasUpdated();
         }
-    }
-
-    writeZoomStencil() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-        gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-    }
-
-    startZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
-    }
-
-    endZoomStencilTest() {
-        this.pauseZoomStencilTest();
-    }
-
-    pauseZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-    }
-
-    resumeZoomStencilTest() {
-        const gl = this.gl;
-        gl.stencilFunc(gl.EQUAL, 0, 0xFF);
     }
 
     _bindGLBuffer(image, w, h) {
@@ -172,5 +191,4 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 TileLayer.registerRenderer('gl', TileLayerGLRenderer);
 
 export default TileLayerGLRenderer;
-
 

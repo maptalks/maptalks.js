@@ -1,17 +1,18 @@
 import Class from '../core/Class';
-import { isNil, isNumber } from '../core/util';
+import { isFunction, isNil, isNumber } from '../core/util';
 import Eventable from '../core/Eventable';
 import JSONAble from '../core/JSONAble';
 import Renderable from '../renderer/Renderable';
 import CanvasRenderer from '../renderer/layer/CanvasRenderer';
+import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
 
 /**
  * @property {Object}  [options=null] - base options of layer.
  * @property {String}  [options.attribution= null] - the attribution of this layer, you can specify company or other information of this layer.
- * @property {Number}  [options.minZoom=-1] - the minimum zoom to display the layer, set to -1 to unlimit it.
- * @property {Number}  [options.maxZoom=-1] - the maximum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Number}  [options.minZoom=null] - the minimum zoom to display the layer, set to -1 to unlimit it.
+ * @property {Number}  [options.maxZoom=null] - the maximum zoom to display the layer, set to -1 to unlimit it.
  * @property {Boolean} [options.visible=true] - whether to display the layer.
  * @property {Number}  [options.opacity=1] - opacity of the layer, from 0 to 1.
  * @property {Number}  [options.zIndex=undefined] - z index of the layer
@@ -23,6 +24,8 @@ import Browser from '../core/Browser';
  * @property {Boolean}  [options.forceRenderOnMoving=false]    - force to render layer when map is moving
  * @property {Boolean}  [options.forceRenderOnZooming=false]   - force to render layer when map is zooming
  * @property {Boolean}  [options.forceRenderOnRotating=false]  - force to render layer when map is Rotating
+ *
+ * @property {String}   [options.collisionScope=layer]         - layer's collision scope: layer or map
  * @memberOf Layer
  * @instance
  */
@@ -35,11 +38,13 @@ const options = {
     // context.globalCompositeOperation, 'source-over' in default
     'globalCompositeOperation': null,
     'renderer': 'canvas',
-    'debugOutline' : '#0f0',
+    'debugOutline': '#0f0',
     'cssFilter': null,
-    'forceRenderOnMoving' : false,
-    'forceRenderOnZooming' : false,
-    'forceRenderOnRotating' : false,
+    'forceRenderOnMoving': false,
+    'forceRenderOnZooming': false,
+    'forceRenderOnRotating': false,
+    'collision': false,
+    'collisionScope': 'layer',
     'hitDetect': (function () {
         return !Browser.mobile;
     })()
@@ -74,6 +79,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                 this.setMask(Geometry.fromJSON(options.mask));
             }
         }
+        this.proxyOptions();
     }
 
     /**
@@ -162,6 +168,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this._renderer) {
             this._renderer.setZIndex(zIndex);
         }
+        /**
+         * setzindex event.
+         *
+         * @event Layer#setzindex
+         * @type {Object}
+         * @property {String} type - setzindex
+         * @property {Layer} target    - the layer fires the event
+         * @property {Number} zIndex        - value of the zIndex
+         */
+        this.fire('setzindex', { zIndex });
         return this;
     }
 
@@ -208,6 +224,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     setOpacity(op) {
         this.config('opacity', op);
+        /**
+        * setopacity event.
+        *
+        * @event Layer#setopacity
+        * @type {Object}
+        * @property {String} type - setopacity
+        * @property {Layer} target    - the layer fires the event
+        * @property {Number} opacity        - value of the opacity
+        */
+        this.fire('setopacity', { opacity: op });
         return this;
     }
 
@@ -296,6 +322,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                     this.fire('show');
                 });
             } else {
+                /**
+                * show event.
+                *
+                * @event Layer#show
+                * @type {Object}
+                * @property {String} type - show
+                * @property {Layer} target    - the layer fires the event
+                */
                 this.fire('show');
             }
         }
@@ -321,6 +355,14 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
                     this.fire('hide');
                 });
             } else {
+                /**
+                 * hide event.
+                 *
+                 * @event Layer#hide
+                 * @type {Object}
+                 * @property {String} type - hide
+                 * @property {Layer} target    - the layer fires the event
+                 */
                 this.fire('hide');
             }
         }
@@ -440,26 +482,64 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return !!this._loaded;
     }
 
+    /**
+     * Get layer's collision index
+     * @returns {CollisionIndex}
+     */
+    getCollisionIndex() {
+        if (this.options['collisionScope'] === 'layer') {
+            if (!this._collisionIndex) {
+                this._collisionIndex = new CollisionIndex();
+            }
+            return this._collisionIndex;
+        }
+        const map = this.getMap();
+        if (!map) {
+            return null;
+        }
+        return map.getCollisionIndex();
+    }
+
+    /**
+     * Clear layer's collision index.
+     * Will ignore if collisionScope is not layer
+     */
+    clearCollisionIndex() {
+        if (this.options['collisionScope'] === 'layer' &&
+            this._collisionIndex) {
+            this._collisionIndex.clear();
+        }
+        return this;
+    }
+
     getRenderer() {
         return this._getRenderer();
     }
 
     onConfig(conf) {
-        if (isNumber(conf['opacity']) || conf['cssFilter']) {
+        const needUpdate = conf && Object.keys && Object.keys(conf).length > 0;
+        if (needUpdate && isNil(conf['animation'])) {
+            // options change Hook,subLayers Can realize its own logic,such as tileSize/tileSystem etc change
+            if (this._optionsHook && isFunction(this._optionsHook)) {
+                this._optionsHook(conf);
+            }
+            if (this._silentConfig) {
+                return;
+            }
             const renderer = this.getRenderer();
-            if (renderer) {
+            if (renderer && renderer.setToRedraw) {
                 renderer.setToRedraw();
             }
         }
     }
 
-    onAdd() {}
+    onAdd() { }
 
-    onRendererCreate() {}
+    onRendererCreate() { }
 
-    onCanvasCreate() {}
+    onCanvasCreate() { }
 
-    onRemove() {}
+    onRemove() { }
 
     _bindMap(map, zIndex) {
         if (!map) {
@@ -511,19 +591,20 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _doRemove() {
         this._loaded = false;
-        this.onRemove();
 
         this._switchEvents('off', this);
+        this.onRemove();
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
             delete this._renderer;
         }
         delete this.map;
+        delete this._collisionIndex;
     }
 
     _switchEvents(to, emitter) {
-        if (emitter && emitter.getEvents) {
+        if (emitter && emitter.getEvents && this.getMap()) {
             this.getMap()[to](emitter.getEvents(), emitter);
         }
     }
@@ -567,7 +648,20 @@ Layer.prototype.fire = function (eventType, param) {
         param['target'] = this;
         this.map._onLayerEvent(param);
     }
-    return fire.apply(this, arguments);
+    fire.apply(this, arguments);
+    if (['show', 'hide'].indexOf(eventType) > -1) {
+        /**
+        * visiblechange event.
+        *
+        * @event Layer#visiblechange
+        * @type {Object}
+        * @property {String} type - visiblechange
+        * @property {Layer} target    - the layer fires the event
+        * @property {Boolean} visible        - value of visible
+       */
+        this.fire('visiblechange', Object.assign({}, param, { visible: this.options.visible }));
+    }
+    return this;
 };
 
 export default Layer;

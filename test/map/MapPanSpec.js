@@ -57,7 +57,7 @@ describe('#MapPan', function () {
         var offset = { x: 20, y: 0 };
         map.once('moveend', function () {
             expect(+map.getCenter().x.toFixed(6)).to.be.eql(center.x);
-            expect(map.getCenter().y).not.to.be.eql(center.y);
+            expect(map.getCenter().y).to.be.eql(center.y);
             done();
         });
         map.panBy(offset, { 'animation' : false });
@@ -84,14 +84,51 @@ describe('#MapPan', function () {
         }, 50);
     });
 
-    it('change zoom or center during panning', function (done) {
+    it('change center during panning', function (done) {
         var coord = center.substract(1, 1),
             newCenter = center.add(1, 1);
         map.once('moveend', function () {
-            expect(map.getCenter()).to.be.closeTo(newCenter);
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
             done();
         });
         map.panTo(coord, { 'animation' : true });
-        map.setCenterAndZoom(newCenter, map.getZoom() + 1);
+        map.setCenter(newCenter);
+    });
+
+    it('change zoom during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setZoom(map.getZoom() + 1);
+    });
+
+    it('change bearing during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setBearing(30);
+    });
+
+    it('change pitch during panning', function (done) {
+        var coord = center.substract(1, 1),
+            newCenter = center.add(1, 1);
+        map.once('moveend', function () {
+            // animation is stopped
+            expect(map.getCenter()).to.be.closeTo(center);
+            done();
+        });
+        map.panTo(coord, { 'animation' : true });
+        map.setPitch(30);
     });
 });

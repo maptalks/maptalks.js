@@ -38,6 +38,21 @@ class Polygon extends Path {
         }
     }
 
+
+    getOutline() {
+        const painter = this._getPainter();
+        if (!painter) {
+            return null;
+        }
+        const extent = this.getExtent();
+        return new Polygon(extent.toArray(), {
+            symbol: {
+                'lineWidth': 1,
+                'lineColor': '6b707b'
+            }
+        });
+    }
+
     /**
      * Set coordinates to the polygon
      *
@@ -67,6 +82,8 @@ class Polygon extends Path {
                     holes.push(this._trimRing(rings[i]));
                 }
                 this._holes = holes;
+            } else {
+                this._holes = null;
             }
         }
 

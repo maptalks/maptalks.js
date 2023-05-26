@@ -1,8 +1,12 @@
-import { isFunction, isArrayHasData } from '../core/util';
+import { isFunction, isArrayHasData, isNil } from '../core/util';
 import { createFilter, getFilterFeature } from '@maptalks/feature-filter';
 import { getExternalResources } from '../core/util/resource';
 import Coordinate from '../geo/Coordinate';
+import PointExtent from '../geo/PointExtent';
+import Extent from '../geo/Extent';
 import Geometry from './Geometry';
+
+const TEMP_EXTENT = new PointExtent();
 
 /**
  * @classdesc
@@ -26,6 +30,14 @@ class GeometryCollection extends Geometry {
         super(opts);
         this.type = 'GeometryCollection';
         this.setGeometries(geometries);
+    }
+
+    getContainerExtent(out) {
+        const extent = out || new PointExtent();
+        this.forEach(geo => {
+            extent._combine(geo.getContainerExtent(TEMP_EXTENT));
+        });
+        return extent;
     }
 
     /**
@@ -200,8 +212,8 @@ class GeometryCollection extends Geometry {
                 symbols.push(g.getSymbol());
             });
             if (is) {
-                s =  {
-                    'children' : symbols
+                s = {
+                    'children': symbols
                 };
             }
         }
@@ -212,12 +224,14 @@ class GeometryCollection extends Geometry {
         if (s && s['children']) {
             this._symbol = null;
             this.forEach((g, i) => {
+                g._eventSymbolProperties = this._eventSymbolProperties;
                 g.setSymbol(s['children'][i]);
             });
         } else {
             const symbol = this._prepareSymbol(s);
             this._symbol = symbol;
             this.forEach(g => {
+                g._eventSymbolProperties = this._eventSymbolProperties;
                 g.setSymbol(symbol);
             });
         }
@@ -330,9 +344,11 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return false;
         }
+        delete this._pickGeometryIndex;
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
             if (geometries[i]._containsPoint(point, t)) {
+                this._pickGeometryIndex = i;
                 return true;
             }
         }
@@ -377,6 +393,7 @@ class GeometryCollection extends Geometry {
         return result;
     }
 
+    //for toGeoJSON
     _exportGeoJSONGeometry() {
         const children = [];
         if (!this.isEmpty()) {
@@ -392,6 +409,36 @@ class GeometryCollection extends Geometry {
             'type': 'GeometryCollection',
             'geometries': children
         };
+    }
+    //for toJSON
+    _toJSON(options) {
+        //Geometry了用的是toGeoJSON(),如果里面包含特殊图形(Circle等),就不能简单的用toGeoJSON代替了，否则反序列化回来就不是原来的图形了
+        const feature = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'GeometryCollection',
+                'geometries': this.getGeometries().filter(geo => {
+                    return geo && geo._toJSON;
+                }).map(geo => {
+                    const json = geo._toJSON();
+                    if (json.subType) {
+                        return json;
+                    }
+                    return geo._exportGeoJSONGeometry();
+                })
+            }
+        };
+        const id = this.getId();
+        if (!isNil(id)) {
+            feature['id'] = id;
+        }
+        let properties;
+        if (isNil(options['properties']) || options['properties']) {
+            properties = this._exportProperties();
+        }
+        feature['properties'] = properties;
+        options.feature = feature;
+        return options;
     }
 
     _clearProjection() {
@@ -469,7 +516,11 @@ class GeometryCollection extends Geometry {
             geometries[i].startEdit(opts);
         }
         this._editing = true;
-        this.hide();
+        const layer = this.getLayer();
+        const needShadow = layer && layer.options['renderer'] === 'canvas';
+        if (needShadow) {
+            this.hide();
+        }
         setTimeout(() => {
             this.fire('editstart');
         }, 1);
@@ -501,6 +552,13 @@ class GeometryCollection extends Geometry {
         }
         return true;
     }
+
+    // copy() {
+    //     const geometries = this.getGeometries().map(geo => {
+    //         return geo.copy();
+    //     });
+    //     return new GeometryCollection(geometries, extend({}, this.options));
+    // }
 }
 
 GeometryCollection.registerJSONType('GeometryCollection');
@@ -511,17 +569,17 @@ function computeExtent(projection, fn) {
     if (this.isEmpty()) {
         return null;
     }
+    const extent = new Extent();
     const geometries = this.getGeometries();
-    let result = null;
     for (let i = 0, l = geometries.length; i < l; i++) {
-        const geo = geometries[i];
-        if (!geo) {
+        if (!geometries[i]) {
             continue;
         }
-        const geoExtent = geo[fn](projection);
-        if (geoExtent) {
-            result = geoExtent.combine(result);
+        const e = geometries[i][fn](projection);
+        if (e) {
+            extent._combine(e);
         }
     }
-    return result;
+
+    return extent;
 }

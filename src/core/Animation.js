@@ -20,6 +20,14 @@ const KEY = '__anim_player';
  * @protected
  */
 const Easing = {
+    outExpo(x) {
+        return x === 1 ? 1 : 1 - Math.pow(2, -10 * x);
+    },
+
+    outQuint(x) {
+        return 1 - Math.pow(1 - x, 5);
+    },
+
     /**
      * Start slow and speed up.
      * @param {number} t Input between 0 and 1.
@@ -87,6 +95,14 @@ class Frame {
     constructor(state, styles) {
         this.state = state;
         this.styles = styles;
+    }
+
+    get playState() {
+        return this.state.playState;
+    }
+
+    get symbol() {
+        return this.styles.symbol;
     }
 }
 
@@ -534,5 +550,5 @@ extend(Player.prototype, /** @lends animation.Player.prototype */{
 
     }
 });
-
-export { Animation, Easing, Player, Frame };
+const animate = Animation.animate;
+export { Animation, Easing, Player, Frame, animate };
