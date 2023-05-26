@@ -424,9 +424,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         this._Load();
         this.proxyOptions();
     }
-
-
-
+   
     static fromJSON(container, profile, options): Map {
         return null;
     }
@@ -672,13 +670,21 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     /**
      * Set a new center to the map.
      * @param {Coordinate} center
+     * @param  {Object} [padding]
+     * @param  {Number} [padding.paddingLeft] - Sets the amount of padding in the left of a map container
+     * @param  {Number} [padding.paddingTop] - Sets the amount of padding in the top of a map container
+     * @param  {Number} [padding.paddingRight] - Sets the amount of padding in the right of a map container
+     * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Map} this
      */
-    setCenter(center: Coordinate | Array<number>) {
+    setCenter(center, padding?) {
         if (!center) {
             return this;
         }
         center = new Coordinate(center);
+        if (padding) {
+            center = this._getCenterByPadding(center, this.getZoom(), padding);
+        }
         const projection = this.getProjection();
         const pcenter = projection.project(center);
         if (!this._verifyExtent(pcenter)) {
@@ -1054,14 +1060,36 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         return this;
     }
 
-
+    /**
+     * Get the padding Size
+     * @param  {Object} options
+     * @param  {Number} [options.paddingLeft] - Sets the amount of padding in the left of a map container
+     * @param  {Number} [options.paddingTop] - Sets the amount of padding in the top of a map container
+     * @param  {Number} [options.paddingRight] - Sets the amount of padding in the right of a map container
+     * @param  {Number} [options.paddingBottom] - Sets the amount of padding in the bottom of a map container
+     * @returns {Object|null}
+     */
+    _getPaddingSize(options = {}) {
+        if (options['paddingLeft'] || options['paddingTop'] || options['paddingRight'] || options['paddingBottom']) {
+            return {
+                width: (options['paddingLeft'] || 0) + (options['paddingRight'] || 0),
+                height: (options['paddingTop'] || 0) + (options['paddingBottom'] || 0)
+            };
+        }
+        return null;
+    }
     /**
      * Caculate the zoom level that contains the given extent with the maximum zoom level possible.
      * @param {Extent} extent
      * @param  {Boolean} isFraction - can return fractional zoom
+     * @param  {Object} [padding] [padding] - padding
+     * @param  {Object} [padding.paddingLeft] - Sets the amount of padding in the left of a map container
+     * @param  {Object} [padding.paddingTop] - Sets the amount of padding in the top of a map container
+     * @param  {Object} [padding.paddingRight] - Sets the amount of padding in the right of a map container
+     * @param  {Object} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Number} zoom fit for scale starting from fromZoom
      */
-    getFitZoom(extent, isFraction?) {
+    getFitZoom(extent, isFraction?, padding?) {
         if (!extent || !(extent instanceof Extent)) {
             return this._zoomLevel;
         }
@@ -1069,7 +1097,15 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         if (extent['xmin'] === extent['xmax'] && extent['ymin'] === extent['ymax']) {
             return this.getMaxZoom();
         }
-        const size = this.getSize();
+        let size = this.getSize();
+        const paddingSize = this._getPaddingSize(padding);
+        if (paddingSize) {
+            //@ts-ignore
+            size = {
+                width: size.width - (paddingSize.width || 0),
+                height: size.height - (paddingSize.height || 0)
+            };
+        }
         const containerExtent = extent.convertTo(p => this.coordToPoint(p));
         const w = containerExtent.getWidth(),
             h = containerExtent.getHeight();
@@ -1144,9 +1180,50 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     }
 
     /**
+     * Get center by the padding.
+     * @private
+     * @param  {Coordinate} center
+     * @param  {Number} zoom
+     * @param  {Object} padding
+     * @param  {Number} [padding.paddingLeft] - Sets the amount of padding in the left of a map container
+     * @param  {Number} [padding.paddingTop] - Sets the amount of padding in the top of a map container
+     * @param  {Number} [padding.paddingRight] - Sets the amount of padding in the right of a map container
+     * @param  {Number} [padding.paddingBottom] - Sets the amount of padding in the bottom of a map container
+     * @return {Coordinate}
+     */
+    _getCenterByPadding(center, zoom, padding = {}) {
+        const point = this.coordinateToPoint(center, zoom);
+        //@ts-ignore
+        const { paddingLeft = 0, paddingRight = 0, paddingTop = 0, paddingBottom = 0 } = padding;
+        let pX = 0;
+        let pY = 0;
+        if (paddingLeft || paddingRight) {
+            pX = (paddingRight - paddingLeft) / 2;
+        }
+        if (paddingTop || paddingBottom) {
+            pY = (paddingTop - paddingBottom) / 2;
+        }
+        //@ts-ignore
+        const newPoint = new Point({
+            x: point.x + pX,
+            y: point.y + pY
+        });
+        return this.pointToCoordinate(newPoint, zoom);
+    }
+
+    /**
      * Set the map to be fit for the given extent with the max zoom level possible.
      * @param  {Extent} extent - extent
      * @param  {Number} zoomOffset - zoom offset
+     * @param  {Object} [options={}] - options
+     * @param  {Object} [options.animation]
+     * @param  {Object} [options.duration]
+     * @param  {Object} [options.zoomAnimationDuration]
+     * @param  {Object} [options.easing='out']
+     * @param  {Number} [options.paddingLeft] - Sets the amount of padding in the left of a map container
+     * @param  {Number} [options.paddingTop] - Sets the amount of padding in the top of a map container
+     * @param  {Number} [options.paddingRight] - Sets the amount of padding in the right of a map container
+     * @param  {Number} [options.paddingBottom] - Sets the amount of padding in the bottom of a map container
      * @return {Map} - this
      */
     fitExtent(extent: Extent | Array<number>, zoomOffset?: number, options?, step?) {
@@ -1155,8 +1232,11 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         }
         options = options || {};
         extent = new Extent(extent, this.getProjection());
-        const zoom = this.getFitZoom(extent) + (zoomOffset || 0);
-        const center = extent.getCenter();
+        const zoom = this.getFitZoom(extent, false, options) + (zoomOffset || 0);
+        let center = extent.getCenter();
+        if (this._getPaddingSize(options)) {
+            center = this._getCenterByPadding(center, zoom, options);
+        }
         if (typeof (options['animation']) === 'undefined' || options['animation'])
             return this._animateTo({
                 center,
@@ -2538,7 +2618,6 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     panBy(offset: Point, options?: any, step?: any) {
         throw new Error('Method not implemented.');
     }
-
     coordinateToPoint(coordinate: Coordinate, zoom?: number, out?: Point): Point {
         throw new Error('Method not implemented.');
     }
@@ -2602,43 +2681,28 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     locateByPoint(coordinate: Coordinate, px: number, py: number): Coordinate {
         throw new Error('Method not implemented.');
     }
+    _pointAtResToContainerPoint(point: Point, res: number, altitude?: number, out?: Point): Point {
+        throw new Error('Method not implemented.');
+    }
     _containerPointToPoint(point: Point, zoom?: number, out?: Point): Point {
         throw new Error('Method not implemented.');
     }
     _pointToContainerPoint(point: Point, zoom?: number, altitude?: number, out?: Point): Point {
         throw new Error('Method not implemented.');
     }
-    _pointAtResToContainerPoint(point: Point, res: number, altitude?: number, out?: Point): Point {
+    _get2DExtent(zoom?: number, out?: Extent): Extent {
         throw new Error('Method not implemented.');
     }
-    _zoomAnimation(nextZoom: number, origin: Point, startScale?: number) {
+    _get2DExtentAtRes(res?: number, out?: Extent): Extent {
         throw new Error('Method not implemented.');
     }
-    _setBearing(bearing: number) {
+    _pointsAtResToContainerPoints(cPoints: Point[], glRes: number, altitudes: number | number[], pts: Point[]): Point[] {
         throw new Error('Method not implemented.');
     }
-    _setPitch(pitch: number) {
+    _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point {
         throw new Error('Method not implemented.');
     }
-    _isEventOutMap(e: MouseEvent): boolean {
-        throw new Error('Method not implemented.');
-    }
-    _panTo(prjCoord: Coordinate, options: object) {
-        throw new Error('Method not implemented.');
-    }
-    _getActualEvent(e: MouseEvent) {
-        throw new Error('Method not implemented.');
-    }
-    _stopAnim(player: Player) {
-        throw new Error('Method not implemented.');
-    }
-    _ignoreEvent(domEvent: MouseEvent): boolean {
-        throw new Error('Method not implemented.');
-    }
-    _checkZoom(nextZoom: number): number {
-        throw new Error('Method not implemented.');
-    }
-    _checkZoomOrigin(origin: Point): Point {
+    _animateTo(view: MapViewType, options?: object, step?: Function) {
         throw new Error('Method not implemented.');
     }
     onZoomStart(nextZoom: number, origin: Point) {
@@ -2650,19 +2714,34 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     onZoomEnd(nextZoom: number, origin: Point) {
         throw new Error('Method not implemented.');
     }
-    _animateTo(view: MapViewType, options?: object, step?: Function) {
+    _checkZoomOrigin(origin: Point): Point {
         throw new Error('Method not implemented.');
     }
-    _prjToContainerPoint(pCoordinate: Coordinate, zoom?: number, out?: Point, altitude?: number): Point {
+    _checkZoom(nextZoom: number): number {
         throw new Error('Method not implemented.');
     }
-    _pointsAtResToContainerPoints(cPoints: Point[], glRes: number, altitudes: number | number[], pts: Point[]): Point[] {
+    _ignoreEvent(domEvent: MouseEvent): boolean {
         throw new Error('Method not implemented.');
     }
-    _get2DExtent(zoom?: number, out?: Extent): Extent {
+    _stopAnim(player: Player) {
         throw new Error('Method not implemented.');
     }
-    _get2DExtentAtRes(res?: number, out?: Extent): Extent {
+    _getActualEvent(e: MouseEvent) {
+        throw new Error('Method not implemented.');
+    }
+    _isEventOutMap(e: MouseEvent): boolean {
+        throw new Error('Method not implemented.');
+    }
+    _panTo(prjCoord: Coordinate, options: object) {
+        throw new Error('Method not implemented.');
+    }
+    _setBearing(bearing: number) {
+        throw new Error('Method not implemented.');
+    }
+    _setPitch(pitch: number) {
+        throw new Error('Method not implemented.');
+    }
+    _zoomAnimation(nextZoom: number, origin: Point, startScale?: number) {
         throw new Error('Method not implemented.');
     }
 

@@ -1358,7 +1358,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         const e = {};
         if (this._eventSymbolProperties) {
             //@ts-ignore
-            e.properties = extend({}, this._eventSymbolProperties);
+            e.properties = JSON.parse(JSON.stringify(this._eventSymbolProperties));
             delete this._eventSymbolProperties;
         } else {
             delete this._textDesc;

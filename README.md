@@ -1,6 +1,6 @@
 <h1 align="center"><img src="https://user-images.githubusercontent.com/13678919/31573203-99ae6894-b0e9-11e7-8a7e-2b26eaff58c6.png"/></h1>
 
-[![NPM Version](https://img.shields.io/npm/v/maptalks.svg)](https://github.com/maptalks/maptalks.js) [![Circle CI](https://circleci.com/gh/maptalks/maptalks.js.svg?style=shield)](https://circleci.com/gh/maptalks/maptalks.js) [![Build status](https://ci.appveyor.com/api/projects/status/r9pb0dhqqq3cdppy/branch/master?svg=true)](https://ci.appveyor.com/project/fuzhenn/maptalks-js) [![Build Status](https://travis-ci.org/maptalks/maptalks.js.svg?branch=master)](https://travis-ci.org/maptalks/maptalks.js) [![codecov](https://codecov.io/gh/maptalks/maptalks.js/branch/master/graph/badge.svg)](https://codecov.io/gh/maptalks/maptalks.js) [![devDependency Status](https://david-dm.org/maptalks/maptalks.js/dev-status.svg)](https://david-dm.org/maptalks/maptalks.js#info=devDependencies)
+[![NPM Version](https://img.shields.io/npm/v/maptalks.svg)](https://github.com/maptalks/maptalks.js) [![Circle CI](https://circleci.com/gh/maptalks/maptalks.js.svg?style=shield)](https://circleci.com/gh/maptalks/maptalks.js) [![codecov](https://codecov.io/gh/maptalks/maptalks.js/branch/master/graph/badge.svg)](https://codecov.io/gh/maptalks/maptalks.js)
 
 A light JavaScript library to create integrated 2D/3D maps. 
 

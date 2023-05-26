@@ -11,6 +11,7 @@ import {
 import Canvas2D from '../../../core/Canvas';
 import Browser from '../../../core/Browser';
 import { default as TileLayer } from '../../../layer/tile/TileLayer';
+import WMSTileLayer from '../../../layer/tile/WMSTileLayer';
 import CanvasRenderer from '../CanvasRenderer';
 import Point from '../../../geo/Point';
 import LRUCache from '../../../core/util/LRUCache';
@@ -234,6 +235,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                                 this.setToRedraw();
                             }
                             tiles.push(cached);
+                            //@ts-ignore
+                            if (!this.isTileComplete(cached)) {
+                                tileLoading = true;
+                            }
                         }
                     } else {
                         tileLoading = loading = true;
@@ -287,6 +292,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
+        this.tileCache.shrink();
+
         // if (parentTiles.length) {
         //     childTiles.length = 0;
         //     this._childTiles.length = 0;
@@ -326,11 +333,22 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this._childTiles.sort(this._compareTiles);
         }
 
+        let drawBackground = true;
+        const backgroundTimestamp = this.canvas._parentTileTimestamp;
+        if (this.layer.constructor === TileLayer || this.layer.constructor === WMSTileLayer) {
+            // background tiles are only painted once for TileLayer and WMSTileLayer per frame.
+            if (this._renderTimestamp === backgroundTimestamp) {
+                drawBackground = false;
+            } else {
+                this.canvas._parentTileTimestamp = this._renderTimestamp;
+            }
+        }
+
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         //@ts-ignore
         this.onDrawTileStart(context, parentContext);
 
-        if (this.layer.options['opacity'] === 1) {
+        if (drawBackground && this.layer.options['opacity'] === 1) {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
@@ -352,7 +370,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
         delete this.drawingCurrentTiles;
 
-        if (this.layer.options['opacity'] < 1) {
+        if (drawBackground && this.layer.options['opacity'] < 1) {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
@@ -703,9 +721,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             ctx.translate(x, y);
             if (bearing) {
                 ctx.rotate(-bearing * Math.PI / 180);
-                w += 0.1;
-                h += 0.1;
             }
+            w += 0.5;
+            h += 0.5;
             const res = map._getResolution();
             if (res !== tileInfo.res) {
                 const scale = tileInfo.res / res;
@@ -860,7 +878,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return null;
     }
 
-    isValidCachedTile(/*tile*/) {
+    isValidCachedTile(tile) {
+        return !!tile.image;
+    }
+
+    isTileComplete(/*tile*/) {
         return true;
     }
 

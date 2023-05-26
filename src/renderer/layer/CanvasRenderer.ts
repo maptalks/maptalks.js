@@ -905,7 +905,7 @@ export class ResourceCache {
             height: +url[2],
             refCnt: 0
         };
-        if (img && !img.close && Browser.imageBitMap && !Browser.safari && !Browser.iosWeixin) {
+        if (img && img.width && img.height && !img.close && Browser.imageBitMap && !Browser.safari && !Browser.iosWeixin) {
             if (img.src && isSVG(img.src)) {
                 return;
             }
@@ -947,6 +947,9 @@ export class ResourceCache {
     logout(url) {
         const res = this.resources[url];
         if (res && res.refCnt-- <= 0) {
+            if (res.image && res.image.close) {
+                res.image.close();
+            }
             delete this.resources[url];
         }
     }
