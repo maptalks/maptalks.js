@@ -166,7 +166,11 @@ export default class GLTFMarker extends Marker {
         const url = this.getUrl();
         this._gltfManager = gltfManager;
         if (!this._login) {
-            gltfManager.loginGLTF(url);
+            if (!this._gltfRequestor) {
+                const renderer = this.getLayer().getRenderer();
+                this._gltfRequestor = renderer._requestor.bind(renderer);
+            }
+            gltfManager.loginGLTF(url, this._gltfRequestor);
             this._login = true;
         }
         const resource = gltfManager.getGLTF(url);
@@ -767,6 +771,7 @@ export default class GLTFMarker extends Marker {
             const zoom = map.getZoom();
             this._zoomOnAdded = zoom;
         }
+        delete this._gltfRequestor;
     }
 
     onRemove() {

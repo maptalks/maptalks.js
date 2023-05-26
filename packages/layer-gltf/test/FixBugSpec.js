@@ -1020,4 +1020,37 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('remove a gltflayer and then add a new one', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: 'models/Duck/Duck'
+            }
+        }).addTo(gltflayer);
+        const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        function checkColor() {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([142, 120, 28, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        marker.on('load', () => {
+            setTimeout(function() {
+                gltflayer.remove();
+                const newLayer = new maptalks.GLTFLayer('gltf');
+                new maptalks.GLTFMarker(center, {
+                    symbol: {
+                        url: 'models/Duck/Duck'
+                    }
+                }).addTo(newLayer);
+                setTimeout(function() {
+                    map.setPitch(0);
+                    checkColor();
+                }, 100);
+                newLayer.addTo(groupgllayer);
+            }, 100);
+        });
+    });
 });

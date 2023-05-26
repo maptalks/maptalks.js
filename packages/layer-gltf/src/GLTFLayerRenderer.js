@@ -227,16 +227,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
     }
 
     _createGLTFManager() {
-        return new reshader.GLTFManager(this.regl, url => {
-            return this.workerConn.loadGLTF(url).then(data => {
-                this.setToRedraw();
-                this._needRetireFrames = true;
-                return data;
-            }).catch(err => {
-                console.error(err);
-                this.layer.fire('modelerror', { type: 'modelerror', url, info: err });
-            });
-        });
+        return new reshader.GLTFManager(this.regl);
     }
 
     _initRenderer() {
@@ -291,6 +282,17 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             if (!this.layer) return;
             this.ready = true;
             this.layer.fire('workerready');
+        });
+    }
+
+    _requestor(url) {
+        return this.workerConn.loadGLTF(url).then(data => {
+            this.setToRedraw();
+            this._needRetireFrames = true;
+            return data;
+        }).catch(err => {
+            console.error(err);
+            this.layer.fire('modelerror', { type: 'modelerror', url, info: err });
         });
     }
 

@@ -2,23 +2,22 @@ import * as GLTFHelper  from '../GLTFHelper.js';
 import { simpleModels, getSimpleModel } from './SimpleModel';
 
 export default class GLTFManager {
-    constructor(regl, requestor) {
+    constructor(regl) {
         this.regl = regl;
         this.resourceMap = {};
-        this._requestor = requestor;
     }
 
     getGLTF(url) {
         return this.resourceMap[url];
     }
 
-    loginGLTF(url) {
+    loginGLTF(url, requestor) {
         if (!this.resourceMap[url]) {
             if (simpleModels[url]) { //简单模型不需要request，直接返回数据
                 const data = getSimpleModel(url);
                 this.resourceMap[url] = this._exportGLTFResource(data, url, false);
-            } else if (this._requestor) {
-                this.resourceMap[url] = this._requestor(url).then(gltf => {
+            } else if (requestor) {
+                this.resourceMap[url] = requestor(url).then(gltf => {
                     const gltfpack = this._exportGLTFResource(gltf, url);
                     this.resourceMap[url] = gltfpack;
                     return gltfpack;

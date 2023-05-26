@@ -424,14 +424,15 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.setInfoWindow({
             'title': 'MultiGLTFMarker\'s InfoWindow',
             'content': 'click on marker to open.',
-            'autoPan': false
+            'autoPan': false,
+            'animation': false
         });
         multigltfmarker.once('load', () => {
-            multigltfmarker.openInfoWindow(45);
+            multigltfmarker.openInfoWindow();
             setTimeout(function() {
                 const infoWindowStyle = multigltfmarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(35.7091px, 131.342px, 0px) scale(1); transform-origin: 113.688px bottom;');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(59.0108px, 154.397px, 0px) scale(1);');
                 done();
             }, 100);
         });
