@@ -30,8 +30,7 @@ import {
 import Class from '../../../core/Class';
 import Browser from '../../../core/Browser';
 import TileLayer from '../../../layer/tile/TileLayer';
-import { Layer } from 'src/layer';
-import { PointExtent } from 'src/geo';
+import { PointExtent } from './../../../geo';
 
 
 const POSITION0 = 'position:absolute;';

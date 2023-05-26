@@ -1,4 +1,4 @@
-import Coordinate from 'src/geo/Coordinate';
+import Coordinate from './../geo/Coordinate';
 import { extend, isNil } from '../core/util';
 import Circle, { CirlceOptionsType } from './Circle';
 export type SectorOptionsType = CirlceOptionsType & {

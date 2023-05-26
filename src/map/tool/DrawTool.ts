@@ -6,9 +6,9 @@ import { stopPropagation } from '../../core/util/dom';
 import Polygon from '../../geometry/Polygon';
 import VectorLayer from '../../layer/VectorLayer';
 import MapTool from './MapTool';
-import { Geometry } from 'src/geometry';
-import { Layer } from 'src/layer';
-import { Coordinate } from 'src/geo';
+import { Geometry } from './../../geometry';
+import { Layer } from './../../layer';
+import { Coordinate } from './../../geo';
 
 /**
  * @property {Object} [options=null] - construct options

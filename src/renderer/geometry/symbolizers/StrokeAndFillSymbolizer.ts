@@ -1,4 +1,4 @@
-import { Point } from 'src/geo';
+import { Point } from './../../../geo';
 import { getValueOrDefault } from '../../../core/util';
 import { isGradient as checkGradient } from '../../../core/util/style';
 import Coordinate from '../../../geo/Coordinate';

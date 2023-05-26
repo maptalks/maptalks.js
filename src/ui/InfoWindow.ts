@@ -1,4 +1,4 @@
-import { isGeometry, isLineStringGeometry, isMultiLineStringGeometry, isMultiPointGeometry, isPointGeometry } from 'src/geometry/util';
+import { isGeometry, isLineStringGeometry, isMultiLineStringGeometry, isMultiPointGeometry, isPointGeometry } from './../geometry/util';
 import { isFunction, isNumber, isObject, isString } from '../core/util';
 import { createEl, addDomEvent, removeDomEvent, on, off } from '../core/util/dom';
 import Point from '../geo/Point';

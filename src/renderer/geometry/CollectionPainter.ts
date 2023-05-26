@@ -1,4 +1,4 @@
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../../geometry';
 import Class from '../../core/Class';
 import PointExtent from '../../geo/PointExtent';
 

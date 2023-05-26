@@ -1,4 +1,4 @@
-import Point from 'src/geo/Point';
+import Point from './../geo/Point';
 import Coordinate from '../geo/Coordinate';
 type Constructor = new (...args: any[]) => {};
 /**

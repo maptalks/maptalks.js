@@ -5,7 +5,7 @@ import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
 import Geometry, { GeometyOptionsType } from './Geometry';
-import Point from 'src/geo/Point';
+import Point from './../geo/Point';
 
 const TEMP_EXTENT = new PointExtent();
 

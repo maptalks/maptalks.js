@@ -1,4 +1,4 @@
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../geometry';
 import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
 import { isString, isArrayHasData, pushIn } from '../core/util';
 import Coordinate from '../geo/Coordinate';

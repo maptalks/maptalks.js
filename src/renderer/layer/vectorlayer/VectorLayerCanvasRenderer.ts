@@ -6,7 +6,7 @@ import * as vec3 from '../../../core/util/vec3';
 import { now } from '../../../core/util/common';
 import { getPointsResultPts } from '../../../core/util';
 import CollisionIndex from '../../../core/CollisionIndex';
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../../../geometry';
 const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();

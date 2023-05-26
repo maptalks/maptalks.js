@@ -26,16 +26,15 @@ import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 //@ts-ignore
 import { isFunctionDefinition } from '../core/mapbox';
-import { Player } from 'src/core/Animation';
-import Size from 'src/geo/Size';
+import { Player } from './../core/Animation';
+import Size from './../geo/Size';
 import GeometryInfoWindow from './ext/Geometry.InfoWindow';
 import GeometryAnimation from './ext/Geometry.Animation';
 // import GeometryEdit from './ext/Geometry.Edit';
 import GeometryEvent from './ext/Geometry.Events';
-import OverlayLayer from 'src/layer/OverlayLayer';
-import Menuable from 'src/ui/Menuable';
-import { Menu } from 'src/ui';
-import { GeoPropertiesType } from 'src/types';
+import OverlayLayer from './../layer/OverlayLayer';
+import { Menu } from './../ui';
+import { GeoPropertiesType } from './../types';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();

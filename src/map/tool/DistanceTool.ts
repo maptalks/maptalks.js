@@ -6,7 +6,7 @@ import Marker from '../../geometry/Marker';
 import Label from '../../geometry/Label';
 import VectorLayer from '../../layer/VectorLayer';
 import DrawTool from './DrawTool';
-import { Layer } from 'src/layer';
+import { Layer } from './../../layer';
 
 /**
  * @property {options} options

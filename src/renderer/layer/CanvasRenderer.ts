@@ -7,8 +7,8 @@ import Actor from '../../core/worker/Actor';
 import Point from '../../geo/Point';
 import { imageFetchWorkerKey } from '../../core/worker/CoreWorkers';
 import { registerWorkerAdapter } from '../../core/worker/Worker';
-import Layer from 'src/layer/Layer';
-import { PointExtent } from 'src/geo';
+import Layer from './../../layer/Layer';
+import { PointExtent } from './../../geo';
 
 const EMPTY_ARRAY = [];
 class ResourceWorkerConnection extends Actor {

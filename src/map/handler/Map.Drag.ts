@@ -3,7 +3,7 @@ import { preventDefault, getEventContainerPoint } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import DragHandler from '../../handler/Drag';
 import Map from '../Map';
-import { Point } from 'src/geo';
+import { Point } from './../../geo';
 
 class MapDragHandler extends Handler {
     target: Map;

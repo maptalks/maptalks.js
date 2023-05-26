@@ -8,8 +8,8 @@ import DragHandler from '../../handler/Drag';
 import VectorLayer from '../../layer/VectorLayer';
 import { ConnectorLine } from '../ConnectorLine';
 import { ResourceCache } from '../../renderer/layer/CanvasRenderer';
-import Coordinate from 'src/geo/Coordinate';
-import Point from 'src/geo/Point';
+import Coordinate from './../../geo/Coordinate';
+import Point from './../../geo/Point';
 
 const DRAG_STAGE_LAYER_ID = INTERNAL_LAYER_PREFIX + '_drag_stage';
 

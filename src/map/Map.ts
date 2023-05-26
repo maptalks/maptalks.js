@@ -24,12 +24,12 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 import { computeDomPosition } from '../core/util/dom';
-import MapRenderer from 'src/renderer/map/MapRenderer';
-import { Player } from 'src/core/Animation';
-import MapCanvasRenderer from 'src/renderer/map/MapCanvasRenderer';
+import MapRenderer from './../renderer/map/MapRenderer';
+import { Player } from './../core/Animation';
+import MapCanvasRenderer from './../renderer/map/MapCanvasRenderer';
 import MapCollision from './Map.Collision';
 import MapTopo from './Map.Topo';
-import { MapDataURLType, MapPanelsType, MapViewType } from 'src/types';
+import { MapDataURLType, MapPanelsType, MapViewType } from './../types';
 
 
 const TEMP_COORD = new Coordinate(0, 0);

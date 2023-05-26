@@ -13,9 +13,8 @@ import Browser from '../core/Browser';
 import Class from '../core/Class';
 import Eventable from '../core/Eventable';
 import Size from '../geo/Size';
-import { Map } from 'src/map';
-import { Coordinate } from 'src/geo';
-import { isGeometry } from 'src/geometry/util';
+import { Coordinate } from './../geo';
+import { isGeometry } from './../geometry/util';
 
 /**
  * @property {Object} options

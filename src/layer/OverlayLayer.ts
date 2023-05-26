@@ -5,7 +5,7 @@ import { Geometry } from '../geometry';
 import { createFilter, getFilterFeature, compileStyle } from '@maptalks/feature-filter';
 import Layer, { LayerOptionsType } from './Layer';
 import GeoJSON from '../geometry/GeoJSON';
-import { OverlayLayerCanvasRenderer } from 'src/renderer';
+import { OverlayLayerCanvasRenderer } from './../renderer';
 
 export type OverlayLayerOptionsType = LayerOptionsType & {
     'drawImmediate'?: boolean;

@@ -7,7 +7,7 @@ import CanvasRenderer from '../renderer/layer/CanvasRenderer';
 import CollisionIndex from '../core/CollisionIndex';
 import Geometry from '../geometry/Geometry';
 import Browser from '../core/Browser';
-import { Map } from 'src/map';
+import { Map } from './../map';
 
 export type LayerOptionsType = {
     'attribution'?: string,

@@ -1,6 +1,6 @@
 import { loadFunctionTypes } from '@maptalks/function-type';
 import { extend } from '../util/common';
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../../geometry';
 
 /**
  * @classdesc

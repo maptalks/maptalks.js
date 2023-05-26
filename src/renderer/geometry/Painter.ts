@@ -7,7 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../..//geometry';
 
 //registered symbolizers
 //the latter will paint at the last

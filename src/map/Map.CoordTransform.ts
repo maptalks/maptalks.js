@@ -1,4 +1,4 @@
-import { Coordinate, Extent, Point, PointExtent, Size } from "src/geo";
+import { Coordinate, Extent, Point, PointExtent, Size } from "./../geo";
 import Map from "./Map";
 const TEMP_COORD = new Coordinate(0, 0);
 

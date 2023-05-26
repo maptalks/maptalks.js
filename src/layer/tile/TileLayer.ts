@@ -20,7 +20,6 @@ import Layer, { LayerOptionsType } from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
-import { CanvasRenderer, TileLayerCanvasRenderer } from 'src/renderer';
 
 const DEFAULT_MAXERROR = 1;
 const TEMP_POINT = new Point(0, 0);

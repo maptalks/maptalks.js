@@ -1,4 +1,4 @@
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../../../geometry';
 import { isArrayHasData, pushIn } from '../../../core/util';
 import CanvasRenderer from '../CanvasRenderer';
 

@@ -7,7 +7,7 @@ import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol, DYNA
 //@ts-ignore
 import { isFunctionDefinition, loadGeoSymbol } from '../core/mapbox';
 import { isNil } from '../core/util';
-import Coordinate from 'src/geo/Coordinate';
+import Coordinate from './../geo/Coordinate';
 
 const TEMP_EXTENT = new PointExtent();
 

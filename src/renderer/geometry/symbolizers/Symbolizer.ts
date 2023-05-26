@@ -1,4 +1,4 @@
-import { Geometry } from 'src/geometry';
+import { Geometry } from './../../../geometry';
 import { COLOR_PROPERTIES } from '../../../core/Constants';
 import { isString } from '../../../core/util';
 
