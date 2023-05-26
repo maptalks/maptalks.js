@@ -797,13 +797,14 @@ describe('bug', () => {
     });
 
     it('copy gltfmarker, its meshes\'s scale should be equal(fuzhenn/maptalks-studio#2749)', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFMarker(center, {
             symbol: {
                 url: url3
             }
         }).addTo(gltflayer);
         const copyOne = marker.copy();
+        copyOne.setCoordinates(center.add(0.001, 0));
         copyOne.addTo(gltflayer);
         gltflayer.on('modelload', () => {
             const mesh = marker.getMeshes()[0];
@@ -813,6 +814,7 @@ describe('bug', () => {
             expect(scale1).to.be.eql(scale2);
             done();
         });
+        gltflayer.addTo(map);
     });
 
     it('load model incorrectly(fuzhenn/maptalks-ide/issues/2770、fuzhenn/maptalks-ide/issues/2789)', (done) => {

@@ -148,4 +148,19 @@ describe('3dtiles layer', () => {
             });
         });
     });
+
+    it('support EXT_texture_webp(maptalks/issues/issues/306)', done => {
+        const url = 'models/b3dm/EXT_texture_webp/2_2_0_0.b3dm';
+        const loader = new maptalks.B3DMLoader(null, gltf.GLTFLoader);
+        loader.load(url).then(b3dm => {
+            expect(b3dm).to.be.ok();
+            const { gltf } = b3dm;
+            expect(gltf).to.be.ok();
+            const position = gltf.meshes[0].primitives[0].attributes.POSITION.array;
+            expect(position.slice(0, 3)).to.be.eql({ '0': 147.86264038085938, '1': 113.31120300292969, '2': 762.8773193359375 });
+            const texture = gltf.textures[0];
+            expect(texture.extensions['EXT_texture_webp'].source).to.be.eql(0);
+            done();
+        });
+    })
 });

@@ -40,7 +40,11 @@ export default class BoxClipMask extends ClipMask {
     }
 
     _updateCoordinates() {
-        const map = this._layer.getMap();
+        const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
+        const map = layer.getMap();
         if (map) {
             const { length, width, height } = this.options;
             const center = this._position;

@@ -68,6 +68,9 @@ export default class SkylineAnalysis extends Analysis {
                 pixels[(j * width + i) * 4 + 1] = data[((height - j) * width + i) * 4 + 1];
                 pixels[(j * width + i) * 4 + 2] = data[((height - j) * width + i) * 4 + 2];
                 pixels[(j * width + i) * 4 + 3] = data[((height - j) * width + i) * 4 + 3];
+                if (pixels[(j * width + i) * 4] === 0 && pixels[(j * width + i) * 4 + 1] === 0 && pixels[(j * width + i) * 4 + 2] === 0) {
+                    pixels[(j * width + i) * 4 + 3] = 0;
+                }
             }
         }
         canvas.width = width;

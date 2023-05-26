@@ -63,7 +63,15 @@ export default class V2 extends GLTFAdapter {
         if (!texture) {
             return null;
         }
-        const image = this.gltf.images[texture.source];//get image object by source index
+        // https://github.com/KhronosGroup/glTF/blob/bcd622b26fa785e0bb0e8a89104087d6f24478ba/extensions/2.0/Vendor/EXT_texture_webp/README.md
+        let source = texture.source;
+        if (texture.extensions && texture.extensions['EXT_texture_webp']) {
+            source = texture.extensions['EXT_texture_webp'].source;
+        }
+        if (!defined(source)) {
+            return null;
+        }
+        const image = this.gltf.images[source];//get image object by source index
         const promise = this._loadImage(image);
         return promise.then(response => {
             if (!response) {

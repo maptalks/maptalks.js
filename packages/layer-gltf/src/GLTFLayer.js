@@ -125,7 +125,10 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         } else if (type === 'modelerror') {
             this._onModelError(param);
         } else if (type === 'positionchange') {
-            this.getRenderer().setToRedraw();
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.setToRedraw();
+            }
         }
         super['_onGeometryEvent'](param);
     }

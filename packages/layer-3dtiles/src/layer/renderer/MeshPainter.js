@@ -1039,7 +1039,7 @@ export default class MeshPainter {
         //TODO 有些B3DM或I3DM里，多个 gltf.mesh 会共享同一个POSITION，MESH，TEXCOORD。
         // 效率更高的做法是为他们单独创建buffer后赋给Geometry
         // 程序中无需管理buffer的销毁，Geometry中会维护buffer的引用计数来管理buffer的销毁
-        const matInfo = gltf.materials[gltfMesh.material];
+        const matInfo = gltf.materials && gltf.materials[gltfMesh.material];
         const khrTechniquesWebgl = gltf.extensions && gltf.extensions['KHR_techniques_webgl'];
         if (khrTechniquesWebgl && matInfo.extensions && matInfo.extensions['KHR_techniques_webgl']) {
             // s3m.vert 和 s3m.frag 是用webgl 2写的，所以是s3m时，要开启webgl2
@@ -1148,9 +1148,6 @@ export default class MeshPainter {
         if (batchIdData && indices) {
             geometry.properties.batchIdData = batchIdData;
             geometry.properties.batchIdMap = generateFeatureIndiceIndex(batchIdData, indices);
-        }
-        if ((gltfMesh.mode > 3 || gltfMesh.mode === undefined) && !geometry.data['NORMAL']) {
-            geometry.createNormal('NORMAL');
         }
         geometry.generateBuffers(this._regl, { excludeElementsInVAO: isI3DM });
         return geometry;
@@ -1451,7 +1448,7 @@ export default class MeshPainter {
     }
 
     _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure) {
-        const material = gltf.materials[materialIndex];
+        const material = gltf.materials && gltf.materials[materialIndex];
         if (!material || !material.baseColorTexture && !material.pbrMetallicRoughness) {
             return null;
         }

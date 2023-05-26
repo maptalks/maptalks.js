@@ -291,7 +291,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
     }
 
     _isTransparent() {
-        const data = this.getData();
+        const data = this.getAllData();
         for (let i = 0; i < data.length; i++) {
             const color = data[i].color;
             if (color && color[3] < 1) {
