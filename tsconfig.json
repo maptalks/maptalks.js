@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        // "noImplicitAny": true,
+        "declaration": true,
+        "allowJs": false,
+        "module": "ES2015",
+        "target": "es5",
+        "sourceMap": true,
+        //dependencies lib version
+        "lib": [
+            "es5",
+            "es2015",
+            "dom"
+        ],
+        "outDir": "./dist/",
+        "rootDir": "./src",
+        "baseUrl": "./",
+        //custom types
+        "paths": {}
+    },
+    "include": [
+        "./src/**/*.ts"
+    ]
+}

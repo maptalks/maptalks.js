@@ -1,0 +1,63 @@
+
+const registeredTypes: { [key: string]: any } = {
+};
+type Constructor = new (...args: any[]) => {};
+
+/**
+ * A helper mixin for JSON serialization.
+ * @mixin JSONAble
+ */
+function JSONAble<TBase extends Constructor>(Base: TBase) {
+    return class extends Base {
+        _jsonType: string;
+        /**
+         * It is a static method. <br>
+         * Register layer for JSON serialization and assign a JSON type.
+         * @param  {String} type - JSON type
+         * @function JSONAble.registerJSONType
+         */
+        static registerJSONType(type: string) {
+            if (!type) {
+                return this;
+            }
+            registeredTypes[type] = this;
+            return this;
+        }
+
+        /**
+         * It is a static method. <br>
+         * Get class of input JSON type
+         * @param  {String} type - JSON type
+         * @return {Class}      Class
+         * @function JSONAble.getJSONClass
+         */
+        static getJSONClass(type: string) {
+            if (!type) {
+                return null;
+            }
+            return registeredTypes[type];
+        }
+
+        /**
+         * Get object's JSON Type
+         * @return {String}
+         * @function JSONAble.getJSONType
+         */
+        getJSONType(): string {
+            if (this._jsonType === undefined) {
+                const clazz = Object.getPrototypeOf(this).constructor;
+                for (const p in registeredTypes) {
+                    if (registeredTypes[p] === clazz) {
+                        this._jsonType = p;
+                        break;
+                    }
+                }
+            }
+            if (!this._jsonType) {
+                throw new Error('Found an unregistered geometry class!');
+            }
+            return this._jsonType;
+        }
+    };
+}
+export default JSONAble;

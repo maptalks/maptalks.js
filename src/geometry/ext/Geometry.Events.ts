@@ -1,0 +1,72 @@
+import { isNumber } from '../../core/util';
+import { preventDefault, stopPropagation } from '../../core/util/dom';
+// import Geometry from '../Geometry';
+
+type Constructor = new (...args: any[]) => {};
+
+export default function GeometryEvent<TBase extends Constructor>(Base: TBase) {
+
+    return class extends Base {
+        /** @lends Geometry.prototype */
+        /**
+         * The event handler for all the events.
+         * @param  {Event} event - dom event
+         * @private
+         */
+        _onEvent(event, type) {
+            //@ts-ignore
+            const map = this.getMap();
+            if (!map) {
+                return;
+            }
+            const eventType = type || this._getEventTypeToFire(event);
+            //@ts-ignore
+            if (eventType === 'contextmenu' && this.listens('contextmenu')) {
+                stopPropagation(event);
+                preventDefault(event);
+            }
+            const params = map._getEventParams(event);
+            //@ts-ignore
+            if (isNumber(this._pickGeometryIndex)) {
+                //@ts-ignore
+                params.pickGeometryIndex = this._pickGeometryIndex;
+                // delete this._pickGeometryIndex;
+            }
+            //@ts-ignore
+            this._fireEvent(eventType, params);
+        }
+
+        _getEventTypeToFire(domEvent) {
+            // let eventType = domEvent.type;
+            // //change event type to contextmenu
+            // if (eventType === 'click' || eventType === 'mousedown') {
+            //     if (domEvent.button === 2) {
+            //         eventType = 'contextmenu';
+            //     }
+            // }
+            return domEvent.type;
+        }
+
+        /**
+         * Generate event parameters
+         * @param  {Event} event - dom event
+         * @return {Object}
+         * @private
+         */
+        // _getEventParams: function (e) {
+        //     const map = this.getMap();
+        //     const eventParam = {
+        //         'domEvent': e
+        //     };
+        //     const actual = e.touches && e.touches.length > 0 ? e.touches[0] : e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : e;
+        //     if (actual) {
+        //         const containerPoint = getEventContainerPoint(actual, map._containerDOM);
+        //         eventParam['coordinate'] = map.containerPointToCoordinate(containerPoint);
+        //         eventParam['containerPoint'] = containerPoint;
+        //         eventParam['viewPoint'] = map.containerPointToViewPoint(containerPoint);
+        //         eventParam['pont2d'] = map._containerPointToPoint(containerPoint);
+        //     }
+        //     return eventParam;
+        // }
+    }
+}
