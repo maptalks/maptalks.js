@@ -453,6 +453,86 @@ describe('Map.Camera', function () {
         });
     });
 
+    describe('Set camera position', function () {
+        it('pitch 0, bearing 0', function () {
+            map.setCameraPosition({
+                position: [0, 0, 10000],
+                pitch: 0,
+                bearing: 0,
+            })
+            expect(map.getCenter().x).to.be.eql(0);
+            expect(map.getCenter().y).to.be.eql(0);
+            expect(map.getPitch()).to.be.eql(0);
+            expect(map.getBearing()).to.be.eql(0);
+            expect(map.getZoom()).to.be.within(8, 9);
+        });
+
+        it('pitch 45, bearing 45', function () {
+            map.setCameraPosition({
+                position: [0, 0, 10000],
+                pitch: 45,
+                bearing: 45,
+            })
+            expect(map.getCenter().x).to.be.within(0.07, 0.08);
+            expect(map.getCenter().y).to.be.within(0.07, 0.08);
+            expect(map.getPitch()).to.be.eql(45);
+            expect(map.getBearing()).to.be.eql(45);
+            expect(map.getZoom()).to.be.within(7, 8);
+        });
+
+        it('pitch 45, bearing 135', function () {
+            map.setCameraPosition({
+                position: [0, 0, 10000],
+                pitch: 45,
+                bearing: 135,
+            })
+            expect(map.getCenter().x).to.be.within(0.07, 0.08);
+            expect(map.getCenter().y).to.be.within(-0.08, 0.07);
+            expect(map.getPitch()).to.be.eql(45);
+            expect(map.getBearing()).to.be.eql(135);
+            expect(map.getZoom()).to.be.within(7, 8);
+        });
+
+        it('pitch 45, bearing -45', function () {
+            map.setCameraPosition({
+                position: [0, 0, 10000],
+                pitch: 45,
+                bearing: -45,
+            })
+            expect(map.getCenter().x).to.be.within(-0.08, 0.07);
+            expect(map.getCenter().y).to.be.within(0.07, 0.08);
+            expect(map.getPitch()).to.be.eql(45);
+            expect(map.getBearing()).to.be.eql(-45);
+            expect(map.getZoom()).to.be.within(7, 8);
+        });
+
+        it('pitch 45, bearing -135', function () {
+            map.setCameraPosition({
+                position: [0, 0, 10000],
+                pitch: 45,
+                bearing: -135,
+            })
+            expect(map.getCenter().x).to.be.within(-0.08, -0.07);
+            expect(map.getCenter().y).to.be.within(-0.08, -0.07);
+            expect(map.getPitch()).to.be.eql(45);
+            expect(map.getBearing()).to.be.eql(-135);
+            expect(map.getZoom()).to.be.within(7, 8);
+        });
+
+        it('position z', function () {
+            map.setCameraPosition({
+                position: [0, 0, 100],
+                pitch: 0,
+                bearing: 0,
+            })
+            expect(map.getCenter().x).to.be.eql(0);
+            expect(map.getCenter().y).to.be.eql(0);
+            expect(map.getPitch()).to.be.eql(0);
+            expect(map.getBearing()).to.be.eql(0);
+            expect(map.getZoom()).to.be.within(14, 15);
+        })
+    });
+
     describe('containsPoint when pitching', function () {
 
         it('linestring', function () {
