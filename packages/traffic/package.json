@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/traffic",
-  "version": "0.0.1",
+  "version": "0.83.0",
   "description": "a tool to render traffic effect",
   "license": "UNLICENSED",
   "repository": {
@@ -32,6 +32,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
+    "@maptalks/gltf-layer": "^0.83.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
@@ -45,11 +46,9 @@
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "maptalks": "^1.0.0-rc.21",
-    "@maptalks/gltf-layer": "^0.82.0",
     "mocha": "^9.0.3",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1",
     "turf": "3.0.14"
-  },
-  "dependencies": {}
+  }
 }
