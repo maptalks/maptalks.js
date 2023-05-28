@@ -855,7 +855,7 @@ export default class MeshPainter {
     }
 
     _setWEB3DDecodeUniforms(mesh, attributes) {
-        if (attributes && attributes['TEXCOORD_0'] && attributes['TEXCOORD_0'].extensions === 'WEB3D_quantized_attributes') {
+        if (attributes && attributes['TEXCOORD_0'] && attributes['TEXCOORD_0'].extensions && attributes['TEXCOORD_0'].extensions['WEB3D_quantized_attributes']) {
             const decodeMatrix = attributes['TEXCOORD_0'].extensions['WEB3D_quantized_attributes'].decodeMatrix;
             mesh.setUniform('decodeMatrix', decodeMatrix);
         }
