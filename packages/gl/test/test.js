@@ -454,7 +454,7 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
-        it.only('switch shader for terrain', done => {
+        it('switch shader for terrain', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
                 zoom: 12
