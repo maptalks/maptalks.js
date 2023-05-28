@@ -218,13 +218,16 @@ export default class GLTFLoader {
                 scenes.push(scene);
             }, 'scenes');
             const gltf = {
+                textures: this.gltf.textures,
                 asset: this.gltf.asset,
                 scene : defaultScene,
                 scenes : scenes,
                 nodes : nodeMap,
                 meshes : this.meshes,
                 materials: this.gltf.materials,
-                skins : this.skins
+                skins : this.skins,
+                extensionsRequired: this.gltf.extensionsRequired,
+                extensionsUsed: this.gltf.extensionsUsed
             };
             if (this.gltf.extensions) {
                 gltf.extensions = this.gltf.extensions;

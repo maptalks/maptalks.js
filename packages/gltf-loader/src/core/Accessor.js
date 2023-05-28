@@ -1,7 +1,9 @@
 import Ajax from './Ajax';
 import { getTypedArrayCtor, isDataUri, dataUriToArrayBuffer, readInterleavedArray, bufferToString } from '../common/Util';
+import { vec4 } from 'gl-matrix';
 
 const TYPES = ['SCALAR', 1, 'VEC2', 2, 'VEC3', 3, 'VEC4', 4, 'MAT2', 4, 'MAT3', 9, 'MAT4', 16];
+const TEMP_VEC4 = [];
 
 export default class Accessor {
 
@@ -129,7 +131,10 @@ export default class Accessor {
             componentType: accessor.componentType,
             count: accessor.count,
             type: accessor.type,
-            itemSize
+            itemSize,
+            max: accessor.max,
+            min: accessor.min,
+            extensions: accessor.extensions
         };
         if (accessor.min) {
             bufferData.min = accessor.min;
@@ -161,6 +166,21 @@ export default class Accessor {
                     bufferData.byteOffset = 0;
                     const out = new ctor(accessor.count * itemSize);
                     bufferData.array = readInterleavedArray(out, arrayBuffer, accessor.count, itemSize, byteStride, start + (accessor.byteOffset || 0), accessor.componentType);
+                    if (bufferData.extensions && bufferData.extensions['WEB3D_quantized_attributes']) {
+                        if (itemSize > 2) {//TEXCOORD_0在shader中解压
+                            const newArray = new Float32Array(bufferData.array.length);
+                            const { decodeMatrix } = bufferData.extensions['WEB3D_quantized_attributes'];
+                            for (let i = 0; i < bufferData.array.length; i += itemSize) {
+                                TEMP_VEC4[0] = bufferData.array[i], TEMP_VEC4[1] = bufferData.array[i + 1], TEMP_VEC4[2] = bufferData.array[i + 2], TEMP_VEC4[3] = 1;
+                                const attr = vec4.transformMat4(TEMP_VEC4, TEMP_VEC4, decodeMatrix);
+                                newArray[i] = attr[0];
+                                newArray[i + 1] = attr[1];
+                                newArray[i + 2] = attr[2];
+                            }
+                            bufferData.componentType = 5126;
+                            bufferData.array = newArray;
+                        }
+                    }
                 } else {
                     bufferData.byteStride = 0;
                     bufferData.array = this._typedArray(arrayBuffer, accessor.count, itemSize, start + (accessor.byteOffset || 0), ctor);

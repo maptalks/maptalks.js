@@ -690,6 +690,7 @@ export default class MeshPainter {
             mesh.properties.batchTableBin = batchTableBin;
             mesh.properties.serviceIndex = node._rootIdx;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
+            this._setWEB3DDecodeUniforms(mesh, gltfMesh.attributes);
             // GLTF模型默认y为up
             // https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units
             const nodeMatrix = mat4.identity([]);
@@ -712,6 +713,7 @@ export default class MeshPainter {
             mesh.setDefines(defines);
             mesh.properties.polygonOffset = { offset: 0, factor: 0 };
             meshes.push(mesh);
+            delete gltfMesh.attributes;
         });
 
         if (ready) {
@@ -792,6 +794,7 @@ export default class MeshPainter {
                 }
             }
 
+            this._setWEB3DDecodeUniforms(mesh, gltfMesh.attributes);
             if (maxPrjExtent) {
                 defines['USE_MAX_EXTENT'] = 1;
                 mesh.setUniform('maxPrjExtent', maxPrjExtent);
@@ -838,6 +841,7 @@ export default class MeshPainter {
 
             mesh.setLocalTransform(nodeMatrix);
             meshes.push(mesh);
+            delete gltfMesh.attributes;
         });
 
         if (ready) {
@@ -848,6 +852,13 @@ export default class MeshPainter {
             meshes._callback = cb;
         }
         return meshes;
+    }
+
+    _setWEB3DDecodeUniforms(mesh, attributes) {
+        if (attributes && attributes['TEXCOORD_0'] && attributes['TEXCOORD_0'].extensions && attributes['TEXCOORD_0'].extensions['WEB3D_quantized_attributes']) {
+            const decodeMatrix = attributes['TEXCOORD_0'].extensions['WEB3D_quantized_attributes'].decodeMatrix;
+            mesh.setUniform('decodeMatrix', decodeMatrix);
+        }
     }
 
     _computeProjectedTransform(out, node, rtcCenter, rtcCoord) {
@@ -989,6 +1000,9 @@ export default class MeshPainter {
         if (this.hasIBL()) {
             defines['HAS_IBL_LIGHTING'] = 1;
         }
+        if (gltfMesh.attributes && gltfMesh.attributes['TEXCOORD_0'] && gltfMesh.attributes['TEXCOORD_0'].extensions === 'WEB3D_quantized_attributes') {
+            defines['HAS_WEB3D_quantized_attributes_TEXCOORD'] = 1;
+        }
         const compressDefines = gltfMesh.compressDefines;
         extend(defines, compressDefines);
         return defines;
@@ -1128,7 +1142,6 @@ export default class MeshPainter {
             }
         }
         // createColorArray(attrs);
-        delete gltfMesh.attributes;
         const indices = gltfMesh.indices ? (gltfMesh.indices.array ? gltfMesh.indices.array.slice() : gltfMesh.indices) : null;
         const geometry = new reshader.Geometry(
             attrs,

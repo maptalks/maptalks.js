@@ -95,6 +95,10 @@ export default class V2 extends GLTFAdapter {
             const sampler = defined(texture.sampler) ? this.gltf.samplers[texture.sampler] : undefined;
             if (sampler) {
                 out.sampler = sampler;
+                out.sampler.magFilter = sampler.magFilter || 9729;
+                out.sampler.minFilter = sampler.minFilter || 9729;
+                out.sampler.wrapS = sampler.wrapS || 10497;
+                out.sampler.wrapT = sampler.wrapT || 10497;
             }
             if (response.format) {
                 out.format = response.format;
