@@ -205,8 +205,11 @@ class Control extends Eventable(Class) {
             //@ts-ignore
             this.onRemove();
         }
+        //@ts-ignore
         delete this._map;
+        //@ts-ignore
         delete this.__ctrlContainer;
+        //@ts-ignore
         delete this._controlDom;
         /**
          * remove event.

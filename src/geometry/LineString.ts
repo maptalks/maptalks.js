@@ -42,7 +42,8 @@ class LineString extends Path {
      * @param {Object} [options=null] - construct options defined in [LineString]{@link LineString#options}
      */
     constructor(coordinates, options?: LineStringOptionsType) {
-        super(options);
+
+        super(options || {});
         this.type = 'LineString';
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -61,6 +62,7 @@ class LineString extends Path {
      */
     setCoordinates(coordinates: Array<Coordinate>) {
         if (!coordinates) {
+            //@ts-ignore
             this._coordinates = null;
             this._setPrjCoordinates(null);
             return this;

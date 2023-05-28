@@ -92,6 +92,7 @@ class Circle extends CenterMixin(Polygon) {
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
             const vertex = measurer.locate(center, dx, dy);
+            //@ts-ignore
             shell.push(vertex);
         }
         shell.push(shell[0]);
@@ -112,12 +113,15 @@ class Circle extends CenterMixin(Polygon) {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
+        //@ts-ignore
         if (map.getPitch()) {
             return super._containsPoint(point, tolerance);
         }
+        //@ts-ignore
         const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             size = this.getSize(),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            //@ts-ignore
             se = center.add(size.width / 2, size.height / 2);
         return withInEllipse(point, center, se, t);
     }

@@ -69,7 +69,9 @@ class Compass extends Control {
 
     onRemove() {
         this.getMap().off('resize moving moveend zooming zoomend rotate rotateend dragrotating dragrotateend viewchange', this._rotateCompass, this);
+        //@ts-ignore
         delete this._compass;
+        //@ts-ignore
         delete this._bearing;
     }
 

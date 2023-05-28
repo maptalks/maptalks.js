@@ -497,7 +497,7 @@ class UIComponent extends Eventable(Class) {
                 anim.scale = true;
             }
         }
-        let transition = null;
+        let transition;
         if (anim.fade) {
             transition = 'opacity ' + this.options['animationDuration'] + 'ms';
         }
@@ -668,17 +668,20 @@ class UIComponent extends Eventable(Class) {
                 }
                 delete map[key];
             }
+            //@ts-ignore
             delete this.__uiDOM;
         } else if (this.__uiDOM) {
             if (eventsToStop) {
                 off(this.__uiDOM, eventsToStop, stopPropagation);
             }
             removeDomNode(this.__uiDOM);
+            //@ts-ignore
             delete this.__uiDOM;
         }
         if (this._resizeObserver) {
             //dispose resizeObserver
             this._resizeObserver.disconnect();
+            //@ts-ignore
             delete this._resizeObserver;
             delete this._domContentRect;
         }
@@ -769,6 +772,7 @@ class UIComponent extends Eventable(Class) {
         if (this._owner && this.isVisible()) {
             this._showBySymbolChange = true;
             this.show(param['target'].getCenter());
+            //@ts-ignore
             delete this._showBySymbolChange;
         }
     }
@@ -820,6 +824,7 @@ class UIComponent extends Eventable(Class) {
     _setPosition() {
         const dom = this.getDOM();
         if (!dom) return;
+        //@ts-ignore
         dom.style[TRANSITION] = null;
         const p = this.getPosition();
         this._pos = p;

@@ -32,6 +32,7 @@ Rectangle.include({
             const shell = this._trimRing(this.getShell());
             const points = [];
             for (let i = 0, len = shell.length; i < len; i++) {
+                //@ts-ignore
                 points.push(map.coordToPointAtRes(shell[i], glRes));
             }
             return [points, null];
@@ -58,13 +59,16 @@ const PolyRenderer = {
             }
         } else if (placement === 'vertex') {
             points = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes);
+            //@ts-ignore
             rotations = [];
             if (points && points.length > 0 && Array.isArray(points[0])) {
                 for (let i = 0, l = points.length; i < l; i++) {
                     for (let ii = 0, ll = points[i].length; ii < ll; ii++) {
                         if (ii === 0) {
+                            //@ts-ignore
                             rotations.push([points[i][ii], points[i][ii + 1]]);
                         } else {
+                            //@ts-ignore
                             rotations.push([points[i][ii - 1], points[i][ii]]);
                         }
                     }
@@ -73,14 +77,17 @@ const PolyRenderer = {
             } else {
                 for (let i = 0, l = points.length; i < l; i++) {
                     if (i === 0) {
+                        //@ts-ignore
                         rotations.push([points[i], points[i + 1]]);
                     } else {
+                        //@ts-ignore
                         rotations.push([points[i - 1], points[i]]);
                     }
                 }
             }
         } else if (placement === 'line') {
             points = [];
+            //@ts-ignore
             rotations = [];
             const vertice = this._getPath2DPoints(this._getPrjCoordinates(), false, glRes),
                 isSplitted = vertice.length > 0 && Array.isArray(vertice[0]);
@@ -94,6 +101,7 @@ const PolyRenderer = {
                     }
                     for (let ii = 1, ll = ring.length; ii < ll; ii++) {
                         points.push(ring[ii].add(ring[ii - 1])._multi(0.5));
+                         //@ts-ignore
                         rotations.push([ring[ii - 1], ring[ii]]);
                     }
                 }
@@ -103,6 +111,7 @@ const PolyRenderer = {
                 }
                 for (let i = 1, l = vertice.length; i < l; i++) {
                     points.push(vertice[i].add(vertice[i - 1])._multi(0.5));
+                     //@ts-ignore
                     rotations.push([vertice[i - 1], vertice[i]]);
                 }
             }
@@ -112,6 +121,7 @@ const PolyRenderer = {
             const l = coords.length;
             const point0 = l ? map._prjToPointAtRes(coords[0], glRes) : null;
             points = l ? [point0] : [];
+             //@ts-ignore
             rotations = l ? [[point0, coords[1] ? map._prjToPointAtRes(coords[1], glRes) : point0]] : [];
         } else if (placement === 'vertex-last') {
             const coords = this._getPrjCoordinates();
@@ -119,6 +129,7 @@ const PolyRenderer = {
             const curretPoint = l ? map._prjToPointAtRes(coords[l - 1], glRes) : null;
             points = l ? [curretPoint] : [];
             const previous = l > 1 ? l - 2 : l - 1;
+             //@ts-ignore
             rotations = l ? [[coords[previous] ? map._prjToPointAtRes(coords[previous], glRes) : curretPoint, curretPoint]] : [];
         } else {
             const center = this.getCenter();

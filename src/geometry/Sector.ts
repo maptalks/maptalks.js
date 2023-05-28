@@ -116,9 +116,11 @@ class Sector extends Circle {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
+        //@ts-ignore
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
+        //@ts-ignore
         const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
             size = this.getSize(),
@@ -138,6 +140,7 @@ class Sector extends Circle {
         } else {
             between = (angle >= sAngle && angle <= eAngle);
         }
+        //@ts-ignore
         return pp.distanceTo(pc) <= (size.width / 2 + t) && between;
     }
 

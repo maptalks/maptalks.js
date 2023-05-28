@@ -100,6 +100,7 @@ class MapScrollWheelZoomHandler extends Handler {
         if (!this._zooming && this._delta) {
             const map = this.target;
             this._zoomOrigin = origin;
+            //@ts-ignore
             map.onZoomStart(null, origin);
         }
         this._start();
@@ -136,6 +137,7 @@ class MapScrollWheelZoomHandler extends Handler {
         //@ts-ignore
         this._timeout = setTimeout(() => {
             this._zooming = false;
+            //@ts-ignore
             delete this._timeout;
             map.onZoomEnd(map.getZoom(), this._zoomOrigin);
         }, 210);
@@ -160,6 +162,7 @@ class MapScrollWheelZoomHandler extends Handler {
         }
         this._zooming = true;
         if (!this._delta) {
+            //@ts-ignore
             map.onZoomStart(null, origin);
             this._origin = origin;
             this._delta = levelValue;
@@ -177,7 +180,9 @@ class MapScrollWheelZoomHandler extends Handler {
         }, frame => {
             if (frame.state.playState !== 'finished') {
                 if (frame.state.playState !== 'running') {
+                    //@ts-ignore
                     delete this._zooming;
+                    //@ts-ignore
                     delete this._requesting;
                 }
                 return;
@@ -198,15 +203,20 @@ class MapScrollWheelZoomHandler extends Handler {
                         //     delete this._zooming;
                         //     delete this._requesting;
                         // }, 100);
+                        //@ts-ignore
                         delete this._zooming;
+                        //@ts-ignore
                         delete this._requesting;
                     }
                 });
+                //@ts-ignore
                 delete this._startZoom;
                 delete this._origin;
+                //@ts-ignore
                 delete this._delta;
                 this._requesting = 0;
             } else if (!isNil(this._requesting)) {
+                //@ts-ignore
                 delete this._zooming;
                 this._onWheelScroll(evt);
             }

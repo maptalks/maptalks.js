@@ -181,12 +181,14 @@ class InfoWindow extends UIComponent {
         const msgContent = dom.querySelector('.maptalks-msgContent');
         if (isStr || isFunc) {
             if (isStr) {
+                //@ts-ignore
                 msgContent.innerHTML = this.options['content'];
             } else {
                 //dymatic render dom content
                 this.options['content'].bind(this)(msgContent);
             }
         } else {
+            //@ts-ignore
             msgContent.appendChild(this.options['content']);
         }
         this._onCloseBtnClick = this.hide.bind(this);
@@ -223,15 +225,18 @@ class InfoWindow extends UIComponent {
      */
     getTransformOrigin() {
         const size = this.getSize();
+        //@ts-ignore
         return size.width / 2 + 'px bottom';
     }
 
     getOffset() {
         const size = this.getSize();
+        //@ts-ignore
         const o = new Point(-size['width'] / 2, 0);
         if (!this.options['custom']) {
             o._sub(4, 12);
         } else {
+            //@ts-ignore
             o._sub(0, size['height']);
         }
         const owner = this.getOwner();
@@ -304,6 +309,7 @@ class InfoWindow extends UIComponent {
             const closeBtn = dom.childNodes[2];
             //@ts-ignore
             removeDomEvent(closeBtn, 'click touchend', this._onCloseBtnClick);
+            //@ts-ignore
             delete this._onCloseBtnClick;
         }
     }
@@ -359,10 +365,13 @@ class InfoWindow extends UIComponent {
         }
         const filterPts = [];
         if (coordinateIndex === 0) {
+            //@ts-ignore
             filterPts.push(pts[0], pts[1]);
         } else if (coordinateIndex === pts.length - 1) {
+            //@ts-ignore
             filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex]);
         } else {
+            //@ts-ignore
             filterPts.push(pts[coordinateIndex - 1], pts[coordinateIndex], pts[coordinateIndex + 1]);
         }
         const xys = [];
@@ -370,20 +379,29 @@ class InfoWindow extends UIComponent {
         //Calculate all pixels in the field of view
         for (let i = 0, len = filterPts.length - 1; i < len; i++) {
             const pt1 = filterPts[i], pt2 = filterPts[i + 1];
+            //@ts-ignore
             if (pt1.x === pt2.x) {
+                //@ts-ignore
                 const miny = Math.max(0, Math.min(pt1.y, pt2.y));
+                //@ts-ignore
                 const maxy = Math.min(height, Math.max(pt1.y, pt2.y));
                 for (let y = miny; y <= maxy; y++) {
+                    //@ts-ignore
                     xys.push(new Point(pt1.x, y));
                 }
             } else {
+                //@ts-ignore
                 const k = (pt2.y - pt1.y) / (pt2.x - pt1.x);
                 // y-y0=k(x-x0)
                 // y-pt1.y=k(x-pt1.x)
+                //@ts-ignore
                 const minx = Math.max(0, Math.min(pt1.x, pt2.x));
+                //@ts-ignore
                 const maxx = Math.min(width, Math.max(pt1.x, pt2.x));
                 for (let x = minx; x <= maxx; x++) {
+                    //@ts-ignore
                     const y = k * (x - pt1.x) + pt1.y;
+                    //@ts-ignore
                     xys.push(new Point(x, y));
                 }
             }

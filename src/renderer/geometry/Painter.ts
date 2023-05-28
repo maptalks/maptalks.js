@@ -106,6 +106,7 @@ class Painter extends Class {
                     const symbolizer = new regSymbolizers[i](symbol, this.geometry, this);
                     //@ts-ignore
                     symbolizer._index = ii;
+                    //@ts-ignore
                     symbolizers.push(symbolizer);
                     if (symbolizer instanceof Symbolizers.PointSymbolizer) {
                         this._hasPoint = true;
@@ -152,6 +153,7 @@ class Painter extends Class {
      * @return {Object[]} resources to render vector
      */
     getPaintParams(dx, dy, ignoreAltitude, disableClip, ptkey = '_pt') {
+        //@ts-ignore
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
         let resolution, pitch, bearing, glScale, containerExtent;
@@ -163,10 +165,15 @@ class Painter extends Class {
             glScale = mapStateCache.glScale;
             containerExtent = mapStateCache.containerExtent;
         } else {
+            //@ts-ignore
             resolution = map.getResolution();
+            //@ts-ignore
             pitch = map.getPitch();
+            //@ts-ignore
             bearing = map.getBearing();
+            //@ts-ignore
             glScale = map.getGLScale();
+            //@ts-ignore
             containerExtent = map.getContainerExtent();
         }
         const geometry = this.geometry,
@@ -222,15 +229,19 @@ class Painter extends Class {
         if (!cPoints) {
             return null;
         }
+        //@ts-ignore
         tr.push(cPoints);
         for (let i = 1, l = params.length; i < l; i++) {
             if (isNumber(params[i]) || (params[i] instanceof Size)) {
                 if (isNumber(params[i])) {
+                    //@ts-ignore
                     tr.push(params[i] / zoomScale);
                 } else {
+                    //@ts-ignore
                     tr.push(params[i].multi(1 / zoomScale));
                 }
             } else {
+                //@ts-ignore
                 tr.push(params[i]);
             }
         }
@@ -241,6 +252,7 @@ class Painter extends Class {
         if (this._aboveCamera()) {
             return null;
         }
+        //@ts-ignore
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
 
@@ -252,10 +264,13 @@ class Painter extends Class {
             glRes = mapStateCache.glRes;
             containerExtent = mapStateCache.containerExtent;
         } else {
+            //@ts-ignore
             glRes = map.getGLRes();
+            //@ts-ignore
             containerExtent = map.getContainerExtent();
         }
         let cPoints;
+        //@ts-ignore
         const roundPoint = this.getLayer().options['roundPoint'];
         let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
         let needClip = !disableClip;
@@ -264,21 +279,30 @@ class Painter extends Class {
 
         function pointsContainerPoints(viewPoints = [], alts = []) {
             let pts = getPointsResultPts(viewPoints, ptkey);
+            //@ts-ignore
             pts = map._pointsAtResToContainerPoints(viewPoints, glRes, alts, pts);
             for (let i = 0, len = pts.length; i < len; i++) {
                 const p = pts[i];
+                //@ts-ignore
                 p._sub(containerOffset);
                 if (dx || dy) {
+                    //@ts-ignore
                     p._add(dx || 0, dy || 0);
                 }
                 if (roundPoint) {
                     //使用 round 会导致左右波动，用floor,ceil 要好点
+                    //@ts-ignore
                     p.x = Math.ceil(p.x);
+                    //@ts-ignore
                     p.y = Math.ceil(p.y);
                 }
+                //@ts-ignore
                 minx = Math.min(p.x, minx);
+                //@ts-ignore
                 miny = Math.min(p.y, miny);
+                //@ts-ignore
                 maxx = Math.max(p.x, maxx);
+                //@ts-ignore
                 maxy = Math.max(p.y, maxy);
             }
             if (needClip && isDashLine(symbolizers)) {
@@ -297,7 +321,9 @@ class Painter extends Class {
                 if (clipPts.length) {
                     const points = [];
                     clipPts.forEach(clipPt => {
+                        //@ts-ignore
                         for (let i = 0, len = clipPt.length; i < len; i++) {
+                            //@ts-ignore
                             points.push(clipPt[i].point);
                         }
                     });
@@ -354,8 +380,10 @@ class Painter extends Class {
                                 alt = 0;
                             }
                         }
+                        //@ts-ignore
                         altArray.push(alt);
                     }
+                    //@ts-ignore
                     const cring = pointsContainerPoints(c, altArray);
                     cPoints.push(cring);
                 } else {
@@ -371,6 +399,7 @@ class Painter extends Class {
                             alt = altitude[i];
                         }
                     }
+                    //@ts-ignore
                     alts.push(alt);
                 }
             }
@@ -381,6 +410,7 @@ class Painter extends Class {
             if (ignoreAltitude) {
                 altitude = 0;
             }
+            //@ts-ignore
             cPoints = map._pointAtResToContainerPoint(points, glRes, altitude)._sub(containerOffset);
             if (dx || dy) {
                 cPoints._add(dx, dy);
@@ -424,6 +454,7 @@ class Painter extends Class {
         if (!isNumber(lineWidth)) {
             lineWidth = 4;
         }
+        //@ts-ignore
         const renderer = this.getLayer()._getRenderer();
         const mapStateCache = renderer.mapStateCache;
         let _2DExtent, glExtent, pitch;
@@ -432,13 +463,18 @@ class Painter extends Class {
             glExtent = mapStateCache.glExtent;
             pitch = mapStateCache.pitch;
         } else {
+            //@ts-ignore
             _2DExtent = map._get2DExtent();
+            //@ts-ignore
             glExtent = map._get2DExtentAtRes(map.getGLRes());
+            //@ts-ignore
             pitch = map.getPitch();
         }
         let extent2D = _2DExtent._expand(lineWidth);
         if (pitch > 0 && altitude) {
+            //@ts-ignore
             const c = map.cameraLookAt;
+            //@ts-ignore
             const pos = map.cameraPosition;
             //add [1px, 1px] towards camera's lookAt
             TEMP_POINT0.set(pos.x, pos.y);
@@ -457,6 +493,7 @@ class Painter extends Class {
                 inView: true
             };
         }
+        //@ts-ignore
         const glExtent2D = glExtent._expand(lineWidth * map._glScale);
 
         TEMP_CLIP_EXTENT0.xmin = glExtent2D.xmin;
@@ -549,6 +586,7 @@ class Painter extends Class {
             if (Array.isArray(p)) {
                 const alt = [];
                 const cp = p.map(pp => {
+                    //@ts-ignore
                     alt.push(pp.altitude);
                     return pp.point;
                 });
@@ -573,6 +611,7 @@ class Painter extends Class {
             return;
         }
         const layer = this.getLayer();
+        //@ts-ignore
         const renderer = layer._getRenderer();
         if (!renderer || !renderer.context && !context) {
             return;
@@ -590,6 +629,7 @@ class Painter extends Class {
             return;
         }
         //Multiplexing offset
+        //@ts-ignore
         this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
@@ -604,6 +644,7 @@ class Painter extends Class {
         this._afterPaint();
         this._painted = true;
         // reduce function call
+        //@ts-ignore
         if (this.geometry.options['debug'] || layer.options['debug']) {
             this._debugSymbolizer.symbolize.apply(this._debugSymbolizer, contexts);
         }
@@ -621,6 +662,7 @@ class Painter extends Class {
                 extent._combine(markerExtent);
             });
             const origin = extent.getMin().multi(-1);
+            //@ts-ignore
             const clazz = canvasClass || (this.getMap() ? this.getMap().CanvasClass : null);
             const canvas = Canvas.createCanvas(extent.getWidth(), extent.getHeight(), clazz);
             let bak;
@@ -661,6 +703,7 @@ class Painter extends Class {
         }
         this._hitPoint = cp.sub(tolerance, tolerance);
         if (!testCanvas) {
+            //@ts-ignore
             const canvasClass = this.getMap() ? this.getMap().CanvasClass : null;
             testCanvas = Canvas.createCanvas(1, 1, canvasClass);
         }
@@ -674,7 +717,9 @@ class Painter extends Class {
         } finally {
             Canvas.setHitTesting(false);
         }
+        //@ts-ignore
         delete this._hitPoint;
+        //@ts-ignore
         const imgData = ctx.getImageData(0, 0, testCanvas.width, testCanvas.height).data;
         for (let i = 3, l = imgData.length; i < l; i += 4) {
             if (imgData[i] > 0) {
@@ -718,13 +763,16 @@ class Painter extends Class {
     get2DExtent(resources, out) {
         this._verifyProjection();
         const map = this.getMap();
+        //@ts-ignore
         resources = resources || this.getLayer()._getRenderer().resources;
+        //@ts-ignore
         const zoom = map.getZoom();
         const isDynamicSize = this._isDynamicSize();
         //@ts-ignore
         if (!this._extent2D || this._extent2D._zoom !== zoom || !this._fixedExtent) {
             //@ts-ignore
             if (this._extent2D && this._extent2D._zoom !== zoom) {
+                //@ts-ignore
                 delete this._extent2D;
             }
             if (this.symbolizers) {
@@ -741,12 +789,14 @@ class Painter extends Class {
 
         if (!this._extent2D) {
             if (isDynamicSize) {
+                //@ts-ignore
                 delete this._fixedExtent;
             }
             return null;
         }
         const { xmin, ymin, xmax, ymax } = this._fixedExtent;
         if (isDynamicSize) {
+            //@ts-ignore
             delete this._fixedExtent;
         }
         //2d 坐标系是opengl规则，y轴方向与containerPoint是反向的
@@ -791,14 +841,18 @@ class Painter extends Class {
     _aboveCamera() {
         let altitude = this.getMinAltitude();
         const map = this.getMap();
+        //@ts-ignore
         const glRes = map.getGLRes();
+        //@ts-ignore
         altitude = map.altitudeToPoint(altitude, glRes) * sign(altitude);
+        //@ts-ignore
         const frustumAlt = map.getFrustumAltitude();
         return altitude && frustumAlt && frustumAlt < altitude;
     }
 
     getFixedExtent() {
         const map = this.getMap();
+        //@ts-ignore
         const zoom = map.getZoom();
         if (this._isDynamicSize()) {
             return this._computeFixedExtent(null, new PointExtent());
@@ -819,6 +873,7 @@ class Painter extends Class {
     show() {
         if (!this._painted) {
             const layer = this.getLayer();
+            //@ts-ignore
             if (!layer.isCanvasRender()) {
                 this.paint();
             }
@@ -877,10 +932,13 @@ class Painter extends Class {
      * delete painter's caches
      */
     removeCache() {
+        //@ts-ignore
         delete this._renderPoints;
         delete this._paintParams;
         delete this._sprite;
+        //@ts-ignore
         delete this._extent2D;
+        //@ts-ignore
         delete this._fixedExtent;
         delete this._cachedParams;
         delete this._unsimpledParams;
@@ -968,6 +1026,7 @@ function interpolateAlt(points, orig, altitude) {
     const parts = [];
     for (let i = 0, l = points.length; i < l; i++) {
         if (Array.isArray(points[i])) {
+            //@ts-ignore
             parts.push(interpolateAlt(points[i], orig, altitude));
         } else {
             const p = points[i];
@@ -985,9 +1044,11 @@ function interpolateAlt(points, orig, altitude) {
                 const t = t0 / (t0 + orig[w0].distanceTo(p.point));
                 const alt = interpolate(altitude[w0], altitude[w1], 1 - t);
                 p.altitude = alt;
+                //@ts-ignore
                 parts.push(p);
             } else {
                 p.altitude = altitude[p.index];
+                //@ts-ignore
                 parts.push(p);
             }
         }

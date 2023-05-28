@@ -132,16 +132,21 @@ class Menu extends UIComponent {
             size = this.getSize();
         let dx = 0,
             dy = 0;
+        //@ts-ignore
         if (p.x + size['width'] > mapSize['width']) {
+            //@ts-ignore
             dx = -size['width'];
         }
+        //@ts-ignore
         if (p.y + size['height'] > mapSize['height']) {
+            //@ts-ignore
             dy = -size['height'];
         }
         return new Point(dx, dy);
     }
 
     getTransformOrigin() {
+         //@ts-ignore
         const p = this.getOffset()._multi(-1);
         return p.x + 'px ' + p.y + 'px';
     }

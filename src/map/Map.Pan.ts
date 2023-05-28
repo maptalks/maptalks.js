@@ -3,7 +3,7 @@ import Point from '../geo/Point';
 import Map from './Map';
 import { isFunction } from '../core/util';
 
-Map.include({
+Map.include( /** @lends Map.prototype */{
     /** @lends Map.prototype */
 
     /**

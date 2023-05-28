@@ -18,6 +18,7 @@ import TileConfig from './tileinfo/TileConfig';
 import TileSystem from './tileinfo/TileSystem';
 import Layer, { LayerOptionsType } from '../Layer';
 import SpatialReference from '../../map/spatial-reference/SpatialReference';
+//@ts-ignore
 import { intersectsBox } from 'frustum-intersects';
 import * as vec3 from '../../core/util/vec3';
 
@@ -211,6 +212,7 @@ const ARR3 = [];
         subdomains:['a','b','c']
     })
  */
+//@ts-ignore
 class TileLayer extends Layer {
     _tileSize: Size;
     _coordCache: object;
@@ -353,6 +355,7 @@ class TileLayer extends Layer {
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
                 const y = scale.y < 0 ? j : -(j + 1);
+                //@ts-ignore
                 tiles.push({
                     x: i,
                     y,
@@ -426,6 +429,7 @@ class TileLayer extends Layer {
                 const tileGrid = this._getTiles(0, visualContainerExtent, 2, layer && layer.getRenderer(), true);
                 const error = this._getRootError();
                 tileGrid.tiles.forEach(t => {
+                    //@ts-ignore
                     t.error = error;
                 });
                 queue = tileGrid.tiles;
@@ -459,6 +463,7 @@ class TileLayer extends Layer {
             const node = queue.pop();
             if (node.z === maxZoom) {
                 extent._combine(node.extent2d);
+                //@ts-ignore
                 tiles.push(node);
                 continue;
             }
@@ -467,6 +472,7 @@ class TileLayer extends Layer {
             }
             this._splitNode(node, projectionView, queue, tiles, extent, maxZoom, offsets[node.z + 1], layer && layer.getRenderer(), glRes);
             if (this.isParentTile(z, maxZoom, node)) {
+                //@ts-ignore
                 parents.push(node);
             }
         }
@@ -583,6 +589,7 @@ class TileLayer extends Layer {
                 gridExtent._combine(node.extent2d);
                 return;
             }
+            //@ts-ignore
             children.push(childNode);
         }
         if (z === maxZoom) {
@@ -732,6 +739,7 @@ class TileLayer extends Layer {
             const currentTiles = this._getTiles(tileZoom, containerExtent, 2, parentRenderer);
             if (currentTiles) {
                 count += currentTiles.tiles.length;
+                //@ts-ignore
                 tileGrids.push(currentTiles);
             }
             return {
@@ -742,6 +750,7 @@ class TileLayer extends Layer {
         const extent0 = new PointExtent(0, map.height - visualHeight0, map.width, map.height);
         const currentTiles = this._getTiles(tileZoom, extent0, 0, parentRenderer);
         count += currentTiles ? currentTiles.tiles.length : 0;
+        //@ts-ignore
         tileGrids.push(currentTiles);
 
         let cascadeHeight = extent0.ymin;
@@ -758,6 +767,7 @@ class TileLayer extends Layer {
             count += cascadeTiles1 ? cascadeTiles1.tiles.length : 0;
             cascadeHeight = extent1.ymin;
             cascadeLevels += 4 * d;
+            //@ts-ignore
             tileGrids.push(cascadeTiles1);
         }
 
@@ -766,11 +776,14 @@ class TileLayer extends Layer {
             const extent2 = new PointExtent(0, mapExtent.ymin, map.width, cascadeHeight);
             cascadeTiles2 = this._getTiles(tileZoom - cascadeLevels, extent2, 2, parentRenderer);
             count += cascadeTiles2 ? cascadeTiles2.tiles.length : 0;
+            //@ts-ignore
             tileGrids.push(cascadeTiles2);
         }
 
         if (cascadeTiles1 && cascadeTiles2) {
+            //@ts-ignore
             tileGrids[1] = cascadeTiles2;
+            //@ts-ignore
             tileGrids[2] = cascadeTiles1;
         }
 
@@ -1054,6 +1067,7 @@ class TileLayer extends Layer {
                     continue;
                 }
                 //unique id of the tile
+                //@ts-ignore
                 let tileInfo = renderer && renderer.isTileCachedOrLoading(tileId);
                 if (tileInfo) {
                     tileInfo = tileInfo.info;
@@ -1130,7 +1144,7 @@ class TileLayer extends Layer {
                             tileInfo.offset[0] = offset[0];
                             tileInfo.offset[1] = offset[1];
                         }
-
+                        //@ts-ignore
                         tiles.push(tileInfo);
                         extent._combine(tileExtent);
                     }
@@ -1153,7 +1167,9 @@ class TileLayer extends Layer {
             const point0 = new Point(0, 0);
             const point1 = new Point(0, 0);
             tiles.sort(function (a, b) {
+                //@ts-ignore
                 point0.set((a.extent2d.xmin + a.extent2d.xmax) / 2, (a.extent2d.ymin + a.extent2d.ymax) / 2);
+                //@ts-ignore
                 point1.set((b.extent2d.xmin + b.extent2d.xmax) / 2, (b.extent2d.ymin + b.extent2d.ymax) / 2);
                 return point0.distanceTo(center) - point1.distanceTo(center);
             });
@@ -1316,6 +1332,7 @@ class TileLayer extends Layer {
         //     this._tileConfig = new TileConfig(map, base.tileSystem, base.fullExtent, tileSize);
         // }
         delete this._rootNodes;
+        //@ts-ignore
         delete this._tileFullExtent;
         delete this._disablePyramid;
     }
@@ -1381,6 +1398,7 @@ class TileLayer extends Layer {
         delete this._tileConfig;
         delete this._defaultTileConfig;
         delete this._sr;
+        //@ts-ignore
         delete this._srMinZoom;
         delete this._hasOwnSR;
         delete this._rootNodes;

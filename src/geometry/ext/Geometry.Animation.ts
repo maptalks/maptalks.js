@@ -3,6 +3,11 @@ import { extendSymbol } from '../../core/util/style';
 import { Animation, Player } from '../../core/Animation';
 import Coordinate from '../../geo/Coordinate';
 type Constructor = new (...args: any[]) => {};
+/**
+ * 
+ * @mixin GeometryAnimation
+ */
+
 export default function GeometryAnimation<TBase extends Constructor>(Base: TBase) {
 
     return class extends Base {
@@ -21,6 +26,7 @@ export default function GeometryAnimation<TBase extends Constructor>(Base: TBase
          * @param  {Boolean}  [options.repeat=false]      - repeat animation
          * @param  {Function} [step=null]  - step function during animation, animation frame as the parameter
          * @return {animation.Player} animation player
+         * @function GeometryAnimation.animate
          * @example
          * var player = marker.animate({
          *     'symbol': {
@@ -53,6 +59,7 @@ export default function GeometryAnimation<TBase extends Constructor>(Base: TBase
             let preTranslate;
 
             const isFocusing = options['focus'];
+            //@ts-ignore
             delete this._animationStarted;
             // geometry.animate can be called without map
             if (map) {
@@ -175,6 +182,7 @@ export default function GeometryAnimation<TBase extends Constructor>(Base: TBase
 
         _fireAnimateEvent(playState) {
             if (playState === 'finished') {
+                //@ts-ignore
                 delete this._animationStarted;
                 /**
                  * fired when geometry's animation ended.

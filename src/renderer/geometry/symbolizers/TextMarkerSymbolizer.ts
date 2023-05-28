@@ -71,7 +71,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     getPlacement() {
         return this.symbol['textPlacement'];
     }
-
+    //@ts-ignore
     getRotation() {
         const r = this.style['textRotation'];
         if (!isNumber(r)) {

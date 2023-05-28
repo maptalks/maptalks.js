@@ -43,6 +43,7 @@ class MapDragHandler extends Handler {
             .off('dragging', this._onDragging, this)
             .off('dragend', this._onDragEnd, this);
         this._dragHandler.remove();
+        //@ts-ignore
         delete this._dragHandler;
     }
 
@@ -64,7 +65,9 @@ class MapDragHandler extends Handler {
     }
 
     _onMouseDown(param) {
+        //@ts-ignore
         delete this.startDragTime;
+        //@ts-ignore
         delete this._mode;
         if (param.domEvent.button === 2 || param.domEvent.ctrlKey) {
             if (this.target.options['dragRotate'] || this.target.options['dragPitch']) {
@@ -104,7 +107,9 @@ class MapDragHandler extends Handler {
         } else if (this._mode === 'rotatePitch') {
             this._rotateEnd(param);
         }
+        //@ts-ignore
         delete this.startDragTime;
+        //@ts-ignore
         delete this.startBearing;
     }
 
@@ -122,7 +127,7 @@ class MapDragHandler extends Handler {
         const map = this.target;
         map.onMoveStart(param);
         const p = getEventContainerPoint(map._getActualEvent(param.domEvent), map.getContainer());
-       //@ts-ignore
+        //@ts-ignore
         this.startPrjCoord = map._containerPointToPrj(p);
     }
 
@@ -165,6 +170,7 @@ class MapDragHandler extends Handler {
 
     _rotateStart(param) {
         this._start(param);
+        //@ts-ignore
         delete this._rotateMode;
         this.startBearing = this.target.getBearing();
         this.target.onDragRotateStart(param);
@@ -240,10 +246,15 @@ class MapDragHandler extends Handler {
     }
 
     _clear() {
+        //@ts-ignore
         delete this.startPrjCoord;
+        //@ts-ignore
         delete this.preX;
+        //@ts-ignore
         delete this.preY;
+        //@ts-ignore
         delete this.startX;
+        //@ts-ignore
         delete this.startY;
     }
 }

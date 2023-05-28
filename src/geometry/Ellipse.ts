@@ -121,6 +121,7 @@ class Ellipse extends CenterMixin(Polygon) {
                 dy *= -1;
             }
             const vertex = measurer.locate(center, dx, dy);
+            //@ts-ignore
             shell.push(vertex);
         }
         return shell;
@@ -140,14 +141,20 @@ class Ellipse extends CenterMixin(Polygon) {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
+        //@ts-ignore
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
+        //@ts-ignore
         const projection = map.getProjection();
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            //@ts-ignore
             pps = projection.projectCoords([this._coordinates, map.locate(this._coordinates, this.getWidth() / 2, this.getHeight() / 2)], this.options['antiMeridian']),
+            //@ts-ignore
             p0 = map._prjToContainerPoint(pps[0]),
+            //@ts-ignore
             p1 = map._prjToContainerPoint(pps[1]);
+        //@ts-ignore
         return withInEllipse(point, p0, p1, t);
     }
 

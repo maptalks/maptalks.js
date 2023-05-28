@@ -47,6 +47,7 @@ class GeometryDragHandler extends Handler {
     removeHooks() {
         this._endDrag();
         this.target.off(EVENTS, this._startDrag, this);
+        //@ts-ignore
         delete this.container;
     }
 
@@ -111,6 +112,7 @@ class GeometryDragHandler extends Handler {
                 } else {
                     conn = new targetConn.constructor(targetConn.getConnectSource(), shadow, connOptions);
                 }
+                //@ts-ignore
                 shadowConnectors.push(conn);
                 if (targetConn.getLayer() && targetConn.getLayer()._getRenderer()) {
                     resources.merge(targetConn.getLayer()._getRenderer().resources);
@@ -119,6 +121,7 @@ class GeometryDragHandler extends Handler {
             }
         }
         this._shadowConnectors = shadowConnectors;
+        //@ts-ignore
         shadowConnectors.push(shadow);
         this._dragStageLayer.bringToFront().addGeometry(shadowConnectors);
     }
@@ -244,6 +247,7 @@ class GeometryDragHandler extends Handler {
         }
         this._lastPoint = point;
         this._lastCoord = coord;
+        //@ts-ignore
         geo.translate(coordOffset);
         if (geo !== target && !target.options['dragShadow']) {
             target.translate(coordOffset);
@@ -271,6 +275,7 @@ class GeometryDragHandler extends Handler {
     _endDrag(param?) {
         if (this._dragHandler) {
             this._dragHandler.disable();
+            //@ts-ignore
             delete this._dragHandler;
         }
         if (this.container) {
@@ -284,8 +289,9 @@ class GeometryDragHandler extends Handler {
         target.off('click', this._endDrag, this);
 
         target.off('symbolchange', this._onTargetUpdated, this);
-
+        //@ts-ignore
         delete this._lastCoord;
+        //@ts-ignore
         delete this._lastPoint;
 
         this._isDragging = false;
@@ -346,6 +352,7 @@ class GeometryDragHandler extends Handler {
             }
             shadow._fireEvent('dragend', eventParam);
             shadow.remove();
+            //@ts-ignore
             delete this._shadow;
         }
         if (this._shadowConnectors) {

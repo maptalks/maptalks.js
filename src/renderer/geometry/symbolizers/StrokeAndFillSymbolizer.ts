@@ -55,6 +55,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         const isGradient = checkGradient(style['lineColor']),
             isPath = (this.geometry.getJSONType() === 'Polygon') || (this.geometry.type === 'LineString');
         if (isGradient && (style['lineColor']['places'] || !isPath)) {
+            //@ts-ignore
             style['lineGradientExtent'] = this.geometry.getContainerExtent()._expand(style['lineWidth']);
         }
         if (checkGradient(style['polygonFill'])) {
@@ -112,7 +113,9 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         this._extMin.y = extent['ymin'];
         this._extMax.x = extent['xmax'];
         this._extMax.y = extent['ymax'];
+        //@ts-ignore
         const min = map._prjToPoint(this._extMin, undefined, TEMP_COORD0),
+            //@ts-ignore
             max = map._prjToPoint(this._extMax, undefined, TEMP_COORD1);
         if (!this._pxExtent) {
             this._pxExtent = new PointExtent(min, max);

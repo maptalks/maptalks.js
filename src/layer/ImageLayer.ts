@@ -47,9 +47,11 @@ class ImageLayer extends Layer {
         //@ts-ignore
         if (images && !Array.isArray(images) && !images.url) {
             options = images;
+            //@ts-ignore
             images = null;
         }
         super(id, options);
+        //@ts-ignore
         this._images = images;
     }
 
@@ -107,6 +109,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
     _imageLoaded: boolean;
 
     isDrawable() {
+        //@ts-ignore
         if (this.getMap().getPitch()) {
             if (console) {
                 console.warn('ImageLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
@@ -131,6 +134,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
                     const img = this.resources.getImage(url);
                     resources.addResource(url, img);
                 } else {
+                    //@ts-ignore
                     unloaded.push(url);
                 }
             });
@@ -172,6 +176,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         //@ts-ignore
         const imgData = this.layer._imageData;
         const map = this.getMap();
+        //@ts-ignore
         const mapExtent = map._get2DExtentAtRes(map.getGLRes());
         if (imgData && imgData.length) {
             for (let i = 0; i < imgData.length; i++) {
@@ -194,8 +199,10 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         }
         const map = this.getMap();
         const nw = TEMP_POINT.set(extent.xmin, extent.ymax);
+        //@ts-ignore
         const point = map._pointAtResToContainerPoint(nw, map.getGLRes());
         let x = point.x, y = point.y;
+        //@ts-ignore
         const bearing = map.getBearing();
         if (bearing) {
             ctx.save();
@@ -205,6 +212,7 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
             }
             x = y = 0;
         }
+        //@ts-ignore
         const scale = map.getGLScale();
         ctx.drawImage(image, x, y, extent.getWidth() / scale, extent.getHeight() / scale);
         if (bearing) {

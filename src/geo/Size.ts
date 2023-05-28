@@ -23,6 +23,7 @@ class Size {
             /**
              * @property {Number} height - height
              */
+             //@ts-ignore
             this.height = height;
         } else if (isNumber(width['width'])) {
             //@ts-ignore

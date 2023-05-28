@@ -105,7 +105,9 @@ class TileLayerDomRenderer extends Class {
 
     remove() {
         this._abortLoading();
+        //@ts-ignore
         delete this._tiles;
+        //@ts-ignore
         delete this.layer;
         this._removeLayerContainer();
     }
@@ -194,7 +196,9 @@ class TileLayerDomRenderer extends Class {
             return true;
         }
         const map = this.getMap(),
+            //@ts-ignore
             mapRenderer = map._getRenderer();
+        //@ts-ignore
         return map.isInteracting() || mapRenderer.isViewChanged();
     }
 
@@ -210,6 +214,7 @@ class TileLayerDomRenderer extends Class {
         const param = this._zoomParam;
         const zoom = this._tileZoom;
         if (this._levelContainers && this._levelContainers[zoom]) {
+            //@ts-ignore
             if (map.domCssMatrix) {
                 this._updateContainer();
             } else {
@@ -231,6 +236,7 @@ class TileLayerDomRenderer extends Class {
 
     _drawOnDragRotating() {
         // when rotation is canceled, tiles needs to be repositioned.
+        //@ts-ignore
         const mat = this.getMap().domCssMatrix;
         if (!mat || this.layer.options['renderOnRotating']) {
             this._renderTiles();
@@ -300,6 +306,7 @@ class TileLayerDomRenderer extends Class {
             if (offset && !offset.isZero()) {
                 tiles[i]['viewPoint']._sub(offset);
             }
+            //@ts-ignore
             queue.push(tiles[i]);
         }
         this._centerOffset = tileGrid.anchor.sub(this._anchor);
@@ -322,9 +329,12 @@ class TileLayerDomRenderer extends Class {
     _updateContainer() {
         const map = this.getMap(),
             tileZoom = this._tileZoom,
+            //@ts-ignore
             domMat = map.domCssMatrix,
             container = this._getTileContainer(tileZoom),
+            //@ts-ignore
             size = map.getSize(),
+            //@ts-ignore
             fraction = map.getResolution(tileZoom) / map.getResolution(),
             centerOffset = this._centerOffset;
         const containerStyle = container.style;
@@ -354,7 +364,7 @@ class TileLayerDomRenderer extends Class {
             }
             return;
         }
-
+        //@ts-ignore
         if (Browser.chrome && Browser.chromeVersion.startsWith('60')) {
             const err = 'DOM TileLayer can\'t pitch or rotate due to a crash bug with chrome 60.';
             if (!this._reported) {
@@ -378,9 +388,11 @@ class TileLayerDomRenderer extends Class {
         let matrix;
         if (fraction !== 1) {
             const m = new Float32Array();
+            //@ts-ignore
             if (map.isZooming() && this._zoomParam) {
                 const origin = this._zoomParam['origin'],
                     // when origin is not in the center with pitch, layer scaling is not fit for map's scaling, add a offset to fix.
+                    //@ts-ignore
                     pitch = map.getPitch(),
                     offset = [
                         (origin.x - size['width'] / 2) * (1 - fraction),
@@ -402,11 +414,14 @@ class TileLayerDomRenderer extends Class {
             //@ts-ignore
             matrix = join(domMat);
         }
+        //@ts-ignore
         const mapOffset = map.getViewPoint().round();
         let tileOffset;
+        //@ts-ignore
         if (map.isZooming() && !map.isMoving()) {
             // when map is zooming, mapOffset is fixed when zoom starts
             // should multiply with zoom fraction if zoom start from a fractional zoom
+            //@ts-ignore
             const startFraction = map.getResolution(tileZoom) / map.getResolution(this._startZoom);
             tileOffset = mapOffset.multi(1 / startFraction);
         } else {
@@ -438,6 +453,7 @@ class TileLayerDomRenderer extends Class {
         // https://bugs.chromium.org/p/chromium/issues/detail?id=600120
         // related issue by Leaflet:
         // https://github.com/Leaflet/Leaflet/issues/3575
+        //@ts-ignore
         if (Browser.webkit && (map.isTransforming() || map.isZooming() || map.getZoom() !== this._tileZoom)) {
             tileSize[0]++;
             tileSize[1]++;
@@ -543,6 +559,7 @@ class TileLayerDomRenderer extends Class {
             if (this._pruneTimeout) {
                 clearTimeout(this._pruneTimeout);
             }
+            //@ts-ignore
             if (map.isInteracting()) {
                 this._pruneLevels();
             } else {
@@ -729,6 +746,7 @@ class TileLayerDomRenderer extends Class {
             //@ts-ignore
             container.style.zIndex = this._zIndex;
         }
+        //@ts-ignore
         const parentContainer = this.layer.options['container'] === 'front' ? this.getMap()._panels['frontLayer'] : this.getMap()._panels['backLayer'];
         parentContainer.appendChild(container);
     }
@@ -779,6 +797,7 @@ class TileLayerDomRenderer extends Class {
     }
 
     onMoveStart() {
+        //@ts-ignore
         if (this.getMap().getPitch()) {
             this._pruneLevels();
         }
@@ -787,6 +806,7 @@ class TileLayerDomRenderer extends Class {
     onZoomStart(param) {
         const map = this.getMap();
         this._fadeAnimated = false;
+        //@ts-ignore
         this._startZoom = map.getZoom();
         this._endZoom = param.to;
         //@ts-ignore
@@ -831,8 +851,11 @@ class TileLayerDomRenderer extends Class {
         }
         this._fadeAnimated = !Browser.mobile && this._startZoom !== this._endZoom;
         delete this._zoomParam;
+        //@ts-ignore
         delete this._endZoom;
+        //@ts-ignore
         delete this._startZoom;
+        //@ts-ignore
         delete this._curAnimZoom;
         this.setToRedraw();
     }

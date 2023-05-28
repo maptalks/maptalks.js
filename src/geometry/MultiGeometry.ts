@@ -50,6 +50,7 @@ class MultiGeometry extends GeometryCollection {
         for (let i = 0, l = coordinates.length; i < l; i++) {
             //@ts-ignore
             const g = new this.GeometryType(coordinates[i], this.config());
+            //@ts-ignore
             geometries.push(g);
         }
         this.setGeometries(geometries);

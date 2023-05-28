@@ -50,6 +50,7 @@ class OverlayLayer extends Layer {
         //@ts-ignore
         if (geometries && (!(geometries instanceof Geometry) && !Array.isArray(geometries) && GEOJSON_TYPES.indexOf(geometries.type) < 0)) {
             options = geometries;
+            //@ts-ignore
             geometries = null;
         }
         super(id, options);
@@ -78,7 +79,7 @@ class OverlayLayer extends Layer {
      * @param  {String|Number} id   - id of the geometry
      * @return {Geometry}
      */
-    getGeometryById(id): Geometry {
+    getGeometryById(id): Geometry | null {
         if (isNil(id) || id === '') {
             return null;
         }
@@ -108,6 +109,7 @@ class OverlayLayer extends Layer {
                 filtered = filter(geometry);
             }
             if (filtered) {
+                //@ts-ignore
                 result.push(geometry);
             }
         }
@@ -118,7 +120,7 @@ class OverlayLayer extends Layer {
      * Get the first geometry, the geometry at the bottom.
      * @return {Geometry} first geometry
      */
-    getFirstGeometry(): Geometry {
+    getFirstGeometry(): Geometry | null {
         if (!this._geoList.length) {
             return null;
         }
@@ -129,7 +131,7 @@ class OverlayLayer extends Layer {
      * Get the last geometry, the geometry on the top
      * @return {Geometry} last geometry
      */
-    getLastGeometry(): Geometry {
+    getLastGeometry(): Geometry | null {
         const len = this._geoList.length;
         if (len === 0) {
             return null;
@@ -149,7 +151,7 @@ class OverlayLayer extends Layer {
      * Get extent of all the geometries in the layer, return null if the layer is empty.
      * @return {Extent} - extent of the layer
      */
-    getExtent(): Extent {
+    getExtent(): Extent | null {
         if (this.getCount() === 0) {
             return null;
         }
@@ -192,6 +194,7 @@ class OverlayLayer extends Layer {
         this.forEach(geometry => {
             const g = isFn ? geometry : getFilterFeature(geometry);
             if (context ? filter.call(context, g) : filter(g)) {
+                //@ts-ignore
                 selected.push(geometry);
             }
         }, this);
@@ -253,12 +256,14 @@ class OverlayLayer extends Layer {
                 if (Array.isArray(geo)) {
                     for (let ii = 0, ll = geo.length; ii < ll; ii++) {
                         this._add(geo[ii], extent, i);
+                        //@ts-ignore
                         geos.push(geo[ii]);
                     }
                 }
             }
             if (!Array.isArray(geo)) {
                 this._add(geo, extent, i);
+                //@ts-ignore
                 geos.push(geo);
             }
         }
@@ -366,6 +371,7 @@ class OverlayLayer extends Layer {
         }
         for (let i = geometries.length - 1; i >= 0; i--) {
             if (!(geometries[i] instanceof Geometry)) {
+                //@ts-ignore
                 geometries[i] = this.getGeometryById(geometries[i]);
             }
             if (!geometries[i] || this !== geometries[i].getLayer()) continue;
@@ -712,6 +718,7 @@ class OverlayLayer extends Layer {
             return false;
         }
         if (!Array.isArray(eventTypes)) {
+            //@ts-ignore
             TMP_EVENTS_ARR[0] = eventTypes;
             eventTypes = TMP_EVENTS_ARR;
         }

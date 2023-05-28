@@ -86,7 +86,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     clearImageData() {
         //每次渲染完成清除缓存的imageData
+        //@ts-ignore
         this._imageData = null;
+        //@ts-ignore
         delete this._imageData;
         this._lastRenderTime = now();
     }
@@ -113,6 +115,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     needToRedraw() {
         const map = this.getMap();
+        if (!map) {
+            return false;
+        }
         if (map.isInteracting() && this.layer.options['enableAltitude']) {
             return true;
         }
@@ -166,8 +171,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         const count = this.layer.getCount();
         //@ts-ignore
         const res = this.mapStateCache.resolution;
+        //@ts-ignore
         if (map.isZooming() &&
+            //@ts-ignore
             map.options['seamlessZoom'] && this._drawnRes !== undefined && res > this._drawnRes * 1.5 &&
+            //@ts-ignore
             this._geosToDraw.length < count || map.isMoving() || map.isInteracting()) {
             this.prepareToDraw();
             //@ts-ignore
@@ -177,6 +185,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
             this._drawnRes = res;
         }
+        //@ts-ignore
         this._sortByDistanceToCamera(map.cameraPosition);
         const { collision, collisionDelay } = (this.layer.options as VectorLayerOptionsType);
         if (collision) {
@@ -184,6 +193,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             if (!this._lastCollisionTime) {
                 this._lastCollisionTime = time;
             }
+            //@ts-ignore
             if (time - this._lastCollisionTime <= collisionDelay) {
                 this._geosToDraw = this._lastGeosToDraw || this._geosToDraw;
             } else {
@@ -244,6 +254,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!this._onlyHasPoint) {
             this.forEachGeo(this.checkGeo, this);
         }
+        //@ts-ignore
         this._sortByDistanceToCamera(this.getMap().cameraPosition);
         this._collidesGeos();
         for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
@@ -319,6 +330,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     }
 
     onZoomEnd() {
+        //@ts-ignore
         delete this.canvasExtent2D;
         super.onZoomEnd.apply(this, arguments);
     }
@@ -327,6 +339,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this.forEachGeo(function (g) {
             g.onHide();
         });
+        //@ts-ignore
         delete this._geosToDraw;
     }
     //@ts-ignore
@@ -362,6 +375,9 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     _updateMapStateCache() {
         const map = this.getMap();
+        if (!map) {
+            return this;
+        }
         const offset = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
         const resolution = map.getResolution();
         const pitch = map.getPitch();
@@ -389,6 +405,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     // 优化前 11fps
     // 优化后 15fps
     _batchConversionMarkers(glRes) {
+        //@ts-ignore
         this._onlyHasPoint = undefined;
         if (!this._constructorIsThis()) {
             return [];
@@ -421,8 +438,11 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
                 if (altitudeCache[altitude] === undefined) {
                     altitudeCache[altitude] = painter.getAltitude();
                 }
+                //@ts-ignore
                 cPoints[idx] = point;
+                //@ts-ignore
                 altitudes[idx] = altitudeCache[altitude];
+                //@ts-ignore
                 markers[idx] = geo;
                 idx++;
             } else {
@@ -434,41 +454,57 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         const map = this.getMap();
         let pts = getPointsResultPts(cPoints, '_pt');
+        //@ts-ignore
         pts = map._pointsAtResToContainerPoints(cPoints, glRes, altitudes, pts);
+        //@ts-ignore
         const containerExtent = map.getContainerExtent();
         const { xmax, ymax, xmin, ymin } = containerExtent;
         const extentCache = {};
         for (let i = 0, len = markers.length; i < len; i++) {
             const geo = markers[i];
+            //@ts-ignore
             geo._cPoint = pts[i];
+            //@ts-ignore
             if (!geo._cPoint) {
+                //@ts-ignore
                 geo._inCurrentView = false;
                 continue;
             }
             const { x, y } = pts[i];
             //Is the point in view
+            //@ts-ignore
             geo._inCurrentView = (x >= xmin && y >= ymin && x <= xmax && y <= ymax);
             //不在视野内的，再用fixedExtent 精确判断下
+            //@ts-ignore
             if (!geo._inCurrentView) {
+                //@ts-ignore
                 const symbolkey = geo.getSymbolHash();
                 let fixedExtent;
                 if (symbolkey) {
                     //相同的symbol 不要重复计算
+                    //@ts-ignore
                     fixedExtent = extentCache[symbolkey] = (extentCache[symbolkey] || geo._painter.getFixedExtent());
                 } else {
+                    //@ts-ignore
                     fixedExtent = geo._painter.getFixedExtent();
                 }
                 TEMP_FIXEDEXTENT.set(fixedExtent.xmin, fixedExtent.ymin, fixedExtent.xmax, fixedExtent.ymax);
                 TEMP_FIXEDEXTENT._add(pts[i]);
+                //@ts-ignore
                 geo._inCurrentView = TEMP_FIXEDEXTENT.intersects(containerExtent);
             }
+            //@ts-ignore
             if (geo._inCurrentView) {
+                //@ts-ignore
                 if (!geo.isVisible() || !isCanvasRender) {
+                    //@ts-ignore
                     geo._inCurrentView = false;
                 }
                 //如果当前图层上只有点，整个checkGeo都不用执行了,这里已经把所有的点都判断了
+                //@ts-ignore
                 if (this._onlyHasPoint && geo._inCurrentView) {
                     this._hasPoint = true;
+                    //@ts-ignore
                     geo._isCheck = true;
                     this._geosToDraw.push(geo);
                 }
@@ -485,6 +521,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             return;
         }
         const map = this.getMap();
+        //@ts-ignore
         const p = map.distanceToPoint(1000, 0, map.getGLScale()).x;
         const meterScale = p / 1000;
         const placement = 'center';

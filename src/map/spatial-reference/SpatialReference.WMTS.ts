@@ -18,8 +18,11 @@ function getProjectionCode(code) {
 function getProjection(projection) {
     let prj = (projection.indexOf('EPSG') > -1 ? projection : 'EPSG:' + projection);
     prj = strReplace(prj, [
+        //@ts-ignore
         ['4490', '4326'],
+        //@ts-ignore
         ['102100', '3857'],
+        //@ts-ignore
         ['900913', '3857']
     ]);
     return prj;
@@ -27,6 +30,7 @@ function getProjection(projection) {
 
 function strReplace(str, repArray = []) {
     repArray.forEach(rep => {
+        //@ts-ignore
         const [template, value] = rep;
         str = str.replace(template, value);
     });
@@ -99,6 +103,7 @@ function parseWMTSXML(str, requestUrl, options) {
     for (let i = 0, len = content.childNodes.length; i < len; i++) {
         //@ts-ignore
         if (content.childNodes[i].localName === 'TileMatrixSet') {
+            //@ts-ignore
             TileMatrixSets.push(content.childNodes[i]);
         }
     }
@@ -145,18 +150,30 @@ function parseWMTSXML(str, requestUrl, options) {
                 url += '?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={LAYER}&STYLE={Style}&TILEMATRIXSET={TileMatrixSet}&FORMAT={tiles}&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}';
             }
             const urlTemplate = strReplace(url, [
+                //@ts-ignore
                 ['{LAYER}', layerName],
+                //@ts-ignore
                 ['{Layer}', layerName],
+                //@ts-ignore
                 ['{layer}', layerName],
+                //@ts-ignore
                 ['{STYLE}', style],
+                //@ts-ignore
                 ['{Style}', style],
+                //@ts-ignore
                 ['{style}', style],
+                //@ts-ignore
                 ['{TileMatrixSet}', TileMatrixSet],
+                //@ts-ignore
                 ['{TileMatrix}', isGeoServer ? `${levelStr}:{z}` : '{z}'],
+                //@ts-ignore
                 ['{TileRow}', '{y}'],
+                //@ts-ignore
                 ['{TileCol}', '{x}'],
+                //@ts-ignore
                 ['{tiles}', isGeoServer ? 'image/png' : 'tiles'],
             ]);
+            //@ts-ignore
             result.push({
                 tileSize,
                 tileSystem,
@@ -217,6 +234,7 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
         const TileWidth = getElementsByTagName(TileMatrix, 'TileWidth')[0].textContent;
         const TileHeight = getElementsByTagName(TileMatrix, 'TileHeight')[0].textContent;
         if (tileSize.length === 0) {
+            //@ts-ignore
             tileSize.push(parseInt(TileWidth), parseInt(TileHeight));
         }
         if (tileSystem.length === 0) {
@@ -226,13 +244,16 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
                 return parseFloat(v);
             });
             if (x > 0) {
+                //@ts-ignore
                 tileSystem.push(1, -1, y, x);
             } else {
+                //@ts-ignore
                 tileSystem.push(1, -1, x, y);
             }
         }
         const transformValue = getTransformValue(options);
         const res = parseFloat(ScaleDenominator) * transformValue;
+        //@ts-ignore
         resolutions.push(res);
     }
     //Missing LOD completion
@@ -240,6 +261,7 @@ function parseTileMatrixSet(TileMatrixSet, options = {}) {
     if (minLevel > 0) {
         let res = resolutions[0];
         for (let i = minLevel - 1; i >= 0; i--) {
+            //@ts-ignore
             res = res * 2;
             resolutions.splice(0, 0, res);
         }

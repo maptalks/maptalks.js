@@ -73,6 +73,7 @@ class WMSTileLayer extends TileLayer {
         }
         this.wmsParams = extend({}, defaultWmsParams);
         this.setOptions(options);
+        //@ts-ignore
         this.setZIndex(options.zIndex);
         if (!Browser.proxy) {
             this._optionsHook(options);
@@ -84,6 +85,7 @@ class WMSTileLayer extends TileLayer {
         for (const p in options) {
             //clear tilesize cache
             if (p === 'tileSize') {
+                //@ts-ignore
                 this._tileSize = null;
             }
             if (!(p in wmsExcludeParams)) {
@@ -178,6 +180,7 @@ export default WMSTileLayer;
 export function getParamString(obj, existingUrl, uppercase) {
     const params = [];
     for (const i in obj) {
+        //@ts-ignore
         params.push(encodeURIComponent(uppercase ? i.toUpperCase() : i) + '=' + encodeURIComponent(obj[i]));
     }
     return ((!existingUrl || existingUrl.indexOf('?') === -1) ? '?' : '&') + params.join('&');

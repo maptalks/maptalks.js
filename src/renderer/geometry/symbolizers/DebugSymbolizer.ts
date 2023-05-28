@@ -26,12 +26,14 @@ export default class DebugSymbolizer extends PointSymbolizer {
         if (!map || map.isZooming()) {
             return;
         }
+        //@ts-ignore
         const color = layer.options['debugOutline'],
             op = 1;
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
 
         //outline
+        //@ts-ignore
         const outline = geometry.getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
 
@@ -46,6 +48,7 @@ export default class DebugSymbolizer extends PointSymbolizer {
             }
             const c = [];
             for (let ii = 0; ii < cross.length; ii++) {
+                //@ts-ignore
                 c.push(cross[ii].add(p));
             }
             Canvas.path(ctx, c.slice(0, 2), op);

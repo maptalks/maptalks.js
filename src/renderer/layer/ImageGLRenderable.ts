@@ -461,6 +461,7 @@ function ImageGLRenderable<TBase extends Constructor>(Base: TBase) {
             }
             if (this._textures) {
                 this._textures.forEach(t => gl.deleteTexture(t));
+                //@ts-ignore
                 delete this._textures;
             }
             if (this._debugInfoCanvas) {
@@ -520,11 +521,13 @@ function ImageGLRenderable<TBase extends Constructor>(Base: TBase) {
          */
         createProgram(vert, frag) {
             const gl = this.gl;
+            //@ts-ignore
             const { program, vertexShader, fragmentShader } = createProgram(gl, vert, frag);
             const numUniforms = gl.getProgramParameter(program, 0x8B86);
             const activeUniforms = [];
             for (let i = 0; i < numUniforms; ++i) {
                 const info = gl.getActiveUniform(program, i);
+                //@ts-ignore
                 activeUniforms.push(info.name);
             }
             program.vertexShader = vertexShader;
@@ -591,13 +594,21 @@ function ImageGLRenderable<TBase extends Constructor>(Base: TBase) {
         set8: function () {
             const out = Browser.ie9 ? null : new Float32Array(8);
             return function (a0, a1, a2, a3, a4, a5, a6, a7) {
+                //@ts-ignore
                 out[0] = a0;
+                //@ts-ignore
                 out[1] = a1;
+                //@ts-ignore
                 out[2] = a2;
+                //@ts-ignore
                 out[3] = a3;
+                //@ts-ignore
                 out[4] = a4;
+                //@ts-ignore
                 out[5] = a5;
+                //@ts-ignore
                 out[6] = a6;
+                //@ts-ignore
                 out[7] = a7;
                 return out;
             };
@@ -606,13 +617,21 @@ function ImageGLRenderable<TBase extends Constructor>(Base: TBase) {
         set8Int: function () {
             const out = Browser.ie9 ? null : new Int16Array(8);
             return function (a0, a1, a2, a3, a4, a5, a6, a7) {
+                //@ts-ignore
                 out[0] = a0;
+                //@ts-ignore
                 out[1] = a1;
+                //@ts-ignore
                 out[2] = a2;
+                //@ts-ignore
                 out[3] = a3;
+                //@ts-ignore
                 out[4] = a4;
+                //@ts-ignore
                 out[5] = a5;
+                //@ts-ignore
                 out[6] = a6;
+                //@ts-ignore
                 out[7] = a7;
                 return out;
             };

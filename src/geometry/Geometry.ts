@@ -91,11 +91,11 @@ interface GeometryInterface {
  * @instance
  */
 const options: GeometyOptionsType = {
-    'id': null,
+    'id': '',
     'visible': true,
     'interactive': true,
     'editable': true,
-    'cursor': null,
+    'cursor': '',
     'antiMeridian': false,
     'defaultProjection': 'EPSG:4326' // BAIDU, IDENTITY
 };
@@ -111,6 +111,8 @@ const options: GeometyOptionsType = {
  * @mixes Eventable
  * @mixes Handlerable
  * @mixes JSONAble
+ * @mixes GeometryInfoWindow
+ * @mixes GeometryAnimation
  * @mixes ui.Menuable
  */
 
@@ -148,7 +150,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
 
 
     static fromJSON(json: object): Geometry {
-
+        //@ts-ignore
         return null;
     }
 
@@ -185,7 +187,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @return {Coordinate} First Coordinate
      */
-    getFirstCoordinate(): Coordinate {
+    getFirstCoordinate(): Coordinate | null {
         if (this.type === 'GeometryCollection') {
             //@ts-ignore
             const geometries = this.getGeometries();
@@ -210,7 +212,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @return {Coordinate} Last Coordinate
      */
-    getLastCoordinate(): Coordinate {
+    getLastCoordinate(): Coordinate | null {
         if (this.type === 'GeometryCollection') {
             //@ts-ignore
             const geometries = this.getGeometries();
@@ -246,7 +248,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      * Get the layer which this geometry added to.
      * @returns {Layer} - layer added to
      */
-    getLayer(): OverlayLayer {
+    getLayer(): OverlayLayer | null {
         if (!this._layer) {
             return null;
         }
@@ -304,7 +306,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @returns {Object} properties
      */
-    getProperties(): GeoPropertiesType {
+    getProperties(): GeoPropertiesType | null {
         if (!this.properties) {
             if (this._getParent()) {
                 return this._getParent().getProperties();
@@ -461,6 +463,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
             const contents = [];
             let has = false;
             for (let i = 0; i < symbol.length; i++) {
+                //@ts-ignore
                 contents[i] = replaceVariable(symbol[i] && symbol[i]['textName'], this.getProperties());
                 if (!isNil(contents[i])) {
                     has = true;
@@ -524,24 +527,27 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @returns {PointExtent}
      */
-    getContainerExtent(out?): PointExtent {
+    getContainerExtent(out?): PointExtent | null {
         const extent2d = this.get2DExtent();
         if (!extent2d || !extent2d.isValid()) {
             return null;
         }
         const map = this.getMap();
         // const center = this.getCenter();
+        //@ts-ignore
         const glRes = map.getGLRes();
         const minAltitude = this.getMinAltitude();
-
+        //@ts-ignore
         const extent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, minAltitude, TEMP_POINT0), out);
         const maxAltitude = this.getMaxAltitude();
         if (maxAltitude !== minAltitude) {
+            //@ts-ignore
             const extent2 = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, maxAltitude, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(extent2);
         }
         const layer = this.getLayer();
         if (layer && this.type === 'LineString' && maxAltitude && layer.options['drawAltitude']) {
+            //@ts-ignore
             const groundExtent = extent2d.convertTo(c => map._pointAtResToContainerPoint(c, glRes, 0, TEMP_POINT0), TEMP_EXTENT);
             extent._combine(groundExtent);
         }
@@ -570,7 +576,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         return this._fixedExtent;
     }
 
-    get2DExtent(): PointExtent {
+    get2DExtent(): PointExtent | null {
         const map = this.getMap();
         if (!map) {
             return null;
@@ -599,7 +605,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
      *
      * @returns {Size}
      */
-    getSize(): Size {
+    getSize(): Size | null {
         const extent = this.getContainerExtent();
         return extent ? extent.getSize() : null;
     }
@@ -620,6 +626,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
             throw new Error('The geometry is required to be added on a map to perform "containsPoint".');
         }
         if (containerPoint instanceof Coordinate) {
+            //@ts-ignore
             containerPoint = this.getMap().coordToContainerPoint(containerPoint);
         }
         return this._containsPoint(containerPoint, t);
@@ -937,6 +944,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         };
         if (isNil(opts['geometry']) || opts['geometry']) {
             const geoJSON = this._exportGeoJSONGeometry();
+            //@ts-ignore
             feature['geometry'] = geoJSON;
         }
         const id = this.getId();
@@ -1111,6 +1119,7 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         if (Array.isArray(symbol)) {
             const cookedSymbols = [];
             for (let i = 0; i < symbol.length; i++) {
+                //@ts-ignore
                 cookedSymbols.push(convertResourceUrl(this._checkAndCopySymbol(symbol[i])));
             }
             return cookedSymbols;
@@ -1203,8 +1212,10 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         if (layer.onRemoveGeometry) {
             layer.onRemoveGeometry(this);
         }
+        //@ts-ignore
         delete this._layer;
         delete this._internalId;
+        //@ts-ignore
         delete this._extent;
     }
 
@@ -1301,12 +1312,16 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
     }
 
     _clearCache() {
+        //@ts-ignore
         delete this._extent;
+        //@ts-ignore
         delete this._extent2d;
     }
 
     _clearProjection() {
+        //@ts-ignore
         delete this._extent;
+        //@ts-ignore
         delete this._extent2d;
     }
 
@@ -1461,12 +1476,14 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         if (this._silence) {
             return;
         }
+        //@ts-ignore
         if (this.getLayer() && this.getLayer()._onGeometryEvent) {
             if (!param) {
                 param = {};
             }
             param['type'] = eventName;
             param['target'] = this;
+            //@ts-ignore
             this.getLayer()._onGeometryEvent(param);
         }
         //@ts-ignore
@@ -1511,8 +1528,10 @@ class Geometry extends GeometryEvent(GeometryAnimation(GeometryInfoWindow(JSONAb
         const geoProperties = this.getProperties();
         if (!isNil(geoProperties)) {
             if (isObject(geoProperties)) {
+                //@ts-ignore
                 properties = extend({}, geoProperties);
             } else {
+                //@ts-ignore
                 properties = geoProperties;
             }
         }
@@ -1750,6 +1769,7 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
     if (Array.isArray(coordinates)) {
         const alts = [];
         for (let i = 0, len = coordinates.length; i < len; i++) {
+            //@ts-ignore
             alts.push(getCoordinatesAlts(coordinates[i], layerAlt, enableAltitude));
         }
         return alts;

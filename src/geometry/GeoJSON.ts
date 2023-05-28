@@ -86,6 +86,7 @@ const GeoJSON = {
                     //@ts-ignore
                     pushIn(resultGeos, geo);
                 } else {
+                    //@ts-ignore
                     resultGeos.push(geo);
                 }
             }
@@ -149,8 +150,10 @@ const GeoJSON = {
                 //circle ellipse etc...
                 //规范上geojson里是没有Circle等图形的，但是Circle json等的反序列化有用到该方法
                 if (geometries[i].subType) {
+                    //@ts-ignore
                     mGeos.push(Geometry.getJSONClass(geometries[i].subType).fromJSON(geometries[i]));
                 } else {
+                    //@ts-ignore
                     mGeos.push(GeoJSON._convert(geometries[i]));
                 }
             }

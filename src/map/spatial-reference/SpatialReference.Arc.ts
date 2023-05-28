@@ -8,6 +8,7 @@ function parse(arcConf) {
         resolutions = [],
         lods = tileInfo['lods'];
     for (let i = 0, len = lods.length; i < len; i++) {
+         //@ts-ignore
         resolutions.push(lods[i]['resolution']);
     }
     const fullExtent = arcConf['fullExtent'],

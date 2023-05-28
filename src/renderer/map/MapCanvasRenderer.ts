@@ -70,6 +70,7 @@ class MapCanvasRenderer extends MapRenderer {
             return true;
         }
         this._updateDomPosition(framestamp);
+        //@ts-ignore
         delete this._isViewChanged;
         map._fireEvent('framestart');
         this.updateMapDOM();
@@ -96,6 +97,7 @@ class MapCanvasRenderer extends MapRenderer {
         // refresh map's state
         // It must be before events and frame callback, because map state may be changed in callbacks.
         this._mapview = this._getMapView();
+        //@ts-ignore
         delete this._spatialRefChanged;
         this._fireLayerLoadEvents();
         this.executeFrameCallbacks();
@@ -140,6 +142,7 @@ class MapCanvasRenderer extends MapRenderer {
             }
             const isCanvas = layer.isCanvasRender();
             if (isCanvas) {
+                //@ts-ignore
                 canvasIds.push(layer.getId());
             }
             const renderer = layer._getRenderer();
@@ -151,6 +154,7 @@ class MapCanvasRenderer extends MapRenderer {
             if (isCanvas && renderer.isCanvasUpdated()) {
                 // don't need to call layer's draw/drawOnInteracting but need to redraw layer's updated canvas
                 if (!needsRedraw) {
+                    //@ts-ignore
                     updatedIds.push(layer.getId());
                 }
                 this.setLayerCanvasUpdated();
@@ -200,6 +204,7 @@ class MapCanvasRenderer extends MapRenderer {
             }
 
             if (isCanvas) {
+                //@ts-ignore
                 updatedIds.push(layer.getId());
                 this.setLayerCanvasUpdated();
             }
@@ -382,6 +387,7 @@ class MapCanvasRenderer extends MapRenderer {
                 if (layers[i] === map.getBaseLayer()) {
                     baseLayerImage = [layers[i], layerImage];
                 } else {
+                    //@ts-ignore
                     images.push([layers[i], layerImage]);
                 }
             }
@@ -474,9 +480,12 @@ class MapCanvasRenderer extends MapRenderer {
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
         }
+        //@ts-ignore
         delete this.context;
+        //@ts-ignore
         delete this.canvas;
         delete this.map;
+        //@ts-ignore
         delete this._spatialRefChanged;
         this._cancelFrameLoop();
     }
@@ -854,6 +863,7 @@ class MapCanvasRenderer extends MapRenderer {
 
     createCanvas() {
         this.topLayer = (createEl('canvas') as HTMLCanvasElement)
+         //@ts-ignore
         this.topCtx = this.topLayer.getContext('2d');
         if (this._containerIsCanvas) {
             this.canvas = this.map._containerDOM;
@@ -862,6 +872,7 @@ class MapCanvasRenderer extends MapRenderer {
             this._updateCanvasSize();
             this.map._panels.canvasContainer.appendChild(this.canvas);
         }
+         //@ts-ignore
         this.context = this.canvas.getContext('2d');
     }
 

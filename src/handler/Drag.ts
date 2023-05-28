@@ -151,6 +151,7 @@ class DragHandler extends Handler {
             param.interupted = this.interupted;
             //@ts-ignore
             this.fire('dragend', param);
+            //@ts-ignore
             delete this.interupted;
             delete this.moved;
         }

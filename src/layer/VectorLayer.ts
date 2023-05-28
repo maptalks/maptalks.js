@@ -77,6 +77,7 @@ const options: VectorLayerOptionsType = {
  * @category layer
  * @extends OverlayLayer
  */
+//@ts-ignore
 class VectorLayer extends OverlayLayer {
 
     /**
@@ -200,6 +201,7 @@ class VectorLayer extends OverlayLayer {
                 }
             }
             if (geo._containsPoint(cp, tolerance) && (!filter || filter(geo))) {
+                //@ts-ignore
                 hits.push(geo);
                 if (options['count']) {
                     if (hits.length >= options['count']) {
@@ -249,6 +251,7 @@ class VectorLayer extends OverlayLayer {
                     continue;
                 }
                 const json = geo.toJSON(options['geometries']);
+                //@ts-ignore
                 geoJSONs.push(json);
             }
             profile['geometries'] = geoJSONs;
@@ -274,6 +277,7 @@ class VectorLayer extends OverlayLayer {
         for (let i = 0; i < geoJSONs.length; i++) {
             const geo = Geometry.fromJSON(geoJSONs[i]);
             if (geo) {
+                //@ts-ignore
                 geometries.push(geo);
             }
         }

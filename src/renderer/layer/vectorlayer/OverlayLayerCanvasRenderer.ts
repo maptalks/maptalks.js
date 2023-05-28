@@ -43,12 +43,14 @@ class OverlayLayerRenderer extends CanvasRenderer {
                     const url = res[i][0];
                     if (!this.resources.isResourceLoaded(res[i]) && !cache[url]) {
                         resources.push(res[i]);
+                         //@ts-ignore
                         cache[url] = 1;
                     }
                 }
             }
         }
         this._resourceChecked = true;
+         //@ts-ignore
         delete this._geosToCheck;
         return resources;
     }

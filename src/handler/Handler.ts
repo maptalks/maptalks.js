@@ -54,6 +54,7 @@ class Handler {
     remove() {
         this.disable();
         delete this.target;
+        //@ts-ignore
         delete this.dom;
     }
 }

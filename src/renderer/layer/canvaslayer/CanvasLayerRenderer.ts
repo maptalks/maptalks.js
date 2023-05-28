@@ -16,6 +16,7 @@ export default class CanvasLayerRenderer extends CanvasRenderer {
 
     onCanvasCreate() {
         if (this.canvas && this.layer.options['doubleBuffer']) {
+             //@ts-ignore
             this.buffer = Canvas.createCanvas(this.canvas.width, this.canvas.height, this.getMap().CanvasClass);
         }
     }

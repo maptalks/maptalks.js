@@ -47,7 +47,7 @@ export default extend(/** @lends measurer.Identity */{
         let area = 0;
         for (let i = 0, len = coordinates.length; i < len; i++) {
             const c1 = coordinates[i];
-            let c2 = null;
+            let c2;
             if (i === len - 1) {
                 c2 = coordinates[0];
             } else {
@@ -73,6 +73,7 @@ export default extend(/** @lends measurer.Identity */{
      */
     _locate: function (c: Coordinate, xDist: number, yDist: number): Coordinate {
         if (!c) {
+             //@ts-ignore
             return null;
         }
         if (!xDist) {

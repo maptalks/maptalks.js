@@ -133,13 +133,21 @@ class Path extends Geometry {
             }
             const currentCoord = this._drawAnimShowFrame(frame.styles.t, duration, length, animCoords, prjAnimCoords);
             if (frame.state.playState === 'finished') {
+                //@ts-ignore
                 delete this._showPlayer;
+                //@ts-ignore
                 delete this._aniShowCenter;
+                //@ts-ignore
                 delete this._prjAniShowCenter;
+                //@ts-ignore
                 delete this._animIdx;
+                //@ts-ignore
                 delete this._animLenSoFar;
+                //@ts-ignore
                 delete this._animTailRatio;
+                //@ts-ignore
                 delete this._tempCoord;
+                //@ts-ignore
                 delete this._tempPrjCoord;
                 //@ts-ignore
                 this.setCoordinates(coordinates);
@@ -200,10 +208,14 @@ class Path extends Geometry {
             //smooth line needs to set current coordinates plus 2 more to caculate correct control points
             const animCoords = [], prjAnimCoords = [];
             for (let i = 0; i <= this._animIdx; i++) {
+                //@ts-ignore
                 animCoords.push(coordinates[i]);
+                //@ts-ignore
                 prjAnimCoords.push(prjCoords[i]);
             }
+            //@ts-ignore
             animCoords.push(targetCoord, targetCoord);
+            //@ts-ignore
             prjAnimCoords.push(lastCoord, lastCoord);
             // const animCoords = coordinates.slice(0, this._animIdx + 3);
             //@ts-ignore
@@ -277,6 +289,7 @@ class Path extends Geometry {
         }
         const map = this.getMap(),
             isSimplify = !disableSimplify && this._shouldSimplify(),
+            //@ts-ignore
             tolerance = this.options['simplifyTolerance'] * map._getResolution(),
             isMulti = Array.isArray(prjCoords[0]);
         delete this._simplified;
@@ -286,22 +299,28 @@ class Path extends Geometry {
             this._simplified = prjCoords.length < count;
         }
         if (!res) {
+            //@ts-ignore
             res = map._getResolution();
         }
         if (!Array.isArray(prjCoords)) {
+            //@ts-ignore
             return map._prjToPointAtRes(prjCoords, res);
         } else {
             let resultPoints = [];
             const glPointKey = '_glPt';
             if (!Array.isArray(prjCoords[0])) {
+                //@ts-ignore
                 resultPoints = getPointsResultPts(prjCoords, glPointKey);
+                //@ts-ignore
                 return map._prjsToPointsAtRes(prjCoords, res, resultPoints);
             }
             const pts = [];
             for (let i = 0, len = prjCoords.length; i < len; i++) {
                 const prjCoord = prjCoords[i];
                 resultPoints = getPointsResultPts(prjCoord, glPointKey);
+                //@ts-ignore
                 const pt = map._prjsToPointsAtRes(prjCoord, res, resultPoints);
+                //@ts-ignore
                 pts.push(pt);
             }
             return pts;
@@ -312,6 +331,7 @@ class Path extends Geometry {
     _shouldSimplify() {
         const layer = this.getLayer(),
             properties = this.getProperties();
+        //@ts-ignore
         const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]) && (properties[layer.options['altitudeProperty']] !== 0);
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }

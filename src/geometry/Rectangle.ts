@@ -126,10 +126,15 @@ class Rectangle extends Polygon {
             }
         }
         const points = [];
+        //@ts-ignore
         points.push(nw);
+        //@ts-ignore
         points.push(measurer.locate(nw, sx * this._width, 0));
+        //@ts-ignore
         points.push(measurer.locate(nw, sx * this._width, sy * this._height));
+        //@ts-ignore
         points.push(measurer.locate(nw, 0, sy * this._height));
+        //@ts-ignore
         points.push(nw);
         return points;
 
@@ -208,12 +213,15 @@ class Rectangle extends Polygon {
 
     _containsPoint(point, tolerance) {
         const map = this.getMap();
+        //@ts-ignore
         if (map.isTransforming()) {
             return super._containsPoint(point, tolerance);
         }
         const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            //@ts-ignore
             r = map._getResolution() * t;
         const extent = this._getPrjExtent().expand(r);
+        //@ts-ignore
         const p = map._containerPointToPrj(point);
         return extent.contains(p);
     }

@@ -32,6 +32,7 @@ class CanvasSymbolizer extends Symbolizer {
             }
         } else if (this._opacityFn) {
             const map = this.getMap();
+            //@ts-ignore
             ctx.globalAlpha = this._opacityFn(map.getZoom());
         } else if (ctx.globalAlpha !== 1) {
             ctx.globalAlpha = 1;

@@ -132,6 +132,7 @@ function Connectable<TBase extends Constructor>(Base: TBase) {
                 this._connSource.off('dragend mouseup mouseout', this.hide, this);
                 //@ts-ignore
                 this._connSource.off('show', this._showConnect, this).off('hide', this.hide, this);
+                //@ts-ignore
                 delete this._connSource;
             }
             if (this._connTarget) {
@@ -141,6 +142,7 @@ function Connectable<TBase extends Constructor>(Base: TBase) {
                     .off('remove', this.onRemove, this);
                 //@ts-ignore
                 this._connTarget.off('show', this._showConnect, this).off('hide', this.hide, this);
+                //@ts-ignore
                 delete this._connTarget;
             }
 
@@ -275,7 +277,9 @@ class ConnectorLine extends Connectable(LineString) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
+            //@ts-ignore
             src = null;
+            //@ts-ignore
             target = null;
         }
         this._connSource = src;
@@ -319,7 +323,9 @@ class ArcConnectorLine extends Connectable(ArcCurve) {
         super(null, options);
         if (arguments.length === 1) {
             options = src;
+            //@ts-ignore
             src = null;
+            //@ts-ignore
             target = null;
         }
         this._connSource = src;
