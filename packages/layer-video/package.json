@@ -44,7 +44,7 @@
     "karma-happen": "^0.1.0",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
-    "maptalks": "^1.0.0-rc.18",
+    "maptalks": "^1.0.0-rc.21",
     "mocha": "^9.0.3",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1"
