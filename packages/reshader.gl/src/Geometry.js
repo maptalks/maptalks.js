@@ -75,7 +75,7 @@ export default class Geometry {
         this._buffers = {};
         this._vao = {};
         this.getVertexCount();
-        this._prepareData();
+        this._prepareData(true);
         this.updateBoundingBox();
     }
 
@@ -91,7 +91,7 @@ export default class Geometry {
     //     throw new Error('Geometry.elements is read only, use setElements instead.');
     // }
 
-    _prepareData() {
+    _prepareData(toUpdateRefCount) {
         if (!this.data) {
             return;
         }
@@ -108,7 +108,9 @@ export default class Geometry {
                 if (!buffer[REF_COUNT_KEY]) {
                     buffer[REF_COUNT_KEY] = 0;
                 }
-                buffer[REF_COUNT_KEY]++;
+                if (toUpdateRefCount) {
+                    buffer[REF_COUNT_KEY]++;
+                }
             } else if (attribute && attribute.array) {
                 if (isInStride(attribute)) {
                     let id = attribute.array.buffer['__id'];
@@ -444,7 +446,7 @@ export default class Geometry {
             }
             this.data[name] = buffer;
         }
-        this._prepareData();
+        this._prepareData(false);
         if (this.desc.positionAttribute === name) {
             this._posDirty = true;
         }
@@ -478,7 +480,7 @@ export default class Geometry {
                 arr[offset + i] = data[i];
             }
         }
-        this._prepareData();
+        this._prepareData(false);
         if (this.desc.positionAttribute === name) {
             this._posDirty = true;
         }
