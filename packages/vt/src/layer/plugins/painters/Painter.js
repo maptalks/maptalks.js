@@ -328,7 +328,7 @@ class Painter {
             const res = this.getMap().getResolution();
             const tileRes = context.tileInfo.res;
             const scale = tileRes / res;
-            if (scale > 4) {
+            if (scale > 3) {
                 // 过于放大
                 return;
             }
