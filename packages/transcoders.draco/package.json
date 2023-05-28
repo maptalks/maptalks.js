@@ -30,5 +30,6 @@
     "rollup": "^2.56.2",
     "rollup-plugin-polyfill-node": "^0.8.0",
     "rollup-plugin-terser": "^5.3.1"
-  }
+  },
+  "gitHead": "547a91a8d175495a917391e6f87e63f488947df8"
 }

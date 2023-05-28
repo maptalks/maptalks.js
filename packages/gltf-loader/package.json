@@ -39,5 +39,6 @@
   },
   "dependencies": {
     "gl-matrix": "^2.6.1"
-  }
+  },
+  "gitHead": "547a91a8d175495a917391e6f87e63f488947df8"
 }

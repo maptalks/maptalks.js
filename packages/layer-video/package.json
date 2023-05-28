@@ -51,5 +51,6 @@
   },
   "dependencies": {
     "frustum-intersects": "^0.2.2"
-  }
+  },
+  "gitHead": "547a91a8d175495a917391e6f87e63f488947df8"
 }

@@ -49,5 +49,6 @@
   "dependencies": {
     "@maptalks/gl": "^0.83.0",
     "@maptalks/gltf-loader": "^0.83.0"
-  }
+  },
+  "gitHead": "547a91a8d175495a917391e6f87e63f488947df8"
 }
