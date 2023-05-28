@@ -24,7 +24,7 @@
     "pretest": "npm run lint && npm run build",
     "test": "karma start --single-run",
     "tdd": "karma start --no-single-run",
-    "preversion": "npm run lint",
+    "preversion": "npm test",
     "version": "npm run build",
     "lint": "eslint src/**/*.js test/**/*.js",
     "prepare": "npm run lint && npm run build"
