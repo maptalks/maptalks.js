@@ -27,6 +27,10 @@
     }
 #endif
 
+#ifdef HAS_WEB3D_quantized_attributes_TEXCOORD
+    uniform mat3 decodeMatrix;
+#endif
+
 #ifdef HAS_DECODE_NORMAL
     float czm_signNotZero(float value) {
         return value >= 0.0 ? 1.0 : -1.0;
@@ -65,6 +69,9 @@ vec3 getPositionAsDraco(vec3 aPosition) {
 vec2 getTexcoord(vec2 aTexCoord) {
     #ifdef HAS_DECODE_TEXCOORD
         return decodeDracoTexcoord(aTexCoord);
+    #elif defined(HAS_WEB3D_quantized_attributes_TEXCOORD)
+        vec3 web3dTexcoord = decodeMatrix * vec3(aTexCoord, 1.0);
+        return vec2(web3dTexcoord.x, web3dTexcoord.y);
     #else
         return aTexCoord;
     #endif

@@ -726,6 +726,24 @@ describe('render specs', () => {
             });
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 2 });
         });
+
+        it('cmpt data with WEB3D_quantized_attributes extensions(maptalks/issues/issues/306)', done => {
+            const resPath = 'cmpt';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [0.3, 0.3, 0.3],
+                        maximumScreenSpaceError: 8.0,
+                        heightOffset: 0
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
     });
 
 
@@ -1601,6 +1619,6 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
 
-    })
+    });
 });
 
