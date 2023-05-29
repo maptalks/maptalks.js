@@ -8,7 +8,7 @@
         "declaration": true,
         "allowJs": false,
         "module": "ES2015",
-        "target": "es5",
+        "target": "es6",
         "sourceMap": true,
         //dependencies lib version
         "lib": [

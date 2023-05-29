@@ -202,6 +202,7 @@ class Label extends TextMarker {
         }
         this._refreshing = true;
         this.updateSymbol(symbol);
+        //@ts-ignore
         delete this._refreshing;
     }
 
@@ -212,16 +213,23 @@ class Label extends TextMarker {
         const boxStyle = this.getBoxStyle();
         const size = this._getTextSize(symbol);
         let width, height;
+        //@ts-ignore
         const padding = boxStyle['padding'] || this._getDefaultPadding();
         width = size['width'] + padding[0] * 2;
         height = size['height'] + padding[1] * 2;
+        //@ts-ignore
         if (boxStyle['minWidth']) {
+            //@ts-ignore
             if (!width || width < boxStyle['minWidth']) {
+                //@ts-ignore
                 width = boxStyle['minWidth'];
             }
         }
+        //@ts-ignore
         if (boxStyle['minHeight']) {
+            //@ts-ignore
             if (!height || height < boxStyle['minHeight']) {
+                //@ts-ignore
                 height = boxStyle['minHeight'];
             }
         }

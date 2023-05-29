@@ -7,8 +7,8 @@ import Point from '../geo/Point';
 type Constructor = new (...args: any[]) => {};
 /**
  * Methods of topo computations
+ * @mixin MapTopo
  */
-
 export default function MapTopo<TBase extends Constructor>(Base: TBase) {
     return class extends Base {
         /** @lends Map.prototype */
@@ -17,6 +17,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @param {Number[]|Coordinate} coord1 - coordinate 1
          * @param {Number[]|Coordinate} coord2 - coordinate 2
          * @return {Number} distance, unit is meter
+         * @function MapTopo.computeGeometryLength
          * @example
          * var distance = map.computeLength([0, 0], [0, 20]);
          */
@@ -38,6 +39,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * Caculate a geometry's length.
          * @param {Geometry} geometry - geometry to caculate
          * @return {Number} length, unit is meter
+         * @function MapTopo.computeGeometryLength
          */
         computeGeometryLength(geometry: Geometry) {
             //@ts-ignore
@@ -48,6 +50,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * Caculate a geometry's area.
          * @param  {Geometry} geometry - geometry to caculate
          * @return {Number} area, unit is sq.meter
+         * @function MapTopo.computeGeometryArea
          */
         computeGeometryArea(geometry: Geometry) {
             //@ts-ignore
@@ -66,6 +69,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
          * @param {Function} callback           - the callback function using the result geometries as the parameter.
          * @return {Map} this
+         * @function MapTopo.identify
          * @example
          * map.identify({
          *      coordinate: [0, 0],
@@ -93,6 +97,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
          * @param {Boolean}  [opts.includeInvisible=false] - whether to identify invisible layers.
          * @param {Function} callback           - the callback function using the result geometries as the parameter.
          * @return {Map} this
+         * @function MapTopo.identifyAtPoint
          * @example
          * map.identifyAtPoint({
          *      containerPoint: [200, 300],
@@ -130,14 +135,17 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
                     //@ts-ignore
                     layers.push(this.getLayer(reqLayers[i]));
                 } else {
+                    //@ts-ignore
                     layers.push(reqLayers[i]);
                 }
             }
             if (eventTypes) {
                 layers = layers.filter(layer => {
+                    //@ts-ignore
                     if (!layer._hasGeoListeners) {
                         return true;
                     }
+                    //@ts-ignore
                     return layer._hasGeoListeners(eventTypes);
                 });
             }
@@ -149,6 +157,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
                     break;
                 }
                 const layer = layers[i];
+                //@ts-ignore
                 if (!layer || !layer.getMap() || (!opts['includeInvisible'] && !layer.isVisible()) || (!opts['includeInternals'] && layer.getId().indexOf(INTERNAL_LAYER_PREFIX) >= 0)) {
                     continue;
                 }
@@ -158,6 +167,7 @@ export default function MapTopo<TBase extends Constructor>(Base: TBase) {
                         //@ts-ignore
                         pushIn(hits, layerHits);
                     } else {
+                        //@ts-ignore
                         hits.push(layerHits);
                     }
                 }

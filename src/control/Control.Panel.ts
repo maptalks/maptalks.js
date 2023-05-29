@@ -97,6 +97,7 @@ class Panel extends Control {
     update() {
         if (this.draggable) {
             this.draggable.disable();
+            //@ts-ignore
             delete this.draggable;
         }
         return Control.prototype.update.call(this);

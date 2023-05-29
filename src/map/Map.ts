@@ -283,6 +283,8 @@ export type MapOptionsType = {
  *
  * @mixes Eventable
  * @mixes Handlerable
+ * @mixes MapCollision
+ * @mixes MapTopo
  * @mixes ui.Menuable
  * @mixes Renderable
  *
@@ -398,6 +400,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         this._panels = {};
 
         //Layers
+        //@ts-ignore
         this._baseLayer = null;
         this._layers = [];
 
@@ -424,8 +427,9 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         this._Load();
         this.proxyOptions();
     }
-   
+
     static fromJSON(container, profile, options): Map {
+        //@ts-ignore
         return null;
     }
 
@@ -449,6 +453,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     }
 
     toJSON(options?: object): object {
+        //@ts-ignore
         return null;
     }
 
@@ -618,7 +623,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * eg: {'left': -180, 'right' : 180, 'top' : 90, 'bottom' : -90}
      * @return {Extent}
      */
-    getFullExtent(): Extent {
+    getFullExtent(): Extent | null {
         if (!this._spatialReference) {
             return null;
         }
@@ -633,6 +638,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * map.setCursor('url(cursor.png) 4 12, auto');
      */
     setCursor(cursor: string) {
+        //@ts-ignore
         delete this._cursor;
         this._trySetCursor(cursor);
         this._cursor = cursor;
@@ -646,6 +652,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * map.resetCursor();
      */
     resetCursor() {
+        //@ts-ignore
         return this.setCursor(null);
     }
 
@@ -707,6 +714,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      */
     getSize(): Size {
         if (isNil(this.width) || isNil(this.height)) {
+            //@ts-ignore
             return this._getContainerDomSize();
         }
         return new Size(this.width, this.height);
@@ -785,7 +793,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * Get the max extent that the map is restricted to.
      * @return {Extent}
      */
-    getMaxExtent(): Extent {
+    getMaxExtent(): Extent | null {
         if (!this.options['maxExtent']) {
             return null;
         }
@@ -816,6 +824,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             }
         } else {
             delete this.options['maxExtent'];
+            //@ts-ignore
             delete this._prjMaxExtent;
         }
         return this;
@@ -914,6 +923,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      */
     getMaxZoom(): number {
         if (!isNil(this.options['maxZoom'])) {
+            //@ts-ignore
             return this.options['maxZoom'];
         }
         return this.getMaxNativeZoom();
@@ -943,6 +953,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      */
     getMinZoom(): number {
         if (!isNil(this.options['minZoom'])) {
+            //@ts-ignore
             return this.options['minZoom'];
         }
         return this._spatialReference.getMinZoom();
@@ -975,6 +986,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     getMaxNativeZoom(): number {
         const ref = this.getSpatialReference();
         if (!ref) {
+            //@ts-ignore
             return null;
         }
         return ref.getMaxZoom();
@@ -1144,13 +1156,17 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         if (view['center']) {
             this.setCenter(view['center']);
         }
+        //@ts-ignore
         if (view['zoom'] !== null && !isNaN(+view['zoom'])) {
+            //@ts-ignore
             this.setZoom(+view['zoom'], { 'animation': false });
         }
+        //@ts-ignore
         if (view['pitch'] !== null && !isNaN(+view['pitch'])) {
             //@ts-ignore
             this.setPitch(+view['pitch']);
         }
+        //@ts-ignore
         if (view['pitch'] !== null && !isNaN(+view['bearing'])) {
             //@ts-ignore
             this.setBearing(+view['bearing']);
@@ -1282,6 +1298,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             this._baseLayer.remove();
         }
         if (!baseLayer) {
+            //@ts-ignore
             delete this._baseLayer;
             /**
              * baselayerchangeend event, fired when base layer is changed.
@@ -1338,6 +1355,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     removeBaseLayer() {
         if (this._baseLayer) {
             this._baseLayer.remove();
+            //@ts-ignore
             delete this._baseLayer;
             /**
              * baselayerremove event, fired when base layer is removed.
@@ -1379,7 +1397,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param  {String} id - layer id
      * @return {Layer}
      */
-    getLayer(id: string | number): Layer {
+    getLayer(id: string | number): Layer | null {
         if (!id) {
             return null;
         }
@@ -1466,6 +1484,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
             if (!(layer instanceof Layer)) {
+                //@ts-ignore
                 layer = this.getLayer(layer);
             }
             if (!layer) {
@@ -1475,6 +1494,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             if (!map || map !== this) {
                 continue;
             }
+            //@ts-ignore
             removed.push(layer);
             this._removeLayer(layer, this._layers);
             if (this._loaded) {
@@ -1491,6 +1511,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
                 renderer.setLayerCanvasUpdated();
             }
             removed.forEach(layer => {
+                //@ts-ignore
                 layer.fire('remove');
             });
             // this.once('frameend', () => {
@@ -1541,9 +1562,11 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             if (layer.getZIndex() < minZ) {
                 minZ = layer.getZIndex();
             }
+            //@ts-ignore
             layersToOrder.push(layer);
         }
         for (let i = 0, l = layersToOrder.length; i < l; i++) {
+            //@ts-ignore
             layersToOrder[i].setZIndex(minZ + i);
         }
 
@@ -1559,7 +1582,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
      * @param {String} [options.fileName=export] - specify the file name, if options.save is true.
      * @return {String} image of base64 format.
      */
-    toDataURL(options?: MapDataURLType): string {
+    toDataURL(options?: MapDataURLType): string | null {
         if (!options) {
             options = {};
         }
@@ -1676,6 +1699,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             //@ts-ignore
             out = containerPoint.copy();
         }
+        //@ts-ignore
         return out._sub(this.getViewPoint());
     }
 
@@ -1693,6 +1717,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             //@ts-ignore
             out = viewPoint.copy();
         }
+        //@ts-ignore
         return out._add(this.getViewPoint());
     }
 
@@ -1707,6 +1732,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         const watched = this._getContainerDomSize(),
             oldHeight = this.height,
             oldWidth = this.width;
+        //@ts-ignore
         if (!force && watched['width'] === oldWidth && watched['height'] === oldHeight) {
             return this;
         }
@@ -1731,12 +1757,13 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         } else {
             this._updateMapSize(watched);
         }
-
+        //@ts-ignore
         const hided = (watched['width'] === 0 || watched['height'] === 0 || oldWidth === 0 || oldHeight === 0);
 
         if (justStart || hided) {
             this._eventSilence = true;
             this.setCenter(center);
+            //@ts-ignore
             delete this._eventSilence;
         }
         /**
@@ -1806,8 +1833,11 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
                 .filter(node => node.className === 'maptalks-wrapper')
                 .forEach(node => this._containerDOM.removeChild(node));
         }
+        //@ts-ignore
         delete this._panels;
+        //@ts-ignore
         delete this._containerDOM;
+        //@ts-ignore
         delete this.renderer;
         this._fireEvent('removeend');
         this._clearAllListeners();
@@ -2009,6 +2039,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
 
     _initContainer(container) {
         if (isString(container)) {
+            //@ts-ignore
             this._containerDOM = document.getElementById(container);
             if (!this._containerDOM) {
                 throw new Error('Invalid container when creating map: \'' + container + '\'');
@@ -2050,6 +2081,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             if (this._priorityCursor) {
                 hasCursor = true;
             }
+            //@ts-ignore
             delete this._priorityCursor;
             if (hasCursor) {
                 this.setCursor(this._cursor);
@@ -2127,6 +2159,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
             this.setBearing(this.options['bearing']);
             delete this.options['bearing'];
         }
+        //@ts-ignore
         delete this._glRes;
         this._loadAllLayers();
         this._getRenderer().onLoad();
@@ -2170,6 +2203,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         const result = [];
         for (let i = 0; i < layers.length; i++) {
             if (!filter || filter.call(this, layers[i])) {
+                //@ts-ignore
                 result.push(layers[i]);
             }
         }
@@ -2226,6 +2260,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         if (this._zoomLevel < minZoom) {
             this._zoomLevel = minZoom;
         }
+        //@ts-ignore
         delete this._prjCenter;
         const projection = this.getProjection();
         this._prjCenter = projection.project(this._center);
@@ -2417,6 +2452,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     }
 
     _prjToPointAtRes(pCoord: Coordinate, res?: number, out?: Point): Point {
+        //@ts-ignore
         return this._spatialReference.getTransformation().transform(pCoord, res, out);
     }
 
@@ -2432,7 +2468,9 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
         const pts = [];
         resultPoints = resultPoints || [];
         for (let i = 0, len = pCoords.length; i < len; i++) {
+            //@ts-ignore
             const pt = transformation.transform(pCoords[i], res, resultPoints[i]);
+            //@ts-ignore
             pts.push(pt);
         }
         return pts;
@@ -2452,6 +2490,7 @@ class Map extends MapTopo(MapCollision(Handlerable(Eventable(Renderable(Class)))
     }
 
     _pointToPrjAtRes(point: Point, res?: number, out?: Coordinate): Coordinate {
+        //@ts-ignore
         return this._spatialReference.getTransformation().untransform(point, res, out);
     }
 

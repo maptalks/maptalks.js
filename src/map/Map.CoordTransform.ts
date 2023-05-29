@@ -1,7 +1,9 @@
 import { Coordinate, Extent, Point, PointExtent, Size } from "./../geo";
 import Map from "./Map";
 const TEMP_COORD = new Coordinate(0, 0);
-
+/**
+ * implements map coord transform methods
+ */
 Map.include(
     /** @lends Map.prototype */{
 
@@ -171,6 +173,7 @@ Map.include(
                 let point = transformation.transform(pCoordinate, resolution);
                 point = point._multi(res);
                 this._toContainerPoint(point, isTransforming, coordinates[i].z, centerPoint);
+                 //@ts-ignore
                 pts.push(point);
             }
             return pts;

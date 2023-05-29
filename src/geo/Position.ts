@@ -153,6 +153,7 @@ class Position {
         } else {
             //@ts-ignore
             this.x += x;
+            //@ts-ignore
             this.y += y;
         }
         return this;
@@ -199,6 +200,7 @@ class Position {
         } else {
             //@ts-ignore
             this.x -= x;
+            //@ts-ignore
             this.y -= y;
         }
         return this;
@@ -228,6 +230,7 @@ class Position {
         } else {
             //@ts-ignore
             nx = this.x - x;
+             //@ts-ignore
             ny = this.y - y;
         }
         //@ts-ignore

@@ -302,6 +302,7 @@ class TextBox extends TextMarker {
         }
         this._refreshing = true;
         this.updateSymbol(symbol);
+        //@ts-ignore
         delete this._refreshing;
     }
     //@ts-ignore
@@ -335,6 +336,7 @@ class TextBox extends TextMarker {
                 stops[i][1] *= scale;
             }
             this.setWidth(this._oldWidth);
+            //@ts-ignore
             delete this._oldWidth;
         }
         if (this._oldHeight) {
@@ -348,6 +350,7 @@ class TextBox extends TextMarker {
                 stops[i][1] *= scale;
             }
             this.setHeight(this._oldHeight);
+            //@ts-ignore
             delete this._oldHeight;
         }
         //@ts-ignore

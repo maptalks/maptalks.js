@@ -275,6 +275,7 @@ export function invert(out: Array<number>, a: Array<number>) {
  *
  * @param {mat4} out the receiving matrix
  * @returns {mat4} out
+ * @private
  */
 export function identity(out: Array<number>) {
     out[0] = 1;
@@ -302,6 +303,7 @@ export function identity(out: Array<number>) {
  * @param {mat4} out the receiving matrix
  * @param {mat4} a the source matrix
  * @returns {mat4} out
+ * @private
  */
 export function copy(out: Array<number>, a: Array<number>) {
     out[0] = a[0];

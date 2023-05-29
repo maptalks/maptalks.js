@@ -73,6 +73,7 @@ class Attribution extends Control {
         const attributions = map
             ._getLayers(layer => layer.options['attribution'])
             .reverse()
+            //@ts-ignore
             .map(layer => layer.options['attribution']);
         const content = this.options['content'] + (attributions.length > 0 ? ' - ' + attributions.join(', ') : '');
         this._attributionContainer.innerHTML = '<span style="padding:0px 4px">' + content + '</span>';

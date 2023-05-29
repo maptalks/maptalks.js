@@ -122,6 +122,7 @@ class MapTouchZoomHandler extends Handler {
         if (this.mode === 'zoom' || this.mode === 'rotate_zoom') {
             const size = map.getSize();
             this._Origin = new Point(size['width'] / 2, size['height'] / 2);
+            //@ts-ignore
             map.onZoomStart(null, this._Origin);
         }
         if (this.mode === 'rotate' || this.mode === 'pitch' || this.mode === 'rotate_zoom') {
@@ -130,6 +131,7 @@ class MapTouchZoomHandler extends Handler {
     }
 
     _onTouchEnd(event) {
+        //@ts-ignore
         delete this.preY;
         const map = this.target;
         //@ts-ignore
@@ -148,6 +150,7 @@ class MapTouchZoomHandler extends Handler {
                 'domEvent': event
             });
         }
+        //@ts-ignore
         delete this.mode;
         /**
           * touchactend event

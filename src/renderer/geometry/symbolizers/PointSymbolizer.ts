@@ -33,11 +33,13 @@ class PointSymbolizer extends CanvasSymbolizer {
 
     get2DExtent() {
         const map = this.getMap();
+        //@ts-ignore
         const glRes = map.getGLRes();
         const extent = new PointExtent();
         const renderPoints = this._getRenderPoints()[0];
         for (let i = renderPoints.length - 1; i >= 0; i--) {
             if (renderPoints[i]) {
+                //@ts-ignore
                 extent._combine(map._pointAtResToPoint(renderPoints[i], glRes));
             }
         }
@@ -98,6 +100,7 @@ class PointSymbolizer extends CanvasSymbolizer {
         const flat = [];
         for (let i = 0, l = cpoints.length; i < l; i++) {
             for (let ii = 0, ll = cpoints[i].length; ii < ll; ii++) {
+                //@ts-ignore
                 flat.push(cpoints[i][ii]);
             }
         }
@@ -131,9 +134,13 @@ class PointSymbolizer extends CanvasSymbolizer {
 
         const map = this.getMap();
         let p0 = rotations[i][0], p1 = rotations[i][1];
+        //@ts-ignore
         if (map.isTransforming()) {
+            //@ts-ignore
             const glRes = map.getGLRes();
+            //@ts-ignore
             p0 = map._pointAtResToContainerPoint(rotations[i][0], glRes, 0, TEMP_POINT0);
+            //@ts-ignore
             p1 = map._pointAtResToContainerPoint(rotations[i][1], glRes, 0, TEMP_POINT1);
             return r + computeDegree(p0.x, p0.y, p1.x, p1.y);
         } else {

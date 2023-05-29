@@ -69,8 +69,11 @@ class LayerSwitcher extends Control {
             off(this.getMap(), 'click', this._hide, this);
             removeDomNode(this.panel);
             removeDomNode(this.button);
+            //@ts-ignore
             delete this.panel;
+            //@ts-ignore
             delete this.button;
+            //@ts-ignore
             delete this.container;
         }
     }

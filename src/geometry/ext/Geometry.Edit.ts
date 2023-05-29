@@ -1,6 +1,6 @@
 import Geometry from '../Geometry';
 import GeometryEditor from '../editor/GeometryEditor';
-Geometry.include({
+Geometry.include(/** @lends Geometry.prototype */{
 
     /** @lends Geometry.prototype */
     /**

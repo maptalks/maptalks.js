@@ -43,10 +43,12 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     symbolize(ctx) {
         const layer = this.geometry.getLayer();
+        //@ts-ignore
         if (!layer.options['drawAltitude']) {
             return;
         }
         const properties = this.geometry.getProperties();
+        //@ts-ignore
         if (!properties || !properties[layer.options['altitudeProperty']]) {
             return;
         }
@@ -95,6 +97,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
     _drawMarkerAltitude(ctx, point, groundPoint) {
         const style = this._getStyle();
         this.prepareCanvas(ctx, style);
+        //@ts-ignore
         Canvas.path(ctx, [point, groundPoint], style['lineOpacity'], null, style['lineDasharray']);
     }
 
@@ -125,6 +128,7 @@ export default class DrawAltitudeSymbolizer extends PointSymbolizer {
 
     _getStyle() {
         // read drawAltitude from layer every time
+        //@ts-ignore
         let style = this.geometry.getLayer().options['drawAltitude'];
         if (!isObject(style)) {
             style = defaultSymbol;

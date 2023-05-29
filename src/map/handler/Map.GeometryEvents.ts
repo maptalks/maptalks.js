@@ -183,6 +183,7 @@ class MapGeometryEventsHandler extends Handler {
             this._mouseDownTime = now();
         } else if ((eventType === 'click' || eventType === 'touchend') && this._mouseDownTime) {
             const downTime = this._mouseDownTime;
+            //@ts-ignore
             delete this._mouseDownTime;
             const time = now();
             if (time - downTime > 300) {
@@ -190,6 +191,7 @@ class MapGeometryEventsHandler extends Handler {
                     return;
                 }
             } else if (eventType === 'touchend') {
+                //@ts-ignore
                 oneMoreEvent = 'click';
             }
         }
@@ -257,6 +259,7 @@ class MapGeometryEventsHandler extends Handler {
                     if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
                         return false;
                     }
+                    //@ts-ignore
                 } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                     return false;
                 }

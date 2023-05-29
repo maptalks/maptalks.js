@@ -45,6 +45,7 @@ class CRS {
 
     static fromProjectionCode(code): CRS {
         if (!code) {
+             //@ts-ignore
             return null;
         }
         code = code.toUpperCase().replace(':', '');

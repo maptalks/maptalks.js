@@ -32,7 +32,9 @@ const rollupPlugins = [
         main: true
     }),
     commonjs(),
-    typescript(),
+    typescript({
+        compilerOptions: isDebug ? {} : { target: "es5" }
+    }),
     babel({
         plugins
     })

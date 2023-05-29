@@ -158,6 +158,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!loadingCount) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
+                //@ts-ignore
                 if (!map.isAnimating() && (this._parentTiles.length || this._childTiles.length)) {
                     this._parentTiles = [];
                     this._childTiles = [];
@@ -234,6 +235,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                                 tileLoading = loading = true;
                                 this.setToRedraw();
                             }
+                            //@ts-ignore
                             tiles.push(cached);
                             //@ts-ignore
                             if (!this.isTileComplete(cached)) {
@@ -243,6 +245,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     } else {
                         tileLoading = loading = true;
                         const hitLimit = loadingLimit && (loadingCount + preLoadingCount[0]) > loadingLimit;
+                        //@ts-ignore
                         if (!hitLimit && (!map.isInteracting() || (map.isMoving() || map.isRotating()))) {
                             loadingCount++;
                             const key = tileId;
@@ -258,6 +261,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 if (placeholder && !placeholderKeys[tileId]) {
                     //tell gl renderer not to bind gl buffer with image
                     tile.cache = false;
+                    //@ts-ignore
                     placeholders.push({
                         image: placeholder,
                         info: tile
@@ -269,8 +273,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const children = this._findChildTiles(tile);
                 if (children.length) {
                     children.forEach(c => {
+                        //@ts-ignore
                         if (!childKeys[c.info.id]) {
                             childTiles.push(c);
+                            //@ts-ignore
                             childKeys[c.info.id] = 1;
                         }
                     });
@@ -282,6 +288,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         const parentId = parentTile.info.id;
                         if (parentKeys[parentId] === undefined) {
                             parentKeys[parentId] = parentTiles.length;
+                            //@ts-ignore
                             parentTiles.push(parentTile);
                         }/* else {
                             //replace with parentTile of above tiles
@@ -355,9 +362,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            //@ts-ignore
             delete this.drawingChildTiles;
             this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            //@ts-ignore
             delete this.drawingParentTiles;
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
@@ -368,6 +377,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         for (let i = 0, l = tiles.length; i < l; i++) {
             this._drawTileAndCache(tiles[i], parentContext);
         }
+        //@ts-ignore
         delete this.drawingCurrentTiles;
 
         if (drawBackground && this.layer.options['opacity'] < 1) {
@@ -376,9 +386,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.layer.options['fadeAnimation'] = false;
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            //@ts-ignore
             delete this.drawingChildTiles;
             this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            //@ts-ignore
             delete this.drawingParentTiles;
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
@@ -414,6 +426,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this._tileQueue.length) {
             return true;
         }
+        if (!map) {
+            return false;
+        }
         if (map.getPitch()) {
             return super.needToRedraw();
         }
@@ -432,6 +447,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     // limit tile number to load when map is interacting
     _getLoadLimit() {
+        //@ts-ignore
         if (this.getMap().isInteracting()) {
             return this.layer.options['loadingLimitOnInteracting'];
         }
@@ -439,6 +455,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     isDrawable() {
+        //@ts-ignore
         if (this.getMap().getPitch()) {
             if (console) {
                 console.warn('TileLayer with canvas renderer can\'t be pitched, use gl renderer (\'renderer\' : \'gl\') instead.');
@@ -474,13 +491,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     // clip canvas to avoid rough edge of tiles
     _clipByPitch(ctx) {
         const map = this.getMap();
+        //@ts-ignore
         if (map.getPitch() <= map.options['maxVisualPitch']) {
             return false;
         }
         if (!this.layer.options['clipByPitch']) {
             return false;
         }
+        //@ts-ignore
         const clipExtent = map.getContainerExtent();
+        //@ts-ignore
         const r = map.getDevicePixelRatio();
         ctx.save();
         ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
@@ -699,9 +719,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             tileZoom = tileInfo.z,
             tileId = tileInfo.id;
         const map = this.getMap(),
+            //@ts-ignore
             zoom = map.getZoom(),
             ctx = this.context,
+            //@ts-ignore
             cp = map._pointAtResToContainerPoint(point, tileInfo.res, 0, TEMP_POINT),
+            //@ts-ignore
             bearing = map.getBearing(),
             transformed = bearing || zoom !== tileZoom;
         const opacity = this.getTileOpacity(tileImage, tileInfo);
@@ -724,6 +747,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
             w += 0.5;
             h += 0.5;
+            //@ts-ignore
             const res = map._getResolution();
             if (res !== tileInfo.res) {
                 const scale = tileInfo.res / res;
@@ -781,6 +805,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         const tile = this.tileCache.getAndRemove(id);
                         //@ts-ignore
                         if (this.isValidCachedTile(tile)) {
+                            //@ts-ignore
                             children.push(tile);
                             this.tileCache.add(id, tile);
                         }
@@ -794,7 +819,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const res = info.res;
         const min = info.extent2d.getMin(),
             max = info.extent2d.getMax(),
+            //@ts-ignore
             pmin = layer._project(map._pointToPrjAtRes(min, res, TEMP_POINT1), TEMP_POINT1),
+            //@ts-ignore
             pmax = layer._project(map._pointToPrjAtRes(max, res, TEMP_POINT2), TEMP_POINT2);
 
         for (let i = 1; i < zoomDiff; i++) {
@@ -862,6 +889,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const d = sr.getZoomDirection();
         const res = info.res;
         const center = info.extent2d.getCenter(),
+            //@ts-ignore
             prj = layer._project(map._pointToPrjAtRes(center, res));
         for (let diff = 1; diff <= zoomDiff; diff++) {
             const z = info.z - d * diff;
@@ -1008,11 +1036,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _generatePlaceHolder(res) {
         const map = this.getMap();
         const placeholder = this.layer.options['placeholder'];
+        //@ts-ignore
         if (!placeholder || map.getPitch()) {
             return null;
         }
         const tileSize = this.layer.getTileSize(),
+            //@ts-ignore
             scale = res / map._getResolution(),
+            //@ts-ignore
             canvas = this._tilePlaceHolder = this._tilePlaceHolder || Canvas.createCanvas(1, 1, map.CanvasClass);
         canvas.width = tileSize.width * scale;
         canvas.height = tileSize.height * scale;

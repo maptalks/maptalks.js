@@ -50,8 +50,10 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         }
         this._prepareContext(ctx);
         if (this.getPainter().isSpriting() ||
+            //@ts-ignore
             this.geometry.getLayer().getMask() === this.geometry ||
             this._dynamic ||
+            //@ts-ignore
             this.geometry.getLayer().options['cacheVectorOnCanvas'] === false) {
             this._drawMarkers(ctx, cookedPoints, resources);
         } else {
@@ -169,6 +171,7 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
         const w = this.style.markerWidth;
         const h = this.style.markerHeight;
         this._fixedExtent = this._fixedExtent || new PointExtent();
+         //@ts-ignore
         return getVectorMarkerFixedExtent(this._fixedExtent, this.style, isDynamic ? [128, 128 * (w === 0 ? 1 : h / w)] : null);
     }
 

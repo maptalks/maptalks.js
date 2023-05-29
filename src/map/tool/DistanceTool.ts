@@ -251,6 +251,7 @@ class DistanceTool extends DrawTool {
             this._measureLineLayer = new VectorLayer(layerId).addTo(map);
             this._measureMarkerLayer = new VectorLayer(markerLayerId).addTo(map);
         } else {
+            //@ts-ignore
             this._measureLineLayer = map.getLayer(layerId);
             //@ts-ignore
             this._measureMarkerLayer = map.getLayer(markerLayerId);
@@ -384,10 +385,12 @@ class DistanceTool extends DrawTool {
     _clearTailMarker() {
         if (this._tailMarker) {
             this._tailMarker.remove();
+            //@ts-ignore
             delete this._tailMarker;
         }
         if (this._tailLabel) {
             this._tailLabel.remove();
+            //@ts-ignore
             delete this._tailLabel;
         }
     }

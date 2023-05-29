@@ -18,6 +18,7 @@ export default function TextEditable<TBase extends Constructor>(Base: TBase) {
          *
          * @return {TextMarker} this
          * @fires TextMarker#edittextstart
+         * @function TextEditable.startEditText
          */
         startEditText() {
             //@ts-ignore
@@ -44,6 +45,7 @@ export default function TextEditable<TBase extends Constructor>(Base: TBase) {
          * End text edit.
          *
          * @return {TextMarker} this
+         * @function TextEditable.endEditText
          * @fires TextMarker#edittextend
          */
         endEditText() {
@@ -60,6 +62,7 @@ export default function TextEditable<TBase extends Constructor>(Base: TBase) {
                 this.getMap().off('mousedown', this.endEditText, this);
 
                 this._editUIMarker.remove();
+                //@ts-ignore
                 delete this._editUIMarker;
                 this._textEditor.onkeyup = null;
                 delete this._textEditor;
@@ -82,6 +85,7 @@ export default function TextEditable<TBase extends Constructor>(Base: TBase) {
          * Whether the text is being edited.
          *
          * @return {Boolean}
+         * @function TextEditable.isEditingText
          */
         isEditingText() {
             if (this._textEditor) {
@@ -93,6 +97,7 @@ export default function TextEditable<TBase extends Constructor>(Base: TBase) {
         /**
          * Get the text editor which is an [ui.UIMarker]{@link ui.UIMarker}
          * @return {ui.UIMarker} text editor
+         * @function TextEditable.getTextEditor
          */
         getTextEditor() {
             return this._editUIMarker;

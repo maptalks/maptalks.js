@@ -15,6 +15,7 @@ const search = {
  * 2. painter中查询collisionIndex中是否有命中
  *   2.1 如果有，则从 elements 中删除当前item
  *   2.2 如果没有，如果需要的，insert到collisionIndex中
+ * @category core
  */
 class CollisionIndex {
     _tree: any;

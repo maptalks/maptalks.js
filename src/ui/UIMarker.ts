@@ -395,6 +395,9 @@ class UIMarker extends Handlerable(UIComponent) {
      */
     getOffset() {
         const size = this.getSize();
+        if (!size) {
+            return null;
+        }
         //default is middle
         let offsetX = -size.width / 2, offsetY = -size.height / 2;
         //@ts-ignore
@@ -486,7 +489,9 @@ class UIMarker extends Handlerable(UIComponent) {
         const map = this.getMap();
         const containerPoint = map.coordToContainerPoint(this.getCoordinates());
         const size = this.getSize(),
+            //@ts-ignore
             width = size.width,
+            //@ts-ignore
             height = size.height;
         const anchors = [
             //top center
@@ -693,9 +698,12 @@ class UIMarkerDragHandler extends Handler {
         if (this._dragHandler) {
             target.off('click', this._endDrag, this);
             this._dragHandler.disable();
+            //@ts-ignore
             delete this._dragHandler;
         }
+        //@ts-ignore
         delete this._lastCoord;
+        //@ts-ignore
         delete this._lastPoint;
         this._isDragging = false;
         if (!map) {

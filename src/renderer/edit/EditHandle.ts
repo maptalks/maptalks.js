@@ -68,6 +68,7 @@ export default class EditHandle extends Eventable(Class) {
                 const ctx = canvas.getContext('2d');
                 // vector marker
                 // 不同的vector，point不同
+                 //@ts-ignore
                 img = drawVectorMarker(ctx, { x: w / 2, y: h / 2 }, symbol, resources);
             }
             resources.addResource([this.url, w, h], img);

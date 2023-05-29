@@ -6,6 +6,7 @@
  * @param {Number} y Y component
  * @param {Number} z Z component
  * @returns {vec3} out
+ * @private
  */
 export function set(out: Array<number>, x: number, y: number, z: number) {
     out[0] = x;
@@ -21,6 +22,7 @@ export function set(out: Array<number>, x: number, y: number, z: number) {
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {vec3} out
+ * @private
  */
 export function add(out: Array<number>, a: Array<number>, b: Array<number>) {
     out[0] = a[0] + b[0];
@@ -36,6 +38,7 @@ export function add(out: Array<number>, a: Array<number>, b: Array<number>) {
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {vec3} out
+ * @private
  */
 export function subtract(out: Array<number>, a: Array<number>, b: Array<number>) {
     out[0] = a[0] - b[0];
@@ -49,6 +52,7 @@ export function subtract(out: Array<number>, a: Array<number>, b: Array<number>)
  *
  * @param {vec3} a vector to calculate length of
  * @returns {Number} length of a
+ * @private
  */
 export function length(a: Array<number>) {
     const x = a[0],
@@ -63,6 +67,7 @@ export function length(a: Array<number>) {
  * @param {vec3} out the receiving vector
  * @param {vec3} a vector to normalize
  * @returns {vec3} out
+ * @private
  */
 export function normalize(out: Array<number>, a: Array<number>) {
     const x = a[0],
@@ -85,6 +90,7 @@ export function normalize(out: Array<number>, a: Array<number>) {
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} dot product of a and b
+ * @private
  */
 export function dot(a: Array<number>, b: Array<number>) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -96,6 +102,7 @@ export function dot(a: Array<number>, b: Array<number>) {
  * @param {vec3} out the receiving vector
  * @param {vec3} a the vector to scale
  * @param {Number} b amount to scale the vector by
+ * @private
  * @returns {vec3} out
  */
 export function scale(out: Array<number>, a: Array<number>, b: number) {
@@ -112,6 +119,7 @@ export function scale(out: Array<number>, a: Array<number>, b: number) {
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {vec3} out
+ * @private
  */
 export function cross(out: Array<number>, a: Array<number>, b: Array<number>) {
     const ax = a[0], ay = a[1], az = a[2],
@@ -129,6 +137,7 @@ export function cross(out: Array<number>, a: Array<number>, b: Array<number>) {
  * @param {vec3} a the first operand
  * @param {vec3} b the second operand
  * @returns {Number} distance between a and b
+ * @private
  */
 export function distance(a: Array<number>, b: Array<number>) {
     const x = b[0] - a[0];
@@ -146,6 +155,7 @@ export function distance(a: Array<number>, b: Array<number>) {
  * @param {vec3} a the vector to transform
  * @param {mat4} m matrix to transform with
  * @returns {vec3} out
+ * @private
  */
 export function transformMat4(out: Array<number>, a: Array<number>, m: Array<number>) {
     const x = a[0], y = a[1], z = a[2];

@@ -186,6 +186,7 @@ LineString.include({
         } else if (this.options['smoothness']) {
             Canvas.paintSmoothLine(ctx, points, lineOpacity, this.options['smoothness'], false, this._animIdx, this._animTailRatio);
         } else {
+            //@ts-ignore
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
         }
         this._paintArrow(ctx, points, lineOpacity);
@@ -219,12 +220,14 @@ LineString.include({
             if (placement === 'vertex-first' || placement === 'vertex-firstlast' && segments[i][0].closeTo(first, 0.01)) {
                 const arrow = this._getArrowShape(segments[i][1], segments[i][0], lineWidth, arrowStyle, tolerance);
                 if (arrow) {
+                    //@ts-ignore
                     arrows.push(arrow);
                 }
             }
             if (placement === 'vertex-last' || placement === 'vertex-firstlast' && segments[i][segments[i].length - 1].closeTo(last, 0.01)) {
                 const arrow = this._getArrowShape(segments[i][segments[i].length - 2], segments[i][segments[i].length - 1], lineWidth, arrowStyle, tolerance);
                 if (arrow) {
+                    //@ts-ignore
                     arrows.push(arrow);
                 }
             } else if (placement === 'point') {
@@ -291,6 +294,7 @@ Polygon.include({
                         points[0].push(hole);
                     }
                 } else {
+                    //@ts-ignore
                     holePoints.push(hole);
                 }
             }

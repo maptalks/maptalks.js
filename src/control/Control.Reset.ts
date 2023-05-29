@@ -58,7 +58,9 @@ class Reset extends Control {
     }
 
     onRemove() {
+        //@ts-ignore
         delete this._reset;
+        //@ts-ignore
         delete this._view;
     }
 

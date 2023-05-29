@@ -95,6 +95,7 @@ function CenterMixin<TBase extends Constructor>(Base: TBase) {
         }
 
         _clearProjection() {
+             //@ts-ignore
             this._pcenter = null;
             //@ts-ignore
             super._clearProjection();

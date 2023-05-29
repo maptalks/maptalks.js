@@ -184,6 +184,7 @@ export function replaceVariable(str: string, props) {
 /**
  * Generate text descriptors according to symbols
  * @return {Object} text descriptor
+ * @memberOf StringUtil
  */
 export function describeText(textContent: any, symbol) {
     if (isNumber(textContent)) {
@@ -281,6 +282,7 @@ export function splitTextToRow(text: string, style) {
                     if (w > actualWidth) {
                         actualWidth = w;
                     }
+                    //@ts-ignore
                     textRows.push({
                         //@ts-ignore
                         'text': contents[ii].text,
@@ -308,6 +310,7 @@ export function splitTextToRow(text: string, style) {
             if (w > actualWidth) {
                 actualWidth = w;
             }
+            //@ts-ignore
             textRows.push({
                 //@ts-ignore
                 'text': contents[i].text,
@@ -319,6 +322,7 @@ export function splitTextToRow(text: string, style) {
         if (textWidth > actualWidth) {
             actualWidth = textWidth;
         }
+        //@ts-ignore
         textRows.push({
             //@ts-ignore
             'text': text,

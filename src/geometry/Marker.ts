@@ -65,7 +65,7 @@ class Marker extends CenterMixin(Geometry) {
      * @param {Object} [options=null]       - construct options defined in [Marker]{@link Marker#options}
      */
     constructor(coordinates, opts?: MarkerOptionsType) {
-        super(opts);
+        super(opts || {});
         this.type = 'Point';
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -85,22 +85,28 @@ class Marker extends CenterMixin(Geometry) {
     getOutline() {
         const coord = this.getCoordinates();
         const extent = this.getContainerExtent();
+        //@ts-ignore
         const anchor = this.getMap().coordToContainerPoint(coord);
         return new Marker(coord, {
             'symbol': {
                 'markerType': 'square',
+                //@ts-ignore
                 'markerWidth': extent.getWidth(),
+                //@ts-ignore
                 'markerHeight': extent.getHeight(),
                 'markerLineWidth': 1,
                 'markerLineColor': '6b707b',
                 'markerFill': 'rgba(0, 0, 0, 0)',
+                //@ts-ignore
                 'markerDx': extent.xmin - (anchor.x - extent.getWidth() / 2),
+                //@ts-ignore
                 'markerDy': extent.ymin - (anchor.y - extent.getHeight() / 2)
             }
         });
     }
 
     setSymbol(...args) {
+        //@ts-ignore
         delete this._fixedExtent;
         return super.setSymbol.call(this, ...args);
     }
@@ -144,6 +150,7 @@ class Marker extends CenterMixin(Geometry) {
 
     _setExternSymbol(symbol) {
         if (!this._symbol) {
+            //@ts-ignore
             delete this._fixedExtent;
         }
         return super._setExternSymbol(symbol);
@@ -163,6 +170,7 @@ class Marker extends CenterMixin(Geometry) {
         if (!symbol) {
             return this._fixedExtent;
         }
+        //@ts-ignore
         const renderer = this.getLayer() && this.getLayer().getRenderer();
         const resources = renderer && renderer.resources;
         const textDesc = this.getTextDesc();
@@ -204,8 +212,10 @@ class Marker extends CenterMixin(Geometry) {
     _containsPoint(point, t) {
         let extent = this.getContainerExtent();
         if (t) {
+            //@ts-ignore
             extent = extent.expand(t);
         }
+        //@ts-ignore
         if (extent.contains(point)) {
             if (this.options['hitTestForEvent']) {
                 return super._containsPoint(point, t);

@@ -276,14 +276,20 @@ Map.include(/** @lends Map.prototype */{
                 const dxPerPixel = (xmax - xmin) / width, dyPerPixel = (ymax - ymin) / height;
                 for (let i = 0, len = points.length; i < len; i++) {
                     if (!points[i]) {
+                        //@ts-ignore
                         resultPoints[i] = null;
                         continue;
                     }
                     const pt = resultPoints[i];
+                    //@ts-ignore
                     pt.x = points[i].x;
+                    //@ts-ignore
                     pt.y = points[i].y;
+                    //@ts-ignore
                     pt._multi(scale);
+                    //@ts-ignore
                     pt.x = (pt.x - xmin) * dxPerPixel;
+                    //@ts-ignore
                     pt.y = height - (pt.y - ymin) * dyPerPixel;
                 }
                 return resultPoints;
@@ -294,12 +300,16 @@ Map.include(/** @lends Map.prototype */{
         const centerPoint = this._prjToPoint(this._getPrjCenter(), undefined, TEMP_COORD);
         for (let i = 0, len = points.length; i < len; i++) {
             if (!points[i]) {
+                //@ts-ignore
                 resultPoints[i] = null;
                 continue;
             }
             const pt = resultPoints[i];
+            //@ts-ignore
             pt.x = points[i].x;
+            //@ts-ignore
             pt.y = points[i].y;
+            //@ts-ignore
             pt._multi(scale);
             const altitude = altitudeIsArray ? (altitudes[i] || 0) : altitudes;
             this._toContainerPoint(pt, isTransforming, altitude, centerPoint);
@@ -450,6 +460,7 @@ Map.include(/** @lends Map.prototype */{
             this.projViewMatrix = mat4.multiply(this.projViewMatrix || createMat4(), projMatrix, this.viewMatrix);
             this._calcCascadeMatrixes();
             // matrix for screen point => world point
+             //@ts-ignore
             this.projViewMatrixInverse = mat4.multiply(this.projViewMatrixInverse || createMat4(), worldMatrix, mat4.invert(m1, projMatrix));
             this.domCssMatrix = this._calcDomMatrix();
             this._frustumAltitude = this._calcFrustumAltitude();

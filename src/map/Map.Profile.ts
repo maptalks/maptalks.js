@@ -42,8 +42,10 @@ Geometry.fromJSON = function (json) {
         for (let i = 0, len = json.length; i < len; i++) {
             const c = Geometry.fromJSON(json[i]);
             if (Array.isArray(json)) {
+                //@ts-ignore
                 result = result.concat(c);
             } else {
+                //@ts-ignore
                 result.push(c);
             }
         }
@@ -147,6 +149,7 @@ Map.include(/** @lends Map.prototype */ {
                     continue;
                 }
                 const opts = extend({}, isObject(options['layers']) ? options['layers'] : {}, extraLayerOptions);
+                //@ts-ignore
                 layersJSON.push(layers[i].toJSON(opts));
             }
             json['layers'] = layersJSON;
@@ -159,6 +162,7 @@ Map.include(/** @lends Map.prototype */ {
                     continue;
                 }
                 const opts = extend({}, exportOption['options'], extraLayerOptions);
+                //@ts-ignore
                 layersJSON.push(layer.toJSON(opts));
             }
             json['layers'] = layersJSON;
@@ -187,6 +191,7 @@ Map.include(/** @lends Map.prototype */ {
  * @example
  * var map = Map.fromJSON('map', mapProfile);
  */
+//@ts-ignore
 Map.fromJSON = function (container, profile, options) {
     if (!container || !profile) {
         return null;
@@ -206,6 +211,7 @@ Map.fromJSON = function (container, profile, options) {
         const layerJSONs = profile['layers'];
         for (let i = 0; i < layerJSONs.length; i++) {
             const layer = Layer.fromJSON(layerJSONs[i]);
+            //@ts-ignore
             layers.push(layer);
         }
         map.addLayer(layers);

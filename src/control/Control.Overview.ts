@@ -97,6 +97,7 @@ class Overview extends Control {
             .off('spatialreferencechange', this._updateSpatialReference, this);
         if (this._overview) {
             this._overview.remove();
+            //@ts-ignore
             delete this._overview;
             delete this._perspective;
         }
@@ -125,6 +126,7 @@ class Overview extends Control {
         if (this._overview) {
             this._overview.remove();
         }
+        //@ts-ignore
         delete this._overview;
         delete this._perspective;
         const dom = this.mapContainer;
@@ -260,6 +262,7 @@ class Overview extends Control {
         const map = this.getMap(),
             baseLayer = map.getBaseLayer();
         if (!baseLayer) {
+            //@ts-ignore
             this._overview.setBaseLayer(null);
             return;
         }
@@ -277,16 +280,21 @@ class Overview extends Control {
         }
         //@ts-ignore
         const json = baseLayer.toJSON();
-        let options = null;
+        let options = {};
         if (layers) {
             options = json.layers[showIndex].options;
+            //@ts-ignore
             options.visible = true;
         } else {
             options = json.options;
         }
+        //@ts-ignore
         this._overview.setMinZoom(options.minZoom || null)
+            //@ts-ignore
             .setMaxZoom(options.maxZoom || null);
+        //@ts-ignore
         delete options.minZoom;
+        //@ts-ignore
         delete options.maxZoom;
         delete json.options.canvas;
         json.options.visible = true;

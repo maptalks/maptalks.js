@@ -136,6 +136,7 @@ class DrawTool extends MapTool {
         if (this.options['mode']) {
             return this.options['mode'].toLowerCase();
         }
+        //@ts-ignore
         return null;
     }
 
@@ -147,6 +148,7 @@ class DrawTool extends MapTool {
     setMode(mode: string) {
         if (this._geometry) {
             this._geometry.remove();
+            //@ts-ignore
             delete this._geometry;
         }
         this._clearStage();
@@ -214,6 +216,7 @@ class DrawTool extends MapTool {
                 map.config({ autoPanAtEdge: true });
             }
         }
+        //@ts-ignore
         this._geometryEvents = map.options['geometryEvents'];
         if (this.options['blockGeometryEvents']) {
             //@ts-ignore
@@ -287,6 +290,7 @@ class DrawTool extends MapTool {
 
     _saveMapCfg() {
         const map = this.getMap();
+        //@ts-ignore
         this._mapDoubleClickZoom = map.options['doubleClickZoom'];
         map.config({
             'doubleClickZoom': this.options['doubleClickZoom']
@@ -301,6 +305,7 @@ class DrawTool extends MapTool {
         }
         if (dragging) {
             const map = this.getMap();
+            //@ts-ignore
             this._mapDraggable = map.options['draggable'];
             map.config({
                 'draggable': false
@@ -317,7 +322,9 @@ class DrawTool extends MapTool {
             //@ts-ignore
             map.config('draggable', this._mapDraggable);
         }
+        //@ts-ignore
         delete this._mapDraggable;
+        //@ts-ignore
         delete this._mapDoubleClickZoom;
     }
 
@@ -630,10 +637,12 @@ class DrawTool extends MapTool {
         if (!param.ignoreEndEvent) {
             this._fireEvent('drawend', param);
         }
+        //@ts-ignore
         delete this._geometry;
         if (this.options['once']) {
             this.disable();
         }
+        //@ts-ignore
         delete this._ending;
         delete this._historyPointer;
         if (this._vertexes) {
@@ -645,7 +654,9 @@ class DrawTool extends MapTool {
     _clearStage() {
         //@ts-ignore
         this._getDrawLayer().clear();
+        //@ts-ignore
         delete this._geometry;
+        //@ts-ignore
         delete this._clickCoords;
     }
 

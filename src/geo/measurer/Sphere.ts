@@ -61,6 +61,7 @@ class Sphere {
 
     _locate(c: Coordinate, xDist: number, yDist: number): Coordinate {
         if (!c) {
+             //@ts-ignore
             return null;
         }
         if (!xDist) {

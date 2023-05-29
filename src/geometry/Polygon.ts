@@ -36,7 +36,7 @@ class Polygon extends Path {
      * @param {Object} [options=null] - construct options defined in [Polygon]{@link Polygon#options}
      */
     constructor(coordinates, opts?: PolygonOptionsType) {
-        super(opts);
+        super(opts || {});
         this.type = 'Polygon';
         if (coordinates) {
             this.setCoordinates(coordinates);
@@ -68,6 +68,7 @@ class Polygon extends Path {
     setCoordinates(coordinates: Array<Array<Coordinate | Array<number>>>) {
         if (!coordinates) {
             this._coordinates = null;
+            //@ts-ignore
             this._holes = null;
             this._projectRings();
             return this;
@@ -85,10 +86,12 @@ class Polygon extends Path {
                     if (!rings[i]) {
                         continue;
                     }
+                    //@ts-ignore
                     holes.push(this._trimRing(rings[i]));
                 }
                 this._holes = holes;
             } else {
+                //@ts-ignore
                 this._holes = null;
             }
         }
@@ -277,15 +280,18 @@ class Polygon extends Path {
     }
 
     _clearCache() {
+        //@ts-ignore
         delete this._prjShell;
         return super._clearCache();
     }
 
     _clearProjection() {
         if (this._prjHoles) {
+            //@ts-ignore
             this._prjHoles = null;
         }
         if (this._prjShell) {
+            //@ts-ignore
             this._prjShell = null;
         }
         super._clearProjection();

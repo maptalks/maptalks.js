@@ -124,6 +124,7 @@ class GeometryCollection extends Geometry {
         this.forEach(geometry => {
             const g = isFn ? geometry : getFilterFeature(geometry);
             if (context ? filter.call(context, g) : filter(g)) {
+                //@ts-ignore
                 selected.push(geometry);
             }
         }, this);
@@ -217,6 +218,7 @@ class GeometryCollection extends Geometry {
                 if (symbol && !is) {
                     is = true;
                 }
+                //@ts-ignore
                 symbols.push(g.getSymbol());
             });
             if (is) {
@@ -353,6 +355,7 @@ class GeometryCollection extends Geometry {
         if (this.isEmpty()) {
             return false;
         }
+        //@ts-ignore
         delete this._pickGeometryIndex;
         const geometries = this.getGeometries();
         for (let i = 0, l = geometries.length; i < l; i++) {
@@ -414,6 +417,7 @@ class GeometryCollection extends Geometry {
                 if (!geometries[i]) {
                     continue;
                 }
+                //@ts-ignore
                 children.push(geometries[i]._exportGeoJSONGeometry());
             }
         }
@@ -501,6 +505,7 @@ class GeometryCollection extends Geometry {
             for (let ii = 0, ll = res.length; ii < ll; ii++) {
                 key = res[ii].join();
                 if (!cache[key]) {
+                    //@ts-ignore
                     resources.push(res[ii]);
                     cache[key] = 1;
                 }

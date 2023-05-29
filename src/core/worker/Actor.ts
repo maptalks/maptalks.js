@@ -42,7 +42,7 @@ const EMPTY_BUFFERS = [];
       console.log(data);
     });
  */
-export default class Actor {
+class Actor {
 
     workerKey: string;
     currentActor: number;
@@ -202,3 +202,4 @@ function asyncAll(array, fn, callback) {
         });
     });
 }
+export default  Actor;

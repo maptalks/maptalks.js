@@ -150,6 +150,7 @@ class QuadStencil {
     }
 
     _createProgram() {
+         //@ts-ignore
         const { program, vertexShader, fragmentShader } = createProgram(this.gl, vert, frag);
         program.vertexShader = vertexShader;
         program.fragmentShader = fragmentShader;

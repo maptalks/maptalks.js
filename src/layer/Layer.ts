@@ -10,15 +10,15 @@ import Browser from '../core/Browser';
 import { Map } from './../map';
 
 export type LayerOptionsType = {
-    'attribution'?: string,
-    'minZoom'?: number,
-    'maxZoom'?: number;
+    'attribution'?: string | null,
+    'minZoom'?: number | null,
+    'maxZoom'?: number | null;
     'visible'?: boolean;
     'opacity'?: number;
-    'globalCompositeOperation'?: string,
+    'globalCompositeOperation'?: string | null,
     'renderer'?: string;
     'debugOutline'?: string;
-    'cssFilter'?: string;
+    'cssFilter'?: string | null;
     'forceRenderOnMoving'?: boolean;
     'forceRenderOnZooming'?: boolean;
     'forceRenderOnRotating'?: boolean;
@@ -51,6 +51,7 @@ export type LayerOptionsType = {
  * @instance
  */
 const options: LayerOptionsType = {
+
     'attribution': null,
     'minZoom': null,
     'maxZoom': null,
@@ -95,6 +96,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     _silentConfig: boolean;
 
     static fromJSON(json: object): Layer {
+        //@ts-ignore
         return null;
     }
 
@@ -104,10 +106,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             canvas = options.canvas;
             delete options.canvas;
         }
-        super(options);
+        super(options || {});
         this._canvas = canvas;
         this.setId(id);
         if (options) {
+            //@ts-ignore
             this.setZIndex(options.zIndex);
             //@ts-ignore
             if (options.mask) {
@@ -298,6 +301,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this.map) {
             return this.map;
         }
+        //@ts-ignore
         return null;
     }
 
@@ -485,10 +489,12 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         this._mask = mask;
         //@ts-ignore
         this.options.mask = mask.toJSON();
+        //@ts-ignore
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
         const renderer = this._getRenderer();
+        //@ts-ignore
         if (renderer && renderer.setToRedraw) {
             this._getRenderer().setToRedraw();
         }
@@ -500,13 +506,16 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @returns {Layer} this
      */
     removeMask() {
+        //@ts-ignore
         delete this._mask;
         //@ts-ignore
         delete this.options.mask;
+        //@ts-ignore
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
         const renderer = this._getRenderer();
+        //@ts-ignore
         if (renderer && renderer.setToRedraw) {
             this._getRenderer().setToRedraw();
         }
@@ -537,7 +546,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * Get layer's collision index
      * @returns {CollisionIndex}
      */
-    getCollisionIndex(): CollisionIndex {
+    getCollisionIndex(): CollisionIndex | null {
         if (this.options['collisionScope'] === 'layer') {
             if (!this._collisionIndex) {
                 this._collisionIndex = new CollisionIndex();
@@ -655,14 +664,18 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this._renderer) {
             this._switchEvents('off', this._renderer);
             this._renderer.remove();
+            //@ts-ignore
             delete this._renderer;
         }
+        //@ts-ignore
         delete this.map;
+        //@ts-ignore
         delete this._collisionIndex;
     }
 
     _switchEvents(to, emitter) {
         if (emitter && emitter.getEvents && this.getMap()) {
+            //@ts-ignore
             this.getMap()[to](emitter.getEvents(), emitter);
         }
     }

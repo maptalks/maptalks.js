@@ -13,6 +13,7 @@ const DefaultSpatialReference = {
             const resolutions = [];
             const d = 2 * 6378137 * Math.PI;
             for (let i = 0; i < MAX_ZOOM; i++) {
+                //@ts-ignore
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;
@@ -35,6 +36,7 @@ const DefaultSpatialReference = {
         'resolutions': (function () {
             const resolutions = [];
             for (let i = 0; i < MAX_ZOOM; i++) {
+                //@ts-ignore
                 resolutions[i] = 180 / (Math.pow(2, i) * 128);
             }
             return resolutions;
@@ -46,6 +48,7 @@ const DefaultSpatialReference = {
             let res = Math.pow(2, 18);
             const resolutions = [];
             for (let i = 0; i < MAX_ZOOM; i++) {
+                //@ts-ignore
                 resolutions[i] = res;
                 res *= 0.5;
             }
@@ -64,6 +67,7 @@ const DefaultSpatialReference = {
             let res = Math.pow(2, 8);
             const resolutions = [];
             for (let i = 0; i < MAX_ZOOM; i++) {
+                //@ts-ignore
                 resolutions[i] = res;
                 res *= 0.5;
             }
@@ -84,6 +88,7 @@ const DefaultSpatialReference = {
             const resolutions = [];
             const d = 6378137 * Math.PI;
             for (let i = 0; i < MAX_ZOOM; i++) {
+                //@ts-ignore
                 resolutions[i] = d / (256 * Math.pow(2, i));
             }
             return resolutions;

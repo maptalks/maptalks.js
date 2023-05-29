@@ -157,6 +157,9 @@ class CanvasRenderer extends Class {
         if (this._toRedraw) {
             return true;
         }
+        if (!map) {
+            return false;
+        }
         if (map.isInteracting() && !this.drawOnInteracting) {
             return false;
         }
@@ -172,6 +175,9 @@ class CanvasRenderer extends Class {
      */
     needToRedraw() {
         const map = this.getMap();
+        if (!map) {
+            return false;
+        }
         if (map.isInteracting() || map.getRenderer().isViewChanged()) {
             // don't redraw when map is moving without any pitch
             return !(!map.getPitch() && map.isMoving() && !map.isZooming() && !map.isRotating() && !this.layer.options['forceRenderOnMoving']);
@@ -231,16 +237,21 @@ class CanvasRenderer extends Class {
      */
     remove() {
         this.onRemove();
+        //@ts-ignore
         delete this._loadingResource;
         delete this.southWest;
         delete this.canvas;
+        //@ts-ignore
         delete this.context;
+        //@ts-ignore
         delete this.canvasExtent2D;
+        //@ts-ignore
         delete this._extent2D;
         if (this.resources) {
             this.resources.remove();
         }
         delete this.resources;
+        //@ts-ignore
         delete this.layer;
     }
 
@@ -266,6 +277,7 @@ class CanvasRenderer extends Class {
     getCanvasImage() {
         const map = this.getMap();
         this._canvasUpdated = false;
+        //@ts-ignore
         if (this._renderZoom !== map.getZoom() || !this.canvas || !this._extent2D) {
             return null;
         }
@@ -277,6 +289,7 @@ class CanvasRenderer extends Class {
             return null;
         }
         // size = this._extent2D.getSize(),
+        //@ts-ignore
         const containerPoint = map._pointToContainerPoint(this.southWest)._add(0, -map.height);
         return {
             'image': this.canvas,
@@ -338,7 +351,9 @@ class CanvasRenderer extends Class {
             return false;
         }
         const map = this.getMap();
+        //@ts-ignore
         const r = map.getDevicePixelRatio();
+        //@ts-ignore
         const size = map.getSize();
         if (point.x < 0 || point.x > size['width'] * r || point.y < 0 || point.y > size['height'] * r) {
             return false;
@@ -398,6 +413,7 @@ class CanvasRenderer extends Class {
                 cache[url.join('-')] = 1;
                 if (!resources.isResourceLoaded(url, true)) {
                     //closure it to preserve url's value
+                    //@ts-ignore
                     promises.push(new Promise(this._promiseResource(url)));
                 }
             }
@@ -411,12 +427,15 @@ class CanvasRenderer extends Class {
      * @private
      */
     prepareRender() {
+        //@ts-ignore
         delete this._renderComplete;
         const map = this.getMap();
+        //@ts-ignore
         this._renderZoom = map.getZoom();
         //@ts-ignore
         this.canvasExtent2D = this._extent2D = map._get2DExtent();
         //change from northWest to southWest, because northwest's point <=> containerPoint changes when pitch >= 72
+        //@ts-ignore
         this.southWest = map._containerPointToPoint(new Point(0, map.height));
     }
 
@@ -428,7 +447,9 @@ class CanvasRenderer extends Class {
             return;
         }
         const map = this.getMap();
+        //@ts-ignore
         const size = map.getSize();
+        //@ts-ignore
         const r = map.getDevicePixelRatio(),
             w = Math.round(r * size.width),
             h = Math.round(r * size.height);
@@ -442,6 +463,7 @@ class CanvasRenderer extends Class {
             }
             this.canvas = this.layer._canvas;
         } else {
+            //@ts-ignore
             this.canvas = Canvas2D.createCanvas(w, h, map.CanvasClass);
         }
 
@@ -458,6 +480,7 @@ class CanvasRenderer extends Class {
         if (this.gl && this.gl.canvas === this.canvas || this.context) {
             return;
         }
+        //@ts-ignore
         this.context = Canvas2D.getCanvas2DContext(this.canvas);
         if (!this.context) {
             return;
@@ -465,6 +488,7 @@ class CanvasRenderer extends Class {
         if (this.layer.options['globalCompositeOperation']) {
             this.context.globalCompositeOperation = this.layer.options['globalCompositeOperation'];
         }
+        //@ts-ignore
         const dpr = this.getMap().getDevicePixelRatio();
         if (dpr !== 1) {
             this.context.scale(dpr, dpr);
@@ -475,6 +499,7 @@ class CanvasRenderer extends Class {
         if (!this.context) {
             return;
         }
+        //@ts-ignore
         const dpr = this.getMap().getDevicePixelRatio();
         this.context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
@@ -488,7 +513,9 @@ class CanvasRenderer extends Class {
         if (!canvas) {
             return;
         }
+        //@ts-ignore
         const size = canvasSize || this.getMap().getSize();
+        //@ts-ignore
         const r = this.getMap().getDevicePixelRatio();
         const { width, height, cssWidth, cssHeight } = calCanvasSize(size, r);
         // width/height不变并不意味着 css width/height 不变
@@ -516,6 +543,7 @@ class CanvasRenderer extends Class {
             return;
         }
         //fix #1597
+         //@ts-ignore
         const r = this.getMap().getDevicePixelRatio();
         const rScale = 1 / r;
         const w = this.canvas.width * rScale, h = this.canvas.height * rScale;
@@ -598,8 +626,10 @@ class CanvasRenderer extends Class {
         const old = this.southWest;
         const map = this.getMap();
         //when clipping, layer's southwest needs to be reset for mask's containerPoint conversion
+         //@ts-ignore
         this.southWest = map._containerPointToPoint(new Point(0, map.height));
         context.save();
+         //@ts-ignore
         const dpr = map.getDevicePixelRatio();
         if (dpr !== 1) {
             context.save();
@@ -737,6 +767,7 @@ class CanvasRenderer extends Class {
     * @param  {Object} param event parameters
     */
     onResize() {
+         //@ts-ignore
         delete this._extent2D;
         this.resizeCanvas();
         this.setToRedraw();
@@ -881,6 +912,7 @@ class CanvasRenderer extends Class {
                 h = img.height || this.layer.options['defaultIconSize'][1];
             }
             const canvas = Canvas2D.createCanvas(w, h);
+             //@ts-ignore
             Canvas2D.image(canvas.getContext('2d'), img, 0, 0, w, h);
             img = canvas;
         }

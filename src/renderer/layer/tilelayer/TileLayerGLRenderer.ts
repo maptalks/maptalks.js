@@ -29,6 +29,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     needToRedraw() {
         const map = this.getMap();
+        //@ts-ignore
         if (this._gl() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
             return true;
         }
@@ -93,6 +94,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         const opacity = this.getTileOpacity(tileImage, tileInfo);
         let debugInfo = null;
         if (this.layer.options['debug']) {
+            //@ts-ignore
             debugInfo = this.getDebugInfo(tileInfo.id);
         }
         const gl = this.gl;
