@@ -100,7 +100,7 @@ class TerrainPainter {
         const mesh = tileImage.terrainMesh;
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
-            mesh.setUniform('opacity', opacity);
+            mesh.setUniform('polygonOpacity', opacity);
             const maxZoom = this.layer.getSpatialReference().getMaxZoom();
             const isLeaf = this.layer.getRenderer().drawingCurrentTiles === true;
             mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
@@ -117,7 +117,7 @@ class TerrainPainter {
         this.updateIBLDefines(this.shader);
         let renderCount = 0;
 
-        const enableFading = this.layer.options['fadeAnimation'] && this.layer.options['fadeDuration'] > 0;
+        const enableFading = true;//this.layer.options['fadeAnimation'] && this.layer.options['fadeDuration'] > 0;
 
         const uniforms = this.getUniformValues();
 
@@ -132,7 +132,7 @@ class TerrainPainter {
         uniforms.colorMask = true;
         this._parentScene.meshes.forEach(m => {
             const { skirtOffset, skirtCount } = m.properties;
-            // m.setUniform('opacity', 1);
+            // m.setUniform('polygonOpacity', 1);
             m.geometry.setDrawOffset(skirtOffset);
             if (m.getUniform('skin') === this._emptyTileTexture) {
                 m.geometry.setDrawCount(0);
@@ -191,7 +191,7 @@ class TerrainPainter {
 
         this._leafScene.meshes.forEach(m => {
             const { skirtOffset, skirtCount } = m.properties;
-            m.setUniform('opacity', 1);
+            m.setUniform('polygonOpacity', 1);
             m.geometry.setDrawOffset(skirtOffset);
             if (m.getUniform('skin') === this._emptyTileTexture) {
                 m.geometry.setDrawCount(0);

@@ -70,6 +70,9 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         if (!tileInfo || !map || !tileImage) {
             return;
         }
+        if (!this.drawingCurrentTiles && !this._isSkinReady(tileImage)) {
+            return;
+        }
         let opacity = this.drawingCurrentTiles ? this.getTileOpacity(tileImage) : 1;
         opacity *= (this.layer.options.opacity || 1);
         this._painter.addTerrainImage(tileInfo, tileImage, opacity);
@@ -465,6 +468,12 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             }
         }
         return false;
+    }
+
+    isValidCachedTile(tile) {
+        // parent或者child tile没有初始化时，也允许加到parentsTile里，执行初始化逻辑
+        const notInitialized = !tile.image.skinStatus;
+        return tile.image && (notInitialized || this._isSkinReady(tile.image));
     }
 
     isTileComplete(tile) {
