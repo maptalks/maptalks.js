@@ -126,6 +126,7 @@ class TerrainPainter {
         uniforms.enableStencil = false;
         uniforms.colorMask = false;
         uniforms.depthMask = true;
+        this.shader.filter = context && context.sceneFilter;
         this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
 
         //.绘制 parent 背面的 skirt，并开启颜色，避免下凹的地形（露出skirt时）会出现空白
