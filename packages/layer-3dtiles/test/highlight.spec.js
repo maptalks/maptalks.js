@@ -83,7 +83,7 @@ describe('highlight and showOnly specs', () => {
                     if (options.onPainted) {
                         options.onPainted();
                     }
-                } else if (options.afterExe && counter === 2) {
+                } else if (options.afterExe && counter === 3) {
                     done();
                 }
 
@@ -175,6 +175,74 @@ describe('highlight and showOnly specs', () => {
         runner(done, layer, { renderCount: 1, highlights, offset: [10, 0], expected: new Uint8ClampedArray([255, 255, 0, 56]) });
     });
 
+    it('cancelHighlight', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                    shader: 'pbr'
+                }
+            ]
+        });
+        const canvas = map.getRenderer().canvas;
+        const ctx = canvas.getContext('2d');
+        const highlights = {
+            id: 0,
+            color: '#ff0'
+        };
+        const offset = [0, 0];
+
+        const onPainted = () => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
+        };
+        const afterExe = () => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 0, 255]));
+            layer.cancelHighlight(0, [0]);
+        };
+        runner(() => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
+            done();
+        }, layer, { onPainted, afterExe, renderCount: 1, highlights, offset: [10, 0] });
+    });
+
+    it('cancelAllHighlight', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services : [
+                {
+                    url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                    shader: 'pbr'
+                }
+            ]
+        });
+        const canvas = map.getRenderer().canvas;
+        const ctx = canvas.getContext('2d');
+        const highlights = {
+            id: 0,
+            color: '#ff0'
+        };
+        const offset = [0, 0];
+
+        const onPainted = () => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
+        };
+        const afterExe = () => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 0, 255]));
+            layer.cancelAllHighlight();
+        };
+        runner(() => {
+            const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
+            done();
+        }, layer, { onPainted, afterExe, renderCount: 1, highlights, offset: [10, 0] });
+    });
+
     it('showOnly', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -224,14 +292,22 @@ describe('highlight and showOnly specs', () => {
             assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
         };
         const afterExe = () => {
+            const offset = [-40, 75];
+            let color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
+            // 左下角被showOnly隐藏了
+            assert.deepEqual(color.data, new Uint8ClampedArray([0, 0, 0, 0]));
+            color = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+            // 中心的仍然显示
+            assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             layer.cancelShowOnly();
         };
         runner(() => {
-            const offset = [0, 0];
+            const offset = [-40, 75];
+            // 因为调用了cancelShowOnly，左下角恢复显示
             const color = ctx.getImageData(canvas.width / 2 + offset[0], canvas.height / 2 + offset[1], 1, 1);
             assert.deepEqual(color.data, new Uint8ClampedArray([255, 255, 255, 255]));
             done();
-        }, layer, { onPainted, afterExe, renderCount: 1, showOnlys, offset: [-40, 75], expected: new Uint8ClampedArray([255, 255, 255, 255]) });
+        }, layer, { onPainted, afterExe, renderCount: 1, showOnlys, offset: [-40, 75] });
     });
 
 });

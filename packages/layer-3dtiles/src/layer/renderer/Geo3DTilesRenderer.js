@@ -890,6 +890,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         } else {
             serviceHighs.delete(ids);
         }
+        if (!serviceHighs.size) {
+            this._highlighted[service] = null;
+        }
         this.painter.highlight(this._highlighted);
     }
 

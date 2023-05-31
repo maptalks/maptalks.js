@@ -171,6 +171,8 @@ export default class MeshPainter {
                         const rootIdx = mesh[ii].properties.node._rootIdx;
                         if (this._highlighted && this._highlighted[rootIdx]) {
                             HighlightUtil.highlightMesh(this._regl, mesh[ii], this._highlighted[rootIdx], this._highlightTimestamp, batchIdMap);
+                        } else if (!this._highlighted || !this._highlighted[rootIdx]) {
+                            HighlightUtil.highlightMesh(this._regl, mesh[ii], null, this._highlightTimestamp, batchIdMap);
                         }
                         HighlightUtil.showOnly(this._regl, mesh[ii], this._showOnlys && this._showOnlys[rootIdx], this._showOnlyTimeStamp, batchIdMap);
                     }
