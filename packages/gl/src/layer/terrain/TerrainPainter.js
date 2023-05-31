@@ -57,7 +57,6 @@ class TerrainPainter {
         mesh.setUniform('heightTexture', terrainImage);
         mesh.setUniform('bias', 0);
         this.prepareMesh(mesh, tileInfo, terrainGeo);
-
         return mesh;
     }
 
@@ -94,6 +93,7 @@ class TerrainPainter {
         mesh.properties.skirtOffset = numTrianglesWithoutSkirts * 3;
         mesh.properties.skirtCount = triangles.length - numTrianglesWithoutSkirts * 3;
         mesh.properties.z = tileInfo.z;
+        mesh.castShadow = false;
     }
 
     addTerrainImage(tileInfo, tileImage, opacity) {
