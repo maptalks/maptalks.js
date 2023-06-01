@@ -8,7 +8,6 @@ import { PackUtil } from '@maptalks/vector-packer';
 
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
-const PROJ_COORD = new maptalks.Coordinate(0, 0);
 const EMPTY_ALTITUDE = [null, 0];
 
 const defaultOptions = {
@@ -165,7 +164,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             EMPTY_ALTITUDE[1] = 0;
             return EMPTY_ALTITUDE;
         }
-        const pointAtRes = this._tilePointToPoint(PROJ_COORD, point, tilePoint, extent);
+        const pointAtRes = this._tilePointToPoint(TMP_POINT, point, tilePoint, extent);
         if (terrainTileInfo && terrainHelper.queryTileTerrainByPointAtRes) {
             // faster
             return terrainHelper.queryTileTerrainByPointAtRes(pointAtRes, res, terrainTileInfo.id, terrainTileInfo);

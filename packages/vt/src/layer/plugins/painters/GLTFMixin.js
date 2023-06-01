@@ -119,6 +119,11 @@ const GLTFMixin = Base =>
 
             const hasFnType = this._hasFuncType();
 
+            // 这里不考虑每个模型所处经纬度对meterScale的影响
+            const meterScale = this._getMeterScale();
+            const meterToPointMat = mat4.identity([]);
+            mat4.scale(meterToPointMat, meterToPointMat, [meterScale, meterScale, meterScale]);
+
             const meshes = [];
             const symbols = this.getSymbols();
             for (let i = 0; i < symbols.length; i++) {
@@ -138,7 +143,8 @@ const GLTFMixin = Base =>
                 //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
                 meshInfos.forEach(info => {
                     const { geometry, nodeMatrix } = info;
-                    const positionMatrix = mat4.multiply(TEMP_MATRIX, trsMatrix, nodeMatrix);
+                    mat4.multiply(TEMP_MATRIX, meterToPointMat, nodeMatrix);
+                    const positionMatrix = mat4.multiply(TEMP_MATRIX, trsMatrix, TEMP_MATRIX);
                     const gltfBBox = geometry.boundingBox;
                     const meshBox = gltfBBox.copy();
                     meshBox.transform(positionMatrix);
@@ -185,6 +191,7 @@ const GLTFMixin = Base =>
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'markerOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], trsMatrix, nodeMatrix));
                     const positionMatrix = mat4.multiply([], Y_TO_Z, nodeMatrix);
+                    mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
                     mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
                     const matrix = [];
                     mat4.fromTranslation(matrix, anchorTranslation);
@@ -289,7 +296,9 @@ const GLTFMixin = Base =>
             if (!mesh) {
                 return;
             }
-            mesh.updateInstancedData('aTerrainAltitude', aTerrainAltitude);
+            if (mesh.updateInstancedData) {
+                mesh.updateInstancedData('aTerrainAltitude', aTerrainAltitude);
+            }
         }
 
         prepareRender(context) {

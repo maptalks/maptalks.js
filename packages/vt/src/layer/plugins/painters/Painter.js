@@ -1182,7 +1182,11 @@ class Painter {
         if (!geometry) {
             return;
         }
-        geometry.updateData('aTerrainAltitude', aTerrainAltitude);
+        // GLTFMixin 的 geometry 就没有updateData
+        if (geometry.updateData) {
+            geometry.updateData('aTerrainAltitude', aTerrainAltitude);
+        }
+
     }
 
     _fillTerrainAltitude(aTerrainAltitude, aPosition, tile, start, end) {

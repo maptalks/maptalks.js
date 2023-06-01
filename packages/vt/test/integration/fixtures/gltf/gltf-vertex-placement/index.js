@@ -6,7 +6,7 @@ const data = {
         { type: 'Feature', geometry: { type: 'LineString', coordinates: [[13.411523913043766, 52.53168811873488], [13.411423913043766, 52.53168811873488]] }, properties: { type: 1 } }
     ]
 };
-const scale = Math.pow(2, -4);
+const scale = Math.pow(2, 2);
 
 const style = [
     {
