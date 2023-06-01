@@ -10,8 +10,8 @@ import { cartesian3ToDegree } from '../common/Transform';
 import { eastNorthUpToFixedFrame } from '../common/TileHelper';
 import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
 /*import { I3SLoader } from '@loaders.gl/i3s';*/
-import { convertS3MJSON } from './parsers/s3m/S3MHelper';
-import parseS3M from './parsers/s3m/S3MParser';
+// import { convertS3MJSON } from './parsers/s3m/S3MHelper';
+// import parseS3M from './parsers/s3m/S3MParser';
 import { isI3SURL, loadI3STile } from './parsers/i3s/I3SWorkerHelper';
 import { project } from './Projection';
 
@@ -147,12 +147,13 @@ export default class BaseLayerWorker {
                 //     cb('ignore');
                 //     return;
                 // }
-                const s3mVersion = view.getFloat32(0, true);
-                if (s3mVersion === 1 || s3mVersion === 2 || s3mVersion === 3) {
-                    this._readS3M(arraybuffer, url, params, cb);
-                } else {
-                    this._read3DTile(arraybuffer, url, params, magic, cb);
-                }
+                // const s3mVersion = view.getFloat32(0, true);
+                // if (s3mVersion === 1 || s3mVersion === 2 || s3mVersion === 3) {
+                //     this._readS3M(arraybuffer, url, params, cb);
+                // } else {
+                //     this._read3DTile(arraybuffer, url, params, magic, cb);
+                // }
+                this._read3DTile(arraybuffer, url, params, magic, cb);
             }
         } else {
             const service = this.options.services[params.rootIdx];
@@ -219,34 +220,34 @@ export default class BaseLayerWorker {
         }
     }
 
-    _readS3M(arraybuffer, url, params, cb) {
-        // const view = new DataView(arraybuffer);
-        // let bytesOffset = 0;
-        // const version = view.getFloat32(bytesOffset, true);
-        // bytesOffset += Float32Array.BYTES_PER_ELEMENT;
-        // if(version >= 2.0) {
-        //     // const unzipSize = view.getUint32(bytesOffset, true);
-        //     bytesOffset += Uint32Array.BYTES_PER_ELEMENT;
-        // }
+    // _readS3M(arraybuffer, url, params, cb) {
+    //     // const view = new DataView(arraybuffer);
+    //     // let bytesOffset = 0;
+    //     // const version = view.getFloat32(bytesOffset, true);
+    //     // bytesOffset += Float32Array.BYTES_PER_ELEMENT;
+    //     // if(version >= 2.0) {
+    //     //     // const unzipSize = view.getUint32(bytesOffset, true);
+    //     //     bytesOffset += Uint32Array.BYTES_PER_ELEMENT;
+    //     // }
 
-        // // const byteSize = view.getUint32(bytesOffset, true);
-        // bytesOffset += Uint32Array.BYTES_PER_ELEMENT;
-        // const unzipBuffer = unZip(arraybuffer, bytesOffset);
-        const service = this.options.services[params.rootIdx];
-        parseS3M({ buffer: arraybuffer, bytesOffset: 0 }, service.maxTextureSize || 1024).then(s3mData => {
-            s3mData.gltf.url = url;
-            const { content, transferables } = this._processB3DM(s3mData, params);
-            content.magic = 'b3dm';
-            if (s3mData.pageLods) {
-                const children = this._convertPageLoads(s3mData.pageLods);
-                if (children.length) {
-                    content.children = children;
-                }
-            }
-            cb(null, content, transferables);
-        });
+    //     // // const byteSize = view.getUint32(bytesOffset, true);
+    //     // bytesOffset += Uint32Array.BYTES_PER_ELEMENT;
+    //     // const unzipBuffer = unZip(arraybuffer, bytesOffset);
+    //     const service = this.options.services[params.rootIdx];
+    //     parseS3M({ buffer: arraybuffer, bytesOffset: 0 }, service.maxTextureSize || 1024).then(s3mData => {
+    //         s3mData.gltf.url = url;
+    //         const { content, transferables } = this._processB3DM(s3mData, params);
+    //         content.magic = 'b3dm';
+    //         if (s3mData.pageLods) {
+    //             const children = this._convertPageLoads(s3mData.pageLods);
+    //             if (children.length) {
+    //                 content.children = children;
+    //             }
+    //         }
+    //         cb(null, content, transferables);
+    //     });
 
-    }
+    // }
 
     _convertPageLoads(pageLods) {
         const children = [];
@@ -276,11 +277,12 @@ export default class BaseLayerWorker {
     }
 
     _checkAndConvert(rootIdx, json, arraybuffer, url, cb) {
-        if (json.dataType && json.position) {
+        /*if (json.dataType && json.position) {
             // S3M
             cb(null, convertS3MJSON(json));
             return;
-        } else if (json.capabilities) {
+        } else */
+        if (json.capabilities) {
             cb(null, json);
             // parseI3SJSON(json, url, rootIdx, this._i3sNodeCache[rootIdx], this._fnFetchNodepages).then(tileset => {
             //     cb(null, tileset);

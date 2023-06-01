@@ -313,97 +313,97 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 70, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 2 });
         });
 
-        it('s3m-jinjiang', done => {
-            const resPath = 'S3M/jinjiang';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/config.json`,
-                        shader: 'phong',
-                        ambientLight: [1, 1, 1],
-                        heightOffset: -420
-                    }
-                ]
-            });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 2 });
-        });
+        // it('s3m-jinjiang', done => {
+        //     const resPath = 'S3M/jinjiang';
+        //     const layer = new Geo3DTilesLayer('3d-tiles', {
+        //         services : [
+        //             {
+        //                 url : `http://localhost:${PORT}/integration/fixtures/${resPath}/config.json`,
+        //                 shader: 'phong',
+        //                 ambientLight: [1, 1, 1],
+        //                 heightOffset: -420
+        //             }
+        //         ]
+        //     });
+        //     runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 2 });
+        // });
 
 
-        it('s3m-bim', done => {
-            const resPath = 'S3M/bim';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/test@test.scp`,
-                        shader: 'phong',
-                        ambientLight: [1, 1, 1]
-                    }
-                ]
-            });
-            const assertion = layer => {
-                const renderer = layer.getRenderer();
-                const meshes = renderer.getB3DMMeshes();
-                const mesh = Object.values(meshes)[0][0];
-                const geoData = mesh.geometry.data;
-                assert(!!geoData['batchId']);
-                assert(!!geoData['aColor']);
-            };
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 }, assertion);
-        }).timeout(5000);
+        // it('s3m-bim', done => {
+        //     const resPath = 'S3M/bim';
+        //     const layer = new Geo3DTilesLayer('3d-tiles', {
+        //         services : [
+        //             {
+        //                 url : `http://localhost:${PORT}/integration/fixtures/${resPath}/test@test.scp`,
+        //                 shader: 'phong',
+        //                 ambientLight: [1, 1, 1]
+        //             }
+        //         ]
+        //     });
+        //     const assertion = layer => {
+        //         const renderer = layer.getRenderer();
+        //         const meshes = renderer.getB3DMMeshes();
+        //         const mesh = Object.values(meshes)[0][0];
+        //         const geoData = mesh.geometry.data;
+        //         assert(!!geoData['batchId']);
+        //         assert(!!geoData['aColor']);
+        //     };
+        //     runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 }, assertion);
+        // }).timeout(5000);
 
-        it('s3m 3.0', done => {
-            const resPath = 'S3M/s3m3';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/building.scp`,
-                        shader: 'phong',
-                        ambientLight: [1, 1, 1],
-                        maxTextureSize: 1024,
-                        maximumScreenSpaceError: 1.0,
-                        heightOffset: 0,
-                        alwaysShow: true
-                    }
-                ]
-            });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
-        });
+        // it('s3m 3.0', done => {
+        //     const resPath = 'S3M/s3m3';
+        //     const layer = new Geo3DTilesLayer('3d-tiles', {
+        //         services : [
+        //             {
+        //                 url : `http://localhost:${PORT}/integration/fixtures/${resPath}/building.scp`,
+        //                 shader: 'phong',
+        //                 ambientLight: [1, 1, 1],
+        //                 maxTextureSize: 1024,
+        //                 maximumScreenSpaceError: 1.0,
+        //                 heightOffset: 0,
+        //                 alwaysShow: true
+        //             }
+        //         ]
+        //     });
+        //     runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
+        // });
 
-        it('texture0width', done => {
-            const resPath = 'S3M/texture0width';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/config.scp`,
-                        shader: 'phong',
-                        ambientLight: [1, 1, 1],
-                        maxTextureSize: 1024,
-                        maximumScreenSpaceError: 1.0,
-                        heightOffset: 0,
-                        alwaysShow: true
-                    }
-                ]
-            });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
-        });
+        // it('texture0width', done => {
+        //     const resPath = 'S3M/texture0width';
+        //     const layer = new Geo3DTilesLayer('3d-tiles', {
+        //         services : [
+        //             {
+        //                 url : `http://localhost:${PORT}/integration/fixtures/${resPath}/config.scp`,
+        //                 shader: 'phong',
+        //                 ambientLight: [1, 1, 1],
+        //                 maxTextureSize: 1024,
+        //                 maximumScreenSpaceError: 1.0,
+        //                 heightOffset: 0,
+        //                 alwaysShow: true
+        //             }
+        //         ]
+        //     });
+        //     runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
+        // });
 
-        it('s3m-compressed vertex', done => {
-            const resPath = 'S3M/guanyin';
-            const layer = new Geo3DTilesLayer('3d-tiles', {
-                services : [
-                    {
-                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/guanyin.json`,
-                        shader: 'phong',
-                        ambientLight: [1, 1, 1],
-                        maxTextureSize: 1024,
-                        maximumScreenSpaceError: 10.0,
-                        heightOffset: 0,
-                        alwaysShow: true
-                    }
-                ]
-            });
-            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
-        });
+        // it('s3m-compressed vertex', done => {
+        //     const resPath = 'S3M/guanyin';
+        //     const layer = new Geo3DTilesLayer('3d-tiles', {
+        //         services : [
+        //             {
+        //                 url : `http://localhost:${PORT}/integration/fixtures/${resPath}/guanyin.json`,
+        //                 shader: 'phong',
+        //                 ambientLight: [1, 1, 1],
+        //                 maxTextureSize: 1024,
+        //                 maximumScreenSpaceError: 10.0,
+        //                 heightOffset: 0,
+        //                 alwaysShow: true
+        //             }
+        //         ]
+        //     });
+        //     runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 2, noGroup: true, threshold: 0.4, zoomOffset: 0 });
+        // });
 
         it('damon: khr_techinques_webgl missing attribute', done => {
             const resPath = 'BatchedDraco/damon';

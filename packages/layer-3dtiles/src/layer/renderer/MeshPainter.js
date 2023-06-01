@@ -8,7 +8,7 @@ import pntsFrag from './glsl/pnts.frag';
 import { toDegree, isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
-import { getKHR_techniques } from './s3m/S3MTechnique';
+// import { getKHR_techniques } from './s3m/S3MTechnique';
 
 
 const { getTextureMagFilter, getTextureMinFilter, getTextureWrap, getMaterialType, getMaterialFormat, getPrimitive, getUniqueREGLBuffer } = reshader.REGLHelper;
@@ -1044,7 +1044,7 @@ export default class MeshPainter {
             isS3M = true;
             // is a s3mType
             gltf.extensions = gltf.extensions || {};
-            gltf.extensions['KHR_techniques_webgl'] = getKHR_techniques(gltf.asset.s3mVersion);
+            // gltf.extensions['KHR_techniques_webgl'] = getKHR_techniques(gltf.asset.s3mVersion);
         }
         const url = gltf.url + '-' + meshId + '-' + primId;
         if (this._cachedGLTF[url]) {
