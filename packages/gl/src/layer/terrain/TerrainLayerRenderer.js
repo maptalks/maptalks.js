@@ -853,7 +853,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
     _createPainter() {
         const painter = this._painter;
-        if (this.layer.options.shader === 'lit') {
+        if (this.layer.options.shader === 'lit' || this.layer.options.shader === 'pbr') {
             if (painter && painter.constructor === TerrainPainter || !painter) {
                 if (painter) {
                     painter.delete();
