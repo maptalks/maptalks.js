@@ -239,7 +239,8 @@ class MeshPainter extends Painter {
     }
 
     needPolygonOffset() {
-        return this._needPolygonOffset;
+        // return this._needPolygonOffset;
+        return true;
     }
 
     startFrame(...args) {
@@ -367,7 +368,8 @@ class MeshPainter extends Painter {
 
     getPolygonOffset() {
         return {
-            enable: (context, props) => props.maxAltitude === 0,
+            // enable: (context, props) => props.maxAltitude === 0,
+            enable: true,
             offset: super.getPolygonOffset()
         };
     }
