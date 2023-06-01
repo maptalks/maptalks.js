@@ -847,6 +847,11 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (!this.painter) {
             return [];
         }
+        const pickingFBO = this.pickingFBO;
+        const { width, height } = this.canvas;
+        if (this.pickingFBO && (pickingFBO.width !== width || pickingFBO.height !== height)) {
+            pickingFBO.resize(width, height);
+        }
         return this.painter.pick(x, y, options && options.tolerance);
     }
 
