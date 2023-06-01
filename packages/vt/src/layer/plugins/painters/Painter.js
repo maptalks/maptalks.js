@@ -150,14 +150,22 @@ class Painter {
         return false;
     }
 
+    isShadowIncludeChanged(context) {
+        const isRenderingTerrainSkin = context && context.isRenderingTerrain && this.isTerrainSkin();
+        return context && context.states && context.states.includesChanged['shadow'] || isRenderingTerrainSkin && this._includeKeys;
+    }
+
     fillIncludes(defines, uniformDeclares, context) {
+        delete this._includeKeys;
         if (context && context.isRenderingTerrain && this.isTerrainSkin()) {
             return;
         }
         const includes = context && context.includes;
         if (includes) {
+            let keys = '';
             for (const p in includes) {
                 if (includes[p]) {
+                    keys += p;
                     if (context[p].uniformDeclares) {
                         uniformDeclares.push(...context[p].uniformDeclares);
                     }
@@ -166,6 +174,7 @@ class Painter {
                     }
                 }
             }
+            this._includeKeys = keys;
         }
     }
 

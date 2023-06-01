@@ -266,7 +266,7 @@ class LinePainter extends BasicPainter {
     }
 
     paint(context) {
-        if (context.states && context.states.includesChanged['shadow']) {
+        if (this.isShadowIncludeChanged(context)) {
             this.shader.dispose();
             this.createShader(context);
         }
