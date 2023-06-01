@@ -674,7 +674,7 @@ export default class MeshPainter {
             };
         }
 
-        const shader = service.shader || 'phong';
+        const shader = service.shader || 'pbr';
         let unreadyCount = 0;
         let ready = true;
         const meshes = [];
@@ -968,7 +968,7 @@ export default class MeshPainter {
     }
 
     _getGLTFMeshDefines(gltfMesh, geometry, material, rootIdx, gltf) {
-        const shader = this._layer.options.services[rootIdx].shader || 'phong';
+        const shader = this._layer.options.services[rootIdx].shader || 'pbr';
         const runShader = shader === 'phong' ? this._phongShader : this._standardShader;
         const defines = runShader.getGeometryDefines(geometry);
         if (gltf.asset && gltf.asset.generator === 'S3M') {

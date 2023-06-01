@@ -1,5 +1,6 @@
 import { Layer } from 'maptalks';
 import VideoLayerRenderer from './VideoLayerRenderer';
+import VideoSurface from './VideoSurface';
 
 const options = {
     'renderer': 'gl',
@@ -9,15 +10,22 @@ const options = {
     'forceRenderOnZooming': true,
     'forceRenderOnMoving': true,
     'forceRenderOnRotating': true,
-    'showTopAlways': true
+    'showTopAlways': true,
+    'doubleSide': true
 };
 
 export default class VideoLayer extends Layer {
     constructor(id, videoSurfaces, options) {
+        if (videoSurfaces && (!Array.isArray(videoSurfaces) && !(videoSurfaces instanceof VideoSurface))) {
+            options = videoSurfaces;
+            videoSurfaces = null;
+        }
         super(id, options);
         this._videoSurfaceMap = {};
         this.videoId = 0;
-        this.addSurfaces(videoSurfaces);
+        if (videoSurfaces) {
+            this.addSurfaces(videoSurfaces);
+        }
     }
 
     addSurfaces(videoSurfaces) {
@@ -50,6 +58,14 @@ export default class VideoLayer extends Layer {
 
     showTopAlways(always) {
         this.options.showTopAlways = always;
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer._updateShader();
+        }
+    }
+
+    setDoubleSide(doubleSide) {
+        this.options.doubleSide = doubleSide;
         const renderer = this.getRenderer();
         if (renderer) {
             renderer._updateShader();

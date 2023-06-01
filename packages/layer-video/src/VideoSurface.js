@@ -9,7 +9,7 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     constructor(coordinates, options) {
         super(options);
         this.setCoordinates(coordinates);
-        this.setVideo(this.options.url);
+        this._createVideo(this.options.url);
     }
 
     setCoordinates(coordinates) {
@@ -23,8 +23,29 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     setVideo(url) {
         this._videoState = 'stop';
         this.options.url = url;
-        const video = document.createElement('video');
-        video.src = url;
+        delete this.options.elementId;
+        this._createVideo();
+    }
+
+    setElementId(elementId) {
+        this._videoState = 'stop';
+        this.options.elementId = elementId;
+        delete this.options.url;
+        this._createVideo();
+    }
+
+    _createVideo() {
+        this._videoState = 'stop';
+        const url = this.options.url;
+        const id = this.options.elementId;
+        let video = document.getElementById(id);
+        if (url) { //有url,优先使用url
+            video = document.createElement('video');
+            video.src = url;
+        }
+        if (!video) {
+            throw new Error('there is no element or url setting for video mask');
+        }
         video.autoplay = true;
         video.loop = true;
         video.muted = true;
@@ -36,6 +57,11 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
         video.addEventListener('pause', () => {
             this._videoState = 'pause';
             this.fire('pause', { state: this._videoState, url });
+        });
+        video.addEventListener('error', () => {
+            this._videoState = 'pause';
+            this.fire('error', { state: this._videoState, url });
+            throw new Error('video resource load error');
         });
         this.video = video;
     }
@@ -112,7 +138,7 @@ export default class VideoSurface extends Eventable(Handlerable(Class)) {
     }
 
     _canDrawing() {
-        return this._videoState === 'playing' || this._videoState === 'pause';
+        return this._videoState === 'playing';
     }
 
     startEdit() {

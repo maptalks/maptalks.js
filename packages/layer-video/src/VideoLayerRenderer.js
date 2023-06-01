@@ -190,6 +190,7 @@ class VideoLayerRenderer extends maptalks.renderer.CanvasRenderer {
             delete shaderConfig.extraCommandProps.depth.mask;
             delete shaderConfig.extraCommandProps.depth.range;
         }
+        shaderConfig.extraCommandProps.cull.enable = this.layer.options['doubleSide'] ? false : true;
         this._shader = new reshader.MeshShader(shaderConfig);
     }
 

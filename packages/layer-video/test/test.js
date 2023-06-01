@@ -2,7 +2,7 @@ let container, map, eventContainer;
 const center = new maptalks.Coordinate([0, 0]);
 const url1 = 'video/test1.mp4';
 const url2 = 'video/test2.mp4';
-const coordinates = [[-1, 1, 5], [1, 1, 5], [1, -1, 5], [-1, -1, 5]];
+const coordinates = [[-1, 1, 5], [-1, -1, 5], [1, -1, 5], [1, 1, 5]];
 const sceneConfig = {
     shadow : {
         enable : true,
@@ -232,5 +232,65 @@ describe('maptalks.videolayer', () => {
             }
         };
         videoSurface.on('playing', handle);
+    });
+
+    it('add video by element id', done => {
+        const video = document.createElement('video');
+        video.src = url1;
+        video.autoplay = true;
+        video.id = 'myvideo';
+        video.style.display = 'none';
+        document.body.appendChild(video);
+        const videoSurface = new maptalks.VideoSurface(coordinates, {
+            elementId: 'myvideo'
+        });
+        const videoLayer = new maptalks.VideoLayer('video');
+        videoSurface.addTo(videoLayer);
+        new maptalks.GroupGLLayer('g', [videoLayer], { sceneConfig }).addTo(map);
+        videoSurface.setOpacity(0.6);
+        const handle = function () {
+            const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+            if (!hasColor(pixel)) {
+                return;
+            } else {
+                videoSurface.off('playing', handle);
+                done();
+            }
+        };
+        videoSurface.on('playing', handle);
+    });
+
+    it('set doubleside for videolayer', done => {
+        const coordinates = [[-1, 1, 5], [1, 1, 5], [1, -1, 5], [-1, -1, 5]];
+        const videoSurface = new maptalks.VideoSurface(coordinates, {
+            url: url1
+        });
+        const videoLayer = new maptalks.VideoLayer('video', {
+            doubleSide: false
+        });
+        videoSurface.addTo(videoLayer);
+        new maptalks.GroupGLLayer('g', [videoLayer], { sceneConfig }).addTo(map);
+        videoSurface.setOpacity(0.6);
+        const handle = function () {
+            const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+            if (!hasColor(pixel)) {
+                done();
+            }
+        };
+        videoSurface.on('playing', handle);
+    });
+
+    it('no video resource', done => {
+        const videoSurface = new maptalks.VideoSurface(coordinates, {
+            url: './error.mp4' //this url has no video resource
+        });
+        const videoLayer = new maptalks.VideoLayer('video');
+        videoSurface.addTo(videoLayer);
+        new maptalks.GroupGLLayer('g', [videoLayer], { sceneConfig }).addTo(map);
+        videoSurface.setOpacity(0.6);
+        const handle = function () {
+            done();
+        };
+        videoSurface.on('error', handle);
     });
 });

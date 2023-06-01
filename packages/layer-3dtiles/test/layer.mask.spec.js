@@ -209,4 +209,22 @@ describe('render specs', () => {
             }, 200);
         });
     }).timeout(10000);
+
+    it('add mask with large extent', done => {
+        const layer = add3DTilesLayer();
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            const coordinates = [[73.345664,16.529296],[71.288347,54.288208],[139.066887,55.158173],[141.246746,15.542349]];
+            const mask = new ColorMask(coordinates, {
+                symbol
+            });
+            layer.setMask(mask);
+            setTimeout(function() {
+                const pixel = pickPixel(map, 255, 497, 1, 1);
+                assert(pixelMatch([238, 35, 35, 255], pixel) === true);
+                done();
+            }, 200);
+        });
+    }).timeout(10000);
 });
