@@ -139,7 +139,7 @@ const GLTFMixin = Base =>
                     trsMatrix = this._getSymbolTRSMatrix(trsMatrix);
                 }
 
-                let zOffset = -Infinity;
+                let zOffset = 0;
                 //获取多个mesh中，最大的zOffset，保证所有mesh的zOffset是统一的
                 meshInfos.forEach(info => {
                     const { geometry, nodeMatrix } = info;
@@ -153,7 +153,7 @@ const GLTFMixin = Base =>
                     meshBox.transform(positionMatrix);
 
                     const offset = this._calAnchorTranslation(meshBox, symbol);
-                    if (offset > zOffset) {
+                    if (Math.abs(offset) > Math.abs(zOffset)) {
                         zOffset = offset;
                     }
                 });
@@ -197,7 +197,7 @@ const GLTFMixin = Base =>
                     mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
                     mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
                     const matrix = mat4.identity(TEMP_MATRIX)
-                    if (zOffset !== 0 && zOffset !== -Infinity) {
+                    if (zOffset !== 0) {
                         mat4.fromTranslation(matrix, anchorTranslation);
                         mat4.multiply(positionMatrix, matrix, positionMatrix);
                     }
@@ -257,14 +257,13 @@ const GLTFMixin = Base =>
         // }
 
         _calAnchorTranslation(gltfBBox, symbol) {
-            const anchorZ = symbol.anchorZ || 'bottom';
+            const anchorZ = symbol.anchorZ || 'center';
             let zOffset = 0;
+            const height = gltfBBox.max[2] - gltfBBox.min[2];
             if (anchorZ === 'bottom') {
-                zOffset = -gltfBBox.min[2];
+                zOffset = height / 2;
             } else if (anchorZ === 'top') {
-                zOffset = -gltfBBox.max[2];
-            } else if (anchorZ === 'center') {
-                zOffset = -(gltfBBox.min[2] + gltfBBox.max[2]) / 2;
+                zOffset = -height / 2;
             }
             return zOffset;
         }
