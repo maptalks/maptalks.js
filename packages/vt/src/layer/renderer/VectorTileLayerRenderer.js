@@ -496,7 +496,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { url } = tileInfo;
         const cached = this._requestingMVT[url];
         if (!cached) {
-            const pointAtTileRes = this.getTilePointAtTileRes(tileInfo.z);
+            const centimeterToPoint = this.getCentimeterToPoint(tileInfo.z);
             const glScale = this.getTileGLScale(tileInfo.z);
             this._requestingMVT[url] = {
                 keys: {},
@@ -505,7 +505,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
             const fetchOptions = this.layer.options['fetchOptions'];
-            this._workerConn.loadTile({ tileInfo: { x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d }, glScale, zScale: this._zScale, pointAtTileRes, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
+            this._workerConn.loadTile({ tileInfo: { x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d }, glScale, zScale: this._zScale, centimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;
@@ -519,7 +519,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return sr.getResolution(z) / map.getGLRes();
     }
 
-    getTilePointAtTileRes(z) {
+    getCentimeterToPoint(z) {
         const map = this.getMap();
         const sr = this.layer.getSpatialReference();
         // / 10000是为了转换成厘米

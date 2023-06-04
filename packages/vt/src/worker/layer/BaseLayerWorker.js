@@ -1,6 +1,6 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
+import { VectorPack, PolygonPack, NativeLinePack, LinePack, PixelLinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -471,7 +471,7 @@ export default class BaseLayerWorker {
         const dataConfig = pluginConfig.renderPlugin.dataConfig;
         const symbol = pluginConfig.symbol;
         const tileSize = this.options.tileSize;
-        const { extent, glScale, zScale, zoom, tilePoint, pointAtTileRes } = context;
+        const { extent, glScale, zScale, zoom, tilePoint, centimeterToPoint } = context;
         const tileRatio = extent / tileSize;
         const type = dataConfig.type;
         const debugIndex = context.debugIndex;
@@ -490,7 +490,7 @@ export default class BaseLayerWorker {
                     dataConfig.tangent = 1;
                 }
             }
-            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, glScale, zScale, this.options['tileSize'] / extent, symbol, zoom, debugIndex))]);
+            return Promise.all([Promise.resolve(build3DExtrusion(features, dataConfig, extent, tilePoint, this.options['tileSize'] / extent, centimeterToPoint, symbol, zoom, debugIndex))]);
         } else if (type === '3d-wireframe') {
             return Promise.all([Promise.resolve(buildWireframe(features, extent, symbol, dataConfig))]);
         } else if (type === 'point') {
@@ -526,6 +526,12 @@ export default class BaseLayerWorker {
             // return Promise.resolve(null);
         } else if (type === 'native-line') {
             return parseSymbolAndGenPromises(features, symbol, options, NativeLinePack);
+        } else if (type === 'pixel-line') {
+            options = extend(options, {
+                requestor: this.fetchIconGlyphs.bind(this),
+                tileRatio
+            });
+            return parseSymbolAndGenPromises(features, symbol, options, PixelLinePack);
         } else if (type === 'fill') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this)
@@ -573,7 +579,7 @@ export default class BaseLayerWorker {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
                 radialSegments: type === 'round-tube' ? (dataConfig.radialSegments || 8) : 4,
-                pointAtTileRes,
+                centimeterToPoint,
                 tileRatio,
                 isTube: true
             });
@@ -807,7 +813,7 @@ function getPropTypes(properties) {
     return types;
 }
 
-function hasTexture(symbol) {
+export function hasTexture(symbol) {
     if (!symbol) {
         return 0;
     }

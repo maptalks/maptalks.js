@@ -1,9 +1,13 @@
 import computeOMBB from './Ombb.js';
 import { vec2 } from 'gl-matrix';
 
-export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight) {
+// 按照原来的uv计算时的缩放比例，计算的 meter 到 gl point 坐标的比例
+const METER_TO_GL_POINT = 46.5;
+
+
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight) {
     if (mode === 0) {
-        buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight);
+        buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight);
     } else if (mode === 1) {
         buildOmbbUV(start, offset, uvs, vertices);
     }
@@ -42,7 +46,8 @@ function cacAnchor(x, y, v, k, len) {
     return vec2.distance(v, V2) / len;
 }
 
-function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale, texWidth, texHeight) {
+function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight) {
+    const pointToMeter = 1 / (centimeterToPoint * 100);
     //为了提升精度，计算uvOrigin的小数部分
     // console.log([(uvOrigin.x / texWidth), (uvOrigin.y / texHeight)]);
     // const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
@@ -50,12 +55,12 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, glScale, localScale
     for (let i = start; i < offset; i += 3) {
         const idx = i / 3 * 2;
         const x = vertices[i], y = vertices[i + 1];
-        uvs[idx] = uvStart[0] + (x * glScale * localScale) / texWidth;
-        uvs[idx + 1] = uvStart[1] - (y * glScale * localScale) / texHeight;
+        uvs[idx] = uvStart[0] + (x * pointToMeter / METER_TO_GL_POINT * localScale) / texWidth;
+        uvs[idx + 1] = uvStart[1] - (y * pointToMeter / METER_TO_GL_POINT * localScale) / texHeight;
     }
 }
 
-export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, glScale, localScale, vScale) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, localScale, centimeterToPoint) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
@@ -96,8 +101,10 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
             }
         }
 
-
-        const u = len * glScale * localScale / texWidth; //0 ? 1.0 - len * glScale / texWidth :
+        // len * glScale = gl point， localScale = tileSize / extent
+        const pointToMeter = 1 / (centimeterToPoint * 100);
+        const u = len * localScale * pointToMeter / METER_TO_GL_POINT / texWidth; //0 ? 1.0 - len * glScale / texWidth :
+        // const u = len * localScale * glScale / texWidth;
         let v;
 
         if (sideVerticalUVMode === 1) {
@@ -106,9 +113,9 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
             v = z === maxz ? 1 : 0;
         } else {
             if (textureYOrigin === 'bottom') {
-                v = (z === maxz ? h * vScale / texHeight : 0);
+                v = (z === maxz ? h / METER_TO_GL_POINT / texHeight : 0);
             } else {
-                v = (z === maxz ? 0 : h * vScale / texHeight);
+                v = (z === maxz ? 0 : h / METER_TO_GL_POINT / texHeight);
             }
         }
 

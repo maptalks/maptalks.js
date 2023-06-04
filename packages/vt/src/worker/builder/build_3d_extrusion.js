@@ -6,7 +6,8 @@ import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-pac
 import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
-export default function (features, dataConfig, extent, uvOrigin, glScale, zScale, localScale, symbol, zoom, debugIndex) {
+export default function (features, dataConfig, extent, uvOrigin,
+    localScale, centimeterToPoint, symbol, zoom, debugIndex) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -49,13 +50,10 @@ export default function (features, dataConfig, extent, uvOrigin, glScale, zScale
             sideUVMode,
             sideVerticalUVMode,
             textureYOrigin,
-            //>> needed by uv computation
-            glScale,
-            localScale,
-            //用于白模侧面的uv坐标v的计算
-            // zScale用于将meter转为gl point值
             // localScale用于将gl point转为瓦片内坐标
-            vScale: zScale
+            localScale,
+            // 厘米到point的比例系数
+            centimeterToPoint
             //<<
         }, debugIndex);
     const buffers = [];

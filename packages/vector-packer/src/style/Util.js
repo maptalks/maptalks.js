@@ -152,9 +152,8 @@ export function isFnTypeSymbol(v) {
 }
 
 export function getAltitudeToLocal(options) {
-    const { pointAtTileRes, tileRatio } = options;
-    // zScale是用厘米转换成 glres point
-    const altitudeToLocal = pointAtTileRes * tileRatio;
+    const { centimeterToPoint, tileRatio } = options;
+    const altitudeToLocal = centimeterToPoint * tileRatio;
     return altitudeToLocal;
 }
 

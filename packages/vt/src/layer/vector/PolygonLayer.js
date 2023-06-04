@@ -53,7 +53,7 @@ const SYMBOL = {
 class PolygonLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
-        this.PackClass = PolygonPack;
+        // this.PackClass = PolygonPack;
         this.GeometryTypes = [maptalks.Polygon, maptalks.MultiPolygon];
     }
 
