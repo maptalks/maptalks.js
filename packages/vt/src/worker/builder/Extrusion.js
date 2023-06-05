@@ -102,7 +102,7 @@ export function buildExtrudeFaces(
     const BOUNDS = [-1, -1, EXTENT + 1, EXTENT + 1];
 
     let r = 0, n = features.length;
-    if (debugIndex !== undefined) {
+    if (isNumber(debugIndex)) {
         r = debugIndex;
         n = debugIndex + 1;
     }

@@ -295,7 +295,7 @@ export default class VectorPack {
                 if (!feature || !feature.geometry) {
                     continue;
                 }
-                if (debugIndex !== undefined && feature[keyNameDebug].index !== debugIndex) {
+                if (isNumber(debugIndex) && feature[keyNameDebug].index !== debugIndex) {
                     continue;
                 }
                 if (!feature.properties) {
