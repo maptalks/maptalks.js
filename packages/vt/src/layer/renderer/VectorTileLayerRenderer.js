@@ -522,8 +522,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     getCentimeterToPoint(z) {
         const map = this.getMap();
         const sr = this.layer.getSpatialReference();
-        // / 10000是为了转换成厘米
-        return map.distanceToPointAtRes(100, 100, sr.getResolution(z)).x / 10000;
+        const res = sr.getResolution(z);
+        return getCentiMeterScale(res, map);
     }
 
     _onReceiveMVTData(url, err, data) {
