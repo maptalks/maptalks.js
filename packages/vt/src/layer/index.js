@@ -9,6 +9,7 @@ import Vector3DLayer from './vector/Vector3DLayer';
 import PointLayer from './vector/PointLayer';
 import LineStringLayer from './vector/LineStringLayer';
 import PolygonLayer from './vector/PolygonLayer';
+import ExtrudePolygonLayer from './vector/ExtrudePolygonLayer';
 import initialize from './initialize';
 import { PackUtil, FilterUtil, SYMBOLS_NEED_REBUILD_IN_VT,  SYMBOLS_NEED_REBUILD_IN_VECTOR } from '@maptalks/vector-packer';
 
@@ -30,6 +31,7 @@ export {
     PointLayer,
     LineStringLayer,
     PolygonLayer,
+    ExtrudePolygonLayer,
     PackUtil,
     SYMBOLS_NEED_REBUILD_IN_VT,
     SYMBOLS_NEED_REBUILD_IN_VECTOR,

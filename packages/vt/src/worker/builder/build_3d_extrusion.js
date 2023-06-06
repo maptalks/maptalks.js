@@ -7,7 +7,7 @@ import { interpolated, piecewiseConstant } from '@maptalks/function-type';
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin,
-    localScale, centimeterToPoint, symbol, zoom, debugIndex) {
+    localScale, centimeterToPoint, symbol, zoom, debugIndex, positionType) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -53,15 +53,15 @@ export default function (features, dataConfig, extent, uvOrigin,
             // localScale用于将gl point转为瓦片内坐标
             localScale,
             // 厘米到point的比例系数
-            centimeterToPoint
+            centimeterToPoint,
+            positionType
             //<<
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
     const indices = new ctor(faces.indices);
     delete faces.indices;
-    buffers.push(indices.buffer, faces.vertices.buffer, faces.pickingIds.buffer);
-
+    buffers.push(indices.buffer, faces.pickingIds.buffer);
     const normals = buildNormals(faces.vertices, indices);
     let simpleNormal = true;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
@@ -96,13 +96,14 @@ export default function (features, dataConfig, extent, uvOrigin,
         faces.uvs = new Float32Array(uvs);
         buffers.push(faces.uvs.buffer);
     }
+    const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
 
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
     const data =  {
         data: {
             data: {
                 aVertexColorType: faces.verticeTypes,
-                aPosition: faces.vertices,
+                aPosition: new posArrayType(faces.vertices),
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
                 aTangent: faces.tangents,
@@ -129,7 +130,7 @@ export default function (features, dataConfig, extent, uvOrigin,
         data.data.data.aOpacity = fnTypes.aOpacity;
         data.buffers.push(fnTypes.aOpacity.buffer);
     }
-
+    data.buffers.push(data.data.data.aPosition.buffer);
     data.data.pickingIdIndiceMap = PackUtil.generatePickingIndiceIndex(data.data.data.aPickingId, data.data.indices);
     return data;
 }

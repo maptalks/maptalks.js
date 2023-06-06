@@ -36,11 +36,15 @@ export function countVertexes(features, isLine) {
  * @param {Number|Number[]} altitude - altitude or altitude[]
  * @param {Boolean} isLine
  */
-export function fillPosArray(vertices, offset, segment, scale, altitude, isLine) {
+export function fillPosArray(vertices, offset, segment, scale, altitude, isLine, positionType) {
     const isCoordArr = segment && Array.isArray(segment[0]);
     for (let i = 0, l = segment.length; i < l; i++) {
-        vertices[offset] = Math.round((isCoordArr ? segment[i][0] : segment[i].x) * scale);
-        vertices[offset + 1] = Math.round((isCoordArr ? segment[i][1] : segment[i].y) * scale);
+        vertices[offset] = (isCoordArr ? segment[i][0] : segment[i].x) * scale;
+        vertices[offset + 1] = (isCoordArr ? segment[i][1] : segment[i].y) * scale;
+        if (positionType !== Float32Array) {
+            vertices[offset] = Math.round(vertices[offset]);
+            vertices[offset + 1] = Math.round(vertices[offset + 1]);
+        }
 
         let alt = altitude || 0;
         if (Array.isArray(altitude)) {

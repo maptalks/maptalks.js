@@ -93,6 +93,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const layer = this.layer;
         this.prepareCanvas();
         this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
+        this._parentContext = parentContext || {};
+        const renderMode = this._parentContext.renderMode;
+        const context = this._preparePaintContext();
+        this._startFrame(context, renderMode);
         if (this._dirtyAll) {
             this.buildMesh();
             this._buildMarkerMesh();
@@ -132,10 +136,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._updateDirtyTargets();
 
         this._frameTime = timestamp;
-        this._parentContext = parentContext || {};
-        const renderMode = this._parentContext.renderMode;
+
         const isDefaultRender = !renderMode || renderMode === 'default';
-        const context = this._preparePaintContext();
         let polygonOffset = 0;
         if (this.layer.options['meshRenderOrder'] === 0) {
             this._renderMeshes(context, polygonOffset++, renderMode);
@@ -175,10 +177,17 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
+    _startFrame(context, renderMode) {
+        const isDefaultRender = !renderMode || renderMode === 'default';
+        if (this.painter && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
+            // 因为 StandardPainter 需要在createMesh前初始化，才能正常创建mesh，所以需要先调用startFrame
+            this.painter.startFrame(context);
+        }
+    }
+
     _renderMeshes(context, polygonOffset, renderMode) {
         const isDefaultRender = !renderMode || renderMode === 'default';
         if (this.painter && this.meshes && (isDefaultRender || this.painter.supportRenderMode(renderMode))) {
-            this.painter.startFrame(context);
             this.painter.addMesh(this.meshes, null, { bloom: context && context.bloom });
             this.painter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
@@ -347,41 +356,49 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     createMesh(painter, PackClass, symbol, features, atlas, center) {
-        const v0 = [], v1 = [];
         return this.createVectorPacks(painter, PackClass, symbol, features, atlas, center).then(packData => {
-            if (!packData) {
-                return null;
-            }
-            const geometries = painter.createGeometries([packData.data], convertToPainterFeatures(features, null, 0, symbol, this.layer));
-            for (let i = 0; i < geometries.length; i++) {
-                this._fillCommonProps(geometries[i].geometry);
-            }
-
-            const posMatrix = mat4.identity([]);
-            mat4.translate(posMatrix, posMatrix, vec3.set(v1, center[0], center[1], 0));
-            mat4.scale(posMatrix, posMatrix, vec3.set(v0, 1, 1, this._zScale));
-            // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
-            // const transform = mat4.translate([], mat4.identity([]), center);
-
-            // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
-            const meshes = painter.createMeshes(geometries, posMatrix, { tilePoint: [center[0], center[1]] });
-            for (let i = 0; i < meshes.length; i++) {
-                const mesh = meshes[i];
-                mesh.properties.level = 0;
-                const defines = mesh.defines;
-                //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
-                defines['ENABLE_TILE_STENCIL'] = 1;
-                mesh.setDefines(defines);
-                mesh.properties.meshKey = this.layer.getId();
-            }
-
-            return {
-                meshes,
-                atlas: {
-                    iconAtlas: packData.data.iconAtlas
-                }
-            };
+            return this._createMesh(packData, painter, PackClass, symbol, features, atlas, center);
         });
+    }
+
+    _createMesh(packData, painter, PackClass, symbol, features, atlas, center) {
+        const v0 = [], v1 = [];
+        if (!packData) {
+            return null;
+        }
+        const geometries = painter.createGeometries([packData.data], convertToPainterFeatures(features, null, 0, symbol, this.layer));
+        for (let i = 0; i < geometries.length; i++) {
+            if (!geometries[i]) {
+                continue;
+            }
+            this._fillCommonProps(geometries[i].geometry);
+        }
+
+        const tileTransform = mat4.identity([]);
+        mat4.translate(tileTransform, tileTransform, vec3.set(v1, center[0], center[1], 0));
+        mat4.scale(tileTransform, tileTransform, vec3.set(v0, 1, 1, this._zScale));
+        // mat4.scale(posMatrix, posMatrix, vec3.set(v0, glScale, glScale, this._zScale));
+        // const transform = mat4.translate([], mat4.identity([]), center);
+
+        // mat4.translate(posMatrix, posMatrix, vec3.set(v0, tilePos.x * glScale, tilePos.y * glScale, 0));
+        const meshes = painter.createMeshes(geometries, tileTransform, { tilePoint: [center[0], center[1]] });
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            mesh.properties.level = 0;
+            mesh.properties.tileTransform = tileTransform;
+            const defines = mesh.defines;
+            //不开启ENABLE_TILE_STENCIL的话，frag中会用tileExtent剪切图形，会造成图形绘制不出
+            defines['ENABLE_TILE_STENCIL'] = 1;
+            mesh.setDefines(defines);
+            mesh.properties.meshKey = this.layer.getId();
+        }
+
+        return {
+            meshes,
+            atlas: {
+                iconAtlas: packData.data.iconAtlas
+            }
+        };
     }
 
     _addCoordsToCenter(geometry, center) {
@@ -991,6 +1008,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 this._allFeatures[kid] = { feature: feas[j] };
                 this._allFeatures[kid][ID_PROP] = uid;
                 // 采用 { feature } 结构，是为了和VT图层中 { feature, symbol } 统一
+                if (!this.needCheckPointLineSymbols()) {
+                    continue;
+                }
                 const feaObj = { feature: feas[j] };
                 if (hasMarkerSymbol(feas[j])) {
                     this._markerFeatures[kid] = feaObj;
@@ -1009,6 +1029,10 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             feas[ID_PROP] = uid;
             const feaObj = { feature: feas };
             const kid = feas[KEY_IDX_NAME];
+            this._allFeatures[kid] = feaObj;
+            if (!this.needCheckPointLineSymbols()) {
+                return;
+            }
             if (hasMarkerSymbol(feas)) {
                 this._markerFeatures[kid] = feaObj;
             }
@@ -1018,8 +1042,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (hasLineSymbol(feas)) {
                 this._lineFeatures[kid] = feaObj;
             }
-            this._allFeatures[kid] = feaObj;
         }
+    }
+
+    needCheckPointLineSymbols() {
+        return true;
     }
 
     _removeFeatures(uid) {

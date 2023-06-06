@@ -50,7 +50,7 @@ const SYMBOL = {
     }
 };
 
-class PolygonLayerRenderer extends Vector3DLayerRenderer {
+export class PolygonLayerRenderer extends Vector3DLayerRenderer {
     constructor(...args) {
         super(...args);
         // this.PackClass = PolygonPack;

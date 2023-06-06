@@ -24,12 +24,18 @@ export function buildExtrudeFaces(
         // vScale用于将meter转为gl point值
         // localScale用于将gl point转为瓦片内坐标
         localScale,
-        centimeterToPoint
+        centimeterToPoint,
+        positionType
     },
     debugIndex
 ) {
     // debugger
-    const scale = EXTENT / features[0].extent;
+    let scale = EXTENT / features[0].extent;
+    if (EXTENT === Infinity) {
+        scale = 1;
+    }
+    // Vector3DLayer下，需要反向的triangle
+    const needReverseTriangle = EXTENT === Infinity;
 
     // const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
@@ -46,7 +52,7 @@ export function buildExtrudeFaces(
         generateSide = !!side;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
-    function fillData(start, offset, holes, height) {
+    function fillData(start, offset, holes, height, needReverseTriangle) {
         let typeStartOffset = offset;
         //just ignore bottom faces never appear in sight
         if (generateTop) {
@@ -58,13 +64,20 @@ export function buildExtrudeFaces(
             pushIn(vertices, geoVertices);
             offset += geoVertices.length;
             //switch triangle's i + 1 and i + 2 to make it ccw winding
-            let tmp;
-            for (let i = 2, l = triangles.length; i < l; i += 3) {
-                tmp = triangles[i - 1];
-                triangles[i - 1] = triangles[i] + start / 3;
-                triangles[i] = tmp + start / 3;
-                triangles[i - 2] += start / 3;
-                // clipEdges.push(0, 0, 0);
+            if (needReverseTriangle) {
+                for (let i = 2, l = triangles.length; i < l; i += 3) {
+                    triangles[i] += start / 3;
+                    triangles[i - 1] += start / 3;
+                    triangles[i - 2] += start / 3;
+                }
+            } else {
+                let tmp;
+                for (let i = 2, l = triangles.length; i < l; i += 3) {
+                    tmp = triangles[i - 1];
+                    triangles[i - 1] = triangles[i] + start / 3;
+                    triangles[i] = tmp + start / 3;
+                    triangles[i - 2] += start / 3;
+                }
             }
 
             //top face indices
@@ -75,7 +88,7 @@ export function buildExtrudeFaces(
             }
 
             if (topThickness > 0 && !generateSide) {
-                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint);
+                offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
             }
             verticeTypes.length = offset / 3;
             verticeTypes.fill(1, typeStartOffset / 3, offset / 3);
@@ -86,7 +99,7 @@ export function buildExtrudeFaces(
                 topThickness = 0;
             }
             typeStartOffset = offset;
-            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint);
+            offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
             verticeTypes.length = offset / 3;
             const count = geoVertices.length / 3;
             verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
@@ -130,23 +143,28 @@ export function buildExtrudeFaces(
         let start = offset;
         let holes = [];
         geoVertices.length = 0;
+        const shellIsClockwise = PackUtil.calculateSignedArea(geometry[0]) < 0;
         for (let i = 0, l = geometry.length; i < l; i++) {
-            const isHole = PackUtil.calculateSignedArea(geometry[i]) < 0;
+            let ring = geometry[i];
+            if (shellIsClockwise) {
+                ring = ring.reverse();
+            }
+            ring = cleanVertices(ring);
+            const isHole = PackUtil.calculateSignedArea(ring) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
                 //an exterior ring (multi polygon)
-                offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
                 geoVertices.length = 0;
                 holes = [];
                 start = offset;
             }
-            let ring = geometry[i];
             if (EXTENT !== Infinity) {
                 ring = PackUtil.clipPolygon(ring, BOUNDS);
             }
             if (!ring.length) {
                 if (i === l - 1) {
-                    offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                    offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
                 }
                 continue;
             }
@@ -164,10 +182,10 @@ export function buildExtrudeFaces(
                 holes.push(geoVertices.length / 3);
             }
             //a seg or a ring in line or polygon
-            fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude);
+            fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude, false, positionType);
 
             if (i === l - 1) {
-                offset = fillData(start, offset, holes, height * scale); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
             }
         }
 
@@ -182,11 +200,10 @@ export function buildExtrudeFaces(
         }
     }
     const pickingCtor = PackUtil.getUnsignedArrayType(pickingIds.length ? pickingIds[pickingIds.length - 1] : 0);
-    const posArrayType = PackUtil.getPosArrayType(Math.max(512, maxAltitude));
 
     const data = {
         maxAltitude,
-        vertices: new posArrayType(vertices),        // vertexes
+        vertices: vertices,        // vertexes
         verticeTypes: new Uint8Array(verticeTypes),
         indices,                                    // indices for drawElements
         pickingIds: new pickingCtor(pickingIds),   // vertex index of each feature
@@ -207,7 +224,7 @@ export function buildExtrudeFaces(
     return data;
 }
 
-function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvSize, localScale, centimeterToPoint) {
+function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle) {
     const count = topVertices.length;
     const startIdx = offset / 3;
     //拷贝两次top和bottom，是为了让侧面的三角形使用不同的端点，避免uv和normal值因为共端点产生错误
@@ -247,12 +264,14 @@ function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickn
         const ringStart = startIdx + (holes[r - 1] || 0);
         const ringEnd = startIdx + holes[r];
 
-        buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint);
+        buildRingSide(ringStart, ringEnd, vertices, count / 3, EXTENT, indices,
+            generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint, needReverseTriangle);
     }
     return offset;
 }
 
-function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices, generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint) {
+function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indices,
+    generateUV, sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, uvSize, localScale, centimeterToPoint, needReverseTriangle) {
     const indiceStart = indices.length;
     let current, next;
     for (let i = ringStart, l = ringEnd; i < l - 1; i++) {
@@ -266,12 +285,37 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
             current += 2 * vertexCount;
             next += 2 * vertexCount;
         }
-        //bottom[i], top[i], top[i + 1]
-        indices.push(current + vertexCount, current, next);
-        //top[i + 1], bottom[i + 1],  bottom[i]
-        indices.push(next, next + vertexCount, current + vertexCount);
+
+        if (!needReverseTriangle) {
+            //bottom[i], top[i], top[i + 1]
+            indices.push(current + vertexCount, current, next);
+            //top[i + 1], bottom[i + 1],  bottom[i]
+            indices.push(next, next + vertexCount, current + vertexCount);
+        } else {
+            indices.push(next, current, current + vertexCount);
+            indices.push(current + vertexCount, next + vertexCount, next);
+        }
+
     }
     if (generateUV) {
         buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], localScale, centimeterToPoint); //convert uvSize[1] to meter
     }
+}
+
+function cleanVertices(ring) {
+    const result = [ring[0]];
+    let currentVertice = ring[0];
+    for (let i = 1; i < ring.length; i++) {
+        if (Array.isArray(ring[i])) {
+            if (ring[i][0] !== currentVertice[0] || ring[i][1] !== currentVertice[1] || ring[i][2] !== currentVertice[2]) {
+                result.push(ring[i]);
+            }
+        } else {
+            if (ring[i].x !== currentVertice.x || ring[i].y !== currentVertice.y || ring[i].z !== currentVertice.z) {
+                result.push(ring[i]);
+            }
+        }
+        currentVertice = ring[i];
+    }
+    return result;
 }
