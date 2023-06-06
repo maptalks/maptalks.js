@@ -1888,6 +1888,7 @@ describe('update style specs', () => {
                     symbol: { markerType: 'square', markerSize: 20 }
                 },
                 {
+                    name: 'squarePoint',
                     renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
                     symbol: { markerType: 'square', markerSize: 20 }
                 }
@@ -1899,7 +1900,7 @@ describe('update style specs', () => {
         });
         layer.once('pluginsinited', () => {
             layer.updateDataConfig(0, { foo2: 2 });
-            layer.updateDataConfig(1, { foo3: 2 });
+            layer.updateDataConfig('squarePoint', { foo3: 2 });
             assert.equal(refreshCount, 0);
             assert.deepStrictEqual(layer.options.style[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);
             assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.dataConfig, layer.getComputedStyle().style[0].renderPlugin.dataConfig);

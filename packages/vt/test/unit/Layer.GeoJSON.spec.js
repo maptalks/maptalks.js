@@ -174,11 +174,12 @@ describe('GeoJSONVectorTileLayer', () => {
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: points,
             style: [{
+                name: 'squarePoint',
                 renderPlugin: { type: 'native-point', dataConfig: { type: 'native-point' }, sceneConfig: { foo: 1 } },
                 symbol: { markerType: 'square', markerSize: 20 }
             }]
         });
-        layer.updateSceneConfig(0, { foo2: 2 });
+        layer.updateSceneConfig('squarePoint', { foo2: 2 });
         assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.getStyle()[0].renderPlugin.sceneConfig, layer.getComputedStyle().style[0].renderPlugin.sceneConfig);
         assert.deepStrictEqual(layer.options.style[0].renderPlugin.sceneConfig, { foo: 1, foo2: 2 });

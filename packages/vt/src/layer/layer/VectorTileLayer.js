@@ -390,6 +390,9 @@ class VectorTileLayer extends maptalks.TileLayer {
 
 
     updateSceneConfig(idx, sceneConfig) {
+        if (isString(idx)) {
+            idx = this._getStyleIndex(idx);
+        }
         return this._updateSceneConfig(0, idx, sceneConfig);
     }
 
@@ -457,6 +460,9 @@ class VectorTileLayer extends maptalks.TileLayer {
     }
 
     updateDataConfig(idx, dataConfig) {
+        if (isString(idx)) {
+            idx = this._getStyleIndex(idx);
+        }
         return this._updateDataConfig(0, idx, dataConfig);
     }
 
