@@ -168,8 +168,6 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             }
             delete properties['$layer'];
             delete properties['$type'];
-            // 如果颜色只有三位，alpha永远不会变，所以需要手动将alpha置为255
-            ARR0[3] = 255;
             StyleUtil.normalizeColor(ARR0, color);
             aColor[i * 4] = ARR0[0];
             aColor[i * 4 + 1] = ARR0[1];

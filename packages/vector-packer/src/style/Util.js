@@ -190,8 +190,8 @@ export function normalizeColor(out, color) {
     for (let i = 0; i < color.length; i++) {
         out[i] = color[i] * 255;
     }
-    if (out.length === 3) {
-        out.push(255);
+    if (color.length === 3) {
+        out[3] = 255;
     }
     return out;
 }

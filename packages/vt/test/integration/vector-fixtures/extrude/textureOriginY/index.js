@@ -50,5 +50,5 @@ const layerOptions = Object.assign({}, JSON.parse(JSON.stringify(options)), {
 });
 layerOptions.options.material = material;
 layerOptions.options.dataConfig = dataConfig;
-layerOptions.renderingCount = 2;
+layerOptions.renderingCount = 3;
 module.exports = layerOptions;
