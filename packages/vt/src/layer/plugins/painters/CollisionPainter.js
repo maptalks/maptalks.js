@@ -405,6 +405,21 @@ export default class CollisionPainter extends BasicPainter {
             return NO_COLLISION;
         }
         const collision = this.isBoxCollides(mesh, elements, boxCount, start, end, mvpMatrix, boxIndex);
+        const dpr = this.getMap().getDevicePixelRatio();
+        if (dpr !== 1) {
+            const boxes = collision.boxes;
+            if (boxes) {
+                for (let i = 0; i < boxes.length; i++) {
+                    if (!boxes[i]) {
+                        continue;
+                    }
+                    boxes[i][0] *= dpr;
+                    boxes[i][1] *= dpr;
+                    boxes[i][2] *= dpr;
+                    boxes[i][3] *= dpr;
+                }
+            }
+        }
         if (isAllowOverlap) {
             collision.collides = 0;
             collision.isAllowOverlap = 1;
