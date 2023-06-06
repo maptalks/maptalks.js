@@ -63,6 +63,9 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this.painterSymbol = extend({}, SYMBOL);
         this._defineSymbolBloom(this.painterSymbol, 'bloom');
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
+        if (this.layer.options.material) {
+            this.painterSymbol.material = this.layer.options.material;
+        }
         const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig || {}, 0, dataConfig);
         return painter;
     }
@@ -73,6 +76,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = this.getMap().getZoom();
         const tilePoint = center;
+        const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         const t = hasTexture(this.layer.options.material);
         if (t) {
             dataConfig.uv = 1;
@@ -80,7 +84,6 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
                 dataConfig.tangent = 1;
             }
         }
-        const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         const debugIndex = undefined;
         if (!features.length) {
             return Promise.resolve([]);
@@ -88,7 +91,6 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
 
         const data = build3DExtrusion(features, dataConfig, extent, tilePoint,
             localScale, this._zScale, symbol, zoom, debugIndex, Float32Array);
-        console.log(data);
         const aPosition = data.data.data.aPosition;
         for (let i = 0; i < aPosition.length; i += 3) {
             aPosition[i] -= center[0];

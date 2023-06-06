@@ -3,7 +3,7 @@ import { buildExtrudeFaces } from './Extrusion';
 // import { buildUniqueVertex, buildShadowVolume } from './Build';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
-import { interpolated, piecewiseConstant } from '@maptalks/function-type';
+import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin,
@@ -153,7 +153,7 @@ const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
     const fnTypes = {};
     if (isFnTypeSymbol(symbol['polygonFill'])) {
-        const colorFn = piecewiseConstant(symbol.polygonFill);
+        let colorFn = piecewiseConstant(symbol.polygonFill);
         const aColor = new Uint8Array(feaIndexes.length * 4);
         aColor.fill(255);
         for (let i = 0; i < feaIndexes.length; i++) {
@@ -162,8 +162,14 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             properties['$layer'] = feature.layer;
             properties['$type'] = feature.type;
             let color = colorFn(zoom, properties);
+            if (isFunctionDefinition(color)) {
+                colorFn = piecewiseConstant(color);
+                color = colorFn(zoom, properties);
+            }
             delete properties['$layer'];
             delete properties['$type'];
+            // 如果颜色只有三位，alpha永远不会变，所以需要手动将alpha置为255
+            ARR0[3] = 255;
             StyleUtil.normalizeColor(ARR0, color);
             aColor[i * 4] = ARR0[0];
             aColor[i * 4 + 1] = ARR0[1];
@@ -173,7 +179,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         fnTypes.aColor = aColor;
     }
     if (isFnTypeSymbol(symbol['polygonOpacity'])) {
-        const opacityFn = interpolated(symbol.polygonOpacity);
+        let opacityFn = interpolated(symbol.polygonOpacity);
         const aOpacity = new Uint8Array(feaIndexes.length);
         aOpacity.fill(255);
         for (let i = 0; i < feaIndexes.length; i++) {
@@ -181,7 +187,11 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             const properties = feature.properties || {};
             properties['$layer'] = feature.layer;
             properties['$type'] = feature.type;
-            const opacity = opacityFn(zoom, properties);
+            let opacity = opacityFn(zoom, properties);
+            if (isFunctionDefinition(opacity)) {
+                opacityFn = piecewiseConstant(opacity);
+                opacity = opacityFn(zoom, properties);
+            }
             delete properties['$layer'];
             delete properties['$type'];
             aOpacity[i] = opacity * 255;

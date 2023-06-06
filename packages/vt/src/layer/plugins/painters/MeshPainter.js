@@ -1,7 +1,7 @@
 import { reshader } from '@maptalks/gl';
 import { mat4 } from '@maptalks/gl';
 import Painter from './Painter';
-import { piecewiseConstant } from '@maptalks/function-type';
+import { piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobalVar } from '../Util';
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
@@ -327,8 +327,11 @@ class MeshPainter extends Painter {
                 symbolName: fillName,
                 define: 'HAS_COLOR',
                 //
-                evaluate: properties => {
+                evaluate: (properties, geometry) => {
                     let color = fillFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(color)) {
+                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                    }
                     if (!Array.isArray(color)) {
                         color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
                     }
@@ -342,7 +345,10 @@ class MeshPainter extends Painter {
                 width: 1,
                 symbolName: opacityName,
                 evaluate: (properties, geometry) => {
-                    const polygonOpacity = opacityFn(map.getZoom(), properties);
+                    let polygonOpacity = opacityFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(polygonOpacity)) {
+                        polygonOpacity = this.evaluateInFnTypeConfig(polygonOpacity, geometry, map, properties, false);
+                    }
                     u8[0] = polygonOpacity * 255;
                     if (u8[0] < 255) {
                         geometry.properties.hasAlpha = true;

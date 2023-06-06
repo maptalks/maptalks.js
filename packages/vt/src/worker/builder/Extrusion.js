@@ -277,7 +277,7 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
     for (let i = ringStart, l = ringEnd; i < l - 1; i++) {
         current = i;
         next = i + 1;
-        if (isClippedEdge(vertices, current, next, EXTENT)) {
+        if (EXTENT !== Infinity && isClippedEdge(vertices, current, next, EXTENT)) {
             continue;
         }
         if ((i - ringStart) % 2 === 1) {
@@ -292,13 +292,13 @@ function buildRingSide(ringStart, ringEnd, vertices, vertexCount, EXTENT, indice
             //top[i + 1], bottom[i + 1],  bottom[i]
             indices.push(next, next + vertexCount, current + vertexCount);
         } else {
-            indices.push(next, current, current + vertexCount);
-            indices.push(current + vertexCount, next + vertexCount, next);
+            indices.push(current + vertexCount, next, current);
+            indices.push(next + vertexCount, next, current + vertexCount);
         }
 
     }
     if (generateUV) {
-        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], localScale, centimeterToPoint); //convert uvSize[1] to meter
+        buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices.slice(indiceStart, indices.length), uvSize[0], uvSize[1], localScale, centimeterToPoint, needReverseTriangle); //convert uvSize[1] to meter
     }
 }
 

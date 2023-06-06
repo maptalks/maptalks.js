@@ -3,7 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { match, readSpecs, hasOwn } = require('./util');
-const { PointLayer, LineStringLayer, PolygonLayer } = require('../../dist/maptalks.vt.js');
+const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 const DEFAULT_VIEW = {
@@ -112,6 +112,15 @@ describe('vector 3d integration specs', () => {
         for (const p in specs) {
             if (hasOwn(specs, p)) {
                 it('polygon-' + p, runner(p, PolygonLayer, specs[p]));
+            }
+        }
+    });
+
+    context('extrude specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'extrude'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                it('extrude-' + p, runner(p, ExtrudePolygonLayer, specs[p]));
             }
         }
     });

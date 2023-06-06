@@ -60,18 +60,21 @@ function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, 
     }
 }
 
-export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, localScale, centimeterToPoint) {
+export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs, vertices, indices, texWidth, texHeight, localScale, centimeterToPoint, needReverseTriangle) {
     let maxz = 0, minz = 0, h;
     let lensofar = 0;
     let seg = 0;
+
+    const segStart = 5;
+    const segEnd = needReverseTriangle ? [1, 3, 4] : [2, 3, 4];
     //因为是逆时针，需要倒序遍历
     for (let i = indices.length - 1; i >= 0; i--) {
         const idx = indices[i];
         const ix = idx * 3, iy = idx * 3 + 1, iz = idx * 3 + 2;
         const x = vertices[ix], y = vertices[iy], z = vertices[iz];
         if (!maxz && !minz) {
-            maxz = Math.max(vertices[iz], vertices[indices[i - 2] * 3 + 2]);
-            minz = Math.min(vertices[iz], vertices[indices[i - 2] * 3 + 2]);
+            maxz = Math.max(vertices[iz], vertices[indices[i - 3] * 3 + 2]);
+            minz = Math.min(vertices[iz], vertices[indices[i - 3] * 3 + 2]);
             h = maxz - minz;
         }
         let len = lensofar;
@@ -80,20 +83,24 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
         //  1 -- 2(3)
         //  |    |
         // 0(5)- 4
+        // 如果是needReverseTriangle
+        //  2 -- 1(4)
+        //  |    |
+        // 0(5)- 3
         if (sideUVMode === 0) {
             //连续
-            if (m === 5) {
+            if (m === segStart) {
                 seg = getSegLength(vertices, indices, i, x, y);
             }
-            if (m === 2 || m === 3 || m === 4) {
+            if (m === segEnd[0] || m === segEnd[1] || m === segEnd[2]) {
                 len = lensofar;
             } else {
                 len = lensofar + seg;
             }
         } else if (sideUVMode === 1) {
-            if (m === 2 || m === 3 || m === 4) {
+            if (m === segEnd[0] || m === segEnd[1] || m === segEnd[2]) {
                 len = 0;
-            } else if (m === 5) {
+            } else if (m === segStart) {
                 seg = getSegLength(vertices, indices, i, x, y);
                 len = seg;
             } else {
@@ -113,9 +120,10 @@ export function buildSideUV(sideUVMode, sideVerticalUVMode, textureYOrigin, uvs,
             v = z === maxz ? 1 : 0;
         } else {
             if (textureYOrigin === 'bottom') {
-                v = (z === maxz ? h / METER_TO_GL_POINT / texHeight : 0);
+                // 除以 100 是从厘米转换为米
+                v = (z === maxz ? h / 100 / METER_TO_GL_POINT / texHeight : 0);
             } else {
-                v = (z === maxz ? 0 : h / METER_TO_GL_POINT / texHeight);
+                v = (z === maxz ? 0 : -h / 100 / METER_TO_GL_POINT / texHeight);
             }
         }
 
