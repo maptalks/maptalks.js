@@ -602,7 +602,8 @@ class Painter {
     updateSceneConfig(/* config */) {
     }
 
-    updateDataConfig() {
+    updateDataConfig(dataConfig) {
+        extend(this.dataConfig, dataConfig);
         return true;
     }
 

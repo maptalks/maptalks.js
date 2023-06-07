@@ -2,7 +2,7 @@ const path = require('path');
 const assert = require('assert');
 const { readPixel, compareExpected } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer, LineStringLayer, PolygonLayer, GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer, GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 
 
@@ -37,7 +37,7 @@ describe('vector layers update style specs', () => {
     });
 
     afterEach(() => {
-        map.remove();
+        // map.remove();
     });
 
     it('should can update markerFill and markerOpacity', done => {
@@ -1949,6 +1949,79 @@ describe('vector layers update style specs', () => {
 
           }, 60);
           groupLayer.addTo(map);
+    });
+
+    it('should can update ExtrudePolygonLayer dataConfig', done => {
+        map.setPitch(80);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#0f0'
+            },
+            properties: {
+                height: 80000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon]);
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 30);
+                assert(pixel[3] === 0);
+                layer.updateDataConfig({
+                    altitudeProperty: 'height'
+                });
+            } else if (count === 4) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 30);
+                assert(pixel[3] > 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can update ExtrudePolygonLayer material', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert(pixel[0] > 0);
+                assert(pixel[0] === pixel[1]);
+                layer.updateMaterial({
+                    baseColorFactor: [1, 0, 0, 1]
+                });
+            } else if (count === 3) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert(pixel[0] !== pixel[1]);
+                done();
+            }
+        });
+        group.addTo(map);
     });
 
 

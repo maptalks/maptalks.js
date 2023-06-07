@@ -1,11 +1,14 @@
 import * as maptalks from 'maptalks';
-import { extend } from '../../common/Util';
+import { extend, isNil } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import { PolygonLayerRenderer } from './PolygonLayer';
 import { fromJSON } from './util/from_json';
-import { ID_PROP } from './util/convert_to_feature';
 import { build3DExtrusion } from '../../worker/builder/';
 import { hasTexture } from '../../worker/layer/BaseLayerWorker';
+
+const options = {
+    cullFace: false
+};
 
 class ExtrudePolygonLayer extends Vector3DLayer {
     /**
@@ -19,9 +22,48 @@ class ExtrudePolygonLayer extends Vector3DLayer {
     static fromJSON(json) {
         return fromJSON(json, 'ExtrudePolygonLayer', ExtrudePolygonLayer);
     }
+
+    onConfig(conf) {
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.onConfig(conf);
+        }
+        return super.onConfig(conf);
+    }
+
+    updateMaterial(matInfo) {
+        if (!matInfo) {
+            return this;
+        }
+        if (!this.options.material) {
+            this.options.material = {};
+        }
+        extend(this.options.material, matInfo);
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateMaterial(matInfo);
+        }
+        return this;
+    }
+
+    updateDataConfig(dataConfig) {
+        if (!dataConfig) {
+            return this;
+        }
+        if (!this.options.dataConfig) {
+            this.options.dataConfig = {};
+        }
+        extend(this.options.dataConfig, dataConfig);
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateDataConfig(dataConfig);
+        }
+        return this;
+    }
 }
 
 ExtrudePolygonLayer.registerJSONType('ExtrudePolygonLayer');
+ExtrudePolygonLayer.mergeOptions(options);
 
 const SYMBOL = {
     polygonFill: {
@@ -50,6 +92,32 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         return [features];
     }
 
+    onConfig(conf) {
+        if (!this.painter) {
+            return;
+        }
+        if (!isNil(conf.cullFace)) {
+            this.painter.updateSceneConfig({
+                cullFace: conf.cullFace
+            });
+        }
+    }
+
+    updateMaterial(matInfo) {
+        if (!this.painter) {
+            return;
+        }
+        this.painter._updateMaterial(matInfo);
+    }
+
+    updateDataConfig(dataConfig) {
+        if (!this.painter) {
+            return;
+        }
+        this.painter.updateDataConfig(dataConfig);
+        this._markRebuild();
+    }
+
     needCheckPointLineSymbols() {
         return false;
     }
@@ -66,7 +134,10 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (this.layer.options.material) {
             this.painterSymbol.material = this.layer.options.material;
         }
-        const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig || {}, 0, dataConfig);
+        const sceneConfig = {
+            cullFace: this.layer.options.cullFace
+        };
+        const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0, dataConfig);
         return painter;
     }
 
