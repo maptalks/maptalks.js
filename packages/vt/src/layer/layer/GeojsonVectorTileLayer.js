@@ -42,7 +42,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
 
     _initTileConfig() {
         const sr = this.getSpatialReference();
-        if (sr && sr.getProjection() && sr.getProjection().code === 'EPSG:4326') {
+        if (sr && sr.getProjection() && (sr.getProjection().code === 'EPSG:4326' || sr.getProjection().code === 'EPSG:4490')) {
             // geojson-vt 在4326投影下的tileSystem
             this.options.tileSystem = [1, -1, -180, 90];
         }
