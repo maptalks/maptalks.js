@@ -64,11 +64,15 @@ export default function (features, dataConfig, extent, uvOrigin,
     buffers.push(indices.buffer, faces.pickingIds.buffer);
     const normals = buildNormals(faces.vertices, indices);
     let simpleNormal = true;
+    const delta = 1E-6;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
     for (let i = 0; i < normals.length; i++) {
         normals[i] = -normals[i];
-        if (normals[i] % 1 !== 0) {
+        const m = normals[i] % 1;
+        if (1 - Math.abs(m) > delta) {
             simpleNormal = false;
+        } else if (m !== 0) {
+            normals[i] = Math.round(normals[i]);
         }
     }
     faces.normals = normals;
@@ -112,7 +116,8 @@ export default function (features, dataConfig, extent, uvOrigin,
             indices,
             properties: {
                 maxAltitude: faces.maxAltitude
-            }
+            },
+            dynamicAttributes: fnTypes.dynamicAttributes
         },
         buffers
     };
@@ -151,6 +156,7 @@ function createQuaternion(normals, tangents) {
 
 const ARR0 = [];
 function buildFnTypes(features, symbol, zoom, feaIndexes) {
+    const dynamicAttributes = {};
     const fnTypes = {};
     if (isFnTypeSymbol(symbol['polygonFill'])) {
         let colorFn = piecewiseConstant(symbol.polygonFill);
@@ -163,6 +169,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             properties['$type'] = feature.type;
             let color = colorFn(zoom, properties);
             if (isFunctionDefinition(color)) {
+                dynamicAttributes['aColor'] = 1;
                 colorFn = piecewiseConstant(color);
                 color = colorFn(zoom, properties);
             }
@@ -187,6 +194,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
             properties['$type'] = feature.type;
             let opacity = opacityFn(zoom, properties);
             if (isFunctionDefinition(opacity)) {
+                dynamicAttributes['aOpacity'] = 1;
                 opacityFn = piecewiseConstant(opacity);
                 opacity = opacityFn(zoom, properties);
             }
@@ -196,5 +204,6 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
         }
         fnTypes.aOpacity = aOpacity;
     }
+    fnTypes.dynamicAttributes = dynamicAttributes;
     return fnTypes;
 }

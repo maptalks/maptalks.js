@@ -744,7 +744,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         continue;
                     }
                     const data = packData[i].data.data[p];
-                    mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
+                    if (data) {
+                        mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
+                    }
                 }
             }
             this.setToRedraw();
@@ -836,43 +838,47 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 if (!mesh) {
                     continue;
                 }
-                const aFeaIds = mesh.geometry.properties.aFeaIds;
-                const startIndex = aFeaIds.indexOf(feaId);
-                if (startIndex < 0) {
-                    continue;
-                }
-                if (!packData[i]) {
-                    let walker = startIndex + 1;
-                    while (aFeaIds[walker] === feaId) {
-                        walker++;
-                    }
-                    const length = walker - startIndex;
-                    const positionSize = mesh.geometry.desc.positionSize;
-                    if (EMPTY_POSITION.length !== length * 3) {
-                        EMPTY_POSITION = new Float32Array(length * positionSize);
-                        EMPTY_POSITION.fill(-Infinity, 0);
-                    }
-                    mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * positionSize);
-                } else {
-                    const dynamicAttrs = packData[i].data.dynamicAttributes;
-                    const count = packData[i].data.featureIds.length;
-                    const datas = packData[i].data.data;
-                    for (const p in datas) {
-                        if (dynamicAttrs[p]) {
-                            // 如果该属性是dynamic（值里包含了function-type），在之前的检查中会rebuild，所以这里不可能出现dynamic attribute
-                            continue;
-                        }
-                        if (hasOwn(datas, p)) {
-                            const data = datas[p];
-                            mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
-                        }
-                    }
-                }
-                this.layer.fire('updatemesh');
-                this.setToRedraw();
+                this._updateMeshData(mesh, feaId, packData[i]);
             }
         });
         return true;
+    }
+
+    _updateMeshData(mesh, feaId, packData) {
+        const aFeaIds = mesh.geometry.properties.aFeaIds;
+        const startIndex = aFeaIds.indexOf(feaId);
+        if (startIndex < 0) {
+            return;
+        }
+        if (!packData) {
+            let walker = startIndex + 1;
+            while (aFeaIds[walker] === feaId) {
+                walker++;
+            }
+            const length = walker - startIndex;
+            const positionSize = mesh.geometry.desc.positionSize;
+            if (EMPTY_POSITION.length !== length * 3) {
+                EMPTY_POSITION = new Float32Array(length * positionSize);
+                EMPTY_POSITION.fill(-Infinity, 0);
+            }
+            mesh.geometry.updateSubData(mesh.geometry.desc.positionAttribute, EMPTY_POSITION, startIndex * positionSize);
+        } else {
+            const dynamicAttrs = packData.data.dynamicAttributes;
+            const count = packData.data.featureIds.length;
+            const datas = packData.data.data;
+            for (const p in datas) {
+                if (dynamicAttrs[p]) {
+                    // 如果该属性是dynamic（值里包含了function-type），在之前的检查中会rebuild，所以这里不可能出现dynamic attribute
+                    continue;
+                }
+                if (hasOwn(datas, p) && datas[p]) {
+                    const data = datas[p];
+                    mesh.geometry.updateSubData(p, data, startIndex * data.length / count);
+                }
+            }
+        }
+        this.layer.fire('updatemesh');
+        this.setToRedraw();
     }
 
     _buildLineMesh(atlas) {

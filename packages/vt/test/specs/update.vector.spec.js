@@ -37,7 +37,7 @@ describe('vector layers update style specs', () => {
     });
 
     afterEach(() => {
-        // map.remove();
+        map.remove();
     });
 
     it('should can update markerFill and markerOpacity', done => {

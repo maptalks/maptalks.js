@@ -5,7 +5,7 @@ import { PolygonLayerRenderer } from './PolygonLayer';
 import { fromJSON } from './util/from_json';
 import { build3DExtrusion } from '../../worker/builder/';
 import { hasTexture } from '../../worker/layer/BaseLayerWorker';
-
+import { ID_PROP } from './util/convert_to_feature';
 const options = {
     cullFace: false
 };
@@ -142,6 +142,13 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
 
     createMesh(painter, PackClass, symbol, features, atlas, center) {
+        this._extrudeCenter = center;
+        const data = this._createPackData(features, symbol)
+        return this._createMesh(data, painter, PackClass, symbol, features, null, center);
+    }
+
+    _createPackData(features, symbol) {
+        const center = this._extrudeCenter;
         const extent = Infinity;
         const localScale = 1;
         // 原zoom是用来计算functiont-type 的symbol属性值
@@ -167,12 +174,17 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
             aPosition[i] -= center[0];
             aPosition[i + 1] -= center[1];
         }
-
-        return this._createMesh(data, painter, PackClass, symbol, features, null, center);
+        return data;
     }
 
     updateMesh(polygon) {
-        // return this._updateMesh(polygon, this.meshes, null, this._meshCenter, this.painter, null, SYMBOL, this._groupPolygonFeatures);
+        const uid = polygon[ID_PROP];
+        let feature = this.features[uid];
+        const data = this._createPackData([feature], this.painterSymbol);
+        if (!data || !data.data) {
+            return;
+        }
+        this._updateMeshData(this.meshes[0], feature.id, data);
     }
 
 
