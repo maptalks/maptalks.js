@@ -57,7 +57,7 @@ void main() {
     #ifdef HAS_FLOODANALYSE
         vec4 floodColor = texture2D(floodMap, vTexCoord);
         if (floodColor.r > 0.0) {
-            glFragColor = vec4(mix(flood_waterColor, glFragColor.rgb, flood_waterOpacity), glFragColor.a);
+            glFragColor = vec4(mix(glFragColor.rgb, flood_waterColor, flood_waterOpacity), glFragColor.a);
         }
     #endif
     #ifdef HAS_SKYLINE
