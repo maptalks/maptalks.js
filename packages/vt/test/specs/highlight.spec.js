@@ -106,6 +106,8 @@ describe('highlight specs', () => {
                 symbol: { markerType: 'ellipse', markerVerticalAlignment: 'middle', markerWidth: 20, markerHeight: 20, markerFill: '#f00' }
             }
         ];
+        // test if feature's id is string, maptalks/issues#332
+        point.features[0].id = 'foo';
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: point,
             style
@@ -131,6 +133,7 @@ describe('highlight specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
+                point.features[0].id = 0;
                 done();
             }
         });

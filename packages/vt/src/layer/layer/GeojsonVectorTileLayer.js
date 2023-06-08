@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import Ajax from '../../worker/util/Ajax';
-import { isString } from '../../common/Util';
+import { isString, isNumber } from '../../common/Util';
 
 const options = {
     //feature data to return from worker
@@ -162,7 +162,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 if (!f) {
                     return;
                 }
-                if (f.id === undefined || f.id === null) {
+                if (!isNumber(f.id)) {
                     f.id = uid++;
                 }
                 this._idMaps[f.id] = f;
@@ -172,7 +172,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 if (!f) {
                     return;
                 }
-                if (f.id === undefined || f.id === null) {
+                if (!isNumber(f.id)) {
                     f.id = uid++;
                 }
                 this._idMaps[f.id] = f;
