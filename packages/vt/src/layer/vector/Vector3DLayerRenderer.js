@@ -1235,19 +1235,19 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         if (uid === undefined) {
             return;
         }
-        const geojson = convertToFeature(target, { id: 0 });
-        const coordJSON = geojson.geometry;
-        const features = this.features[uid];
-        const currentFea =  Array.isArray(features) ? features[0] : features;
-        if (compareCoordSize(coordJSON, currentFea.geometry)) {
-            // 当数据的端点数量不变时，可以进行局部更新
-            // 但不适用lineMesh，因lineMesh因为会因为lineJoin角度变化，生成的实际端点数量会变化，无法局部更新
-            if (this._lineMeshes) {
-                this._dirtyLine = true;
-            }
-            this.onGeometryPositionChange(e);
-            return;
-        }
+        // const geojson = convertToFeature(target, { id: 0 });
+        // const coordJSON = geojson.geometry;
+        // const features = this.features[uid];
+        // const currentFea =  Array.isArray(features) ? features[0] : features;
+        // if (compareCoordSize(coordJSON, currentFea.geometry)) {
+        //     // 当数据的端点数量不变时，可以进行局部更新
+        //     // 但不适用lineMesh，因lineMesh因为会因为lineJoin角度变化，生成的实际端点数量会变化，无法局部更新
+        //     if (this._lineMeshes) {
+        //         this._dirtyLine = true;
+        //     }
+        //     this.onGeometryPositionChange(e);
+        //     return;
+        // }
         this._convertGeometries([target]);
         this._markRebuildGeometry();
         redraw(this);

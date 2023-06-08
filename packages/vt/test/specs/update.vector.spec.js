@@ -2024,6 +2024,83 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can translate ExtrudePolygon', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[0] > 0);
+                polygon.translate(1, 0);
+            } else if (count === 3) {
+                const canvas = group.getRenderer().canvas;
+                let pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[0] === 0);
+                // 移动到了新的位置
+                pixel = readPixel(canvas, canvas.width / 2 + 60, canvas.height / 2 - 10);
+                assert(pixel[0] > 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can update ExtrudePolygon coordinates', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[0] > 0);
+                polygon.setCoordinates([
+                    [[1, 0], [2, 0], [2, 1], [1, 1], [1, 0]]
+                ]);
+            } else if (count === 4) {
+                const canvas = group.getRenderer().canvas;
+                let pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[0] === 0);
+                // 移动到了新的位置
+                pixel = readPixel(canvas, canvas.width / 2 + 60, canvas.height / 2 - 10);
+                assert(pixel[0] > 0);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
 
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
