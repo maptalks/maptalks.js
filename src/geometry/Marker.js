@@ -6,6 +6,7 @@ import Painter from '../renderer/geometry/Painter';
 import { getMarkerFixedExtent, isVectorSymbol, isImageSymbol, isPathSymbol, DYNAMIC_SYMBOL_PROPS as propsToCheck, SIZE_SYMBOL_PROPS as sizeProps } from '../core/util/marker';
 import { isFunctionDefinition, loadGeoSymbol } from '../core/mapbox';
 import { isNil } from '../core/util';
+import { DEFAULT_MARKER_SYMBOL } from '../core/Constants';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -16,17 +17,7 @@ const TEMP_EXTENT = new PointExtent();
  * @instance
  */
 const options = {
-    'symbol': {
-        'markerType': 'path',
-        'markerPath': [{
-            'path': 'M8 23l0 0 0 0 0 0 0 0 0 0c-4,-5 -8,-10 -8,-14 0,-5 4,-9 8,-9l0 0 0 0c4,0 8,4 8,9 0,4 -4,9 -8,14z M3,9 a5,5 0,1,0,0,-0.9Z',
-            'fill': '#DE3333'
-        }],
-        'markerPathWidth': 16,
-        'markerPathHeight': 23,
-        'markerWidth': 24,
-        'markerHeight': 34
-    },
+    'symbol': DEFAULT_MARKER_SYMBOL,
     'hitTestForEvent': false,
     'collision': true
 };

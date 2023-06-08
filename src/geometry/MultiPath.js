@@ -1,16 +1,9 @@
 import MultiGeometry from './MultiGeometry';
 import Coordinate from '../geo/Coordinate';
+import { DEFAULT_PATH_SYMBOL } from '../core/Constants';
 
 const options = {
-    'symbol': {
-        'lineColor': '#000',
-        'lineWidth': 2,
-        'lineOpacity': 1,
-
-        'polygonFill': '#fff', //default color in cartoCSS
-        'polygonOpacity': 1,
-        'opacity': 1
-    }
+    'symbol': DEFAULT_PATH_SYMBOL
 };
 
 /**

@@ -5,6 +5,7 @@ import Extent from '../geo/Extent';
 import Geometry from './Geometry';
 import simplify from 'simplify-js';
 import Point from '../geo/Point';
+import { DEFAULT_PATH_SYMBOL } from '../core/Constants';
 
 /**
  * @property {Object} options - configuration options
@@ -21,15 +22,7 @@ const options = {
     'enableClip': true,
     'enableSimplify': true,
     'simplifyTolerance': 2,
-    'symbol': {
-        'lineColor': '#000',
-        'lineWidth': 2,
-        'lineOpacity': 1,
-
-        'polygonFill': '#fff', //default color in cartoCSS
-        'polygonOpacity': 1,
-        'opacity': 1
-    }
+    'symbol': DEFAULT_PATH_SYMBOL
 };
 
 /**
