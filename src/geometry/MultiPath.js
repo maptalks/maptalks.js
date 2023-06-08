@@ -1,6 +1,18 @@
 import MultiGeometry from './MultiGeometry';
 import Coordinate from '../geo/Coordinate';
 
+const options = {
+    'symbol': {
+        'lineColor': '#000',
+        'lineWidth': 2,
+        'lineOpacity': 1,
+
+        'polygonFill': '#fff', //default color in cartoCSS
+        'polygonOpacity': 1,
+        'opacity': 1
+    }
+};
+
 /**
  * @classdesc
  * An abstract class for MultiPolygon and MultiLineString
@@ -35,5 +47,5 @@ class MultiPath extends MultiGeometry {
     }
 }
 
-
+MultiPath.mergeOptions(options);
 export default MultiPath;
