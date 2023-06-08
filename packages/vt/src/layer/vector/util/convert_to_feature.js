@@ -54,7 +54,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
-    const symbol = geo['_getInternalSymbol']();
+    const symbol = geo['_getInternalSymbol']() || getDefaultSymbol(geo);
     const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0][keyName] : currentFeature[keyName]) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
@@ -120,4 +120,26 @@ function fillGradientProperties(symbol, props) {
         delete props[lineGradientProperty];
     }
     return lineGradientProperty;
+}
+
+function getDefaultSymbol(geo) {
+    if (geo instanceof maptalks.Marker || geo instanceof maptalks.MultiPoint) {
+        return {
+            markerType: 'ellipse',
+            markerWidth: 8,
+            markerHeight: 0,
+            markerFill: '#000'
+        };
+    } else if (geo instanceof maptalks.LineString || geo instanceof maptalks.MultiLineString) {
+        return {
+            lineColor: '#000',
+            lineWidth: 1
+        };
+    } else if (geo instanceof maptalks.Polygon || geo instanceof maptalks.MultiPolygon) {
+        return {
+            polygonFill: '#fff',
+            lineColor: '#000',
+            lineWidth: 1
+        };
+    }
 }
