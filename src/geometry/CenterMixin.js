@@ -25,9 +25,6 @@ export default function (Base) {
          */
         setCoordinates(coordinates) {
             const center = (coordinates instanceof Coordinate) ? coordinates : new Coordinate(coordinates);
-            if (center.equals(this._coordinates)) {
-                return this;
-            }
             this._coordinates = center;
             if (!this.getMap()) {
                 //When not on a layer or when creating a new one, temporarily save the coordinates,
