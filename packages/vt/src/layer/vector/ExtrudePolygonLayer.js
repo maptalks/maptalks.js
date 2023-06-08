@@ -75,6 +75,16 @@ const SYMBOL = {
         type: 'identity',
         default: 1,
         property: '_symbol_polygonOpacity'
+    },
+    topPolygonFill: {
+        type: 'identity',
+        default: [1, 1, 1, 1],
+        property: '_symbol_topPolygonFill'
+    },
+    bottomPolygonFill: {
+        type: 'identity',
+        default: [1, 1, 1, 1],
+        property: '_symbol_bottomPolygonFill'
     }
 };
 
@@ -148,6 +158,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
 
     _createPackData(features, symbol) {
+        symbol = SYMBOL;
         const center = this._extrudeCenter;
         const extent = Infinity;
         const localScale = 1;

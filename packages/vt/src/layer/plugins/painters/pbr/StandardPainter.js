@@ -52,6 +52,10 @@ class StandardPainter extends MeshPainter {
         }
         const geometry = new reshader.Geometry(glData.data, glData.indices, 0, desc);
         extend(geometry.properties, glData.properties);
+        if (glData.vertexColors) {
+            geometry.properties.vertexColors = glData.vertexColors;
+        }
+
         this._prepareFeatureIds(geometry, glData);
         return {
             geometry,

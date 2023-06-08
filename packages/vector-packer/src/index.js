@@ -60,7 +60,9 @@ const SYMBOLS_NEED_REBUILD_IN_VT = {
 
 // 只有vector图层，需要重建mesh的symbol属性
 const SYMBOLS_NEED_REBUILD_IN_VECTOR = {
-    'lineDasharray': 1
+    'lineDasharray': 1,
+    'topPolygonFill': 1,
+    'bottomPolygonFill': 1
 };
 
 Object.assign(SYMBOLS_NEED_REBUILD_IN_VT, SYMBOLS_NEED_REBUILD);

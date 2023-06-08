@@ -96,6 +96,17 @@ class MeshPainter extends Painter {
                     vertexColorTypes[5] = topColor[1];
                     vertexColorTypes[6] = topColor[2];
                     vertexColorTypes[7] = topColor[3];
+                    const vertexColors = mesh.geometry.properties.vertexColors;
+                    if (vertexColors) {
+                        let index = 8;
+                        vertexColorTypes.length = 8 + vertexColors.length;
+                        for (let i = 0; i < vertexColors.length; i++) {
+                            vertexColorTypes[index++] = vertexColors[i][0];
+                            vertexColorTypes[index++] = vertexColors[i][1];
+                            vertexColorTypes[index++] = vertexColors[i][2];
+                            vertexColorTypes[index++] = vertexColors[i][3];
+                        }
+                    }
                     return vertexColorTypes;
                 }
             });
@@ -113,7 +124,12 @@ class MeshPainter extends Painter {
             defines['HAS_TERRAIN_ALTITUDE'] = 1;
         }
         if (geometry.data.aVertexColorType) {
-            defines['VERTEX_TYPES_COUNT'] = 2;
+            const vertexColors = mesh.geometry.properties.vertexColors;
+            let vertexTypesCount = 2;
+            if (vertexColors) {
+                vertexTypesCount += vertexColors.length;
+            }
+            defines['VERTEX_TYPES_COUNT'] = vertexTypesCount;
         }
         if (geometry.data.aOpacity) {
             const aOpacity = geometry.data.aOpacity;

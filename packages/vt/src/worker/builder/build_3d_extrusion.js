@@ -103,10 +103,11 @@ export default function (features, dataConfig, extent, uvOrigin,
     const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
 
     const fnTypes = buildFnTypes(features, symbol, zoom, faces.featureIndexes);
+    const vertexColors = buildVertexColorTypes(faces.verticeTypes, faces.featureIndexes, features, symbol, zoom);
     const data =  {
         data: {
             data: {
-                aVertexColorType: faces.verticeTypes,
+                aVertexColorType: vertexColors.length <= 252 ? new Uint8Array(faces.verticeTypes) : new Uint16Array(faces.verticeTypes),
                 aPosition: new posArrayType(faces.vertices),
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
@@ -117,7 +118,8 @@ export default function (features, dataConfig, extent, uvOrigin,
             properties: {
                 maxAltitude: faces.maxAltitude
             },
-            dynamicAttributes: fnTypes.dynamicAttributes
+            dynamicAttributes: fnTypes.dynamicAttributes,
+            vertexColors
         },
         buffers
     };
@@ -206,4 +208,71 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
     }
     fnTypes.dynamicAttributes = dynamicAttributes;
     return fnTypes;
+}
+
+function buildVertexColorTypes(verticeTypes, feaIndexes, features, symbol, zoom, dynamicAttributes) {
+    const vertexColors = [[], []];
+    const isTopFn = isFnTypeSymbol(symbol['topPolygonFill']);
+    const isBottomFn = isFnTypeSymbol(symbol['bottomPolygonFill']);
+    const colorNormalize = [255, 255, 255, 255];
+    if (isTopFn || isBottomFn) {
+        let topFillFn = isTopFn && piecewiseConstant(symbol.topPolygonFill);
+        let bottomFillFn = isBottomFn && piecewiseConstant(symbol.bottomPolygonFill);
+        let currentTopFeatureId = null;
+        let currentBottomFeatureId = null;
+        let currentTopValue = null;
+        let currentBottomValue = null;
+        for (let i = 0; i < feaIndexes.length; i++) {
+            if (verticeTypes[i] === 1 && !isTopFn || verticeTypes[i] === 0 && !isBottomFn) {
+                continue;
+            }
+            const isTop = verticeTypes[i] === 1;
+            if (isTop && feaIndexes[i] === currentTopFeatureId) {
+                verticeTypes[i] = currentTopValue;
+                continue;
+            }
+            if (!isTop && feaIndexes[i] === currentBottomFeatureId) {
+                verticeTypes[i] = currentBottomValue;
+                continue;
+            }
+            const feature = features[feaIndexes[i]];
+            const properties = feature.properties || {};
+            properties['$layer'] = feature.layer;
+            properties['$type'] = feature.type;
+            let fillFn = isTop ? topFillFn : bottomFillFn
+            let color = fillFn(zoom, properties);
+            if (isFunctionDefinition(color)) {
+                fillFn = piecewiseConstant(color);
+                color = fillFn(zoom, properties);
+            }
+            delete properties['$layer'];
+            delete properties['$type'];
+            StyleUtil.normalizeColor(ARR0, color);
+            vec4.divide(ARR0, ARR0, colorNormalize)
+            let index = findColor(vertexColors, ARR0);
+            if (index < 0) {
+                index = vertexColors.length;
+                vertexColors.push(vec4.copy([], ARR0));
+            }
+            verticeTypes[i] = index;
+            if (isTop) {
+                currentTopFeatureId = feaIndexes[i];
+                currentTopValue = index;
+            } else {
+                currentBottomFeatureId = feaIndexes[i];
+                currentBottomValue = index;
+            }
+
+        }
+    }
+    return vertexColors.slice(2);
+}
+
+function findColor(colors, color) {
+    for (let i = 0; i < colors.length; i++) {
+        if (vec4.exactEquals(color, colors[i])) {
+            return i;
+        }
+    }
+    return -1;
 }

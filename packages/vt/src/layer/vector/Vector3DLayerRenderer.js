@@ -951,7 +951,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                 feas.push(f);
             }
         }
-        return [patternFeas, dashFeas, feas];
+        return [feas, patternFeas, dashFeas];
     }
 
     _markRebuildGeometry() {

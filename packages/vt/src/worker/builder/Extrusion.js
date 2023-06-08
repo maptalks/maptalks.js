@@ -204,7 +204,7 @@ export function buildExtrudeFaces(
     const data = {
         maxAltitude,
         vertices: vertices,        // vertexes
-        verticeTypes: new Uint8Array(verticeTypes),
+        verticeTypes,
         indices,                                    // indices for drawElements
         pickingIds: new pickingCtor(pickingIds),   // vertex index of each feature
         featureIndexes: featIndexes
