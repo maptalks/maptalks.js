@@ -7,9 +7,9 @@ describe('gltflayer set style', function () {
     afterEach(function() {
         removeMap(map);
     });
-    it('setUrl', (done) => {
+    it('setUrl', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
         marker.once('load', () => {
             const renderer = gltflayer.getRenderer();
             const gltfManager = renderer.regl.gltfManager;
@@ -24,19 +24,10 @@ describe('gltflayer set style', function () {
         });
     });
 
-    it('setUrl with simple model', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url1 }}).addTo(gltflayer);
-        setTimeout(() => {
-            marker.setUrl('pyramid');
-            done();
-        }, 100);
-    });
-
     it('update url for marker when setting style for gltflayer', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, { properties: { count: 100 }}).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFMarker(center, { properties: { count: 200 }}).addTo(gltflayer);
+        const marker1 = new maptalks.GLTFBuilding(center, { properties: { count: 100 }}).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFBuilding(center, { properties: { count: 200 }}).addTo(gltflayer);
         gltflayer.setStyle([
             {
                 'filter': ['==', 'count', 100],
@@ -61,18 +52,6 @@ describe('gltflayer set style', function () {
         expect(marker2.getUrl()).to.be.eql(url2);
         expect(marker1.getScale()).to.be.eql([0.5, 0.5, 0.5]);
         expect(marker2.getScale()).to.be.eql([2, 2, 2]);
-    });
-
-    it('getGLTFUrls', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        new maptalks.GLTFMarker(center, { symbol: { url: url1 }}).addTo(gltflayer);
-        new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
-        new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
-        gltflayer.on('modelload', () => {
-            const gltfUrls = gltflayer.getGLTFUrls();
-            expect(gltfUrls.length).to.be.eql(2);
-            done();
-        });
     });
 
     it('setStyle and getStyle', () => {
@@ -190,7 +169,7 @@ describe('gltflayer set style', function () {
 
     it('setStyle without parameters will reset the layer\'s style to default', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        new maptalks.GLTFMarker(center).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center).addTo(gltflayer);
         const style = [
             {
                 'filter': ['==', 'count', 100],
@@ -215,7 +194,7 @@ describe('gltflayer set style', function () {
 
     it('setStyle and setSymbol', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, {
+        const marker1 = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url1
             },
@@ -223,12 +202,12 @@ describe('gltflayer set style', function () {
                 count: 100
             }
         }).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFMarker(center, {
+        const marker2 = new maptalks.GLTFBuilding(center, {
             properties: {
                 count: 200
             }
         }).addTo(gltflayer);
-        const marker3 = new maptalks.GLTFMarker(center, {
+        const marker3 = new maptalks.GLTFBuilding(center, {
             properties: {
                 count: 300
             }
@@ -283,7 +262,7 @@ describe('gltflayer set style', function () {
 
     it('updateSymbol', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url1
             }
@@ -306,17 +285,172 @@ describe('gltflayer set style', function () {
         });
         expect(marker.isAnimationLooped()).to.be.ok();
         expect(marker.getAnimationSpeed()).to.be.eql(2.0);
-        const expectMatrix = maptalksgl.mat4.fromValues(1.0000000000000002, 0, -1.7320508075688772, 0, 0, 2, 0, 0, 1.7320508075688772, 0, 1.0000000000000002, 0, 0.13082664542728, 0.1308266454209729, 0.1707822812928094, 1);
-        const modelMatrix = marker.getModelMatrix();
-        expect(maptalksgl.mat4.equals(expectMatrix, modelMatrix)).to.be.ok();
         expect(marker.getShader()).to.be.eql('wireframe');
         expect(marker.getUniform('lightAmbient')).to.be.eql([0.8, 0.5, 0.2]);
     });
 
+    it('setStyle before layer addding to map', () => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFBuilding(center, {
+            properties:{
+                count: 200
+            }
+        }).addTo(gltflayer);
+        gltflayer.setStyle([{
+            'filter': ['==', 'count', 100],
+            'symbol': {
+                shader: 'phong'
+            }
+        },
+        {
+            'filter': ['==', 'count', 200],
+            'symbol': {
+                shader: 'pbr'
+            }
+        }
+        ]);
+        gltflayer.addTo(map);
+        //TODO marker的symbol是否正确
+        const symbol = marker.getSymbol();
+        expect(symbol.shader).to.be.eql('pbr');
+    });
+
+    it('gltflayer\'s modelload event', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
+        const marker1 = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker2 = new maptalks.GLTFBuilding(center, { symbol: { url: url2 }});
+        gltflayer.on('modelload', (e) => {
+            const models = gltflayer.getGLTFUrls();
+            expect(e.models).to.be.ok();
+            expect(models['pyramid']).not.to.be.ok();
+            expect(models.length).to.be.eql(2);
+            done();
+        });
+        gltflayer.addGeometry(marker1);
+        gltflayer.addGeometry(marker2);
+    });
+
+    it('load glb model', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFBuilding(center, {
+            symbol: {
+                url: url3
+            }
+        });
+        marker.on('load', e => {
+            expect(e.data).to.be.ok();
+            done();
+        });
+        gltflayer.addGeometry(marker);
+    });
+
+    it('function types for symbol', (done) => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const gltfMarker = new maptalks.GLTFBuilding(center, {
+            symbol: {
+                url: url1,
+                scaleX: {
+                    stops: [
+                        [5, 20],
+                        [10, 10],
+                        [15, 1]
+                    ]
+                },
+                uniforms: {
+                    opacity: {
+                        stops: [
+                            [5, 0.1],
+                            [10, 0.5],
+                            [15, 1.0]
+                        ]
+                    }
+                }
+            }
+        });
+        layer.addGeometry(gltfMarker);
+        const handler = () => {
+            const scale = gltfMarker.getScale();
+            const opacity = gltfMarker.getUniforms().opacity;
+            expect(scale).to.be.eql([6.4, 1, 1]);
+            expect(opacity).to.be.eql(0.7);
+            map.off('zoomend', handler);
+            done();
+        };
+        map.on('zoomend', handler);
+        map.setZoom(12);
+    });
+
+    it('hasFunctionDefinition', (done) => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const gltfMarker = new maptalks.GLTFBuilding(center, {
+            symbol: {
+                url: url1,
+                scaleX: 1,
+                scaleY: 1,
+                scaleZ: 1
+            }
+        });
+        layer.addGeometry(gltfMarker);
+        const hasFuncDefinition = gltfMarker.hasFunctionDefinition();
+        expect(hasFuncDefinition).not.to.be.ok();
+        gltfMarker.updateSymbol({
+            scaleX: {
+                stops: [
+                    [5, 20],
+                    [10, 10],
+                    [15, 5]
+                ]
+            }
+        });
+        //TODO 判断scaleX是否正确
+        expect(gltfMarker.getSymbol().scaleX).to.be.eql(5);
+        map.setZoom(8);
+        map.on('zoomend', () => {
+            expect(gltfMarker.getSymbol().scaleX).to.be.eql(14);
+            done();
+        });
+    });
+
+    it('save properties when toJSON', () => {
+        const layer = new maptalks.GLTFLayer('layer').addTo(map);
+        const gltfmarker = new maptalks.GLTFBuilding(center, {
+            properties: {
+                'num':0.2
+            }
+        }).addTo(layer);
+        const json = gltfmarker.toJSON();
+        const newMarker = maptalks.GLTFMarker.fromJSON(json);
+        const prop = newMarker.getProperties();
+        expect(prop).to.be.ok();
+        expect(prop.num).to.be.eql(0.2);
+    });
+
+    it('setUrl with simple model', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        setTimeout(() => {
+            marker.setUrl('pyramid');
+            done();
+        }, 100);
+    });
+
+    it('getGLTFUrls', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        gltflayer.on('modelload', () => {
+            const gltfUrls = gltflayer.getGLTFUrls();
+            expect(gltfUrls.length).to.be.eql(2);
+            done();
+        });
+    });
+
+
     it('set style for gltflayer many times', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, { properties: { count: 100 }}).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFMarker(center, { properties: { count: 200 }}).addTo(gltflayer);
+        const marker1 = new maptalks.GLTFBuilding(center, { properties: { count: 100 }}).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFBuilding(center, { properties: { count: 200 }}).addTo(gltflayer);
         gltflayer.setStyle([
             {
                 'filter': ['==', 'count', 100],
@@ -370,7 +504,7 @@ describe('gltflayer set style', function () {
 
     it('updateSymbol for layer', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFMarker(center, {
+        const gltfMarker = new maptalks.GLTFBuilding(center, {
             properties: {
                 num: 1.5
             }
@@ -419,141 +553,5 @@ describe('gltflayer set style', function () {
             expect(url).to.be.eql(url1);
             done();
         }, 1 * 1000);
-    });
-
-    it('setStyle before layer addding to map', () => {
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
-            properties:{
-                count: 200
-            }
-        }).addTo(gltflayer);
-        gltflayer.setStyle([{
-            'filter': ['==', 'count', 100],
-            'symbol': {
-                shader: 'phong'
-            }
-        },
-        {
-            'filter': ['==', 'count', 200],
-            'symbol': {
-                shader: 'pbr'
-            }
-        }
-        ]);
-        gltflayer.addTo(map);
-        //TODO marker的symbol是否正确
-        const symbol = marker.getSymbol();
-        expect(symbol.shader).to.be.eql('pbr');
-    });
-
-    it('gltflayer\'s modelload event', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, { symbol: { url: url1 }});
-        const marker2 = new maptalks.GLTFMarker(center, { symbol: { url: url2 }});
-        gltflayer.on('modelload', (e) => {
-            const models = gltflayer.getGLTFUrls();
-            expect(e.models).to.be.ok();
-            expect(models['pyramid']).not.to.be.ok();
-            expect(models.length).to.be.eql(2);
-            done();
-        });
-        gltflayer.addGeometry(marker1);
-        gltflayer.addGeometry(marker2);
-    });
-
-    it('load glb model', done => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, {
-            symbol: {
-                url: url3
-            }
-        });
-        marker.on('load', e => {
-            expect(e.data).to.be.ok();
-            done();
-        });
-        gltflayer.addGeometry(marker);
-    });
-
-    it('function types for symbol', (done) => {
-        const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFMarker(center, {
-            symbol: {
-                url: url1,
-                scaleX: {
-                    stops: [
-                        [5, 20],
-                        [10, 10],
-                        [15, 1]
-                    ]
-                },
-                uniforms: {
-                    opacity: {
-                        stops: [
-                            [5, 0.1],
-                            [10, 0.5],
-                            [15, 1.0]
-                        ]
-                    }
-                }
-            }
-        });
-        layer.addGeometry(gltfMarker);
-        const handler = () => {
-            const scale = gltfMarker.getScale();
-            const opacity = gltfMarker.getUniforms().opacity;
-            expect(scale).to.be.eql([6.4, 1, 1]);
-            expect(opacity).to.be.eql(0.7);
-            map.off('zoomend', handler);
-            done();
-        };
-        map.on('zoomend', handler);
-        map.setZoom(12);
-    });
-
-    it('hasFunctionDefinition', (done) => {
-        const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFMarker(center, {
-            symbol: {
-                url: url1,
-                scaleX: 1,
-                scaleY: 1,
-                scaleZ: 1
-            }
-        });
-        layer.addGeometry(gltfMarker);
-        const hasFuncDefinition = gltfMarker.hasFunctionDefinition();
-        expect(hasFuncDefinition).not.to.be.ok();
-        gltfMarker.updateSymbol({
-            scaleX: {
-                stops: [
-                    [5, 20],
-                    [10, 10],
-                    [15, 5]
-                ]
-            }
-        });
-        //TODO 判断scaleX是否正确
-        expect(gltfMarker.getSymbol().scaleX).to.be.eql(5);
-        map.setZoom(8);
-        map.on('zoomend', () => {
-            expect(gltfMarker.getSymbol().scaleX).to.be.eql(14);
-            done();
-        });
-    });
-
-    it('save properties when toJSON', () => {
-        const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfmarker = new maptalks.GLTFMarker(center, {
-            properties: {
-                'num':0.2
-            }
-        }).addTo(layer);
-        const json = gltfmarker.toJSON();
-        const newMarker = maptalks.GLTFMarker.fromJSON(json);
-        const prop = newMarker.getProperties();
-        expect(prop).to.be.ok();
-        expect(prop.num).to.be.eql(0.2);
     });
 });

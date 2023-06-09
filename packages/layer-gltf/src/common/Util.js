@@ -26,11 +26,12 @@ export function intersectArray(a, b) {
     return Array.from(new Set(a.filter(v => bSet.has(v))));
 }
 
-export function coordinateToWorld(map, coordinate, z = 0) {
+export function coordinateToWorld(map, coordinate) {
     if (!map || !(coordinate instanceof Coordinate)) {
         return null;
     }
     const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
+    const z = map.altitudeToPoint(coordinate.z || 0, map.getGLRes());
     return [p.x, p.y, z];
 }
 

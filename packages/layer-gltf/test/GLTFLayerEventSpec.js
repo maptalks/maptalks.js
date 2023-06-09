@@ -9,7 +9,11 @@ describe('gltf layer\'s event', function () {
     });
     it('gltfmarker responding to mouse click events', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf7').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url2 }});
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
         gltflayer.addGeometry(marker);
         marker.on('click', e => {
             const meshId = e.meshId;
@@ -34,7 +38,11 @@ describe('gltf layer\'s event', function () {
         //TODO 每个marker都能响应click事件
         let clickTimes = 0;
         for (let i = 0; i < 5; i++) {
-            const marker = new maptalks.GLTFMarker(center.add(0.0005 * i - 0.001, 0), { symbol: { url: url2 }, id: i});
+            const marker = new maptalks.GLTFBuilding(center.add(0.0005 * i - 0.001, 0), { symbol: { url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }, id: i});
             gltflayer.addGeometry(marker);
             marker.on('click', e => {
                 clickTimes++;
@@ -59,7 +67,11 @@ describe('gltf layer\'s event', function () {
 
     it('gltfmarker\'s dynamic mouse events', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf10').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url2 }}, {
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }}, {
             animation:false
         }).addTo(gltflayer);
         marker.on('a b c click', e => {
@@ -81,7 +93,11 @@ describe('gltf layer\'s event', function () {
 
     it('gltfmarker\'s add event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1,
+            scaleX: 10,
+            scaleY: 10,
+            scaleZ: 10
+        }});
         marker.on('add', e => {
             expect(e.type).to.be.ok();
             expect(e.target).to.be.ok();
@@ -94,7 +110,11 @@ describe('gltf layer\'s event', function () {
     it('addEvents and removeEvents', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
         expect(gltflayer.getMapEvents()).to.be.eql('');
-        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url1 }}, {
+        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1,
+            scaleX: 40,
+            scaleY: 40,
+            scaleZ: 40
+        }}, {
             animation:false
         }).addTo(gltflayer);
         const handler = function (e) {
@@ -114,7 +134,11 @@ describe('gltf layer\'s event', function () {
 
     it('need refresh picking', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, { symbol: { url: url2 }}, {
+        const marker1 = new maptalks.GLTFBuilding(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }}, {
             animation:false
         }).addTo(gltflayer);
         marker1.on('click', e => {

@@ -9,8 +9,8 @@ describe('sharing geometry', function () {
     });
     it('reuse geometry', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
-        new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
-        new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
         gltflayer.on('modelload', () => {
             const renderer = gltflayer.getRenderer();
             const gltfmanager = renderer.regl.gltfManager;
@@ -22,8 +22,8 @@ describe('sharing geometry', function () {
 
     it('will not reuse geometry', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
-        new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
-        new maptalks.GLTFMarker(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
         gltflayer.on('modelload', () => {
             const renderer = gltflayer.getRenderer();
             const gltfmanager = renderer.regl.gltfManager;
@@ -37,8 +37,8 @@ describe('sharing geometry', function () {
 
     it('remove geometry and needRetireFrames(maptalks-studio/issues/1930)', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
-        const marker1 = new maptalks.GLTFMarker(center, { symbol: { url: url1 }});
-        const marker2 = new maptalks.GLTFMarker(center, { symbol: { url: url2 }});
+        const marker1 = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker2 = new maptalks.GLTFBuilding(center, { symbol: { url: url2 }});
         const marker3 = marker1.copy();
         const marker4 = marker1.copy();
         gltflayer.on('modelload', () => {
@@ -72,10 +72,10 @@ describe('sharing geometry', function () {
     it('clear', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
         for (let i = 0; i < 5; i++) {
-            new maptalks.GLTFMarker(center, { symbol: { url: url1 }}).addTo(gltflayer);
+            new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
         }
         for (let i = 0; i < 5; i++) {
-            new maptalks.GLTFMarker(center, { symbol: { url: url2 }}).addTo(gltflayer);
+            new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
         }
         gltflayer.clear();
         const geometries = gltflayer.getGeometries();
@@ -97,7 +97,7 @@ describe('sharing geometry', function () {
         const layer1 = new maptalks.GLTFLayer('gltf1', geojson, { fitSize: 30 }).addTo(map);
         const markers = [];
         for (let i = 0; i < 10; i++) {
-            const gltfmarker = new maptalks.GLTFMarker(center.add(i * 0.01, -i * 0.01), {
+            const gltfmarker = new maptalks.GLTFBuilding(center.add(i * 0.01, -i * 0.01), {
                 symbol: {
                     url: url1
                 }

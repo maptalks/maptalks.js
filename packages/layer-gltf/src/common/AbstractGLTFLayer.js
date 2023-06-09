@@ -15,8 +15,7 @@ const options = {
     'markerEvents': true,
     'forceRenderOnZooming': true,
     'forceRenderOnMoving': true,
-    'forceRenderOnRotating': true,
-    'gltfCoordinateSystem': 'map'//map, gltf两种情况，分别是地图坐标系和gltf模型内部坐标系
+    'forceRenderOnRotating': true
 };
 const regex = /\{*(\$root)*\}/g;
 
@@ -510,14 +509,6 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
         geometries.forEach(geometry => {
             geometry.cancelOutline();
         });
-    }
-
-    setGltfCoordinateSystem(coordinateSystem) {
-        this.options.gltfCoordinateSystem = coordinateSystem;
-    }
-
-    getGltfCoordinateSystem() {
-        return this.options.gltfCoordinateSystem;
     }
 }
 

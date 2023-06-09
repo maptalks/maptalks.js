@@ -76,7 +76,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
     //删
     removeData(index) {
         this._data.splice(index, 1);
-        if (this._updateAttributeMatrix) {
+        if (this._attributeMatrixs) {
             this._attributeMatrixs.splice(index, 1);
         }
         this._dirty = true;
@@ -175,8 +175,8 @@ export default class MultiGLTFMarker extends GLTFMarker {
         return modelMatrix;
     }
 
-    _updateMatrix() {
-        super._updateMatrix();
+    _updateTRSMatrix() {
+        super._updateTRSMatrix();
         this._updateAttributeMatrix();
     }
 

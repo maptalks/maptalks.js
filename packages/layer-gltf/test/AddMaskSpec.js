@@ -47,12 +47,12 @@ describe('setMask', () => {
     // TODO 分成5个测试用例，做像素判断
     it('flat inside ', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -63,6 +63,14 @@ describe('setMask', () => {
             }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const vlayer = new maptalks.VectorLayer('v').addTo(map);
+        new maptalks.Polygon(coord1, {
+            symbol: {
+                polygonOpacity: 0.1,
+                lineWidth: 2,
+                lineColor: '#f00'
+            }
+        }).addTo(vlayer);
         const mask = new maptalks.FlatInsideMask(coord1, {
             symbol: symbol1,
             flatHeight: 0
@@ -72,19 +80,19 @@ describe('setMask', () => {
 
     it('flat outside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
         map.setPitch(45);
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([21, 21, 21, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -98,12 +106,12 @@ describe('setMask', () => {
 
     it('clip inside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -120,12 +128,12 @@ describe('setMask', () => {
 
     it('clip outside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -144,20 +152,20 @@ describe('setMask', () => {
 
     it('color', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([150, 30, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([152, 31, 33, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -170,12 +178,12 @@ describe('setMask', () => {
 
     it('clear mask', done => {//TODO 做像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
 
@@ -183,9 +191,9 @@ describe('setMask', () => {
             gltflayer.removeMask();
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([50, 62, 65, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([29, 27, 24, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -193,9 +201,9 @@ describe('setMask', () => {
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([50, 62, 65, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([12, 139, 11, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 clearMask();
             }, 100);
         });
@@ -211,12 +219,12 @@ describe('setMask', () => {
 
     it('update mask', done => {//TODO 需要做像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 60,
+                scaleY: 60,
+                scaleZ: 60
             }
         }).addTo(gltflayer);
 
@@ -230,9 +238,9 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([150, 29, 31, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([29, 27, 24, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([151, 30, 32, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 - 30, map.height / 2 + 50, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -247,9 +255,9 @@ describe('setMask', () => {
             gltflayer.setMask([mask2, mask1]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([46, 58, 61, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([12, 139, 11, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([40, 52, 56, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 - 30, map.height / 2 + 50, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 updateMask();
             }, 100);
         });
@@ -258,20 +266,20 @@ describe('setMask', () => {
 
     it('video mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([213, 216, 216, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([37, 68, 108, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 500);
         });
@@ -284,12 +292,12 @@ describe('setMask', () => {
 
     it('update symbol', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
@@ -304,31 +312,31 @@ describe('setMask', () => {
             });
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([23, 30, 158, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([24, 30, 158, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([150, 30, 31, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
-                updateSymbol()
+                expect(pixelMatch([151, 30, 31, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                updateSymbol();
             }, 100);
         });
     });
 
     it('show and hide mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
 
@@ -337,17 +345,17 @@ describe('setMask', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
                 expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([213, 216, 216, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([37, 68, 108, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
                 hide();
             }, 500);
         });
@@ -360,12 +368,12 @@ describe('setMask', () => {
 
     it('stop and play videoMask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
 
@@ -373,18 +381,18 @@ describe('setMask', () => {
             mask.pause();
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([213, 216, 216, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([36, 66, 105, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, 179, 129, 1, 1);
-                expect(pixelMatch([213, 216, 216, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 + 100, map.height / 2, 1, 1);
-                expect(pixelMatch([73, 73, 73, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([36, 66, 106, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
                 pause();
             }, 500);
         });
@@ -397,12 +405,12 @@ describe('setMask', () => {
 
     it('setCoordinates for mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
@@ -414,31 +422,31 @@ describe('setMask', () => {
             mask.setCoordinates(coord2);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
-                expect(pixelMatch([176, 52, 53, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([150, 30, 31, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
-                expect(pixelMatch([98, 103, 103, 255], pixel2)).to.be.eql(true);
-                setCoordinates()
+                const pixel1 = pickPixel(map, 179, 129, 1, 1);
+                expect(pixelMatch([151, 30, 31, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
+                expect(pixelMatch([57, 57, 57, 255], pixel2)).to.be.eql(true);
+                setCoordinates();
             }, 100);
         });
     });
 
     it('set height range for color mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
@@ -451,18 +459,18 @@ describe('setMask', () => {
             mask.setHeightRange([140, 180]);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([150, 30, 31, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 - 70, map.height / 2 + 70, 1, 1);
-                expect(pixelMatch([176, 52, 53, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
-                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 100, 1, 1);
-                expect(pixelMatch([160, 38, 41, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([47, 59, 63, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
+                expect(pixelMatch([61, 89, 73, 255], pixel2)).to.be.eql(true);
                 updateHeightRange();
             }, 100);
         });
@@ -470,18 +478,18 @@ describe('setMask', () => {
 
     it('add mask with holes', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel1)).to.be.eql(true);
+                expect(pixelMatch([42, 54, 57, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2 + 30, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
                 done();
@@ -494,12 +502,12 @@ describe('setMask', () => {
 
     it('click event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -520,12 +528,12 @@ describe('setMask', () => {
 
     it('mousemove event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         let times = 0;
@@ -558,12 +566,12 @@ describe('setMask', () => {
 
     it('identify mask with holes', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -572,7 +580,7 @@ describe('setMask', () => {
                 expect(resultsInHole.length).to.be.eql(1);
                 expect(resultsInHole[0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
 
-                const resultsOutHole = gltflayer.identify(center.add(0.0004398822784423828, 0));
+                const resultsOutHole = gltflayer.identify(center.add(0.00043980278442308, 0));
                 expect(resultsOutHole.length).to.be.eql(2);
                 expect(resultsOutHole[0] instanceof maptalks.ColorMask).to.be.eql(true);
                 expect(resultsOutHole[1].data instanceof maptalks.GLTFMarker).to.be.eql(true);
@@ -586,12 +594,12 @@ describe('setMask', () => {
 
     it('flv video', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         const videoElement = document.createElement('video');
@@ -613,7 +621,7 @@ describe('setMask', () => {
                 });
                 gltflayer.setMask(mask);
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 59, 62, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([42, 54, 57, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -622,12 +630,12 @@ describe('setMask', () => {
 
     it('box clip', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: url4,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         marker.once('load', () => {
@@ -645,5 +653,5 @@ describe('setMask', () => {
             })
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-    })
+    });
 });

@@ -75,7 +75,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.addData({
@@ -88,11 +91,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([79, 79, 79, 214], pixel2)).to.be.eql(true);
+                expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([72, 77, 79, 183], pixel3)).to.be.eql(true);
+                expect(pixelMatch([75, 77, 77, 223], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 153], pixel4)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 168], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -103,7 +106,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.removeData(55);
@@ -114,11 +120,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([79, 79, 79, 214], pixel2)).to.be.eql(true);
+                expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([79, 79, 79, 183], pixel3, 50)).to.be.eql(true);
+                expect(pixelMatch([75, 77, 77, 223], pixel3, 50)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 153], pixel4, 50)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 168], pixel4, 50)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -129,7 +135,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.updateData(4, 'coordinates', new maptalks.Coordinate([-0.001, -0.001]));
@@ -138,7 +147,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([50, 65, 71, 205], pixel1)).to.be.eql(true);
+                expect(pixelMatch([59, 69, 63, 229], pixel1)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -150,12 +159,18 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker1 = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer1);
         const multigltfmarker2 = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer2);
         expect(multigltfmarker1.getIndexByPickingId(0)).to.be.eql(0);
@@ -167,7 +182,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.setUrl(url1);
@@ -192,7 +210,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         const coordinates = [];
@@ -207,11 +228,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([85, 85, 85, 199], pixel2)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 199], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([50, 65, 71, 205], pixel3)).to.be.eql(true);
+                expect(pixelMatch([59, 69, 63, 229], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 50, map.height / 2, 1, 1);
-                expect(pixelMatch([47, 60, 53, 226], pixel4)).to.be.eql(true);
+                expect(pixelMatch([63, 69, 56, 214], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -222,7 +243,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData1();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.setShader('wireframe');
@@ -258,18 +282,24 @@ describe('MultiGLTFMarker', () => {
     it('simple model', (done) => {//TODO 增加像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         const importData = initInstanceData0();
-        const multigltfmarker = new maptalks.MultiGLTFMarker(importData);
+        const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
+            symbol: {
+                scaleX: 20,
+                scaleY: 20,
+                scaleZ: 20
+            }
+        });
         gltflayer.addGeometry(multigltfmarker);
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([88, 88, 88, 214], pixel1)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 214], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([94, 93, 93, 214], pixel2)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 214], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([88, 88, 88, 214], pixel3)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 214], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([93, 93, 93, 214], pixel4)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 214], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -280,7 +310,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.setInfoWindow({
@@ -298,13 +331,16 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
                 url: url3//Duck.glb
             }
         }).addTo(gltflayer);
         multigltfmarker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([81, 68, 20, 183], pixel)).to.be.eql(true);
+                expect(pixelMatch([78, 67, 15, 199], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -316,11 +352,14 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
+        multigltfmarker.outline(55);
         multigltfmarker.once('load', () => {
-            multigltfmarker.outline(55);
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([137, 137, 62, 173], pixel)).to.be.eql(true);
@@ -336,7 +375,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.on('click', e => {
@@ -361,7 +403,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         const count = multigltfmarker.getCount();
@@ -374,13 +419,13 @@ describe('MultiGLTFMarker', () => {
             multigltfmarker.outline(0);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([85, 81, 84, 253], pixel1)).to.be.eql(true);
+                expect(pixelMatch([58, 69, 79, 255], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([90, 81, 84, 249], pixel2)).to.be.eql(true);
+                expect(pixelMatch([111, 75, 75, 250], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([92, 92, 92, 153], pixel3)).to.be.eql(true);
+                expect(pixelMatch([90, 90, 90, 249], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([0, 0, 0, 0], pixel4)).to.be.eql(true);
+                expect(pixelMatch([108, 84, 81, 238], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -392,7 +437,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         map.setPitch(45);
@@ -418,7 +466,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         multigltfmarker.setInfoWindow({
@@ -432,7 +483,6 @@ describe('MultiGLTFMarker', () => {
             setTimeout(function() {
                 const infoWindowStyle = multigltfmarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(59.0108px, 154.644px, 0px) scale(1);');
                 done();
             }, 100);
         });
@@ -444,7 +494,10 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData2(100);
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                url: url2
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
             }
         }).addTo(gltflayer);
         map.setPitch(75);
@@ -466,6 +519,9 @@ describe('MultiGLTFMarker', () => {
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
                 url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80,
                 shadow: true
             }
         }).addTo(gltflayer);

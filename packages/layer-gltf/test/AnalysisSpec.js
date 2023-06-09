@@ -11,12 +11,12 @@ describe('add analysis', () => {
     it('add ViewShedAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -58,12 +58,12 @@ describe('add analysis', () => {
     it('add FloodAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl, //TODO,模型改成小一点的模型
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -74,9 +74,9 @@ describe('add analysis', () => {
             floodAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
-                expect(pixelMatch([101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255, 101, 142, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
+                expect(pixelMatch([75, 136, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 80, 2, 2);
-                expect(pixelMatch([158, 158, 158, 255, 157, 157, 157, 255, 157, 157, 157, 255, 157, 157, 157, 255], pixel2)).to.be.eql(true);//非水淹区颜色
+                expect(pixelMatch([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], pixel2)).to.be.eql(true);//非水淹区颜色
                 done();
             }, 100);
         });
@@ -87,12 +87,12 @@ describe('add analysis', () => {
     it('add SkylineAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -105,10 +105,10 @@ describe('add analysis', () => {
             });
             skylineAnalysis.addTo(gllayer);
             setTimeout(function() {
-                const pixel1 = pickPixel(map, 145, 36, 1, 1);
-                expect(pixelMatch([143, 29, 0, 255], pixel1)).to.be.eql(true);//天际线颜色
+                const pixel1 = pickPixel(map, 50, 69, 1, 1);
+                expect(pixelMatch([178, 36, 0, 255], pixel1)).to.be.eql(true);//天际线颜色
                 const pixel2 = pickPixel(map, 200, 80, 1, 1);
-                expect(pixelMatch([153, 153, 153, 255], pixel2)).to.be.eql(true);//无天际线颜色
+                expect(pixelMatch([144, 144, 144, 255], pixel2)).to.be.eql(true);//无天际线颜色
                 done();
             }, 500);
         });
@@ -118,18 +118,18 @@ describe('add analysis', () => {
     it('add InSightAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 6,
+                scaleY: 6,
+                scaleZ: 6
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
             const inSightAnalysis = new maptalks.InSightAnalysis({
                 lines: [{
-                    from: [center.x, center.y, 0],
+                    from: [center.x, center.y, 10],
                     to: [center.x + 0.05, center.y + 0.05, 20]
                 }],
                 visibleColor: [0, 1, 0, 1],
@@ -150,7 +150,7 @@ describe('add analysis', () => {
     it('add CutAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -171,7 +171,7 @@ describe('add analysis', () => {
                 const tempMap = cutAnalysis.exportAnalysisMap(meshes);
                 const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
                 const arr = tempMap.slice(index, index + 16);
-                expect(pixelMatch([0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25], arr)).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 25, 0, 0, 0, 25, 0, 0, 0, 25, 46, 46, 46, 255], arr)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -181,12 +181,12 @@ describe('add analysis', () => {
     it('add ExcavateAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -202,7 +202,7 @@ describe('add analysis', () => {
             excavateAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                const pixel2 = pickPixel(map, 270, 100, 1, 1);
+                const pixel2 = pickPixel(map, 250, 100, 1, 1);
                 expect(pixelMatch([120, 98, 85, 255], pixel1)).to.be.eql(true);//挖方区颜色
                 expect(pixelMatch([255, 255, 255, 255], pixel2)).to.be.eql(true);//非挖方区颜色
                 done();
@@ -214,25 +214,25 @@ describe('add analysis', () => {
     it('add HeightLimitAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
             const heightLimitAnalysis = new maptalks.HeightLimitAnalysis({
-                limitHeight: 15,
+                limitHeight: 10,
                 limitColor: [0.9, 0.2, 0.2]
             });
             heightLimitAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//未超过高度阈值的颜色
-                const pixel2 = pickPixel(map, 160, 150, 1, 1);//超过高度阈值颜色
+                const pixel2 = pickPixel(map, 172, 148, 1, 1);//超过高度阈值颜色
                 expect(pixelMatch([151, 151, 151, 255], pixel1)).to.be.eql(true);
-                expect(pixelMatch([179, 107, 107, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([178, 107, 107, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -242,7 +242,7 @@ describe('add analysis', () => {
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFMarker(center, {
+        new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -274,8 +274,8 @@ describe('add analysis', () => {
         function testColor() {
             const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//不可视区域的颜色
             const pixel2 = pickPixel(map, 120, 80, 1, 1);//可视区域颜色
-            expect(pixelMatch([224, 45, 45, 255], pixel1)).to.be.eql(true);
-            expect(pixelMatch([44, 222, 44, 255], pixel2)).to.be.eql(true);
+            expect(pixelMatch([204, 204, 25, 255], pixel1)).to.be.eql(true);
+            expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
             done();
         }
         gllayer.addTo(map);
@@ -284,12 +284,12 @@ describe('add analysis', () => {
     it('export result image by skylineAanalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -305,7 +305,7 @@ describe('add analysis', () => {
                 const base64 = skylineAnalysis.exportSkylineMap({
                     save: false
                 });
-                const expectedBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAEsCAYAAADtt+XCAAAAAXNSR0IArs4c6QAAE1NJREFUeF7t3cmuK1cVBuB9Qi6iCZMIFEDJAAaRYEBoHgEkhjAFXgMeAiHxFoiXgCkz2gFIEc0ABERCTICASHPQ5qSgMD52eZevV/32d0eEW+W1/K1y/dXZ9675Q4AAAQIEBgTuBtaxCgECBAgQaALERkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2KxEgAABAgLENkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2KxEgAABAgLENkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2KxEgAABAgLENkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2KxEgAABAgLENkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2KxEgAABAgLENkCAAAECQwICZIjNSgQIECAgQGwDBAgQIDAkIECG2P670o8+2e4/+/PGcaWj1QkQyBOw41s5sz++0u5//0ZrQmQlpNUJEIgTECCDI+tnHt/4bWvf+Xhrz9y39rs3hcggpdUIEAgVECCDg+sB8tEnrb32z9a++Vpr336pNWcig5hWI0AgUkCADI5tCpCv/bq1F54IkEFGqxEgECwgQAaHN13C+v5f2t1Xn2/3X/+wS1iDlFYjQCBUQICcOLjpqavHAsRTWSeCWpwAgVgBAXLi6Kanrl5+d2vveVdrX3y1te9+rLXnn7T2j7da+9KvWutnJSe+rMUJECAQJ2BHt3Bk0xlHX3y65/HCs6194dXWvv1iax950toPXm/ty79sd5//QLv/1ksuaS2ktRgBAqECAmTh4Kab5tMju/0R3v5nOtv46Sfa/Qvvvs1Hel22W7gRWYzAlQkIkBMH+ubn2v2f33hY6Q9vtPbKL9pd34G++OzD//e+Z1p77ie3cwlrClaPMJ+4IVmcwBUICJATh9h3mH2VT723tR4kX/nNwwt87+XW/vbWbYXHXz/d7l9/u7W37x7OvHp4vvpPl+5O3KQsTiBWQIAMjm7aeU4B0r+RfktH4f39v/9dD3g//ntrn3nvw/9+q7X2s78LkcHNymoEogQEyMC4+llIPwPp+8+7H7a7/mRWv6Hed6S38JtY8/CYzrrmJp301s7GBjYjqxCIFxAgAyPsO8t+xD0dbfeX6P/92pvXfxayLzwmwu7SH2+ezkyEyMDGZRUCQQIC5MRhTTeN52cc09H3n648QA6Fx5xx6XIn0lucAIGNCQiQEwcyBUhf7bm7h5vm8//vWu+DnBoKpy5/4hgsToDABgQEyIlDmJ+B9EtYz/7w+gNkumR36r2N3Rvtt3B/6MTNyeIEogUEyOD4+vdB+k30ft/jwz99uJHeX+razkDmgTlyT2MKkVu4PzS4KVmNQKyAABkcXd8x9t/C6vc9pgD54LMPv4fVvwux+yf16HsKkP7eRh7PvZX7Q4ObkdUIRAsIkMHxzXeMU4D0G+v9slYPld0//cyk/0kLkrX3d9auPzgeqxEgcAEBATKAPH9cdX5pZrqMNX/JfuT+zvft/uex35QgWRsAa9cfGI9VCBC4kIAAOQF6/jMmUyjMvzw4/f2+l5y+eNj/Lunb2msDYO36J4zHogQIXFhAgCwA3xccp4bAvtcYuSm9oN2zLrI2ANauf9Y348UIEDirgAA5wHkoOEbvZ6R9W3ttAKxd/6xbuxeLEzh0Vj+9mZTLwXH4CxoWII8g7f620/xnS86xwaZ80W5tAKxdf8E2bJErE5iHxkefHH9z1/bo/PF3vJ0lBMieWcx37ucOjnm5hBBZGwBr11/6UZnvdM4R8EvrWu58AtMMe2jsPnyy78nG+TIJl4PPJ7WdVxIgs1nsu7z0tP99i62HyNoAWLv+Yx+V3Usb8yPV6ZHp0cuM2/l4Xn8n8znuPmgy/bbcIQU/3lm7jQiQd/x3L1ld8ohmyyGyNgDWrr/78Zgfpfa/mx+F9keq+3dx+p/p+zgub9TuYI4dAOw72+hfWJ3+LDmb3PLnZ5v65+vq5gNk96zj1KerzjWKrX4I1gbA2vW777Gj1L7M/Kxjd6d0yYOBc20P1/o6jz2YMj/bWBIauz5+d61mi7npANl31vG0L1kdGvMWPgS7l4b6JYLpJ1tGjuanABn5KZRD18TnR6m7l6qm9XYvb1TOtubjvZ2qx55oPMflRr+7dvl532yA7LtRPnLkc+6RTX1d4kxo3yOSu0+9TJeIRn8McQqQfmlp6ZnAOY9Stzrnc283W329Y8Fxzs/cdEB47f8uz5ZmfZMBsnu5aEtHpvOzoqU73KUb1KEbz8eeeum/97W0zr77FtO/mX7oPR3b2YwepW7tTHPUMWW9Q5ccpzPHcwbH5LLmbDfFdmt9Du8UtvZGlvaz1XsN8/77B2Ha4a75d9YfC4xDYTG/lzDvae0H/rHQvtTO5rF7XaOhtHR7O8dy+84U973u2hmt7XXJJcen2eP8bHfN52atwy2tfzMBsrsDOffR/bk3mtFLWfOdzXQ56rHA2BcWT/MDvu9y0qGncJ5GL7tnI/Pv+VwyTJaGQu9pyZfp+nKPhf/utnlO12MPOFz6V6ing6/RS67n/hxf++vdRIDsu4TR/ynaLQ933vOxo6nd0FgaGOfckSy1nN7Xn99o7e271p65b+35Jw8/gX+pnc2SeyxrdrpLwmFJKBy7rDj1uHS5aflDQXNom3jsntljvzh9yUCeX8bq3ydxH2TpJ3Ldcpveia57aw9rJ99EnY6mHruhfuiSwb4vYVUExr4Zzvuu/NLfMb9570uP7o+dMZy6sz/lzOJYKC2pfeh9zl9/32td6gDg0H5huow1uW1lmz/HvmyLr3HVAbLlm+VLNoZ9N9SXXjKoOPpb8p7my/T3soUP+L7LfiNH90t20EvOAkbPfpac+TwWcId6X3rPbCuznIJu5LHzU7fhW1/+agMk4Wb5ko1vfkO937f56/3//07Qqd/cXVL3Vpd5bCd87Oj+1LOVyp3toaA59D4vfc9sZBs8dgaylYOWkfe2xXWuMkCuJTymDaa/n9ffrrtnsMUN99I9LT26TzjzO3YJ6LG/rwy9pfPeDZDd9XpAVl42Xfo+Upa7ugC5tvCYNqTpg2HjT/lo6bNCYPqc9Mtu/3jnjL330f/7sQc3EoKxwnJJzasKkGsNj3mI2NiXbNaWuVWBKUD60339z4ee/PeHNft/9wMwv5V2vq3jKgKkbzR+1vl8G4VXIpAu8MdX2r8jZPe+TT8Amy5H2mesn/J/MNe/VN0rzP8dga1/QbBOSWUCtyMwhcSxM/Z9T2rejtL6d3o3JfX6l7r8K+z7AtOxDebyXapIgMCWBXa/K7bvXz/ccv+VvUUHyAS3hS8wVQ5RbQIE1gnMn95a90q3tfZVXMJy1nFbG613S+BpCJzyqPbTqJ/4mldxEz0RXs8ECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoEBEgRvLIECBBIFxAg6RPUPwECBIoE/gXXzYODS1dxWgAAAABJRU5ErkJggg==';
+                const expectedBase64 = 'data:image/png;base64,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5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCAQES4CklQIBAZQEBUnn6eidAgEAgIEACPKUECBCoLCBAKk9f7wQIEAgEBEiAp5QAAQKVBQRI5enrnQABAoGAAAnwlBIgQKCygACpPH29EyBAIBAQIAGeUgIECFQWECCVp693AgQIBAICJMBTSoAAgcoCAqTy9PVOgACBQECABHhKCRAgUFlAgFSevt4JECAQCAiQAE8pAQIEKgsIkMrT1zsBAgQCgf8CiNRzdN5vzz8AAAAASUVORK5CYII=';
                 expect(base64).to.be.eql(expectedBase64);
                 done();
             }, 500);
@@ -316,12 +316,12 @@ describe('add analysis', () => {
     it('remove skylineAnalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 6,
+                scaleY: 6,
+                scaleZ: 6
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -336,7 +336,7 @@ describe('add analysis', () => {
             setTimeout(function() {
                 skylineAnalysis.remove();
                 const pixel = pickPixel(map, 145, 36, 1, 1);
-                expect(pixelMatch([143, 29, 0, 255], pixel)).to.be.eql(false);//无天际线颜色
+                expect(pixelMatch([0, 0, 0, 0], pixel)).to.be.eql(true);//无天际线颜色
                 done();
             }, 100);
         });
@@ -346,12 +346,12 @@ describe('add analysis', () => {
     it('enable and disable analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -384,17 +384,14 @@ describe('add analysis', () => {
     it('calculate volume for excavate analysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
-        map.on('click', e => {
-            console.log([e.coordinate.x, e.coordinate.y]);
-        });
         marker.on('load', () => {
             const boundary = [[-0.00021457672119140625, 0.00019311904907226562], [-0.0000858306884765625, 0.000171661376953125], [-0.00007510185241699219, 0.00007510185241699219], [-0.00021457672119140625, 0.00008583068850498421]];
             const excavateAnalysis = new maptalks.ExcavateAnalysis({
@@ -405,7 +402,7 @@ describe('add analysis', () => {
             excavateAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const volume = excavateAnalysis.getVolume();
-                expect(volume).to.be.eql(137.16457420476468);
+                expect(volume.toFixed(4)).to.be.eql(190.0570);
                 done();
             }, 500);
         });
@@ -414,7 +411,7 @@ describe('add analysis', () => {
     it('update boundary for crosscut analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -443,7 +440,7 @@ describe('add analysis', () => {
     it('add more than one analysis task, and then disable one of this', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -480,15 +477,15 @@ describe('add analysis', () => {
         const gltflayer1 = new maptalks.GLTFLayer('gltf1');
         const gltflayer2 = new maptalks.GLTFLayer('gltf2');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer1, gltflayer2], { sceneConfig });
-        const marker1 = new maptalks.GLTFMarker(center, {
+        const marker1 = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer1);
-        new maptalks.GLTFMarker(center, {
+        new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
                 scale: [1, 1, 1]
@@ -522,12 +519,12 @@ describe('add analysis', () => {
     it('add more than one insight lines', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -551,7 +548,7 @@ describe('add analysis', () => {
                 expect(pixelMatch([0, 255, 0, 255], pixel2)).to.be.eql(true);//通视区颜色
                 //另一条通视线的颜色比对
                 const pixel3 = pickPixel(map, 140, 246, 4, 4);
-                expect(pixelMatch([255, 0, 0, 255], pixel3.slice(8, 12))).to.be.eql(true);//非通视区颜色
+                expect(pixelMatch([0, 255, 0, 255], pixel3.slice(8, 12))).to.be.eql(true);//通视区颜色
                 const pixel4 = pickPixel(map, 167, 201, 4, 4);
                 expect(pixelMatch([0, 255, 0, 255], pixel4.slice(8, 12))).to.be.eql(true);//通视区颜色
                 done();
@@ -563,12 +560,12 @@ describe('add analysis', () => {
     it('clear insight lines', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol : {
                 url : modelUrl,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
             }
         }).addTo(gltflayer);
         marker.on('load', () => {
@@ -593,9 +590,9 @@ describe('add analysis', () => {
                 const pixel2 = pickPixel(map, 249, 100, 1, 1);
                 expect(pixelMatch([146, 146, 146, 255], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, 140, 246, 4, 4);
-                expect(pixelMatch([138, 138, 138, 255], pixel3.slice(8, 12))).to.be.eql(true);
+                expect(pixelMatch([0, 0, 0, 0], pixel3.slice(8, 12))).to.be.eql(true);
                 const pixel4 = pickPixel(map, 167, 201, 4, 4);
-                expect(pixelMatch([152, 152, 152, 255], pixel4.slice(8, 12))).to.be.eql(true);
+                expect(pixelMatch([148, 148, 148, 255], pixel4.slice(8, 12))).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -615,32 +612,33 @@ describe('add analysis', () => {
                 invisibleColor: [1, 0, 0, 1]
             }).addTo(gllayer);
             setTimeout(function() {
-                const { inSightLine, intersects } = insightAnalysis.getIntersetction()[0];
+                const result = insightAnalysis.getIntersetction()[0];
+                const { inSightLine, intersects } = result;
                 expect(inSightLine).to.be.ok();
                 expect(intersects.length).to.be.eql(2);
                 expect(intersects[0][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
                 expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
-                expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0007622108088298774);
-                expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
+                expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
                 expect(intersects[0][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
-                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(-0.0002377891911464758);
-                expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.0008648243260438448);
+                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730494329);
+                expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.00028134777252830645);
                 expect(intersects[1][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
                 done();
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFMarker(center).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
     });
 
     it('raycaster\'s test method', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFMarker(center).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
         function getAllMeshes() {
             let meshes = [];
             const markers = gltflayer.getGeometries();
@@ -658,9 +656,9 @@ describe('add analysis', () => {
                 const results = raycaster.test(meshes, map);
                 expect(results.length).to.be.eql(2);
                 expect(results[0].mesh).to.be.ok();
-                expect(results[0].coordinates[0].indices).to.be.eql([0, 1, 2]);
-                expect(results[0].coordinates[0].coordinate.x).to.be.eql(0.0007622108088298774);
-                expect(results[0].coordinates[0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(results[0].coordinates[0].indices).to.be.eql([0, 2, 3]);
+                expect(results[0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
+                expect(results[0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
                 expect(results[0].coordinates[0].coordinate.z).to.be.eql(50.00033);
                 done();
             }, 100);
@@ -688,25 +686,25 @@ describe('add analysis', () => {
                 expect(intersects.length).to.be.eql(2);
                 expect(intersects[0][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
                 expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
-                expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0007622108088298774);
-                expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(0.00003149099268284772);
+                expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
+                expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
                 expect(intersects[0][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
-                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(-0.0002377891911464758);
-                expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.0008648243260438448);
+                expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730494329);
+                expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.00028134777252830645);
                 expect(intersects[1][0].coordinates[0].coordinate.z).to.be.eql(50.00033);
                 done();
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFMarker(center).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0.001, 0)).addTo(gltflayer);
-        new maptalks.GLTFMarker(center.add(0, 0.001)).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
     });
 
     it('add measure tool', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFMarker(center, {
+        const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
                 url: modelUrl
             }

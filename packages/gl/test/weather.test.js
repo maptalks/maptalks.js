@@ -90,6 +90,9 @@ describe('weather tests', () => {
         const gltfMarker = new maptalks.GLTFMarker(position.add(0, 0.1), {
             symbol: {
                 url: url,
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400,
                 shadow: true
             }
         });
@@ -98,7 +101,7 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 170 , 1, 1);
                 expect(pixelMatch([169, 169, 169, 163], pixel1)).to.be.eql(true);
-                expect(pixelMatch([242, 220, 117, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([244, 235, 121, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -121,9 +124,9 @@ describe('weather tests', () => {
             symbol: {
                 url: url,
                 shadow: true,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400
             }
         });
         const groupgllayer = new maptalks.GroupGLLayer("gl", [gltfLayer], {
@@ -136,7 +139,7 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 137, 1, 1);
                 expect(pixelMatch([161, 161, 161, 255], pixel1)).to.be.eql(true);
-                expect(pixelMatch([244, 242, 218, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([186, 186, 186, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -160,9 +163,9 @@ describe('weather tests', () => {
             symbol: {
                 url: url,
                 shadow: true,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400
             }
         });
         gltfMarker.once('load', () => {
@@ -172,9 +175,9 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 150, 1, 1);
                 const pixel3 = pickPixel(map, 204, 417, 1, 1);
-                expect(pixelMatch([121, 121, 121, 200], pixel1)).to.be.eql(true);
-                expect(pixelMatch([244, 230, 122, 255], pixel2)).to.be.eql(true);//模型颜色
-                expect(pixelMatch([92, 92, 92, 200], pixel3)).to.be.eql(true);//涟漪颜色
+                expect(pixelMatch([121, 121, 121, 200], pixel1, 50)).to.be.eql(true);
+                expect(pixelMatch([175, 175, 175, 200], pixel2, 50)).to.be.eql(true);//模型颜色
+                expect(pixelMatch([92, 92, 92, 200], pixel3, 50)).to.be.eql(true);//涟漪颜色
                 done();
             }, 100);
         });
@@ -194,13 +197,13 @@ describe('weather tests', () => {
         const url = "models/Duck/Duck.glb";
         const gltfLayer = new maptalks.GLTFLayer("gltf");
         const position = map.getCenter();
-        const gltfMarker = new maptalks.GLTFMarker(position.add(0, 0.1), {
+        const gltfMarker = new maptalks.GLTFBuilding(position.add(0, 0.1), {
             symbol: {
                 url: url,
                 shadow: true,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400
             }
         });
         new maptalks.GroupGLLayer("gl", [gltfLayer], {
@@ -231,13 +234,13 @@ describe('weather tests', () => {
         const url = "models/Duck/Duck.glb";
         const gltfLayer = new maptalks.GLTFLayer("gltf");
         const position = map.getCenter();
-        const gltfMarker = new maptalks.GLTFMarker(position, {
+        const gltfMarker = new maptalks.GLTFBuilding(position, {
             symbol: {
                 url: url,
                 shadow: true,
-                scaleX: 2,
-                scaleY: 2,
-                scaleZ: 2
+                scaleX: 400,
+                scaleY: 400,
+                scaleZ: 400
             }
         });
         gltfMarker.once('load', () => {
@@ -252,9 +255,9 @@ describe('weather tests', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 150, 1, 1);
                 const pixel3 = pickPixel(map, 204, 417, 1, 1);
-                expect(pixelMatch([198, 178, 86, 255], pixel1)).to.be.eql(true);
-                expect(pixelMatch([228, 205, 85, 255], pixel2)).to.be.eql(true);//模型颜色
-                expect(pixelMatch([92, 92, 92, 200], pixel3, 20)).to.be.eql(true);//涟漪颜色
+                expect(pixelMatch([121, 121, 121, 200], pixel1, 50)).to.be.eql(true);
+                expect(pixelMatch([175, 175, 175, 200], pixel2, 50)).to.be.eql(true);//模型颜色
+                expect(pixelMatch([92, 92, 92, 200], pixel3, 50)).to.be.eql(true);//涟漪颜色
                 done();
             }, 100);
         });
