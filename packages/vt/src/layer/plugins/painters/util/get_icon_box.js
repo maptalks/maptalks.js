@@ -107,7 +107,13 @@ export function getIconBox(out, mesh, i, matrix, map) {
         getPosition(out, projAnchor, tl, tr, bl, br, dxdy, perspectiveRatio);
     }
 
-
+    const dpr = this.getMap().getDevicePixelRatio();
+    if (dpr !== 1) {
+        out[0] *= dpr;
+        out[1] *= dpr;
+        out[2] *= dpr;
+        out[3] *= dpr;
+    }
     return out;
 }
 

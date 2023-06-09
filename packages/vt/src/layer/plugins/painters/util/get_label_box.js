@@ -126,6 +126,14 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
     out[1] -= textHaloRadius + TEXT_BOX_MARGIN;
     out[2] += textHaloRadius + TEXT_BOX_MARGIN;
     out[3] += textHaloRadius + TEXT_BOX_MARGIN;
+
+    const dpr = this.getMap().getDevicePixelRatio();
+    if (dpr !== 1) {
+        out[0] *= dpr;
+        out[1] *= dpr;
+        out[2] *= dpr;
+        out[3] *= dpr;
+    }
     return out;
 }
 
