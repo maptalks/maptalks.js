@@ -156,7 +156,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
-            if (layer.options['collision']) {
+            const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
+            const needUpdateCollision = !this._collisionTimestamp || this._collisionTimestamp !== timestamp;
+            if (layer.options['collision'] && needUpdateCollision) {
                 layer.clearCollisionIndex();
             }
             const sceneConfig = this.layer.options.sceneConfig;
@@ -164,8 +166,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this._markerPainter.startFrame(context);
             this._markerPainter.addMesh(this._markerMeshes, null, { bloom: this._parentContext.bloom });
             this._markerPainter.prepareRender(context);
-            if (layer.options.collision) {
+            if (layer.options.collision && needUpdateCollision) {
                 this._markerPainter.updateCollision(context);
+                if (isFinalRender) {
+                    this._collisionTimestamp = timestamp;
+                }
             }
 
             this._markerPainter.render(context);
