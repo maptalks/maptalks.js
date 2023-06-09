@@ -1543,6 +1543,7 @@ export default class MeshPainter {
             matInfo['lightSpecular'] = [0, 0, 0];
             return new reshader.PhongMaterial(matInfo);
         }
+        matInfo.alphaTest = 0.99;
 
         let meshMaterial = new reshader.pbr.StandardMaterial(matInfo);
         if (shader === 'phong') {
