@@ -1082,22 +1082,22 @@ class VectorTileLayer extends maptalks.TileLayer {
      * To avoid conflict with current zoom's tiles
      * @returns {CollisionIndex}
      */
-    getBackgroundCollisionIndex() {
-        if (!this._bgCollisionIndex) {
-            this._bgCollisionIndex = new maptalks.CollisionIndex();
-        }
-        return this._bgCollisionIndex;
-    }
+    // getBackgroundCollisionIndex() {
+    //     if (!this._bgCollisionIndex) {
+    //         this._bgCollisionIndex = new maptalks.CollisionIndex();
+    //     }
+    //     return this._bgCollisionIndex;
+    // }
 
     /**
      * Clear layer's background tiles collision index.
      */
-    clearBackgroundCollisionIndex() {
-        if (this._bgCollisionIndex) {
-            this._bgCollisionIndex.clear();
-        }
-        return this;
-    }
+    // clearBackgroundCollisionIndex() {
+    //     if (this._bgCollisionIndex) {
+    //         this._bgCollisionIndex.clear();
+    //     }
+    //     return this;
+    // }
 
     /**
      * Return vector tile data's schema, including layers, properties, data types
