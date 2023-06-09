@@ -671,6 +671,9 @@ class VectorTileLayer extends maptalks.TileLayer {
             if (filter && filter.value) {
                 filter = filter.value;
             }
+            if (!filter) {
+                console.warn(`render plugin at ${i} doesn't define filter, its filter will be set to 'default' by default.`);
+            }
             if (filter !== undefined &&
                 filter !== 'default' &&
                 filter !== true &&
