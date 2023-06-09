@@ -18,3 +18,30 @@ export function createAtlasTexture(regl, atlas, flipY) {
     }
     return regl.texture(config);
 }
+
+const EMPTY_SIZE = [0, 0];
+const DEFAULT_SIZE = [];
+export function getDefaultMarkerSize(geometry) {
+    if (!geometry.properties.iconPositions) {
+        return EMPTY_SIZE;
+    }
+    let key;
+    let count = 0;
+    // 只有当iconPositions中只有一个markerFile时，才能读出默认尺寸
+    for (const p in geometry.properties.iconPositions) {
+        key = p;
+        count++;
+        if (count > 1) {
+            return EMPTY_SIZE;
+        }
+    }
+    if (!key) {
+        return EMPTY_SIZE;
+    }
+    const iconPosition = geometry.properties.iconPositions[key];
+    const defaultMarkerWidth = iconPosition.displaySize[0];
+    const defaultMarkerHeight = iconPosition.displaySize[1];
+    DEFAULT_SIZE[0] = defaultMarkerWidth;
+    DEFAULT_SIZE[1] = defaultMarkerHeight
+    return DEFAULT_SIZE;
+}

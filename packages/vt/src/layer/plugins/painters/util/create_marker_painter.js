@@ -2,7 +2,7 @@ import { reshader } from '@maptalks/gl';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { setUniformFromSymbol, wrap, fillArray } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, GLYPH_SIZE } from '../Constant';
-import { createAtlasTexture } from './atlas_util';
+import { createAtlasTexture, getDefaultMarkerSize } from './atlas_util';
 import { prepareFnTypeData, PREFIX } from './fn_type_util';
 // import { getIconBox } from './get_icon_box';
 
@@ -55,10 +55,12 @@ export function createMarkerMesh(regl, geometry, transform, symbolDef, symbol, f
         geometry.properties.visElemts = new geometry.elements.constructor(geometry.elements.length);
     }
 
+
+    const [ defaultMarkerWidth, defaultMarkerHeight ] = getDefaultMarkerSize(geometry);
     setUniformFromSymbol(uniforms, 'markerOpacity', symbol, 'markerOpacity', 1);
     setUniformFromSymbol(uniforms, 'markerPerspectiveRatio', symbol, 'markerPerspectiveRatio', symbol.markerTextFit ? 0 : 1);
-    setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', DEFAULT_MARKER_WIDTH);
-    setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight', DEFAULT_MARKER_HEIGHT);
+    setUniformFromSymbol(uniforms, 'markerWidth', symbol, 'markerWidth', defaultMarkerWidth || DEFAULT_MARKER_WIDTH);
+    setUniformFromSymbol(uniforms, 'markerHeight', symbol, 'markerHeight', defaultMarkerHeight || DEFAULT_MARKER_HEIGHT);
     setUniformFromSymbol(uniforms, 'markerDx', symbol, 'markerDx', 0);
     setUniformFromSymbol(uniforms, 'markerDy', symbol, 'markerDy', 0);
     setUniformFromSymbol(uniforms, 'markerRotation', symbol, 'markerRotation', 0, v => v * Math.PI / 180);

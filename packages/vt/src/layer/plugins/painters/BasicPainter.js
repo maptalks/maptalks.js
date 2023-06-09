@@ -32,6 +32,7 @@ export default class BasicPainter extends Painter {
         };
         if (glData.iconAtlas) {
             geometry.properties.iconAtlas = glData.iconAtlas.image;
+            geometry.properties.iconPositions = glData.iconAtlas.positions;
         }
         if (glData.glyphAtlas) {
             geometry.properties.glyphAtlas = glData.glyphAtlas.image;

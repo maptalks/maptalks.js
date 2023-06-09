@@ -156,7 +156,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
-            const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
+            const isFinalRender = !this._parentContext.timestamp || this._parentContext.isFinalRender;
             const needUpdateCollision = !this._collisionTimestamp || this._collisionTimestamp !== timestamp;
             if (layer.options['collision'] && needUpdateCollision) {
                 layer.clearCollisionIndex();

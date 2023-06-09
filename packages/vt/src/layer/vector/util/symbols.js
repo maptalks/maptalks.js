@@ -6,12 +6,12 @@ export const  MARKER_SYMBOL = {
     },
     markerWidth: {
         type: 'identity',
-        default: 20,
+        default: undefined,
         property: '_symbol_markerWidth'
     },
     markerHeight: {
         type: 'identity',
-        default: 20,
+        default: undefined,
         property: '_symbol_markerHeight'
     },
     markerPathWidth: {

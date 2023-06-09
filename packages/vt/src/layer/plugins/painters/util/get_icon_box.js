@@ -1,6 +1,7 @@
 import { vec2, vec3 } from '@maptalks/gl';
 import { projectPoint } from './projection';
 import { getPitchPosition, getPosition, getShapeMatrix } from './box_util';
+import { getDefaultMarkerSize } from './atlas_util';
 import { isNil, clamp } from '../../Util';
 import { DEFAULT_MARKER_WIDTH, DEFAULT_MARKER_HEIGHT, ICON_SIZE } from '../Constant';
 
@@ -65,13 +66,14 @@ export function getIconBox(out, mesh, i, matrix, map) {
         vec2.multiply(br, br, AXIS_FACTOR);
     }
 
+    const [ defaultMarkerWidth, defaultMarkerHeight ] = getDefaultMarkerSize(mesh.geometry);
     let markerWidth = (aMarkerWidth ? aMarkerWidth[i] : symbol['markerWidth']);
     if (isNil(markerWidth)) {
-        markerWidth = DEFAULT_MARKER_WIDTH;
+        markerWidth = defaultMarkerWidth || DEFAULT_MARKER_WIDTH;
     }
     let markerHeight = (aMarkerHeight ? aMarkerHeight[i] : symbol['markerHeight']);
     if (isNil(markerHeight)) {
-        markerHeight = DEFAULT_MARKER_HEIGHT;
+        markerHeight = defaultMarkerHeight || DEFAULT_MARKER_HEIGHT;
     }
     const sizeScale = vec2.set(SIZE_SCALE, markerWidth / ICON_SIZE, markerHeight / ICON_SIZE);
     vec2.mul(tl, tl, sizeScale);

@@ -479,12 +479,17 @@ export default class PointPack extends VectorPack {
             }
         } else {
             quads = shape ? getIconQuads(shape) : getEmptyIconQuads();
-
             if (markerWidthFn) {
                 markerWidth = markerWidthFn(null, properties);
             }
+            if (isNil(markerWidth)) {
+                markerWidth = quads[0].tex.w;
+            }
             if (markerHeightFn) {
                 markerHeight = markerHeightFn(null, properties);
+            }
+            if (isNil(markerHeight)) {
+                markerHeight = quads[0].tex.h;
             }
             if (markerDxFn) {
                 markerDx = markerDxFn(null, properties);
