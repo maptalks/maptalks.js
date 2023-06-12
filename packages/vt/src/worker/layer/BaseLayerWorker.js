@@ -156,6 +156,8 @@ export default class BaseLayerWorker {
 
     onRemove() {
         this.loadings = {};
+        delete this._cache;
+        delete this.requests;
     }
 
     fetchIconGlyphs(icons, glyphs, cb) {

@@ -1455,10 +1455,15 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
         if (this._debugPainter) {
             this._debugPainter.delete();
+            delete this._debugPainter;
         }
         if (this._terrainDepthStencil) {
             this._terrainDepthStencil.destroy();
             delete this._terrainDepthStencil;
+        }
+        if (this._groundPainter) {
+            this._groundPainter.dispose();
+            delete this._groundPainter;
         }
         if (super.onRemove) super.onRemove();
         this._clearPlugin();
