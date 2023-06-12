@@ -217,6 +217,10 @@ class CanvasRenderer extends Class {
             this.resources.remove();
         }
         delete this.resources;
+        if (this._resWorkerConn) {
+            this._resWorkerConn.remove();
+            delete this._resWorkerConn;
+        }
         delete this.layer;
     }
 
