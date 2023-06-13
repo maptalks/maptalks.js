@@ -1081,7 +1081,8 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._shadowScene.setMeshes(meshes);
         const map = this.getMap();
         const shadowConfig = sceneConfig.shadow;
-        const lightDirection = map.getLightManager().getDirectionalLight().direction;
+        const lightManager = map.getLightManager();
+        const lightDirection = lightManager && lightManager.getDirectionalLight().direction || [1, 1, -1];
         const displayShadow = !sceneConfig.ground || !sceneConfig.ground.enable;
         const uniforms = this._shadowPass.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
         // if (this._shadowPass.isUpdated()) {

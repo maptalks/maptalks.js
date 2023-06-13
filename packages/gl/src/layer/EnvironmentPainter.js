@@ -75,7 +75,8 @@ class EnvironmentPainter {
 
     _getUniformValues() {
         const map = this.getMap();
-        const ambient = this.getMap().getLightManager().getAmbientLight();
+        const lightManager = this.getMap().getLightManager();
+        const ambient = lightManager && lightManager.getAmbientLight();
         let iblTexes = this._iblTexes;
         if (!iblTexes) {
             iblTexes = this._iblTexes = createIBLTextures(this._regl, map);
@@ -109,13 +110,13 @@ class EnvironmentPainter {
             'cubeMap': iblTexes.prefilterMap,
             'bias': level,
             'size': cubeSize / Math.pow(2, Math.max(0, level - 1)),
-            'environmentExposure': isNumber(ambient.exposure) ? ambient.exposure : 1,
+            'environmentExposure': isNumber(ambient && ambient.exposure) ? ambient.exposure : 1,
             'diffuseSPH': iblTexes.sh,
             'viewMatrix': map.viewMatrix,
             'projMatrix': map.projMatrix,
             'resolution': OUTSIZE,
             'hsv': HSV,
-            'transformMatrix': mat3.fromRotation(transform, Math.PI / 180 * -ambient.orientation || 0)
+            'transformMatrix': mat3.fromRotation(transform, ambient && Math.PI / 180 * -ambient.orientation || 0)
         };
     }
 

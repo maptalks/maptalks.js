@@ -132,7 +132,7 @@ function getLightUniforms(map, iblTexes) {
 
 export function createIBLTextures(regl, map) {
     const lightManager = map.getLightManager();
-    const resource = lightManager.getAmbientResource();
+    const resource = lightManager && lightManager.getAmbientResource();
     if (!resource) {
         return null;
     }
