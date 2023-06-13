@@ -43,10 +43,11 @@ function prepareAttr(geometry, symbolDef, config) {
         }
     } else if (!isFnTypeSymbol(symbolDef[symbolName]) && !hasRelatedFnTypeSymbol(related, symbolDef)) {
         //symbol不是fn-type，但存在attr，则删除arr和aIndex
-        if (arr && arr.buffer && arr.buffer.destroy) {
-            arr.buffer.destroy();
-        }
-        delete geometry.data[attrName];
+        // if (arr && arr.buffer && arr.buffer.destroy) {
+        //     arr.buffer.destroy();
+        // }
+        // delete geometry.data[attrName];
+        geometry.deleteData(attrName);
         removeFnTypePropArrs(geometry, attrName);
         return null;
     }

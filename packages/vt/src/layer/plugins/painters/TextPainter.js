@@ -106,6 +106,24 @@ export default class TextPainter extends CollisionPainter {
         this._genTextNames();
     }
 
+    prepareRender(...args) {
+        super.prepareRender(...args);
+        // maptalks/issues#336
+        const meshes = this.scene.getMeshes();
+        if (!meshes || !meshes.length) {
+            return;
+        }
+        for (let i = 0; i < meshes.length; i++) {
+            if (meshes[i].properties.isHalo) {
+                continue;
+            }
+            const { haloMesh } = meshes[i].properties;
+            if (haloMesh.dirtyDefines) {
+                meshes[i].setDefines(haloMesh.defines);
+            }
+        }
+    }
+
     updateSymbol(...args) {
         this._tagTerrainVector = undefined;
         this._tagTerrainSkin = undefined;

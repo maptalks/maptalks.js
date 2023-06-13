@@ -143,27 +143,28 @@ export function createTextMesh(regl, geometry, transform, symbolDef, symbol, fnT
         };
         setMeshUniforms(geometry, uniforms1, symbol);
         const material = new reshader.Material(uniforms1, DEFAULT_UNIFORMS);
-        const mesh = new reshader.Mesh(geometry, material, {
+        const textMesh = new reshader.Mesh(geometry, material, {
             // 必须关闭VAO，否则对vao中elements的更新会导致halo绘制出错
             disableVAO: true,
             transparent,
             castShadow: false,
             picking: true
         });
+        textMesh.properties.haloMesh = mesh;
         // isLabelCollides 中，计算碰撞盒时需要
-        Object.defineProperty(mesh.properties, 'textSize',  {
+        Object.defineProperty(textMesh.properties, 'textSize',  {
             enumerable: true,
             get: function () {
                 return uniforms1['textSize'];
             }
         });
         if (enableCollision) {
-            mesh.setDefines({
+            textMesh.setDefines({
                 'ENABLE_COLLISION': 1
             });
         }
-        mesh.setLocalTransform(transform);
-        meshes.push(mesh);
+        textMesh.setLocalTransform(transform);
+        meshes.push(textMesh);
     }
 
     meshes.forEach(mesh => {

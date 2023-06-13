@@ -2043,6 +2043,75 @@ describe('update style specs', () => {
         layer.addTo(map);
     });
 
+    it('should can update textOpacity from function-type to 1, maptalks/issues#336', done => {
+        // 多symbol style，第二个symbol因为geometry和第一个symbol相同，会用ref引用第一个geometry，这个测试是为了测试第一个geometry为null时的空指针异常
+        const data = {
+            type: "FeatureCollection",
+            features: [
+                {
+                    "type": "Feature",
+                    "id": 0, "geometry": {
+                        "type": "Point",
+                        "coordinates": [-0.113049, 51.49856]
+                    }, "properties": {
+                        name: '■■■■■■■■■',
+                        online: true
+                    }
+                }
+            ]
+        };
+        const style = {
+            style: [
+                {
+                    filter: true,
+                    renderPlugin: {
+                        dataConfig: {
+                            type: "point",
+                        }, sceneConfig: {
+                            collision: false, fading: false, depthFunc: "always",
+                        }, postProcess: {
+                            enable: true, antialias: {
+                                enable: true,
+                            },
+                        }, type: "text",
+                    }, symbol: {
+                        textName: "{name}",
+                        textSize: 14,
+                        textFill: '#f00',
+                        textOpacity: {
+                            type: "categorical",
+                            property: "online",
+                            stops: [[true, 1], [false, 0]]
+                        }
+                    }
+                }
+            ]
+        };
+        map.setCenterAndZoom([-0.113049, 51.49856], 14);
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data,
+            style
+        });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 3) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.updateSymbol(0, { textOpacity: 0.5 })
+            } else if (count === 4) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                assert.deepEqual(pixel, [255, 0, 0, 127]);
+                done();
+            }
+
+        });
+
+        layer.addTo(map);
+    });
+
     function assertChangeStyle(done, expectedColor, changeFun, isSetStyle, style, renderCount, doneRenderCount) {
         style = style || [
             {
