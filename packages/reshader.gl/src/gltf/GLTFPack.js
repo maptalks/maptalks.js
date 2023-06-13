@@ -330,12 +330,8 @@ export default class GLTFPack {
                 if (metallicRoughnessTexture) {
                     materialUniforms['metallicRoughnessTexture'] = this._getTexture(metallicRoughnessTexture);
                 } else {
-                    if (defined(pbrMetallicRoughness.metallicFactor)) {
-                        materialUniforms['metallicFactor'] = pbrMetallicRoughness.metallicFactor;
-                    }
-                    if (defined(pbrMetallicRoughness.roughnessFactor)) {
-                        materialUniforms['roughnessFactor'] = pbrMetallicRoughness.roughnessFactor;
-                    }
+                    materialUniforms['metallicFactor'] = defined(pbrMetallicRoughness.metallicFactor) ? pbrMetallicRoughness.metallicFactor : 1.0;
+                    materialUniforms['roughnessFactor'] = defined(pbrMetallicRoughness.roughnessFactor) ? pbrMetallicRoughness.roughnessFactor : 1.0;
                 }
             }
             const extensions = material.extensions;

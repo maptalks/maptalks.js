@@ -1,5 +1,5 @@
 //生成 BRDF LUT
-precision mediump float;
+precision highp float;
 
 varying vec2 vTexCoords;
 uniform sampler2D distributionMap;

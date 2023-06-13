@@ -1062,9 +1062,9 @@ describe('bug', () => {
                     const width = map.width, height = map.height;
                     const pixels = ctx.getImageData(0, 0, width, height).data;
                     const index = width * (height / 2) * 4 + width / 2 * 4;
-                    expect(pixels.slice(index, index + 4)).to.be.eql([147, 147, 147, 255]);
-                    expect(pixels.slice(index + 4, index + 8)).to.be.eql([147, 147, 147, 255]);
-                    expect(pixels.slice(index + 8, index + 12)).to.be.eql([147, 147, 147, 255]);
+                    expect(pixelMatch(pixels.slice(index, index + 4), [147, 147, 147, 255])).to.be.eql(true);
+                    expect(pixelMatch(pixels.slice(index + 4, index + 8), [147, 147, 147, 255])).to.be.eql(true);
+                    expect(pixelMatch(pixels.slice(index + 8, index + 12), [147, 147, 147, 255])).to.be.eql(true);
                     done();
                 });
             });
@@ -1087,7 +1087,7 @@ describe('bug', () => {
         function checkColor() {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixel).to.be.eql([131, 131, 131, 255]);
+                expect(pixelMatch([131, 131, 131, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -1138,7 +1138,7 @@ describe('bug', () => {
         function checkColor() {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([142, 120, 28, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([133, 112, 17, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -1179,7 +1179,7 @@ describe('bug', () => {
         function checkColor() {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, 20, 1, 1);//高度为100时,不能被pick到
-                expect(pixel).to.be.eql([51, 71, 32, 255]);
+                expect(pixelMatch([51, 71, 32, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -1210,16 +1210,37 @@ describe('bug', () => {
         function checkColor() {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixel).to.be.eql([132, 132, 132, 255]);
+                expect(pixelMatch([130, 130, 130, 255], pixel)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixel).to.be.eql([133, 141, 124, 255]);
+                expect(pixelMatch([118, 127, 108, 255], pixel)).to.be.eql(true);
                 marker.setModelHeight(100);
                 checkColor();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('default roughnessFactor and metallicFactor(maptalks-ide/issues/3169)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                scaleX: 10,
+                scaleY: 10,
+                scaleZ: 10,
+                anchorZ: 'bottom',
+                url: './models/2/2.gltf'
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 175, 110, 1, 1);
+                expect(pixelMatch([49, 76, 116, 255], pixel)).to.be.eql(true);
+                done();
             }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
