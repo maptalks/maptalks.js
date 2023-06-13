@@ -99,7 +99,7 @@ class BloomPass {
 
     _createColorTex(curTex, w, h, dataType) {
         const regl = this._renderer.regl;
-        const type = dataType || (regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float');
+        const type = dataType;
         const width = w || curTex.width, height = h || curTex.height;
         const color = regl.texture({
             min: 'linear',
