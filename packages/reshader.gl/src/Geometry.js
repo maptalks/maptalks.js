@@ -416,6 +416,21 @@ export default class Geometry {
         return this;
     }
 
+    deleteData(name) {
+        const buf = this.data[name];
+        if (!buf) {
+            return this;
+        }
+        this._incrVersion();
+        if (buf.buffer && buf.buffer.destroy) {
+            buf.buffer.destroy();
+        }
+        delete this.data[name];
+        delete this._reglData;
+        this._markVAODirty();
+        return this;
+    }
+
     /**
      * Replace data or refill attribute data buffer
      * @param {String} name - data's name
@@ -510,12 +525,16 @@ export default class Geometry {
         } else {
             this.elements = elements;
         }
+        this._markVAODirty();
+        return this;
+    }
+
+    _markVAODirty() {
         if (this._vao) {
             for (const key in this._vao) {
                 this._vao[key].dirty = true;
             }
         }
-        return this;
     }
 
     setDrawCount(count) {
