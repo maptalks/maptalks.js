@@ -529,6 +529,20 @@ export default class Geometry {
         return this;
     }
 
+    deleteElements() {
+        if (!this.elements || this.elements.length === 0) {
+            return this;
+        }
+        this._incrVersion();
+        if (this.elements && this.elements.destroy && !this.elements[KEY_DISPOSED]) {
+            this.elements.destroy();
+            this.elements[KEY_DISPOSED] = 1;
+        }
+        this.elements = [];
+        this._markVAODirty();
+        return this;
+    }
+
     _markVAODirty() {
         if (this._vao) {
             for (const key in this._vao) {

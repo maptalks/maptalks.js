@@ -12,7 +12,7 @@ export function clearShowOnly(mesh) {
     delete mesh.properties.showOnlyTimestamp;
     const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
     if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
-        mesh.geometry.elements.destroy();
+        mesh.geometry.deleteElements();
         mesh.geometry.setElements(oldElementsBeforeHighlight);
     }
 }
@@ -45,7 +45,7 @@ export function showOnly(regl, mesh, items, timestamp, feaIdIndiceMap) {
         mesh.properties.oldElementsBeforeHighlight = mesh.geometry.elements;
     }
     if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
-        mesh.geometry.elements.destroy();
+        mesh.geometry.deleteElements();
     }
     const info = {
         data: elements,
@@ -67,7 +67,7 @@ export function clearHighlight(mesh) {
     delete mesh.properties.highlightTimestamp;
     const oldElementsBeforeHighlight = mesh.properties.oldElementsBeforeHighlight;
     if (oldElementsBeforeHighlight && mesh.geometry.elements !== oldElementsBeforeHighlight) {
-        mesh.geometry.elements.destroy();
+        mesh.geometry.deleteElements();
         mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
         delete mesh.properties.hasInvisible;
     }
@@ -196,15 +196,13 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
             primitive: mesh.geometry.getPrimitive()
         };
         if (mesh.geometry.elements !== mesh.properties.oldElementsBeforeHighlight && mesh.geometry.elements.destroy) {
-            mesh.geometry.elements.destroy();
+            mesh.geometry.deleteElements();
         }
         elements = regl.elements(info);
         mesh.geometry.setElements(elements);
         mesh.geometry.generateBuffers(regl);
     } else if (mesh.properties.hasInvisible) {
-        if (mesh.geometry.elements && mesh.geometry.elements.destroy) {
-            mesh.geometry.elements.destroy();
-        }
+        mesh.geometry.deleteElements();
         mesh.geometry.setElements(mesh.properties.oldElementsBeforeHighlight);
         delete mesh.properties.hasInvisible;
         // delete mesh.properties.oldElementsBeforeHighlight;
@@ -260,7 +258,7 @@ export function deleteHighlightBloomMesh(mesh) {
     if (hlBloomMesh) {
         const hlGeo = hlBloomMesh.geometry;
         if (hlGeo.elements && hlGeo.elements.destroy) {
-            hlGeo.elements.destroy();
+            hlGeo.deleteElements();
         }
         hlBloomMesh.dispose();
         delete mesh.properties.hlBloomMesh;
