@@ -1804,6 +1804,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     cancelHighlight(names) {
+        if (!this._highlighted) {
+            return;
+        }
         if (Array.isArray(names)) {
             for (let i = 0; i < names.length; i++) {
                 this._highlighted.delete(names[i]);

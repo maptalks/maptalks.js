@@ -195,6 +195,46 @@ describe('highlight specs', () => {
         group.addTo(map);
     });
 
+    it('should can cancelHighlight before highlight, maptalks/issues#343', done => {
+        const style = [
+            {
+                filter: true,
+                renderPlugin: {
+                    type: 'fill',
+                    dataConfig: { type: 'fill' }
+                },
+                symbol: { polygonFill: '#f00' }
+            }
+        ];
+
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: polygon,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        const start = 6;
+        group.on('layerload', () => {
+            count++
+            if (count === start) {
+                const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.cancelHighlight('test');
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('missing name for highlight with filter', done => {
         const style = [
             {
