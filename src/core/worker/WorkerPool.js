@@ -86,6 +86,9 @@ export default class WorkerPool {
     }
 
     commit() {
+        if (!this.workers) {
+            return;
+        }
         if (this._messages.length) {
             for (let i = 0; i < this._messages.length; i++) {
                 if (!this._messages[i] || !this._messages[i].length) {

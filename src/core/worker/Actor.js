@@ -138,7 +138,7 @@ export default class Actor {
         this.workers.forEach(w => {
             w.removeEventListener('message', this.receiveFn, false);
         });
-        this.workerPool.release(this.actorId);
+        // this.workerPool.release(this.actorId);
         delete this.receiveFn;
         delete this.workers;
         delete this.callbacks;
