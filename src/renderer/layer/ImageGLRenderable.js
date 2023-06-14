@@ -90,14 +90,21 @@ const ImageGLRenderable = Base => {
             const layer = this.layer;
             if (layer) {
                 const { altitude } = layer.options;
-                if (isNumber(altitude) && altitude !== 0) {
+                const altIsNumber = isNumber(altitude);
+                if (!altIsNumber) {
+                    this._layerAlt = 0;
+                }
+                //update _layerAlt cache
+                if (this._layerAltitude !== altitude && altIsNumber) {
                     const map = layer.getMap();
                     if (map) {
                         const z = map.altitudeToPoint(altitude, map.getGLRes());
-                        v3[2] = z;
+                        this._layerAltitude = altitude;
+                        this._layerAlt = z;
                     }
                 }
             }
+            v3[2] = this._layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
