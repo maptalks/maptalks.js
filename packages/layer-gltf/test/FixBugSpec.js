@@ -44,7 +44,11 @@ describe('bug', () => {
                 gltflayer.clear();
                 //TODO 从map上取像素值，判断为空
                 pickColor([0, 0, 0, 0]);
-                addNewMarker();
+                setTimeout(() => {
+                    // 让addNewMarker在上一个pickColor之后执行
+                    addNewMarker();
+                }, 120);
+
             }, 100);
         });
     });
