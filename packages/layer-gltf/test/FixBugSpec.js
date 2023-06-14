@@ -65,7 +65,7 @@ describe('bug', () => {
                 const pixel = pickPixel(map, 218, 96, 1, 1);
                 expect(pixelMatch([211, 184, 178, 255], pixel)).to.be.eql(true);
                 done();
-            }, 100);
+            }, 200);
         });
         //TODO 增加像素对比
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
