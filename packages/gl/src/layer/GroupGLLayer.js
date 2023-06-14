@@ -100,24 +100,21 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     getSceneConfig() {
-        return JSON.parse(JSON.stringify(this.options.sceneConfig || {}));
+        return JSON.parse(JSON.stringify(this._getSceneConfig()));
     }
 
     _getSceneConfig() {
-        return this.options.sceneConfig;
+        return this.options.sceneConfig || {};
     }
 
     getGroundConfig() {
         const sceneConfig = this._getSceneConfig();
-        if (!sceneConfig) {
-            return null;
-        }
         return sceneConfig.ground;
     }
 
     getWeatherConfig() {
         const sceneConfig = this._getSceneConfig();
-        return sceneConfig && sceneConfig.weather;
+        return sceneConfig.weather;
     }
 
     /**
