@@ -21,7 +21,9 @@ const style = [
         },
         symbol: {
             markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
-            markerOpacity: 0.5
+            markerOpacity: 0.5,
+            markerWidth: 15,
+            markerHeight: 15
         }
     }
 ];

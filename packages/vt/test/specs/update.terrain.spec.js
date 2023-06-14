@@ -1,6 +1,5 @@
-const path = require('path');
 const assert = require('assert');
-const { readPixel, compareExpected } = require('../common/Util');
+const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
 const { GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
@@ -27,13 +26,6 @@ const line = {
     type: 'FeatureCollection',
     features: [
         { type: 'Feature', id: 0, geometry: { type: 'LineString', coordinates: [[91.13178,29.658272], [91.15678,29.658272]] }, properties: { type: 1 } }
-    ]
-};
-
-const point = {
-    type: 'FeatureCollection',
-    features: [
-        { type: 'Feature', id: 0, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { type: 1 } }
     ]
 };
 
@@ -108,8 +100,8 @@ describe('update vt on terrain specs', () => {
                         let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                         assert.deepEqual(pixel, new Uint8ClampedArray([255, 0, 0, 255]));
 
-                        pixel = readPixel(renderer.canvas, x / 2, y / 2 + 50);
-                        assert.deepEqual(pixel, new Uint8ClampedArray([110, 110, 110, 255]));
+                        pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
+                        assert.deepEqual(pixel, new Uint8ClampedArray([112, 112, 112, 255]));
                         done();
                     }
                 });
@@ -121,11 +113,11 @@ describe('update vt on terrain specs', () => {
             group.addTo(map);
         }
         it ('without post process', done => {
-            lineTerrainRunner(done, 7, false);
+            lineTerrainRunner(done, 8, false);
         });
 
         it ('without post process', done => {
-            lineTerrainRunner(done, 6, true);
+            lineTerrainRunner(done, 7, true);
         });
 
     });

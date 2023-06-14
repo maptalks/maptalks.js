@@ -22,7 +22,9 @@ const style = {
                         [1, '{$root}/plane-min.png'],
                         [2, '{$root}/plane-min.png'],
                     ]
-                }
+                },
+                markerWidth: 15,
+                markerHeight: 15
             }
         }
     ]

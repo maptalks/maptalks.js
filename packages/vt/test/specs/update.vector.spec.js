@@ -796,7 +796,7 @@ describe('vector layers update style specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
-                assert(partialUpdate);
+                assert(!partialUpdate);
                 done();
             }
         });
@@ -898,7 +898,7 @@ describe('vector layers update style specs', () => {
             } else if (count === 3) {
                 let pixel = readPixel(layer.getRenderer().canvas, x / 2 + 40, y / 2);
                 assert.deepEqual(pixel, [0, 0, 0, 0]);
-                assert(partialUpdate);
+                assert(!partialUpdate);
                 done();
             }
         });

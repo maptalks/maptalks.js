@@ -210,7 +210,7 @@ function buildFnTypes(features, symbol, zoom, feaIndexes) {
     return fnTypes;
 }
 
-function buildVertexColorTypes(verticeTypes, feaIndexes, features, symbol, zoom, dynamicAttributes) {
+function buildVertexColorTypes(verticeTypes, feaIndexes, features, symbol, zoom) {
     const vertexColors = [[], []];
     const isTopFn = isFnTypeSymbol(symbol['topPolygonFill']);
     const isBottomFn = isFnTypeSymbol(symbol['bottomPolygonFill']);

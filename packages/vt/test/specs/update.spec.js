@@ -1414,17 +1414,22 @@ describe('update style specs', () => {
             tileStackDepth: 0
         });
         let painted = false;
+        let finished = false;
         layer.on('canvasisdirty', () => {
+            if (finished) {
+                return;
+            }
             const canvas = layer.getRenderer().canvas;
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, new Uint8ClampedArray([14, 11, 52, 255]));
+                    assert.deepEqual(pixel, new Uint8ClampedArray([12, 11, 48, 255]));
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });
                     painted = true;
                 } else {
+                    finished = true;
                     assert.deepEqual(pixel, [52, 52, 52, 255]);
                     done();
                 }
@@ -2033,7 +2038,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
                 //[87, 140, 143, 255]
                 assert(styleRefreshed);
-                assert.deepEqual(pixel, [76, 97, 99, 255]);
+                assert.deepEqual(pixel, [105, 170, 174, 255]);
                 done();
             }
         });

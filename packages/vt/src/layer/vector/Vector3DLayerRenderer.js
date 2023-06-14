@@ -90,6 +90,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     draw(timestamp, parentContext) {
+        this._frameTime = timestamp;
         const layer = this.layer;
         this.prepareCanvas();
         this._zScale = this._getCentiMeterScale(this.getMap().getGLRes()); // scale to convert meter to gl point
@@ -134,8 +135,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
 
         this._updateDirtyTargets();
-
-        this._frameTime = timestamp;
 
         const isDefaultRender = !renderMode || renderMode === 'default';
         let polygonOffset = 0;
@@ -592,6 +591,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             this._isCreatingMarkerMesh = false;
             this.setToRedraw();
+            this.layer.fire('buildmarkermesh');
         });
     }
 
@@ -935,6 +935,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
             this._isCreatingLineMesh = false;
             this.setToRedraw();
+            this.layer.fire('buildlinemesh');
         });
     }
 
@@ -1569,21 +1570,21 @@ function dashLength(dash) {
     return len;
 }
 
-function compareCoordSize(coords0, coords1) {
-    if (coords0.length !== coords1.length) {
-        return false;
-    }
-    if (Array.isArray(coords0[0]) && Array.isArray(coords1[0])) {
-        for (let i = 0; i < coords0.length; i++) {
-            if (!compareCoordSize(coords0[0], coords1[0])) {
-                return false;
-            }
-        }
-    } else if (Array.isArray(coords0[0]) || Array.isArray(coords1[0])) {
-        return false;
-    }
-    return true;
-}
+// function compareCoordSize(coords0, coords1) {
+//     if (coords0.length !== coords1.length) {
+//         return false;
+//     }
+//     if (Array.isArray(coords0[0]) && Array.isArray(coords1[0])) {
+//         for (let i = 0; i < coords0.length; i++) {
+//             if (!compareCoordSize(coords0[0], coords1[0])) {
+//                 return false;
+//             }
+//         }
+//     } else if (Array.isArray(coords0[0]) || Array.isArray(coords1[0])) {
+//         return false;
+//     }
+//     return true;
+// }
 
 function compareSymbolCount(symbol, feas) {
     if (Array.isArray(symbol)) {

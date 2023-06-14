@@ -102,6 +102,7 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
             }
             this._isCreatingMesh = false;
             this.setToRedraw();
+            this.layer.fire('buildmesh');
         });
     }
 

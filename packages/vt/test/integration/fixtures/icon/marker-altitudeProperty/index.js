@@ -22,7 +22,9 @@ const style = [
             }
         },
         symbol: {
-            markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png')
+            markerFile: 'file://' + path.resolve(__dirname, '../../../resources/plane-min.png'),
+            markerWidth: 15,
+            markerHeight: 15
         }
     }
 ];

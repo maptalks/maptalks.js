@@ -1,6 +1,6 @@
 import { isNil, extend, isString, isObject, isNumber, pushIn, isFnTypeSymbol } from '../../common/Util';
 import { buildWireframe, build3DExtrusion } from '../builder/';
-import { VectorPack, PolygonPack, NativeLinePack, LinePack, PixelLinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
+import { VectorPack, PolygonPack, NativeLinePack, LinePack, PointPack, NativePointPack, LineExtrusionPack, CirclePack, RoundTubePack, SquareTubePack, FilterUtil, PackUtil, StyleUtil, TextUtil } from '@maptalks/vector-packer';
 // import { GlyphRequestor, IconRequestor } from '@maptalks/vector-packer';
 import { createFilter } from '@maptalks/feature-filter';
 import { KEY_IDX } from '../../common/Constant';
@@ -157,7 +157,7 @@ export default class BaseLayerWorker {
     onRemove() {
         this.loadings = {};
         delete this._cache;
-        delete this.requests;
+        this.requests = {};
     }
 
     fetchIconGlyphs(icons, glyphs, cb) {
@@ -528,13 +528,13 @@ export default class BaseLayerWorker {
             // return Promise.resolve(null);
         } else if (type === 'native-line') {
             return parseSymbolAndGenPromises(features, symbol, options, NativeLinePack);
-        } else if (type === 'pixel-line') {
+        } /*else if (type === 'pixel-line') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this),
                 tileRatio
             });
             return parseSymbolAndGenPromises(features, symbol, options, PixelLinePack);
-        } else if (type === 'fill') {
+        } */else if (type === 'fill') {
             options = extend(options, {
                 requestor: this.fetchIconGlyphs.bind(this)
             });
