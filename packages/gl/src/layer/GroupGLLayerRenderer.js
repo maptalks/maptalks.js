@@ -944,7 +944,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const ratio = config && config.antialias && config.antialias.jitterRatio || 0.2;
         const jitGetter = this._jitGetter;
-        jitGetter.setRatio(ratio);
+        if (jitGetter) {
+            jitGetter.setRatio(ratio);
+        }
 
         const ssrMode = this.isSSROn();
         let renderTarget;
