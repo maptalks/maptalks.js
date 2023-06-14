@@ -144,7 +144,10 @@ class BoundingBox {
         return this.vertex;
     }
 
-    copy() {
+    copy(out) {
+        if (out) {
+            return BoundingBox.copy(out, this);
+        }
         return new BoundingBox(this.min.slice(), this.max.slice());
     }
 

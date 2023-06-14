@@ -10,7 +10,7 @@ const options = {
     symbol: null
 };
 const VEC41 = [], VEC42 = [], MAT4 = [], TEMP_SCALE = [1, 1, 1], TEMP_MAT = [], TEMP_TRANS = [], TEMP_FIXSIZE_SCALE = [1, 1, 1];
-const MIN0 = [], MAX0 = [], MIN = [], MAX= [];
+const TEMP_BBOX = new reshader.BoundingBox();
 const Y_UP_TO_Z_UP = fromRotationTranslation(fromRotationX(Math.PI * 0.5), [0, 0, 0]);
 const defaultColor = [186 / 255, 186 / 255, 186 / 255, 1];
 const defaultOpacity = 1;
@@ -344,7 +344,7 @@ export default class GLTFMarker extends Marker {
                 mesh.localTransform = mat4.multiply(mesh.localTransform, tmpMat, nodeMatrix);
             }
             const gltfBBox = mesh.geometry.boundingBox;
-            const meshBox = gltfBBox.copy();
+            const meshBox = gltfBBox.copy(TEMP_BBOX);
             meshBox.transform(mesh.positionMatrix, mesh.localTransform);
             const offset =  this._calAnchorTranslation(meshBox);
             if (Math.abs(offset) > Math.abs(zOffset)) {
@@ -551,13 +551,11 @@ export default class GLTFMarker extends Marker {
         }
         let bbox0 = meshes[0].geometry.boundingBox.copy();
         bbox0 = bbox0.transform(mat4.identity(MAT4), meshes[0].nodeMatrix);
-        bbox0[0] = bbox0.min, bbox0[1] = bbox0.max;
-        const min = vec3.copy(MIN0, bbox0[0]), max = vec3.copy(MAX0, bbox0[1]);
+        const min = bbox0.min, max = bbox0.max;
         for (let i = 1; i < meshes.length; i++) {
             let bbox = meshes[i].geometry.boundingBox.copy();
             bbox = bbox.transform(mat4.identity(MAT4), meshes[i].nodeMatrix);
-            bbox[0] = bbox.min, bbox[1] = bbox.max;
-            const bboxMin = vec3.copy(MIN, bbox[0]), bboxMax = vec3.copy(MAX, bbox[1]);
+            const bboxMin = bbox.min, bboxMax = bbox.max;
             if (bboxMin[0] < min[0]) {
                 min[0] = bboxMin[0];
             }
