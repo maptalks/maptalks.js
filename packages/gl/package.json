@@ -9,7 +9,7 @@
     "build": "npm run lint && cd ../reshader.gl && npm run build && cd ../gl && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -c rollup.config.js",
     "dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -w -c rollup.config.js",
-    "test": "karma start --single-run",
+    "test": "cd ../layer-gltf && npm run build && cd ../gl && karma start --single-run",
     "tdd": "karma start karma.conf.dev.js --no-single-run",
     "prepare": "npm run build",
     "lint": "eslint src/**/*.js",
