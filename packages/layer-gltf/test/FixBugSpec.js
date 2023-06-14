@@ -1182,8 +1182,10 @@ describe('bug', () => {
 
         function checkColor() {
             setTimeout(function() {
-                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);//高度为100时,不能被pick到
-                expect(pixelMatch([51, 71, 32, 255], pixel)).to.be.eql(true);
+                const pixel1 = pickPixel(map, map.width / 2, 20, 1, 1);//高度为100时,不能被pick到
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 30, 1, 1);
+                expect(pixelMatch([222, 51, 51, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
@@ -1196,6 +1198,8 @@ describe('bug', () => {
             }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+        const vLayer = new maptalks.VectorLayer('v', { enableAltitude: true }).addTo(map);
+        new maptalks.Marker([0, 0, 100]).addTo(vLayer);//高度为100的标记，方便排查
     });
 
     it('add GLTFMarker', done => {
@@ -1221,7 +1225,7 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixelMatch([118, 127, 108, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([146, 146, 144, 255], pixel)).to.be.eql(true);
                 marker.setModelHeight(100);
                 checkColor();
             }, 100);

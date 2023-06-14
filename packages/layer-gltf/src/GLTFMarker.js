@@ -10,6 +10,7 @@ const options = {
     symbol: null
 };
 const VEC41 = [], VEC42 = [], MAT4 = [], TEMP_SCALE = [1, 1, 1], TEMP_MAT = [], TEMP_TRANS = [], TEMP_FIXSIZE_SCALE = [1, 1, 1];
+const MIN0 = [], MAX0 = [], MIN = [], MAX= [];
 const Y_UP_TO_Z_UP = fromRotationTranslation(fromRotationX(Math.PI * 0.5), [0, 0, 0]);
 const defaultColor = [186 / 255, 186 / 255, 186 / 255, 1];
 const defaultOpacity = 1;
@@ -19,7 +20,7 @@ const phongUniforms = {
     'lightSpecular': [1.0, 1.0, 1.0],
     'lightDirection': [1.0, 1.0, 1.0]
 };
-const effectSymbols = new Set(['url', 'translationX', 'translationY', 'translationZ', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleXZ', 'anchorZ', 'markerFixSize', 'modelHeight']);
+const effectSymbols = new Set(['url', 'translationX', 'translationY', 'translationZ', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ', 'anchorZ', 'markerFixSize', 'modelHeight']);
 
 export default class GLTFMarker extends Marker {
     constructor(coordinates, options) {
@@ -398,7 +399,7 @@ export default class GLTFMarker extends Marker {
     _calModelHeightScale(out) {
         const modelHeight = this.getSymbol().modelHeight;
         const bbox = this._gltfModelBBox;
-        const fitScale = modelHeight / (Math.abs(bbox.max[2] - bbox.min[2]));
+        const fitScale = modelHeight / (Math.abs(bbox.max[1] - bbox.min[1]));//YZ轴做了翻转，所以需要用y方向来算高度比例
         return vec3.set(out, fitScale, fitScale, fitScale);
     }
 
@@ -411,7 +412,7 @@ export default class GLTFMarker extends Marker {
             return out;
         }
         const map = this.getMap();
-        const boxHeight = Math.abs(bbox.max[2] - bbox.min[2]);
+        const boxHeight = Math.abs(bbox.max[1] - bbox.min[1]);
         const pointZ = map.altitudeToPoint(boxHeight, map.getGLRes());
         const fitExtent = getFitExtent(map, fixSize, map.getZoom());
         const ratio = fitExtent / pointZ;
@@ -548,15 +549,15 @@ export default class GLTFMarker extends Marker {
         if (!meshes || !meshes.length) {
             return null;
         }
-        let bbox0 = meshes[0].geometry.boundingBox.copy([]);
-        bbox0 = bbox0.transform(mat4.identity([]), meshes[0].nodeMatrix);
+        let bbox0 = meshes[0].geometry.boundingBox.copy();
+        bbox0 = bbox0.transform(mat4.identity(MAT4), meshes[0].nodeMatrix);
         bbox0[0] = bbox0.min, bbox0[1] = bbox0.max;
-        const min = vec3.copy([], bbox0[0]), max = vec3.copy([], bbox0[1]);
+        const min = vec3.copy(MIN0, bbox0[0]), max = vec3.copy(MAX0, bbox0[1]);
         for (let i = 1; i < meshes.length; i++) {
-            let bbox = meshes[i].geometry.boundingBox.copy([]);
-            bbox = bbox.transform(meshes[i].nodeMatrix);
+            let bbox = meshes[i].geometry.boundingBox.copy();
+            bbox = bbox.transform(mat4.identity(MAT4), meshes[i].nodeMatrix);
             bbox[0] = bbox.min, bbox[1] = bbox.max;
-            const bboxMin = vec3.copy([], bbox[0]), bboxMax = vec3.copy([], bbox[1]);
+            const bboxMin = vec3.copy(MIN, bbox[0]), bboxMax = vec3.copy(MAX, bbox[1]);
             if (bboxMin[0] < min[0]) {
                 min[0] = bboxMin[0];
             }
