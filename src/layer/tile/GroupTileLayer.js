@@ -9,7 +9,7 @@ const options = {
 
 
 const DEFAULT_TILESIZE = new Size(256, 256);
-const EVENTS = 'show hide remove setzindex';
+const EVENTS = 'show hide remove setzindex forcereloadstart';
 
 function checkLayers(tileLayers) {
     if (!Array.isArray(tileLayers)) {
@@ -238,6 +238,49 @@ class GroupTileLayer extends TileLayer {
         return null;
     }
 
+    _removeChildTileCache(layer) {
+        if (!layer) {
+            return this;
+        }
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        let cache;
+        const id = layer.getId();
+        const validateCache = () => {
+            return cache && cache.info && cache.info.layer === id;
+        };
+        //clear LRU
+        if (renderer.tileCache) {
+            const keys = renderer.tileCache.keys();
+            keys.forEach(key => {
+                cache = renderer.tileCache.get(key);
+                if (validateCache()) {
+                    renderer.tileCache.remove(key);
+                }
+            });
+        }
+        //clear tilesInView cache
+        const tilesInView = renderer.tilesInView || {};
+        for (const key in tilesInView) {
+            cache = tilesInView[key];
+            if (validateCache()) {
+                delete tilesInView[key];
+            }
+        }
+        //cancel image load
+        const tilesLoading = renderer.tilesLoading || {};
+        for (const key in tilesLoading) {
+            cache = tilesLoading[key];
+            if (validateCache()) {
+                renderer.abortTileLoading(cache.image);
+                delete tilesLoading[key];
+            }
+        }
+        return this;
+    }
+
     _onLayerShowHide(e) {
         const { type, target } = e || {};
         //listen tilelayer.remove() method fix #1629
@@ -248,6 +291,8 @@ class GroupTileLayer extends TileLayer {
             this._refresh();
         } else if (type === 'setzindex') {
             this._sortLayers();
+        } else if (type === 'forcereloadstart') {
+            this._removeChildTileCache(target);
         }
         this._renderLayers();
         return this;
@@ -275,6 +320,8 @@ class GroupTileLayer extends TileLayer {
             if (!layer.getMap()) {
                 layer._bindMap(map);
             }
+            //remove old event handler
+            layer.off(EVENTS, this._onLayerShowHide, this);
             layer.on(EVENTS, this._onLayerShowHide, this);
         });
         return this;
