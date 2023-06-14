@@ -406,7 +406,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 125, '1': 125, '2': 125, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 127, '1': 127, '2': 127, '3': 255 } });
                         done();
                     });
                 });

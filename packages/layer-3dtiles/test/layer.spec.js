@@ -7,7 +7,7 @@ const { Geo3DTilesLayer, B3DMLoader, Geo3DTransform } = require('../dist/maptalk
 const assert = require('assert');
 const startServer = require('./server.js');
 
-const PORT = 4399;
+const PORT = 39887;
 describe('3dtiles layer', () => {
     let container, map;
     let server;

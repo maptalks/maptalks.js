@@ -5,7 +5,7 @@ const { Geo3DTilesLayer } = require('../dist/maptalks.3dtiles');
 const assert = require('assert');
 const startServer = require('./server.js');
 
-const PORT = 4399;
+const PORT = 39887;
 
 
 describe('highlight and showOnly specs', () => {

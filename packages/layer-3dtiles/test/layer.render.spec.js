@@ -7,7 +7,7 @@ const { match, writeImageData } = require('./util');
 const startServer = require('./server.js');
 const { join } = require('path');
 
-const PORT = 4399;
+const PORT = 39887;
 
 const TARGET_CANVAS = document.createElement('canvas');
 

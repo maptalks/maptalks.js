@@ -7,7 +7,7 @@ const assert = require('assert');
 const { Geo3DTilesLayer } = require('../dist/maptalks.3dtiles');
 const startServer = require('./server.js');
 
-const PORT = 4399;
+const PORT = 39887;
 
 function pickPixel(map, x, y, width, height) {
     const px = x || map.width / 2, py = y || map.height / 2;
