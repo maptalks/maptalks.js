@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/traffic",
-  "version": "0.84.3",
+  "version": "0.84.4",
   "description": "a tool to render traffic effect",
   "license": "UNLICENSED",
   "repository": {
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gltf-layer": "^0.84.3",
+    "@maptalks/gltf-layer": "^0.84.4",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
