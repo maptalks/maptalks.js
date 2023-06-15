@@ -8,7 +8,6 @@
     "url": "https://github.com/maptalks/maptalks.gltf.git"
   },
   "main": "dist/maptalks.gltf.js",
-  "browser": "dist/maptalks.gltf.js",
   "module": "dist/maptalks.gltf.mjs",
   "unpkg": "dist/maptalks.gltf.js",
   "jsdelivr": "dist/maptalks.gltf.js",

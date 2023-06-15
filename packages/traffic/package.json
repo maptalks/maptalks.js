@@ -8,7 +8,6 @@
     "url": "https://github.com/liubgithub/traffic.git"
   },
   "main": "dist/maptalks.traffic.js",
-  "browser": "dist/maptalks.traffic.js",
   "module": "dist/maptalks.traffic.mjs",
   "unpkg": "dist/maptalks.traffic.js",
   "jsdelivr": "dist/maptalks.traffic.js",

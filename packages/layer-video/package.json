@@ -8,7 +8,6 @@
     "url": "https://github.com/maptalks/maptalks.video.git"
   },
   "main": "dist/maptalks.video.js",
-  "browser": "dist/maptalks.video.js",
   "module": "dist/maptalks.video.mjs",
   "jsnext:main": "dist/maptalks.video.mjs",
   "files": [

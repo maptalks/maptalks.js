@@ -8,7 +8,6 @@
     "url": "https://github.com/maptalks/transform-control.git"
   },
   "main": "dist/transform-control.js",
-  "browser": "dist/transform-control.js",
   "module": "dist/transform-control.mjs",
   "jsnext:main": "dist/transform-control.mjs",
   "files": [

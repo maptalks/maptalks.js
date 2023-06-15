@@ -8,7 +8,6 @@
     "url": "https://github.com/fuzhenn/maptalks.analysis.git"
   },
   "main": "dist/maptalks.analysis.js",
-  "browser": "dist/maptalks.analysis.js",
   "module": "dist/maptalks.analysis.mjs",
   "jsnext:main": "dist/maptalks.analysis.mjs",
   "files": [

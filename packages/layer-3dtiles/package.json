@@ -3,7 +3,6 @@
   "version": "0.84.1",
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
-  "browser": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.mjs",
   "scripts": {
     "lint": "eslint src/**/*.js test/**/*.js",

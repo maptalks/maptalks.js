@@ -9,9 +9,7 @@ export {
 } from 'gl-matrix';
 export { createREGL, reshader };
 
-import { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, HighlightUtil, MaskLayerMixin, MaskRendererMixin, ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ColorMask, VideoMask } from './gl.es.js';
-
-export { GroupGLLayer, GroundPainter, HeatmapProcess, GLContext, HighlightUtil, MaskLayerMixin, MaskRendererMixin, ClipInsideMask, ClipOutsideMask, FlatInsideMask, FlatOutsideMask, ColorMask, VideoMask };
+export * from './gl.es.js';
 import transcoders from '../src/transcoders';
 export { transcoders };
 
