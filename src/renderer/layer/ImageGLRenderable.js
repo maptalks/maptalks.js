@@ -1,4 +1,4 @@
-import { IS_NODE, extend, isInteger, log2, isNil } from '../../core/util';
+import { IS_NODE, extend, isInteger, log2, isNil, isNumber } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
@@ -86,6 +86,25 @@ const ImageGLRenderable = Base => {
             }
             v3[0] = x || 0;
             v3[1] = y || 0;
+            v3[2] = 0;
+            const layer = this.layer;
+            if (layer) {
+                const { altitude } = layer.options;
+                const altIsNumber = isNumber(altitude);
+                if (!altIsNumber) {
+                    this._layerAlt = 0;
+                }
+                //update _layerAlt cache
+                if (this._layerAltitude !== altitude && altIsNumber) {
+                    const map = layer.getMap();
+                    if (map) {
+                        const z = map.altitudeToPoint(altitude, map.getGLRes());
+                        this._layerAltitude = altitude;
+                        this._layerAlt = z;
+                    }
+                }
+            }
+            v3[2] = this._layerAlt || 0;
             const uMatrix = mat4.identity(arr16);
             mat4.translate(uMatrix, uMatrix, v3);
             mat4.scale(uMatrix, uMatrix, [scale, scale, 1]);
