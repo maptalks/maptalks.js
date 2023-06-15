@@ -33,6 +33,7 @@
     "@maptalks/gl": "^0.84.2",
     "@maptalks/transcoders.draco": "^0.84.2",
     "@maptalks/transform-control": "^0.84.2",
+    "@maptalks/vt": "^0.82.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",

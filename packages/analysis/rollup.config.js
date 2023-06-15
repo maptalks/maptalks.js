@@ -58,7 +58,7 @@ module.exports = [
     {
         input: 'src/index.js',
         plugins: basePlugins.concat(plugins),
-        external : ['maptalks', '@maptalks/gl'],
+        external : ['maptalks', '@maptalks/gl', '@maptalks/vt'],
         output: {
             'sourcemap': production ? false : 'inline',
             'format': 'umd',
@@ -69,6 +69,7 @@ module.exports = [
             'globals' : {
                 'maptalks' : 'maptalks',
                 '@maptalks/gl' : 'maptalksgl',
+                '@maptalks/vt' : 'maptalks',
                 '@maptalks/gltf-loader' : 'gltf-loader'
             },
             'file': outputFile
@@ -90,7 +91,7 @@ module.exports = [
                 }
             })
         ] : []),
-        external : ['maptalks', '@maptalks/gltf-loader', '@maptalks/gl'],
+        external : ['maptalks', '@maptalks/gltf-loader', '@maptalks/gl', '@maptalks/vt'],
         output: {
             'sourcemap': false,
             'format': 'es',

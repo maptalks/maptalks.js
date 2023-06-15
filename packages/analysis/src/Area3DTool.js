@@ -1,12 +1,13 @@
 import * as maptalks from 'maptalks';
 import Measure3DTool from './Measure3DTool';
+import { PolygonLayer, PointLayer } from '@maptalks/vt';
 
 export default class Area3DTool extends Measure3DTool {
 
     _addHelperLayer() {
         super._addHelperLayer();
-        this._helperLayer = new maptalks.PolygonLayer(maptalks.INTERNAL_LAYER_PREFIX + '_area3dtool', { geometryEvents: false }).addTo(this._gllayer);
-        this._markerLayer = new maptalks.PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_area3dtool_marker', { geometryEvents: false }).addTo(this._gllayer);
+        this._helperLayer = new PolygonLayer(maptalks.INTERNAL_LAYER_PREFIX + '_area3dtool', { geometryEvents: false }).addTo(this._gllayer);
+        this._markerLayer = new PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_area3dtool_marker', { geometryEvents: false }).addTo(this._gllayer);
     }
 
     _drawVertexMarker() {

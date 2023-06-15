@@ -17,6 +17,7 @@ module.exports = function (config) {
             '../gl/dist/maptalksgl.js',
             "../transcoders.draco/dist/transcoders.draco.js",
             '../transform-control/dist/transform-control.js',
+            '../../node_modules/@maptalks/vt/dist/maptalks.vt.js',
             '../analysis/dist/maptalks.analysis.js',
             'test/js/flv.min.js',
             pkg.main,

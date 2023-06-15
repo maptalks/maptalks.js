@@ -1,12 +1,13 @@
 import * as maptalks from 'maptalks';
 import Measure3DTool from './Measure3DTool';
+import { LineStringLayer, PointLayer } from '@maptalks/vt';
 
 export default class Distance3DTool extends Measure3DTool {
 
     _addHelperLayer() {
         super._addHelperLayer();
-        this._helperLayer = new maptalks.LineStringLayer(maptalks.INTERNAL_LAYER_PREFIX + '_distance3dtool', { geometryEvents: false }).addTo(this._gllayer);
-        this._markerLayer = new maptalks.PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_distance3dtool_marker', { geometryEvents: false }).addTo(this._gllayer);
+        this._helperLayer = new LineStringLayer(maptalks.INTERNAL_LAYER_PREFIX + '_distance3dtool', { geometryEvents: false }).addTo(this._gllayer);
+        this._markerLayer = new PointLayer(maptalks.INTERNAL_LAYER_PREFIX + '_distance3dtool_marker', { geometryEvents: false }).addTo(this._gllayer);
     }
 
     _drawVertexMarker() {
