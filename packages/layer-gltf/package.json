@@ -13,8 +13,7 @@
   "jsdelivr": "dist/maptalks.gltf.js",
   "files": [
     "dist/maptalks.gltf.js",
-    "dist/maptalks.gltf.mjs",
-    "dist/maptalks.gltf-browser.mjs"
+    "dist/maptalks.gltf.mjs"
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",

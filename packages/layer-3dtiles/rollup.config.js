@@ -215,38 +215,6 @@ if (production) {
             watch: {
                 include: ['src/**/*']
             }
-        },
-        {
-            input: 'build/index.js',
-            external: ['maptalks', '@maptalks/gl'],
-            plugins: [
-                resolve({
-                    browser: true,
-                    preferBuiltins: false
-                }),
-                commonjs({
-                    // global keyword handling causes Webpack compatibility issues, so we disabled it:
-                    // https://github.com/mapbox/mapbox-gl-js/pull/6956
-                    ignoreGlobal: true
-                }),
-                glsl()
-            ].concat(plugins),
-            output: {
-                globals: {
-                    'maptalks': 'maptalks',
-                    '@maptalks/gl': 'maptalksgl'
-                },
-                banner,
-                outro,
-                extend: true,
-                name: 'maptalks',
-                file: 'dist/maptalks.3dtiles-browser.mjs',
-                format: 'es',
-                sourcemap: production ? false : 'inline',
-            },
-            watch: {
-                include: ['src/**/*']
-            }
         }
     )
 }

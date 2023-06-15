@@ -27,8 +27,7 @@
   ],
   "files": [
     "dist/maptalks.3dtiles.js",
-    "dist/maptalks.3dtiles.mjs",
-    "dist/maptalks.3dtiles-browser.mjs"
+    "dist/maptalks.3dtiles.mjs"
   ],
   "author": "fuzhenn",
   "license": "UNLICENSED",
