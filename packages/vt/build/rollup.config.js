@@ -7,7 +7,7 @@ const replace = require('@rollup/plugin-replace');
 const pkg = require('../package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = 'dist/maptalks.vt.js';//(production || process.env.BUILD === 'test') ? 'dist/maptalks.vt.js' : 'dist/maptalks.vt-dev.js';
+const outputFile = pkg.main;
 const reserves = ['on', 'once', 'off', '_drawTiles'];
 const plugins = production ? [
     terser({
@@ -172,7 +172,7 @@ module.exports = [{
             outro,
             extend: true,
             name: 'maptalks',
-            file: 'dist/maptalks.vt.mjs',
+            file: pkg.module,
             format: 'es',
             sourcemap: production ? false : 'inline',
         },

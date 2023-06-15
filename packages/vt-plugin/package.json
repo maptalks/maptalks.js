@@ -3,7 +3,6 @@
     "version": "0.82.0",
     "description": "The base plugin for maptalks vectortile layer",
     "module": "index.js",
-    "jsnext:main": "index.js",
     "scripts": {
         "lint": "eslint *.js",
         "prepare": "npm run lint"
