@@ -300,9 +300,11 @@ class GeometryEditor extends Eventable(Class) {
                 }
             },
             onUp: () => {
-                const geo = shadow || this._geometry;
-                this._update('setCoordinates', Coordinate.toNumberArrays(geo.getCoordinates()));
                 if (shadow) {
+                    const shadowFirst = shadow.getFirstCoordinate();
+                    const first = this._geometry.getFirstCoordinate();
+                    const offset = shadowFirst.sub(first);
+                    this._update('translate', offset);
                     shadow.remove();
                 }
             }

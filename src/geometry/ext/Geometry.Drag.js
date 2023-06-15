@@ -319,15 +319,10 @@ class GeometryDragHandler extends Handler {
         const shadow = this._shadow;
         if (shadow) {
             if (target.options['dragShadow']) {
-                if (target.getGeometries) {
-                    const shadows = shadow.getGeometries();
-                    const geos = target.getGeometries();
-                    shadows.forEach((g, i) => {
-                        geos[i].setCoordinates(shadows[i].getCoordinates());
-                    });
-                } else {
-                    target.setCoordinates(shadow.getCoordinates());
-                }
+                const shadowFirst = shadow.getFirstCoordinate();
+                const first = target.getFirstCoordinate();
+                const offset = shadowFirst.sub(first);
+                target.translate(offset);
             }
             shadow._fireEvent('dragend', eventParam);
             shadow.remove();
