@@ -201,8 +201,10 @@ class TileLayer extends Layer {
      * @return {TileLayer} this
      */
     forceReload() {
+        this.fire('forcereloadstart');
         this.clear();
         this.load();
+        this.fire('forcereloadend');
         return this;
     }
 
