@@ -16,7 +16,7 @@
   "author": "fuzhenn, liubing",
   "license": "UNLICENSED",
   "files": [
-    "dist/gltf-loader.mjs"
+    "dist/gltf-loader.es.js"
   ],
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
