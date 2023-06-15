@@ -3,7 +3,7 @@
   "version": "0.84.2",
   "description": "ktx2 transcoder for @maptalks/gl",
   "main": "dist/transcoders.ktx2.js",
-  "module": "dist/transcoders.ktx2.mjs",
+  "module": "dist/transcoders.ktx2.es.js",
   "scripts": {
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -16,7 +16,7 @@
   ],
   "files": [
     "dist/transcoders.ktx2.js",
-    "dist/transcoders.ktx2.mjs"
+    "dist/transcoders.ktx2.es.js"
   ],
   "author": "fuzhen",
   "license": "ISC",

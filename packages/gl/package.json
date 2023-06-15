@@ -3,7 +3,7 @@
   "version": "0.84.2",
   "description": "WebGL infrastrcture for maptalks",
   "main": "dist/maptalksgl.js",
-  "module": "dist/maptalksgl.mjs",
+  "module": "dist/maptalksgl.es.js",
   "scripts": {
     "build": "npm run lint && cd ../reshader.gl && npm run build && cd ../gl && rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "cd ../reshader.gl && npm run build-dev && cd ../gl && rollup -c rollup.config.js",

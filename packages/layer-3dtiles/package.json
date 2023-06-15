@@ -3,7 +3,7 @@
   "version": "0.84.3",
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
-  "module": "dist/maptalks.3dtiles.mjs",
+  "module": "dist/maptalks.3dtiles.es.js",
   "scripts": {
     "lint": "eslint src/**/*.js test/**/*.js",
     "build": "npm run lint && rollup --environment BUILD:production -c rollup.config.js",

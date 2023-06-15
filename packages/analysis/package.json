@@ -8,11 +8,10 @@
     "url": "https://github.com/fuzhenn/maptalks.analysis.git"
   },
   "main": "dist/maptalks.analysis.js",
-  "module": "dist/maptalks.analysis.mjs",
-  "jsnext:main": "dist/maptalks.analysis.mjs",
+  "module": "dist/maptalks.analysis.es.js",
   "files": [
     "dist/maptalks.analysis.js",
-    "dist/maptalks.analysis.mjs"
+    "dist/maptalks.analysis.es.js"
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",

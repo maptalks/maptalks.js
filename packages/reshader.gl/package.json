@@ -2,7 +2,7 @@
   "name": "@maptalks/reshader.gl",
   "version": "0.84.1",
   "description": "A shader centric WebGL engine based on regl",
-  "module": "dist/reshadergl.mjs",
+  "module": "dist/reshadergl.es.js",
   "scripts": {
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -12,7 +12,7 @@
     "preversion": "npm run lint"
   },
   "files": [
-    "dist/reshadergl.mjs"
+    "dist/reshadergl.es.js"
   ],
   "keywords": [
     "webgl"

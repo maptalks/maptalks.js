@@ -5,10 +5,9 @@ const replace = require('@rollup/plugin-replace');
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
-const outputFile = production ? 'dist/maptalks.3dtiles.js' : 'dist/maptalks.3dtiles.js';
-const outputESFile = production ? pkg.module : 'dist/maptalks.3dtiles.mjs';
-const plugins = [
-    ].concat(production ? [
+const outputFile = pkg.main;
+const outputESFile = pkg.module;
+const plugins = [].concat(production ? [
     removeGlobal(),
     terser({
         mangle: {

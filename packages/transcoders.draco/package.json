@@ -3,7 +3,7 @@
   "version": "0.84.2",
   "description": "draco transcoder for @maptalks/gl",
   "main": "dist/transcoders.draco.js",
-  "module": "dist/transcoders.draco.mjs",
+  "module": "dist/transcoders.draco.es.js",
   "scripts": {
     "build": "rollup --environment BUILD:production -c rollup.config.js",
     "build-dev": "rollup -c rollup.config.js",
@@ -14,7 +14,7 @@
   "license": "ISC",
   "files": [
     "dist/transcoders.draco.js",
-    "dist/transcoders.draco.mjs"
+    "dist/transcoders.draco.es.js"
   ],
   "dependencies": {
     "@maptalks/gl": "^0.84.2"

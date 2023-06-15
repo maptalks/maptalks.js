@@ -8,11 +8,10 @@
     "url": "https://github.com/maptalks/transform-control.git"
   },
   "main": "dist/transform-control.js",
-  "module": "dist/transform-control.mjs",
-  "jsnext:main": "dist/transform-control.mjs",
+  "module": "dist/transform-control.es.js",
   "files": [
     "dist/transform-control.js",
-    "dist/transform-control.mjs"
+    "dist/transform-control.es.js"
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",

@@ -2,7 +2,7 @@
   "name": "@maptalks/gltf-loader",
   "version": "0.84.0",
   "description": "",
-  "module": "dist/gltf-loader.mjs",
+  "module": "dist/gltf-loader.es.js",
   "scripts": {
     "build": "npm run lint && cd ../layer-3dtiles && npm run build && cd ../gltf-loader && rollup --environment BUILD:production -c",
     "dev": "rollup -c -w",

@@ -8,13 +8,12 @@
     "url": "https://github.com/liubgithub/traffic.git"
   },
   "main": "dist/maptalks.traffic.js",
-  "module": "dist/maptalks.traffic.mjs",
+  "module": "dist/maptalks.traffic.es.js",
   "unpkg": "dist/maptalks.traffic.js",
   "jsdelivr": "dist/maptalks.traffic.js",
   "files": [
     "dist/maptalks.traffic.js",
-    "dist/maptalks.traffic.mjs",
-    "dist/maptalks.traffic-browser.mjs"
+    "dist/maptalks.traffic.es.js"
   ],
   "scripts": {
     "dev": "rollup -w -c rollup.config.js",
