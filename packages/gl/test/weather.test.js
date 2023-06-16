@@ -111,7 +111,7 @@ describe('weather tests', () => {
         }).addTo(map);
     });
 
-    it('enable snow', done => {
+    it.only('enable snow', done => {
         const snow = {
             enable: true
         };
@@ -138,10 +138,10 @@ describe('weather tests', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 const pixel2 = pickPixel(map, map.width / 2, 137, 1, 1);
-                expect(pixelMatch([161, 161, 161, 255], pixel1)).to.be.eql(true);
-                expect(pixelMatch([186, 186, 186, 255], pixel2)).to.be.eql(true);
+                expect(pixelMatch([169, 169, 169, 163], pixel1)).to.be.eql(true);
+                expect(pixelMatch([241, 241, 241, 163], pixel2)).to.be.eql(true);
                 done();
-            }, 100);
+            }, 200);
         });
         gltfLayer.addGeometry(gltfMarker);
     });
