@@ -222,8 +222,6 @@ export default class GLTFMarker extends Marker {
         }
         mesh.setUniform('uPickingId', this._getPickingId());
         mesh.properties.isAnimated = this.isAnimated();
-        const layer = this.getLayer();
-        mesh.properties.polygonOffset = layer._polygonOffset;
         this._setPolygonFill(mesh);
     }
 
