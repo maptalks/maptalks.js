@@ -83,6 +83,18 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     }
 
     /**
+     *
+     * redraw layer
+     */
+    redraw() {
+        const renderer = this.getRenderer();
+        if (renderer && renderer.setToRedraw) {
+            renderer.setToRedraw();
+        }
+        return this;
+    }
+
+    /**
      * load the tile layer, can't be overrided by sub-classes
      */
     load() {
