@@ -175,12 +175,18 @@ export default class GroupGLLayer extends maptalks.Layer {
             }
         }
         let offset = 0;
-        for (let i = 0; i < this.layers.length; i++) {
+        const len = this.layers.length;
+        for (let i = len - 1; i >= 0; i--) {
             if (this.layers[i].setPolygonOffset && this.layers[i].getPolygonOffsetCount) {
                 this.layers[i].setPolygonOffset(offset, total);
                 offset += this.layers[i].getPolygonOffsetCount();
             }
         }
+        this._polygonOffset = offset;
+    }
+
+    getPolygonOffsetCount() {
+        return this._polygonOffset;
     }
 
     /**
