@@ -384,7 +384,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             this.completeRender();
             return;
         }
-        if (layer.options['collision'] && (!this._collisionTimestamp || this._collisionTimestamp !== timestamp)) {
+        if (layer.options['collision']) {
             layer.clearCollisionIndex();
             // layer.clearBackgroundCollisionIndex();
         }
@@ -856,7 +856,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const isFinalRender = !parentContext.timestamp || parentContext.isFinalRender;
 
         // maptalks/issues#202, finalRender后不再更新collision，以免后处理（如bloom）阶段继续更新collision造成bug
-        if (this.layer.options.collision && (!this._collisionTimestamp || this._collisionTimestamp !== timestamp)) {
+        if (this.layer.options.collision && !parentContext.isPostProcess) {
             //按照plugin顺序更新collision索引
             plugins.forEach((plugin) => {
                 if (!this._isVisible(plugin) || !hasMesh(plugin)) {
@@ -871,7 +871,6 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
                 const context = this._getPluginContext(plugin, 0, cameraPosition, timestamp);
                 plugin.prepareRender(context);
                 plugin.updateCollision(context);
-                this._collisionTimestamp = timestamp;
             });
         } else {
             plugins.forEach((plugin) => {
