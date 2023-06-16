@@ -64,6 +64,7 @@ export default class PostProcess {
         const renderMode = context.renderMode;
         const sceneFilter = context.sceneFilter;
         const renderTarget = context.renderTarget;
+        context.isPostProcess = true;
         context.renderMode = 'default';
         context['sceneFilter'] = bloomFilter;
         context.renderTarget = {
@@ -84,6 +85,7 @@ export default class PostProcess {
                 renderer.draw(timestamp, context);
             });
         }
+        delete context.isPostProcess;
         context.renderMode = renderMode;
         context.sceneFilter = sceneFilter;
         context.renderTarget = renderTarget;
@@ -109,6 +111,7 @@ export default class PostProcess {
         const timestamp = layerRenderer.getFrameTime();
         const event = layerRenderer.getFrameEvent();
         const context = layerRenderer.getFrameContext();
+        context.isPostProcess = true;
         context.ssr = this.getSSRContext();
         const renderMode = context.renderMode;
         const filter = context['sceneFilter'];
@@ -139,6 +142,7 @@ export default class PostProcess {
         const groundPainted = layerRenderer.drawGround();
         //以免和bloom冲突
         delete context.ssr;
+        delete context.isPostProcess;
         context.renderMode = renderMode;
         context['sceneFilter'] = filter;
         this._ssrPainted = fGL.getDrawCalls() > 0;
