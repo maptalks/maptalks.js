@@ -413,18 +413,22 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
 
     _prepareRender() {
         const plugins = this._getFramePlugins();
-        this._pluginOffsets = [];
-        const groundConfig = this.layer.getGroundConfig();
-        let polygonOffsetIndex = +(!!groundConfig.enable);
-        plugins.forEach((plugin, idx) => {
+        this._pluginOffsets = this._pluginOffsets || [];
+        let polygonOffsetIndex = 0;
+        const len = plugins.length;
+        for (let i = len - 1; i >= 0; i--) {
+            const plugin = plugins[i];
             if (!plugin.isVisible() || !hasMesh(plugin)) {
-                return;
+                continue;
             }
-            this._pluginOffsets[idx] = polygonOffsetIndex;
+            this._pluginOffsets[i] = polygonOffsetIndex;
             if (plugin.needPolygonOffset()) {
                 polygonOffsetIndex++;
             }
-        });
+        }
+        if (this._groundPainter.isEnable()) {
+            polygonOffsetIndex++;
+        }
         this._polygonOffsetIndex = polygonOffsetIndex;
     }
 
@@ -893,9 +897,10 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let dirty = false;
         //只在需要的时候才增加polygonOffset
         if (isFirstRender && !isRenderingTerrain) {
-            const groundOffset = -this.layer.getPolygonOffset();
+            const groundOffset = this.layer.getPolygonOffset() + this.layer.getPolygonOffsetCount();
             const groundContext = this._getPluginContext(null, groundOffset, cameraPosition, timestamp);
-            groundContext.offsetFactor = groundContext.offsetUnits = groundOffset;
+            groundContext.offsetFactor = groundOffset;
+            groundContext.offsetUnits = groundOffset
             this._groundPainter.paint(groundContext);
         }
         plugins.forEach((plugin, idx) => {

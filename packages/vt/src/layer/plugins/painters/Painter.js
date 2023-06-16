@@ -508,17 +508,17 @@ class Painter {
         return {
             factor: (_, props) => {
                 if (props.meshConfig.ssr) {
-                    // ssr offset和factor值较小时，会影响ssr逻辑中深度精度，造成屏幕边缘出现“阴影”现象。
                     return 1;
                 }
-                const factor = -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0));
+                const factor = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return factor;
             },
             units: (_, props) => {
                 if (props.meshConfig.ssr) {
                     return 1;
                 }
-                return -(layer.getPolygonOffset() + (this.polygonOffsetIndex || 0));
+                const units = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
+                return units;
             }
         };
     }

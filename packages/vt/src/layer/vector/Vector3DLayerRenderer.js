@@ -137,21 +137,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._updateDirtyTargets();
 
         const isDefaultRender = !renderMode || renderMode === 'default';
-        let polygonOffset = 0;
+        const hasLine = this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode));
+        let polygonOffset = hasLine ? 2 : 1;
         if (this.layer.options['meshRenderOrder'] === 0) {
-            this._renderMeshes(context, polygonOffset++, renderMode);
+            this._renderMeshes(context, polygonOffset--, renderMode);
         }
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
             this._linePainter.startFrame(context);
             this._linePainter.addMesh(this._lineMeshes, null, { bloom: this._parentContext.bloom });
             this._linePainter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset++;
+            context.polygonOffsetIndex = polygonOffset--;
             this._linePainter.render(context);
         }
 
         if (this.layer.options['meshRenderOrder'] === 1) {
-            this._renderMeshes(context, polygonOffset++, renderMode);
+            this._renderMeshes(context, polygonOffset--, renderMode);
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
