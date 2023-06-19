@@ -191,7 +191,10 @@ export default function (Base) {
         identifyMask(point, options) {
             const map = this.getMap();
             if (!map) {
-                return null;
+                return [];
+            }
+            if (!this['_maskList'] || !this['_maskList'].length) {
+                return [];
             }
             const opts = extend({}, options);
             opts['excludeMasks'] = true; //此处调用identifyAtPoint时，不需要去identifyMask
@@ -200,13 +203,13 @@ export default function (Base) {
             if (coordinate) {
                 return this['_hitMasks'](coordinate);
             }
-            return null;
+            return [];
         }
 
         _hitMasks(coordinate) {
             const masks = this['_maskList'];
             if (!masks) {
-                return null;
+                return [];
             }
             const hits = [];
             for (let i = 0; i < masks.length; i++) {
