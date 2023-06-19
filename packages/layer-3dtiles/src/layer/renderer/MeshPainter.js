@@ -263,16 +263,16 @@ export default class MeshPainter {
         // this._renderer.render(shader, uniforms, this._modelScene, renderTarget && renderTarget.fbo);
 
 
-        uniforms['stencilEnable'] = true;
+        // uniforms['stencilEnable'] = true;
         uniforms['debug'] = false;
-        uniforms['cullFace'] = 'back';
-        uniforms['colorMask'] = colorOn;
+        // uniforms['cullFace'] = 'back';
+        // uniforms['colorMask'] = colorOn;
         let drawCount = 0;
         this._modelScene.setMeshes(meshes);
         drawCount += this._renderer.render(shader, uniforms, this._modelScene, renderTarget && renderTarget.fbo);
 
 
-        uniforms['stencilEnable'] = true;
+        // uniforms['stencilEnable'] = true;
 
         this._i3dmScene.setMeshes(i3dmMeshes);
         drawCount += this._renderer.render(shader, uniforms, this._i3dmScene, renderTarget && renderTarget.fbo);
@@ -1362,19 +1362,17 @@ export default class MeshPainter {
         };
         return {
             viewport,
-            colorMask: (_, props) => {
-                return props['colorMask'] || colorOn;
-            },
+            // colorMask: (_, props) => {
+            //     return props['colorMask'] || colorOn;
+            // },
             cull : {
-                enable: true,
+                enable: true/*,
                 face: (_, props) => {
                     return props.cullFace || 'back';
-                }
+                }*/
             },
             stencil: {
-                enable:  (_, props) => {
-                    return props.stencilEnable === true;
-                },
+                enable: true,
                 func: {
                     cmp: (_, props) => {
                         return props.meshProperties.isLeaf ? 'always' : '>=';
