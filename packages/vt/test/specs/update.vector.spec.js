@@ -2024,6 +2024,40 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can update texture in ExtrudePolygonLayer', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                layer.updateMaterial({
+                    baseColorTexture: 'file://' + path.resolve(__dirname, '../integration/resources/avatar.jpg'),
+                });
+            } else if (count === 4) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert.deepEqual(pixel, [62, 56, 45, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can translate ExtrudePolygon', done => {
         map.setPitch(60);
         const polygon = new maptalks.Polygon([

@@ -168,7 +168,9 @@ class MeshPainter extends Painter {
                     // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
                     return EMPTY_UV_ORIGIN;
                 }
-                const uvScale = this.getSymbol(symbolIndex).material.uvScale || [1, 1];
+                const symbol = this.getSymbol(symbolIndex);
+                const material = symbol.material;
+                const uvScale = material && material.uvScale || [1, 1];
                 const dataUVScale = this.dataConfig.dataUVScale || [1, 1];
                 // 每个瓦片左上角的坐标值
                 const xmin = uvScale[0] * tilePoint[0] * glScale;

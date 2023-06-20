@@ -166,13 +166,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const zoom = this.getMap().getZoom();
         const tilePoint = center;
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
-        const t = hasTexture(this.layer.options.material);
-        if (t) {
-            dataConfig.uv = 1;
-            if (t === 2) {
-                dataConfig.tangent = 1;
-            }
-        }
+        dataConfig.uv = 1;
         const debugIndex = undefined;
         if (!features.length) {
             return Promise.resolve([]);
