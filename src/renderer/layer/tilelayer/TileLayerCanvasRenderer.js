@@ -735,24 +735,43 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const map = this.getMap();
         const children = [];
         if (layer._isPyramidMode()) {
-            // only find next level's children
+            const zoomDiff = 2;
             const zoomOffset = layer.options['zoomOffset'];
             const cx = info.x * 2;
             const cy = info.y * 2;
             const cz = info.z + 1;
+            const queue = [];
             for (let j = 0; j < 2; j++) {
                 for (let jj = 0; jj < 2; jj++) {
-                    const id = layer._getTileId(cx + j, cy + jj, cz + zoomOffset, info.layer);
-                    if (this.tileCache.has(id)) {
-                        const tile = this.tileCache.getAndRemove(id);
-                        if (this.isValidCachedTile(tile)) {
-                            children.push(tile);
-                            this.tileCache.add(id, tile);
+                    queue.push(cx + j, cy + jj, cz);
+                }
+            }
+            while (queue.length) {
+                const z = queue.pop();
+                const y = queue.pop();
+                const x = queue.pop();
+                const id = layer._getTileId(x, y, z + zoomOffset, info.layer);
+                const canVisit = z + 1 <= info.z + zoomDiff;
+                const tile = this.tileCache.getAndRemove(id);
+                if (tile) {
+                    if (this.isValidCachedTile(tile)) {
+                        children.push(tile);
+                        this.tileCache.add(id, tile);
+                    } else if (canVisit) {
+                        for (let j = 0; j < 2; j++) {
+                            for (let jj = 0; jj < 2; jj++) {
+                                queue.push(x * 2 + j, y * 2 + jj, z + 1);
+                            }
+                        }
+                    }
+                } else if (canVisit) {
+                    for (let j = 0; j < 2; j++) {
+                        for (let jj = 0; jj < 2; jj++) {
+                            queue.push(x * 2 + j, y * 2 + jj, z + 1);
                         }
                     }
                 }
             }
-
             return children;
         }
         const zoomDiff = 1;
@@ -784,8 +803,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         for (let i = sx; i < ex; i++) {
             for (let ii = sy; ii < ey; ii++) {
                 id = layer._getTileId(i, ii, childZoom + zoomOffset, layerId);
-                if (this.tileCache.has(id)) {
-                    tile = this.tileCache.getAndRemove(id);
+                tile = this.tileCache.getAndRemove(id);
+                if (tile) {
                     if (this.isValidCachedTile(tile)) {
                         children.push(tile);
                         this.tileCache.add(id, tile);
@@ -811,8 +830,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const x = Math.floor(info.x / scale);
                 const y = Math.floor(info.y / scale);
                 const id = layer._getTileId(x, y, z + zoomOffset, info.layer);
-                if (this.tileCache.has(id)) {
-                    const tile = this.tileCache.getAndRemove(id);
+                const tile = this.tileCache.getAndRemove(id);
+                if (tile) {
                     if (this.isValidCachedTile(tile)) {
                         this.tileCache.add(id, tile);
                         return tile;
@@ -832,8 +851,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             if (!res) continue;
             const tileIndex = layer._getTileConfig().getTileIndex(prj, res);
             const id = layer._getTileId(tileIndex.x, tileIndex.y, z + zoomOffset, info.layer);
-            if (this.tileCache.has(id)) {
-                const tile = this.tileCache.getAndRemove(id);
+            const tile = this.tileCache.getAndRemove(id);
+            if (tile) {
                 this.tileCache.add(id, tile);
                 return tile;
             }
