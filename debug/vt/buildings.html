@@ -13,7 +13,7 @@
   <!-- 需要用 maptalks worker 分支下的版本 -->
   <script src="/maptalks/dist/maptalks.js"></script>
   <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks@next/dist/maptalks.min.js"></script> -->
-  <script src="/maptalksgl/dist/maptalksgl-dev.js"></script>
+  <script src="/maptalksgl/dist/maptalksgl.js"></script>
   <script src="buildings.js"></script>
   <script src="../../packages/vt/dist/maptalks.vt.js"></script>
   <!-- <script src="../../packages/vt.basic/dist/maptalks.vt.basic.js"></script> -->
@@ -76,7 +76,8 @@
 
       "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.20000000000007,"bearing":-47.20000000000175,
 
-      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.60000000000008,"bearing":26.599999999998204
+      "center":[13.409510610737243,52.53283290153101],"zoom":19.136793519083586,"pitch":77.60000000000008,"bearing":26.599999999998204,
+      pitch: 0
 
       // bearing : -42,
       // baseLayer: osm
@@ -136,7 +137,7 @@
           // exposure: 1.5
         },
         // color: [0.05, 0.05, 0.05],
-        exposure: 1.5,
+        exposure: 2.5,
         orientation: 0
       },
       directional: {
@@ -240,6 +241,7 @@
       // 'uvScaleFactor': 1,
       // 'uvOffset': [0, 0],      //纹理坐标的偏移量
       // 'uBaseColorTexture': 'http://localhost/maptalksgl-dev/debug/reshader/ibl/resources/rusted_iron/609-normal.jpg',
+      'baseColorTexture': './resources/UV_Grid_Sm.jpg',
       'baseColorFactor': [1, 1, 1, 1],
       'roughnessFactor': 0.,
       'metalnessFactor': 1,
@@ -375,6 +377,8 @@
     //'#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'
     // test tile clipping mask
     var layer = new maptalks.GeoJSONVectorTileLayer('polygon1', {
+      debug: true,
+      topOmbbUV: true,
       // debug: true,
       // canvas: debugCanvas,
       data: data,
