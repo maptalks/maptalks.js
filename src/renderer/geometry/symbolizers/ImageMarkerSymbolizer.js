@@ -20,6 +20,9 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
+        if (!ctx.isHitTesting) {
+            this._resetBBOX();
+        }
         const style = this.style;
         if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 || style['markerOpacity'] === 0)) {
             return;
@@ -70,12 +73,16 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 p = origin;
             }
+            const x = p.x + alignPoint.x, y = p.y + alignPoint.y;
             Canvas.image(ctx, img,
-                p.x + alignPoint.x,
-                p.y + alignPoint.y,
+                x,
+                y,
                 width, height);
             if (origin) {
                 ctx.restore();
+            }
+            if (!ctx.isHitTesting) {
+                this._setBBOX(x, y, x + width, y + height);
             }
         }
         if (alpha !== undefined) {

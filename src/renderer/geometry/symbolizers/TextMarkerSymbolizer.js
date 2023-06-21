@@ -30,6 +30,9 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
+        if (!ctx.isHitTesting) {
+            this._resetBBOX();
+        }
         if (!this.painter.isHitTesting() && (this.style['textSize'] === 0 ||
             !this.style['textOpacity'] && (!this.style['textHaloRadius'] || !this.style['textHaloOpacity']) ||
             this.style['textWrapWidth'] === 0)) {
@@ -56,7 +59,10 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 p = origin;
             }
-            Canvas.text(ctx, textContent, p, style, textDesc);
+            const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
+            if (!ctx.isHitTesting) {
+                this._setBBOX(bbox);
+            }
             if (origin) {
                 ctx.restore();
             }

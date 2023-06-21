@@ -1,5 +1,6 @@
 import { COLOR_PROPERTIES } from '../../../core/Constants';
 import { isString } from '../../../core/util';
+import { resetBBOX, setBBOX } from '../../../core/util/bbox';
 
 /**
  * @classdesc
@@ -10,6 +11,21 @@ import { isString } from '../../../core/util';
  * @private
  */
 class Symbolizer {
+    constructor() {
+        this.bbox = [];
+        this._resetBBOX();
+    }
+
+    _resetBBOX() {
+        resetBBOX(this.bbox);
+        return this;
+    }
+
+    _setBBOX(x1, y1, x2, y2) {
+        setBBOX(this.bbox, x1, y1, x2, y2);
+        return this;
+    }
+
     getMap() {
         return this.geometry.getMap();
     }

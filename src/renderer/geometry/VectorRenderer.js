@@ -9,6 +9,7 @@ import Rectangle from '../../geometry/Rectangle';
 import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
+import { BBOX_TEMP, pointsBBOX, resetBBOX } from '../../core/util/bbox';
 
 const TEMP_WITHIN = {
     within: false,
@@ -187,6 +188,12 @@ LineString.include({
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
         }
         this._paintArrow(ctx, points, lineOpacity);
+        if (!ctx.isHitTesting) {
+            resetBBOX(BBOX_TEMP);
+            pointsBBOX(points, BBOX_TEMP);
+            return BBOX_TEMP;
+        }
+        return null;
     },
 
     _getArrowPlacement() {
@@ -311,6 +318,12 @@ Polygon.include({
         } else {
             Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
         }
+        if (!ctx.isHitTesting) {
+            resetBBOX(BBOX_TEMP);
+            pointsBBOX(points, BBOX_TEMP);
+            return BBOX_TEMP;
+        }
+        return null;
     }
 });
 

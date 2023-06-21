@@ -168,6 +168,13 @@ class VectorLayer extends OverlayLayer {
             if (!geo || !geo.isVisible() || !geo._getPainter() || !geo.options['interactive']) {
                 continue;
             }
+            const bbox = geo._getPainter().getBBOX();
+            if (bbox) {
+                const { x, y } = cp;
+                if (x < bbox[0] || y < bbox[1] || x > bbox[2] || y > bbox[3]) {
+                    continue;
+                }
+            }
             if (!(geo instanceof LineString) || (!geo._getArrowStyle() && !(geo instanceof Curve))) {
                 // Except for LineString with arrows or curves
                 let extent = geo.getContainerExtent(TEMP_EXTENT);

@@ -34,6 +34,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
+        if (!ctx.isHitTesting) {
+            this._resetBBOX();
+        }
         const style = this.style;
         if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 ||
             (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0))) {
@@ -86,7 +89,11 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 point = origin;
             }
-            Canvas.image(ctx, image, point.x + anchor.x, point.y + anchor.y);
+            const x = point.x + anchor.x, y = point.y + anchor.y;
+            Canvas.image(ctx, image, x, y);
+            if (!ctx.isHitTesting) {
+                this._setBBOX(x, y, x + image.width, y + image.height);
+            }
             if (origin) {
                 ctx.restore();
             }

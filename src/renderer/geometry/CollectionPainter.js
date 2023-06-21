@@ -1,5 +1,6 @@
 import Class from '../../core/Class';
 import PointExtent from '../../geo/PointExtent';
+import { resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -17,7 +18,29 @@ export default class CollectionPainter extends Class {
         super();
         this.geometry = geometry;
         this.isMask = isMask;
+        this.bbox = [];
     }
+
+    getBBOX() {
+        resetBBOX(this.bbox);
+        const geometries = this.geometry.getGeometries();
+        for (let i = geometries.length - 1; i >= 0; i--) {
+            const painter = geometries[i]._getPainter();
+            if (!painter) {
+                continue;
+            }
+            const bbox = painter.getBBOX();
+            if (!validateBBOX(bbox)) {
+                continue;
+            }
+            setBBOX(this.bbox, bbox);
+        }
+        if (validateBBOX(this.bbox)) {
+            return this.bbox;
+        }
+        return null;
+    }
+
 
     _eachPainter(fn) {
         const geometries = this.geometry.getGeometries();
