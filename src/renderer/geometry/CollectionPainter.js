@@ -21,20 +21,23 @@ export default class CollectionPainter extends Class {
         this.bbox = [];
     }
 
+    _resetBBOX() {
+        resetBBOX(this.bbox);
+        this._eachPainter((painter) => {
+            painter._resetBBOX();
+        });
+        return this;
+    }
+
     getRenderBBOX() {
         resetBBOX(this.bbox);
-        const geometries = this.geometry.getGeometries();
-        for (let i = geometries.length - 1; i >= 0; i--) {
-            const painter = geometries[i]._getPainter();
-            if (!painter) {
-                continue;
-            }
+        this._eachPainter((painter) => {
             const bbox = painter.getRenderBBOX();
             if (!validateBBOX(bbox)) {
-                continue;
+                return;
             }
             setBBOX(this.bbox, bbox);
-        }
+        });
         if (validateBBOX(this.bbox)) {
             return this.bbox;
         }

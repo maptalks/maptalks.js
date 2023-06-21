@@ -264,6 +264,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
         }
         if (!inCurrentView) {
+            painter._resetBBOX();
             return;
         }
         if (painter.hasPoint()) {
