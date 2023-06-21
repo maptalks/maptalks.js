@@ -59,7 +59,7 @@ class Painter extends Class {
     }
 
 
-    getBBOX() {
+    getRenderBBOX() {
         resetBBOX(this.bbox);
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             const symbolizer = this.symbolizers[i];

@@ -21,7 +21,7 @@ export default class CollectionPainter extends Class {
         this.bbox = [];
     }
 
-    getBBOX() {
+    getRenderBBOX() {
         resetBBOX(this.bbox);
         const geometries = this.geometry.getGeometries();
         for (let i = geometries.length - 1; i >= 0; i--) {
@@ -29,7 +29,7 @@ export default class CollectionPainter extends Class {
             if (!painter) {
                 continue;
             }
-            const bbox = painter.getBBOX();
+            const bbox = painter.getRenderBBOX();
             if (!validateBBOX(bbox)) {
                 continue;
             }
