@@ -1,11 +1,18 @@
-export const BBOX_TEMP = [];
+const minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+
+
+export function getDefaultBBOX() {
+    return [minx, miny, maxx, maxy];
+}
+
+export const BBOX_TEMP = getDefaultBBOX();
 
 //reset bbox
 export function resetBBOX(bbox) {
-    bbox[0] = Infinity;
-    bbox[1] = Infinity;
-    bbox[2] = -Infinity;
-    bbox[3] = -Infinity;
+    bbox[0] = minx;
+    bbox[1] = miny;
+    bbox[2] = maxx;
+    bbox[3] = maxy;
 }
 
 //cal points bbox:linestring,polygon etc

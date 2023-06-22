@@ -7,7 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
-import { resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -55,7 +55,7 @@ class Painter extends Class {
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
         this._altAtGL = this._getGeometryAltitude();
-        this.bbox = [];
+        this.bbox = getDefaultBBOX();
     }
 
     _resetBBOX() {

@@ -1,6 +1,6 @@
 import { COLOR_PROPERTIES } from '../../../core/Constants';
 import { isString } from '../../../core/util';
-import { resetBBOX, setBBOX } from '../../../core/util/bbox';
+import { getDefaultBBOX, resetBBOX, setBBOX } from '../../../core/util/bbox';
 
 /**
  * @classdesc
@@ -12,8 +12,7 @@ import { resetBBOX, setBBOX } from '../../../core/util/bbox';
  */
 class Symbolizer {
     constructor() {
-        this.bbox = [];
-        this._resetBBOX();
+        this.bbox = getDefaultBBOX();
     }
 
     _resetBBOX() {

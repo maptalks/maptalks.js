@@ -1,6 +1,6 @@
 import Class from '../../core/Class';
 import PointExtent from '../../geo/PointExtent';
-import { resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
+import { getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -18,7 +18,7 @@ export default class CollectionPainter extends Class {
         super();
         this.geometry = geometry;
         this.isMask = isMask;
-        this.bbox = [];
+        this.bbox = getDefaultBBOX();
     }
 
     _resetBBOX() {
