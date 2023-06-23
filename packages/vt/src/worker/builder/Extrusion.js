@@ -25,7 +25,9 @@ export function buildExtrudeFaces(
         // localScale用于将gl point转为瓦片内坐标
         localScale,
         centimeterToPoint,
-        positionType
+        positionType,
+        res,
+        glScale
     },
     debugIndex
 ) {
@@ -52,7 +54,7 @@ export function buildExtrudeFaces(
         generateSide = !!side;
     const uvs = generateUV ? [] : null;
     // const clipEdges = [];
-    function fillData(start, offset, holes, height, needReverseTriangle) {
+    function fillData(start, offset, holes, height, ombb, needReverseTriangle) {
         let typeStartOffset = offset;
         //just ignore bottom faces never appear in sight
         if (generateTop) {
@@ -84,7 +86,7 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1]);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale);
             }
 
             if (topThickness > 0 && !generateSide) {
@@ -134,6 +136,7 @@ export function buildExtrudeFaces(
         }
 
         const geometry = feature.geometry;
+        const ombb = feature.properties.ombb;
 
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
@@ -154,7 +157,7 @@ export function buildExtrudeFaces(
             //fill bottom vertexes
             if (!isHole && i > 0) {
                 //an exterior ring (multi polygon)
-                offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
                 geoVertices.length = 0;
                 holes = [];
                 start = offset;
@@ -164,7 +167,7 @@ export function buildExtrudeFaces(
             }
             if (!ring.length) {
                 if (i === l - 1) {
-                    offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
+                    offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
                 }
                 continue;
             }
@@ -185,7 +188,7 @@ export function buildExtrudeFaces(
             fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude, false, positionType);
 
             if (i === l - 1) {
-                offset = fillData(start, offset, holes, height * scale, needReverseTriangle); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
             }
         }
 

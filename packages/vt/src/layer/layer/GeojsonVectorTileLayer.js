@@ -37,6 +37,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.hasAltitude = this.options.enableAltitude;
         options.simplifyTolerance = this.options.simplifyTolerance;
         options.projection = this.getSpatialReference().getProjection().code;
+        options.topOmbbUV = this.options.topOmbbUV;
         return options;
     }
 

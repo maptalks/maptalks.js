@@ -6,7 +6,7 @@ import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-pac
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
-export default function (features, dataConfig, extent, uvOrigin,
+export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     localScale, centimeterToPoint, symbol, zoom, debugIndex, positionType) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
@@ -54,8 +54,10 @@ export default function (features, dataConfig, extent, uvOrigin,
             localScale,
             // 厘米到point的比例系数
             centimeterToPoint,
-            positionType
-            //<<
+            positionType,
+            // tile的resolution
+            res,
+            glScale
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);

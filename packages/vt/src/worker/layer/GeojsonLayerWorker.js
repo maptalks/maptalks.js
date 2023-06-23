@@ -5,6 +5,8 @@ import geojsonvt from '@maptalks/geojson-vt';
 import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
 import { PackUtil } from '@maptalks/vector-packer';
+import computeOMBB from '../builder/Ombb.js';
+import { project } from '../builder/projection.js';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -66,8 +68,10 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                     return;
                 }
                 const data = resp;
+                const features = Array.isArray(data) ? data : data.features;
+                this._genOMBB(features);
                 // debugger
-                const { first1000, idMap } = this._generateId(data);
+                const { first1000, idMap } = this._generateId(features);
                 this._generate(first1000, idMap, data, options, cb);
             });
         } else {
@@ -75,11 +79,64 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 data = JSON.parse(data);
             }
             const features = Array.isArray(data) ? data : data.features;
+            this._genOMBB(features);
             let first1000 = features;
             if (features && features.length > 1000) {
                 first1000 = features.slice(0, 1000);
             }
             this._generate(first1000, null, data, options, cb);
+        }
+    }
+
+    _genOMBB(features) {
+        if (this.options.topOmbbUV && features) {
+            // const projectionCode = 'EPSG:3857';
+            const start = performance.now();
+            let count = 0;
+            for (let i = 0; i < features.length; i++) {
+                const f = features[i];
+                if (!f || !f.geometry || !f.geometry.coordinates) {
+                    continue;
+                }
+                if (f.geometry.type === 'Polygon') {
+                    const shell = f.geometry.coordinates[0];
+                    if (!shell) {
+                        continue;
+                    }
+                    const ombb = computeOMBB(shell, 0, shell.length);
+                    count += shell.length;
+                    // for (let j = 0; j < ombb.length; j++) {
+                    //     if (Array.isArray(ombb[j])) {
+                    //         project(ombb[j], ombb[j], projectionCode);
+                    //     }
+                    // }
+                    f.properties = f.properties || {};
+                    f.properties.ombb = ombb;
+                } else if (f.geometry.type === 'MultiPolygon') {
+                    const polygons = f.geometry.coordinates;
+                    for (let i = 0; i < polygons.length; i++) {
+                        if (!polygons[i]) {
+                            continue;
+                        }
+                        const shell = polygons[i][0];
+                        if (!shell) {
+                            continue;
+                        }
+                        const ombb = computeOMBB(shell, 0, shell.length);
+                        count += shell.length;
+                        // for (let j = 0; j < ombb.length; j++) {
+                        //     if (Array.isArray(ombb[j])) {
+                        //         project(ombb[j], ombb[j], projectionCode);
+                        //     }
+                        // }
+                        f.properties = f.properties || {};
+                        f.properties.ombb = f.properties.ombb || [];
+                        f.properties.ombb[i] = ombb
+                    }
+
+                }
+            }
+            console.log(performance.now() - start, features.length, count);
         }
     }
 
@@ -121,12 +178,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                 first1000.push(f);
             }
         }
-        if (Array.isArray(data)) {
+        if (data) {
             data.forEach(f => {
-                visit(f);
-            });
-        } else if (data.features) {
-            data.features.forEach(f => {
                 visit(f);
             });
         }

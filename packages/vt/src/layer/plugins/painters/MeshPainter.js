@@ -6,6 +6,7 @@ import { setUniformFromSymbol, createColorSetter, isNumber, toUint8ColorInGlobal
 import { prepareFnTypeData } from './util/fn_type_util';
 import { interpolated } from '@maptalks/function-type';
 import Color from 'color';
+import { PACK_TEX_SIZE } from '@maptalks/vector-packer';
 
 const EMPTY_UV_ORIGIN = [0, 0];
 const SCALE = [1, 1, 1];
@@ -157,7 +158,6 @@ class MeshPainter extends Painter {
         const layerRes = sr ? sr.getResolution(tileZoom) : map.getResolution(tileZoom);
         const glScale = layerRes / glRes;
         // vector-packer/PACK_TEX_SIZE
-        const PACK_TEX_SIZE = 128 / 256;
         // const uvScale = this.material.get('uvScale') || [1, 1];
         // mesh.setUniform('uvOrigin', [tilePoint[0] * glScale / (PACK_TEX_SIZE * uvScale[0]), tilePoint[1] * glScale / (PACK_TEX_SIZE * uvScale[0])]);
         Object.defineProperty(mesh.uniforms, 'uvOrigin', {
@@ -166,6 +166,10 @@ class MeshPainter extends Painter {
                 if (this.dataConfig.side) {
                     // 侧面的纹理不会根据瓦片左上角坐标偏移
                     // 只有顶面的坐标是需要根据瓦片左上角坐标来整体偏移的
+                    return EMPTY_UV_ORIGIN;
+                }
+                if (this.dataConfig.topUVMode === 1) {
+                    // 如果顶面纹理是ombb，不需要偏移
                     return EMPTY_UV_ORIGIN;
                 }
                 const symbol = this.getSymbol(symbolIndex);

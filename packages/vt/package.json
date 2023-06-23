@@ -36,8 +36,11 @@
     "fast-deep-equal": "^2.0.1",
     "gl-matrix": "^2.6.1",
     "pbf": "^3.2.1",
+    "point-in-polygon": "^1.1.0",
     "quickselect": "^1.0.0",
-    "rbush": "^2.0.2",
+    "rbush": "^3.0.1",
+    "robust-predicates": "^2.0.4",
+    "tinyqueue": "^2.0.3",
     "vt-pbf": "^3.1.0"
   },
   "devDependencies": {
