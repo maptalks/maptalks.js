@@ -308,7 +308,6 @@ export default function (vertices, start, offset) {
     // }
     const projectionCode = 'EPSG:3857';
     const hull = concaveman(vertices, Infinity);
-    console.log('hull', JSON.stringify(hull));
     // const now1 = performance.now();
     // const elapsed = now1 - now;
     // ctime += elapsed;
@@ -328,11 +327,6 @@ export default function (vertices, start, offset) {
             max[1] = hull[i][1];
         }
     }
-
-    const center = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2];
-    project(center, center, projectionCode);
-
-    center[0] = center[1] = 0;
 
     const projectedCoord = [];
 
@@ -362,9 +356,8 @@ export default function (vertices, start, offset) {
     //     vertices[i][1] *= -1;
     // }
     // debugger
-    let ombb = CalcOmbb(convexHull); // draws OOBB candidates
+    const ombb = CalcOmbb(convexHull); // draws OOBB candidates
 
-    console.log(JSON.stringify(ombb));
     // const elapsed2 = performance.now() - now1;
     // otime += elapsed2;
 
@@ -373,8 +366,7 @@ export default function (vertices, start, offset) {
     // console.log(count, ctime, otime);
     const edge0 = ombb[0].distance(ombb[1]);
     const edge1 = ombb[1].distance(ombb[2]);
-    const box = ombb.map(v => [v.x + center[0], v.y + center[1]]);
-    console.log('ombb', JSON.stringify(box));
+    const box = ombb.map(v => [v.x, v.y]);
     //宽边开始的序号，0或者1
     box.push(+(edge1 > edge0));
     return box;
