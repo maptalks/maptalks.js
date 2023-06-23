@@ -17,7 +17,6 @@ const defaultOptions = {
     forceRenderOnMoving: true,
     forceRenderOnRotating: true,
     tileSize: 512,
-    tileSystem: [1, -1, -6378137 * Math.PI, 6378137 * Math.PI],
     features: false,
     schema: false,
     cascadeTiles: true,
@@ -47,7 +46,6 @@ const defaultOptions = {
     },
     pyramidMode: 1,
     styleScale: 1,
-    spatialReference: 'preset-vt-3857', //'preset-vt-3857', preset-vt-4326'
     enableAltitude: true,
     fadeAnimation: false,
 
@@ -82,6 +80,32 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     onAdd() {
         const map = this.getMap();
+        const projection = map.getProjection();
+        const is4326 = projection.code === 'EPSG:4326' || projection.code === 'EPSG:4490';
+        const is3857 = projection.code === 'EPSG:3857';
+        if (!this.options.spatialReference) {
+            const tileSize = this.getTileSize().width;
+            if (tileSize === 512) {
+                if (is3857) {
+                    this.options.spatialReference = 'preset-vt-3857';
+                } else if (is4326) {
+                    this.options.spatialReference = 'preset-vt-4326';
+                }
+            }
+        }
+        if (!this.options.tileSystem) {
+            if (this.options.tms) {
+                if (is3857) {
+                    this.options.tileSystem = [1, 1, -6378137 * Math.PI, -6378137 * Math.PI];
+                } else if (is4326) {
+                    this.options.tileSystem = [1, 1, -180, -90];
+                }
+            } else {
+                if (is4326) {
+                    this.options.tileSystem = [1, -1, -180, 90];
+                }
+            }
+        }
         const sr = this.getSpatialReference();
         const code = sr.toJSON().projection;
         const mapCode = map.getSpatialReference().toJSON().projection;
@@ -1251,7 +1275,7 @@ const preset4326 = {
     })()
 }
 
-maptalks.SpatialReference.registerPreset('preset-maptiler-4326', preset4326);
+maptalks.SpatialReference.registerPreset('preset-vt-4326', preset4326);
 
 // const preset3857 = {
 //     'projection': 'EPSG:3857',
