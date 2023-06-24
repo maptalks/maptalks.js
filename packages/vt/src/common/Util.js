@@ -201,3 +201,12 @@ export function equalsArray(self, array) {
     }
     return true;
 }
+
+export function wrap(n, min, max) {
+    if (n === max || n === min) {
+        return n;
+    }
+    const d = max - min;
+    const w = ((n - min) % d + d) % d + min;
+    return w;
+}

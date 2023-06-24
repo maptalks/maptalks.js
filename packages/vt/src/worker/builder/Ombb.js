@@ -1,5 +1,5 @@
 import concaveman from './concaveman.js';
-import { project } from '../builder/projection.js';
+import { project, unproject } from '../builder/projection.js';
 import { PackUtil } from '@maptalks/vector-packer';
 
 // Computing oriented minimum bounding boxes
@@ -68,44 +68,44 @@ function GetSideOfLine(lineStart, lineEnd, point) {
 
 // returns convex hull in CCW order
 // (required by Rotating Calipers implementation)
-function CalcConvexHull(points) {
-    // bad input?
-    if (points.length < 3)
-        return points;
+// function CalcConvexHull(points) {
+//     // bad input?
+//     if (points.length < 3)
+//         return points;
 
-    // find first hull point
-    let hullPt = points[0];
-    const convexHull = [];
+//     // find first hull point
+//     let hullPt = points[0];
+//     const convexHull = [];
 
-    for (let i = 1; i < points.length; i++) {
-        // perform lexicographical compare
-        if (points[i].x < hullPt.x)
-            hullPt = points[i];
-        else if (Math.abs(points[i].x - hullPt.x) < ALMOST_ZERO) // equal
-            if (points[i].y < hullPt.y)
-                hullPt = points[i];
-    }
+//     for (let i = 1; i < points.length; i++) {
+//         // perform lexicographical compare
+//         if (points[i].x < hullPt.x)
+//             hullPt = points[i];
+//         else if (Math.abs(points[i].x - hullPt.x) < ALMOST_ZERO) // equal
+//             if (points[i].y < hullPt.y)
+//                 hullPt = points[i];
+//     }
 
-    let endPt = points[0];
-    // find remaining hull points
-    do {
-        convexHull.unshift(hullPt.clone());
+//     let endPt = points[0];
+//     // find remaining hull points
+//     do {
+//         convexHull.unshift(hullPt.clone());
 
-        for (let j = 1; j < points.length; j++) {
-            const side = GetSideOfLine(hullPt, endPt, points[j]);
+//         for (let j = 1; j < points.length; j++) {
+//             const side = GetSideOfLine(hullPt, endPt, points[j]);
 
-            // in case point lies on line take the one further away.
-            // this fixes the collinearity problem.
-            if (endPt.equals(hullPt) || (side === LEFT || (side === ON && hullPt.distance(points[j]) > hullPt.distance(endPt))))
-                endPt = points[j];
-        }
+//             // in case point lies on line take the one further away.
+//             // this fixes the collinearity problem.
+//             if (endPt.equals(hullPt) || (side === LEFT || (side === ON && hullPt.distance(points[j]) > hullPt.distance(endPt))))
+//                 endPt = points[j];
+//         }
 
-        hullPt = endPt;
-    }
-    while (!endPt.equals(convexHull[convexHull.length - 1]));
+//         hullPt = endPt;
+//     }
+//     while (!endPt.equals(convexHull[convexHull.length - 1]));
 
-    return convexHull;
-}
+//     return convexHull;
+// }
 
 //-------------ombb.js---------------------
 
@@ -137,12 +137,6 @@ function CalcOmbb(convexHull) {
             BestObb = [obbUpperLeft, obbBottomLeft, obbBottomRight, obbUpperRight];
             this.BestObbArea = obbArea;
         }
-
-        // draw rectangle candidates
-        // DrawLine(obbUpperLeft.x, obbUpperLeft.y, obbBottomLeft.x, obbBottomLeft.y, "#336699");
-        // DrawLine(obbBottomRight.x, obbBottomRight.y, obbUpperRight.x, obbUpperRight.y, "#336699");
-        // DrawLine(obbUpperRight.x, obbUpperRight.y, obbUpperLeft.x, obbUpperLeft.y, "#336699");
-        // DrawLine(obbBottomLeft.x, obbBottomLeft.y, obbBottomRight.x, obbBottomRight.y, "#336699");
     }
 
     // initialize attributes
@@ -152,7 +146,7 @@ function CalcOmbb(convexHull) {
     // compute directions of convex hull edges
     var edgeDirs = [];
 
-    for (var i=0; i<convexHull.length; i++)
+    for (let i=0; i<convexHull.length; i++)
     {
         edgeDirs.push(convexHull[(i+1)%convexHull.length].diff(convexHull[i]));
         edgeDirs[i].normalize();
@@ -163,7 +157,7 @@ function CalcOmbb(convexHull) {
     var maxPt = new Vector(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
     var leftIdx, rightIdx, topIdx, bottomIdx;
 
-    for (var i=0; i<convexHull.length; i++)
+    for (let i = 0; i<convexHull.length; i++)
     {
         var pt = convexHull[i];
 
@@ -208,7 +202,7 @@ function CalcOmbb(convexHull) {
     var bottomDir = new Vector(1, 0);
 
     // execute rotating caliper algorithm
-    for (var i=0; i<convexHull.length; i++)
+    for (let i = 0; i<convexHull.length; i++)
     {
         // of course the acos() can be optimized.
         // but it's a JS prototype anyways, so who cares.
@@ -267,50 +261,11 @@ function CalcOmbb(convexHull) {
     return BestObb;
 }
 
-const VECTORS = [];
-const HULL = []
+const HULL = [];
 
-// let ctime = 0;
-// let otime = 0;
-// let count = 0;
-export default function (vertices, start, offset) {
-    // const isCoord = Array.isArray(vertices[0]);
-    // let t = 0;
-    // const points = [];
-    // if (isCoord) {
-    //     for (let i = start; i < offset; i++) {
-    //         if (!VECTORS[t]) {
-    //             VECTORS[t] = new Vector(vertices[i][0], -vertices[i][1]);
-    //         } else {
-    //             VECTORS[t].x = vertices[i][0];
-    //             VECTORS[t].y = -vertices[i][1];
-    //         }
-    //         points.push(VECTORS[t]);
-    //         t++;
-    //     }
-    // } else {
-    //     for (let i = start; i < offset; i += 3) {
-    //         if (!VECTORS[t]) {
-    //             VECTORS[t] = new Vector(vertices[i], vertices[i + 1]);
-    //         } else {
-    //             VECTORS[t].x = vertices[i];
-    //             VECTORS[t].y = vertices[i + 1];
-    //         }
-    //         points.push(VECTORS[t]);
-    //         t++;
-    //     }
-    // }
-    // debugger
-    // const now = performance.now();
-    // const hull = CalcConvexHull(points);
-    // for (let i = start; i < offset; i++) {
-    //     vertices[i][1] *= -1;
-    // }
+export default function (vertices) {
     const projectionCode = 'EPSG:3857';
     const hull = concaveman(vertices, Infinity);
-    // const now1 = performance.now();
-    // const elapsed = now1 - now;
-    // ctime += elapsed;
     let min = [Infinity, Infinity], max = [-Infinity, -Infinity];
     for (let i = 0; i < hull.length; i++) {
         if (hull[i][0] < min[0]) {
@@ -336,9 +291,8 @@ export default function (vertices, start, offset) {
         if (i === hull.length - 1 && hull[i][0] === hull[0][0] && hull[i][1] === hull[0][1]) {
             continue
         }
+        // 用原经纬度坐标无法计算出正确的ombb，但投影坐标可以，原因未知
         project(projectedCoord, hull[i], projectionCode);
-        // projectedCoord[0] -= center[0];
-        // projectedCoord[1] -= center[1];
         if (!HULL[t]) {
             HULL[t] = new Vector(projectedCoord[0], projectedCoord[1]);
         } else {
@@ -352,49 +306,17 @@ export default function (vertices, start, offset) {
     if (PackUtil.calculateSignedArea(convexHull) < 0) {
         convexHull = convexHull.reverse();
     }
-    // for (let i = start; i < offset; i++) {
-    //     vertices[i][1] *= -1;
-    // }
-    // debugger
+
     const ombb = CalcOmbb(convexHull); // draws OOBB candidates
 
-    // const elapsed2 = performance.now() - now1;
-    // otime += elapsed2;
-
-    // count++;
-
-    // console.log(count, ctime, otime);
     const edge0 = ombb[0].distance(ombb[1]);
     const edge1 = ombb[1].distance(ombb[2]);
-    const box = ombb.map(v => [v.x, v.y]);
+    const box = ombb.map(v => {
+        projectedCoord[0] = v.x;
+        projectedCoord[1] = v.y;
+        return unproject([], projectedCoord, projectionCode);
+    });
     //宽边开始的序号，0或者1
     box.push(+(edge1 > edge0));
     return box;
 }
-
-// let ctime = 0;
-// let otime = 0;
-// let count = 0;
-// export default function (vertices, start, offset) {
-//     const points = [];
-//     for (let i = start; i < offset; i += 3) {
-//         points.push([vertices[i], vertices[i + 1]]);
-//     }
-//     const now = performance.now();
-//     const hull = convexHull(points).map(p => {
-//         return new Vector(vertices[start + p * 3], vertices[start + p * 3 + 1]);
-//     });
-
-//     // debugger
-//     const now1 = performance.now();
-//     const elapsed = now1 - now;
-//     ctime += elapsed;
-
-//     const ombb = CalcOmbb(hull); // draws OOBB candidates
-//     const elapsed2 = performance.now() - now1;
-//     otime += elapsed2;
-//     count++;
-//     console.log(count, +ctime.toFixed(1), +otime.toFixed(1));
-//     return ombb;
-// }
-

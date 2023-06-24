@@ -90,7 +90,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
     _genOMBB(features) {
         if (this.options.topOmbbUV && features) {
-            // const projectionCode = 'EPSG:3857';
+            const projectionCode = 'EPSG:3857';
             const start = performance.now();
             let count = 0;
             for (let i = 0; i < features.length; i++) {
@@ -105,11 +105,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                     }
                     const ombb = computeOMBB(shell, 0, shell.length);
                     count += shell.length;
-                    // for (let j = 0; j < ombb.length; j++) {
-                    //     if (Array.isArray(ombb[j])) {
-                    //         project(ombb[j], ombb[j], projectionCode);
-                    //     }
-                    // }
+                    for (let j = 0; j < ombb.length; j++) {
+                        if (Array.isArray(ombb[j])) {
+                            project(ombb[j], ombb[j], projectionCode);
+                        }
+                    }
                     f.properties = f.properties || {};
                     f.properties.ombb = ombb;
                 } else if (f.geometry.type === 'MultiPolygon') {
@@ -124,11 +124,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                         }
                         const ombb = computeOMBB(shell, 0, shell.length);
                         count += shell.length;
-                        // for (let j = 0; j < ombb.length; j++) {
-                        //     if (Array.isArray(ombb[j])) {
-                        //         project(ombb[j], ombb[j], projectionCode);
-                        //     }
-                        // }
+                        for (let j = 0; j < ombb.length; j++) {
+                            if (Array.isArray(ombb[j])) {
+                                project(ombb[j], ombb[j], projectionCode);
+                            }
+                        }
                         f.properties = f.properties || {};
                         f.properties.ombb = f.properties.ombb || [];
                         f.properties.ombb[i] = ombb
