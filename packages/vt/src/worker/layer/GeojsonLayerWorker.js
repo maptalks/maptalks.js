@@ -90,7 +90,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
     _genOMBB(features) {
         if (this.options.topOmbbUV && features) {
-            const projectionCode = 'EPSG:3857';
+            const projectionCode = this.options.projectionCode;
             const start = performance.now();
             let count = 0;
             for (let i = 0; i < features.length; i++) {

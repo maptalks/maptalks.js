@@ -140,7 +140,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             style: this.isDefaultRender() ? { style: [], featureStyle: [] } : this._getComputedStyle(),
             features: this.options.debugTileData || this.options.features,
             schema: this.options.schema,
-            pickingGeometry: this.options['pickingGeometry']
+            pickingGeometry: this.options['pickingGeometry'],
+            projectionCode: this.getSpatialReference().getProjection().code
         };
     }
 
