@@ -89,10 +89,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     }
 
     _genOMBB(features) {
-        if (this.options.topOmbbUV && features) {
+        if (features) {
             const projectionCode = this.options.projectionCode;
-            const start = performance.now();
-            let count = 0;
+            // 大概的性能: 2023-06-24
+            // 时间   feature数量    顶点数量
+            // 84ms      2105        24621
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 if (!f || !f.geometry || !f.geometry.coordinates) {
@@ -104,7 +105,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                         continue;
                     }
                     const ombb = computeOMBB(shell, 0, shell.length);
-                    count += shell.length;
                     for (let j = 0; j < ombb.length; j++) {
                         if (Array.isArray(ombb[j])) {
                             project(ombb[j], ombb[j], projectionCode);
@@ -123,7 +123,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                             continue;
                         }
                         const ombb = computeOMBB(shell, 0, shell.length);
-                        count += shell.length;
                         for (let j = 0; j < ombb.length; j++) {
                             if (Array.isArray(ombb[j])) {
                                 project(ombb[j], ombb[j], projectionCode);
@@ -136,7 +135,6 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
                 }
             }
-            console.log(performance.now() - start, features.length, count);
         }
     }
 
