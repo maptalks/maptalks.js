@@ -27,7 +27,8 @@ export function buildExtrudeFaces(
         centimeterToPoint,
         positionType,
         res,
-        glScale
+        glScale,
+        projectionCode
     },
     debugIndex
 ) {
@@ -86,7 +87,7 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode);
             }
 
             if (topThickness > 0 && !generateSide) {

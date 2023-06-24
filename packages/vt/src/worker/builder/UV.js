@@ -1,19 +1,20 @@
 import { vec2 } from 'gl-matrix';
+import { project } from './projection.js';
 
 // 按照原来的uv计算时的缩放比例，计算的 meter 到 gl point 坐标的比例
 export const METER_TO_GL_POINT = 46.5;
 
 
-export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, ombb, res, glScale) {
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, ombb, res, glScale, projectionCode) {
     if (mode === 0) {
         buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight);
     } else if (mode === 1) {
-        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale);
+        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode);
     }
 }
 
 //inspired by https://stackoverflow.com/questions/20774648/three-js-generate-uv-coordinate
-function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale) {
+function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode) {
     const idx = obox[4];
     let v0, v1, v2, v3;
     if (idx === 0) {
@@ -34,11 +35,15 @@ function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, r
     const pt = [];
     const perpX = [];
     const perpY = [];
+
     //为了提升精度，计算uvOrigin的小数部分
     for (let i = start; i < offset; i += 3) {
         const idx = i / 3 * 2;
         const x = (uvOrigin.x / glScale + vertices[i] * localScale) * res, y = (uvOrigin.y / glScale - vertices[i + 1] * localScale) * res;
         vec2.set(pt, x, y);
+        if (projectionCode === 'EPSG:4326' || projectionCode === 'EPSG:4490') {
+            project(pt, pt, 'EPSG:3857');
+        }
         getFootOfPerpendicular(perpX, pt, v0, v1);
         getFootOfPerpendicular(perpY, pt, v3, v0);
         uvs[idx] = vec2.distance(v0, perpX) / w;

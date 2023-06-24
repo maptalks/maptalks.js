@@ -6,7 +6,7 @@ import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
 import { PackUtil } from '@maptalks/vector-packer';
 import computeOMBB from '../builder/Ombb.js';
-import { project } from '../builder/projection.js';
+// import { project } from '../builder/projection.js';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
     /**
@@ -90,10 +90,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
 
     _genOMBB(features) {
         if (features) {
-            const projectionCode = this.options.projectionCode;
+            // const projectionCode = this.options.projectionCode;
             // 大概的性能: 2023-06-24
             // 时间   feature数量    顶点数量
             // 84ms      2105        24621
+            // debugger
             for (let i = 0; i < features.length; i++) {
                 const f = features[i];
                 if (!f || !f.geometry || !f.geometry.coordinates) {
@@ -105,11 +106,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                         continue;
                     }
                     const ombb = computeOMBB(shell, 0, shell.length);
-                    for (let j = 0; j < ombb.length; j++) {
-                        if (Array.isArray(ombb[j])) {
-                            project(ombb[j], ombb[j], projectionCode);
-                        }
-                    }
+                    // for (let j = 0; j < ombb.length; j++) {
+                    //     if (Array.isArray(ombb[j])) {
+                    //         project(ombb[j], ombb[j], projectionCode);
+                    //     }
+                    // }
                     f.properties = f.properties || {};
                     f.properties.ombb = ombb;
                 } else if (f.geometry.type === 'MultiPolygon') {
@@ -123,11 +124,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                             continue;
                         }
                         const ombb = computeOMBB(shell, 0, shell.length);
-                        for (let j = 0; j < ombb.length; j++) {
-                            if (Array.isArray(ombb[j])) {
-                                project(ombb[j], ombb[j], projectionCode);
-                            }
-                        }
+                        // for (let j = 0; j < ombb.length; j++) {
+                        //     if (Array.isArray(ombb[j])) {
+                        //         project(ombb[j], ombb[j], projectionCode);
+                        //     }
+                        // }
                         f.properties = f.properties || {};
                         f.properties.ombb = f.properties.ombb || [];
                         f.properties.ombb[i] = ombb

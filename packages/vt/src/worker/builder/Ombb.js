@@ -311,11 +311,7 @@ export default function (vertices) {
 
     const edge0 = ombb[0].distance(ombb[1]);
     const edge1 = ombb[1].distance(ombb[2]);
-    const box = ombb.map(v => {
-        projectedCoord[0] = v.x;
-        projectedCoord[1] = v.y;
-        return unproject([], projectedCoord, projectionCode);
-    });
+    const box = ombb.map(v => [v.x, v.y]);
     //宽边开始的序号，0或者1
     box.push(+(edge1 > edge0));
     return box;

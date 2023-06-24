@@ -7,7 +7,7 @@ import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin, res, glScale,
-    localScale, centimeterToPoint, symbol, zoom, debugIndex, positionType) {
+    localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -57,7 +57,8 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             positionType,
             // tile的resolution
             res,
-            glScale
+            glScale,
+            projectionCode
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
