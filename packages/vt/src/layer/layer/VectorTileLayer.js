@@ -80,6 +80,17 @@ class VectorTileLayer extends maptalks.TileLayer {
 
     onAdd() {
         const map = this.getMap();
+        this._prepareOptions();
+        const sr = this.getSpatialReference();
+        const code = sr.toJSON().projection;
+        const mapCode = map.getSpatialReference().toJSON().projection;
+        if ((code && code.toLowerCase()) !== (mapCode && mapCode.toLowerCase())) {
+            throw new Error(`VectorTileLayer's projection(${code}) must be the same with map(${mapCode}).`);
+        }
+    }
+
+    _prepareOptions() {
+        const map = this.getMap();
         const projection = map.getProjection();
         const is4326 = projection.code === 'EPSG:4326' || projection.code === 'EPSG:4490';
         const is3857 = projection.code === 'EPSG:3857';
@@ -105,12 +116,6 @@ class VectorTileLayer extends maptalks.TileLayer {
                     this.options.tileSystem = [1, -1, -180, 90];
                 }
             }
-        }
-        const sr = this.getSpatialReference();
-        const code = sr.toJSON().projection;
-        const mapCode = map.getSpatialReference().toJSON().projection;
-        if ((code && code.toLowerCase()) !== (mapCode && mapCode.toLowerCase())) {
-            throw new Error(`VectorTileLayer's projection(${code}) must be the same with map(${mapCode}).`);
         }
     }
 

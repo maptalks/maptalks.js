@@ -23,6 +23,8 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         this.setData(options['data']);
     }
 
+    _prepareOptions() {}
+
     getWorkerOptions() {
         const options = super.getWorkerOptions();
         let workerData = this.options.data;
