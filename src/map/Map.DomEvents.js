@@ -351,6 +351,9 @@ Map.include(/** @lends Map.prototype */ {
         if (isMoveEvent(type)) {
             this.getRenderer().callInNextFrame(() => {
                 if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
+                    // Always trigger _moumove _touchmove event
+                    // for hit test etc
+                    this._fireEvent('_' + type, eventParam);
                     return;
                 }
                 this._fireEvent(type, eventParam);
