@@ -3,7 +3,7 @@ import { buildFaceUV, buildSideUV } from './UV';
 import { isNumber, pushIn } from '../../common/Util';
 import { PackUtil } from '@maptalks/vector-packer';
 import earcut from 'earcut';
-import { KEY_IDX } from '../../common/Constant';
+import { KEY_IDX, PROP_OMBB } from '../../common/Constant';
 
 export function buildExtrudeFaces(
     features, EXTENT,
@@ -28,7 +28,8 @@ export function buildExtrudeFaces(
         positionType,
         res,
         glScale,
-        projectionCode
+        projectionCode,
+        isExtrudePolygonLayer
     },
     debugIndex
 ) {
@@ -87,7 +88,7 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, isExtrudePolygonLayer);
             }
 
             if (topThickness > 0 && !generateSide) {
@@ -137,13 +138,16 @@ export function buildExtrudeFaces(
         }
 
         const geometry = feature.geometry;
-        const ombb = feature.properties.ombb;
+        const ombb = feature.properties[PROP_OMBB];
+        const isMultiOmbb = Array.isArray(ombb && ombb[0] && ombb[0][0]);
+        let ringOmbb = isMultiOmbb ? ombb[0] : ombb;
 
         const { altitude, height } = PackUtil.getFeaAltitudeAndHeight(feature, altitudeScale, altitudeProperty, defaultAltitude, heightProperty, defaultHeight, minHeightProperty);
         maxAltitude = Math.max(Math.abs(altitude), maxAltitude);
 
         const verticeCount = vertices.length;
 
+        let exteriorIndex = 0;
         let start = offset;
         let holes = [];
         geoVertices.length = 0;
@@ -157,8 +161,10 @@ export function buildExtrudeFaces(
             const isHole = PackUtil.calculateSignedArea(ring) < 0;
             //fill bottom vertexes
             if (!isHole && i > 0) {
+                exteriorIndex++;
+                ringOmbb = ombb[exteriorIndex];
                 //an exterior ring (multi polygon)
-                offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle, exteriorIndex); //need to multiply with scale as altitude is
                 geoVertices.length = 0;
                 holes = [];
                 start = offset;
@@ -168,7 +174,7 @@ export function buildExtrudeFaces(
             }
             if (!ring.length) {
                 if (i === l - 1) {
-                    offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
+                    offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle); //need to multiply with scale as altitude is
                 }
                 continue;
             }
@@ -189,7 +195,7 @@ export function buildExtrudeFaces(
             fillPosArray(geoVertices, geoVertices.length, ring, scale, altitude, false, positionType);
 
             if (i === l - 1) {
-                offset = fillData(start, offset, holes, height * scale, ombb, needReverseTriangle); //need to multiply with scale as altitude is
+                offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle); //need to multiply with scale as altitude is
             }
         }
 

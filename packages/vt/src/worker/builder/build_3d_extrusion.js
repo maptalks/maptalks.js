@@ -7,7 +7,7 @@ import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks
 import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
 
 export default function (features, dataConfig, extent, uvOrigin, res, glScale,
-    localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType) {
+    localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType, center) {
     if (dataConfig.top === undefined) {
         dataConfig.top = true;
     }
@@ -58,7 +58,8 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             // tile的resolution
             res,
             glScale,
-            projectionCode
+            projectionCode,
+            isExtrudePolygonLayer: !!center
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
@@ -102,6 +103,13 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
         const uvs = faces.uvs;
         faces.uvs = new Float32Array(uvs);
         buffers.push(faces.uvs.buffer);
+    }
+    if (center) {
+        const vertices = faces.vertices;
+        for (let i = 0; i < vertices.length; i += 3) {
+            vertices[i] -= center[0];
+            vertices[i + 1] -= center[1];
+        }
     }
     const posArrayType = positionType || PackUtil.getPosArrayType(Math.max(512, faces.maxAltitude));
 

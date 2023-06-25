@@ -1,5 +1,6 @@
 import concaveman from './concaveman.js';
-import { project, unproject } from '../builder/projection.js';
+import { isNumber } from '../../common/Util.js';
+import { project } from '../builder/projection.js';
 import { PackUtil } from '@maptalks/vector-packer';
 
 // Computing oriented minimum bounding boxes
@@ -121,8 +122,11 @@ function IntersectLines(start0, dir0, start1, dir1) {
 // computes the minimum area enclosing rectangle
 // (aka oriented minimum bounding box)
 function CalcOmbb(convexHull) {
+    // initialize attributes
     let BestObb;
-    this.UpdateOmbb = function(leftStart, leftDir, rightStart, rightDir, topStart, topDir, bottomStart, bottomDir)
+    let BestObbArea = Number.MAX_VALUE;
+
+    const UpdateOmbb = function(leftStart, leftDir, rightStart, rightDir, topStart, topDir, bottomStart, bottomDir)
     {
         var obbUpperLeft = IntersectLines(leftStart, leftDir, topStart, topDir);
         var obbUpperRight = IntersectLines(rightStart, rightDir, topStart, topDir);
@@ -132,16 +136,13 @@ function CalcOmbb(convexHull) {
         var distTopBottom = obbUpperLeft.distance(obbBottomLeft);
         var obbArea = distLeftRight*distTopBottom;
 
-        if (obbArea !== 0 && obbArea < this.BestObbArea)
+        if (obbArea !== 0 && obbArea < BestObbArea)
         {
             BestObb = [obbUpperLeft, obbBottomLeft, obbBottomRight, obbUpperRight];
-            this.BestObbArea = obbArea;
+            BestObbArea = obbArea;
         }
     }
 
-    // initialize attributes
-    this.BestObbArea = Number.MAX_VALUE;
-    this.BestObb = [];
 
     // compute directions of convex hull edges
     var edgeDirs = [];
@@ -255,16 +256,35 @@ function CalcOmbb(convexHull) {
             break;
         }
 
-        this.UpdateOmbb(convexHull[leftIdx], leftDir, convexHull[rightIdx], rightDir, convexHull[topIdx], topDir, convexHull[bottomIdx], bottomDir);
+        UpdateOmbb(convexHull[leftIdx], leftDir, convexHull[rightIdx], rightDir, convexHull[topIdx], topDir, convexHull[bottomIdx], bottomDir);
     }
 
     return BestObb;
 }
 
 const HULL = [];
+const VERTICES = [];
 
 export default function (vertices) {
     const projectionCode = 'EPSG:3857';
+
+    if (isNumber(vertices[0] && vertices[0].x)) {
+        // 对 { x, y } 格式的坐标支持
+        const vertexes = [];
+        let t = 0;
+        for (let i = 0; i < vertices.length; i++) {
+            if (!VERTICES[t]) {
+                VERTICES[t] = [vertices[i].x, vertices[i].y];
+            } else {
+                VERTICES[t][0] = vertices[i].x;
+                VERTICES[t][1] = vertices[i].y;
+            }
+            vertexes.push(VERTICES[t]);
+            t++;
+        }
+        vertices = vertexes;
+    }
+
     const hull = concaveman(vertices, Infinity);
     let min = [Infinity, Infinity], max = [-Infinity, -Infinity];
     for (let i = 0; i < hull.length; i++) {

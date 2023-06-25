@@ -4,8 +4,10 @@ import Vector3DLayer from './Vector3DLayer';
 import { PolygonLayerRenderer } from './PolygonLayer';
 import { fromJSON } from './util/from_json';
 import { build3DExtrusion } from '../../worker/builder/';
-import { hasTexture } from '../../worker/layer/BaseLayerWorker';
 import { ID_PROP } from './util/convert_to_feature';
+import { PROP_OMBB } from '../../common/Constant';
+import computeOMBB from '../../worker/builder/ombb.js';
+
 const options = {
     cullFace: false
 };
@@ -158,27 +160,23 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
 
     _createPackData(features, symbol) {
+        const map = this.getMap();
         symbol = SYMBOL;
         const center = this._extrudeCenter;
         const extent = Infinity;
         const localScale = 1;
         // 原zoom是用来计算functiont-type 的symbol属性值
-        const zoom = this.getMap().getZoom();
-        const tilePoint = center;
+        const zoom = map.getZoom();
+        const tilePoint = new maptalks.Point(0, 0);
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         dataConfig.uv = 1;
         const debugIndex = undefined;
         if (!features.length) {
             return Promise.resolve([]);
         }
-
-        const data = build3DExtrusion(features, dataConfig, extent, tilePoint,
-            localScale, this._zScale, symbol, zoom, debugIndex, Float32Array);
-        const aPosition = data.data.data.aPosition;
-        for (let i = 0; i < aPosition.length; i += 3) {
-            aPosition[i] -= center[0];
-            aPosition[i + 1] -= center[1];
-        }
+        const projectionCode = map.getProjection().code;
+        const data = build3DExtrusion(features, dataConfig, extent, tilePoint, map.getGLRes(), 1,
+            localScale, this._zScale, symbol, zoom, projectionCode, debugIndex, Float32Array, center);
         return data;
     }
 
@@ -192,7 +190,24 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this._updateMeshData(this.meshes[0], feature.id, data);
     }
 
+    _convertGeo(geo) {
+        if (!geo.getProperties()[PROP_OMBB]) {
+            const coordinates = geo.getCoordinates();
+            if (geo instanceof maptalks.MultiPolygon) {
+                const ombb = [];
+                for (let i = 0; i < coordinates.length; i++) {
+                    const shell = coordinates[i] && coordinates[i][0];
+                    ombb[i] = computeOMBB(shell);
+                }
+                geo.getProperties()[PROP_OMBB] = ombb;
+            } else {
+                const ombb = computeOMBB(coordinates[0]);
+                geo.getProperties()[PROP_OMBB] = ombb;
+            }
 
+        }
+        return super._convertGeo(geo);
+    }
 }
 
 ExtrudePolygonLayer.registerRenderer('gl', ExtrudePolygonLayerRenderer);

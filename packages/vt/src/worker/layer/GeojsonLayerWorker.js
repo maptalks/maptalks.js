@@ -6,6 +6,7 @@ import BaseLayerWorker from './BaseLayerWorker';
 import bbox from '@maptalks/geojson-bbox';
 import { PackUtil } from '@maptalks/vector-packer';
 import computeOMBB from '../builder/Ombb.js';
+import { PROP_OMBB } from '../../common/Constant';
 // import { project } from '../builder/projection.js';
 
 export default class GeoJSONLayerWorker extends BaseLayerWorker {
@@ -112,7 +113,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                     //     }
                     // }
                     f.properties = f.properties || {};
-                    f.properties.ombb = ombb;
+                    f.properties[PROP_OMBB] = ombb;
                 } else if (f.geometry.type === 'MultiPolygon') {
                     const polygons = f.geometry.coordinates;
                     for (let i = 0; i < polygons.length; i++) {
@@ -130,8 +131,8 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                         //     }
                         // }
                         f.properties = f.properties || {};
-                        f.properties.ombb = f.properties.ombb || [];
-                        f.properties.ombb[i] = ombb
+                        f.properties[PROP_OMBB] = f.properties[PROP_OMBB] || [];
+                        f.properties[PROP_OMBB][i] = ombb
                     }
 
                 }
