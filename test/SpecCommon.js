@@ -1,10 +1,10 @@
 if (maptalks.Browser.ie) {
     // change marker's default symbol to on IE due to the Security Error.
     maptalks.Marker.prototype.options.symbol = {
-        'markerType' : 'ellipse',
-        'markerFill' : '#0ff',
-        'markerWidth' : 20,
-        'markerHeight' : 20
+        'markerType': 'ellipse',
+        'markerFill': '#0ff',
+        'markerWidth': 20,
+        'markerHeight': 20
     };
 }
 
@@ -29,17 +29,17 @@ function GEN_GEOMETRIES_OF_ALL_TYPES() {
             //线端点坐标数组
             [[121.48416288620015, 31.24488412311837], [121.48394830947899, 31.242664302121515], [121.48595460182202, 31.242535881128543], [121.48695238357557, 31.244838259576046], [121.48944147354125, 31.24487495041167], [121.49018176322932, 31.242664302121515], [121.49290688758839, 31.242765204207824], [121.49358280426011, 31.245040058995645], [121.49601825004554, 31.245159303904526], [121.49715550666777, 31.242921143583686]],
             //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-            { arcDegree:120, arrowStyle:'classic', arrowPlacement:'point' }),
+            { arcDegree: 120, arrowStyle: 'classic', arrowPlacement: 'point' }),
         new maptalks.QuadBezierCurve(
             //线端点坐标数组
             [[121.48416288620015, 31.24488412311837], [121.48394830947899, 31.242664302121515], [121.48595460182202, 31.242535881128543], [121.48695238357557, 31.244838259576046], [121.48944147354125, 31.24487495041167], [121.49018176322932, 31.242664302121515], [121.49290688758839, 31.242765204207824], [121.49358280426011, 31.245040058995645], [121.49601825004554, 31.245159303904526], [121.49715550666777, 31.242921143583686]],
             //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-            { arrowStyle:'classic', arrowPlacement:'point' }),
+            { arrowStyle: 'classic', arrowPlacement: 'point' }),
         new maptalks.CubicBezierCurve(
             //线端点坐标数组
             [[121.48416288620015, 31.24488412311837], [121.48394830947899, 31.242664302121515], [121.48595460182202, 31.242535881128543], [121.48695238357557, 31.244838259576046], [121.48944147354125, 31.24487495041167], [121.49018176322932, 31.242664302121515], [121.49290688758839, 31.242765204207824], [121.49358280426011, 31.245040058995645], [121.49601825004554, 31.245159303904526], [121.49715550666777, 31.242921143583686]],
             //bezierCurveDegree指贝塞尔曲线的度, 取值为2或者3即二阶贝塞尔曲线或三阶贝塞尔曲线
-            { arrowStyle:'classic', arrowPlacement:'point' }),
+            { arrowStyle: 'classic', arrowPlacement: 'point' }),
         new maptalks.Polygon([
             [
                 { x: 121.111, y: 30.111 },
@@ -90,7 +90,7 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
     container.style.height = (options && options.height || 60) + 'px';
     document.body.appendChild(container);
     var option = {
-        zoomAnimationDuration : 50,
+        zoomAnimationDuration: 50,
         zoom: 17,
         center: center,
         // centerCross : true
@@ -109,8 +109,8 @@ function COMMON_CREATE_MAP(center, baseLayer, options) {
     }
     var map = new maptalks.Map(container, option);
     return {
-        'container':container,
-        'map':map
+        'container': container,
+        'map': map
     };
 }
 
@@ -121,22 +121,22 @@ function REMOVE_CONTAINER() {
 var TILE_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAIAAAD9iXMrAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAPSURBVChTYxgFo4CBgQEAAggAAWc5B7gAAAAASUVORK5CYII=';
 
 var COMMON_SYMBOL_TESTOR = {
-    markerSymbols : [
+    markerSymbols: [
         {
-            'markerPlacement':'point', //point | line | interior
-            'markerFile'   : 'resources/2.png',
-            'markerRotation' : 30,
+            'markerPlacement': 'point', //point | line | interior
+            'markerFile': 'resources/2.png',
+            'markerRotation': 30,
             //设定marker-file后, 只有下面的属性起作用
-            'markerWidth'  : 20,
-            'markerHeight' : 20,
+            'markerWidth': 20,
+            'markerHeight': 20,
             'markerOpacity': 1,
             //两个cartocss里没有的扩展属性, 用来标注相对中心点的像素距离
-            'markerDx'     : 0, //<-------
-            'markerDy'     : 0  //<-------
+            'markerDx': 0, //<-------
+            'markerDy': 0  //<-------
         },
         {
-            'markerPlacement':'point', //point | line | interior
-            'markerRotation' : 30,
+            'markerPlacement': 'point', //point | line | interior
+            'markerRotation': 30,
             //marker-type中定义了若干cartoCSS中没有的属性值
             'markerType': 'ellipse', //<----- ellipse | triangle | square | bar等,默认ellipse
             'markerOpacity': 1,
@@ -152,7 +152,7 @@ var COMMON_SYMBOL_TESTOR = {
             'markerDy': 0
         },
         {
-            'markerPlacement':'line', //point | line | interior
+            'markerPlacement': 'line', //point | line | interior
 
             //marker-type中定义了若干cartoCSS中没有的属性值
             'markerType': 'ellipse', //<----- ellipse | triangle | square | bar等,默认ellipse
@@ -169,9 +169,9 @@ var COMMON_SYMBOL_TESTOR = {
             'markerDy': 0
         },
         {
-            'markerPlacement':'point', //point | line | interior
+            'markerPlacement': 'point', //point | line | interior
             'markerType': 'path', //<----- ellipse | triangle | square | bar等,默认ellipse
-            'markerPath' : 'M129.657,71.361C129.657,75.173,128.55200000000002,78.812,126.504,81.924C125.275',
+            'markerPath': 'M129.657,71.361C129.657,75.173,128.55200000000002,78.812,126.504,81.924C125.275',
             'markerOpacity': 1,
             'markerFill': '#ff0000',
             'markerFillOpacity': 1,
@@ -185,44 +185,44 @@ var COMMON_SYMBOL_TESTOR = {
             'markerDy': 0
         },
         {
-            'textPlacement'    : 'point', // point | vertex | line | interior
-            'textRotation' : 30,
-            'textName'         : '文本标注：[marker_name]',
-            'textFaceName'    : 'arial',
-            'textSize'         : 12,
-            'textFill'         : '#550033',
-            'textOpacity'      : 1,
-            'textHaloFill'    : '#fff',
-            'textHaloRadius'  : 5,
-            'textHaloOpacity' : 0.5,
+            'textPlacement': 'point', // point | vertex | line | interior
+            'textRotation': 30,
+            'textName': '文本标注：[marker_name]',
+            'textFaceName': 'arial',
+            'textSize': 12,
+            'textFill': '#550033',
+            'textOpacity': 1,
+            'textHaloFill': '#fff',
+            'textHaloRadius': 5,
+            'textHaloOpacity': 0.5,
 
-            'textDx'           : 0,
-            'textDy'           : 0,
+            'textDx': 0,
+            'textDy': 0,
 
-            'textHorizontalAlignment' : 'middle', //left | middle | right | auto
-            'textVerticalAlignment'   : 'middle',   // top | middle | bottom | auto
-            'textAlign'                : 'left' //left | right | center | auto
+            'textHorizontalAlignment': 'middle', //left | middle | right | auto
+            'textVerticalAlignment': 'middle',   // top | middle | bottom | auto
+            'textAlign': 'left' //left | right | center | auto
         }
     ],
 
     lineAndFill: {
-        'linePatternFile' : 'url(resources/2.png)',
+        'linePatternFile': 'url(resources/2.png)',
         // "lineColor"        : "#f00",
-        'lineWidth'        : 5,
-        'lineOpacity'      : 1,
-        'lineJoin'         : 'miter', //round bevel
-        'lineCap'          : 'round', //butt square
-        'lineDasharray'    : [20, 5, 20],
-        'polygonPatternFile'  : 'url(resources/2.png)',
-        'polygonFill'          : '#f00',
-        'polygonOpacity'       : 1
+        'lineWidth': 5,
+        'lineOpacity': 1,
+        'lineJoin': 'miter', //round bevel
+        'lineCap': 'round', //butt square
+        'lineDasharray': [20, 5, 20],
+        'polygonPatternFile': 'url(resources/2.png)',
+        'polygonFill': '#f00',
+        'polygonOpacity': 1
     },
 
-    testGeoSymbols:function (geometry, map, done) {
+    testGeoSymbols: function (geometry, map, done) {
         var counter = 0;
         function getLayer(id) {
             counter++;
-            var layer = new maptalks.VectorLayer(id, { 'debug' : true, 'drawImmediate': true });
+            var layer = new maptalks.VectorLayer(id, { 'debug': true, 'drawImmediate': true });
             layer.on('layerload', onLayerLoad);
             layer.addTo(map);
             return layer;
@@ -275,10 +275,10 @@ var COMMON_GEOEVENTS_TESTOR = function () {
 };
 
 COMMON_GEOEVENTS_TESTOR.prototype = {
-    eventsToTest : 'click mousedown mouseup dblclick', //mousemove
+    eventsToTest: 'click mousedown mouseup dblclick', //mousemove
 
-    testCanvasEvents:function (vector, map, testPoint) {
-        var layer = new maptalks.VectorLayer('event_test_layer_canvas', { 'render':'canvas' });
+    testCanvasEvents: function (vector, map, testPoint) {
+        var layer = new maptalks.VectorLayer('event_test_layer_canvas', { 'render': 'canvas' });
         if (!layer.isCanvasRender()) {
             return;
         }
@@ -294,14 +294,14 @@ COMMON_GEOEVENTS_TESTOR.prototype = {
         point._add(domPosition);
         this._verifyGeometryEvents(dom,
             {
-                'screenX':point.x,
-                'screenY':point.y,
-                'clientX':point.x,
-                'clientY':point.y
+                'screenX': point.x,
+                'screenY': point.y,
+                'clientX': point.x,
+                'clientY': point.y
             });
     },
 
-    _eventCallBack:function (param) {
+    _eventCallBack: function (param) {
         expect(param).to.be.ok();
         expect(param.type).to.be.ok();
         expect(param.target).to.be.ok();
@@ -311,7 +311,7 @@ COMMON_GEOEVENTS_TESTOR.prototype = {
         expect(param.point2d).to.be.ok();
     },
 
-    _verifyGeometryEvents:function (dom, options) {
+    _verifyGeometryEvents: function (dom, options) {
         var events = this.eventsToTest.split(' ');
 
         for (var i = 0, len = events.length; i < len; i++) {
@@ -329,12 +329,22 @@ COMMON_GEOEVENTS_TESTOR.prototype = {
 };
 
 var COMMON_GET_MAP_COLOR = function (map, x, y) {
-    return  map._getRenderer().canvas.getContext('2d').getImageData(x, y, 1, 1).data;
+    return map._getRenderer().canvas.getContext('2d').getImageData(x, y, 1, 1).data;
 };
 
 function GET_PAGE_POSITION(obj) {
     var docEl = document.documentElement;
     var rect = obj.getBoundingClientRect();
     return new maptalks.Point(rect['left'] + docEl['scrollLeft'], rect['top'] + docEl['scrollTop']);
+}
+
+function mapMousemove(map, steps, callback) {
+    var result = [];
+    map.on('mousemove touchmove', function () {
+        result.push(1);
+        if (result.length === steps) {
+            callback()
+        }
+    })
 }
 /*eslint-enable no-unused-vars */
