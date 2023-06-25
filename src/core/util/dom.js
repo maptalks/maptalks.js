@@ -264,6 +264,7 @@ export function preventDefault(event) {
  * @memberOf DomUtil
  */
 export function stopPropagation(e) {
+    e._cancelBubble = true;
     if (e.stopPropagation) {
         e.stopPropagation();
     } else {
@@ -520,3 +521,7 @@ export const on = addDomEvent;
  * @memberOf DomUtil
  */
 export const off = removeDomEvent;
+
+export function isMoveEvent(type) {
+    return type && (type === 'mousemove' || type === 'touchmove');
+}
