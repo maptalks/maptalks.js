@@ -215,11 +215,6 @@ export default class GLTFMarker extends Marker {
             mesh.transparent = true;
         }
         mesh.bloom = +!!this.isBloom();
-        if (this.getShader() === 'wireframe') {
-            if (markerUniforms && markerUniforms.dashAnimate) {
-                mesh.material.set('time', timestamp / 1000);
-            }
-        }
         mesh.setUniform('uPickingId', this._getPickingId());
         mesh.properties.isAnimated = this.isAnimated();
         this._setPolygonFill(mesh);
@@ -253,31 +248,19 @@ export default class GLTFMarker extends Marker {
         }
     }
 
-    _updateGeometries(gltfManager, regl) {
-        const shader = this.getShader();
+    _updateGeometries(gltfManager) {
         const url = this.getUrl();
         const meshes = this._meshes;
         if (!gltfManager || !meshes) {
             return;
         }
         if (gltfManager.isSimpleModel(url)) {
-            if (shader === 'wireframe') {
-                meshes.forEach(mesh => {
-                    this._updateGeoResource(mesh.properties.geometryResource, regl);
-                    this._updateUniforms(mesh);
-                });
-            }
             this._updateMaterials(meshes);
             return;
         }
         const geometryObject = gltfManager.getGLTF(url);
         if (!geometryObject) {
             return;
-        }
-        if (shader === 'wireframe') {
-            geometryObject.resources.forEach(resource => {
-                this._updateGeoResource(resource, regl);
-            });
         }
         meshes.forEach(mesh => {
             this._updateUniforms(mesh);
@@ -289,24 +272,17 @@ export default class GLTFMarker extends Marker {
         const shader = this.getShader();
         meshes.forEach(mesh => {
             const material = this._buildMaterial(mesh.properties.geometryResource);
-            //如果是wireframe，则用copyGeometry
-            mesh.geometry = shader === 'wireframe' ? mesh.properties.geometryResource.copyGeometry : mesh.properties.geometryResource.geometry;
+            //如果是wireframe，则用edgeGeometry, 同时判断一下是否有edgeGeometry
+            if (shader === 'wireframe') {
+                if (mesh.properties.geometryResource && !mesh.properties.geometryResource.copyGeometry) {
+                    mesh.properties.geometryResource.copyEdgeGeometry();
+                }
+                mesh.geometry = mesh.properties.geometryResource.copyGeometry;
+            } else {
+                mesh.geometry = mesh.properties.geometryResource.geometry;
+            }
             mesh.material = material;
         });
-    }
-
-    _updateGeoResource(geometryResource, regl) {
-        //创建barycentric属性数据，参数是attribute名字
-        if (!geometryResource.copyGeometry.data.aBarycentric) {
-            geometryResource.copyGeometry.buildUniqueVertex();
-            geometryResource.copyGeometry.createBarycentric('aBarycentric');
-            if (regl) {
-                geometryResource.copyGeometry.generateBuffers(regl);
-            } else {
-                this._noBuffersGeometries = this._noBuffersGeometries || [];
-                this._noBuffersGeometries.push(geometryResource.copyGeometry);
-            }
-        }
     }
 
     _updateMeshMatrix(meshes, timestamp) {
@@ -579,10 +555,6 @@ export default class GLTFMarker extends Marker {
 
     _prepareMesh(resource, shaderName, regl) {
         const geometryResource = resource;
-        geometryResource.copy();
-        if (shaderName === 'wireframe') {
-            geometryResource.createCopyBarycentric();
-        }
         const modelMesh = this._buildMesh(geometryResource, shaderName, regl);
         const defines = modelMesh.getDefines();
         if (modelMesh instanceof reshader.InstancedMesh) {
@@ -605,7 +577,11 @@ export default class GLTFMarker extends Marker {
         const type = this.getGLTFMarkerType();
         let modelMesh = null;
         const material = this._buildMaterial(geometryResource);
-        const geometry = shaderName === 'wireframe' ? geometryResource.copyGeometry : geometryResource.geometry;
+        let geometry = geometryResource.geometry;
+        if (shaderName === 'wireframe') {
+            geometryResource.copyEdgeGeometry();
+            geometry = geometryResource.copyGeometry;
+        }
         if (regl) {
             geometry.generateBuffers(regl);
         } else {
@@ -630,6 +606,7 @@ export default class GLTFMarker extends Marker {
         }
         modelMesh.nodeMatrix = mat4.copy([], geometryResource.nodeMatrix);
         modelMesh.properties.geometryResource = geometryResource;
+        modelMesh.properties.nodeIndex = geometryResource.nodeIndex;
         if (this.isBloom()) {
             modelMesh.bloom = 1;
         }
@@ -658,8 +635,6 @@ export default class GLTFMarker extends Marker {
                 }
                 material = new reshader.PhongMaterial(materialInfo);
             }
-        } else if (shader === 'wireframe') {
-            material = new reshader.WireFrameMaterial(materialInfo);
         } else if (shader === 'pbr') {
             if (materialInfo.name === 'pbrSpecularGlossiness') {
                 material = new reshader.pbr.StandardSpecularGlossinessMaterial(materialInfo);
@@ -1186,12 +1161,11 @@ export default class GLTFMarker extends Marker {
     _getOpacity() {
         const uniforms = this.getUniforms();
         const shader = this.getShader();
-
-        if (shader === 'phong' || shader === 'wireframe') {
-            return uniforms && defined(uniforms['opacity']) ? uniforms['opacity'] : 1;
-        }
-        if (shader === 'pbr') {
+        if (shader === 'pbr' || shader === 'phong') {
             return uniforms && defined(uniforms['polygonOpacity']) ? uniforms['polygonOpacity'] : 1;
+        }
+        if (shader === 'wireframe') {
+            return uniforms && defined(uniforms['lineOpacity']) ? uniforms['lineOpacity'] : 1;
         }
         return 1;
     }

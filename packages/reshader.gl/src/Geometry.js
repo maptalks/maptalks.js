@@ -55,10 +55,11 @@ export default class Geometry {
 
         this.elements = elements;
         this.desc = extend({}, DEFAULT_DESC, desc);
-        const pos = data[this.desc.positionAttribute];
+        const pos = this._getPosAttritute();
+        this.data[this.desc.positionAttribute] = pos;
         if (!count) {
-            if (elements) {
-                count = getElementLength(elements);
+            if (this.elements) {
+                count = getElementLength(this.elements);
             } else if (pos && pos.length) {
                 count = pos.length / this.desc.positionSize;
             } else if (pos && pos.interleavedArray) {
@@ -90,6 +91,10 @@ export default class Geometry {
     // set elements(e) {
     //     throw new Error('Geometry.elements is read only, use setElements instead.');
     // }
+
+    _getPosAttritute() {
+        return this.data[this.desc.positionAttribute];
+    }
 
     _prepareData(toUpdateRefCount) {
         if (!this.data) {

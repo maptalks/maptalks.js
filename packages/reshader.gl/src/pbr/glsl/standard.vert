@@ -15,6 +15,10 @@ attribute vec3 aPosition;
         attribute vec4 uvRegion;
         varying vec4 vUvRegion;
     #endif
+    #if defined(HAS_AO_MAP)
+      attribute vec2 aTexCoord1;
+      varying vec2 vTexCoord1;
+    #endif
 #endif
 
 vec3 Vertex;
@@ -133,6 +137,28 @@ vec2 rotateUV(vec2 uv, float rotation) {
         cos(rotation) * (uv.y - mid) - sin(rotation) * (uv.x - mid) + mid
     );
 }
+#if defined(HAS_MAP)
+  vec2 transformTexcoord(vec2 uv) {
+    vec2 decodedTexCoord = getTexcoord(uv);
+    #ifdef HAS_RANDOM_TEX
+        vec2 origin = uvOrigin;
+        vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
+        if (uvRotation != 0.0) {
+            origin = rotateUV(origin, uvRotation);
+            texCoord = rotateUV(texCoord, uvRotation);
+        }
+        return mod(origin, 1.0) + texCoord;
+    #else
+        vec2 origin = uvOrigin;
+        vec2 texCoord = decodedTexCoord * uvScale;
+        if (uvRotation != 0.0) {
+            origin = rotateUV(origin, uvRotation);
+            texCoord = rotateUV(texCoord, uvRotation);
+        }
+        return mod(origin, 1.0) + texCoord + uvOffset;
+    #endif
+  }
+#endif
 
 #ifdef PICKING_MODE
     #include <fbo_picking_vert>
@@ -176,25 +202,10 @@ void main() {
     #else
 
         #if defined(HAS_MAP)
-            vec2 decodedTexCoord = getTexcoord(aTexCoord);
-            #ifdef HAS_RANDOM_TEX
-                vec2 origin = uvOrigin;
-                vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
-                if (uvRotation != 0.0) {
-                    origin = rotateUV(origin, uvRotation);
-                    texCoord = rotateUV(texCoord, uvRotation);
-                }
-                vTexCoord = mod(origin, 1.0) + texCoord;
-            #else
-                vec2 origin = uvOrigin;
-                vec2 texCoord = decodedTexCoord * uvScale;
-                if (uvRotation != 0.0) {
-                    origin = rotateUV(origin, uvRotation);
-                    texCoord = rotateUV(texCoord, uvRotation);
-                }
-                vTexCoord = mod(origin, 1.0) + texCoord + uvOffset;
+            vTexCoord = transformTexcoord(aTexCoord);
+            #ifdef HAS_AO_MAP
+              vTexCoord1 = transformTexcoord(aTexCoord1);
             #endif
-
             #ifdef HAS_I3S_UVREGION
                 vUvRegion = uvRegion / 65535.0;
             #endif

@@ -278,12 +278,12 @@ export default class GLTFPack {
             node.mesh.node = node;
             node.geometries = node.geometries || [];
             node.mesh.primitives.forEach(primitive => {
-                const geometry = createGeometry(primitive, this.regl);
+                const materialInfo = this._createMaterialInfo(primitive.material);
+                const geometry = createGeometry(primitive, this.regl, materialInfo.occlusionTexture);
                 geometry.properties.morphTargets = primitive.morphTargets;
                 //一个node下可能有多个geometry, node附带的weights会影响其下辖的所有geometry的morph变形结果，这里保存
                 //geometries，方便后面morph的运算
                 node.geometries.push(geometry);
-                const materialInfo = this._createMaterialInfo(primitive.material);
                 const info = {
                     geometry,
                     nodeMatrix,
@@ -408,7 +408,7 @@ export default class GLTFPack {
     }
 }
 
-function createGeometry(primitive, regl) {
+function createGeometry(primitive, regl, hasAOMap) {
     const attributes = primitive.attributes;
     const aColor0 = attributes['COLOR_0'];
     //将float类型的颜色值转为0-255的uint8类型
@@ -421,6 +421,9 @@ function createGeometry(primitive, regl) {
     } else if (aColor0 && aColor0.array instanceof Uint16Array) {
         const color = new Uint8Array(aColor0.array);
         aColor0.array = color;
+    }
+    if (hasAOMap && attributes['TEXCOORD_0'] && !attributes['TEXCOORD_0']) {
+        attributes['TEXCOORD_1'] = attributes['TEXCOORD_0'];
     }
     const attrs = {};
     for (const name in attributes) {

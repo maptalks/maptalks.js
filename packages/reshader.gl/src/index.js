@@ -1,6 +1,7 @@
 export { default as AbstractTexture } from './AbstractTexture.js';
 export { default as DeferredRenderer } from './DeferredRenderer.js';
 export { default as Geometry } from './Geometry.js';
+export { default as EdgeGeometry } from './EdgeGeometry.js';
 export { default as Material } from './Material.js';
 export { default as WireFrameMaterial } from './WireFrameMaterial.js';
 export { default as PhongMaterial } from './PhongMaterial.js';
@@ -45,6 +46,7 @@ export { default as SkyboxShader } from './skybox/SkyboxShader';
 export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
 export { default as WaterShader } from './water/WaterShader.js';
 export { default as CopyShader } from './shader/CopyShader.js';
+export { default as EdgeShader } from './shader/EdgeShader.js';
 
 export { default as FogPass } from './weather/fog/FogPass.js';
 export { default as FogShader } from './weather/fog/FogShader.js';

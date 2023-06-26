@@ -118,6 +118,9 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         const pointLine = [], triangle = [];
         if (shaderName === 'pointline') {
             for (const sName in this._toRenderMeshes) {
+                if (sName === 'wireframe') {
+                    continue;
+                }
                 const meshes = this._toRenderMeshes[sName];
                 meshes.forEach(mesh => {
                     if (pointLineModes.indexOf(mesh.geometry.desc.primitive) > -1) {
@@ -133,7 +136,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             const meshes = this._toRenderMeshes[sName];
             if (sName === shaderName) {
                 meshes.forEach(mesh => {
-                    if (pointLineModes.indexOf(mesh.geometry.desc.primitive) < 0) {
+                    if (pointLineModes.indexOf(mesh.geometry.desc.primitive) < 0 || shaderName === 'wireframe') {
                         triangle.push(mesh);
                     }
                 });
@@ -642,7 +645,14 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         const markerId = this._squeezeTarget(pickingId);
         const data = this.layer._getMarkerMap()[markerId];
         const index = pickingId - markerId;
-        return { meshId, data, pickingId, point, coordinate, index };
+        const nodeIndex = this._getNodeIndex(meshId);
+        return { meshId, data, pickingId, point, coordinate, index, nodeIndex };
+    }
+
+    _getNodeIndex(meshId) {
+        const meshes = this._getToRenderMeshes();
+        const mesh = meshes[meshId];
+        return mesh && mesh.properties.nodeIndex;
     }
     //根据pickingId,查找其所属于哪个marker, 返回marker的markerId, 其中pickingId是连续的，但如果图层上存在groupmarker, markerId不一定连续
     //pickingId : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

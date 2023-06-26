@@ -1,5 +1,5 @@
 import { isArray } from '../common/Util';
-import Geometry from '../Geometry';
+import EdgeGeometry from '../EdgeGeometry';
 
 export default class GeometryResource {
     constructor(resource) {
@@ -17,10 +17,10 @@ export default class GeometryResource {
         this.nodeIndex = resource.nodeIndex;
     }
 
-    copy() {
+    copyEdgeGeometry() {
         if (!this.copyGeometry) {
             //在重复利用geometry时，之前创建过拷贝份的copyGeometry就不用创建了
-            this.copyGeometry = this._copyGeometry(this.geometry);
+            this.copyGeometry = this._copyEdgeGeometry(this.geometry);
         }
     }
 
@@ -34,11 +34,14 @@ export default class GeometryResource {
     }
 
 
-    _copyGeometry(geometry) {
+    _copyEdgeGeometry(geometry) {
         const data = geometry.data;
-        const indices = geometry.elements;
+        const indices = geometry.indices || geometry.elements;
         const newData = {};
         for (const p in data) {
+            if (p !== geometry.desc.positionAttribute) {
+                continue;
+            }
             if (isArray(data[p])) {
                 newData[p] = data[p].slice();
             } else if (data[p].buffer && data[p].buffer.destroy) {
@@ -57,9 +60,8 @@ export default class GeometryResource {
         }
 
         const newElements = indices.length !== undefined ? indices.slice() : indices;
-        const count = geometry.count;
         const desc = JSON.parse(JSON.stringify(geometry.desc));
-        const copyGeometry = new Geometry(newData, newElements, count, desc);
+        const copyGeometry = new EdgeGeometry(newData, newElements, 0, desc);
         copyGeometry.properties = geometry.properties;
         return copyGeometry;
     }

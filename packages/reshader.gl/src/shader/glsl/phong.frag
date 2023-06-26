@@ -54,8 +54,9 @@ varying vec3 vFragPos;
     uniform float polygonOpacity;
 #endif
 
-#ifdef HAS_OCCLUSION_MAP
+#ifdef HAS_AO_MAP
     uniform sampler2D occlusionTexture;
+        varying vec2 vTexCoord1;
 #endif
 
 #ifdef HAS_NORMAL_MAP
@@ -87,7 +88,7 @@ varying vec3 vFragPos;
 vec3 transformNormal() {
     #if defined(HAS_NORMAL_MAP)
         vec3 n = normalize(vNormal);
-        vec3 normal = texture2D(normalTexture, computeTexCoord()).xyz * 2.0 - 1.0;
+        vec3 normal = texture2D(normalTexture, computeTexCoord(vTexCoord)).xyz * 2.0 - 1.0;
         #if defined(HAS_TANGENT)
             vec3 t = normalize(vTangent.xyz);
             vec3 b = normalize(cross(n, t) * sign(vTangent.w));
@@ -107,9 +108,9 @@ vec4 linearTosRGB(const in vec4 color) {
 
 vec4 getBaseColor() {
     #if defined(HAS_BASECOLOR_MAP)
-        return texture2D(baseColorTexture, computeTexCoord());
+        return texture2D(baseColorTexture, computeTexCoord(vTexCoord));
     #elif defined(HAS_DIFFUSE_MAP)
-        return texture2D(diffuseTexture, computeTexCoord());
+        return texture2D(diffuseTexture, computeTexCoord(vTexCoord));
     #elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
         return diffuseFactor;
     #else
@@ -119,7 +120,7 @@ vec4 getBaseColor() {
 
 vec3 getSpecularColor() {
     #if defined(HAS_SPECULARGLOSSINESS_MAP)
-        return texture2D(specularGlossinessTexture, computeTexCoord()).rgb;
+        return texture2D(specularGlossinessTexture, computeTexCoord(vTexCoord)).rgb;
     #elif defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
         return specularFactor;
     #else
@@ -169,7 +170,7 @@ void main() {
     #endif
     vec3 specular = specularStrength * lightSpecular * spec * getSpecularColor();
     #ifdef HAS_OCCLUSION_MAP
-        float ao = texture2D(occlusionTexture, computeTexCoord()).r;
+        float ao = texture2D(occlusionTexture, computeTexCoord(vTexCoord1)).r;
         ambient *= ao;
     #endif
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
@@ -180,7 +181,7 @@ void main() {
     vec3 result = ambient + diffuse + specular;
 
     #ifdef HAS_EMISSIVE_MAP
-        vec3 emit = texture2D(emissiveTexture, computeTexCoord()).rgb;
+        vec3 emit = texture2D(emissiveTexture, computeTexCoord(vTexCoord)).rgb;
         result += emit;
     #endif
 

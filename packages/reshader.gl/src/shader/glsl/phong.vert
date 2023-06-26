@@ -12,6 +12,10 @@ attribute vec3 aPosition;
         attribute vec4 uvRegion;
         varying vec4 vUvRegion;
     #endif
+    #if defined(HAS_AO_MAP)
+        attribute vec2 aTexCoord1;
+        varying vec2 vTexCoord1;
+    #endif
 #endif
 #if defined(HAS_COLOR)
     attribute vec4 aColor;
@@ -115,6 +119,10 @@ void main()
     #ifdef HAS_MAP
         vec2 decodedTexCoord = getTexcoord(aTexCoord);
         vTexCoord = decodedTexCoord * uvScale + uvOffset;
+    #endif
+    #ifdef HAS_AO_MAP
+        vec2 decodedTexCoord1 = getTexcoord(aTexCoord1);
+        vTexCoord1 = decodedTexCoord1 * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
         vExtrusionOpacity = aExtrusionOpacity;

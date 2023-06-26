@@ -15,14 +15,14 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
     static initDefaultShader() {
         const phongShader = getPhongShader();
         GLTFLayer.registerShader('phong', 'PhongShader', phongShader.shader, phongShader.material.getUniforms());
-        const wireFrameShader = getWireFrameShader();
-        GLTFLayer.registerShader('wireframe', 'WireframeShader', wireFrameShader.shader, wireFrameShader.material.getUniforms());
         const pbrShader = getPBRShader();
         GLTFLayer.registerShader('pbr', 'pbr.StandardShader', pbrShader.shader, pbrShader.material.getUniforms());
         //内置StandardDepthShader，用于在taa阶段绘制，提高性能
         GLTFLayer.registerShader('depth', 'pbr.StandardDepthShader', pbrShader.shader, pbrShader.material.getUniforms());
         const pointLineShader = getPointLineShader();
         GLTFLayer.registerShader('pointline', 'PointLineShader', pointLineShader.shader, pointLineShader.material.getUniforms());
+        const wireframeShader = getWireframeShader();
+        GLTFLayer.registerShader('wireframe', 'EdgeShader', wireframeShader.shader, wireframeShader.material.getUniforms());
     }
 
     static fromJSON(json) {
@@ -175,30 +175,6 @@ function getPhongShader() {
     return { shader, material };
 }
 
-function getWireFrameShader() {
-    const shader = {
-        positionAttribute: 'POSITION',
-        normalAttribute: 'NORMAL',
-        extraCommandProps: {
-            cull: {
-                enable: false,
-                face: 'back'
-            },
-            frontFace: 'cw',
-            blend: {
-                enable: false,
-                func: {
-                    src: 'src alpha',
-                    dst: 'one minus src alpha'
-                },
-                equation: 'add'
-            }
-        }
-    };
-    const material = new reshader.WireFrameMaterial();
-    return { shader, material };
-}
-
 function getPBRShader() {
     const shader = {
         positionAttribute : 'POSITION',
@@ -245,5 +221,25 @@ function getPointLineShader() {
         }
     };
     const material = new reshader.Material();
+    return { shader, material };
+}
+
+function getWireframeShader() {
+    const shader = {
+        positionAttribute : 'POSITION',
+        extraCommandProps: {
+            blend: {
+                enable: true,
+                func: {
+                    srcRGB: 'src alpha',
+                    srcAlpha: 1,
+                    dstRGB: 'one minus src alpha',
+                    dstAlpha: 'one minus src alpha'
+                },
+                equation: 'add'
+            }
+        }
+    };
+    const material = new reshader.Material({ lineColor: [0, 0, 0, 1], lineOpacity: 1 });
     return { shader, material };
 }

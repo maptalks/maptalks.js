@@ -16,14 +16,14 @@ varying highp vec2 vTexCoord;
     varying vec4 vUvRegion;
 #endif
 
-vec2 computeTexCoord() {
+vec2 computeTexCoord(vec2 texCoord) {
     #ifdef HAS_I3S_UVREGION
         vec2 atlasScale = vUvRegion.zw - vUvRegion.xy;
-        vec2 uvAtlas = fract(vTexCoord) * atlasScale + vUvRegion.xy;
+        vec2 uvAtlas = fract(texCoord) * atlasScale + vUvRegion.xy;
         return uvAtlas;
     #elif defined(HAS_KHR_TEXTURE_TRANSFORM)
-        return khr_tex_transformTexCoord(vTexCoord, khr_offset, khr_rotation, khr_scale);
+        return khr_tex_transformTexCoord(texCoord, khr_offset, khr_rotation, khr_scale);
     #else
-        return vTexCoord;
+        return texCoord;
     #endif
 }

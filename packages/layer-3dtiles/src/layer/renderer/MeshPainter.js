@@ -41,7 +41,7 @@ const StandardFilter = m => {
 };
 
 // const colorOff = [false, false, false, false];
-const colorOn = [true, true, true, true];
+// const colorOn = [true, true, true, true];
 
 const TEMP_RTCCENTER = [];
 const TEMP_CENTER = new maptalks.Coordinate(0, 0);

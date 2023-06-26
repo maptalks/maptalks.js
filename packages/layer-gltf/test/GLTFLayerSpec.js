@@ -654,7 +654,7 @@ describe('maptalks.gltf', function () {
     it('getShaders', done => {
         maptalks.GLTFLayer.registerShader('a', 'MeshShader', shader);
         maptalks.GLTFLayer.registerShader('b', 'MeshShader', shader);
-        maptalks.GLTFLayer.registerShader('c', 'WireframeShader', shader);
+        maptalks.GLTFLayer.registerShader('c', 'EdgeShader', shader);
         const shaders = maptalks.GLTFLayer.getShaders();
         expect(shaders.length).to.be.eql(12);
         maptalks.GLTFLayer.removeShader('a');

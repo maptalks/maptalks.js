@@ -485,7 +485,7 @@ describe('bug', () => {
             }
         }).addTo(gltflayer);
         marker1.setUniform('polygonFill', [1, 0, 0, 0.6]);
-        marker2.setUniform('opacity', 0.6);
+        marker2.setUniform('polygonOpacity', 0.6);
         const renderer = gltflayer.getRenderer();
         expect(renderer.isMarkerTransparent(marker1)).not.to.be.ok();
         expect(renderer.isMarkerTransparent(marker2)).to.be.ok();
@@ -523,7 +523,7 @@ describe('bug', () => {
         }, 100);
     });
 
-    it('wireframe shader, change url', (done) => {
+    it('edge shader, change url', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         const marker = new maptalks.GLTFBuilding(center, {
             symbol: {
@@ -537,20 +537,6 @@ describe('bug', () => {
             marker.setUrl(url2);
             done();
         }, 100);
-    });
-
-    it('wireframe dashAnimate, noiseEnable', () => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        new maptalks.GLTFBuilding(center, {
-            symbol: {
-                scaleX: 10,
-                scaleY: 10,
-                scaleZ: 10,
-                shader: 'wireframe',
-                dashAnimate: true,
-                noiseEnable: true
-            }
-        }).addTo(gltflayer);
     });
 
     it('getGLTFAsset', done => {
@@ -1252,5 +1238,57 @@ describe('bug', () => {
             }, 100);
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('ao map', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                modelHeight: 100,
+                anchorZ: 'bottom',
+                url: './models/yb/yb.gltf'
+            }
+        }).addTo(gltflayer);
+        map.setPitch(50);
+        map.setBearing(180);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2 + 20, map.height / 2 - 100, 1, 1);
+                expect(pixelMatch([69, 69, 69, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('return mesh\'s node index(maptalks/issues/issues/353)', function (done) {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        gltflayer.on('modelload', () => {
+            setTimeout(function () {
+                map.fire('dom:click', {
+                    containerPoint: clickContainerPoint.add(100, 0)
+                });
+            }, 100);
+        });
+        new maptalks.GLTFMarker(center, { symbol: { url: url4,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }}).addTo(gltflayer);
+        const marker = new maptalks.GLTFMarker(center, { symbol: { url: url11,
+            scaleX: 1,
+            scaleY: 1,
+            scaleZ: 1,
+            translationX: 100
+        }}).addTo(gltflayer);
+        marker.on('click', e => {
+            const nodeIndex = e.nodeIndex;
+            expect(nodeIndex).to.be.eql(1);
+            const target = e.target;
+            const node = target.gltfPack.gltf.nodes[nodeIndex];
+            expect(node).to.be.ok();
+            expect(node.name).to.be.eql('fox');
+            done();
+        });
     });
 });
