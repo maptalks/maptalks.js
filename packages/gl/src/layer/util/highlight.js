@@ -130,21 +130,23 @@ export function highlightMesh(regl, mesh, highlighted, timestamp, feaIdIndiceMap
                 }
                 invisibleIds.add(id);
             }
-            const indices = feaIdIndiceMap.get(id);
-            if (indices) {
-                for (let j = 0; j < indices.length; j++) {
-                    const idx = indices[j];
-                    if (normalizedColor) {
-                        vec4.set(aHighlightColor.subarray(idx * 4, idx * 4 + 4), ...normalizedColor);
-                    }
-                    if (opacity < 1) {
-                        aHighlightOpacity[idx] = opacity * 255;
-                    }
-                    if (bloom) {
-                        if (!hlElements) {
-                            hlElements = [];
+            if (normalizedColor || opacity < 1 || bloom) {
+                const indices = feaIdIndiceMap.get(id);
+                if (indices) {
+                    for (let j = 0; j < indices.length; j++) {
+                        const idx = indices[j];
+                        if (normalizedColor) {
+                            vec4.set(aHighlightColor.subarray(idx * 4, idx * 4 + 4), ...normalizedColor);
                         }
-                        hlElements.push(idx);
+                        if (opacity < 1) {
+                            aHighlightOpacity[idx] = opacity * 255;
+                        }
+                        if (bloom) {
+                            if (!hlElements) {
+                                hlElements = [];
+                            }
+                            hlElements.push(idx);
+                        }
                     }
                 }
             }
