@@ -1442,12 +1442,15 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         super.onRemove();
         if (this.painter) {
             this.painter.delete();
+            delete this.painter;
         }
         if (this._markerPainter) {
             this._markerPainter.delete();
+            delete this._markerPainter;
         }
         if (this._linePainter) {
             this._linePainter.delete();
+            delete this._linePainter;
         }
     }
 

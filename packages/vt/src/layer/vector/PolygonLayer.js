@@ -78,6 +78,7 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
             if (this.meshes) {
                 this.painter.deleteMesh(this.meshes);
             }
+            mm = flatten(mm);
             const meshes = [];
             const atlas = [];
             for (let i = 0; i < mm.length; i++) {
@@ -135,9 +136,9 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
 
     createPainter() {
         const FillPainter = Vector3DLayer.get3DPainterClass('fill');
-        this.painterSymbol = extend({}, SYMBOL);
-        this._defineSymbolBloom(this.painterSymbol, 'polygonBloom');
-        const painter = new FillPainter(this.regl, this.layer, this.painterSymbol, this.layer.options.sceneConfig, 0);
+        const painterSymbol = extend({}, SYMBOL);
+        this._defineSymbolBloom(painterSymbol, 'polygonBloom');
+        const painter = new FillPainter(this.regl, this.layer, painterSymbol, this.layer.options.sceneConfig, 0);
         return painter;
     }
 
@@ -152,3 +153,15 @@ PolygonLayer.registerRenderer('gl', PolygonLayerRenderer);
 PolygonLayer.registerRenderer('canvas', null);
 
 export default PolygonLayer;
+
+function flatten(meshes) {
+    const flattended = [];
+    for (let i = 0; i < meshes.length; i++) {
+        if (Array.isArray(meshes[i])) {
+            flattended.push(...meshes[i]);
+        } else {
+            flattended.push(meshes[i]);
+        }
+    }
+    return flattended;
+}

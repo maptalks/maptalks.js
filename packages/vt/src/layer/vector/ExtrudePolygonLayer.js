@@ -94,6 +94,14 @@ const DEFAULT_DATACONFIG = {
     defaultAltitude: 20
 };
 
+const topFilter = mesh => {
+    return mesh.properties.top === 1;
+};
+
+const sideFilter = mesh => {
+    return mesh.properties.side === 1;
+};
+
 class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     constructor(...args) {
         super(...args);
@@ -141,25 +149,65 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     createPainter() {
         const StandardPainter = Vector3DLayer.get3DPainterClass('lit');
         this.painterSymbol = extend({}, SYMBOL);
+        this.sidePainterSymbol = extend({}, SYMBOL);
         this._defineSymbolBloom(this.painterSymbol, 'bloom');
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         if (this.layer.options.material) {
             this.painterSymbol.material = this.layer.options.material;
         }
+        if (this.layer.options.sideMaterial) {
+            this.sidePainterSymbol.material = this.layer.options.sideMaterial;
+        } else {
+            this.sidePainterSymbol.material = this.layer.options.material;
+        }
         const sceneConfig = {
             cullFace: this.layer.options.cullFace
         };
         const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0, dataConfig);
+        this.sidePainter = new StandardPainter(this.regl, this.layer, this.sidePainterSymbol, sceneConfig, 0, dataConfig);
         return painter;
+    }
+
+    _startFrame(...args) {
+        super._startFrame(...args);
+        const painter = this.painter;
+        this.painter = this.sidePainter;
+        super._startFrame(...args);
+        this.painter = painter;
+    }
+
+    _renderMeshes(...args) {
+        const context = args[0];
+        const sceneFilter = context.sceneFilter;
+        context.sceneFilter = mesh => {
+            return (!sceneFilter || sceneFilter(mesh)) && topFilter(mesh);
+        };
+        super._renderMeshes(...args);
+        context.sceneFilter = mesh => {
+            return (!sceneFilter || sceneFilter(mesh)) && topFilter(mesh);
+        };
+        const painter = this.painter;
+        this.painter = this.sidePainter;
+        context.sceneFilter = mesh => {
+            return (!sceneFilter || sceneFilter(mesh)) && sideFilter(mesh);
+        };
+        super._renderMeshes(...args);
+        this.painter = painter;
+        context.sceneFilter = sceneFilter;
     }
 
     createMesh(painter, PackClass, symbol, features, atlas, center) {
         this._extrudeCenter = center;
-        const data = this._createPackData(features, symbol)
-        return this._createMesh(data, painter, PackClass, symbol, features, null, center);
+        const data = this._createPackData(features, symbol, 1, 0);
+        const sideData = this._createPackData(features, symbol, 0, 1);
+        const topMesh = this._createMesh(data, painter, PackClass, symbol, features, null, center);
+        topMesh.meshes[0].properties.top = 1;
+        const sideMesh = this._createMesh(sideData, painter, PackClass, symbol, features, null, center);
+        sideMesh.meshes[0].properties.side = 1;
+        return [topMesh, sideMesh];
     }
 
-    _createPackData(features, symbol) {
+    _createPackData(features, symbol, top, side) {
         const map = this.getMap();
         symbol = SYMBOL;
         const center = this._extrudeCenter;
@@ -170,6 +218,8 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const tilePoint = new maptalks.Point(0, 0);
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         dataConfig.uv = 1;
+        dataConfig.top = top;
+        dataConfig.side = side;
         const debugIndex = undefined;
         if (!features.length) {
             return Promise.resolve([]);
@@ -183,11 +233,13 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     updateMesh(polygon) {
         const uid = polygon[ID_PROP];
         let feature = this.features[uid];
-        const data = this._createPackData([feature], this.painterSymbol);
+        const data = this._createPackData([feature], this.painterSymbol, 1, 0);
         if (!data || !data.data) {
             return;
         }
         this._updateMeshData(this.meshes[0], feature.id, data);
+        const sideData = this._createPackData([feature], this.painterSymbol, 0, 1);
+        this._updateMeshData(this.meshes[1], feature.id, sideData);
     }
 
     _convertGeo(geo) {
@@ -207,6 +259,35 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
 
         }
         return super._convertGeo(geo);
+    }
+
+    resizeCanvas(canvasSize) {
+        super.resizeCanvas(canvasSize);
+        this.sidePainter.resize(this.canvas.width, this.canvas.height);
+    }
+
+    onRemove() {
+        super.onRemove();
+        if (this.sidePainter) {
+            this.sidePainter.delete();
+            delete this.sidePainter;
+        }
+    }
+
+    drawOutline(fbo) {
+        super.drawOutline(fbo);
+        if (this._outlineAll) {
+            if (this.sidePainter) {
+                this.sidePainter.outlineAll(fbo);
+            }
+        }
+        if (this._outlineFeatures) {
+            for (let i = 0; i < this._outlineFeatures.length; i++) {
+                if (this.sidePainter) {
+                    this.sidePainter.outline(fbo, this._outlineFeatures[i]);
+                }
+            }
+        }
     }
 }
 
