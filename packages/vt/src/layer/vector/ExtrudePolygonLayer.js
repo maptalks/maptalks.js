@@ -197,14 +197,21 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
 
     createMesh(painter, PackClass, symbol, features, atlas, center) {
+        const meshes = [];
         this._extrudeCenter = center;
         const data = this._createPackData(features, symbol, 1, 0);
         const sideData = this._createPackData(features, symbol, 0, 1);
-        const topMesh = this._createMesh(data, painter, PackClass, symbol, features, null, center);
-        topMesh.meshes[0].properties.top = 1;
-        const sideMesh = this._createMesh(sideData, painter, PackClass, symbol, features, null, center);
-        sideMesh.meshes[0].properties.side = 1;
-        return [topMesh, sideMesh];
+        if (data) {
+            const topMesh = this._createMesh(data, painter, PackClass, symbol, features, null, center);
+            topMesh.meshes[0].properties.top = 1;
+            meshes.push(topMesh);
+        }
+        if (sideData) {
+            const sideMesh = this._createMesh(sideData, painter, PackClass, symbol, features, null, center);
+            sideMesh.meshes[0].properties.side = 1;
+            meshes.push(sideMesh);
+        }
+        return meshes;
     }
 
     _createPackData(features, symbol, top, side) {
@@ -216,13 +223,19 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = map.getZoom();
         const tilePoint = new maptalks.Point(0, 0);
-        const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
+        const dataConfig = extend({}, DEFAULT_DATACONFIG);
         dataConfig.uv = 1;
         dataConfig.top = top;
         dataConfig.side = side;
+        if (this.layer.options.dataConfig) {
+            extend(dataConfig, this.layer.options.dataConfig);
+        }
+        if (dataConfig.top === false && dataConfig.side === false) {
+            return null;
+        }
         const debugIndex = undefined;
         if (!features.length) {
-            return Promise.resolve([]);
+            return null;
         }
         const projectionCode = map.getProjection().code;
         const data = build3DExtrusion(features, dataConfig, extent, tilePoint, map.getGLRes(), 1,
@@ -233,13 +246,18 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     updateMesh(polygon) {
         const uid = polygon[ID_PROP];
         let feature = this.features[uid];
-        const data = this._createPackData([feature], this.painterSymbol, 1, 0);
-        if (!data || !data.data) {
+        if (!feature) {
             return;
         }
-        this._updateMeshData(this.meshes[0], feature.id, data);
+        const data = this._createPackData([feature], this.painterSymbol, 1, 0);
+        let index = 0;
+        if (data && data.data) {
+            this._updateMeshData(this.meshes[index++], feature.id, data);
+        }
         const sideData = this._createPackData([feature], this.painterSymbol, 0, 1);
-        this._updateMeshData(this.meshes[1], feature.id, sideData);
+        if (sideData && sideData.data) {
+            this._updateMeshData(this.meshes[index++], feature.id, sideData);
+        }
     }
 
     _convertGeo(geo) {
