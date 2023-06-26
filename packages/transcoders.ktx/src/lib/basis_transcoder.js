@@ -40,44 +40,7 @@ var BASIS = (function() {
         var read_, readAsync, readBinary, setWindowTitle;
         var nodeFS;
         var nodePath;
-        if (ENVIRONMENT_IS_NODE) {
-            if (ENVIRONMENT_IS_WORKER) {
-                scriptDirectory = require("path").dirname(scriptDirectory) + "/"
-            } else {
-                scriptDirectory = __dirname + "/"
-            }
-            read_ = function shell_read(filename, binary) {
-                if (!nodeFS) nodeFS = require("fs");
-                if (!nodePath) nodePath = require("path");
-                filename = nodePath["normalize"](filename);
-                return nodeFS["readFileSync"](filename, binary ? null: "utf8")
-            };
-            readBinary = function readBinary(filename) {
-                var ret = read_(filename, true);
-                if (!ret.buffer) {
-                    ret = new Uint8Array(ret)
-                }
-                assert(ret.buffer);
-                return ret
-            };
-            if (process["argv"].length > 1) {
-                thisProgram = process["argv"][1].replace(/\\/g, "/")
-            }
-            arguments_ = process["argv"].slice(2);
-            process["on"]("uncaughtException",
-            function(ex) {
-                if (! (ex instanceof ExitStatus)) {
-                    throw ex
-                }
-            });
-            process["on"]("unhandledRejection", abort);
-            quit_ = function(status) {
-                process["exit"](status)
-            };
-            Module["inspect"] = function() {
-                return "[Emscripten Module object]"
-            }
-        } else if (ENVIRONMENT_IS_SHELL) {
+            if (ENVIRONMENT_IS_SHELL) {
             if (typeof read != "undefined") {
                 read_ = function shell_read(f) {
                     return read(f)
