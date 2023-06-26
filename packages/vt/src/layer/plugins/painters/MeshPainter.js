@@ -115,6 +115,9 @@ class MeshPainter extends Painter {
         if (geometry.data.aColor) {
             defines['HAS_COLOR'] = 1;
         }
+        if (geometry.data.aOpacity) {
+            defines['HAS_OPACITY'] = 1;
+        }
         if (geometry.data.aLineWidth) {
             defines['HAS_LINE_WIDTH'] = 1;
         }
