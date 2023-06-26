@@ -233,7 +233,6 @@ export default class Geometry {
                     }
                 }
 
-
                 const vaoData = {
                     attributes: buffers,
                     primitive: this.getPrimitive()
@@ -530,7 +529,8 @@ export default class Geometry {
         } else {
             this.elements = elements;
         }
-        this._markVAODirty();
+        this._markVAODirty(true);
+
         return this;
     }
 
@@ -544,14 +544,21 @@ export default class Geometry {
             this.elements[KEY_DISPOSED] = 1;
         }
         this.elements = [];
-        this._markVAODirty();
+        this._markVAODirty(true);
         return this;
     }
 
-    _markVAODirty() {
+    _markVAODirty(forceDelete) {
         if (this._vao) {
             for (const key in this._vao) {
-                this._vao[key].dirty = true;
+                if (forceDelete) {
+                    this._vao[key].vao.destroy();
+                } else {
+                    this._vao[key].dirty = true;
+                }
+            }
+            if (forceDelete) {
+                this._vao = {};
             }
         }
     }
