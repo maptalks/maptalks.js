@@ -57,6 +57,11 @@ varying vec3 vModelVertex;
     varying vec4 vColor;
 #endif
 
+#ifdef HAS_OPACITY
+    attribute float aOpacity;
+#endif
+varying float vOpacity;
+
 #include <highlight_vert>
 
 #if defined(HAS_COLOR0)
@@ -237,6 +242,12 @@ void main() {
 
         #if defined(HAS_COLOR)
             vColor = aColor / 255.0;
+        #endif
+
+        #ifdef HAS_OPACITY
+            vOpacity = aOpacity / 255.0;
+        #else
+            vOpacity = 1.0;
         #endif
 
         highlight_setVarying();
