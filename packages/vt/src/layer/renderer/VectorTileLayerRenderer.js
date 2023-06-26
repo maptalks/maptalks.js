@@ -377,6 +377,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         let plugins = this._plugins[this._styleCounter];
         if (!plugins) {
             this._initPlugins();
+            this._setPluginIndex();
             plugins = this._getStylePlugins();
         }
         const featurePlugins = this._getFeaturePlugins();
