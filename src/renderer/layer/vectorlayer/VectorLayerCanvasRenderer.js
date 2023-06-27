@@ -192,6 +192,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        this._setRenderEnd(true, this._geosToDraw);
     }
 
     /**
@@ -227,20 +228,25 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        this._setRenderEnd(true, this._geosToDraw);
     }
 
     prepareToDraw() {
         this._hasPoint = false;
         this._geosToDraw = [];
-        const geoList = this.layer._geoList || [];
+        this._setRenderEnd(false);
+        return this;
+    }
+
+    _setRenderEnd(renderEnd, geos) {
+        const geoList = geos || this.layer._geoList || [];
         for (let i = 0, len = geoList.length; i < len; i++) {
             const geo = geoList[i];
-            const painter = geo && geo._getPainter && geo._getPainter();
-            if (painter && painter._resetBBOX) {
-                painter._resetBBOX();
+            const painter = geo._painter;
+            if (painter && painter._setRenderEnd) {
+                painter._setRenderEnd(renderEnd);
             }
         }
-        return this;
     }
 
     checkGeo(geo) {

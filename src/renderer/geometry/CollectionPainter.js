@@ -21,15 +21,18 @@ export default class CollectionPainter extends Class {
         this.bbox = getDefaultBBOX();
     }
 
-    _resetBBOX() {
-        resetBBOX(this.bbox);
+    _setRenderEnd(renderEnd) {
+        this.renderEnd = renderEnd;
         this._eachPainter((painter) => {
-            painter._resetBBOX();
+            painter.renderEnd = renderEnd;
         });
         return this;
     }
 
     getRenderBBOX() {
+        if (!this.renderEnd) {
+            return null;
+        }
         resetBBOX(this.bbox);
         this._eachPainter((painter) => {
             const bbox = painter.getRenderBBOX();
