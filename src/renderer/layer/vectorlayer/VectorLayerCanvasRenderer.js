@@ -232,6 +232,15 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
     prepareToDraw() {
         this._hasPoint = false;
         this._geosToDraw = [];
+        const geoList = this.layer._geoList || [];
+        for (let i = 0, len = geoList.length; i < len; i++) {
+            const geo = geoList[i];
+            const painter = geo && geo._getPainter && geo._getPainter();
+            if (painter && painter._resetBBOX) {
+                painter._resetBBOX();
+            }
+        }
+        return this;
     }
 
     checkGeo(geo) {
@@ -264,7 +273,6 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
             }
         }
         if (!inCurrentView) {
-            painter._resetBBOX();
             return;
         }
         if (painter.hasPoint()) {
