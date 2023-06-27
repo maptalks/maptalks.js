@@ -199,8 +199,8 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     createMesh(painter, PackClass, symbol, features, atlas, center) {
         const meshes = [];
         this._extrudeCenter = center;
-        const data = this._createPackData(features, symbol, 1, 0);
-        const sideData = this._createPackData(features, symbol, 0, 1);
+        const data = this._createPackData(features, symbol, true, false);
+        const sideData = this._createPackData(features, symbol, false, true);
         if (data) {
             const topMesh = this._createMesh(data, painter, PackClass, symbol, features, null, center);
             topMesh.meshes[0].properties.top = 1;
@@ -223,12 +223,13 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         // 原zoom是用来计算functiont-type 的symbol属性值
         const zoom = map.getZoom();
         const tilePoint = new maptalks.Point(0, 0);
-        const dataConfig = extend({}, DEFAULT_DATACONFIG);
+        const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig);
         dataConfig.uv = 1;
-        dataConfig.top = top;
-        dataConfig.side = side;
-        if (this.layer.options.dataConfig) {
-            extend(dataConfig, this.layer.options.dataConfig);
+        if (dataConfig.top) {
+            dataConfig.top = top;
+        }
+        if (dataConfig.side) {
+            dataConfig.side = side;
         }
         if (dataConfig.top === false && dataConfig.side === false) {
             return null;
