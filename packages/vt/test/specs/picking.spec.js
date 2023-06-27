@@ -917,6 +917,78 @@ describe('picking specs', () => {
         });
     });
 
+    context('water picking', () => {
+        const symbol = {
+            "ssr": false,
+            "texWaveNormal": 'file://' + path.resolve(__dirname, '../integration/resources/normal.png'),
+            "texWavePerturbation": 'file://' + path.resolve(__dirname, '../integration/resources/perturbation.png'),
+            "waterBaseColor": [0.1451, 0.2588, 0.4863, 1],
+            "contrast": 1,
+            "hsv": [0, 0, 0],
+            "uvScale": 1 / 1000,
+            "animation": false,
+            "waterSpeed": 1,
+            "waterDirection": 0,
+            "visible": true
+        };
+        const renderPlugin = {
+            "type": "water",
+            "dataConfig": {
+                "type": "fill"
+            }
+        };
+        it('should pick point in water', done => {
+            const options = {
+                pickingGeometry: true,
+                // 不返回features
+                // features: 0,
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        },
+                        properties: {
+                            type: 1,
+                            color: '#f00',
+                            foo: 'bar',
+                            foo1: 'bar1'
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin,
+                    symbol
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const hit = layer.identify([13.41720, 52.52952])[0];
+                const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon","coordinates": [[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]] },"properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" },"id": 0,"layer": 0 };
+                assert.deepEqual(hit.coordinate, [13.417199426757975,52.529518938674386,0]);
+                assert.deepEqual(expectedFeature, hit.data.feature);
+                done();
+            });
+            layer.addTo(map);
+        });
+    });
+
     context('vector layer\'s picking', () => {
         it('should pick point in PointLayer', done => {
             const options = {
