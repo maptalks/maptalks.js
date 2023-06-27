@@ -31,6 +31,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     } = dataConfig;
     //256是2的8次方，在glZoom + 8级别时，texture为1:1比例
     const textureSize = PACK_TEX_SIZE;
+    const isExtrudePolygonLayer = !!center;
     const faces = buildExtrudeFaces(
         features, extent,
         {
@@ -59,7 +60,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             res,
             glScale,
             projectionCode,
-            isExtrudePolygonLayer: !!center
+            isExtrudePolygonLayer
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
@@ -71,7 +72,9 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     const delta = 1E-6;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
     for (let i = 0; i < normals.length; i++) {
-        normals[i] = -normals[i];
+        if (!isExtrudePolygonLayer) {
+            normals[i] = -normals[i];
+        }
         const m = normals[i] % 1;
         if (1 - Math.abs(m) > delta) {
             simpleNormal = false;
