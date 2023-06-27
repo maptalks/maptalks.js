@@ -68,8 +68,8 @@ attribute vec4 aTubeNormal;
 
     #ifdef HAS_OPACITY
         attribute float aOpacity;
-        varying float vOpacity;
     #endif
+    varying float vOpacity;
 
     varying vec3 vModelNormal;
     varying vec4 vViewVertex;
@@ -116,6 +116,11 @@ void main() {
             vColor = aColor / 255.0;
             // 检查up的方向是否正确
             // vColor = vec4(aTubeNormal.w / EXTRUDE_SCALE, 0.0, 0.0, 1.0);
+        #endif
+        #ifdef HAS_OPACITY
+            vOpacity = aOpacity / 255.0;
+        #else
+            vOpacity = 1.0;
         #endif
 
         #ifdef HAS_PATTERN

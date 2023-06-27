@@ -57,15 +57,15 @@ class Vector {
 }
 
 //-------------convexhull.js---------------------
-const ON = 0;
-const LEFT = 1;
-const RIGHT = 2;
-const ALMOST_ZERO = 0.00001;
+// const ON = 0;
+// const LEFT = 1;
+// const RIGHT = 2;
+// const ALMOST_ZERO = 0.00001;
 
-function GetSideOfLine(lineStart, lineEnd, point) {
-    const d = (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - (lineEnd.y - lineStart.y) * (point.x - lineStart.x);
-    return (d > ALMOST_ZERO ? LEFT : (d < -ALMOST_ZERO ? RIGHT : ON));
-}
+// function GetSideOfLine(lineStart, lineEnd, point) {
+//     const d = (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - (lineEnd.y - lineStart.y) * (point.x - lineStart.x);
+//     return (d > ALMOST_ZERO ? LEFT : (d < -ALMOST_ZERO ? RIGHT : ON));
+// }
 
 // returns convex hull in CCW order
 // (required by Rotating Calipers implementation)

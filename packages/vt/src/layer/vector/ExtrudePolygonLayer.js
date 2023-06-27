@@ -48,6 +48,21 @@ class ExtrudePolygonLayer extends Vector3DLayer {
         return this;
     }
 
+    updateSideMaterial(matInfo) {
+        if (!matInfo) {
+            return this;
+        }
+        if (!this.options.sideMaterial) {
+            this.options.sideMaterial = {};
+        }
+        extend(this.options.sideMaterial, matInfo);
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.updateSideMaterial(matInfo);
+        }
+        return this;
+    }
+
     updateDataConfig(dataConfig) {
         if (!dataConfig) {
             return this;
@@ -128,6 +143,16 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
             return;
         }
         this.painter._updateMaterial(matInfo);
+        if (!this.layer.options.sideMaterial) {
+            this.sidePainter._updateMaterial(matInfo);
+        }
+    }
+
+    updateSideMaterial(matInfo) {
+        if (!this.sidePainter) {
+            return;
+        }
+        this.sidePainter._updateMaterial(matInfo);
     }
 
     updateDataConfig(dataConfig) {

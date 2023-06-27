@@ -164,7 +164,7 @@ function noIntersections(a, b, segTree) {
     var maxX = Math.max(a[0], b[0]);
     var maxY = Math.max(a[1], b[1]);
 
-    var edges = segTree.search({minX: minX, minY: minY, maxX: maxX, maxY: maxY});
+    var edges = segTree.search({ minX: minX, minY: minY, maxX: maxX, maxY: maxY });
     for (var i = 0; i < edges.length; i++) {
         if (intersects(edges[i].p, edges[i].next.p, a, b)) return false;
     }
