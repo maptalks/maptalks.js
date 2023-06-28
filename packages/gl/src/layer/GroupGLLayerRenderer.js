@@ -763,8 +763,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         context.jitter = NO_JITTER;
         // 1 是留给开启了ssr的图形的
         const polygonOffsetCount = this.layer.getPolygonOffsetCount();
-        context.offsetFactor = polygonOffsetCount;
-        context.offsetUnits = polygonOffsetCount;
+        // 加一是为了防止有ssr的图形的polygonOffset被设置成1
+        context.offsetFactor = polygonOffsetCount + 1;
+        context.offsetUnits = polygonOffsetCount + 1;
         let sceneFilter;
         if (forceRender) {
             // 第一次绘制 ground 应该忽略 sceneFilter
