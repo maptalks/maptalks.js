@@ -985,6 +985,9 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
 
     //bind the geometry to a layer
     _bindLayer(layer) {
+        if (layer === this.getLayer()) {
+            return;
+        }
         //check dupliaction
         if (this.getLayer()) {
             throw new Error('Geometry cannot be added to two or more layers at the same time.');

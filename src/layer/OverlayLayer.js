@@ -223,6 +223,9 @@ class OverlayLayer extends Layer {
             if (!geo) {
                 throw new Error('Invalid geometry to add to layer(' + this.getId() + ') at index:' + i);
             }
+            if (geo.getLayer && geo.getLayer() === this) {
+                continue;
+            }
             if (!(geo instanceof Geometry)) {
                 geo = Geometry.fromJSON(geo);
                 if (Array.isArray(geo)) {
