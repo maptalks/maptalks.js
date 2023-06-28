@@ -80,7 +80,7 @@ export default class BaseLayerWorker {
                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     bitmap.close();
                     // debugger
-                    cb(null, { width : bitmap.width, height : bitmap.height, data : new Uint8Array(imgData.data) });
+                    cb(null, { width: bitmap.width, height: bitmap.height, data: new Uint8Array(imgData.data) });
                 });
         } else {
             this._uploader('requestImage', { url }, null, cb);

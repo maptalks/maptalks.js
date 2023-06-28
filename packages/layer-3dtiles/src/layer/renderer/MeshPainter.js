@@ -1587,13 +1587,6 @@ export default class MeshPainter {
 
     }
 
-    _createTextureURL(texture) {
-        const image = texture.image;
-        const URL = window.URL || window.webkitURL;
-        const blob = new Blob([image.array], { type: image.mimeType });
-        return URL.createObjectURL(blob);
-    }
-
     _onResourceLoad({ target }) {
         const id = target._nodeId;
         const loading = this._loading[id];
