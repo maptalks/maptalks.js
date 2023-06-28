@@ -34,9 +34,6 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
     }
 
     symbolize(ctx, resources) {
-        if (!ctx.isHitTesting) {
-            this._resetBBOX();
-        }
         const style = this.style;
         if (!this.painter.isHitTesting() && (style['markerWidth'] === 0 || style['markerHeight'] === 0 ||
             (style['polygonOpacity'] === 0 && style['lineOpacity'] === 0))) {

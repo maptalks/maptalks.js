@@ -562,6 +562,16 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
+    _resetSymbolizersBBOX() {
+        //reset all symbolizers render bbox
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            const bbox = symbolizer.bbox;
+            resetBBOX(bbox);
+        }
+        return this;
+    }
+
     paint(extent, context, offset) {
         if (!this.symbolizers) {
             return;
@@ -586,6 +596,9 @@ class Painter extends Class {
         this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
+        if (!ctx.isHitTesting) {
+            this._resetSymbolizersBBOX();
+        }
         const contexts = [ctx, renderer.resources];
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             // reduce function call
