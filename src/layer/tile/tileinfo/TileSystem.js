@@ -47,11 +47,12 @@ class TileSystem {
      * @return {String} tile system code
      */
     static getDefault(projection) {
-        if (projection['code'].toLowerCase() === 'baidu') {
+        const code = projection['code'].toLowerCase();
+        if (code === 'baidu') {
             return 'baidu';
-        } else if (projection['code'].toLowerCase() === 'EPSG:4326'.toLowerCase()) {
+        } else if (code === 'EPSG:4326'.toLowerCase() || code === 'EPSG:4490'.toLowerCase()) {
             return 'tms-global-geodetic';
-        } else if (projection['code'].toLowerCase() === 'identity') {
+        } else if (code === 'identity') {
             return [1, -1, 0, 0];
         } else {
             return 'web-mercator';

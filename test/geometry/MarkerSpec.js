@@ -843,7 +843,7 @@ describe('Geometry.Marker', function () {
             var marker = new maptalks.Marker(map.getCenter());
             marker.rotate(10, map.getCenter().sub(1, 1));
             var newCoords = marker.getCoordinates().toArray();
-            expect(newCoords).to.be.eql([118.62842615843942, 32.17932019579001]);
+            expect(newCoords).to.be.eql([118.62842615841328, 32.17932019575247]);
         });
     });
 });

@@ -25,7 +25,7 @@ class Sphere {
             f = toRadian(c1.x) - toRadian(c2.x);
         b = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(e / 2), 2) + Math.cos(b) * Math.cos(d) * Math.pow(Math.sin(f / 2), 2)));
         b *= this.radius;
-        return Math.round(b * 1E5) / 1E5;
+        return b;
     }
 
     measureArea(coordinates) {
