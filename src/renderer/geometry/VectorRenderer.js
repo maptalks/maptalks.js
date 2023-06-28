@@ -37,7 +37,16 @@ function isWithinPixel(painter) {
 Geometry.include({
     _redrawWhenPitch: () => false,
 
-    _redrawWhenRotate: () => false
+    _redrawWhenRotate: () => false,
+
+    _getRenderBBOX(ctx, points) {
+        if (!ctx.isHitTesting) {
+            resetBBOX(BBOX_TEMP);
+            pointsBBOX(points, BBOX_TEMP);
+            return BBOX_TEMP;
+        }
+        return null;
+    }
 });
 
 const el = {
@@ -188,12 +197,7 @@ LineString.include({
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
         }
         this._paintArrow(ctx, points, lineOpacity);
-        if (!ctx.isHitTesting) {
-            resetBBOX(BBOX_TEMP);
-            pointsBBOX(points, BBOX_TEMP);
-            return BBOX_TEMP;
-        }
-        return null;
+        return this._getRenderBBOX(ctx, points);
     },
 
     _getArrowPlacement() {
@@ -318,12 +322,7 @@ Polygon.include({
         } else {
             Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
         }
-        if (!ctx.isHitTesting) {
-            resetBBOX(BBOX_TEMP);
-            pointsBBOX(points, BBOX_TEMP);
-            return BBOX_TEMP;
-        }
-        return null;
+        return this._getRenderBBOX(ctx, points);
     }
 });
 
