@@ -1,5 +1,5 @@
 import { now } from '../../core/util';
-import { on, off, getEventContainerPoint, preventDefault, stopPropagation } from '../../core/util/dom';
+import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
@@ -267,7 +267,7 @@ class MapGeometryEventsHandler extends Handler {
         };
         const callback = fireGeometryEvent.bind(this);
 
-        if (eventType === 'mousemove' || eventType === 'touchmove') {
+        if (isMoveEvent(eventType)) {
             this._queryIdentifyTimeout = map.getRenderer().callInNextFrame(() => {
                 if (map.isInteracting()) {
                     return;

@@ -67,16 +67,21 @@ describe('DrawTool', function () {
             'clientX':point.x,
             'clientY':point.y
         });
+        mapMousemove(map, 10, function () {
+            happen.mouseup(eventContainer, {
+                'clientX':point.x - 10,
+                'clientY':point.y - 10
+            });
+            // callback();
+        })
+
         for (var i = 0; i < 10; i++) {
             happen.mousemove(eventContainer, {
                 'clientX':point.x - i,
                 'clientY':point.y - i
             });
         }
-        happen.mouseup(eventContainer, {
-            'clientX':point.x - 10,
-            'clientY':point.y - 10
-        });
+      
     }
 
     function dragDrawByTouch() {
@@ -88,16 +93,19 @@ describe('DrawTool', function () {
             'clientX':point.x,
             'clientY':point.y
         });
+        mapMousemove(map, 10, function () {
+            happen.touchend(eventContainer, {
+                'clientX':point.x - 10,
+                'clientY':point.y - 10
+            });
+            // callback();
+        })
         for (var i = 0; i < 10; i++) {
             happen.touchmove(eventContainer, {
                 'clientX':point.x - i,
                 'clientY':point.y - i
             });
         }
-        happen.touchend(eventContainer, {
-            'clientX':point.x - 10,
-            'clientY':point.y - 10
-        });
     }
 
     function drawPoint() {

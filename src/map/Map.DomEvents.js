@@ -3,7 +3,8 @@ import {
     addDomEvent,
     removeDomEvent,
     preventDefault,
-    getEventContainerPoint
+    getEventContainerPoint,
+    isMoveEvent
 } from '../core/util/dom';
 import Map from './Map';
 
@@ -345,8 +346,21 @@ Map.include(/** @lends Map.prototype */ {
         if (this.isRemoved()) {
             return;
         }
+
         const eventParam = this._parseEvent(e, type);
-        this._fireEvent(type, eventParam);
+        if (isMoveEvent(type)) {
+            this.getRenderer().callInNextFrame(() => {
+                if (eventParam.domEvent && eventParam.domEvent._cancelBubble) {
+                    // Always trigger _moumove _touchmove event
+                    // for hit test etc
+                    this._fireEvent('_' + type, eventParam);
+                    return;
+                }
+                this._fireEvent(type, eventParam);
+            });
+        } else {
+            this._fireEvent(type, eventParam);
+        }
     },
 
     // _onKeyPress(e) {

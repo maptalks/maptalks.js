@@ -1876,7 +1876,10 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
             return;
         }
         //fire internal events at first
-        this.fire('_' + eventName, param);
+        const underline = '_';
+        if (eventName[0] !== underline) {
+            this.fire(underline + eventName, param);
+        }
         this.fire(eventName, param);
     }
 
