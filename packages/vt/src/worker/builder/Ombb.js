@@ -329,6 +329,9 @@ export default function (vertices) {
 
     const ombb = CalcOmbb(convexHull); // draws OOBB candidates
 
+    if (!ombb || ombb.length !== 4) {
+        return null;
+    }
     const edge0 = ombb[0].distance(ombb[1]);
     const edge1 = ombb[1].distance(ombb[2]);
     const box = ombb.map(v => [v.x, v.y]);

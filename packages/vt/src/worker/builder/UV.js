@@ -15,6 +15,9 @@ export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centim
 
 //inspired by https://stackoverflow.com/questions/20774648/three-js-generate-uv-coordinate
 function buildOmbbUV(obox, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode, isExtrudePolygonLayer) {
+    if (!obox) {
+        return;
+    }
     const idx = obox[4];
     let v0, v1, v2, v3;
     if (idx === 0) {
