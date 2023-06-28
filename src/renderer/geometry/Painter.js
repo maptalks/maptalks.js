@@ -56,16 +56,17 @@ class Painter extends Class {
         this.symbolizers = this._createSymbolizers();
         this._altAtGL = this._getGeometryAltitude();
         this.bbox = getDefaultBBOX();
+        this._drawTime = 0;
     }
 
-    _setRenderEnd(renderEnd) {
-        this.renderEnd = renderEnd;
+    _setDrawTime(time) {
+        this._drawTime = time;
         return this;
     }
 
-
     getRenderBBOX() {
-        if (!this.renderEnd) {
+        const layer = this.getLayer();
+        if (layer && layer._drawTime !== this._drawTime) {
             return null;
         }
         resetBBOX(this.bbox);
@@ -88,7 +89,7 @@ class Painter extends Class {
     }
 
     getLayer() {
-        return this.geometry.getLayer();
+        return this.geometry && this.geometry.getLayer();
     }
 
     /**

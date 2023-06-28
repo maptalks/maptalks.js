@@ -19,18 +19,20 @@ export default class CollectionPainter extends Class {
         this.geometry = geometry;
         this.isMask = isMask;
         this.bbox = getDefaultBBOX();
+        this._drawTime = 0;
     }
 
-    _setRenderEnd(renderEnd) {
-        this.renderEnd = renderEnd;
+    _setDrawTime(time) {
+        this._drawTime = time;
         this._eachPainter((painter) => {
-            painter.renderEnd = renderEnd;
+            painter._setDrawTime(time);
         });
         return this;
     }
 
     getRenderBBOX() {
-        if (!this.renderEnd) {
+        const layer = this.getLayer();
+        if (layer && layer._drawTime !== this._drawTime) {
             return null;
         }
         resetBBOX(this.bbox);
@@ -63,6 +65,11 @@ export default class CollectionPainter extends Class {
             }
         }
     }
+
+    getLayer() {
+        return this.geometry && this.geometry.getLayer();
+    }
+
 
     paint(extent) {
         if (!this.geometry) {
