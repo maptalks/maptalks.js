@@ -1,4 +1,4 @@
-import { isNil, isNumber, isArrayHasData, isFunction, getPointsResultPts } from '../core/util';
+import { isNumber, isArrayHasData, isFunction, getPointsResultPts } from '../core/util';
 import { Animation } from '../core/Animation';
 import Coordinate from '../geo/Coordinate';
 import Extent from '../geo/Extent';
@@ -282,9 +282,8 @@ class Path extends Geometry {
     }
 
     _shouldSimplify() {
-        const layer = this.getLayer(),
-            properties = this.getProperties();
-        const hasAltitude = properties && layer.options['enableAltitude'] && !isNil(properties[layer.options['altitudeProperty']]) && (properties[layer.options['altitudeProperty']] !== 0);
+        const layer = this.getLayer();
+        const hasAltitude = layer.options['enableAltitude'];
         return layer && layer.options['enableSimplify'] && !hasAltitude && this.options['enableSimplify'] && !this._showPlayer/* && !this.options['smoothness'] */;
     }
 
