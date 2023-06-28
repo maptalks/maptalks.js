@@ -287,6 +287,9 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
     }
 
     _convertGeo(geo) {
+        if (!geo.getProperties()) {
+            geo.setProperties({});
+        }
         if (!geo.getProperties()[PROP_OMBB]) {
             const coordinates = geo.getCoordinates();
             if (geo instanceof maptalks.MultiPolygon) {
