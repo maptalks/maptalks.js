@@ -111,7 +111,7 @@ describe('weather tests', () => {
         }).addTo(map);
     });
 
-    it.only('enable snow', done => {
+    it('enable snow', done => {
         const snow = {
             enable: true
         };
