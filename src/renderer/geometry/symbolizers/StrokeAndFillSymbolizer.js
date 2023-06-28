@@ -71,9 +71,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 }
                 params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
                 const bbox = this.geometry._paintOn.apply(this.geometry, params);
-                if (!ctx.isHitTesting) {
-                    this._setBBOX(bbox);
-                }
+                this._setBBOX(ctx, bbox);
             }
         } else {
             this.prepareCanvas(ctx, style, resources);
@@ -84,9 +82,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             params.push.apply(params, paintParams);
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
             const bbox = this.geometry._paintOn.apply(this.geometry, params);
-            if (!ctx.isHitTesting) {
-                this._setBBOX(bbox);
-            }
+            this._setBBOX(ctx, bbox);
         }
 
         if (ctx.setLineDash && Array.isArray(style['lineDasharray'])) {

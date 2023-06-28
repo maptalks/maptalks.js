@@ -15,8 +15,10 @@ class Symbolizer {
         this.bbox = getDefaultBBOX();
     }
 
-    _setBBOX(x1, y1, x2, y2) {
-        setBBOX(this.bbox, x1, y1, x2, y2);
+    _setBBOX(ctx, x1, y1, x2, y2) {
+        if (!ctx.isHitTesting) {
+            setBBOX(this.bbox, x1, y1, x2, y2);
+        }
         return this;
     }
 

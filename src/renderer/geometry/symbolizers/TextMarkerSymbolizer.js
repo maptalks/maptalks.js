@@ -57,9 +57,7 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
                 p = origin;
             }
             const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
-            if (!ctx.isHitTesting) {
-                this._setBBOX(bbox);
-            }
+            this._setBBOX(ctx, bbox);
             if (origin) {
                 ctx.restore();
             }

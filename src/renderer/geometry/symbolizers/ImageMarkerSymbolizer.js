@@ -78,9 +78,7 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 ctx.restore();
             }
-            if (!ctx.isHitTesting) {
-                this._setBBOX(x, y, x + width, y + height);
-            }
+            this._setBBOX(ctx, x, y, x + width, y + height);
         }
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;
