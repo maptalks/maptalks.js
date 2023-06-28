@@ -7,6 +7,7 @@ import PointExtent from '../../geo/PointExtent';
 import Canvas from '../../core/Canvas';
 import * as Symbolizers from './symbolizers';
 import { interpolate } from '../../core/util/util';
+import { getDefaultBBOX, resetBBOX, setBBOX, validateBBOX } from '../../core/util/bbox';
 
 //registered symbolizers
 //the latter will paint at the last
@@ -54,6 +55,33 @@ class Painter extends Class {
         this.geometry = geometry;
         this.symbolizers = this._createSymbolizers();
         this._altAtGL = this._getGeometryAltitude();
+        this.bbox = getDefaultBBOX();
+        this._drawTime = 0;
+    }
+
+    _setDrawTime(time) {
+        this._drawTime = time;
+        return this;
+    }
+
+    getRenderBBOX() {
+        const layer = this.getLayer();
+        if (layer && layer._drawTime !== this._drawTime) {
+            return null;
+        }
+        resetBBOX(this.bbox);
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            const bbox = symbolizer.bbox;
+            if (!validateBBOX(bbox)) {
+                continue;
+            }
+            setBBOX(this.bbox, bbox);
+        }
+        if (validateBBOX(this.bbox)) {
+            return this.bbox;
+        }
+        return null;
     }
 
     getMap() {
@@ -61,7 +89,7 @@ class Painter extends Class {
     }
 
     getLayer() {
-        return this.geometry.getLayer();
+        return this.geometry && this.geometry.getLayer();
     }
 
     /**
@@ -535,6 +563,16 @@ class Painter extends Class {
         return this.geometry._getInternalSymbol();
     }
 
+    _resetSymbolizersBBOX() {
+        //reset all symbolizers render bbox
+        for (let i = this.symbolizers.length - 1; i >= 0; i--) {
+            const symbolizer = this.symbolizers[i];
+            const bbox = symbolizer.bbox;
+            resetBBOX(bbox);
+        }
+        return this;
+    }
+
     paint(extent, context, offset) {
         if (!this.symbolizers) {
             return;
@@ -559,6 +597,9 @@ class Painter extends Class {
         this.containerOffset = offset || mapStateCache.offset || map._pointToContainerPoint(renderer.southWest)._add(0, -map.height);
         this._beforePaint();
         const ctx = context || renderer.context;
+        if (!ctx.isHitTesting) {
+            this._resetSymbolizersBBOX();
+        }
         const contexts = [ctx, renderer.resources];
         for (let i = this.symbolizers.length - 1; i >= 0; i--) {
             // reduce function call
@@ -633,6 +674,7 @@ class Painter extends Class {
         Canvas.setHitTesting(true);
         testCanvas.width = testCanvas.height = 2 * tolerance;
         const ctx = Canvas.getCanvas2DContext(testCanvas);
+        ctx.isHitTesting = true;
         try {
             this.paint(null, ctx, this._hitPoint);
         } catch (e) {

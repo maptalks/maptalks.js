@@ -86,7 +86,9 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 point = origin;
             }
-            Canvas.image(ctx, image, point.x + anchor.x, point.y + anchor.y);
+            const x = point.x + anchor.x, y = point.y + anchor.y;
+            Canvas.image(ctx, image, x, y);
+            this._setBBOX(ctx, x, y, x + image.width, y + image.height);
             if (origin) {
                 ctx.restore();
             }

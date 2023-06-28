@@ -70,13 +70,15 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 p = origin;
             }
+            const x = p.x + alignPoint.x, y = p.y + alignPoint.y;
             Canvas.image(ctx, img,
-                p.x + alignPoint.x,
-                p.y + alignPoint.y,
+                x,
+                y,
                 width, height);
             if (origin) {
                 ctx.restore();
             }
+            this._setBBOX(ctx, x, y, x + width, y + height);
         }
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;

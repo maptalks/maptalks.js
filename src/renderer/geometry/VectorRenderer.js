@@ -9,6 +9,7 @@ import Rectangle from '../../geometry/Rectangle';
 import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
+import { BBOX_TEMP, pointsBBOX, resetBBOX } from '../../core/util/bbox';
 
 const TEMP_WITHIN = {
     within: false,
@@ -36,7 +37,16 @@ function isWithinPixel(painter) {
 Geometry.include({
     _redrawWhenPitch: () => false,
 
-    _redrawWhenRotate: () => false
+    _redrawWhenRotate: () => false,
+
+    _getRenderBBOX(ctx, points) {
+        if (!ctx.isHitTesting) {
+            resetBBOX(BBOX_TEMP);
+            pointsBBOX(points, BBOX_TEMP);
+            return BBOX_TEMP;
+        }
+        return null;
+    }
 });
 
 const el = {
@@ -187,6 +197,7 @@ LineString.include({
             Canvas.path(ctx, points, lineOpacity, null, dasharray);
         }
         this._paintArrow(ctx, points, lineOpacity);
+        return this._getRenderBBOX(ctx, points);
     },
 
     _getArrowPlacement() {
@@ -311,6 +322,7 @@ Polygon.include({
         } else {
             Canvas.polygon(ctx, points, lineOpacity, fillOpacity, dasharray, this.options['smoothness']);
         }
+        return this._getRenderBBOX(ctx, points);
     }
 });
 

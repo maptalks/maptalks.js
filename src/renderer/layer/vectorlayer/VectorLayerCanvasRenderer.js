@@ -194,6 +194,7 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         this._lastGeosToDraw = this._geosToDraw;
     }
 
+
     /**
      * Show and render
      * @override
@@ -227,11 +228,26 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         }
         this.clearImageData();
         this._lastGeosToDraw = this._geosToDraw;
+        this._setDrawGeosDrawTime();
     }
 
     prepareToDraw() {
+        this.layer._drawTime = now();
         this._hasPoint = false;
         this._geosToDraw = [];
+        return this;
+    }
+
+    _setDrawGeosDrawTime() {
+        const drawTime = this.layer._drawTime;
+        for (let i = 0, len = this._geosToDraw.length; i < len; i++) {
+            const geo = this._geosToDraw[i];
+            const painter = geo._painter;
+            if (painter && painter._setDrawTime) {
+                painter._setDrawTime(drawTime);
+            }
+        }
+        return this;
     }
 
     checkGeo(geo) {
