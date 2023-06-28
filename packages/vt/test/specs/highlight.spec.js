@@ -422,7 +422,7 @@ describe('highlight specs', () => {
             data: line,
             style
         });
-        layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+        layer.highlight({ id: 0, plugin: [], color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
         const sceneConfig = {
             postProcess: {
                 enable: true,
@@ -487,7 +487,7 @@ describe('highlight specs', () => {
             }
         });
         group.addTo(map);
-        layer.highlight({ id: 0, plugin: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
+        layer.highlight({ id: 0, plugin: [0], color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 });
     });
 
 

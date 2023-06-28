@@ -507,8 +507,14 @@ function createPainterPlugin(type, Painter) {
             if (highlights) {
                 const excludes = [];
                 highlights.forEach((value, key) => {
-                    if (value.plugin !== undefined && value.plugin !== null && value.plugin !== name && value.plugin !== pluginIndex) {
-                        excludes.push(key)
+                    if (value.plugin !== undefined && value.plugin !== null) {
+                        if (Array.isArray(value.plugin)) {
+                            if (value.plugin.length && value.plugin.indexOf(name) < 0 && value.plugin.indexOf(pluginIndex) < 0) {
+                                excludes.push(key)
+                            }
+                        } else if (value.plugin !== name && value.plugin !== pluginIndex) {
+                            excludes.push(key)
+                        }
                     }
                 });
                 if (excludes.length) {
