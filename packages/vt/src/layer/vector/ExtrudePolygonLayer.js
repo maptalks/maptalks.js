@@ -85,7 +85,7 @@ ExtrudePolygonLayer.mergeOptions(options);
 const SYMBOL = {
     polygonFill: {
         type: 'identity',
-        default: undefined,
+        default: [1, 1, 1, 1],
         property: '_symbol_polygonFill'
     },
     polygonOpacity: {
