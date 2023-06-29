@@ -284,58 +284,61 @@ export default function (vertices) {
         }
         vertices = vertexes;
     }
+    try {
+        const hull = concaveman(vertices, Infinity);
+        let min = [Infinity, Infinity], max = [-Infinity, -Infinity];
+        for (let i = 0; i < hull.length; i++) {
+            if (hull[i][0] < min[0]) {
+                min[0] = hull[i][0];
+            }
+            if (hull[i][0] > max[0]) {
+                max[0] = hull[i][0];
+            }
 
-    const hull = concaveman(vertices, Infinity);
-    let min = [Infinity, Infinity], max = [-Infinity, -Infinity];
-    for (let i = 0; i < hull.length; i++) {
-        if (hull[i][0] < min[0]) {
-            min[0] = hull[i][0];
+            if (hull[i][1] < min[1]) {
+                min[1] = hull[i][1];
+            }
+            if (hull[i][1] > max[1]) {
+                max[1] = hull[i][1];
+            }
         }
-        if (hull[i][0] > max[0]) {
-            max[0] = hull[i][0];
+
+        const projectedCoord = [];
+
+        let convexHull = [];
+        let t = 0;
+        for (let i = 0; i < hull.length; i++) {
+            if (i === hull.length - 1 && hull[i][0] === hull[0][0] && hull[i][1] === hull[0][1]) {
+                continue
+            }
+            // 用原经纬度坐标无法计算出正确的ombb，但投影坐标可以，原因未知
+            project(projectedCoord, hull[i], projectionCode);
+            if (!HULL[t]) {
+                HULL[t] = new Vector(projectedCoord[0], projectedCoord[1]);
+            } else {
+                HULL[t].x = projectedCoord[0];
+                HULL[t].y = projectedCoord[1];
+            }
+            convexHull.push(HULL[t]);
+            t++;
         }
 
-        if (hull[i][1] < min[1]) {
-            min[1] = hull[i][1];
+        if (PackUtil.calculateSignedArea(convexHull) < 0) {
+            convexHull = convexHull.reverse();
         }
-        if (hull[i][1] > max[1]) {
-            max[1] = hull[i][1];
+        const ombb = CalcOmbb(convexHull); // draws OOBB candidates
+        if (!ombb || ombb.length !== 4) {
+            return null;
         }
-    }
-
-    const projectedCoord = [];
-
-    let convexHull = [];
-    let t = 0;
-    for (let i = 0; i < hull.length; i++) {
-        if (i === hull.length - 1 && hull[i][0] === hull[0][0] && hull[i][1] === hull[0][1]) {
-            continue
-        }
-        // 用原经纬度坐标无法计算出正确的ombb，但投影坐标可以，原因未知
-        project(projectedCoord, hull[i], projectionCode);
-        if (!HULL[t]) {
-            HULL[t] = new Vector(projectedCoord[0], projectedCoord[1]);
-        } else {
-            HULL[t].x = projectedCoord[0];
-            HULL[t].y = projectedCoord[1];
-        }
-        convexHull.push(HULL[t]);
-        t++;
-    }
-
-    if (PackUtil.calculateSignedArea(convexHull) < 0) {
-        convexHull = convexHull.reverse();
-    }
-
-    const ombb = CalcOmbb(convexHull); // draws OOBB candidates
-
-    if (!ombb || ombb.length !== 4) {
+        const edge0 = ombb[0].distance(ombb[1]);
+        const edge1 = ombb[1].distance(ombb[2]);
+        const box = ombb.map(v => [v.x, v.y]);
+        //宽边开始的序号，0或者1
+        box.push(+(edge1 > edge0));
+        return box;
+    } catch (e) {
         return null;
     }
-    const edge0 = ombb[0].distance(ombb[1]);
-    const edge1 = ombb[1].distance(ombb[2]);
-    const box = ombb.map(v => [v.x, v.y]);
-    //宽边开始的序号，0或者1
-    box.push(+(edge1 > edge0));
-    return box;
+
+
 }
