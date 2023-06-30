@@ -99,13 +99,18 @@ Map.include(/** @lends Map.prototype */ {
         const containerPoint = new Point(opts['containerPoint']);
         const coordinate = this.containerPointToCoord(containerPoint);
         return this._identify(opts, callback, layer => {
+            let result;
             if (layer.identifyAtPoint) {
-                return layer.identifyAtPoint(containerPoint, opts);
+                result = layer.identifyAtPoint(containerPoint, opts);
             } else if (coordinate) {
-                return layer.identify(coordinate, opts);
+                result = layer.identify(coordinate, opts);
             } else {
-                return [];
+                result = [];
             }
+            if ((!result || !result.length) && layer._emptyIdentify) {
+                layer._emptyIdentify(opts.domEvent);
+            }
+            return result;
         });
     },
 
