@@ -312,6 +312,11 @@ class MapGeometryEventsHandler extends Handler {
         function fireGeometryEvent(geometries) {
             let propagation = true;
 
+            const getOldGeos = () => {
+                const geos = this._prevOverGeos && this._prevOverGeos.geos;
+                return geos || [];
+            };
+
             const oldGeosMouseout = (oldTargets = [], geoMap = {}) => {
                 if (oldTargets && oldTargets.length > 0) {
                     for (let i = oldTargets.length - 1; i >= 0; i--) {
@@ -333,7 +338,7 @@ class MapGeometryEventsHandler extends Handler {
             };
             //鼠标移出地图容器，所有的老的geos触发mouseout,这个属于原来没有做好的地方,现在加上
             if (eventType === 'mouseout') {
-                const oldTargets = this._prevOverGeos && this._prevOverGeos.geos;
+                const oldTargets = getOldGeos();
                 this._prevOverGeos = {
                     'geos': [],
                     'geomap': {}
@@ -362,7 +367,7 @@ class MapGeometryEventsHandler extends Handler {
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                const oldTargets = this._prevOverGeos && this._prevOverGeos.geos;
+                const oldTargets = getOldGeos();
                 this._prevOverGeos = {
                     'geos': geometries,
                     'geomap': geoMap

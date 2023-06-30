@@ -143,7 +143,7 @@ const options = {
     'stopRenderOnOffscreen': true,
     'preventWheelScroll': true,
     'preventTouch': true,
-    //for plugin layer
+    //for plugin layer,such as threelayer
     '_supportPluginEvent': true
 };
 

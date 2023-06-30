@@ -102,11 +102,12 @@ Map.include(/** @lends Map.prototype */ {
             let result;
             if (layer.identifyAtPoint) {
                 result = layer.identifyAtPoint(containerPoint, opts);
-            } else if (coordinate) {
+            } else if (coordinate && layer.identify) {
                 result = layer.identify(coordinate, opts);
             } else {
                 result = [];
             }
+            //for plugin layer,such as threelayer
             if ((!result || !result.length) && layer._emptyIdentify) {
                 layer._emptyIdentify(opts.domEvent);
             }
