@@ -9,8 +9,10 @@ import EnvironmentPainter from './EnvironmentPainter';
 import WeatherPainter from './weather/WeatherPainter';
 import PostProcess from './postprocess/PostProcess.js';
 import AnalysisPainter from '../analysis/AnalysisPainter.js';
+import { createGLContext } from './util/util.js';
 
 const EMPTY_COLOR = [0, 0, 0, 0];
+const DEFAULT_LIGHT_DIRECTION = [1, 1, -1];
 
 const MIN_SSR_PITCH = -0.001;
 const NO_JITTER = [0, 0];
@@ -472,7 +474,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         attributes.preserveDrawingBuffer = true;
         attributes.antialias = !!layer.options['antialias'];
         this.glOptions = attributes;
-        const gl = this.gl = this._createGLContext(this.canvas, attributes);        // this.gl = gl;
+        const gl = this.gl = createGLContext(this.canvas, attributes, layer.options['onlyWebGL1']);        // this.gl = gl;
         this._initGL(gl);
         gl.wrap = () => {
             return new GLContext(this.gl);
@@ -635,23 +637,6 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
 
-    }
-
-    _createGLContext(canvas, options) {
-        const layer = this.layer;
-        const names = layer.options['onlyWebGL1'] ? ['webgl', 'experimental-webgl'] : ['webgl2', 'webgl', 'experimental-webgl'];
-        let gl = null;
-        /* eslint-disable no-empty */
-        for (let i = 0; i < names.length; ++i) {
-            try {
-                gl = canvas.getContext(names[i], options);
-            } catch (e) {}
-            if (gl) {
-                break;
-            }
-        }
-        return gl;
-        /* eslint-enable no-empty */
     }
 
     clearStencil(renderer, fbo) {
@@ -883,7 +868,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             let lightDirectionChanged = false;
             if (map.options.lights) {
                 const lightManager = map.getLightManager();
-                const lightDirection = lightManager.getDirectionalLight().direction;
+                const lightDirection = lightManager.getDirectionalLight().direction || DEFAULT_LIGHT_DIRECTION;
                 this._renderedView.lightDirection = vec3.copy([], lightDirection);
                 lightDirectionChanged = true;
             }
@@ -905,7 +890,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         let lightDirectionChanged = false;
         if (map.options.lights) {
             const lightManager = map.getLightManager();
-            const lightDirection = lightManager.getDirectionalLight().direction;
+            const lightDirection = lightManager.getDirectionalLight().direction || DEFAULT_LIGHT_DIRECTION;
             lightDirectionChanged = !vec3.equals(this._renderedView.lightDirection, lightDirection);
             if (lightDirectionChanged) {
                 this._renderedView.lightDirection = vec3.copy([], lightDirection);
@@ -1086,7 +1071,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const map = this.getMap();
         const shadowConfig = sceneConfig.shadow;
         const lightManager = map.getLightManager();
-        const lightDirection = lightManager && lightManager.getDirectionalLight().direction || [1, 1, -1];
+        const lightDirection = lightManager && lightManager.getDirectionalLight().direction || DEFAULT_LIGHT_DIRECTION;
         const displayShadow = !sceneConfig.ground || !sceneConfig.ground.enable;
         const uniforms = this._shadowPass.render(displayShadow, map.projMatrix, map.viewMatrix, shadowConfig.color, shadowConfig.opacity, lightDirection, this._shadowScene, this._jitter, fbo, forceUpdate);
         // if (this._shadowPass.isUpdated()) {

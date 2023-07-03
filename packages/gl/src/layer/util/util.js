@@ -114,3 +114,19 @@ export function coordinateToWorld(map, coordinate, z = 0) {
     const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
     return [p.x, p.y, z];
 }
+
+export function createGLContext(canvas, options, onlyWebGL1) {
+    const names = onlyWebGL1 ? ['webgl', 'experimental-webgl'] : ['webgl2', 'webgl', 'experimental-webgl'];
+    let gl = null;
+    /* eslint-disable no-empty */
+    for (let i = 0; i < names.length; ++i) {
+        try {
+            gl = canvas.getContext(names[i], options);
+        } catch (e) {}
+        if (gl) {
+            break;
+        }
+    }
+    return gl;
+    /* eslint-enable no-empty */
+}

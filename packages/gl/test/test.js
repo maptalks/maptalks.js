@@ -456,7 +456,7 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
-        it.only('update terrain material by updateTerrainMaterial', done => {
+        it('update terrain material by updateTerrainMaterial', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
                 zoom: 12
@@ -597,6 +597,55 @@ describe('gl tests', () => {
     });
 
     context('skybox tests', () => {
+        it('support only ambient, maptalks/issues#360', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12,
+                lights: {
+                    ambient: {
+                        resource: {
+                            url: './resources/env.hdr',
+                            prefilterCubeSize: 32
+                        }
+                    }
+                }
+            });
+            const sceneConfig = {
+                environment: {
+                    enable: true,
+                    mode: 1,
+                    level: 0
+                },
+                ground: {
+                    enable: true,
+                    renderPlugin: {
+                        type: 'lit'
+                    },
+                    symbol: {
+                        material: {
+                            'baseColorFactor': [1, 1, 1, 1],
+                            'roughnessFactor': 0.,
+                            'metalnessFactor': 1,
+                            'outputSRGB': 0,
+                            'hsv': [0, 0, 0],
+                            'contrast': 1.5
+                        },
+                        polygonFill: [1, 1, 1, 1],
+                        polygonOpacity: 1
+                    }
+                },
+                postProcess: {
+                    enable: true,
+                }
+            };
+            map.on('updatelights', () => {
+                setTimeout(() => {
+                    done();
+                }, 200)
+            });
+            const group = new maptalks.GroupGLLayer('group', [], { sceneConfig });
+            group.addTo(map);
+        });
         it('support skybox with 6 images', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
