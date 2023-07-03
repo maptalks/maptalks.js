@@ -28,6 +28,10 @@ class TerrainPainter {
         this._resLoader = new reshader.ResourceLoader(this._emptyTileTexture);
     }
 
+    setToRedraw() {
+        this.layer.getRenderer().setToRedraw();
+    }
+
     getMap() {
         return this.layer.getMap();
     }

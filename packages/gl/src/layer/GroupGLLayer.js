@@ -453,9 +453,6 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     setTerrain(info) {
-        if (info === this.options['terrain']) {
-            return this;
-        }
         this.options['terrain'] = info;
         if (!this.getRenderer()) {
             return this;
@@ -467,6 +464,13 @@ export default class GroupGLLayer extends maptalks.Layer {
 
     removeTerrain() {
         return this.setTerrain(null);
+    }
+
+    updateTerrainMaterial(mat) {
+        if (!this._terrainLayer) {
+            return;
+        }
+        this._terrainLayer.updateMaterial(mat);
     }
 
     _initTerrainLayer() {
@@ -481,7 +485,9 @@ export default class GroupGLLayer extends maptalks.Layer {
                 this._removeTerrainLayer();
             } else {
                 for (const p in info) {
-                    if (p !== 'urlTemplate' && p !== 'spatialReference') {
+                    if (p === 'material') {
+                        this._terrainLayer.setMaterial(info[p]);
+                    } else if (p !== 'urlTemplate' && p !== 'spatialReference') {
                         this._terrainLayer.config(p, info[p]);
                     }
                 }

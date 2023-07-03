@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
+import  { extend } from '../util/util';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
@@ -303,6 +304,33 @@ export default class TerrainLayer extends maptalks.TileLayer {
             return false;
         }
         return renderer.isTileCached(tileId);
+    }
+
+    updateMaterial(mat) {
+        if (!mat) {
+            return;
+        }
+        if (!this.options['material']) {
+            this.options['material'] = {};
+        }
+        extend(this.options['material'], mat);
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        renderer.updateMaterial(mat);
+    }
+
+    setMaterial(mat) {
+        if (!mat) {
+            return;
+        }
+        this.options['material'] = mat;
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        renderer.setMaterial(mat);
     }
 }
 

@@ -982,6 +982,31 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         this._skinScene = this._skinScene || new reshader.Scene();
     }
 
+    updateMaterial(mat) {
+        if (!this._painter || !mat) {
+            return;
+        }
+        if (!this._painter.updateMaterial) {
+            return;
+        }
+        if (this._matVer === undefined) {
+            this._matVer = 1;
+        }
+        this._painter.updateMaterial(mat, this._matVer++);
+    }
+
+    setMaterial(mat) {
+        if (!this._painter || !mat) {
+            return;
+        }
+        if (!this._painter.setMaterial) {
+            return;
+        }
+        if (this._matVer === undefined) {
+            this._matVer = 1;
+        }
+        this._painter.setMaterial(mat, this._matVer++);
+    }
 }
 
 export default TerrainLayerRenderer;

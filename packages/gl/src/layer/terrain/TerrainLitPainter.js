@@ -4,10 +4,38 @@ import  { extend } from '../util/util';
 
 const { getIBLResOnCanvas, getPBRUniforms, loginIBLResOnCanvas, logoutIBLResOnCanvas } = reshader.pbr.PBRUtils;
 
+const DEFAULT_MATERIAL = {
+    baseColorFactor: [1, 1, 1, 1],
+    emissiveFactor: [0, 0, 0],
+    baseColorIntensity: 1,
+    emitColorFactor: 1,
+    roughnessFactor: 1,
+    metallicFactor: 0,
+    emitMultiplicative: 1,
+    outputSRGB: 1,
+    hsv: [0, 0, 0],
+    contrast: 1,
+    alphaTest: 0,
+};
+
 class TerrainLitPainter extends TerrainPainter {
     constructor(...args) {
         super(...args);
         this.createIBLTextures();
+        this._matVer = 0;
+    }
+
+    updateMaterial(mat, matVer) {
+        this._matVer = matVer;
+        this._material = this._material || {};
+        extend(this._material, mat);
+        this.setToRedraw();
+    }
+
+    setMaterial(mat, matVer) {
+        this._matVer = matVer;
+        this._material = extend({}, DEFAULT_MATERIAL, mat);
+        this.setToRedraw();
     }
 
     createIBLTextures() {
@@ -69,11 +97,12 @@ class TerrainLitPainter extends TerrainPainter {
         }
 
         const emptyTexture = this.getEmptyTexture();
-        const matInfo = this.layer.options['material'] && extend({}, this.layer.options['material']) || {};
+        const matInfo = extend({}, DEFAULT_MATERIAL, this.layer.options['material'] || {});
         matInfo.skinTexture = emptyTexture;
         matInfo.terrainHeightTexture = terrainHeightTexture;
         const material = new reshader.pbr.StandardMaterial(matInfo);
         const mesh = new reshader.Mesh(geo, material);
+        mesh.properties.matVer = this._matVer;
         const defines = mesh.defines;
         defines['HAS_UV_FLIP'] = 1;
         defines['HAS_TERRAIN_NORMAL'] = 1;
@@ -87,6 +116,12 @@ class TerrainLitPainter extends TerrainPainter {
     addTerrainImage(tileInfo, tileImage, opacity) {
         const mesh = tileImage.terrainMesh;
         if (mesh) {
+            if (this._material && mesh.properties.matVer !== this._matVer) {
+                for (const p in this._material) {
+                    mesh.material.set(p, this._material[p]);
+                }
+                mesh.properties.matVer = this._matVer;
+            }
             if (tileImage.skin) {
                 mesh.material.set('skinTexture', tileImage.skin);
             }
