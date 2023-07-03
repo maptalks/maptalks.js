@@ -61,3 +61,10 @@ export function setBBOX(bbox, x1, y1, x2, y2) {
 export function validateBBOX(bbox) {
     return bbox && bbox[0] !== Infinity && bbox[0] !== undefined;
 }
+
+export function bufferBBOX(bbox, bufferSize = 0) {
+    bbox[0] -= bufferSize;
+    bbox[1] -= bufferSize;
+    bbox[2] += bufferSize;
+    bbox[3] += bufferSize;
+}

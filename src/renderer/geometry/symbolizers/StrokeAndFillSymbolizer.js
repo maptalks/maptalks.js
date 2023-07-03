@@ -54,6 +54,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (checkGradient(style['polygonFill'])) {
             style['polygonGradientExtent'] = this.geometry.getContainerExtent();
         }
+        const lineWidth = style['lineWidth'] || 1;
 
         const points = paintParams[0],
             isSplitted = (this.geometry.getJSONType() === 'Polygon' && points.length > 0 && Array.isArray(points[0][0])) ||
@@ -72,6 +73,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
                 params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
                 const bbox = this.geometry._paintOn.apply(this.geometry, params);
                 this._setBBOX(ctx, bbox);
+                this._bufferBBOX(ctx, lineWidth);
             }
         } else {
             this.prepareCanvas(ctx, style, resources);
@@ -83,6 +85,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             params.push(style['lineOpacity'], style['polygonOpacity'], style['lineDasharray']);
             const bbox = this.geometry._paintOn.apply(this.geometry, params);
             this._setBBOX(ctx, bbox);
+            this._bufferBBOX(ctx, lineWidth);
         }
 
         if (ctx.setLineDash && Array.isArray(style['lineDasharray'])) {
