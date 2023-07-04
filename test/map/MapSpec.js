@@ -567,11 +567,11 @@ describe('Map.Spec', function () {
                 });
                 setTimeout(function () {
                     container.style.display = '';
-                }, 17);
+                }, 100);
             });
             setTimeout(function () {
                 container.style.display = 'none';
-            }, 17);
+            }, 100);
         });
 
         it('event properties', function (done) {
