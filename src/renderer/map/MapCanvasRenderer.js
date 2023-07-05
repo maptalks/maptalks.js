@@ -24,6 +24,8 @@ class MapCanvasRenderer extends MapRenderer {
         this._containerIsCanvas = !!map._containerDOM.getContext;
         this._registerEvents();
         this._loopTime = 0;
+        this._resizeEventList = [];
+        this._resizeTime = -Infinity;
     }
 
     load() {
@@ -39,6 +41,7 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map || !map.options['renderable']) {
             return false;
         }
+        this._handleResizeEventList(framestamp);
         //not render anything when map container is hide
         if (map.options['stopRenderOnOffscreen'] && this._containerIsOffscreen()) {
             return true;
@@ -846,6 +849,28 @@ class MapCanvasRenderer extends MapRenderer {
         return this;
     }
 
+    _handleResizeEventList(time) {
+        if (!this._resizeEventList) {
+            return this;
+        }
+        const len = this._resizeEventList.length;
+        if (len === 0) {
+            return this;
+        }
+        if (this._resizeTime && time - this._resizeTime < 60) {
+            return this;
+        }
+        const contentRect = this._resizeEventList[len - 1].contentRect;
+        this.map._containerDomContentRect = contentRect;
+        this._resizeEventList = [];
+        this._checkSize(contentRect);
+        this._resizeCount = this._resizeCount || 0;
+        //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
+        this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
+        this._resizeTime = time;
+        return this;
+    }
+
     _checkSize() {
         if (!this.map) {
             return;
@@ -866,11 +891,8 @@ class MapCanvasRenderer extends MapRenderer {
                     if (!this.map || this.map.isRemoved()) {
                         this._resizeObserver.disconnect();
                     } else if (entries.length) {
-                        this.map._containerDomContentRect = entries[0].contentRect;
-                        this._checkSize(entries[0].contentRect);
-                        this._resizeCount = this._resizeCount || 0;
-                        //force render all layers,这两句代码不能颠倒，因为要先重置所有图层的size，才能正确的渲染所有图层
-                        this.renderFrame((this._frameTimestamp || 0) + (++this._resizeCount) / 100);
+                        this._resizeEventList = this._resizeEventList || [];
+                        this._resizeEventList.push(entries[0]);
                     }
                 });
                 this._resizeObserver.observe(this.map._containerDOM);
