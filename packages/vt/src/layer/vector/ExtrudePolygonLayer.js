@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { extend, isNil } from '../../common/Util';
+import { extend, isNil, pushIn } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import { PolygonLayerRenderer } from './PolygonLayer';
 import { fromJSON } from './util/from_json';
@@ -146,6 +146,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (!this.layer.options.sideMaterial) {
             this.sidePainter._updateMaterial(matInfo);
         }
+        this.setToRedraw();
     }
 
     updateSideMaterial(matInfo) {
@@ -153,6 +154,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
             return;
         }
         this.sidePainter._updateMaterial(matInfo);
+        this.setToRedraw();
     }
 
     updateDataConfig(dataConfig) {
@@ -335,6 +337,16 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
                 }
             }
         }
+    }
+
+    getShadowMeshes() {
+        if (!this.painter) {
+            return [];
+        }
+        const meshes = this.painter.getShadowMeshes();
+        const sideMeshes = this.sidePainter.getShadowMeshes();
+        pushIn(meshes, sideMeshes);
+        return meshes;
     }
 }
 
