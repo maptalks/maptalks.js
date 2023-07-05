@@ -162,7 +162,7 @@ export function buildExtrudeFaces(
             //fill bottom vertexes
             if (!isHole && i > 0) {
                 exteriorIndex++;
-                ringOmbb = ombb[exteriorIndex];
+                ringOmbb = ombb && ombb[exteriorIndex];
                 //an exterior ring (multi polygon)
                 offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle, exteriorIndex); //need to multiply with scale as altitude is
                 geoVertices.length = 0;
