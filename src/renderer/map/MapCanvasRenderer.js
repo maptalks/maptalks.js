@@ -41,12 +41,12 @@ class MapCanvasRenderer extends MapRenderer {
         if (!map || !map.options['renderable']) {
             return false;
         }
+        this._handleResizeEventList(framestamp);
         //not render anything when map container is hide
         if (map.options['stopRenderOnOffscreen'] && this._containerIsOffscreen()) {
             return true;
         }
         this._updateDomPosition(framestamp);
-        this._handleResizeEventList(framestamp);
         delete this._isViewChanged;
         map._fireEvent('framestart');
         this.updateMapDOM();
