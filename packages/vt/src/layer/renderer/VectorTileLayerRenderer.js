@@ -88,6 +88,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         }
     }
 
+    // 为了解决阴影更新的闪烁问题，保留之前的绘制，当前数据载入后再删除
     _preservePrevTiles() {
         if (this._prevTilesInView) {
             for (const p in this._prevTilesInView) {
@@ -1761,9 +1762,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     consumeTile(tileImage, tileInfo) {
-        if (tileImage._empty) {
-            this._retirePrevTile(tileInfo);
-        }
+        this._retirePrevTile(tileInfo);
         super.consumeTile(tileImage, tileInfo);
         this._createOneTile(tileInfo, tileImage);
     }
