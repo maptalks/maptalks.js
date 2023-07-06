@@ -5,11 +5,11 @@ import { project } from './projection.js';
 export const METER_TO_GL_POINT = 46.5;
 
 
-export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, ombb, res, glScale, projectionCode, isExtrudePolygonLayer) {
+export function buildFaceUV(mode, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, ombb, res, glScale, projectionCode, center) {
     if (mode === 0) {
-        buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight);
+        buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, center);
     } else if (mode === 1) {
-        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode, isExtrudePolygonLayer);
+        buildOmbbUV(ombb, start, offset, uvs, vertices, uvOrigin, localScale, res, glScale, projectionCode, !!center);
     }
 }
 
@@ -75,15 +75,18 @@ function getFootOfPerpendicular(
     return out;
 }
 
-function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight) {
+function buildFlatUV(start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, texWidth, texHeight, center) {
     const pointToMeter = 1 / (centimeterToPoint * 100);
     //为了提升精度，计算uvOrigin的小数部分
     // console.log([(uvOrigin.x / texWidth), (uvOrigin.y / texHeight)]);
     // const uvStart = [(uvOrigin.x / texWidth) % 1, (uvOrigin.y / texHeight) % 1];
+    const centerX = (center && center[0] || 0);
+    const centerY = (center && center[1] || 0);
     const uvStart = [0, 0];
     for (let i = start; i < offset; i += 3) {
         const idx = i / 3 * 2;
-        const x = vertices[i], y = vertices[i + 1];
+        const x = vertices[i] - centerX;
+        const y = vertices[i + 1] - centerY;
         uvs[idx] = uvStart[0] + (x * pointToMeter / METER_TO_GL_POINT * localScale) / texWidth;
         uvs[idx + 1] = uvStart[1] - (y * pointToMeter / METER_TO_GL_POINT * localScale) / texHeight;
     }

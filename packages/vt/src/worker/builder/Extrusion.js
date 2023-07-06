@@ -11,6 +11,7 @@ export function buildExtrudeFaces(
         altitudeScale, altitudeProperty, defaultAltitude, heightProperty, minHeightProperty, defaultHeight
     },
     {
+        center,
         side,
         top,
         topThickness,
@@ -88,7 +89,7 @@ export function buildExtrudeFaces(
             pushIn(indices, triangles);
             if (generateUV) {
                 // debugger
-                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, isExtrudePolygonLayer);
+                buildFaceUV(topUVMode || 0, start, offset, uvs, vertices, uvOrigin, centimeterToPoint, localScale, uvSize[0], uvSize[1], ombb, res, glScale, projectionCode, center);
             }
 
             if (topThickness > 0 && !generateSide) {

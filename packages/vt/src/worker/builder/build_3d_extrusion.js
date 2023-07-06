@@ -42,6 +42,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             defaultHeight: defaultHeight || 0
         },
         {
+            center,
             top, side,
             topThickness: topThickness * 10 || 0,
             uv: uv || tangent, //tangent也需要计算uv
