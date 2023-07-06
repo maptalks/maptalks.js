@@ -136,7 +136,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             let taaFBO = this._taaFBO;
             if (!taaFBO) {
                 const regl = this.regl;
-                const info = this._createFBOInfo(config, this._depthTex);
+                const info = this.createFBOInfo(config, this._depthTex);
                 taaFBO = this._taaFBO = regl.framebuffer(info);
             } else if (taaFBO.width !== this._targetFBO.width || taaFBO.height !== this._targetFBO.height) {
                 taaFBO.resize(this._targetFBO.width, this._targetFBO.height);
@@ -150,7 +150,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             let fxaaFBO = this._fxaaFBO;
             if (!fxaaFBO) {
                 const regl = this.regl;
-                const info = this._createFBOInfo(config, this._depthTex);
+                const info = this.createFBOInfo(config, this._depthTex);
                 fxaaFBO = this._fxaaFBO = regl.framebuffer(info);
             } else if (fxaaFBO.width !== this._targetFBO.width || fxaaFBO.height !== this._targetFBO.height) {
                 fxaaFBO.resize(this._targetFBO.width, this._targetFBO.height);
@@ -1106,12 +1106,12 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
             if (!depthTex || !depthTex['_texture'] || depthTex['_texture'].refCount <= 0) {
                 depthTex = null;
             }
-            const fboInfo = this._createFBOInfo(config, depthTex);
+            const fboInfo = this.createFBOInfo(config, depthTex);
             this._depthTex = fboInfo.depth || fboInfo.depthStencil;
             this._targetFBO = regl.framebuffer(fboInfo);
-            const noAaInfo = this._createFBOInfo(config, this._depthTex);
+            const noAaInfo = this.createFBOInfo(config, this._depthTex);
             this._noAaFBO = regl.framebuffer(noAaInfo);
-            const pointInfo = this._createFBOInfo(config, this._depthTex);
+            const pointInfo = this.createFBOInfo(config, this._depthTex);
             this._pointFBO = regl.framebuffer(pointInfo);
             this._clearFramebuffers();
         }
@@ -1154,7 +1154,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return fboInfo;
     }
 
-    _createFBOInfo(config, depthTex) {
+    createFBOInfo(config, depthTex) {
         const { width, height } = this.canvas;
         const regl = this.regl;
         const fboInfo = this._createSimpleFBOInfo();

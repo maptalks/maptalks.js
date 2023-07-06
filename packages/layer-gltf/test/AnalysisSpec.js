@@ -11,7 +11,7 @@ describe('add analysis', () => {
     it('add ViewShedAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -58,7 +58,7 @@ describe('add analysis', () => {
     it('add FloodAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl, //TODO,模型改成小一点的模型
                 scaleX: 4,
@@ -87,7 +87,7 @@ describe('add analysis', () => {
     it('add SkylineAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -118,7 +118,7 @@ describe('add analysis', () => {
     it('add InSightAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 6,
@@ -150,7 +150,7 @@ describe('add analysis', () => {
     it('add CutAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -181,7 +181,7 @@ describe('add analysis', () => {
     it('add ExcavateAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -214,7 +214,7 @@ describe('add analysis', () => {
     it('add HeightLimitAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -242,7 +242,7 @@ describe('add analysis', () => {
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -284,7 +284,7 @@ describe('add analysis', () => {
     it('export result image by skylineAanalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -316,7 +316,7 @@ describe('add analysis', () => {
     it('remove skylineAnalysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 6,
@@ -346,7 +346,7 @@ describe('add analysis', () => {
     it('enable and disable analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -384,7 +384,7 @@ describe('add analysis', () => {
     it('calculate volume for excavate analysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -411,7 +411,7 @@ describe('add analysis', () => {
     it('update boundary for crosscut analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -440,7 +440,7 @@ describe('add analysis', () => {
     it('add more than one analysis task, and then disable one of this', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -477,7 +477,7 @@ describe('add analysis', () => {
         const gltflayer1 = new maptalks.GLTFLayer('gltf1');
         const gltflayer2 = new maptalks.GLTFLayer('gltf2');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer1, gltflayer2], { sceneConfig });
-        const marker1 = new maptalks.GLTFBuilding(center, {
+        const marker1 = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -485,7 +485,7 @@ describe('add analysis', () => {
                 scaleZ: 4
             }
         }).addTo(gltflayer1);
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scale: [1, 1, 1]
@@ -519,7 +519,7 @@ describe('add analysis', () => {
     it('add more than one insight lines', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -560,7 +560,7 @@ describe('add analysis', () => {
     it('clear insight lines', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 4,
@@ -628,17 +628,17 @@ describe('add analysis', () => {
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
     });
 
     it('raycaster\'s test method', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
         function getAllMeshes() {
             let meshes = [];
             const markers = gltflayer.getGeometries();
@@ -696,15 +696,15 @@ describe('add analysis', () => {
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFBuilding(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
     });
 
     it('add measure tool', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: modelUrl
             }

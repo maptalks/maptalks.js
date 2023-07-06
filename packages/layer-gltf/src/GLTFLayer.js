@@ -23,6 +23,8 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         GLTFLayer.registerShader('pointline', 'PointLineShader', pointLineShader.shader, pointLineShader.material.getUniforms());
         const wireframeShader = getWireframeShader();
         GLTFLayer.registerShader('wireframe', 'EdgeShader', wireframeShader.shader, wireframeShader.material.getUniforms());
+        const litShader = getStandardLiteShader();
+        GLTFLayer.registerShader('pbr-lite', 'StandardLiteShader', litShader.shader, litShader.material.getUniforms());
     }
 
     static fromJSON(json) {
@@ -241,5 +243,24 @@ function getWireframeShader() {
         }
     };
     const material = new reshader.Material({ lineColor: [0, 0, 0, 1], lineOpacity: 1 });
+    return { shader, material };
+}
+
+function getStandardLiteShader() {
+    const shader = {
+        positionAttribute: 'POSITION',
+        normalAttribute: 'NORMAL',
+        extraCommandProps: {
+            blend: {
+                enable: true,
+                func: {
+                    src: 'src alpha',
+                    dst: 'one minus src alpha'
+                },
+                equation: 'add'
+            }
+        }
+    };
+    const material = new reshader.StandardLiteMaterial();
     return { shader, material };
 }

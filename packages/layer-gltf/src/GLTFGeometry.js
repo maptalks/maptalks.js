@@ -1,5 +1,6 @@
 import GLTFMarker from './GLTFMarker';
-export default class GLTFBuilding extends GLTFMarker {
+
+export default class GLTFGeometry extends GLTFMarker {
     _calSpatialScale(out) {
         const map = this.getMap();
         const glRes = map.getGLRes();

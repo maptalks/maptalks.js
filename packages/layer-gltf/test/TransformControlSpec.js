@@ -11,7 +11,7 @@ describe('transform-control', () => {
 
     it('transform on gltfmarker', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gltfmarker = new maptalks.GLTFBuilding(center,
+        const gltfmarker = new maptalks.GLTFGeometry(center,
             {
                 id:'gltfmarker1',
                 symbol: {
@@ -46,7 +46,7 @@ describe('transform-control', () => {
 
     it('picked', (done) => {
         const gltflayer = new maptalks.GLTFLayer('picked').addTo(map);
-        const gltfmarker = new maptalks.GLTFBuilding(center, {
+        const gltfmarker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 40,
                 scaleY: 40,
@@ -66,7 +66,7 @@ describe('transform-control', () => {
 
     it('transform event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform').addTo(map);
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 40,
                 scaleY: 40,
@@ -102,7 +102,7 @@ describe('transform-control', () => {
     it('show transform control', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform');
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 40,
                 scaleY: 40,
@@ -144,7 +144,7 @@ describe('transform-control', () => {
     it('rotation change', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform');
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 40,
                 scaleY: 40,
@@ -207,7 +207,7 @@ describe('transform-control', () => {
     it('scale change', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform');
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 40,
                 scaleY: 40,
@@ -270,7 +270,7 @@ describe('transform-control', () => {
     it('position change', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform');
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center,
+        const marker = new maptalks.GLTFGeometry(center,
             {
                 id:'gltfmarker',
                 symbol: {

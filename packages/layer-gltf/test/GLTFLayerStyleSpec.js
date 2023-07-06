@@ -9,7 +9,7 @@ describe('gltflayer set style', function () {
     });
     it('setUrl', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}).addTo(gltflayer);
         marker.once('load', () => {
             const renderer = gltflayer.getRenderer();
             const gltfManager = renderer.regl.gltfManager;
@@ -26,8 +26,8 @@ describe('gltflayer set style', function () {
 
     it('update url for marker when setting style for gltflayer', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding(center, { properties: { count: 100 }}).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFBuilding(center, { properties: { count: 200 }}).addTo(gltflayer);
+        const marker1 = new maptalks.GLTFGeometry(center, { properties: { count: 100 }}).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFGeometry(center, { properties: { count: 200 }}).addTo(gltflayer);
         gltflayer.setStyle([
             {
                 'filter': ['==', 'count', 100],
@@ -169,7 +169,7 @@ describe('gltflayer set style', function () {
 
     it('setStyle without parameters will reset the layer\'s style to default', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        new maptalks.GLTFBuilding(center).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center).addTo(gltflayer);
         const style = [
             {
                 'filter': ['==', 'count', 100],
@@ -194,7 +194,7 @@ describe('gltflayer set style', function () {
 
     it('setStyle and setSymbol', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding(center, {
+        const marker1 = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url1
             },
@@ -202,12 +202,12 @@ describe('gltflayer set style', function () {
                 count: 100
             }
         }).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFBuilding(center, {
+        const marker2 = new maptalks.GLTFGeometry(center, {
             properties: {
                 count: 200
             }
         }).addTo(gltflayer);
-        const marker3 = new maptalks.GLTFBuilding(center, {
+        const marker3 = new maptalks.GLTFGeometry(center, {
             properties: {
                 count: 300
             }
@@ -262,7 +262,7 @@ describe('gltflayer set style', function () {
 
     it('updateSymbol', () => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url1
             }
@@ -291,7 +291,7 @@ describe('gltflayer set style', function () {
 
     it('setStyle before layer addding to map', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             properties:{
                 count: 200
             }
@@ -317,8 +317,8 @@ describe('gltflayer set style', function () {
 
     it('gltflayer\'s modelload event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
-        const marker2 = new maptalks.GLTFBuilding(center, { symbol: { url: url2 }});
+        const marker1 = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
+        const marker2 = new maptalks.GLTFGeometry(center, { symbol: { url: url2 }});
         gltflayer.on('modelload', (e) => {
             const models = gltflayer.getGLTFUrls();
             expect(e.models).to.be.ok();
@@ -332,7 +332,7 @@ describe('gltflayer set style', function () {
 
     it('load glb model', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url3
             }
@@ -346,7 +346,7 @@ describe('gltflayer set style', function () {
 
     it('function types for symbol', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFBuilding(center, {
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url1,
                 scaleX: {
@@ -382,7 +382,7 @@ describe('gltflayer set style', function () {
 
     it('hasFunctionDefinition', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFBuilding(center, {
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url1,
                 scaleX: 1,
@@ -413,7 +413,7 @@ describe('gltflayer set style', function () {
 
     it('save properties when toJSON', () => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfmarker = new maptalks.GLTFBuilding(center, {
+        const gltfmarker = new maptalks.GLTFGeometry(center, {
             properties: {
                 'num':0.2
             }
@@ -427,7 +427,7 @@ describe('gltflayer set style', function () {
 
     it('setUrl with simple model', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}).addTo(gltflayer);
         setTimeout(() => {
             marker.setUrl('pyramid');
             done();
@@ -436,9 +436,9 @@ describe('gltflayer set style', function () {
 
     it('getGLTFUrls', done => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center, { symbol: { url: url2 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center, { symbol: { url: url2 }}).addTo(gltflayer);
         gltflayer.on('modelload', () => {
             const gltfUrls = gltflayer.getGLTFUrls();
             expect(gltfUrls.length).to.be.eql(2);
@@ -449,8 +449,8 @@ describe('gltflayer set style', function () {
 
     it('set style for gltflayer many times', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding(center, { properties: { count: 100 }}).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFBuilding(center, { properties: { count: 200 }}).addTo(gltflayer);
+        const marker1 = new maptalks.GLTFGeometry(center, { properties: { count: 100 }}).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFGeometry(center, { properties: { count: 200 }}).addTo(gltflayer);
         gltflayer.setStyle([
             {
                 'filter': ['==', 'count', 100],
@@ -504,7 +504,7 @@ describe('gltflayer set style', function () {
 
     it('updateSymbol for layer', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const gltfMarker = new maptalks.GLTFBuilding(center, {
+        const gltfMarker = new maptalks.GLTFGeometry(center, {
             properties: {
                 num: 1.5
             }

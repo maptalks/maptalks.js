@@ -224,7 +224,7 @@ export default class GLTFMarker extends Marker {
         const shader = this.getShader();
         const defines = mesh.getDefines();
         let needUpdateDefines = false;
-        if (shader === 'pbr') {
+        if (shader === 'pbr' || shader === 'pbr-lite') {
             const layer = this.getLayer();
             const { iblTexes } = reshader.pbr.PBRUtils.getIBLResOnCanvas(layer.getRenderer().canvas);
             if (iblTexes) {
@@ -647,6 +647,8 @@ export default class GLTFMarker extends Marker {
                     markerUniforms[u] = markerUniforms[u] || phongUniforms[u];
                 }
             }
+        } else if (shader === 'pbr-lite') {
+            material = new reshader.StandardLiteMaterial(materialInfo);
         } else {
             material = new reshader.Material(materialInfo);
         }

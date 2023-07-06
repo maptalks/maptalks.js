@@ -7,8 +7,9 @@ import mixVert from './glsl/fog_mixFactor.vert';
 import mixFrag from './glsl/fog_mixFactor.frag';
 const modelViewMatrix = [];
 class FogPass{
-    constructor(regl, viewport) {
+    constructor(regl, viewport, layer) {
         this._regl = regl;
+        this._layer = layer;
         this._viewport = viewport;
         this._init();
     }
@@ -30,16 +31,9 @@ class FogPass{
                 viewport: this._viewport
             }
         });
-        this._fbo = this._regl.framebuffer({
-            color: this._regl.texture({
-                width: this._viewport.width(),
-                height: this._viewport.height(),
-                wrap: 'clamp',
-                mag : 'linear',
-                min : 'linear'
-            }),
-            depth: true
-        });
+        const layerRenderer = this._layer.getRenderer();
+        const info = layerRenderer.createFBOInfo();
+        this._fbo = this._regl.framebuffer(info);
         this._scene = new Scene();
         this.renderer = new Renderer(this._regl);
     }

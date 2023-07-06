@@ -11,7 +11,7 @@ describe('morph', () => {
     // TODO,增加矩阵判断
     it('add gltf marker with morph', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 80,
                 scaleY: 80,
@@ -38,7 +38,7 @@ describe('morph', () => {
 
     it('change shader for gltfmarker which has morph animations(fuzhenn/maptalks-studio#2242)', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url10,
                 animation: true,

@@ -47,7 +47,7 @@ describe('setMask', () => {
     // TODO 分成5个测试用例，做像素判断
     it('flat inside ', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -80,7 +80,7 @@ describe('setMask', () => {
 
     it('flat outside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -106,7 +106,7 @@ describe('setMask', () => {
 
     it('clip inside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -128,7 +128,7 @@ describe('setMask', () => {
 
     it('clip outside', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -152,7 +152,7 @@ describe('setMask', () => {
 
     it('color', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -178,7 +178,7 @@ describe('setMask', () => {
 
     it('clear mask', done => {//TODO 做像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -219,7 +219,7 @@ describe('setMask', () => {
 
     it('update mask', done => {//TODO 需要做像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 60,
@@ -266,7 +266,7 @@ describe('setMask', () => {
 
     it('video mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -292,7 +292,7 @@ describe('setMask', () => {
 
     it('update symbol', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -331,7 +331,7 @@ describe('setMask', () => {
 
     it('show and hide mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -368,7 +368,7 @@ describe('setMask', () => {
 
     it('stop and play videoMask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -405,7 +405,7 @@ describe('setMask', () => {
 
     it('setCoordinates for mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -441,7 +441,7 @@ describe('setMask', () => {
 
     it('set height range for color mask', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -478,7 +478,7 @@ describe('setMask', () => {
 
     it('add mask with holes', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -502,7 +502,7 @@ describe('setMask', () => {
 
     it('click event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -528,7 +528,7 @@ describe('setMask', () => {
 
     it('mousemove event', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -566,7 +566,7 @@ describe('setMask', () => {
 
     it('identify mask with holes', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -594,7 +594,7 @@ describe('setMask', () => {
 
     it('flv video', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,
@@ -630,7 +630,7 @@ describe('setMask', () => {
 
     it('box clip', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf', { geometryEvents: true });
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url4,
                 scaleX: 80,

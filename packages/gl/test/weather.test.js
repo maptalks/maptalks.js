@@ -197,7 +197,7 @@ describe('weather tests', () => {
         const url = "models/Duck/Duck.glb";
         const gltfLayer = new maptalks.GLTFLayer("gltf");
         const position = map.getCenter();
-        const gltfMarker = new maptalks.GLTFBuilding(position.add(0, 0.1), {
+        const gltfMarker = new maptalks.GLTFGeometry(position.add(0, 0.1), {
             symbol: {
                 url: url,
                 shadow: true,
@@ -234,7 +234,7 @@ describe('weather tests', () => {
         const url = "models/Duck/Duck.glb";
         const gltfLayer = new maptalks.GLTFLayer("gltf");
         const position = map.getCenter();
-        const gltfMarker = new maptalks.GLTFBuilding(position, {
+        const gltfMarker = new maptalks.GLTFGeometry(position, {
             symbol: {
                 url: url,
                 shadow: true,

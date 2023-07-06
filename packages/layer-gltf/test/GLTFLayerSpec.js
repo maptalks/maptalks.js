@@ -10,7 +10,7 @@ describe('maptalks.gltf', function () {
 
     it('show and hide GLTFMarker', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf8').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}).addTo(gltflayer);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}).addTo(gltflayer);
         marker.on('load', () => {
             expect(marker.isVisible()).to.be.ok();
             marker.hide();
@@ -22,7 +22,7 @@ describe('maptalks.gltf', function () {
 
     it('isAnimated', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf8').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol:{
                 url: url1,
                 animation: true
@@ -38,13 +38,13 @@ describe('maptalks.gltf', function () {
 
     it('the markers with same url which has animations should not affect each other', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf8').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding(center, {
+        const marker1 = new maptalks.GLTFGeometry(center, {
             symbol:{
                 url: url1,
                 animation: false
             }
         }).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFBuilding(center, {
+        const marker2 = new maptalks.GLTFGeometry(center, {
             symbol:{
                 url: url1,
                 animation: true,
@@ -66,7 +66,7 @@ describe('maptalks.gltf', function () {
     it('more than one animations', done => {
         const gltflayer = new maptalks.GLTFLayer('layer');
         new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol:{
                 url: url11,
                 animation: true
@@ -84,7 +84,7 @@ describe('maptalks.gltf', function () {
 
     it('fromJSON', (done) => {//TODO 增加像素判断
         const gltflayer1 = new maptalks.GLTFLayer('gltf1').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol:{
                 url: url1,
                 animation: true
@@ -114,7 +114,7 @@ describe('maptalks.gltf', function () {
         const markers = [];
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                const gltfmarker = new maptalks.GLTFBuilding(center.add(i * 0.01 - 0.015, j * 0.01 - 0.015), {
+                const gltfmarker = new maptalks.GLTFGeometry(center.add(i * 0.01 - 0.015, j * 0.01 - 0.015), {
                     properties: {
                         'num': (i + j) * 0.1
                     }
@@ -185,7 +185,7 @@ describe('maptalks.gltf', function () {
         const markers = [];
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                const gltfmarker = new maptalks.GLTFBuilding(center.add(i * 0.01 - 0.015, j * 0.01 - 0.015), {
+                const gltfmarker = new maptalks.GLTFGeometry(center.add(i * 0.01 - 0.015, j * 0.01 - 0.015), {
                     properties: {
                         'num': (i + j) * 0.1
                     }
@@ -303,7 +303,7 @@ describe('maptalks.gltf', function () {
         let count = 0;
         const complete = function (layer) {
             const renderer = layer.getRenderer();
-            expect(Object.keys(renderer.getShaderList()).length).to.be.eql(9);
+            expect(Object.keys(renderer.getShaderList()).length).to.be.eql(10);
             layer.remove();
             count++;
             if (count === times) {
@@ -312,7 +312,7 @@ describe('maptalks.gltf', function () {
         };
         for (let i = 0; i < times; i++) {
             const layer = new maptalks.GLTFLayer('layer' + i).addTo(map);
-            new maptalks.GLTFBuilding(center, {
+            new maptalks.GLTFGeometry(center, {
                 symbol: {
                     scaleX: 10,
                     scaleY: 10,
@@ -328,7 +328,7 @@ describe('maptalks.gltf', function () {
     it('support altitude for coordinate', done => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer').addTo(map);
         const altitude = 100;
-        const marker = new maptalks.GLTFBuilding([center.x, center.y, altitude], {
+        const marker = new maptalks.GLTFGeometry([center.x, center.y, altitude], {
             symbol : {
                 scaleX: 80,
                 scaleY: 80,
@@ -353,8 +353,8 @@ describe('maptalks.gltf', function () {
     it('Adding gltfmarkers in different layers will not change the global shadermap', () => {
         const shadermap = maptalks.GLTFLayer.getShaderMap();
         const layer1 = new maptalks.GLTFLayer('layer1').addTo(map);
-        expect(Object.keys(shadermap).length).to.be.eql(9);
-        new maptalks.GLTFBuilding(center, {
+        expect(Object.keys(shadermap).length).to.be.eql(10);
+        new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 10,
                 scaleY: 10,
@@ -366,7 +366,7 @@ describe('maptalks.gltf', function () {
         }).addTo(layer1);
         expect(shadermap['phong'].uniforms.lightAmbient).not.to.be.eql([1.0, 0.0, 0.0]);
         const layer2 = new maptalks.GLTFLayer('layer2').addTo(map);
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             symbol: {
                 scaleX: 10,
                 scaleY: 10,
@@ -381,21 +381,21 @@ describe('maptalks.gltf', function () {
 
     it('when registering new shader on GLTFLayer, ShaderMap should updating globally', () => {
         const ShaderMap  = maptalks.GLTFLayer.getShaderMap();
-        expect(Object.keys(ShaderMap).length).to.be.eql(9);
+        expect(Object.keys(ShaderMap).length).to.be.eql(10);
         expect(ShaderMap['phong']).to.be.ok();
         maptalks.GLTFLayer.registerShader('a', 'MeshShader', {
             uniforms1: 'uniformValue'
         }, {});
-        expect(Object.keys(ShaderMap).length).to.be.eql(10);
+        expect(Object.keys(ShaderMap).length).to.be.eql(11);
         expect(ShaderMap['a']).to.be.ok();
         maptalks.GLTFLayer.registerShader('b', 'MeshShader', {
             uniforms2: 'uniformValue'
         }, {});
-        expect(Object.keys(ShaderMap).length).to.be.eql(11);
+        expect(Object.keys(ShaderMap).length).to.be.eql(12);
         expect(ShaderMap['b']).to.be.ok();
         maptalks.GLTFLayer.removeShader('a');
         maptalks.GLTFLayer.removeShader('b');
-        expect(Object.keys(ShaderMap).length).to.be.eql(9);
+        expect(Object.keys(ShaderMap).length).to.be.eql(10);
     });
 
     it('remove shader', () => {
@@ -404,17 +404,17 @@ describe('maptalks.gltf', function () {
         });
         const ShaderMap  = maptalks.GLTFLayer.getShaderMap();
         const shaders1 = maptalks.GLTFLayer.getShaders();
-        expect(shaders1.length).to.be.eql(10);
+        expect(shaders1.length).to.be.eql(11);
         expect(ShaderMap['shader1']).to.be.ok();
         maptalks.GLTFLayer.removeShader('shader1');
         const shaders2 = maptalks.GLTFLayer.getShaders();
-        expect(shaders2.length).to.be.eql(9);
+        expect(shaders2.length).to.be.eql(10);
         expect(ShaderMap['shader1']).not.to.be.ok();
     });
 
     it('gltflayer\'s renderer has not prepared when adding marker to it', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url2,
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
             scaleX: 80,
             scaleY: 80,
             scaleZ: 80
@@ -455,19 +455,19 @@ describe('maptalks.gltf', function () {
 
     it('add marker', function () {
         const gltflayer = new maptalks.GLTFLayer('gltf1').addTo(map);
-        new maptalks.GLTFBuilding([center.x, center.y, 0], { symbol:  { url: url1 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol:  { url: url1 }}).addTo(gltflayer);
 
     });
 
     it('gltfmarker\'s symbol with polygonFill、polygonOpacity、lineColor、lineOpacity', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        new maptalks.GLTFBuilding([center.x, center.y, 0], { symbol:  {
+        new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol:  {
             'polygonFill': [0.5, 0.5, 0.5, 1.0],
             'polygonOpacity': 0.8,
             'lineColor': [0.1, 0.2, 1.0, 1.0],
             'lineOpacity': 0.8
         }}).addTo(gltflayer);
-        new maptalks.GLTFBuilding([center.x, center.y, 0], { symbol:  {
+        new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol:  {
             'shader': 'pbr',
             'polygonFill': [0.5, 0.5, 0.5, 1.0],
             'polygonOpacity': 0.8,
@@ -479,8 +479,8 @@ describe('maptalks.gltf', function () {
 
     it('gltfmarker has default trs', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        const marker1 = new maptalks.GLTFBuilding([center.x, center.y]).addTo(gltflayer);
-        const marker2 = new maptalks.GLTFBuilding([center.x + 0.01, center.y], {
+        const marker1 = new maptalks.GLTFGeometry([center.x, center.y]).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFGeometry([center.x + 0.01, center.y], {
             symbol: {
                 scaleX: 2,
                 scaleY: 2,
@@ -490,7 +490,7 @@ describe('maptalks.gltf', function () {
                 translationZ: 0
             }
         }).addTo(gltflayer);
-        const marker3 = new maptalks.GLTFBuilding([center.x, center.y + 0.01], {
+        const marker3 = new maptalks.GLTFGeometry([center.x, center.y + 0.01], {
             symbol: {
                 shader: 'wireframe'
             }
@@ -523,7 +523,7 @@ describe('maptalks.gltf', function () {
 
     it('remove marker', function () {
         const gltflayer = new maptalks.GLTFLayer('gltf2').addTo(map);
-        const marker = new maptalks.GLTFBuilding([center.x, center.y, 0], { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol: { url: url1 }});
         gltflayer.addGeometry(marker);
         let count = gltflayer.getCount();
         expect(count).to.be.eql(1);
@@ -537,7 +537,7 @@ describe('maptalks.gltf', function () {
         const gltflayer = new maptalks.GLTFLayer('gltf3').addTo(map);
         const markers = [];
         for (let i = 0; i < 4; i++) {
-            markers.push(new maptalks.GLTFBuilding([center.x + i * 0.01, center.y - i * 0.01, 0], { symbol: { url: url1 }}));
+            markers.push(new maptalks.GLTFGeometry([center.x + i * 0.01, center.y - i * 0.01, 0], { symbol: { url: url1 }}));
         }
         gltflayer.addGeometry(markers);
         let count = gltflayer.getCount();
@@ -552,7 +552,7 @@ describe('maptalks.gltf', function () {
 
     it('set coordinate for gltfmarker, modelMatrix will not change', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf4').addTo(map);
-        const marker = new maptalks.GLTFBuilding([center.x, center.y, 0], { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry([center.x, center.y, 0], { symbol: { url: url1 }});
         marker.on('load', () => {
             marker.setCoordinates([center.x + 0.1, center.y, 10]);
             const expectMatrix = maptalksgl.mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -565,7 +565,7 @@ describe('maptalks.gltf', function () {
 
     it('change translation, rotation, and scale', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf5').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
         gltflayer.addGeometry(marker);
         marker.setTranslation(10, 10, 10);
         marker.setRotation(0, 60, 0);
@@ -582,7 +582,7 @@ describe('maptalks.gltf', function () {
 
     it('isDirty', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf6').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
         gltflayer.addGeometry(marker);
         expect(marker.isDirty()).to.be.ok();
         marker.setTranslation(10, 10, 10);
@@ -591,14 +591,14 @@ describe('maptalks.gltf', function () {
     });
 
     it('setUniform', () => {
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
         expect(marker.setUniform('key', '1')).to.be.ok();
         const value = marker.getUniform('key');
         expect(value).to.be.eql('1');
     });
 
     it('copy', function (done) {
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}, {
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}, {
             shader: 'light',
             translationX: 10,
             scaleX: 2,
@@ -623,7 +623,7 @@ describe('maptalks.gltf', function () {
     });
 
     it('setCoordinates', function (done) {
-        const marker = new maptalks.GLTFBuilding(center, { symbol: { url: url1 }});
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1 }});
         const copyOne = marker.copy();
         let coordCopy = copyOne.getCoordinates();
         expect(coordCopy).to.be.eql(center);
@@ -638,7 +638,7 @@ describe('maptalks.gltf', function () {
         maptalks.GLTFLayer.registerShader('b', 'MeshShader', shader);
         maptalks.GLTFLayer.registerShader('c', 'MeshShader', shader);
         const gltflayer = new maptalks.GLTFLayer('gltf9').addTo(map);
-        new maptalks.GLTFBuilding(center, { symbol: { url: url1 }}, {
+        new maptalks.GLTFGeometry(center, { symbol: { url: url1 }}, {
             animation:false
         }).addTo(gltflayer);
         gltflayer.on('rendercomplete-debug', function (e) {
@@ -656,7 +656,7 @@ describe('maptalks.gltf', function () {
         maptalks.GLTFLayer.registerShader('b', 'MeshShader', shader);
         maptalks.GLTFLayer.registerShader('c', 'EdgeShader', shader);
         const shaders = maptalks.GLTFLayer.getShaders();
-        expect(shaders.length).to.be.eql(12);
+        expect(shaders.length).to.be.eql(13);
         maptalks.GLTFLayer.removeShader('a');
         maptalks.GLTFLayer.removeShader('b');
         maptalks.GLTFLayer.removeShader('c');
@@ -665,7 +665,7 @@ describe('maptalks.gltf', function () {
 
     it('toJSON', () => {//TODO 整个json判断
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
-        new maptalks.GLTFBuilding(center, {
+        new maptalks.GLTFGeometry(center, {
             id: 'marker',
             symbol:{
                 url: url1,
@@ -709,7 +709,7 @@ describe('maptalks.gltf', function () {
 
     it('The units for translations are meters', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltflayer');
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 translationX: 0,
                 translationY: 100,

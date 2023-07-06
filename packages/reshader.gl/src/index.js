@@ -6,6 +6,7 @@ export { default as Material } from './Material.js';
 export { default as WireFrameMaterial } from './WireFrameMaterial.js';
 export { default as PhongMaterial } from './PhongMaterial.js';
 export { default as ToonMaterial } from './ToonMaterial.js';
+export { default as StandardLiteMaterial } from './StandardLiteMaterial.js';
 export { default as PhongSpecularGlossinessMaterial } from './PhongSpecularGlossinessMaterial.js';
 export { default as Mesh } from './Mesh.js';
 export { default as InstancedMesh } from './InstancedMesh.js';
@@ -47,6 +48,7 @@ export { default as HeatmapDisplayShader } from './shader/HeatmapDisplayShader';
 export { default as WaterShader } from './water/WaterShader.js';
 export { default as CopyShader } from './shader/CopyShader.js';
 export { default as EdgeShader } from './shader/EdgeShader.js';
+export { default as StandardLiteShader } from './shader/StandardLiteShader.js';
 
 export { default as FogPass } from './weather/fog/FogPass.js';
 export { default as FogShader } from './weather/fog/FogShader.js';

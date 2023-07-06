@@ -10,7 +10,7 @@ describe('skinning', () => {
 
     it('add gltf marker with skinning', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url11,
                 scaleX: 1.2,
@@ -35,7 +35,7 @@ describe('skinning', () => {
     //TODO 增加像素判断
     it('skinning animation should not affect each other', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url11,
                 animation: false
@@ -61,7 +61,7 @@ describe('skinning', () => {
     //TODO 再次打开loop, 在某个时间，判断绘制像素是否正确
     it('set animation loop', (done) => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url11,
                 scaleX: 1.2,
@@ -90,7 +90,7 @@ describe('skinning', () => {
 
     it('setCurrentAnimation(maptalks-ide/issues/3127)', done => {
         const layer = new maptalks.GLTFLayer('layer').addTo(map);
-        const marker = new maptalks.GLTFBuilding(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 shader: 'phong',
                 url: url11,

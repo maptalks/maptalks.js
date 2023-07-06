@@ -40,7 +40,7 @@ class WeatherPainter {
         this._rainPainter = new RainPainter(this._regl, this._layer);
         this._rainRipplesPass = new reshader.RainRipplesPass(this._regl, viewport);
         this._snowPainter = new SnowPainter(this._regl, this._layer);
-        this._fogPass = new reshader.FogPass(this._regl, viewport);
+        this._fogPass = new reshader.FogPass(this._regl, viewport, this._layer);
         this._weatherShader = new reshader.FogShader();
         this._weatherShader.version = 300;
     }
@@ -125,7 +125,8 @@ class WeatherPainter {
         options['cameraPosition'] = map.cameraPosition;
         options['fogDist'] = [start * ratio, end * ratio];
         const mixFactorMap = this._fogPass.render(meshes, options);
-        return mixFactorMap;
+        const layerRenderer = this._layer.getRenderer();
+        return layerRenderer._getFBOColor(mixFactorMap);
     }
 
     _renderRainRipples() {
