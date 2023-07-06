@@ -380,6 +380,7 @@ const ImageGLRenderable = Base => {
          * @returns {WebGLTexture}
          */
         loadTexture(image) {
+            const map = this.getMap();
             const gl = this.gl;
             let texture = image.texture;   // Create a texture object
             if (!texture) {
@@ -387,6 +388,12 @@ const ImageGLRenderable = Base => {
                 image.texture = texture;
             }
             gl.bindTexture(gl.TEXTURE_2D, texture);
+            if (map.getRenderer().isViewChanged()) {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            }
+
             return texture;
         }
 
