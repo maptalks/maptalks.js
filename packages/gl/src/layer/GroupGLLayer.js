@@ -69,7 +69,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      */
     constructor(id, layers, options) {
         super(id, options);
-        this.layers = layers || [];
+        this.layers = layers && layers.slice() || [];
         this.layers.forEach(layer => {
             if (layer.getMap()) {
                 throw new Error(`layer(${layer.getId()} is already added on map`);
@@ -142,6 +142,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             return this;
         }
         this._prepareLayer(layer);
+        this._updateTerrainSkinLayers();
         renderer.setToRedraw();
         return this;
     }
@@ -153,6 +154,11 @@ export default class GroupGLLayer extends maptalks.Layer {
         const idx = this.layers.indexOf(layer);
         if (idx < 0) {
             return this;
+        }
+        this._updateTerrainSkinLayers();
+        const layerRenderer = layer.getRenderer();
+        if (layerRenderer && layerRenderer.setTerrainHelper) {
+            layerRenderer.setTerrainHelper(null);
         }
         layer._doRemove();
         this._unbindChildListeners(layer);
@@ -521,6 +527,9 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     _updateTerrainSkinLayers() {
+        if (!this._terrainLayer) {
+            return;
+        }
         const layers = this.layers;
         const skinLayers = [];
         for (let i = 0; i < layers.length; i++) {
@@ -530,6 +539,10 @@ export default class GroupGLLayer extends maptalks.Layer {
             const layer = layers[i];
             const renderer = layer.getRenderer();
             if (renderer.renderTerrainSkin) {
+                if (renderer.deleteTile === emptyMethod) {
+                    // 已经被初始化过了
+                    continue;
+                }
                 layer.getTiles = () => {
                     // debugger
                     return this._terrainLayer.getSkinTiles(layer);
@@ -544,7 +557,7 @@ export default class GroupGLLayer extends maptalks.Layer {
                     renderer.drawTile = emptyMethod;
                 }
                 // skinLayer的deleteTile交由TerrainLayerRenderer.deleteTile中手动执行
-                renderer.deleteTile = () => {};
+                renderer.deleteTile = emptyMethod;
 
                 skinLayers.push(layers[i]);
             }

@@ -184,6 +184,56 @@ describe('gl tests', () => {
     });
 
     context('terrain tests', () =>{
+        it('remove and add skinLayers', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: './fixtures/tiles/tile-green-256.png',
+                })
+            ];
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            const canvas = map.getRenderer().canvas;
+            const ctx = canvas.getContext('2d');
+            let count = 0;
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.on('layerload', () => {
+                        count++;
+                        if (count === 1) {
+                            const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                            expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
+                            group.removeLayer('base');
+                        } else if (count === 2) {
+                            const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                            expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
+                            group.addLayer(skinLayers[0]);
+                        } else if (count === 3) {
+                            const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                            expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
+                            done();
+                        }
+
+
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
         it('terrain layer with 256 skin layer', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],

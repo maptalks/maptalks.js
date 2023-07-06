@@ -97,6 +97,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
         this._skinLayers = skinLayers;
         const renderer = this.getRenderer();
         if (renderer) {
+            renderer.clear();
             renderer.setToRedraw();
         }
     }
