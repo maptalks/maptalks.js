@@ -22,11 +22,7 @@
     }
 
     bool isInExtent(vec4 color) {
-        if (color.r > 0.0 || color.g > 0.0 || color.b > 0.0 || color.a > 0.0) {
-            return true;
-        } else {
-            return false;
-        }
+        return length(color.rgb) > 0.0;
     }
 
     float getFlatHeight(float maskMode, float flatHeight, float height) {

@@ -15,19 +15,17 @@
     const float COLOR_MODE = 0.5;
     const float VIDEO_MODE = 0.6;
     bool isInExtent(vec4 color) {
-        if (color.r > 0.0 || color.g > 0.0 || color.b > 0.0) {
-            return true;
-        } else {
-            return false;
-        }
+        return length(color.rgb) > 0.0;
     }
 
     vec4 setMask(vec4 glFragColor) {
         vec4 extentColor = texture2D(mask_colorExtent, vUVInExtent);
+        // mask可能重叠
         vec4 modeColor = texture2D(mask_modeExtent, vUVInExtent);
         float maskMode = modeColor.r;
         float minHeight = modeColor.b / vHeightRatio + vHeightOffset;
         float maxHeight = modeColor.a / vHeightRatio + vHeightOffset;
+        // 因为精度问题，输入为outside mode时，纹理上的取值不一定精确，所以需要给定范围内的判断
         if (maskMode > CLIPINSIDE_MODE && maskMode <= CLIPOUTSIDE_MODE) {
             if (minHeight == 0.0 && maxHeight == 0.0) {
                 return glFragColor;

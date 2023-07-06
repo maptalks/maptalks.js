@@ -169,7 +169,7 @@ export default function (Base) {
         }
 
         getMasks() {
-            return this['_maskList'];
+            return this['_maskList'] || [];
         }
 
         _onGeometryEvent(param) {
