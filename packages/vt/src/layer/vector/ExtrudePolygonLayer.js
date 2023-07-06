@@ -312,7 +312,9 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
 
     resizeCanvas(canvasSize) {
         super.resizeCanvas(canvasSize);
-        this.sidePainter.resize(this.canvas.width, this.canvas.height);
+        if (this.sidePainter) {
+            this.sidePainter.resize(this.canvas.width, this.canvas.height);
+        }
     }
 
     onRemove() {
