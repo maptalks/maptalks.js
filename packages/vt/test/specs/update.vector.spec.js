@@ -2058,6 +2058,40 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('polygon should can updateSymbol in ExtrudePolygonLayer', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                polygon.updateSymbol({
+                    polygonFill: '#f00'
+                });
+            } else if (count === 4) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert.deepEqual(pixel,  [126, 22, 22, 255]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can outline in ExtrudePolygonLayer', done => {
         map.setPitch(60);
         const polygon = new maptalks.Polygon([

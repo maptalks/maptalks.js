@@ -277,12 +277,12 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (!feature) {
             return;
         }
-        const data = this._createPackData([feature], this.painterSymbol, 1, 0);
+        const data = this._createPackData([feature], this.painterSymbol, true, false);
         let index = 0;
         if (data && data.data) {
             this._updateMeshData(this.meshes[index++], feature.id, data);
         }
-        const sideData = this._createPackData([feature], this.painterSymbol, 0, 1);
+        const sideData = this._createPackData([feature], this.painterSymbol, false, true);
         if (sideData && sideData.data) {
             this._updateMeshData(this.meshes[index++], feature.id, sideData);
         }

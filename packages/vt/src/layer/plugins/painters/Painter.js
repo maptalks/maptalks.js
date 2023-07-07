@@ -417,9 +417,13 @@ class Painter {
         if (!meshes || !meshes.length) {
             return;
         }
+        const sceneFilter = context && context.sceneFilter;
         const z = this.getMap().getZoom();
         for (let i = 0; i < meshes.length; i++) {
             if (!meshes[i] || !meshes[i].geometry) {
+                continue;
+            }
+            if (sceneFilter && !sceneFilter(meshes[i])) {
                 continue;
             }
             const { symbolIndex } = meshes[i].properties;
