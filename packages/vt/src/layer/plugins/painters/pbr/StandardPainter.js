@@ -325,6 +325,8 @@ class StandardPainter extends MeshPainter {
                         };
                     }
                     texConf.flipY = true;//!dataConfig.side && !isNil(dataConfig.side) || this.dataConfig.textureYOrigin === 'bottom';
+                    texConf.min = 'linear mipmap linear';
+                    texConf.mag = 'linear';
                     material[p] = new reshader.Texture2D(texConf, this._loader);
                     material[p].once('complete', this._bindedOnTextureLoad);
                     material[p].once('disposed', this._bindDisposeCachedTexture);
