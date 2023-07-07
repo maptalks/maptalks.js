@@ -56,6 +56,7 @@ describe('picking specs', () => {
                 }
             }
             for (let i = 0; i < result.length; i++) {
+                assert(result[i].coordinate.length === 3);
                 // ignore tiles
                 delete result[i].data.tile;
             }
@@ -501,6 +502,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -624,6 +626,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -697,6 +700,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -768,6 +772,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
@@ -845,6 +850,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.feature["__fea_idx"];
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data.feature, expected, JSON.stringify(redPoint[0].data.feature));
                 done();
             });
@@ -910,6 +916,7 @@ describe('picking specs', () => {
                     }
                 };
                 delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
                 assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
                 done();
             });
