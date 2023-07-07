@@ -326,6 +326,7 @@ export default class FBORayPicking {
                     coords.push(coord);
                 } else {
                     points.push(null);
+                    coords.push(null);
                 }
             }
         }
