@@ -20,6 +20,10 @@
 #define EXTRUDE_MOD 64.0
 #define MAX_LINE_DISTANCE 65535.0
 
+#ifdef PICKING_MODE
+    #include <gl2_vert>
+#endif
+
 #ifdef HAS_ALTITUDE
     attribute vec2 aPosition;
     attribute float aAltitude;

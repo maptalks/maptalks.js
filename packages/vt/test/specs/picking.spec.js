@@ -779,6 +779,79 @@ describe('picking specs', () => {
             layer.addTo(map);
         });
 
+        it('should pick polygon line', done => {
+            const options = {
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        }
+                    }]
+                },
+                style: [{
+                    filter: true,
+                    renderPlugin: {
+                        type: 'line',
+                        dataConfig: {
+                            type: 'line'
+                        }
+                    },
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 10
+                    }
+                }],
+                view: {
+                    center: [13.417226248848124, 52.52954504632825],
+                    zoom: 18
+                }
+            };
+            map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
+            const layer = new GeoJSONVectorTileLayer('gvt', options);
+            layer.once('canvasisdirty', () => {
+                const redPoint = layer.identify([13.41720, 52.52952]);
+                const expected = {
+                    'feature': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Polygon',
+                            'coordinates': [
+                                [
+                                    [13.417135053741617, 52.52956625878565],
+                                    [13.417226248848124, 52.52956625878565],
+                                    [13.417226248848124, 52.52946625878565],
+                                    [13.417135053741617, 52.52946625878565],
+                                    [13.417135053741617, 52.52956625878565]
+                                ]
+                            ]
+                        },
+                        'id': 0,
+                        'layer': 0
+                    },
+                    'symbol': {
+                        'lineColor': '#f00',
+                        'lineWidth': 10
+                    }
+                };
+                delete redPoint[0].data.tile;
+                assert(redPoint[0].coordinate.length === 3);
+                assert.deepEqual(redPoint[0].data, expected, JSON.stringify(redPoint[0].data));
+                done();
+            });
+            layer.addTo(map);
+        });
+
 
 
     it('should return feature properties used in symbol', done => {
