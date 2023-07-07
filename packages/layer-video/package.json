@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/video-layer",
-  "version": "0.86.0",
+  "version": "0.87.0",
   "description": "A maptalks Layer to render video",
   "license": "UNLICENSED",
   "repository": {
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gl": "^0.86.0",
+    "@maptalks/gl": "^0.87.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",

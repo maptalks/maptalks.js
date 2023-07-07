@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/analysis",
-  "version": "0.86.0",
+  "version": "0.87.0",
   "description": "a plugin to excute many analysis tasks",
   "license": "UNLICENSED",
   "repository": {
@@ -26,8 +26,8 @@
     "@babel/core": "^7.15.0",
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gl": "^0.86.0",
-    "@maptalks/gltf-layer": "^0.86.0",
+    "@maptalks/gl": "^0.87.0",
+    "@maptalks/gltf-layer": "^0.87.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
