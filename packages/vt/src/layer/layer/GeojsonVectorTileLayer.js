@@ -11,7 +11,8 @@ const options = {
     extent: 8192,
     pyramidMode: 1,
     simplifyTolerance: 3,
-    tileStackDepth: 0
+    tileStackDepth: 0,
+    generateOMBB: true
 };
 
 class GeoJSONVectorTileLayer extends VectorTileLayer {
@@ -39,7 +40,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.hasAltitude = this.options.enableAltitude;
         options.simplifyTolerance = this.options.simplifyTolerance;
         options.projection = this.getSpatialReference().getProjection().code;
-        // options.topOmbbUV = this.options.topOmbbUV; // 永远打开 topOmbbUV
+        options.generateOMBB = this.options.generateOMBB;
         return options;
     }
 

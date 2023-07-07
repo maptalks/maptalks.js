@@ -90,6 +90,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
     }
 
     _genOMBB(features) {
+        if (!this.options.generateOMBB) {
+            return;
+        }
         if (features) {
             // const projectionCode = this.options.projectionCode;
             // 大概的性能: 2023-06-24
