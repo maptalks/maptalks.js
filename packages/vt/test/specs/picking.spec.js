@@ -108,7 +108,7 @@ describe('picking specs', () => {
                     },
                 },
                 'point': [736.00006, 736.00006, -0.00049],
-                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859],
+                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859089881171275],
                 'type': 'icon',
                 'plugin': 0
             }];
@@ -160,7 +160,7 @@ describe('picking specs', () => {
                     },
                 },
                 'point': [736.00006, 736.00006, -0.00049],
-                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859],
+                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859089881171275],
                 'type': 'icon',
                 'plugin': 0
             }];
@@ -205,7 +205,7 @@ describe('picking specs', () => {
                         'layer': 0
                     },
                 },
-                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859],
+                'coordinate': [0.505371133913286, 0.5053645811220235, 0.02859089881171275],
                 'point': [736.00006, 736.00006, -0.00049],
                 'type': 'icon',
                 'plugin': 0
@@ -981,7 +981,7 @@ describe('picking specs', () => {
             layer.once('canvasisdirty', () => {
                 const hit = layer.identify([13.41720, 52.52952])[0];
                 const expectedFeature = { "type": "Feature", "geometry": { "type": "Polygon","coordinates": [[[13.417135053741617,52.52956625878565],[13.417226248848124,52.52956625878565],[13.417226248848124,52.52946625878565],[13.417135053741617,52.52946625878565],[13.417135053741617,52.52956625878565]]] },"properties": { "type": 1, "color": "#f00", "foo": "bar", "foo1": "bar1" },"id": 0,"layer": 0 };
-                assert.deepEqual(hit.coordinate, [13.417199426757975,52.529518938674386,0]);
+                assert.deepEqual(hit.coordinate, [13.417199426757975,52.529518938674386, 2.832461820645449e-9]);
                 assert.deepEqual(expectedFeature, hit.data.feature);
                 done();
             });

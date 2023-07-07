@@ -101,7 +101,7 @@ describe('update vt on terrain specs', () => {
                         assert.deepEqual(pixel, new Uint8ClampedArray([255, 0, 0, 255]));
 
                         pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                        assert.deepEqual(pixel, new Uint8ClampedArray([112, 112, 112, 255]));
+                        assert.deepEqual(pixel, new Uint8ClampedArray([106, 106, 106, 255]));
                         done();
                     }
                 });

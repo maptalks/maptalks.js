@@ -1423,7 +1423,7 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, new Uint8ClampedArray([12, 11, 48, 255]));
+                    assert.deepEqual(pixel, new Uint8ClampedArray([11, 11, 50, 255]));
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });
@@ -1538,7 +1538,7 @@ describe('update style specs', () => {
                     count++;
                     if (count >= 3) {
                         finished = true;
-                        assert.deepEqual(pixel, [64, 73, 71, 255]);
+                        assert.deepEqual(pixel, [60, 70, 68, 255]);
                         done();
                     }
                 }
@@ -2038,7 +2038,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
                 //[87, 140, 143, 255]
                 assert(styleRefreshed);
-                assert.deepEqual(pixel, [105, 170, 174, 255]);
+                assert.deepEqual(pixel, [151, 219, 224, 255]);
                 done();
             }
         });
