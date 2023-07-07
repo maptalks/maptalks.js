@@ -29,8 +29,7 @@ export function buildExtrudeFaces(
         positionType,
         res,
         glScale,
-        projectionCode,
-        isExtrudePolygonLayer
+        projectionCode
     },
     debugIndex
 ) {

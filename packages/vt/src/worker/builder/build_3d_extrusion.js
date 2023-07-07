@@ -60,8 +60,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             // tile的resolution
             res,
             glScale,
-            projectionCode,
-            isExtrudePolygonLayer
+            projectionCode
         }, debugIndex);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
