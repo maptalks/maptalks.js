@@ -30,7 +30,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/gltf-layer": "^0.87.1",
+    "@maptalks/gl-layers": "0.23.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",

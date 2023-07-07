@@ -9,8 +9,7 @@ module.exports = function (config) {
         },
         files: [
             '../../node_modules/maptalks/dist/maptalks.js',
-            '../gl/dist/maptalksgl.js',
-            '../layer-gltf/dist/maptalks.gltf.js',
+            '../../node_modules/@maptalks/gl-layers/dist/maptalks-gl-layers.js',
             './test/js/turf.min.js',
             './dist/maptalks.traffic.js',
             'test/**/*.js',

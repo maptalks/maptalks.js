@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { GLTFLayer, MultiGLTFMarker } from '@maptalks/gl-layers';
 import { map, reduce, extend, sample } from './Util.js';
 import * as turf from 'turf';
 import Pool from './Pool.js';
@@ -17,7 +18,7 @@ export default class TrafficScene {
         this._lastUpdate = 0;
         this._timeFactor = 5;
         this.carsList = {};
-        this._carlayer = new maptalks.GLTFLayer('traffic', { gltfCoordinateSystem: 'gltf' });
+        this._carlayer = new GLTFLayer('traffic');
         this._state = 'stop';
         this._symbols = [];
         this._instanceMap = {};
@@ -45,7 +46,7 @@ export default class TrafficScene {
         this._symbols = symbols;
         for (let i = 0; i < this._symbols.length; i++) {
             const symbol = this._symbols[i];
-            this._instanceMap[symbol.url] = new maptalks.MultiGLTFMarker([], { symbol }).addTo(this._carlayer);
+            this._instanceMap[symbol.url] = new MultiGLTFMarker([], { symbol }).addTo(this._carlayer);
         }
     }
 

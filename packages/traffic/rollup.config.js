@@ -42,13 +42,12 @@ const basePlugins = [
 module.exports = [
     {
         input: 'src/index.js',
-        external: ['maptalks', '@maptalks/gl', '@maptalks/gltf-layer', 'turf'],
+        external: ['maptalks', '@maptalks/gl-layers', 'turf'],
         plugins: basePlugins.concat(plugins),
         output: {
             globals: {
                 'maptalks': 'maptalks',
-                '@maptalks/gl': 'maptalksgl',
-                '@maptalks/gltf-layer': 'maptalks.gltf',
+                '@maptalks/gl-layers': 'maptalks',
                 'turf': 'turf'
             },
             'sourcemap': production ? false : 'inline',
@@ -73,12 +72,11 @@ module.exports = [
                 }
             })
         ] : []),
-        external: ['maptalks', '@maptalks/gl', '@maptalks/gltf-layer', 'turf'],
+        external: ['maptalks', '@maptalks/gl-layers', 'turf'],
         output: {
             globals: {
                 'maptalks': 'maptalks',
-                '@maptalks/gl': 'maptalksgl',
-                '@maptalks/gltf-layer': 'maptalks.gltf',
+                '@maptalks/gl-layers': 'maptalks',
                 'turf': 'turf'
             },
             'sourcemap': false,
