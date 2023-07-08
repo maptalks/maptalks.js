@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/transcoders.crn",
-  "version": "0.87.1",
+  "version": "0.87.2",
   "description": "crn transcoder for @maptalks/gl",
   "main": "dist/transcoders.crn.js",
   "module": "dist/transcoders.crn.es.js",
@@ -23,7 +23,7 @@
   "author": "fuzhen",
   "license": "ISC",
   "dependencies": {
-    "@maptalks/gl": "^0.87.1"
+    "@maptalks/gl": "*"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
