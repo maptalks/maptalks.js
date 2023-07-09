@@ -87,7 +87,7 @@ class Scene {
     }
 
     getMeshes() {
-        return this.meshes;
+        return this.meshes || [];
     }
 
     clear() {
@@ -147,7 +147,7 @@ class Scene {
         if (this._dirty) {
             this.sortMeshes();
         }
-        return this.sortedMeshes;
+        return this.sortedMeshes || [];
     }
 
     _compare(a, b) {
