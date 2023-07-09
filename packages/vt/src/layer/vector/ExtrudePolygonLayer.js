@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { extend, isNil, pushIn } from '../../common/Util';
+import { extend, isNil } from '../../common/Util';
 import Vector3DLayer from './Vector3DLayer';
 import { PolygonLayerRenderer } from './PolygonLayer';
 import { fromJSON } from './util/from_json';
@@ -345,10 +345,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (!this.painter) {
             return [];
         }
-        const meshes = this.painter.getShadowMeshes();
-        const sideMeshes = this.sidePainter.getShadowMeshes();
-        pushIn(meshes, sideMeshes);
-        return meshes;
+        return this.meshes;
     }
 }
 
