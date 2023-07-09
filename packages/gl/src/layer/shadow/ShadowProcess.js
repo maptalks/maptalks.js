@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
-import  { getGroundTransform } from '../util/util';
+import  { getGroundTransform, isNil } from '../util/util';
 
 const EMPTY_HALTON = [0, 0];
 const DEFAULT_SHADOW_COLOR = [0, 0, 0];
@@ -99,7 +99,7 @@ class ShadowProcess {
             smap = this._shadowMap = shadowMap;
             this._blurFBO = blurFBO;
             this._renderedShadows = scene.getMeshes().reduce((ids, m) => {
-                if (m.castShadow) {
+                if (m.castShadow && m.geometry) {
                     ids[m.uuid] = {
                         v0: m.version,
                         v1: m.geometry.version
@@ -120,6 +120,9 @@ class ShadowProcess {
         }
         this._projMatrix = projMatrix;
         this._viewMatrix = viewMatrix;
+        if (isNil(opacity)) {
+            opacity = 1;
+        }
         if (displayShadow && scene.getMeshes().length) {
             this.displayShadow(color, opacity, halton, framebuffer);
         }
@@ -127,7 +130,7 @@ class ShadowProcess {
             'shadow_lightProjViewMatrix': matrix,
             'shadow_shadowMap': smap,
             'shadow_opacity': opacity,
-            'shadow_color': color,
+            'shadow_color': color || DEFAULT_SHADOW_COLOR,
             'esm_shadow_threshold': this._esmShadowThreshold
         };
 
