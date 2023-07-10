@@ -470,6 +470,7 @@ export default class GLTFMarker extends Marker {
         const pixelSize = length / map.getGLScale();
         if (pixelSize < 5) {
             console.warn('Model\'s size on screen is too small, try to increase its symbol.scaleX/Y/Z');
+            this.fire('smallonscreen');
         }
     }
 
