@@ -468,7 +468,7 @@ export default class GLTFMarker extends Marker {
         const { max, min } = gltfBBox;
         const length = vec3.length([max[0] - min[0], max[1] - min[1], max[2] - min[2]]);
         const pixelSize = length / map.getGLScale();
-        if (pixelSize < 5) {
+        if (pixelSize < 20) {
             console.warn('Model\'s size on screen is too small, try to increase its symbol.scaleX/Y/Z');
             this.fire('smallonscreen');
         }
