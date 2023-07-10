@@ -5,7 +5,7 @@
 import * as maptalks from 'maptalks';
 import { vec3, mat3, mat4, MaskLayerMixin } from '@maptalks/gl';
 import { intersectsSphere, intersectsBox, intersectsOrientedBox } from 'frustum-intersects';
-import { isFunction, extend, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
+import { isFunction, extend, isNil, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
 import { DEFAULT_MAXIMUMSCREENSPACEERROR } from '../common/Constants';
 import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
 import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
@@ -88,17 +88,28 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _initRoots() {
         const urls = this.options.services.map(service => service.url);
-        this._roots = urls.map((url, idx) => createRootTile(url, idx));
+        let maxRootId = 0;
+        if (this._roots) {
+            for (let i = 0; i < this._roots.length; i++) {
+                const root = this._roots[i];
+                if (root && root._rootIdx > maxRootId) {
+                    maxRootId = root._rootIdx;
+                }
+            }
+        }
+        this._roots = urls.map((url, idx) => {
+            return this._root && this._roots[idx] || createRootTile(url, maxRootId++);
+        });
         this.fire('rootready', { roots : this._roots.slice(0) });
     }
 
     showService(idx) {
-        this._updateServiceVisible(idx, 1);
+        this.updateService(idx, { visible: 1 });
         return this;
     }
 
     hideService(idx) {
-        this._updateServiceVisible(idx, 0);
+        this.updateService(idx, { visible: 0 });
         return this;
     }
 
@@ -109,16 +120,50 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
     }
 
-    _updateServiceVisible(idx, visible) {
-        const rootNode = this._roots[idx];
-        if (!rootNode) {
-            return;
-        }
-        rootNode.visible = visible;
+    addService(info) {
+        this.options.services = this.options.services || [];
+        this.options.services.push(info);
+        this._initRoots();
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
         }
+        return this;
+    }
+
+    updateService(idx, info) {
+        if (!info) {
+            return this;
+        }
+        const services = this.options.services;
+        if (services && services[idx]) {
+            extend(services[idx], info)
+        }
+        if (!isNil(info.visible)) {
+            if (this._roots && this._roots[idx]) {
+                this._roots[idx].visible = info.visible;
+            }
+        }
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+        return this;
+    }
+
+    removeService(idx) {
+        const services = this.options.services;
+        if (services && services[idx]) {
+            services.splice(idx, 1);
+        }
+        if (this._roots && this._roots[idx]) {
+            this._roots.splice(idx, 1);
+        }
+        const renderer = this.getRenderer();
+        if (renderer) {
+            renderer.setToRedraw();
+        }
+        return this;
     }
 
     getTileUrl(url/*, baseUrl*/) {

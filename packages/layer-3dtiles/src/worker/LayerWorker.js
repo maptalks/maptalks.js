@@ -94,11 +94,12 @@ export default class BaseLayerWorker {
      */
     loadTile(params, cb) {
         this._createLoaders(params.supportedFormats);
+        const service = params.service;
         const url = params.url,
             arraybuffer = params.arraybuffer;
         if (isI3SURL(url)) {
             const i3sInfo = params.i3sInfo;
-            const maxTextureSize = this.options.services[params.rootIdx].maxTextureSize || 1024;
+            const maxTextureSize = service.maxTextureSize || 1024;
             const promise = loadI3STile(i3sInfo, params.supportedFormats, this.options.projection, maxTextureSize);
             promise.then(i3sData => {
                 delete this._requests[url];
@@ -156,7 +157,6 @@ export default class BaseLayerWorker {
                 this._read3DTile(arraybuffer, url, params, magic, cb);
             }
         } else {
-            const service = this.options.services[params.rootIdx];
             let urlParams = service['urlParams'];
             if (urlParams) {
                 urlParams = (url.indexOf('?') > 0 ? '&' : '?') + urlParams;
@@ -182,7 +182,7 @@ export default class BaseLayerWorker {
 
 
     _read3DTile(arraybuffer, url, params, magic, cb) {
-        const service = this.options.services[params.rootIdx];
+        const service = params.service;
         if (magic === 'b3dm') {
             const promise = this._b3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {

@@ -264,6 +264,130 @@ describe('3dtiles layer', () => {
         });
     });
 
+    it('can add service', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr'
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                assert(color.data[3] > 0);
+                done();
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('can add service on the fly', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr'
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 1) {
+                layer.addService(service);
+            } else if (count === 3) {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                assert(color.data[3] > 0);
+                done();
+            }
+
+        });
+        layer.addTo(map);
+    });
+
+    it('can remove service', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: [{
+                url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                shader: 'pbr'
+            }]
+        });
+
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                layer.removeService(0);
+            } else if (count === 3) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 0);
+                    done();
+                }, 10);
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('can update service opacity', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            opacity: 0.5
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.updateService(0, { opacity: 1 });
+            } else if (count === 3) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 255);
+                    done();
+                }, 10);
+            }
+        });
+        layer.addTo(map);
+    });
+
 });
 
 function toRadian(d) {

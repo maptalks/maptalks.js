@@ -391,6 +391,10 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         // if (url.substring(url.length - 4, url.length) === 'b3dm') {
         //     url = 'http://localhost/3dtiles/debug/xx/tile0/3/2/6.b3dm';
         // }
+        params.service = extend({}, service);
+        if (service.offset) {
+            delete params.service.offset;
+        }
         this.workerConn.loadTile(this.layer.getId(), params, (err, data) => {
             if (err) {
                 this.onTileError(err, tile);
