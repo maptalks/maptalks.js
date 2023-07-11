@@ -70,7 +70,7 @@ class MeshShader extends Shader {
                     configurable: false,
                     enumerable: true,
                     get: function () {
-                        return this.shaderContext && this.shaderContext[p];
+                        return this.shaderContext[p];
                     }
                 });
             }
