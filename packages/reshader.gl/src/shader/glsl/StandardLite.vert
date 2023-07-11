@@ -60,7 +60,7 @@ void main()
     vec4 mvPosition = modelViewMatrix * localPositionMatrix * localPosition;
     vViewPosition = -mvPosition.xyz;
     #ifdef HAS_MAP
-        vec2 decodedTexCoord = getTexcoord(aTexCoord);
+        vec2 decodedTexCoord = decode_getTexcoord(aTexCoord);
         vTexCoord = decodedTexCoord * uvScale + uvOffset;
     #endif
     #if defined(HAS_COLOR)

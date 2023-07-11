@@ -39,16 +39,16 @@ describe('add analysis', () => {
                 const vertexCoordinates = viewshedAnalysis.getVertexCoordinates();
                 expect(vertexCoordinates[0].x).to.be.eql(0);
                 expect(vertexCoordinates[0].y).to.be.eql(-0.001763269806815515);
-                expect(vertexCoordinates[0].z).to.be.eql(228.49548874058272);
+                expect(vertexCoordinates[0].z.toFixed(5)).to.be.eql(228.49549);
                 expect(vertexCoordinates[1].x).to.be.eql(0);
                 expect(vertexCoordinates[1].y).to.be.eql(0.001763269806815515);
-                expect(vertexCoordinates[1].z).to.be.eql(228.49548874058272);
+                expect(vertexCoordinates[1].z.toFixed(5)).to.be.eql(228.49549);
                 expect(vertexCoordinates[2].x).to.be.eql(0);
                 expect(vertexCoordinates[2].y).to.be.eql(0.001763269806815515);
-                expect(vertexCoordinates[2].z).to.be.eql(228.49548874058272);
+                expect(vertexCoordinates[2].z.toFixed(5)).to.be.eql(228.49549);
                 expect(vertexCoordinates[3].x).to.be.eql(0);
                 expect(vertexCoordinates[3].y).to.be.eql(-0.001763269806815515);
-                expect(vertexCoordinates[3].z).to.be.eql(228.49548874058272);
+                expect(vertexCoordinates[3].z.toFixed(5)).to.be.eql(228.49549);
                 done();
             }, 100);
         });
@@ -620,10 +620,10 @@ describe('add analysis', () => {
                 expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
                 expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
                 expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
-                expect(intersects[0][0].coordinates[0].coordinate.z).to.be.eql(50.00032889870992);
+                expect(intersects[0][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730494329);
                 expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.00028134777252830645);
-                expect(intersects[1][0].coordinates[0].coordinate.z).to.be.eql(50.00032889870992);
+                expect(intersects[1][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 done();
             }, 100);
         });
@@ -659,7 +659,7 @@ describe('add analysis', () => {
                 expect(results[0].coordinates[0].indices).to.be.eql([0, 2, 3]);
                 expect(results[0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
                 expect(results[0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
-                expect(results[0].coordinates[0].coordinate.z).to.be.eql(50.00032889870992);
+                expect(results[0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 done();
             }, 100);
         });
@@ -688,10 +688,10 @@ describe('add analysis', () => {
                 expect(intersects[1][0].data instanceof maptalks.GLTFMarker).to.be.eql(true);
                 expect(intersects[0][0].coordinates[0].coordinate.x).to.be.eql(0.0016623826727482083);
                 expect(intersects[0][0].coordinates[0].coordinate.y).to.be.eql(-0.0007186522272775164);
-                expect(intersects[0][0].coordinates[0].coordinate.z).to.be.eql(50.00032889870992);
+                expect(intersects[0][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 expect(intersects[1][0].coordinates[0].coordinate.x).to.be.eql(0.0004623826730494329);
                 expect(intersects[1][0].coordinates[0].coordinate.y).to.be.eql(0.00028134777252830645);
-                expect(intersects[1][0].coordinates[0].coordinate.z).to.be.eql(50.00032889870992);
+                expect(intersects[1][0].coordinates[0].coordinate.z.toFixed(5)).to.be.eql(50.00033);
                 done();
             }, 100);
         });
@@ -714,7 +714,7 @@ describe('add analysis', () => {
             measuretool.fire('drawstart', { coordinate: center });
             measuretool.fire('mousemove', { coordinate: center.add(0.001, 0) });
             const result = measuretool.getMeasureResult();
-            expect(result).to.be.eql(222.63898158654715);
+            expect(result.toFixed(5)).to.be.eql(222.63898);
             done();
         }
         marker.on('load', () => {

@@ -507,7 +507,7 @@ export default class MeshPainter {
             cb(null, { id : id, mesh : meshes });
             return meshes;
         }
-        const { pnts, featureTable, rootIdx } = data;
+        const { pnts, featureTable, rootIdx, compressed_int16_params } = data;
         const service = this._layer.options.services[rootIdx];
         const count = featureTable['POINTS_LENGTH'];
 
@@ -540,6 +540,7 @@ export default class MeshPainter {
                 defines['HAS_NORMAL_OCT16P'] = 1;
             }
         }
+        this._setCompressedInt16Defines(defines, compressed_int16_params);
         if (data.featureTable['CONSTANT_RGBA']) {
             data.featureTable['CONSTANT_RGBA'] = data.featureTable['CONSTANT_RGBA'].map(c => c / 255);
         }
@@ -581,6 +582,7 @@ export default class MeshPainter {
                 return options && options.pointOpacity || 1;
             }
         });
+        this._setCompressedInt16Uniforms(mesh, compressed_int16_params);
         if (service.coordOffset) {
             const coordOffsetMatrix = this._computeCoordOffsetMatrix(node._rootIdx, rtcCoord);
             mat4.multiply(localTransform, coordOffsetMatrix, localTransform);
@@ -692,6 +694,9 @@ export default class MeshPainter {
             mesh.properties.batchTableBin = batchTableBin;
             mesh.properties.serviceIndex = node._rootIdx;
             const defines = this._getGLTFMeshDefines(gltfMesh, geometry, material, node._rootIdx, gltf);
+            if (gltfMesh.compressed_int16_params) {
+                this._setCompressedInt16Uniforms(mesh, gltfMesh.compressed_int16_params);
+            }
             this._setWEB3DDecodeUniforms(mesh, gltfMesh.attributes);
             // GLTF模型默认y为up
             // https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units
@@ -795,7 +800,9 @@ export default class MeshPainter {
                     mesh.setUniform(u, compressUniforms[u]);
                 }
             }
-
+            if (gltfMesh.compressed_int16_params) {
+                this._setCompressedInt16Uniforms(mesh, gltfMesh.compressed_int16_params);
+            }
             this._setWEB3DDecodeUniforms(mesh, gltfMesh.attributes);
             if (maxPrjExtent) {
                 defines['USE_MAX_EXTENT'] = 1;
@@ -854,6 +861,24 @@ export default class MeshPainter {
             meshes._callback = cb;
         }
         return meshes;
+    }
+
+    _setCompressedInt16Uniforms(mesh, compressed_int16_params) {
+        if (compressed_int16_params['POSITION']) {
+            mesh.setUniform('compressedPositionRange', compressed_int16_params['POSITION']);
+        }
+        if (compressed_int16_params['TEXCOORD_0']) {
+            mesh.setUniform('compressedTexcoordRange_0', compressed_int16_params['TEXCOORD_0']);
+        }
+        if (compressed_int16_params['TEXCOORD_1']) {
+            mesh.setUniform('compressedTexcoordRange_1', compressed_int16_params['TEXCOORD_0']);
+        }
+        if (compressed_int16_params['NORMAL']) {
+            mesh.setUniform('compressedNormalRange', compressed_int16_params['NORMAL']);
+        }
+        if (compressed_int16_params['TANGENT']) {
+            mesh.setUniform('compressedTangentRange', compressed_int16_params['TANGENT']);
+        }
     }
 
     _setWEB3DDecodeUniforms(mesh, attributes) {
@@ -1005,9 +1030,31 @@ export default class MeshPainter {
         if (gltfMesh.attributes && gltfMesh.attributes['TEXCOORD_0'] && gltfMesh.attributes['TEXCOORD_0'].extensions === 'WEB3D_quantized_attributes') {
             defines['HAS_WEB3D_quantized_attributes_TEXCOORD'] = 1;
         }
+        this._setCompressedInt16Defines(defines, gltfMesh.compressed_int16_params);
         const compressDefines = gltfMesh.compressDefines;
         extend(defines, compressDefines);
         return defines;
+    }
+
+    _setCompressedInt16Defines(defines, compressed_int16_params) {
+        if (compressed_int16_params) {
+            defines['HAS_COMPRESSED_INT16'] = 1;
+            if (compressed_int16_params['POSITION']) {
+                defines['HAS_COMPRESSED_INT16_POSITION'] = 1;
+            }
+            if (compressed_int16_params['TEXCOORD_0']) {
+                defines['HAS_COMPRESSED_INT16_TEXCOORD_0'] = 1;
+            }
+            if (compressed_int16_params['TEXCOORD_1']) {
+                defines['HAS_COMPRESSED_INT16_TEXCOORD_1'] = 1;
+            }
+            if (compressed_int16_params['NORMAL']) {
+                defines['HAS_COMPRESSED_INT16_NORMAL'] = 1;
+            }
+            if (compressed_int16_params['TANGENT']) {
+                defines['HAS_COMPRESSED_INT16_TANGENT'] = 1;
+            }
+        }
     }
 
     _updateMaskDefines(mesh) {

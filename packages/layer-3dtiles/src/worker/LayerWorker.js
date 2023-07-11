@@ -41,7 +41,7 @@ const TMP_INV_MATRIX = [];
 
 const TEMP_DEGREE = [];
 const TEMP_PROJ = [];
-
+const NEED_COMPRESSED_ATTR = { 'POSITION': 1, 'TEXCOORD_0': 1, 'TEXCOORD_1': 1, 'NORMAL': 1, 'TANGENT': 1};
 
 export default class BaseLayerWorker {
 
@@ -115,6 +115,7 @@ export default class BaseLayerWorker {
                 i3sData.gltf.url = url;
                 const { transferables } = i3sData;
                 i3sData.magic = 'b3dm';
+                this._compressAttrFloat32ToInt16(i3sData.gltf);
                 cb(null, i3sData, transferables);
             });
             this._requests[url] = promise.xhr;
@@ -191,6 +192,7 @@ export default class BaseLayerWorker {
                     return;
                 }
                 const { content, transferables } = this._processB3DM(tile, params);
+                this._compressAttrFloat32ToInt16(content.gltf);
                 cb(null, content, transferables);
             }).catch(err => {
                 cb(err);
@@ -200,6 +202,7 @@ export default class BaseLayerWorker {
             const promise = this._pntsLoader.load(url, arraybuffer);
             promise.then(tile => {
                 const { content:pnts, transferables } = this._loadI3DMAndPNTS(tile, transform, params.rootIdx);
+                this._compressPNTSFloat32ToInt16(pnts);
                 cb(null, pnts, transferables);
             });
         } else if (magic === 'i3dm') {
@@ -207,16 +210,69 @@ export default class BaseLayerWorker {
             const promise =  this._i3dmLoader.load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {
                 const { content:i3dm, transferables } = this._loadI3DMAndPNTS(tile, transform, params.rootIdx);
+                this._compressAttrFloat32ToInt16(i3dm.gltf);
                 cb(null, i3dm, transferables);
             });
         } else if (magic === 'cmpt') {
             const promise = new CMPTLoader(this._bindedRequestImage, GLTFLoader, this._supportedFormats, service.maxTextureSize || 1024).load(url, arraybuffer, 0, 0, { maxTextureSize: service.maxTextureSize || 1024 });
             promise.then(tile => {
                 const { content: cmpt, transferables } = this._processCMPT(tile, params);
+                this._iterateCMPTContent(cmpt);
                 cb(null, cmpt, transferables);
             }).catch(err => {
                 cb(err);
             });
+        }
+    }
+
+    _iterateCMPTContent(cmpt) {
+        if (cmpt.content) {
+            cmpt.content.forEach(contentItem => {
+                this._iterateCMPTContent(contentItem);
+            });
+        } else {
+            this._compressAttrFloat32ToInt16(cmpt.gltf);
+        }
+    }
+
+    _compressAttrFloat32ToInt16(gltf) {
+        //采用KHR_techniques_webgl的模型是自定义shader，这里不做压缩处理
+        if (!gltf || !gltf.meshes || (gltf.extensionsUsed && gltf.extensionsUsed.indexOf('KHR_techniques_webgl') > -1)) {
+            return;
+        }
+        const meshes = gltf.meshes;
+        for (const primitiveIndex in meshes) {
+            const primitives = meshes[primitiveIndex].primitives;
+            primitives.forEach(primitive => {
+                primitive.compressed_int16_params = {};
+                const attributes = primitive.attributes;
+                for (const attrName in attributes) {
+                    if (NEED_COMPRESSED_ATTR[attrName] &&
+                        attributes[attrName].array &&
+                        attributes[attrName].array instanceof Float32Array) {
+                        const { array, range } = float32ToInt16(attributes[attrName].array, attributes[attrName].min, attributes[attrName].max);
+                        attributes[attrName].array = array;
+                        primitive.compressed_int16_params[attrName] = range;
+                    }
+                }
+            });
+        }
+    }
+
+    _compressPNTSFloat32ToInt16(pnts) {
+        if (!pnts || !pnts.pnts) {
+            return;
+        }
+        const pntsData = pnts.pnts;
+        pnts.compressed_int16_params = {};
+        for (const attrName in pntsData) {
+            if (NEED_COMPRESSED_ATTR[attrName] &&
+                pntsData[attrName].array &&
+                pntsData[attrName].array instanceof Float32Array) {
+                const { array, range } = float32ToInt16(pntsData[attrName].array, pntsData[attrName].min, pntsData[attrName].max);
+                pntsData[attrName].array = array;
+                pnts.compressed_int16_params[attrName] = range;
+            }
         }
     }
 
@@ -916,4 +972,36 @@ function getNodeMatrix(out, matrices) {
         mat4.multiply(nodeMatrix, matrices[i], nodeMatrix);
     }
     return nodeMatrix;
+}
+
+function float32ToInt16(inputArray, min, max) {
+    let minElement, maxElement;
+    if (min && max) {//存在min,max则直接使用
+        minElement = Math.min(...min);
+        maxElement = Math.max(...max);
+    } else {
+        const { min, max } = findMinMax(inputArray);
+        minElement = min;
+        maxElement = max;
+    }
+    const output = new Int16Array(inputArray.length);
+    for(let i = 0; i < inputArray.length; i++) {
+        const normalizeValue = (inputArray[i] - minElement) * 2 / (maxElement - minElement) -1;
+        const s = Math.max(-1, Math.min(1, normalizeValue)); //[-1, 1]
+        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return  { array: output, range: [minElement, maxElement] };
+}
+
+function findMinMax(array) {
+    let min = Infinity, max = -Infinity;
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] > max) {
+            max = array[i];
+        }
+        if (array[i] < min) {
+            min = array[i];
+        }
+    }
+    return { min , max };
 }

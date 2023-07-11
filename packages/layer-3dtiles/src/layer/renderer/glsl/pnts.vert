@@ -58,7 +58,7 @@ varying vec4 vColor;
         return max(dot(-lightDir, normal), 0.0);
     }
 #endif
-
+#include <draco_decode_vert>
 void main() {
     #if defined(HAS_RGB)
         vColor = vec4(RGB / 255.0, 1.0) * pointOpacity;
@@ -80,7 +80,7 @@ void main() {
     #endif
 
     #ifdef HAS_POSITION
-        vec3 localPos = POSITION;
+        vec3 localPos = decode_getPosition(POSITION);
     #endif
 
     #ifdef HAS_NORMAL

@@ -168,13 +168,13 @@ class Mesh {
             texcoord = geometry.data[geometry.desc.uv0Attribute],
             normal = geometry.data[geometry.desc.normalAttribute];
         if (position && position.quantization) {
-            this._defines['HAS_DECODE_POSITION'] = 1;
+            this._defines['HAS_DRACO_POSITION'] = 1;
         }
         if (texcoord && texcoord.quantization) {
-            this._defines['HAS_DECODE_TEXCOORD'] = 1;
+            this._defines['HAS_DRACO_TEXCOORD'] = 1;
         }
         if (normal && normal.quantization) {
-            this._defines['HAS_DECODE_NORMAL'] = 1;
+            this._defines['HAS_DRACO_NORMAL'] = 1;
         }
         return this._defines;
     }

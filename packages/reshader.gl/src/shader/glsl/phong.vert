@@ -98,11 +98,7 @@ void main()
             toTangentFrame(aTangent, Normal, t);
             vTangent = vec4(localNormalMatrix * t, aTangent.w);
         #else
-            #ifdef HAS_DECODE_NORMAL
-                Normal = getNormal(aNormal);
-            #else
-                Normal = aNormal;
-            #endif
+            Normal = decode_getNormal(aNormal);
         #endif
         vec3 localNormal = appendMorphNormal(Normal);
         vNormal = normalize(localNormalMatrix * localNormal);
@@ -117,11 +113,11 @@ void main()
         gl_Position = jitteredProjection * modelViewMatrix * localPositionMatrix * localPosition;
     #endif
     #ifdef HAS_MAP
-        vec2 decodedTexCoord = getTexcoord(aTexCoord);
+        vec2 decodedTexCoord = decode_getTexcoord(aTexCoord);
         vTexCoord = decodedTexCoord * uvScale + uvOffset;
     #endif
     #ifdef HAS_AO_MAP
-        vec2 decodedTexCoord1 = getTexcoord(aTexCoord1);
+        vec2 decodedTexCoord1 = decode_getTexcoord(aTexCoord1);
         vTexCoord1 = decodedTexCoord1 * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY

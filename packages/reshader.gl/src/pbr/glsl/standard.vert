@@ -139,7 +139,7 @@ vec2 rotateUV(vec2 uv, float rotation) {
 }
 #if defined(HAS_MAP)
   vec2 transformTexcoord(vec2 uv) {
-    vec2 decodedTexCoord = getTexcoord(uv);
+    vec2 decodedTexCoord = decode_getTexcoord(uv);
     #ifdef HAS_RANDOM_TEX
         vec2 origin = uvOrigin;
         vec2 texCoord = decodedTexCoord * uvScale + uvOffset;
@@ -224,11 +224,7 @@ void main() {
                 // vViewTangent = vec4(modelViewNormalMatrix * localTangent.xyz, localTangent.w);
                 vModelTangent = vec4(normalMatrix * t, aTangent.w);
             #else
-                #ifdef HAS_DECODE_NORMAL
-                    Normal = getNormal(aNormal);
-                #else
-                    Normal = aNormal;
-                #endif
+                Normal = decode_getNormal(aNormal);
             #endif
             vec3 localNormal = Normal;
             vModelNormal = normalMatrix * localNormal;

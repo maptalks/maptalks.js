@@ -103,7 +103,7 @@ void main()
     jitteredProjection[2].xy += halton.xy / outSize.xy;
     gl_Position = jitteredProjection * modelViewMatrix * localPositionMatrix * localPosition;
     #ifdef HAS_MAP
-        vec2 TexCoord = getTexcoord(aTexCoord);
+        vec2 TexCoord = decode_getTexcoord(aTexCoord);
         vTexCoord = TexCoord * uvScale + uvOffset;
     #endif
     #ifdef HAS_EXTRUSION_OPACITY
