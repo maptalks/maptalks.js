@@ -109,7 +109,7 @@ Map.include(/** @lends Map.prototype */ {
             }
             //fire layer identify empty event
             if ((!result || !result.length)) {
-                layer.fire('identifyempty', opts.domEvent);
+                layer.fire('identifyempty', opts);
             }
             return result;
         });
