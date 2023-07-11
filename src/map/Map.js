@@ -144,7 +144,7 @@ const options = {
     'preventWheelScroll': true,
     'preventTouch': true,
     //for plugin layer,such as threelayer
-    '_supportPluginEvent': true
+    'supportPluginEvent': true
 };
 
 /**

@@ -176,8 +176,8 @@ const fireGeoEvent = (geometry, domEvent, type) => {
     }
     //plugin layer,such as threelayer
     const layer = geometry.getLayer();
-    if (layer && layer._fireGeoEvent) {
-        return layer._fireGeoEvent(geometry, domEvent, type);
+    if (layer && layer.fireGeoEvent) {
+        return layer.fireGeoEvent(geometry, domEvent, type);
     }
     return null;
 };

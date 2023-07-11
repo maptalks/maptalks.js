@@ -107,9 +107,9 @@ Map.include(/** @lends Map.prototype */ {
             } else {
                 result = [];
             }
-            //for plugin layer,such as threelayer
-            if ((!result || !result.length) && layer._emptyIdentify) {
-                layer._emptyIdentify(opts.domEvent);
+            //fire layer identify empty event
+            if ((!result || !result.length)) {
+                layer.fire('identifyempty', opts.domEvent);
             }
             return result;
         });
