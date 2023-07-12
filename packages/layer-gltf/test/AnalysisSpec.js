@@ -628,17 +628,17 @@ describe('add analysis', () => {
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
     });
 
     it('raycaster\'s test method', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
         function getAllMeshes() {
             let meshes = [];
             const markers = gltflayer.getGeometries();
@@ -696,9 +696,9 @@ describe('add analysis', () => {
             }, 100);
         });
         gllayer.addTo(map);
-        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
-        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 80, scaleY: 80, scaleZ: 80 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(-0.002, -0.002), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0.001, 0), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
+        new maptalks.GLTFGeometry(center.add(0, 0.001), { symbol: { url: 'cube', scaleX: 4 / 3, scaleY: 4 / 3, scaleZ: 4 / 3 }}).addTo(gltflayer);
     });
 
     it('add measure tool', (done) => {

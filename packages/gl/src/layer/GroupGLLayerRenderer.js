@@ -1202,6 +1202,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;
         if (!config || !config.enable) {
+            if (this.isEnableWeather()) {
+                throw new Error('you must enable the post process to turn on weather');
+            }
             return;
         }
         this.layer.fire('postprocessstart');

@@ -78,7 +78,12 @@ export const simpleModels = {
             {
                 nodes : [
                     {
-                        mesh : 0
+                        mesh : 0,
+                        scale: [
+                            60,
+                            60,
+                            60
+                        ]
                     }
                 ]
             }
@@ -106,7 +111,12 @@ export const simpleModels = {
             {
                 nodes : [
                     {
-                        mesh : 0
+                        mesh : 0,
+                        scale: [
+                            60,
+                            60,
+                            60
+                        ]
                     }
                 ]
             }
@@ -134,7 +144,12 @@ export const simpleModels = {
             {
                 nodes : [
                     {
-                        mesh : 0
+                        mesh : 0,
+                        scale: [
+                            60,
+                            60,
+                            60
+                        ]
                     }
                 ]
             }

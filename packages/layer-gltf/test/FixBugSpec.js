@@ -583,7 +583,7 @@ describe('bug', () => {
         }).addTo(gltflayer);
         marker.on('load', () => {
             const meshes = marker.getMeshes();
-            expect(meshes[0].localTransform).to.be.eql([0.13082664547695053, 0, 0, 0, 0, 8.010821630629926e-18, 0.1707843034631676, 0, 0, -0.13082664546557213, 1.0457522529038923e-17, 0, 0, 0, 0, 1]);
+            expect(meshes[0].localTransform).to.be.eql([7.849598728617032, 0, 0, 0, 0, 4.806492978377955e-16, 10.247058207790056, 0, 0, -7.849598727934327, 6.274513517423353e-16, 0, 0, 0, 0, 1]);
             done();
         });
     });
@@ -819,7 +819,7 @@ describe('bug', () => {
         marker.on('createscene-debug', () => {
             const meshes = marker.getMeshes();
             const localTransform = meshes[0].localTransform;
-            expect(localTransform).to.be.eql([0.026165329095390107, 0, 0, 0, 0, 1.6021643261259848e-18, 0.034156860692633524, 0, 0, -0.026165329093114423, 2.0915045058077844e-18, 0, 0, 0, 0, 1]);
+            expect(localTransform).to.be.eql([1.5699197457234064, 0, 0, 0, 0, 9.61298595675591e-17, 2.0494116415580113, 0, 0, -1.5699197455868654, 1.2549027034846707e-16, 0, 0, 0, 0, 1]);
             done();
         });
     });

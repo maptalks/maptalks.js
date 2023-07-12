@@ -284,9 +284,9 @@ describe('MultiGLTFMarker', () => {
         const importData = initInstanceData0();
         const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
             symbol: {
-                scaleX: 20,
-                scaleY: 20,
-                scaleZ: 20
+                scaleX: 1 / 3,
+                scaleY: 1 / 3,
+                scaleZ: 1 / 3
             }
         });
         gltflayer.addGeometry(multigltfmarker);

@@ -83,7 +83,7 @@ describe('weather tests', () => {
         }
     };
 
-    it('enable fog', done => {
+    it('enable and disable fog', done => {
         const url = "models/Duck/Duck.glb";
         const gltfLayer = new maptalks.GLTFLayer("gltf");
         const position = map.getCenter();
@@ -102,13 +102,26 @@ describe('weather tests', () => {
                 const pixel2 = pickPixel(map, map.width / 2, 170 , 1, 1);
                 expect(pixelMatch([169, 169, 169, 163], pixel1)).to.be.eql(true);
                 expect(pixelMatch([244, 235, 121, 255], pixel2)).to.be.eql(true);
-                done();
+                disableFog();
             }, 100);
         });
         gltfLayer.addGeometry(gltfMarker);
-        new maptalks.GroupGLLayer("gl", [gltfLayer], {
+        const gllayer = new maptalks.GroupGLLayer("gl", [gltfLayer], {
             sceneConfig
         }).addTo(map);
+        function disableFog() {
+            const sceneConfig = gllayer.getSceneConfig();
+            const config = JSON.parse(JSON.stringify(sceneConfig));
+            config.weather.fog.enable = false;
+            gllayer.setSceneConfig(config);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                const pixel2 = pickPixel(map, map.width / 2, 170 , 1, 1);
+                expect(pixelMatch([77, 77, 77, 163], pixel1)).to.be.eql(true);
+                expect(pixelMatch([255, 244, 35, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        }
     });
 
     it('enable snow', done => {

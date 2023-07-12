@@ -116,7 +116,7 @@ class WeatherPainter {
         const ratio = Math.pow(2, DEFAULT_ZOOM - zoom);
         const config = this._layer.getWeatherConfig();
         const fogConfig = config.fog;
-        if (!fogConfig) {
+        if (!fogConfig || !fogConfig.enable) {
             return null;
         }
         const start = fogConfig.start || 0.1, end = fogConfig.end || 100;

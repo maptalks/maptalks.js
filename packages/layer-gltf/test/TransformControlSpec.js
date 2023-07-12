@@ -15,9 +15,9 @@ describe('transform-control', () => {
             {
                 id:'gltfmarker1',
                 symbol: {
-                    scaleX: 40,
-                    scaleY: 40,
-                    scaleZ: 40
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
                 }
             }
         ).addTo(gltflayer);
@@ -48,9 +48,9 @@ describe('transform-control', () => {
         const gltflayer = new maptalks.GLTFLayer('picked').addTo(map);
         const gltfmarker = new maptalks.GLTFGeometry(center, {
             symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
             }
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl();
@@ -68,9 +68,9 @@ describe('transform-control', () => {
         const gltflayer = new maptalks.GLTFLayer('transform').addTo(map);
         new maptalks.GLTFGeometry(center, {
             symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
             }
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl();
@@ -104,9 +104,9 @@ describe('transform-control', () => {
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
         new maptalks.GLTFGeometry(center, {
             symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
             }
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl();
@@ -146,9 +146,9 @@ describe('transform-control', () => {
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
         const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
             }
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl();
@@ -209,9 +209,9 @@ describe('transform-control', () => {
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
         const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
-                scaleX: 40,
-                scaleY: 40,
-                scaleZ: 40
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
             }
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl();
@@ -252,7 +252,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([43.49628707049042, 43.49628707049042, 43.49628707049042]);
+                expect(scale).to.be.eql([0.7240783990069692, 0.7240783990069692, 0.7240783990069692]);
                 done();
             }, 100);
         }
@@ -274,9 +274,9 @@ describe('transform-control', () => {
             {
                 id:'gltfmarker',
                 symbol: {
-                    scaleX: 40,
-                    scaleY: 40,
-                    scaleZ: 40
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
                 }
             }
         ).addTo(gltflayer);
