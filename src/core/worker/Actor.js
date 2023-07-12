@@ -50,7 +50,8 @@ export default class Actor {
     constructor(workerKey) {
         this._delayMessages = [];
         this.initializing = false;
-        if (workerPoolHasCreated() && ACTOR_CREATED_LIST.indexOf(workerKey) === -1) {
+        const hasCreated = ACTOR_CREATED_LIST.indexOf(workerKey) > -1;
+        if (workerPoolHasCreated() && !hasCreated) {
             this.initializing = true;
             createAdapter(workerKey, () => {
                 this.initializing = false;
@@ -68,7 +69,9 @@ export default class Actor {
         this.workers.forEach(w => {
             w.addEventListener('message', this.receiveFn, false);
         });
-        ACTOR_CREATED_LIST.push(workerKey);
+        if (!hasCreated) {
+            ACTOR_CREATED_LIST.push(workerKey);
+        }
     }
 
     created() {
