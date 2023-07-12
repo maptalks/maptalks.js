@@ -354,6 +354,141 @@ describe('3dtiles layer', () => {
         layer.addTo(map);
     });
 
+    it('service can be invisible', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            visible: 0
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        let loaded = false;
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            loaded = true;
+        });
+        layer.addTo(map);
+        setTimeout(() => {
+            assert(loaded === false);
+            done();
+        }, 300);
+    });
+
+    it('can update service heightOffset', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            opacity: 1
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.updateService(0, { heightOffset: 100 });
+            } else if (count === 3) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 - 53, canvas.height / 2 + 100, 1, 1);
+                    assert(color.data[3] === 255);
+                    done();
+                }, 10);
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('can update remove/add service for multiple times', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            opacity: 1,
+            visible: 1
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.removeService(0);
+                layer.addService(service);
+                layer.removeService(0);
+                layer.addService(service);
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                assert(color.data[3] === 255);
+                layer.hideService(0);
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 0);
+                    done();
+                }, 100);
+            }
+        });
+        layer.addTo(map);
+    });
+
+    it('can update service coordOffset', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            opacity: 1
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('canvasisdirty', () => {
+            count++;
+            if (count === 2) {
+                layer.updateService(0, { coordOffset: [0.0005, 0] });
+            } else if (count === 3) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 + 56, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 255);
+                    done();
+                }, 10);
+            }
+        });
+        layer.addTo(map);
+    });
+
     it('can update service opacity', done => {
         const resPath = 'Cesium3DTiles/Batched/BatchedWithBatchTable';
         const service = {

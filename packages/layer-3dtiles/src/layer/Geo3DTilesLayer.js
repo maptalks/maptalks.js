@@ -88,18 +88,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _initRoots() {
         const urls = this.options.services.map(service => service.url);
-        let maxRootId = 0;
-        if (this._roots) {
-            for (let i = 0; i < this._roots.length; i++) {
-                const root = this._roots[i];
-                if (root && root._rootIdx > maxRootId) {
-                    maxRootId = root._rootIdx;
-                }
+        this._rootMap = this._rootMap || {};
+        this._roots = this._roots || [];
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            let index = this._rootMap[url];
+            if (index === undefined) {
+                index = this._rootMap[url] = this._roots.length;
             }
+            this._roots[index] = createRootTile(url, index, this.options.services[i]);
         }
-        this._roots = urls.map((url, idx) => {
-            return this._root && this._roots[idx] || createRootTile(url, maxRootId++);
-        });
         this.fire('rootready', { roots : this._roots.slice(0) });
     }
 
@@ -140,8 +138,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             extend(services[idx], info)
         }
         if (!isNil(info.visible)) {
-            if (this._roots && this._roots[idx]) {
-                this._roots[idx].visible = info.visible;
+            const url = services[idx].url;
+            const rootIdx = this._rootMap[url];
+            if (this._roots && this._roots[rootIdx]) {
+                this._roots[rootIdx].visible = info.visible;
             }
         }
         const renderer = this.getRenderer();
@@ -154,11 +154,15 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     removeService(idx) {
         const services = this.options.services;
         if (services && services[idx]) {
+            const url = services[idx].url;
+            const rootIdx = this._rootMap[url];
+            if (this._roots[rootIdx]) {
+                this._roots[rootIdx] = null;
+            }
+            delete this._rootMap[url];
             services.splice(idx, 1);
         }
-        if (this._roots && this._roots[idx]) {
-            this._roots.splice(idx, 1);
-        }
+
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.setToRedraw();
@@ -259,7 +263,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const tiles = [];
         for (let i = 0; i < this._roots.length; i++) {
             const root = this._roots[i];
-            if (!root.visible) {
+            if (!root || !root.visible) {
                 continue;
             }
             let firstContentLevel = Infinity;
@@ -423,18 +427,19 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (node.content && !node.content.url && node.content.uri) {
             node.content.url = node.content.uri;
         }
-        // boundingVolume上应用heightOffset，解决设置heightOffset后，visible计算不正确的问题
-
-        this._offsetBoundingVolume(node)
-
     }
 
+    _getNodeService(rootIdx) {
+        return this._roots[rootIdx].service;
+    }
+
+    // // boundingVolume上应用heightOffset，解决设置heightOffset后，visible计算不正确的问题
     _offsetBoundingVolume(node) {
         const boundingVolume = node.boundingVolume;
-        if (!boundingVolume || boundingVolume._centerTransformed) {
+        if (!boundingVolume || boundingVolume._centerTransformed && !this._offsetChanged(node)) {
             return;
         }
-        const service = this.options.services[node._rootIdx];
+        const service = this._getNodeService(node._rootIdx);
         const heightOffset = service.heightOffset || 0;
 
         // if (node.boundingVolume && node.boundingVolume.box) {
@@ -447,19 +452,25 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (!Array.isArray(coordOffset)) {
             throw new Error('service.coordOffset must be an array');
         }
-        if (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET)) {
+        if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
             return;
         }
         const { region, box, sphere } = boundingVolume;
+        boundingVolume.coordOffset = [coordOffset[0], coordOffset[1]];
+        boundingVolume.heightOffset = heightOffset;
         if (region) {
-            const westSouth = this._offsetCenter([toDegree(region[0]), toDegree(region[1])]);
+            if (!boundingVolume.originalVolume) {
+                boundingVolume.originalVolume = region.slice(0);
+            }
+            const volume = boundingVolume.originalVolume;
+            const westSouth = this._offsetCenter([toDegree(volume[0]), toDegree(volume[1])]);
             region[0] = toRadian(westSouth.x + coordOffset[0]);
             region[1] = toRadian(westSouth.y + coordOffset[1]);
-            const eastNorth = this._offsetCenter([toDegree(region[2]), toDegree(region[3])]);
+            const eastNorth = this._offsetCenter([toDegree(volume[2]), toDegree(volume[3])]);
             region[2] = toRadian(eastNorth.x + coordOffset[0]);
             region[3] = toRadian(eastNorth.y + coordOffset[1]);
-            region[4] += heightOffset + (coordOffset[2] || 0);
-            region[5] += heightOffset + (coordOffset[2] || 0);
+            region[4] = volume[4] + heightOffset + (coordOffset[2] || 0);
+            region[5] = volume[5] + heightOffset + (coordOffset[2] || 0);
         } else if (box || sphere) {
             // const volume = box || sphere;
             // const cart3 = vec3.transformMat4(TEMP_VEC3_0, volume, node.matrix);
@@ -469,8 +480,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // radianToCartesian3(cart3, toRadian(center[0]), toRadian(center[1]), center[2]);
             // vec3.transformMat4(volume, cart3, matInvert);
 
+            if (!boundingVolume.originalVolume) {
+                boundingVolume.originalVolume = (box || sphere).slice(0);
+            }
             const volume = box || sphere;
-            const cart3 = vec3.transformMat4(TEMP_VEC3_0, volume, node.matrix);
+            const originalVolume = boundingVolume.originalVolume;
+            const cart3 = vec3.transformMat4(TEMP_VEC3_0, originalVolume, node.matrix);
             const center = cartesian3ToDegree(TEMP_VEC3_1, cart3);
             const offsetCenter = this._offsetCenter([center[0] + coordOffset[0], center[1] + coordOffset[1]]);
             center[0] = offsetCenter.x;
@@ -506,6 +521,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // }
         }
         boundingVolume._centerTransformed =  true;
+    }
+
+    _offsetChanged(node) {
+        const boundingVolume = node.boundingVolume;
+        const service = this._getNodeService(node._rootIdx);
+        const heightOffset = service.heightOffset || 0;
+        const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
+        return boundingVolume.coordOffset[0] !== coordOffset[0] || boundingVolume.coordOffset[1] !== coordOffset[1] || boundingVolume.heightOffset !== heightOffset;
     }
 
     // _convertAxis(cartCenter, axis, pcenter, centerHeight, hScale) {
@@ -550,7 +573,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             console.warn('invalid tileset at : ' + url);
             return;
         }
-        const service = this.options.services[parent._rootIdx];
+        const service = this._getNodeService(parent._rootIdx);
         const axisUp = (tileset.asset && tileset.asset.gltfUpAxis || parent && parent._upAxis || service.upAxis || 'Y').toUpperCase();
         tileset.root.baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
         const isRealspace = url.indexOf("realspace/") > -1;
@@ -583,7 +606,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                     parent.matrix = mat4.multiply([], parent.parent.matrix, transform);
                 }
             }
-            this._offsetBoundingVolume(parent);
             // parent.matrix = tileset.root.transform || parent.matrix;
             // delete parent._topBottom;
             // delete this._nodeBoxes[parent.id];
@@ -613,6 +635,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (node._level === 0 || node._empty) {
             return 1;
         }
+        this._offsetBoundingVolume(node);
         //reset node status
         // node._error = Infinity;
         if (!this._isTileInFrustum(node, maxExtent, projectionView)) {
@@ -624,7 +647,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (node.geometricError === 0) {
             return 1;
         }
-        let maximumScreenSpaceError = this.options.services[node._rootIdx]['maximumScreenSpaceError'];
+        let maximumScreenSpaceError = this._getNodeService(node._rootIdx)['maximumScreenSpaceError'];
         if (maximumScreenSpaceError === undefined || maximumScreenSpaceError === null) {
             maximumScreenSpaceError = DEFAULT_MAXIMUMSCREENSPACEERROR;
         }
@@ -778,14 +801,14 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             const map = this.getMap();
             const res = map.getGLRes();
             const point = map.coordToPointAtRes(center, res);
-            point['_sub'](offset);
+            point['_add'](offset);
             return map.pointAtResToCoord(point, res);
         }
         return center;
     }
 
     _getRootMaxExtent(i) {
-        const extent = this.options.services[i].maxExtent;
+        const extent = this._getNodeService(i).maxExtent;
         if (!extent) {
             return null;
         }
@@ -1039,10 +1062,11 @@ function computeRegionDistanceToCamera(node, cameraCartesian3, cameraLocation) {
     return node._tileRegion.distanceToCamera(cameraCartesian3, cameraLocation);
 }
 
-function createRootTile(url, idx) {
+function createRootTile(url, idx, service) {
     url = getAbsoluteURL(url);
     const root = {
-        visible: 1,
+        service,
+        visible: isNil(service.visible) ? 1: service.visible,
         baseUrl : url.substring(0, url.lastIndexOf('/')) + '/',
         content: {
             url

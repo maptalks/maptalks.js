@@ -292,8 +292,6 @@ describe('render specs', () => {
                 ]
             });
             runner(() => {
-                // 因为coordOffset增加了0.001,所以坐标变了
-                assert(map.getCenter().x.toFixed(3) === '108.960');
                 done();
             }, layer, { path: `./integration/expected/${resPath}-offset/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
         });
@@ -1567,7 +1565,7 @@ describe('render specs', () => {
     });
 
     context('offset specs', () => {
-        const offset = [8, -4];
+        const offset = [1, -1];
         it('offset/BatchedWithTransformBox', done => {
             const resPath = 'Cesium3DTiles/Batched/BatchedWithTransformBox';
             const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -1580,7 +1578,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758749, 40.04463327 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209432, 40.04253061 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformBox/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1597,7 +1595,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61758747, 40.04463327 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209431, 40.04253061 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformRegion/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1614,7 +1612,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.6175875, 40.04463327 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209434, 40.04253061 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
