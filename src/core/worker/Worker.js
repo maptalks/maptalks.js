@@ -1,5 +1,5 @@
 import { isFunction } from '../util/common.js';
-import { getGlobalWorkerPool } from './WorkerPool.js';
+import { getWorkerPool } from './CoreWorkers.js';
 
 let adapters = {};
 /**
@@ -145,6 +145,7 @@ export function getWorkerSourcePath() {
     }
     return url;
 }
+
 // Dynamic Create Adapter
 export function createAdapter(key, cb) {
     if (!adapters[key]) {
@@ -159,7 +160,10 @@ export function createAdapter(key, cb) {
         }
     }
     adapter = `(${adapter})`;
-    const workerPool = getGlobalWorkerPool();
+    const workerPool = getWorkerPool();
+    if (!workerPool) {
+        return;
+    }
     const workers = workerPool.workers || [];
     let count = 0;
     const messageCB = (msg) => {

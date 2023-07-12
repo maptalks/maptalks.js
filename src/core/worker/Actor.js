@@ -1,10 +1,12 @@
-import { getGlobalWorkerPool, workerPoolHasCreated } from './WorkerPool';
+import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
+import { workerPoolHasCreated } from './CoreWorkers';
 
 let dedicatedWorker = 0;
 
 const EMPTY_BUFFERS = [];
+const ACTOR_CREATED_LIST = [];
 
 /**
  * An actor to exchange data from main-thread to workers
@@ -48,7 +50,7 @@ export default class Actor {
     constructor(workerKey) {
         this._delayMessages = [];
         this.initializing = false;
-        if (workerPoolHasCreated()) {
+        if (workerPoolHasCreated() && ACTOR_CREATED_LIST.indexOf(workerKey) === -1) {
             this.initializing = true;
             createAdapter(workerKey, () => {
                 this.initializing = false;
@@ -66,6 +68,7 @@ export default class Actor {
         this.workers.forEach(w => {
             w.addEventListener('message', this.receiveFn, false);
         });
+        ACTOR_CREATED_LIST.push(workerKey);
     }
 
     created() {
