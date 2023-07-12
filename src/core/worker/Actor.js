@@ -1,5 +1,6 @@
-import { getGlobalWorkerPool } from './WorkerPool';
+import { getGlobalWorkerPool, workerPoolHasCreated } from './WorkerPool';
 import { UID } from '../util';
+import { createAdapter } from './Worker';
 
 let dedicatedWorker = 0;
 
@@ -45,6 +46,15 @@ const EMPTY_BUFFERS = [];
 export default class Actor {
 
     constructor(workerKey) {
+        this._delayMessages = [];
+        this.initializing = false;
+        if (workerPoolHasCreated()) {
+            this.initializing = true;
+            createAdapter(workerKey, () => {
+                this.initializing = false;
+                this.created();
+            });
+        }
         this.workerKey = workerKey;
         this.workerPool = getGlobalWorkerPool();
         this.currentActor = 0;
@@ -56,6 +66,15 @@ export default class Actor {
         this.workers.forEach(w => {
             w.addEventListener('message', this.receiveFn, false);
         });
+    }
+
+    created() {
+        // handler delay messages
+        this._delayMessages.forEach(message => {
+            const { command, data, buffers, cb, workerId } = message;
+            this[command](data, buffers, cb, workerId);
+        });
+        this._delayMessages = [];
     }
 
     /**
@@ -73,7 +92,11 @@ export default class Actor {
      * @param {Function} cb - callback function when received message from worker thread
      */
     broadcast(data, buffers, cb) {
-        cb = cb || function () {};
+        if (this.initializing) {
+            this._delayMessages.push({ command: 'broadcast', data, buffers, cb });
+            return this;
+        }
+        cb = cb || function () { };
         asyncAll(this.workers, (worker, done) => {
             this.send(data, buffers, done, worker.id);
         }, cb);
@@ -89,10 +112,14 @@ export default class Actor {
      * @param {Number} [workerId=undefined] - Optional, a particular worker id to which to send this message.
      */
     send(data, buffers, cb, workerId) {
+        if (this.initializing) {
+            this._delayMessages.push({ command: 'send', data, buffers, cb, workerId });
+            return this;
+        }
         const id = cb ? `${this.actorId}:${this.callbackID++}` : null;
         if (cb) this.callbacks[id] = cb;
         this.post({
-            data : data,
+            data: data,
             callback: String(id)
         }, buffers, workerId);
         return this;
@@ -111,10 +138,10 @@ export default class Actor {
         if (data.type === '<request>') {
             if (this.actorId === data.actorId) {
                 //request from worker to main thread
-                this[data.command](data.params,  (err, cbData, buffers) => {
+                this[data.command](data.params, (err, cbData, buffers) => {
                     const message = {
-                        type : '<response>',
-                        callback : data.callback
+                        type: '<response>',
+                        callback: data.callback
                     };
                     if (err) {
                         message.error = err.message;

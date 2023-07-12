@@ -109,6 +109,10 @@ export function getGlobalWorkerPool() {
     return globalWorkerPool;
 }
 
+export function workerPoolHasCreated() {
+    return !!globalWorkerPool;
+}
+
 function frameLoop() {
     getGlobalWorkerPool().commit();
     requestAnimFrame(frameLoop);
