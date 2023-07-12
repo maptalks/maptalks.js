@@ -307,6 +307,14 @@ class VectorTileLayer extends maptalks.TileLayer {
         return this._totalPolygonOffset;
     }
 
+    getRenderedFeatures() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return [];
+        }
+        return renderer.getRenderedFeatures();
+    }
+
     outlineAll() {
         const renderer = this.getRenderer();
         if (!renderer) {

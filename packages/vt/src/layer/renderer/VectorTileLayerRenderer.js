@@ -532,6 +532,25 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return getCentiMeterScale(res, map);
     }
 
+    getRenderedFeatures() {
+        const renderedFeatures = [];
+        const keys = this.tileCache.keys();
+        for (let i = 0; i < keys.length; i++) {
+            const cache = this.tileCache.get(keys[i]);
+            if (!cache || !cache.info || !cache.image) {
+                continue;
+            }
+            const { info, image } = cache;
+            const features = findFeatures(image);
+            renderedFeatures.push({
+                tile: { id: info.id, x: info.x, y: info.y, z: info.z, url: info.url },
+                current: !!this.tilesInView[info.id],
+                features
+            });
+        }
+        return renderedFeatures;
+    }
+
     _onReceiveMVTData(url, err, data) {
         if (!this._requestingMVT[url]) {
             return;
@@ -2008,4 +2027,30 @@ function getTileViewport(tileSize) {
         width: tileSize * 2,
         height: tileSize * 2
     };
+}
+
+function findFeatures(image) {
+    if (!image.cache) {
+        return [];
+    }
+    for (const p in image.cache) {
+        const data = image.cache[p];
+        if (!data.geometry) {
+            continue;
+        }
+        for (let i = 0; i < data.geometry.length; i++) {
+            const geometry = data.geometry[i] && data.geometry[i].geometry;
+            if (geometry && geometry.properties && geometry.properties.features) {
+                const empty = geometry.properties.features.empty;
+                delete geometry.properties.features.empty;
+                const features = Object.values(geometry.properties.features);
+                if (empty !== undefined) {
+                    geometry.properties.features.empty = empty;
+                }
+                return features;
+            }
+        }
+
+    }
+    return [];
 }
