@@ -112,7 +112,8 @@ const EVENTS =
      * @property {Point} viewPoint       - view point of the event
      * @property {Event} domEvent                 - dom event
      */
-    'touchend';
+    'touchend ' +
+    'mouseout';
 /**
  * mouseenter event for geometry
  * @event Geometry#mouseenter
@@ -150,6 +151,35 @@ const EVENTS =
 const MOUSEEVENT_ASSOCIATION_TABLE = {
     'mousemove': ['mousemove', 'mouseover', 'mouseout', 'mouseenter'],
     'touchend': ['touchend', 'click']
+};
+
+/**
+ * geo validate
+ *
+ */
+const isGeo = (geometry) => {
+    return geometry && geometry.getLayer && geometry.on && geometry.fire;
+};
+
+const getGeoId = (geometry) => {
+    if (geometry._getInternalId) {
+        return geometry._getInternalId();
+    } else if (geometry.getId) {
+        return geometry.getId();
+    }
+    return null;
+};
+
+const fireGeoEvent = (geometry, domEvent, type) => {
+    if (geometry._onEvent) {
+        return geometry._onEvent(domEvent, type);
+    }
+    //plugin layer,such as threelayer
+    const layer = geometry.getLayer();
+    if (layer && layer.fireGeoEvent) {
+        return layer.fireGeoEvent(geometry, domEvent, type);
+    }
+    return null;
 };
 
 class MapGeometryEventsHandler extends Handler {
@@ -263,7 +293,8 @@ class MapGeometryEventsHandler extends Handler {
             'onlyVisible': map.options['onlyVisibleGeometryEvents'],
             containerPoint,
             layers,
-            eventTypes
+            eventTypes,
+            domEvent
         };
         const callback = fireGeometryEvent.bind(this);
 
@@ -280,56 +311,80 @@ class MapGeometryEventsHandler extends Handler {
 
         function fireGeometryEvent(geometries) {
             let propagation = true;
-            if (eventType === 'mousemove') {
+
+            const getOldGeos = () => {
+                const geos = this._prevOverGeos && this._prevOverGeos.geos;
+                return geos || [];
+            };
+
+            const oldGeosMouseout = (oldTargets = [], geoMap = {}) => {
+                if (oldTargets && oldTargets.length > 0) {
+                    for (let i = oldTargets.length - 1; i >= 0; i--) {
+                        const oldTarget = oldTargets[i];
+                        if (!isGeo(oldTarget)) {
+                            continue;
+                        }
+                        // const oldTargetId = oldTargets[i]._getInternalId();
+                        const oldTargetId = getGeoId(oldTargets[i]);
+                        /**
+                         * 鼠标经过的新位置中不包含老的目标geometry
+                         */
+                        if (!geoMap[oldTargetId]) {
+                            // propagation = oldTarget._onEvent(domEvent, 'mouseout');
+                            propagation = fireGeoEvent(oldTarget, domEvent, 'mouseout');
+                        }
+                    }
+                }
+            };
+            //鼠标移出地图容器，所有的老的geos触发mouseout,这个属于原来没有做好的地方,现在加上
+            if (eventType === 'mouseout') {
+                const oldTargets = getOldGeos();
+                this._prevOverGeos = {
+                    'geos': [],
+                    'geomap': {}
+                };
+                oldGeosMouseout(oldTargets, {});
+            } else if (eventType === 'mousemove') {
                 const geoMap = {};
                 if (geometries.length > 0) {
                     for (let i = geometries.length - 1; i >= 0; i--) {
                         const geo = geometries[i];
-                        if (!(geo instanceof Geometry)) {
+                        if (!isGeo(geo)) {
                             continue;
                         }
-                        const iid = geo._getInternalId();
+                        const iid = getGeoId(geo);
                         geoMap[iid] = geo;
-                        geo._onEvent(domEvent);
+                        // geo._onEvent(domEvent);
+                        fireGeoEvent(geo, domEvent);
                         if (!this._prevOverGeos || !this._prevOverGeos.geomap[iid]) {
-                            geo._onEvent(domEvent, 'mouseenter');
+                            // geo._onEvent(domEvent, 'mouseenter');
+                            fireGeoEvent(geo, domEvent, 'mouseenter');
                         }
-                        propagation = geo._onEvent(domEvent, 'mouseover');
+                        // propagation = geo._onEvent(domEvent, 'mouseover');
+                        propagation = fireGeoEvent(geo, domEvent, 'mouseover');
                     }
                 }
 
                 map._setPriorityCursor(geometryCursorStyle);
 
-                const oldTargets = this._prevOverGeos && this._prevOverGeos.geos;
+                const oldTargets = getOldGeos();
                 this._prevOverGeos = {
                     'geos': geometries,
                     'geomap': geoMap
                 };
-                if (oldTargets && oldTargets.length > 0) {
-                    for (let i = oldTargets.length - 1; i >= 0; i--) {
-                        const oldTarget = oldTargets[i];
-                        if (!(oldTarget instanceof Geometry)) {
-                            continue;
-                        }
-                        const oldTargetId = oldTargets[i]._getInternalId();
-                        /**
-                         * 鼠标经过的新位置中不包含老的目标geometry
-                         */
-                        if (!geoMap[oldTargetId]) {
-                            propagation = oldTarget._onEvent(domEvent, 'mouseout');
-                        }
-                    }
-                }
+                oldGeosMouseout(oldTargets, geoMap);
 
             } else {
                 if (!geometries || !geometries.length) { return; }
                 for (let i = geometries.length - 1; i >= 0; i--) {
-                    if (!(geometries[i] instanceof Geometry)) {
+                    if (!isGeo(geometries[i])) {
                         continue;
                     }
-                    propagation = geometries[i]._onEvent(domEvent);
+                    // propagation = geometries[i]._onEvent(domEvent);
+                    propagation = fireGeoEvent(geometries[i], domEvent);
                     if (oneMoreEvent) {
-                        geometries[i]._onEvent(domEvent, oneMoreEvent);
+                        // geometries[i]._onEvent(domEvent, oneMoreEvent);
+                        fireGeoEvent(geometries[i], domEvent, oneMoreEvent);
                     }
                     break;
                 }
