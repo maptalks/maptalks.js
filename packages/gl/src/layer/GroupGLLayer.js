@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import Renderer from './GroupGLLayerRenderer.js';
 import { vec3 } from 'gl-matrix';
-import { isNil } from './util/util.js';
+import { isNil, extend } from './util/util.js';
 import TerrainLayer from './terrain/TerrainLayer';
 
 const options = {
@@ -473,8 +473,13 @@ export default class GroupGLLayer extends maptalks.Layer {
     }
 
     updateTerrainMaterial(mat) {
-        if (!this._terrainLayer) {
+        if (!this._terrainLayer || !mat) {
             return;
+        }
+        if (!this.options.terrain.material) {
+            this.options.terrain.material = mat;
+        } else {
+            extend(this.options.terrain.material, mat);
         }
         this._terrainLayer.updateMaterial(mat);
     }

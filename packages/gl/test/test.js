@@ -518,13 +518,13 @@ describe('gl tests', () => {
                 spatialReference: 'preset-vt-3857',
                 urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
                 tileStackDepth: 0,
-                shader: 'lit',
-                material: {
-                    baseColorFactor: [1, 1, 1, 1],
-                    roughnessFactor: 0.9,
-                    metallicFactor: 0
-                }
-            }
+                shader: 'lit'
+            };
+            const material = {
+                baseColorFactor: [1, 0, 0, 1],
+                roughnessFactor: 0.9,
+                metallicFactor: 0
+            };
             const group = new maptalks.GroupGLLayer('group', [], { terrain });
             group.once('terrainlayercreated', () => {
                 const terrainLayer = group.getTerrainLayer();
@@ -533,16 +533,14 @@ describe('gl tests', () => {
                     group.on('layerload', () => {
                         count++;
                         if (count === 1) {
-                            group.updateTerrainMaterial({
-                                baseColorFactor: [1, 0, 0, 1],
-                                roughnessFactor: 0.9,
-                                metallicFactor: 0
-                            });
+                            group.updateTerrainMaterial(material);
                         } else if (count === 2) {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 127, '1': 28, '2': 28, '3': 255 } });
+                            const exportMat = group.toJSON().options.terrain.material;
+                            expect(material).to.be.eql(exportMat);
                             done();
                         }
                     });
