@@ -170,15 +170,16 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    getTileUrl(url, baseUrl, service) {
-        if (service.subdomains) {
-            const len = service.subdomains.length;
+    getTileUrl(url, baseUrl, rootNode) {
+        const subdomains = rootNode && rootNode.service && rootNode.service.subdomains;
+        if (subdomains && rootNode.domainKey) {
+            const len = subdomains.length;
             if (len) {
                 const urlArr = [...url];
                 const index = urlArr.reduce((a, char) => a + char.charCodeAt() - 96, 0);
                 const domain = index % len;
                 // {s} is encoded in getAbsoluteUrl
-                return url.replace('%7Bs%7D', service.subdomains[domain]);
+                return url.replace(rootNode.domainKey, subdomains[domain]);
             }
         }
         return url;
@@ -1074,17 +1075,19 @@ function computeRegionDistanceToCamera(node, cameraCartesian3, cameraLocation) {
 
 function createRootTile(url, idx, service) {
     url = getAbsoluteURL(url);
+    const domainKey = url.indexOf('{s}') >= 0 ? '{s}' : url.indexOf('%7Bs%7D') >= 0 ? '%7Bs%7D' : null;
     const root = {
         service,
         visible: isNil(service.visible) ? 1: service.visible,
-        baseUrl : url.substring(0, url.lastIndexOf('/')) + '/',
+        baseUrl: url.substring(0, url.lastIndexOf('/')) + '/',
         content: {
             url
         },
         refine: 'replace',
-        matrix : mat4.identity([]),
-        _rootIdx : idx,
-        _level : 0
+        matrix: mat4.identity([]),
+        _rootIdx: idx,
+        _level: 0,
+        domainKey
     };
     return root;
 }

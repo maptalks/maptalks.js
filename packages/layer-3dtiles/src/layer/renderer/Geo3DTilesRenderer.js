@@ -376,7 +376,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (service.isSuperMapiServer) {
             url = encodeSuperMapURI(url, tile.baseUrl);
         }
-        url = this.layer.getTileUrl(url, tile.baseUrl, service);
+        url = this.layer.getTileUrl(url, tile.baseUrl, this.layer._roots[tile._rootIdx]);
         const params = { url, arraybuffer, rootIdx : tile._rootIdx, upAxis : tile._upAxis, transform: tile.matrix, supportedFormats };
 
         if (isI3SMesh(url)) {
