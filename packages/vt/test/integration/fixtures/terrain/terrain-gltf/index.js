@@ -5,7 +5,7 @@ const data = {
     ]
 };
 
-const scale = Math.pow(2, 7);
+const scale = Math.pow(2, 7) / 60;
 
 const style = [
     {

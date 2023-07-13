@@ -55,12 +55,11 @@ class StandardPainter extends MeshPainter {
         if (glData.vertexColors) {
             geometry.properties.vertexColors = glData.vertexColors;
         }
-        if (this.material.uniforms.normalTexture) {
+        if (this.material.uniforms.normalTexture && !geometry.data[geometry.desc.tangentAttribute]) {
             if (!geometry.data[geometry.desc.normalAttribute]) {
                 geometry.createNormal();
             }
             geometry.createTangent();
-            delete geometry.data[geometry.desc.normalAttribute];
         }
 
         this._prepareFeatureIds(geometry, glData);

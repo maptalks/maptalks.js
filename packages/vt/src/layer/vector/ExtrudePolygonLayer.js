@@ -251,7 +251,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const zoom = map.getZoom();
         const tilePoint = new maptalks.Point(0, 0);
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig);
-        dataConfig.uv = 1;
+        dataConfig.tangent = 1;
         if (dataConfig.top) {
             dataConfig.top = top;
         }

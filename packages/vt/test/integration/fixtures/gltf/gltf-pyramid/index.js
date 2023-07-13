@@ -4,7 +4,7 @@ const data = {
         { type: 'Feature', geometry: { type: 'Point', coordinates: [13.411523913043766, 52.53168811873488] }, properties: { type: 1 } }
     ]
 };
-const scale = Math.pow(2, 2);
+const scale = Math.pow(2, 2) / 60;
 
 const style = [
     {
