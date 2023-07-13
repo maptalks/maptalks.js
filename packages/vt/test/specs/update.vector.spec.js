@@ -2024,6 +2024,56 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can update uvOffsetAnim in ExtrudePolygonLayer', done => {
+        map.setPitch(60);
+        map.setLights({
+            ambient: {
+                color: [0.5, 0.5, 0.5]
+            },
+            directional: {
+                color: [0.1, 0.1, 0.1],
+                direction: [1, 0, -1],
+            }
+        });
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' },
+            material: {
+                baseColorTexture: 'file://' + path.resolve(__dirname, '../integration/resources/avatar.jpg'),
+                uvScale: [0.001, 0.0013],
+            }
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 3) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert.deepEqual(pixel,  [ 81, 73, 60, 255 ]);
+                layer.updateMaterial({
+                    uvOffsetAnim: [1, 1]
+                });
+            } else if (count === 10) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert.notDeepEqual(pixel,  [ 81, 73, 60, 255 ]);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can update texture in ExtrudePolygonLayer', done => {
         map.setPitch(60);
         const polygon = new maptalks.Polygon([

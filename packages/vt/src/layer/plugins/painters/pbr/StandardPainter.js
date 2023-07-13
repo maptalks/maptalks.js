@@ -286,6 +286,9 @@ class StandardPainter extends MeshPainter {
     }
 
     _updateMaterial(config) {
+        if (config) {
+            extend(this.getSymbols()[0].material, config);
+        }
         const materialConfig = config || this.getSymbols()[0].material;
         const material = {};
         let hasTexture = false;
