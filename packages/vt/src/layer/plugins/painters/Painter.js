@@ -512,14 +512,14 @@ class Painter {
         return {
             factor: (_, props) => {
                 if (props.meshConfig.ssr) {
-                    return 1;
+                    return layer.getTotalPolygonOffset();
                 }
                 const factor = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return factor;
             },
             units: (_, props) => {
                 if (props.meshConfig.ssr) {
-                    return 1;
+                    return layer.getTotalPolygonOffset();
                 }
                 const units = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return units;
