@@ -170,7 +170,17 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
-    getTileUrl(url/*, baseUrl*/) {
+    getTileUrl(url, baseUrl, service) {
+        if (service.subdomains) {
+            const len = service.subdomains.length;
+            if (len) {
+                const urlArr = [...url];
+                const index = urlArr.reduce((a, char) => a + char.charCodeAt() - 96, 0);
+                const domain = index % len;
+                // {s} is encoded in getAbsoluteUrl
+                return url.replace('%7Bs%7D', service.subdomains[domain]);
+            }
+        }
         return url;
     }
 
