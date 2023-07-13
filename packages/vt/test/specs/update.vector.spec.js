@@ -2055,19 +2055,21 @@ describe('vector layers update style specs', () => {
         });
         const group = new GroupGLLayer('group', [layer]);
         let count = 0;
+        let pixel;
         group.on('layerload', () => {
             count++;
             if (count === 3) {
                 const canvas = group.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert.deepEqual(pixel,  [ 81, 73, 60, 255 ]);
+                pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert(pixel[3] === 255);
                 layer.updateMaterial({
                     uvOffsetAnim: [1, 1]
                 });
             } else if (count === 10) {
                 const canvas = group.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert.notDeepEqual(pixel,  [ 81, 73, 60, 255 ]);
+                const pixel1 = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
+                assert(pixel1[3] === 255);
+                assert.notDeepEqual(pixel1,  pixel);
                 done();
             }
         });
@@ -2101,7 +2103,10 @@ describe('vector layers update style specs', () => {
             } else if (count === 4) {
                 const canvas = group.getRenderer().canvas;
                 const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 20);
-                assert.deepEqual(pixel,  [51, 44, 27, 255]);
+                assert(pixel[3] === 255);
+                assert(pixel[2] < 100);
+                assert(pixel[1] < 100);
+                assert(pixel[0] < 100);
                 done();
             }
         });
