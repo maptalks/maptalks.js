@@ -21,7 +21,6 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
-    "@maptalks/transcoders.draco": "^0.87.2",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "eslint": "^7.32.0",
