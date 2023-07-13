@@ -350,13 +350,13 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             promise = promise.then(data => {
                 delete this._requests[url];
                 if (!data) {
-                    this.onTileError(null, node);
+                    this.onTileError(null, node, url);
                 } else {
                     this._loadTileContent(url, data.data, node);
                 }
             }).catch(err => {
                 delete this._requests[url];
-                this.onTileError(err, node);
+                this.onTileError(err, node, url);
             });
             this._requests[url] = xhr;
         } else {
@@ -383,7 +383,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             const nodeCache = this._i3sNodeCache[tile._rootIdx];
             params.i3sInfo = getI3SNodeInfo(url, nodeCache, this.regl, this.layer.options['enableI3SCompressedGeometry'], this.layer.options['forceI3SCompressedGeometry']);
             if (!params.i3sInfo) {
-                this.onTileError({ status: 404 }, tile);
+                this.onTileError({ status: 404 }, tile, url);
                 return;
             }
         }
@@ -397,7 +397,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         }
         this.workerConn.loadTile(this.layer.getId(), params, (err, data) => {
             if (err) {
-                this.onTileError(err, tile);
+                this.onTileError(err, tile, url);
                 return;
             }
             const { magic } = data;
@@ -516,12 +516,12 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.layer.onTilesetLoad(tileset, parent, url);
     }
 
-    onTileError(err, node) {
+    onTileError(err, node, errorUrl) {
         if (!this.layer) {
             return;
         }
         // debugger
-        const url = node.content.url;
+        const url = errorUrl || node.content.url;
         console.warn('failed to load 3d tile: ' + url);
         console.warn(err);
 
