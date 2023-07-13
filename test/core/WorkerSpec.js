@@ -47,7 +47,7 @@ describe('WorkerSpec', function () {
     });
 
     it('multi instance', function (done) {
-        //workerpoool 已经存在
+        //workerpool 已经存在
         var key = getWorkerKey();
         maptalks.registerWorkerAdapter(key, fun);
         var actor1 = new Actor(key);
@@ -64,21 +64,25 @@ describe('WorkerSpec', function () {
             })
         }
         setTimeout(() => {
+            expect(actor1.initializing).to.be.eql(false);
+            expect(actor2.initializing).to.be.eql(false);
             expect(result.length).to.be.eql(10);
             done();
         }, 1000);
     });
     it('multi actor and multi instance', function (done) {
-        //workerpoool 已经存在
+        //workerpool 已经存在
         var key1 = getWorkerKey();
         var key2 = getWorkerKey();
         var result = [];
+        var actors = [];
         [key1, key2].forEach(key => {
             maptalks.registerWorkerAdapter(key, fun);
             var actor1 = new Actor(key);
             expect(actor1.initializing).to.be.eql(true);
             var actor2 = new Actor(key);
             expect(actor2.initializing).to.be.eql(false);
+            actors.push(actor1, actor2);
             for (let i = 0; i < 5; i++) {
                 actor1.send({ num: i }, [], (err, data) => {
                     result.push(data);
@@ -90,6 +94,9 @@ describe('WorkerSpec', function () {
         });
 
         setTimeout(() => {
+            actors.forEach(actor => {
+                expect(actor.initializing).to.be.eql(false); 
+            });
             expect(result.length).to.be.eql(20);
             done();
         }, 1000);
