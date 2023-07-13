@@ -147,6 +147,8 @@ export function getWorkerSourcePath() {
 }
 
 // Dynamic Create Adapter
+//利用worker通信向每个workerPool里的每个worker注入新的code
+//注意注入的代码在worker code里不是明文的，是个匿名函数挂到adapters,代码层面是看不到改段代码的
 export function createAdapter(key, cb) {
     if (!adapters[key]) {
         console.error(`not find ${key} adapter`);
@@ -165,6 +167,9 @@ export function createAdapter(key, cb) {
         return;
     }
     const workers = workerPool.workers || [];
+    if (workers.length === 0) {
+        console.error('workerpool workers count is 0');
+    }
     let count = 0;
     const messageCB = (msg) => {
         msg = msg.data || {};

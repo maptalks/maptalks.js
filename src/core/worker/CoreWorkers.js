@@ -9,7 +9,11 @@ export function setGlobalWorkerPool(pool) {
 export function getWorkerPool() {
     return globalWorkerPool;
 }
+let workersCreated = false;
 
-export function workerPoolHasCreated() {
-    return globalWorkerPool;
+export function setWorkersCreated() {
+    workersCreated = true;
+}
+export function workersHasCreated() {
+    return workersCreated;
 }

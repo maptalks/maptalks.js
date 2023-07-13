@@ -1,7 +1,7 @@
 import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
-import { workerPoolHasCreated } from './CoreWorkers';
+import { workersHasCreated } from './CoreWorkers';
 
 let dedicatedWorker = 0;
 
@@ -51,8 +51,11 @@ export default class Actor {
         this._delayMessages = [];
         this.initializing = false;
         const hasCreated = ACTOR_CREATED_LIST.indexOf(workerKey) > -1;
-        if (workerPoolHasCreated() && !hasCreated) {
+        //当同一个workerKey多例时初始化会有问题吗？不会，因为第一个Actor会将workerpool占满，后续的Actor worker通信处于排队状态
+        //当第一个Actor初始化完成释放了worker pool里的每个worker资源,后续的Actor的消息通信才会被执行
+        if (workersHasCreated() && !hasCreated) {
             this.initializing = true;
+            console.log(`Dynamic Create Adapter for worker:${workerKey}`);
             createAdapter(workerKey, () => {
                 this.initializing = false;
                 this.created();
