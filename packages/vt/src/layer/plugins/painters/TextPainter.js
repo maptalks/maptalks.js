@@ -220,7 +220,8 @@ export default class TextPainter extends CollisionPainter {
 
     isBloom(mesh) {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        return !!symbol['textBloom'];
+        const bloomSymbol = TextPainter.getBloomSymbol()[0];
+        return !!symbol[bloomSymbol];
     }
 
     createGeometry(glData, features, index) {

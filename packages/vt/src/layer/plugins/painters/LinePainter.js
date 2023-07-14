@@ -79,7 +79,8 @@ class LinePainter extends BasicPainter {
 
     isBloom(mesh) {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        return !!symbol['lineBloom'];
+        const lineSymbol = LinePainter.getBloomSymbol()[0];
+        return !!symbol[lineSymbol];
     }
 
     needPolygonOffset() {

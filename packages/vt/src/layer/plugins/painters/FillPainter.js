@@ -46,7 +46,8 @@ class FillPainter extends BasicPainter {
 
     isBloom(mesh) {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        return !!symbol[this.bloomSymbol];
+        const bloomSymbol = FillPainter.getBloomSymbol()[0];
+        return !!symbol[bloomSymbol];
     }
 
     forbiddenTerrainUpscale() {
