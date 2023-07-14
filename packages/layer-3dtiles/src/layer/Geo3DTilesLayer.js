@@ -806,13 +806,13 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset(Array.isArray(center) ? new maptalks.Coordinate(center) : center);
+            offset = offset.call(this, Array.isArray(center) ? new maptalks.Coordinate(center) : center);
         }
         if (offset[0] || offset[1]) {
             const map = this.getMap();
             const res = map.getGLRes();
             const point = map.coordToPointAtRes(center, res);
-            point['_add'](offset);
+            point['_sub'](offset);
             return map.pointAtResToCoord(point, res);
         }
         return center;

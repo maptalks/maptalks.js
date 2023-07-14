@@ -1565,7 +1565,7 @@ describe('render specs', () => {
     });
 
     context('offset specs', () => {
-        const offset = [1, -1];
+        const offset = [-1, 1];
         it('offset/BatchedWithTransformBox', done => {
             const resPath = 'Cesium3DTiles/Batched/BatchedWithTransformBox';
             const layer = new Geo3DTilesLayer('3d-tiles', {

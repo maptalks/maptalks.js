@@ -987,10 +987,10 @@ export default class MeshPainter {
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {
             const center = this._layer._getNodeBox(node.id).center;
-            offset = offset(center);
+            offset = offset.call(this._layer, center);
         }
         vec3.set(TEMP_OFFSET, offset[0], offset[1], 0);
-        vec3.add(translation, translation, TEMP_OFFSET);
+        vec3.sub(translation, translation, TEMP_OFFSET);
         setTranslation(projectedTransform, translation, projectedTransform);
         return projectedTransform;
 
@@ -1306,11 +1306,11 @@ export default class MeshPainter {
         // const heightScale = map.altitudeToPoint(100, map.getGLRes()) / 100;
         let offset = this._layer.options['offset'];
         if (isFunction(offset)) {
-            offset = offset(TEMP_CENTER);
+            offset = offset.call(this._layer, TEMP_CENTER);
         }
 
         const heightOffset = this._layer._getNodeService(rootIdx).heightOffset || 0;
-        vec3.set(TEMP_TRANSLATION, center.x + offset[0], center.y + offset[1], heightScale * projCenter[2] + heightScale * heightOffset);
+        vec3.set(TEMP_TRANSLATION, center.x - offset[0], center.y - offset[1], heightScale * projCenter[2] + heightScale * heightOffset);
         mat4.translate(localTransform, localTransform, TEMP_TRANSLATION);
         vec3.set(scale, zoomScale, zoomScale, heightScale);
         mat4.scale(localTransform, localTransform, scale);
