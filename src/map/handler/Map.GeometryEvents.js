@@ -284,10 +284,11 @@ class MapGeometryEventsHandler extends Handler {
                     } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                         return false;
                     }
+                    return true;
                 } else if (isGeo(geometry)) {
                     return true;
                 }
-                return true;
+                return false;
             },
             'count': 1,
             'onlyVisible': map.options['onlyVisibleGeometryEvents'],
