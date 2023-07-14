@@ -34,6 +34,16 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         return Vector3DLayer.painters[name];
     }
 
+    onConfig(conf) {
+        super.onConfig(conf);
+        if (conf['enableBloom'] !== undefined) {
+            const renderer = this.getRenderer();
+            if (renderer) {
+                renderer.updateBloom(conf['enableBloom']);
+            }
+        }
+    }
+
     // constructor(...args) {
     //     super(...args);
     //     if (!this.options.sceneConfig) {

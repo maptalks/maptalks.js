@@ -32,6 +32,10 @@ const levelNFilter = mesh => {
 };
 
 class Painter {
+    static getBloomSymbol() {
+        return 'bloom';
+    }
+
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         this._is2D = true;
         this.regl = regl;
@@ -409,7 +413,6 @@ class Painter {
         if (this._currentTimestamp === context.timestamp) {
             return;
         }
-        this._currentTimestamp = context.timestamp;
         if (!this.createFnTypeConfig) {
             return;
         }
@@ -431,6 +434,7 @@ class Painter {
             if (!symbolDef) {
                 continue;
             }
+            this._currentTimestamp = context.timestamp;
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             updateOneGeometryFnTypeAttrib(this.regl, symbolDef, fnTypeConfig, meshes[i], z);
         }
@@ -683,7 +687,8 @@ class Painter {
 
     updateSymbol(symbolDef, all) {
         // maptalks-studio#2442, needRetire要提前计算，否则symbol更新后，可能出现错误
-        const needRetire = this.supportRenderMode('taa');
+        // const needRetire = this.supportRenderMode('taa');
+        const needRetire = false;
         if (!Array.isArray(symbolDef)) {
             symbolDef = [symbolDef];
             all = [all];

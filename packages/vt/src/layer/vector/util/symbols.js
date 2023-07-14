@@ -1,17 +1,17 @@
 export const  MARKER_SYMBOL = {
     markerFile: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerFile'
     },
     markerWidth: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerWidth'
     },
     markerHeight: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerHeight'
     },
     markerPathWidth: {
@@ -26,63 +26,63 @@ export const  MARKER_SYMBOL = {
     },
     markerDx: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerDx'
     },
     markerDy: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerDy'
     },
     //marker type properties
     markerType: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerType'
     },
     markerPath: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerPath'
     },
     markerFill: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerFill'
     },
     markerFillPatternFile: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerFillPatternFile'
     },
     markerFillOpacity: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerFillOpacity'
     },
     markerLineColor: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerLineColor'
     },
     markerLineWidth: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerLineWidth'
     },
     markerLineOpacity: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerLineOpacity'
     },
     markerLineDasharray: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerLineDasharray'
     },
     markerLinePatternFile: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_markerLinePatternFile'
     },
     markerVerticalAlignment: {
@@ -151,57 +151,57 @@ export const TEXT_SYMBOL = {
     //text properties
     textName: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textName'
     },
     textFaceName: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textFaceName'
     },
     textWeight: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textWeight'
     },
     textStyle: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textStyle'
     },
     textWrapWidth: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textWrapWidth'
     },
     textHorizontalAlignment: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textHorizontalAlignment'
     },
     textVerticalAlignment: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textVerticalAlignment'
     },
     textFill: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textFill'
     },
     textSize: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textSize'
     },
     textHaloRadius: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textHaloRadius'
     },
     textHaloFill: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textHaloFill'
     },
     textHaloOpacity: {
@@ -211,12 +211,12 @@ export const TEXT_SYMBOL = {
     },
     textDx: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textDx'
     },
     textDy: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_textDy'
     },
     textOpacity: {
@@ -294,7 +294,7 @@ export const LINE_SYMBOL = {
     },
     linePatternFile: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_linePatternFile'
     },
     linePatternAnimSpeed: {
@@ -314,22 +314,22 @@ export const LINE_SYMBOL = {
     },
     lineJoin: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_lineJoin'
     },
     lineCap: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_lineCap'
     },
     lineDasharray: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_lineDasharray'
     },
     lineDashColor: {
         type: 'identity',
-        default: undefined,
+        default: null,
         property: '_symbol_lineDashColor'
     }
 };

@@ -77,7 +77,8 @@ describe('vector 3d integration specs', () => {
                 const sceneConfig = {
                     postProcess: {
                         enable: true,
-                        bloom: { enable: true }
+                        bloom: { enable: true },
+                        ssr: { enable: true }
                     }
                 };
                 const groupLayer = new GroupGLLayer('group', [layer], { sceneConfig });

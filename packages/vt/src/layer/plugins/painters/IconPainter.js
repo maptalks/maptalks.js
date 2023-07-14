@@ -53,6 +53,10 @@ const IDENTITY_ARR = mat4.identity([]);
 const TEMP_CANVAS_SIZE = [];
 
 class IconPainter extends CollisionPainter {
+    static getBloomSymbol() {
+        return ['markerBloom', 'textBloom'];
+    }
+
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
         this.propAllowOverlap = 'markerAllowOverlap';

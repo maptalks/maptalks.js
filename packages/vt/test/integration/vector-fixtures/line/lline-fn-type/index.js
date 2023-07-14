@@ -19,5 +19,8 @@ module.exports = {
     view: {
         center: [0, 0],
         zoom: 6
+    },
+    options: {
+        enableBloom: true
     }
 };

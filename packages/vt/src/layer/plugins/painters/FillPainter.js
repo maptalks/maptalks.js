@@ -21,6 +21,10 @@ const DEFAULT_UNIFORMS = {
 const EMPTY_ARRAY = [];
 
 class FillPainter extends BasicPainter {
+    static getBloomSymbol() {
+        return ['polygonBloom'];
+    }
+
     prepareSymbol(symbol) {
         const polygonFill = symbol.polygonFill;
         if (Array.isArray(polygonFill)) {
@@ -42,7 +46,7 @@ class FillPainter extends BasicPainter {
 
     isBloom(mesh) {
         const symbol = this.getSymbol(mesh.properties.symbolIndex);
-        return !!symbol['polygonBloom'];
+        return !!symbol[this.bloomSymbol];
     }
 
     forbiddenTerrainUpscale() {

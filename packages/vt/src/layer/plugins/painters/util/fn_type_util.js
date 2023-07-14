@@ -2,6 +2,7 @@ import { fillArray, isArray } from '../../Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { StyleUtil } from '@maptalks/vector-packer';
 import { isObjectEmpty } from './is_obj_empty';
+import deepEqual from 'fast-deep-equal';
 
 export const PREFIX = '_fn_type_';
 
@@ -203,7 +204,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
 function symbolChanged(geometry, symbolDef, config) {
     const value = symbolDef[config.symbolName];
     const savedTypes = geometry[SAVED_FN_TYPE];
-    if (value !== savedTypes[config.symbolName]) {
+    if (!deepEqual(value, savedTypes[config.symbolName])) {
         savedTypes[config.symbolName] = value;
         return true;
     }

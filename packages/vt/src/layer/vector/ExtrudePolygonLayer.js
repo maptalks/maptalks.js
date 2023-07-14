@@ -165,6 +165,13 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this._markRebuild();
     }
 
+    updateBloom(enableBloom) {
+        super.updateBloom(enableBloom);
+        if (this.sidePainter) {
+            this._updatePainterBloom(this.sidePainter, this.sidePainterSymbol, enableBloom);
+        }
+    }
+
     needCheckPointLineSymbols() {
         return false;
     }
@@ -177,7 +184,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const StandardPainter = Vector3DLayer.get3DPainterClass('lit');
         this.painterSymbol = extend({}, SYMBOL);
         this.sidePainterSymbol = extend({}, SYMBOL);
-        this._defineSymbolBloom(this.painterSymbol, 'bloom');
+        this._defineSymbolBloom(this.painterSymbol, StandardPainter.getBloomSymbol());
         const dataConfig = extend({}, DEFAULT_DATACONFIG, this.layer.options.dataConfig || {});
         if (this.layer.options.material) {
             this.painterSymbol.material = this.layer.options.material;

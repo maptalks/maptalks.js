@@ -185,7 +185,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aMarkerWidth',
             symbolName: 'markerWidth',
-            type: Uint8Array,
+            type: Uint16Array,
             width: 1,
             define: 'HAS_MARKER_WIDTH',
             evaluate: (properties, geometry, arr, index) => {
@@ -207,7 +207,7 @@ export function getMarkerFnTypeConfig(map, symbolDef) {
         {
             attrName: 'aMarkerHeight',
             symbolName: 'markerHeight',
-            type: Uint8Array,
+            type: Uint16Array,
             width: 1,
             define: 'HAS_MARKER_HEIGHT',
             evaluate: (properties, geometry, arr, index) => {

@@ -15,6 +15,10 @@ const TEMP_CANVAS_SIZE = [];
 
 class LinePainter extends BasicPainter {
 
+    static getBloomSymbol() {
+        return ['lineBloom'];
+    }
+
     prepareSymbol(symbol) {
         const lineColor = symbol.lineColor;
         if (Array.isArray(lineColor)) {

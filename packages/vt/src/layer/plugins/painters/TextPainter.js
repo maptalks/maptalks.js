@@ -77,6 +77,10 @@ const ELEVATED_ANCHOR = [];
 const IDENTITY_ARR = mat4.identity([]);
 
 export default class TextPainter extends CollisionPainter {
+    static getBloomSymbol() {
+        return ['textBloom'];
+    }
+
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
         super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
         this.propAllowOverlap = 'textAllowOverlap';

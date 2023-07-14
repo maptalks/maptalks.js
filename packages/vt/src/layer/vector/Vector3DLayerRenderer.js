@@ -62,7 +62,6 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._lineFeatures = {};
         this._dirtyAll = true;
         this._kidGen = { id: 0, pickingId: 0 };
-        this._markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         this._dirtyTargetsInCurrentFrame = {};
     }
 
@@ -1335,10 +1334,11 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this.pickingFBO = this.canvas.pickingFBO || this.regl.framebuffer(this.canvas.width, this.canvas.height);
         this.painter = this.createPainter();
         const IconPainter = Vector3DLayer.get3DPainterClass('icon');
+        let bloomSymbols = IconPainter.getBloomSymbol();
         const markerSymbol = extend({}, MARKER_SYMBOL, TEXT_SYMBOL);
         markerSymbol.markerPerspectiveRatio = this.layer.options['markerPerspectiveRatio'] || 0;
-        this._defineSymbolBloom(markerSymbol, 'markerBloom');
-        this._defineSymbolBloom(markerSymbol, 'textBloom');
+        this._defineSymbolBloom(markerSymbol, bloomSymbols);
+        this._markerSymbol = markerSymbol;
         const sceneConfig = extend({}, ICON_PAINTER_SCENECONFIG, this.layer.options.sceneConfig || {});
         this._markerPainter = new IconPainter(this.regl, this.layer, markerSymbol, sceneConfig, 0);
         this._markerPainter.setTextShaderDefines({
@@ -1347,7 +1347,9 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
         const LinePainter = Vector3DLayer.get3DPainterClass('line');
         const lineSymbol = extend({}, LINE_SYMBOL);
-        this._defineSymbolBloom(lineSymbol, 'lineBloom');
+        bloomSymbols = LinePainter.getBloomSymbol();
+        this._defineSymbolBloom(lineSymbol, bloomSymbols);
+        this._lineSymbol = lineSymbol;
         const lineSceneConfig = extend({}, this.layer.options.sceneConfig || {});
         if (lineSceneConfig.depthMask === undefined) {
             lineSceneConfig.depthMask = true;
@@ -1359,14 +1361,32 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
     }
 
-    _defineSymbolBloom(symbol, key) {
-        const layer = this.layer;
-        Object.defineProperty(symbol, key, {
-            enumerable: true,
-            get: function () {
-                return layer && layer.options['enableBloom'];
-            }
-        });
+    _defineSymbolBloom(symbol, keys) {
+        for (let i = 0; i < keys.length; i++) {
+            symbol[keys[i]] = this.layer.options['enableBloom'];
+        }
+    }
+
+    updateBloom(enableBloom) {
+        if (this._markerPainter) {
+            this._updatePainterBloom(this._markerPainter, this._markerSymbol, enableBloom);
+        }
+        if (this._linePainter) {
+            this._updatePainterBloom(this._linePainter, this._lineSymbol, enableBloom);
+        }
+        if (this.painter) {
+            this._updatePainterBloom(this.painter, this.painterSymbol, enableBloom);
+        }
+    }
+
+    _updatePainterBloom(painter, targetSymbol, enableBloom) {
+        const bloomSymbols = painter.constructor.getBloomSymbol();
+        const symbol = bloomSymbols.reduce((v, currentValue) => {
+            v[currentValue] = enableBloom;
+            targetSymbol[currentValue] = enableBloom;
+            return v;
+        }, {});
+        painter.updateSymbol(symbol, targetSymbol);
     }
 
     createPainter() {
