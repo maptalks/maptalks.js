@@ -1,12 +1,11 @@
 import { getGlobalWorkerPool } from './WorkerPool';
 import { UID } from '../util';
 import { createAdapter } from './Worker';
-import { workersHasCreated } from './CoreWorkers';
+import { adapterHasCreated, pushAdapterCreated, workersHasCreated } from './CoreWorkers';
 
 let dedicatedWorker = 0;
 
 const EMPTY_BUFFERS = [];
-const ACTOR_CREATED_LIST = [];
 
 /**
  * An actor to exchange data from main-thread to workers
@@ -50,7 +49,7 @@ export default class Actor {
     constructor(workerKey) {
         this._delayMessages = [];
         this.initializing = false;
-        const hasCreated = ACTOR_CREATED_LIST.indexOf(workerKey) > -1;
+        const hasCreated = adapterHasCreated(workerKey);
         //当同一个workerKey多例时初始化会有问题吗？不会，因为第一个Actor会将workerpool占满，后续的Actor worker通信处于排队状态
         //当第一个Actor初始化完成释放了worker pool里的每个worker资源,后续的Actor的消息通信才会被执行
         if (workersHasCreated() && !hasCreated) {
@@ -72,9 +71,7 @@ export default class Actor {
         this.workers.forEach(w => {
             w.addEventListener('message', this.receiveFn, false);
         });
-        if (!hasCreated) {
-            ACTOR_CREATED_LIST.push(workerKey);
-        }
+        pushAdapterCreated(workerKey);
     }
 
     created() {

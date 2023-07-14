@@ -22,7 +22,54 @@ describe('WorkerSpec', function () {
         }
     }
 
+    var container;
+    var map;
+    var layer;
+
+    function COMMON_CREATE_MAP(center, baseLayer, options) {
+        var container = document.createElement('div');
+        container.id = 'test_container';
+        container.style.width = (options && options.width || 80) + 'px';
+        container.style.height = (options && options.height || 60) + 'px';
+        document.body.appendChild(container);
+        var option = {
+            zoomAnimationDuration: 50,
+            zoom: 17,
+            center: center,
+            // centerCross : true
+        };
+        if (options) {
+            delete options.width;
+            delete options.height;
+            for (var p in options) {
+                if (options.hasOwnProperty(p)) {
+                    option[p] = options[p];
+                }
+            }
+        }
+        if (baseLayer) {
+            option.baseLayer = baseLayer;
+        }
+        var map = new maptalks.Map(container, option);
+        return {
+            'container': container,
+            'map': map
+        };
+    }
+    
+    function REMOVE_CONTAINER() {
+        document.body.innerHTML = '';
+    }
+
+
     beforeEach(function () {
+    });
+
+    afterEach(function () {
+        if (map) {
+            map.remove();
+            REMOVE_CONTAINER(container);
+        }
     });
 
 
@@ -95,11 +142,38 @@ describe('WorkerSpec', function () {
 
         setTimeout(() => {
             actors.forEach(actor => {
-                expect(actor.initializing).to.be.eql(false); 
+                expect(actor.initializing).to.be.eql(false);
             });
             expect(result.length).to.be.eql(20);
             done();
         }, 1000);
+    });
+
+    it('core-fetch-image', function (done) {
+        //workerpool 已经存在
+        //core-fetch-image worker will Asynchronous injection
+        var center = new maptalks.Coordinate(118.846825, 32.046534);
+        var setups = COMMON_CREATE_MAP(center, null, {
+            width: 800,
+            height: 600
+        });
+        container = setups.container;
+        map = setups.map;
+        layer = new maptalks.VectorLayer('v').addTo(map);
+        setTimeout(() => {
+            expect(layer).to.be.painted(0, -10);
+            done();
+        }, 1000);
+        // layer.once('layerload', function () {
+        //     expect(layer).to.be.painted(0, 0);
+        //     done();
+        // });
+        var marker = new maptalks.Marker(center, {
+            symbol: {
+                markerFile: 'resources/2.png'
+            }
+        });
+        marker.addTo(layer);
     });
 
 

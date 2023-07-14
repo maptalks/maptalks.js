@@ -1,5 +1,5 @@
 import { isFunction } from '../util/common.js';
-import { getWorkerPool } from './CoreWorkers.js';
+import { getWorkerPool, pushAdapterCreated } from './CoreWorkers.js';
 
 let adapters = {};
 /**
@@ -112,6 +112,7 @@ function compileWorkerSource() {
     let source = header;
     for (const p in adapters) {
         let adapter = adapters[p];
+        pushAdapterCreated(p);
         if (isFunction(adapter)) {
             if (adapter.length === 0) {
                 // new definition form of worker source

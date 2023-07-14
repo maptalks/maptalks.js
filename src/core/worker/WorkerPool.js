@@ -1,5 +1,5 @@
 import { requestAnimFrame } from '../util';
-import { setGlobalWorkerPool, setWorkersCreated } from './CoreWorkers';
+import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
@@ -107,7 +107,7 @@ let globalWorkerPool;
 export function getGlobalWorkerPool() {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
-        setGlobalWorkerPool(globalWorkerPool);
+        setWorkerPool(globalWorkerPool);
     }
     return globalWorkerPool;
 }

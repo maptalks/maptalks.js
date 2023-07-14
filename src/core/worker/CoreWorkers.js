@@ -2,7 +2,7 @@ export const imageFetchWorkerKey = 'core-fetch-image';
 
 
 let globalWorkerPool;
-export function setGlobalWorkerPool(pool) {
+export function setWorkerPool(pool) {
     globalWorkerPool = pool;
 }
 
@@ -16,4 +16,16 @@ export function setWorkersCreated() {
 }
 export function workersHasCreated() {
     return workersCreated;
+}
+
+const ACTOR_CREATED_LIST = [];
+
+export function adapterHasCreated(workerKey) {
+    return ACTOR_CREATED_LIST.indexOf(workerKey) > -1;
+}
+
+export function pushAdapterCreated(workerKey) {
+    if (!adapterHasCreated(workerKey)) {
+        ACTOR_CREATED_LIST.push(workerKey);
+    }
 }
