@@ -272,22 +272,23 @@ class MapGeometryEventsHandler extends Handler {
             'includeInternals': true,
             //return only one geometry on top,
             'filter': geometry => {
-                if (!(geometry instanceof Geometry)) {
-                    return false;
-                }
-                const eventToFire = geometry._getEventTypeToFire(domEvent);
-                if (eventType === 'mousemove') {
-                    if (!geometryCursorStyle && geometry.options['cursor']) {
-                        geometryCursorStyle = geometry.options['cursor'];
-                    }
-                    if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
+                if (geometry instanceof Geometry) {
+                    const eventToFire = geometry._getEventTypeToFire(domEvent);
+                    if (eventType === 'mousemove') {
+                        if (!geometryCursorStyle && geometry.options['cursor']) {
+                            geometryCursorStyle = geometry.options['cursor'];
+                        }
+                        if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
+                            return false;
+                        }
+                    } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                         return false;
                     }
-                } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
-                    return false;
+                    return true;
+                } else if (isGeo(geometry)) {
+                    return true;
                 }
-
-                return true;
+                return false;
             },
             'count': 1,
             'onlyVisible': map.options['onlyVisibleGeometryEvents'],
