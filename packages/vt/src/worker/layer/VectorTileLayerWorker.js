@@ -2,7 +2,9 @@ import LayerWorker from './BaseLayerWorker';
 import Pbf from 'pbf';
 import { VectorTile } from '@mapbox/vector-tile';
 import Ajax from '../util/Ajax';
-import { hasOwn } from '../../common/Util';
+import { hasOwn, isString } from '../../common/Util';
+import { PROP_OMBB } from '../../common/Constant';
+import { projectOMBB } from '../builder/Ombb.js';
 
 export default class VectorTileLayerWorker extends LayerWorker {
     constructor(id, options, uploader, cache, loadings, callback) {
@@ -79,6 +81,13 @@ export default class VectorTileLayerWorker extends LayerWorker {
                         };
                         if (feature.id !== undefined) {
                             fea.id = feature.id;
+                        }
+                        let ombb = fea.properties[PROP_OMBB];
+                        if (ombb) {
+                            if (isString(ombb)) {
+                                ombb = JSON.parse(ombb);
+                            }
+                            fea.properties[PROP_OMBB] = projectOMBB(ombb, 'EPSG:3857');
                         }
                         features.push(fea);
                     } catch (err) {

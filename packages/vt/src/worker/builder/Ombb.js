@@ -262,11 +262,11 @@ function CalcOmbb(convexHull) {
     return BestObb;
 }
 
+const projectionCode = 'EPSG:3857';
 const HULL = [];
 const VERTICES = [];
 
 export default function (vertices) {
-    const projectionCode = 'EPSG:3857';
 
     if (isNumber(vertices[0] && vertices[0].x)) {
         // 对 { x, y } 格式的坐标支持
@@ -341,4 +341,19 @@ export default function (vertices) {
     }
 
 
+}
+
+const projectedCoord = [];
+export function projectOMBB(ombb, projectionCode) {
+    const isMultiOmbb = Array.isArray(ombb && ombb[0] && ombb[0][0]);
+    for (let i = 0; i < ombb.length; i++) {
+        if (isMultiOmbb) {
+            ombb[i] = projectOMBB(ombb[i]);
+        } else {
+            project(projectedCoord, ombb[i], projectionCode);
+            ombb[i][0] = projectedCoord[0];
+            ombb[i][1] = projectedCoord[1];
+        }
+    }
+    return ombb;
 }
