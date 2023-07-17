@@ -61,8 +61,8 @@ function abort(url) {
     }
 }
 
-function createHeightMap(heightmap/*, exag*/) {
-    const width = terrainStructure.width, height = terrainStructure.height;
+function createHeightMap(heightmap, terrainWidth/*, exag*/) {
+    const width = terrainWidth, height = terrainWidth;
     const endRow = width + 1, endColum = height + 1;
     const elementsPerHeight = terrainStructure.elementsPerHeight;
     const heightOffset = terrainStructure.heightOffset;
@@ -73,6 +73,8 @@ function createHeightMap(heightmap/*, exag*/) {
     const skirtHeight = terrainStructure.skirtHeight;
     const heights = new Float32Array(endRow * endColum);
     let index = 0;
+    let min = Infinity;
+    let max = -Infinity;
     for (let i = 0; i < endRow; i++) {
         const row = i >= height ? height - 1 : i;
         for(let j = 0; j < endColum; j++) {
@@ -85,10 +87,16 @@ function createHeightMap(heightmap/*, exag*/) {
             heightSample = (heightSample * heightScale + heightOffset) * exaggeration;
             heightSample -= skirtHeight;
             heights[index] = heightSample;
+            if (heightSample < min) {
+                min = heightSample;
+            }
+            if (heightSample > max) {
+                max = heightSample;
+            }
             index++;
         }
     }
-    return heights;
+    return { data: heights, min, max };
 }
 
 function decZlibBuffer(zBuffer) {
@@ -147,7 +155,7 @@ function transformBuffer(zlibData){
     return myBuffer;
 }
 
-function generateTiandituTerrain(buffer) {
+function generateTiandituTerrain(buffer, terrainWidth) {
     const view = new DataView(buffer);
     const zBuffer = new Uint8Array(view.byteLength);
     let index = 0;
@@ -158,7 +166,8 @@ function generateTiandituTerrain(buffer) {
     //解压数据
     const dZlib = decZlibBuffer(zBuffer);
     const heightBuffer = transformBuffer(dZlib);
-    const heights = createHeightMap(heightBuffer);
+    const heights = createHeightMap(heightBuffer, terrainWidth - 1);
+    heights.width = heights.height = terrainWidth;
     return heights;
 }
 
@@ -350,11 +359,8 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
             const buffer = res.data;
             let terrain = null;
             if (type === 'tianditu') {
-                terrain = generateTiandituTerrain(buffer);
-                //martini顶点计算方式:https://github.com/mapbox/martini/issues/5
-                const mesh = createMartiniData(error, terrain, terrainWidth);
-                res.transferables.push(mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer);
-                cb({ data: terrain, mesh }, res.transferables);
+                const terrainData = generateTiandituTerrain(buffer, terrainWidth);
+                triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, null, null, true, true, cb);
             } else if (type === 'cesium') {
                 terrain = generateCesiumTerrain(buffer);
                 const transferables = [terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer];
@@ -411,7 +417,7 @@ function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imag
     data.image = imageBitmap;
     if (isTransferData) {
         data.data = terrainData;
-        if (maxAvailable) {
+        if (maxAvailable && imageData) {
             const originalTerrainData = mapboxBitMapToHeights(imageData, imageData.width + 1);
             data.data = originalTerrainData;
             transferables.push(originalTerrainData.data.buffer);

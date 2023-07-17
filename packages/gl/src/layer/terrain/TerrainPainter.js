@@ -1,3 +1,4 @@
+import  { isNil } from '../util/util';
 import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 
@@ -73,8 +74,9 @@ class TerrainPainter {
 
     _getLocalTransform(tileInfo) {
         const map = this.getMap();
-        const tileSize = this.layer.options['tileSize'];
-        const terrainWidth = tileSize + 1;
+        const layerOptions = this.layer.options;
+        const tileSize = layerOptions['tileSize'];
+        const terrainWidth = isNil(layerOptions.terrainWidth) ? tileSize + 1 : layerOptions.terrainWidth;
 
         const scale = tileInfo.res / map.getGLRes();
 

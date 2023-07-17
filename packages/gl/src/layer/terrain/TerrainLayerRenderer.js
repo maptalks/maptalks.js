@@ -5,7 +5,7 @@ import * as reshader from '@maptalks/reshader.gl';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
 import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, inTerrainTile } from './TerrainTileUtil';
-import  { extend } from '../util/util';
+import  { isNil, extend } from '../util/util';
 import TerrainPainter from './TerrainPainter';
 import TerrainLitPainter from './TerrainLitPainter';
 
@@ -484,6 +484,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
         const sp = this.layer.getSpatialReference();
         const res = sp.getResolution(tile.z);
+        const error = this.getMap().pointAtResToDistance(1, 1, res);
         if (maxAvailableZoom && tile.z > maxAvailableZoom) {
             const parentTile = this._findParentAvailableTile(tile);
             if (parentTile && parentTile.image && parentTile.image.data) {
@@ -493,7 +494,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
                 this.workerConn.createTerrainMesh({
                     terrainHeights: childTileHeights,
                     terrainWidth: this.layer.options.tileSize + 1,
-                    error: res
+                    error: error
                 }, (err, resource) => {
                     if (err) {
                         if (err.canceled) {
@@ -515,12 +516,14 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         const terrainUrl = tile.url;
         const terrainData = {};
+        const layerOptions = this.layer.options;
+        const terrainWidth = isNil(layerOptions.terrainWidth) ? layerOptions.tileSize + 1 : layerOptions.terrainWidth;
 
         const options = {
-            terrainWidth: (this.layer.options.tileSize + 1),
-            type: this.layer.options.type,
-            accessToken: this.layer.options.accessToken,
-            error: res,
+            terrainWidth,
+            type: layerOptions.type,
+            accessToken: layerOptions.accessToken,
+            error: error,
             maxAvailable: maxAvailableZoom === tile.z
         };
         this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
