@@ -218,7 +218,9 @@ class StandardPainter extends MeshPainter {
                 enable: () => {
                     return this.sceneConfig.cullFace === undefined || !!this.sceneConfig.cullFace;
                 },
-                face: this.sceneConfig.cullFace || 'back'
+                face: () => {
+                    return this.sceneConfig.cullFace || 'back';
+                }
             },
             stencil: {
                 enable: (_, props) => {

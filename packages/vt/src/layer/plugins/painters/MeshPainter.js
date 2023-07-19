@@ -225,6 +225,18 @@ class MeshPainter extends Painter {
         return mesh;
     }
 
+    callShader(uniforms, context) {
+        const cullFace = this.sceneConfig.cullFace;
+        this.sceneConfig.cullFace = 'front';
+        this.callBackgroundTileShader(uniforms, context);
+        if (cullFace) {
+            this.sceneConfig.cullFace = cullFace;
+        } else {
+            delete this.sceneConfig.cullFace;
+        }
+        super.callShader(uniforms, context);
+    }
+
     getShadowMeshes() {
         if (!this.isVisible()) {
             return EMPTY_ARRAY;
