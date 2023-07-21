@@ -31,12 +31,12 @@ describe('Geometry.Events', function () {
         var spy2 = sinon.spy();
         map.on('click', spy2);
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
         expect(spy2.called).to.be.ok();
@@ -57,8 +57,8 @@ describe('Geometry.Events', function () {
         var spy = sinon.spy();
         map.on('click', spy);
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(circleClicked).to.be.ok();
         expect(spy.called).not.to.be.ok();
@@ -73,8 +73,8 @@ describe('Geometry.Events', function () {
             expect(param.type).to.be.eql('mousemove');
             circle.off('mousemove', onMouseMove);
             happen.mousemove(eventContainer, {
-                'clientX':point.x + 100,
-                'clientY':point.y + 100
+                'clientX': point.x + 100,
+                'clientY': point.y + 100
             });
         }
         circle.on('mousemove', onMouseMove);
@@ -84,8 +84,8 @@ describe('Geometry.Events', function () {
         });
 
         happen.mousemove(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
     });
 
@@ -110,13 +110,13 @@ describe('Geometry.Events', function () {
         circle.on('mouseover', onMouseOver);
         circle.on('mouseenter', onMouseOver);
         happen.mousemove(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         setTimeout(function () {
             happen.mousemove(eventContainer, {
-                'clientX':point.x,
-                'clientY':point.y
+                'clientX': point.x,
+                'clientY': point.y
             });
         }, 300);
 
@@ -131,14 +131,14 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
         spy.reset();
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
     });
@@ -152,13 +152,13 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.mousedown(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         setTimeout(function () {
             happen.click(eventContainer, {
-                'clientX':point.x,
-                'clientY':point.y
+                'clientX': point.x,
+                'clientY': point.y
             });
             expect(spy.called).not.to.be.ok();
             done();
@@ -174,17 +174,17 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.once(eventContainer, {
-            'type' : 'touchstart',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchstart',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         happen.once(eventContainer, {
-            'type' : 'touchend',
-            'touches' : [{
-                'clientX':point.x,
-                'clientY':point.y
+            'type': 'touchend',
+            'touches': [{
+                'clientX': point.x,
+                'clientY': point.y
             }]
         });
         expect(spy.called).to.be.ok();
@@ -199,14 +199,14 @@ describe('Geometry.Events', function () {
         circle.once('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
         spy.reset();
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).not.to.be.ok();
     });
@@ -221,8 +221,8 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x,
-            'clientY':point.y
+            'clientX': point.x,
+            'clientY': point.y
         });
         expect(spy.called).not.to.be.ok();
     });
@@ -231,8 +231,8 @@ describe('Geometry.Events', function () {
         var circle = new maptalks.Marker(map.getCenter(), {
             'symbol': {
                 'markerType': 'circle',
-                'markerWidth': {stops: [[18, 0], [20, 30]]},
-                'markerHeight': {stops: [[18, 0], [20, 30]]},
+                'markerWidth': { stops: [[18, 0], [20, 30]] },
+                'markerHeight': { stops: [[18, 0], [20, 30]] },
             }
         });
         circle.addTo(layer);
@@ -242,8 +242,8 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x + 2,
-            'clientY':point.y
+            'clientX': point.x + 2,
+            'clientY': point.y
         });
         expect(spy.called).not.to.be.ok();
     });
@@ -252,8 +252,8 @@ describe('Geometry.Events', function () {
         var circle = new maptalks.Marker(map.getCenter(), {
             'symbol': {
                 'markerType': 'circle',
-                'markerWidth': {stops: [[10, 0], [20, 30]]},
-                'markerHeight': {stops: [[10, 0], [20, 30]]},
+                'markerWidth': { stops: [[10, 0], [20, 30]] },
+                'markerHeight': { stops: [[10, 0], [20, 30]] },
             }
         });
         circle.addTo(layer);
@@ -263,9 +263,34 @@ describe('Geometry.Events', function () {
         circle.on('click', spy);
 
         happen.click(eventContainer, {
-            'clientX':point.x + 1,
-            'clientY':point.y
+            'clientX': point.x + 1,
+            'clientY': point.y
         });
         expect(spy.called).to.be.ok();
     });
+    
+    it('#2027 Horizontal line', function () {
+        var center = map.getCenter();
+        var c1 = center.add(1, 0);
+        var line = new maptalks.LineString([center, c1]);
+        line.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        line.on('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+        expect(spy.called).to.be.ok();
+        spy.reset();
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y
+        });
+        expect(spy.called).to.be.ok();
+    });
+
+
 });
