@@ -1,15 +1,15 @@
 import * as maptalks from 'maptalks';
 
-export function getCascadeTileIds(layer, x, y, z, offset, scale, levelLimit) {
+export function getCascadeTileIds(layer, x, y, z, offset, terrainTileScaleY, scale, levelLimit) {
     const result = {};
     for (let i = 0; i < levelLimit; i++) {
-        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, offset, scale, i);
+        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, offset, terrainTileScaleY, scale, i);
     }
     return result;
 }
 
 const EMPTY_ARRAY = [];
-export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
+export function getTileIdsAtLevel(layer, x, y, z, offset, terrainTileScaleY, scale, level) {
     z -= level;
     if (z <= 0) {
         return EMPTY_ARRAY;
@@ -19,12 +19,11 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
     const layerOffset = layer['_getTileOffset'](z);
     const tileOffsetX = offset[0] - layerOffset[0];
     const tileOffsetY = layerOffset[1] - offset[1];
-    let tileXScale, tileYScale;
-    if (tileOffsetX || tileOffsetY) {
-        const tileConfig = layer['_getTileConfig']();
-        tileXScale = tileConfig.tileSystem.scale.x;
-        tileYScale = tileConfig.tileSystem.scale.x;
-    }
+    const tileConfig = layer['_getTileConfig']();
+    const sr = layer.getSpatialReference();
+    const tileRes = sr.getResolution(z);
+    const tileXScale = tileConfig.tileSystem.scale.x;
+    const tileYScale = tileConfig.tileSystem.scale.y;
 
     const delta = 1E-7;
     scale = scale / Math.pow(2, level);
@@ -44,11 +43,16 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
     }
     if (xStart === 0 && yStart === 0 && xEnd <= 1 && yEnd <= 1) {
         const tx = Math.floor(x * scale);
-        const ty = Math.floor(y * scale);
+        let ty = Math.floor(y * scale);
+        const skinY = ty;
+        if (tileYScale !== terrainTileScaleY) {
+            ty = getReverseY(tileConfig, ty, tileRes);
+        }
         return [
             {
                 x: tx,
                 y: ty,
+                skinY,
                 z,
                 offset: layerOffset,
                 tileSize,
@@ -60,10 +64,15 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, scale, level) {
     for (let i = xStart; i < xEnd; i++) {
         for (let j = yStart; j < yEnd; j++) {
             const tx = x * scale + i;
-            const ty = y * scale + j;
+            let ty = y * scale + j;
+            const skinY = ty;
+            if (tileYScale !== terrainTileScaleY) {
+                ty = getReverseY(tileConfig, ty, tileRes);
+            }
             result.push({
                 x: tx,
                 y: ty,
+                skinY,
                 z,
                 offset: layerOffset,
                 tileSize,
@@ -87,6 +96,7 @@ export function getParentSkinTile(layer, x, y, z, limit) {
     return cached;
 }
 
+// 地形瓦片与skin瓦片编号的scale
 export function getSkinTileScale(res, size, terrainRes, terrainSize) {
     let scale = res / terrainRes * terrainSize / size;
     if (scale < 1) {
@@ -110,4 +120,9 @@ export function inTerrainTile(tileInfo, x, y, res) {
     const point0 = TILEPOINT.set(x, y);
     const point1 = point0['_multi'](res / tileInfo.res);
     return tileInfo.extent2d.contains(point1);
+}
+
+function getReverseY(tileConfig, y, res) {
+    const fullExtent = tileConfig.fullExtent;
+    return Math.round((fullExtent['top'] - fullExtent['bottom']) / (tileConfig.tileSize.width * res) - y) - 1;
 }

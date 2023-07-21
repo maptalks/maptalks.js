@@ -25,6 +25,7 @@ const options = {
     'blendSrc': 'one',
     'blendDst': 'one minus src alpha',
     'requireSkuToken': true,
+    'cesiumIonTokenURL': 'https://api.cesium.com/v1/assets/1/endpoint?access_token=',
     'tileRetryCount': 0,
     'maxCacheSize': 300,
     'shader': 'default'
@@ -149,7 +150,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
             if (!info.skinTileIds[layerId]) {
                 const skinTileIds = new Set();
                 const layerTiles = [];
-                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, offset, scale, 0);
+                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, offset, dy, scale, 0);
                 for (let j = 0; j < tileIds.length; j++) {
                     const skinTile = tileIds[j];
                     if (skinTileIds.has(skinTile.id)) {
@@ -161,7 +162,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
                     skinTile.url = layer.getTileUrl(skinTile.x, skinTile.y, skinTile.z + layer.options['zoomOffset']);
 
                     const xOffset = dx * (skinTile.x - leftX) * tileSize;
-                    const yOffset = dy * (skinTile.y - topY) * tileSize;
+                    const yOffset = dy * (skinTile.skinY - topY) * tileSize;
                     const xmin = extent2d.xmin * resScale + xOffset;
                     const ymax = extent2d.ymax * resScale + yOffset;
                     skinTile.extent2d = new maptalks.PointExtent(
@@ -289,7 +290,7 @@ export default class TerrainLayer extends maptalks.TileLayer {
 
         const scale = getSkinTileScale(terrainRes, terrainTileSize, res, tileSize);
 
-        const terrainTiles = getCascadeTileIds(this, x, y, zoom, offset, scale, 1)[0];
+        const terrainTiles = getCascadeTileIds(this, x, y, zoom, offset, tc.tileSystem.scale.y, scale, 1)[0];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { x: tx, y: ty } = terrainTiles[i];
             const nw = tc.getTilePointNW(tx, ty, terrainRes, POINT0);

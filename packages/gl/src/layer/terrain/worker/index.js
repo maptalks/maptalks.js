@@ -1,6 +1,7 @@
 import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
 import Martini from '@maptalks/martini';
+import { vec2, vec3 } from 'gl-matrix';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 
@@ -37,8 +38,10 @@ const requestHeaders = {
         'Accept': 'image/webp,*/*'
     }
 };
+requestHeaders['cesium-ion'] = requestHeaders['cesium'];
 const maxShort = 32767;
-let access_token = null;
+let cesium_access_token = null;
+let cesiumAccessTokenPromise = null;
 function load(url, headers, origin) {
     const options = {
         method: 'GET',
@@ -179,13 +182,17 @@ function lerp(p, q, time) {
     return (1.0 - time) * p + time * q;
 }
 
+const POSITIONS = [];
+
 function generateCesiumTerrain(buffer) {
+    // cesium 格式说明：
+    // https://www.cnblogs.com/oloroso/p/11080222.html
     let pos = 0;
     const cartesian3Elements = 3;
-    const boundingSphereElements = cartesian3Elements + 1;
+    // const boundingSphereElements = cartesian3Elements + 1;
     const cartesian3Length = Float64Array.BYTES_PER_ELEMENT * cartesian3Elements;
-    const boundingSphereLength =
-    Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
+    // const boundingSphereLength =
+    // Float64Array.BYTES_PER_ELEMENT * boundingSphereElements;
     const encodedVertexElements = 3;
     const encodedVertexLength =
     Uint16Array.BYTES_PER_ELEMENT * encodedVertexElements;
@@ -199,7 +206,9 @@ function generateCesiumTerrain(buffer) {
     pos += Float32Array.BYTES_PER_ELEMENT;
     const maximumHeight = view.getFloat32(pos, true);
     pos += Float32Array.BYTES_PER_ELEMENT;
-    pos += boundingSphereLength;
+    pos += cartesian3Length;
+    const radius = view.getFloat64(pos, true);
+    pos += Float64Array.BYTES_PER_ELEMENT;
     pos += cartesian3Length;
 
     const vertexCount = view.getUint32(pos, true);
@@ -255,8 +264,7 @@ function generateCesiumTerrain(buffer) {
         quantizedVertexCount * 2,
         3 * quantizedVertexCount
     );
-    const positions = new Float32Array(quantizedVertexCount * 3);
-    const uvs = new Float32Array(quantizedVertexCount * 2);
+    const positions = POSITIONS;
     for (let i = 0; i < quantizedVertexCount; ++i) {
         const rawU = uBuffer_1[i];
         const rawV = vBuffer_1[i];
@@ -268,13 +276,131 @@ function generateCesiumTerrain(buffer) {
             maximumHeight,
             heightBuffer_1[i] / maxShort
         );
-        uvs[i * 2] = u;
-        uvs[i * 2 + 1] = 1 - v;
-        positions[i * 3] = (u * 256);
-        positions[i * 3 + 1] = (-(1 - v) * 256);
+        positions[i * 3] = u;
+        positions[i * 3 + 1] = (1 - v);
         positions[i * 3 + 2] = height;
     }
-    return { positions, texcoords: uvs, triangles: indices}
+    return { positions, radius, min: minimumHeight, max: maximumHeight, indices}
+}
+
+const P0P1 = [];
+const P1P2 = [];
+const A = [];
+const B = [];
+const C = [];
+
+class Triangle {
+    constructor(positions, a, b, c, radius) {
+        this.p0 = [];
+        this.p1 = [];
+        this.p2 = [];
+        this.normal = [];
+        this.min = [];
+        this.max = [];
+        this.set(positions, a, b, c, radius);
+    }
+
+    set(positions, a, b, c, radius) {
+        this.radius = radius;
+        let x = a * 3;
+        let y = a * 3 + 1;
+        let z = a * 3 + 2;
+        this.p0[0] = positions[x] * radius;
+        this.p0[1] = positions[y] * radius;
+        this.p0[2] = positions[z];
+        x = b * 3;
+        y = b * 3 + 1;
+        z = b * 3 + 2;
+        this.p1[0] = positions[x] * radius;
+        this.p1[1] = positions[y] * radius;
+        this.p1[2] = positions[z];
+        x = c * 3;
+        y = c * 3 + 1;
+        z = c * 3 + 2;
+        this.p2[0] = positions[x] * radius;
+        this.p2[1] = positions[y] * radius;
+        this.p2[2] = positions[z];
+
+        this.min[0] = Math.min(this.p0[0], this.p1[0], this.p2[0]);
+        this.min[1] = Math.min(this.p0[1], this.p1[1], this.p2[1]);
+
+        this.max[0] = Math.max(this.p0[0], this.p1[0], this.p2[0]);
+        this.max[1] = Math.max(this.p0[1], this.p1[1], this.p2[1]);
+
+        const p0p1 = vec3.sub(P0P1, this.p1, this.p0);
+        const p1p2 = vec3.sub(P1P2, this.p2, this.p1);
+        this.normal = vec3.normalize(this.normal, vec3.cross(this.normal, p0p1, p1p2));
+    }
+
+    contains(x, y) {
+        if (x < this.min[0] || x > this.max[0] || y < this.min[1] || y > this.max[1]) {
+            return false;
+        }
+        vec2.set(A, this.p0[0], this.p0[1]);
+        vec2.set(B, this.p1[0], this.p1[1]);
+        vec2.set(C, this.p2[0], this.p2[1]);
+        const SABC = calTriangleArae(A[0], A[1], B[0], B[1], C[0], C[1]);
+        const SPAC = calTriangleArae(x, y, A[0], A[1], C[0], C[1]);
+        const SPAB = calTriangleArae(x, y, A[0], A[1], B[0], B[1]);
+        const SPBC = calTriangleArae(x, y, B[0], B[1], C[0], C[1]);
+        return SPAC + SPAB + SPBC - SABC <= 0.0001;
+    }
+
+    getHeight(x, y) {
+        // https://stackoverflow.com/questions/18755251/linear-interpolation-of-three-3d-points-in-3d-space
+        //z1 - ((x4-x1)*N.x + (y4-y1)*N.y)/ N.z
+        const N = this.normal;
+        return this.p0[2] - ((x - this.p0[0]) * N[0] + (y - this.p0[1]) * N[1]) / N[2];
+    }
+}
+
+// 当前像素命中某三角形后，下一个像素也很可能会在该三角形中，可以节省一些循环
+let preTriangle = null;
+function findInTriangle(triangles, x, y) {
+    if (preTriangle && preTriangle.contains(x, y)) {
+        return preTriangle.getHeight(x, y);
+    }
+    for (let i = 0; i < triangles.length; i++) {
+        if (triangles[i].contains(x, y)) {
+            preTriangle = triangles[i];
+            return triangles[i].getHeight(x, y);
+        }
+    }
+    return 0;
+}
+const TRIANGLES = [];
+
+function cesiumTerrainToHeights(cesiumTerrain, terrainWidth) {
+    const { positions, min, max, indices, radius } = cesiumTerrain;
+    const triangles = [];
+    let index = 0;
+    for (let i = 0; i < indices.length; i += 3) {
+        let triangle = TRIANGLES[index];
+        if (triangle) {
+            triangle.set(positions, indices[i], indices[i + 1], indices[i + 2], radius * 2);
+        } else {
+            triangle = TRIANGLES[index] =  new Triangle(positions, indices[i], indices[i + 1], indices[i + 2], radius * 2);
+        }
+        index++;
+        triangles.push(triangle);
+    }
+    const heights = new Float32Array(terrainWidth * terrainWidth);
+    index = 0;
+    for (let i = 0; i < terrainWidth; i++) {
+        for (let j = 0; j < terrainWidth; j++) {
+            heights[index++] = findInTriangle(triangles, j / terrainWidth * radius * 2, i / terrainWidth * radius * 2);
+        }
+    }
+
+    const result = { data: heights, min, max, width: terrainWidth, height: terrainWidth };
+
+    return result;
+}
+
+
+
+function calTriangleArae(x1, y1, x2, y2, x3, y3) {
+    return Math.abs(x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) * 0.5;
 }
 
 function zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer) {
@@ -308,12 +434,16 @@ function loadTerrain(params, cb) {
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
         fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
-    } else if (type === 'cesium') {
-        const tokenUrl = 'https://api.cesium.com/v1/assets/1/endpoint?access_token=' + accessToken;
-        if (access_token) {
+    } else if (type === 'cesium-ion') {
+        const tokenUrl = params.cesiumIonTokenURL + accessToken;
+        if (cesium_access_token) {
             fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+        } else if (cesiumAccessTokenPromise) {
+            cesiumAccessTokenPromise.then(() => {
+                fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+            });
         } else {
-            fetch(tokenUrl, {
+            cesiumAccessTokenPromise = fetch(tokenUrl, {
                 responseType: "json",
                 method: 'GET',
                 referrer: origin,
@@ -324,23 +454,23 @@ function loadTerrain(params, cb) {
             }).then(tkJson => {
                 return tkJson.json();
             }).then(res => {
-                access_token = res.accessToken;
+                cesium_access_token = res.accessToken;
+                cesiumAccessTokenPromise = null;
+            });
+            cesiumAccessTokenPromise.then(() => {
                 fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
             });
         }
+    } else if (type === 'cesium') {
+        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
     } else if (type === 'mapbox') {
         fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
     }
 }
 
 function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb) {
-    if (type === 'cesium') {
-        // headers['Authorization'] = 'Bearer ' + access_token;
-        headers = {
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept': 'application/vnd.quantized-mesh,application/octet-stream;q=0.9,*/*;q=0.01',
-            'Authorization': 'Bearer ' + access_token
-        }
+    if (type === 'cesium-ion') {
+        headers['Authorization'] = 'Bearer ' + cesium_access_token;
     }
     load(url, headers, origin).then(res => {
         if (!res || res.message) {
@@ -361,10 +491,10 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
             if (type === 'tianditu') {
                 const terrainData = generateTiandituTerrain(buffer, terrainWidth);
                 triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, null, null, true, true, cb);
-            } else if (type === 'cesium') {
+            } else if (type === 'cesium-ion' || type === 'cesium') {
                 terrain = generateCesiumTerrain(buffer);
-                const transferables = [terrain.positions.buffer, terrain.texcoords.buffer, terrain.triangles.buffer];
-                cb(terrain, transferables)
+                const terrainData = cesiumTerrainToHeights(terrain, terrainWidth);
+                triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, null, null, true, true, cb);
             } else if (type === 'mapbox') {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {

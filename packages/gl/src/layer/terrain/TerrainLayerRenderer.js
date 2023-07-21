@@ -139,7 +139,8 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
 
         let skinTileIds = tileImage.skinTileIds[skinIndex];
         if (!skinTileIds) {
-            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, offset, scale, SKIN_LEVEL_LIMIT);
+            const terrainTileScaleY = this.layer['_getTileConfig']().tileSystem.scale.y;
+            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];
         let complete = true;
@@ -523,6 +524,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             terrainWidth,
             type: layerOptions.type,
             accessToken: layerOptions.accessToken,
+            cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
             error: error,
             maxAvailable: maxAvailableZoom === tile.z
         };
