@@ -17,6 +17,10 @@ export default Base =>
             if (!type) {
                 return this;
             }
+            if (registeredTypes[type]) {
+                console.error(`${type} has register. please use Different name for:`, this);
+                return this;
+            }
             registeredTypes[type] = this;
             return this;
         }
@@ -51,7 +55,7 @@ export default Base =>
                 }
             }
             if (!this._jsonType) {
-                throw new Error('Found an unregistered geometry class!');
+                throw new Error('Found an unregistered Layer/Geometry class!');
             }
             return this._jsonType;
         }
