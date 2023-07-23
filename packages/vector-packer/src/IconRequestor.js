@@ -8,7 +8,7 @@ export default class IconRequestor {
         this._requesting = {};
         this._cache = new LRUCache(256, function () {});
         const canvas = document.createElement('canvas');
-        this.ctx = canvas.getContext('2d');
+        this.ctx = canvas.getContext('2d', { willReadFrequently: true });
     }
 
     getIcons(icons, cb) {
