@@ -34,13 +34,14 @@ class ExtrudePolygonLayer extends Vector3DLayer {
     }
 
     updateMaterial(matInfo) {
-        if (!matInfo) {
-            return this;
-        }
         if (!this.options.material) {
             this.options.material = {};
         }
-        extend(this.options.material, matInfo);
+        if (matInfo) {
+            extend(this.options.material, matInfo);
+        } else {
+            this.options.material = null;
+        }
         const renderer = this.getRenderer();
         if (renderer) {
             renderer.updateMaterial(matInfo);
@@ -49,15 +50,21 @@ class ExtrudePolygonLayer extends Vector3DLayer {
     }
 
     updateSideMaterial(matInfo) {
-        if (!matInfo) {
-            return this;
-        }
+        let isNew = false;
         if (!this.options.sideMaterial) {
             this.options.sideMaterial = {};
+            isNew = true;
         }
-        extend(this.options.sideMaterial, matInfo);
+        if (matInfo) {
+            extend(this.options.sideMaterial, matInfo);
+        } else {
+            this.options.sideMaterial = null;
+        }
         const renderer = this.getRenderer();
         if (renderer) {
+            if (isNew) {
+                renderer._deleteSideMaterial();
+            }
             renderer.updateSideMaterial(matInfo);
         }
         return this;
@@ -150,11 +157,24 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this.setToRedraw();
     }
 
+    _deleteSideMaterial() {
+        if (!this.sidePainter) {
+            return;
+        }
+        this.sidePainter.deleteMaterial();
+    }
+
     updateSideMaterial(matInfo) {
         if (!this.sidePainter) {
             return;
         }
-        this.sidePainter._updateMaterial(matInfo);
+        if (matInfo) {
+            this.sidePainter._updateMaterial(matInfo);
+        } else {
+            this.sidePainter.deleteMaterial();
+            this.sidePainter._updateMaterial(this.layer.options.material);
+        }
+
         this.setToRedraw();
     }
 

@@ -2356,6 +2356,91 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('should can reset ExtrudePolygonLayer sideMaterial, fuzhenn/maptalks-ide#3299', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const material = {
+            baseColorFactor: [1, 1, 1, 1]
+        };
+        const sideMaterial = {
+            baseColorFactor: [1, 0, 0, 1]
+        };
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' },
+            material,
+            sideMaterial
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[1] < 50);
+                layer.updateSideMaterial(null);
+            } else if (count === 3) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[1] > 50);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
+    it('should can update ExtrudePolygonLayer sideMaterial from none, fuzhenn/maptalks-ide#3299', done => {
+        map.setPitch(60);
+        const polygon = new maptalks.Polygon([
+            [0, 0], [1, 0], [1, 1], [0, 1], [0, 0]
+        ], {
+            symbol: {
+                polygonFill: '#fff'
+            },
+            properties: {
+                height: 20000
+            }
+        });
+
+        const material = {
+            baseColorFactor: [1, 0, 0, 1]
+        };
+        const sideMaterial = {
+            baseColorFactor: [1, 1, 1, 1]
+        };
+        const layer = new ExtrudePolygonLayer('polygons', [polygon], {
+            dataConfig: { altitudeProperty: 'height' },
+            material
+        });
+        const group = new GroupGLLayer('group', [layer]);
+        let count = 0;
+        group.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[1] < 50);
+                layer.updateSideMaterial(sideMaterial);
+            } else if (count === 3) {
+                const canvas = group.getRenderer().canvas;
+                const pixel = readPixel(canvas, canvas.width / 2 + 20, canvas.height / 2 - 10);
+                assert(pixel[1] > 50);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     function assertChangeStyle(done, layer, expectedColor, offset, changeFun, isSetStyle, firstColor) {
         if (typeof offset === 'function') {
             changeFun = offset;

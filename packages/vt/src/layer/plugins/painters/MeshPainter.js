@@ -229,10 +229,10 @@ class MeshPainter extends Painter {
         const cullFace = this.sceneConfig.cullFace;
         this.sceneConfig.cullFace = 'front';
         this.callBackgroundTileShader(uniforms, context);
-        if (cullFace) {
-            this.sceneConfig.cullFace = cullFace;
-        } else {
+         if (cullFace === undefined) {
             delete this.sceneConfig.cullFace;
+        } else {
+            this.sceneConfig.cullFace = cullFace;
         }
         super.callShader(uniforms, context);
     }
@@ -317,6 +317,14 @@ class MeshPainter extends Painter {
         } else {
             mesh.ssr = 0;
         }
+    }
+
+    deleteMaterial() {
+        if (!this.material) {
+            return;
+        }
+        this.material.dispose();
+        delete this.material;
     }
 
     deleteMesh(meshes, keepGeometry) {
