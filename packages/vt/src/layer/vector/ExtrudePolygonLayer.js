@@ -70,10 +70,11 @@ class ExtrudePolygonLayer extends Vector3DLayer {
         if (!this.options.dataConfig) {
             this.options.dataConfig = {};
         }
+        const old = JSON.parse(JSON.stringify(this.options.dataConfig));
         extend(this.options.dataConfig, dataConfig);
         const renderer = this.getRenderer();
         if (renderer) {
-            renderer.updateDataConfig(dataConfig);
+            renderer.updateDataConfig(dataConfig, old);
         }
         return this;
     }
@@ -157,11 +158,11 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         this.setToRedraw();
     }
 
-    updateDataConfig(dataConfig) {
+    updateDataConfig(dataConfig, old) {
         if (!this.painter) {
             return;
         }
-        this.painter.updateDataConfig(dataConfig);
+        this.painter.updateDataConfig(dataConfig, old);
         this._markRebuild();
     }
 
