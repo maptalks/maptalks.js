@@ -14,6 +14,7 @@ import Class from '../core/Class';
 import Eventable from '../core/Eventable';
 import Size from '../geo/Size';
 import Geometry from '../geometry/Geometry';
+import Coordinate from '../geo/Coordinate';
 
 /**
  * @property {Object} options
@@ -182,6 +183,9 @@ class UIComponent extends Eventable(Class) {
         this.options['visible'] = true;
 
         coordinate = coordinate || this._coordinate || this._owner.getCenter();
+        if (!(coordinate instanceof Coordinate)) {
+            coordinate = new Coordinate(coordinate);
+        }
 
         const visible = this.isVisible();
 
