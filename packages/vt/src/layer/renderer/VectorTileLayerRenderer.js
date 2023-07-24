@@ -409,6 +409,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const plugins = this._getFramePlugins();
         //按照plugin顺序更新collision索引
         plugins.forEach((plugin, idx) => {
+            if (!plugin) {
+                return;
+            }
             plugin.renderIndex = idx;
         });
     }
