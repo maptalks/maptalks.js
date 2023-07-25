@@ -52,9 +52,10 @@ export default class Actor {
         const hasCreated = adapterHasCreated(workerKey);
         //当同一个workerKey多例时初始化会有问题吗？不会，因为第一个Actor会将workerpool占满，后续的Actor worker通信处于排队状态
         //当第一个Actor初始化完成释放了worker pool里的每个worker资源,后续的Actor的消息通信才会被执行
+        //当且仅当worker线程池启动且第一次创建改Actor时才走这个逻辑,后续改workerKey的Actor都是同步的
         if (workersHasCreated() && !hasCreated) {
             this.initializing = true;
-            console.log(`Dynamic Create Adapter for worker:${workerKey}`);
+            console.log(`Injecting codes in worker with worker key: :${workerKey}`);
             createAdapter(workerKey, () => {
                 this.initializing = false;
                 this.created();
