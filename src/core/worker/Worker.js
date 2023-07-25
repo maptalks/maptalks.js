@@ -1,4 +1,5 @@
 import { isFunction } from '../util/common.js';
+import { getWorkerPool, pushAdapterCreated } from './CoreWorkers.js';
 
 let adapters = {};
 /**
@@ -30,8 +31,28 @@ export function registerWorkerAdapter(workerKey, adapter) {
 
 const header = `
     var adapters = {};
+    // Dynamic Create Adapter
+    function createAdapter(key,code){
+        if(adapters[key]||!code){
+            return;
+        }
+        var func=new Function('exports',code+'(exports)');
+        var workerExports={};
+        func(workerExports,self);
+        adapters[key]=workerExports;
+        workerExports.initialize && workerExports.initialize(self);
+        
+    }
     onmessage = function (msg) {
         msg = msg.data;
+        //createAdapter
+        if (msg.messageType === 'createAdapter') {
+           var key=msg.key;
+           var code=msg.code;
+           createAdapter(key,code);
+           postMessage({adapterName:key});
+           return;
+        }
         if (msg.messageType === 'batch') {
             const messages = msg.messages;
             if (messages) {
@@ -91,6 +112,7 @@ function compileWorkerSource() {
     let source = header;
     for (const p in adapters) {
         let adapter = adapters[p];
+        pushAdapterCreated(p);
         if (isFunction(adapter)) {
             if (adapter.length === 0) {
                 // new definition form of worker source
@@ -120,7 +142,53 @@ export function getWorkerSourcePath() {
         const source = compileWorkerSource();
         url = window.URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
         //clear cached worker adapters
-        adapters = null;
+        adapters = {};
     }
     return url;
+}
+
+// Dynamic Create Adapter
+//利用worker通信向每个workerPool里的每个worker注入新的code
+//注意注入的代码在worker code里不是明文的，是个匿名函数挂到adapters,代码层面是看不到改段代码的
+export function createAdapter(key, cb) {
+    if (!adapters[key]) {
+        console.error(`not find ${key} adapter`);
+        return;
+    }
+    let adapter = adapters[key];
+    if (isFunction(adapter)) {
+        if (adapter.length === 0) {
+            // new definition form of worker source
+            adapter = adapter();
+        }
+    }
+    adapter = `(${adapter})`;
+    const workerPool = getWorkerPool();
+    if (!workerPool) {
+        return;
+    }
+    const workers = workerPool.workers || [];
+    if (workers.length === 0) {
+        console.error('workerpool workers count is 0');
+    }
+    let count = 0;
+    const messageCB = (msg) => {
+        msg = msg.data || {};
+        if (msg.adapterName === key) {
+            count++;
+            if (count === workers.length) {
+                workers.forEach(worker => {
+                    worker.removeEventListener('message', messageCB);
+                });
+                delete adapters[key];
+                cb();
+            }
+        }
+    };
+    workers.forEach(worker => {
+        worker.addEventListener('message', messageCB);
+        worker.postMessage({ key, code: adapter, messageType: 'createAdapter' });
+    });
+
+
 }

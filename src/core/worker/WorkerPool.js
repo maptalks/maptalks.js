@@ -1,4 +1,5 @@
 import { requestAnimFrame } from '../util';
+import { setWorkerPool, setWorkersCreated } from './CoreWorkers';
 import { getWorkerSourcePath } from './Worker';
 
 const hardwareConcurrency = typeof window !== 'undefined' ? (window.navigator.hardwareConcurrency || 4) : 0;
@@ -56,6 +57,7 @@ export default class WorkerPool {
                 this.workers.push(worker);
             }
             URL.revokeObjectURL(url);
+            setWorkersCreated();
         }
         this.active[id] = true;
 
@@ -105,6 +107,7 @@ let globalWorkerPool;
 export function getGlobalWorkerPool() {
     if (!globalWorkerPool) {
         globalWorkerPool = new WorkerPool();
+        setWorkerPool(globalWorkerPool);
     }
     return globalWorkerPool;
 }

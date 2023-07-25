@@ -1,3 +1,4 @@
+import Browser from './Browser';
 import { extend, isString, isNil } from './util';
 import { stopPropagation } from './util/dom';
 /**
@@ -49,7 +50,9 @@ const Eventable = Base =>
                 if (l > 0) {
                     for (let i = 0; i < l; i++) {
                         if (handler === handlerChain[i].handler && handlerChain[i].context === context) {
-                            console.warn(this, `find '${eventsOn}' handler:`, handler, ' The old listener function will be removed');
+                            if (!Browser.isTest) {
+                                console.warn(this, `find '${eventsOn}' handler:`, handler, ' The old listener function will be removed');
+                            }
                             return this;
                         }
                     }
