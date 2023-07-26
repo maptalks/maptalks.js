@@ -11,6 +11,7 @@ uniform vec3 ambientColor;
 uniform vec4 light0_diffuse;
 uniform vec3 lightSpecular;
 uniform vec3 cameraPosition;
+uniform float alphaTest;
 
 #ifdef HAS_TOON
     uniform float toons;
@@ -186,9 +187,9 @@ void main() {
     #endif
 
     #ifdef IS_LINE_EXTRUSION
-        glFragColor = vec4(result, lineOpacity);
+        glFragColor = vec4(result, lineOpacity * baseColor.a);
     #else
-        glFragColor = vec4(result, polygonOpacity);
+        glFragColor = vec4(result, polygonOpacity * baseColor.a);
     #endif
 
     // glFragColor = linearTosRGB(glFragColor);
@@ -207,7 +208,9 @@ void main() {
         alpha = clamp(alpha, 0.0, 1.0);
         glFragColor *= alpha;
     #endif
-
+  if (glFragColor.a < alphaTest) {
+        discard;
+    }
     #ifdef HAS_HEATMAP
         glFragColor = heatmap_getColor(glFragColor);
     #endif

@@ -178,39 +178,6 @@ describe('add analysis', () => {
         gllayer.addTo(map);
     });
 
-    it('add ExcavateAnalysis', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol : {
-                url : modelUrl,
-                scaleX: 4,
-                scaleY: 4,
-                scaleZ: 4
-            }
-        }).addTo(gltflayer);
-        marker.on('load', () => {
-            const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
-                [-0.0013518333435058594, 0.00009655952453613281],
-                [-0.0004184246063232422, -0.0005686283111288049],
-                [0.0005471706390380859, 0.00006437301638584358],
-                [0.0005042552947998047, 0.0006651878356649377]];
-            const excavateAnalysis = new maptalks.ExcavateAnalysis({
-                boundary,
-                textureUrl: './resources/ground.jpg'
-            });
-            excavateAnalysis.addTo(gllayer);
-            setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                const pixel2 = pickPixel(map, 250, 100, 1, 1);
-                expect(pixelMatch([120, 98, 85, 255], pixel1)).to.be.eql(true);//挖方区颜色
-                expect(pixelMatch([255, 255, 255, 255], pixel2)).to.be.eql(true);//非挖方区颜色
-                done();
-            }, 500);
-        });
-        gllayer.addTo(map);
-    });
-
     it('add HeightLimitAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
@@ -381,33 +348,6 @@ describe('add analysis', () => {
         gllayer.addTo(map);
     });
 
-    it('calculate volume for excavate analysis', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, {
-            symbol : {
-                url : modelUrl,
-                scaleX: 4,
-                scaleY: 4,
-                scaleZ: 4
-            }
-        }).addTo(gltflayer);
-        marker.on('load', () => {
-            const boundary = [[-0.00021457672119140625, 0.00019311904907226562], [-0.0000858306884765625, 0.000171661376953125], [-0.00007510185241699219, 0.00007510185241699219], [-0.00021457672119140625, 0.00008583068850498421]];
-            const excavateAnalysis = new maptalks.ExcavateAnalysis({
-                boundary,
-                textureUrl: './resources/ground.jpg',
-                height: -10
-            });
-            excavateAnalysis.addTo(gllayer);
-            setTimeout(function() {
-                const volume = excavateAnalysis.getVolume();
-                expect(volume.toFixed(4)).to.be.eql(190.0570);
-                done();
-            }, 500);
-        });
-    });
-
     it('update boundary for crosscut analysis', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
@@ -469,49 +409,6 @@ describe('add analysis', () => {
             viewshedAnalysis.addTo(gllayer);
             skylineAnalysis.disable();
             done();
-        });
-        gllayer.addTo(map);
-    });
-
-    it('exclude layers', done => {
-        const gltflayer1 = new maptalks.GLTFLayer('gltf1');
-        const gltflayer2 = new maptalks.GLTFLayer('gltf2');
-        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer1, gltflayer2], { sceneConfig });
-        const marker1 = new maptalks.GLTFGeometry(center, {
-            symbol : {
-                url : modelUrl,
-                scaleX: 4,
-                scaleY: 4,
-                scaleZ: 4
-            }
-        }).addTo(gltflayer1);
-        new maptalks.GLTFGeometry(center, {
-            symbol : {
-                url : modelUrl,
-                scale: [1, 1, 1]
-            }
-        }).addTo(gltflayer1);
-        marker1.on('load', () => {
-            const boundary = [[ -0.00084, 0.00081],
-                [-0.00135, 0.00009],
-                [-0.00041, -0.00056],
-                [0.00054, 0.00006],
-                [0.0005, 0.00066]];
-            const excavateAnalysis = new maptalks.ExcavateAnalysis({
-                boundary,
-                textureUrl: './resources/ground.jpg',
-                excludeLayers: ['gltf2'] //不参与被开挖图层的id
-            });
-            excavateAnalysis.addTo(gllayer);
-            setTimeout(function() {
-                const renderer = gltflayer1.getRenderer();
-                const meshes = renderer.getAnalysisMeshes();
-                const tempMap = excavateAnalysis.exportAnalysisMap(meshes);
-                const index = (map.height / 2) * map.width * 4 + (map.width / 2) * 4;
-                const arr = tempMap.slice(index, index + 16);
-                expect(pixelMatch([122, 99, 83, 255, 157, 131, 114, 255, 134, 117, 101, 255, 122, 92, 81, 255], arr));
-                done();
-            }, 500);
         });
         gllayer.addTo(map);
     });
@@ -715,6 +612,7 @@ describe('add analysis', () => {
             measuretool.fire('mousemove', { coordinate: center.add(0.001, 0) });
             const result = measuretool.getMeasureResult();
             expect(result.toFixed(5)).to.be.eql(222.63898);
+            measuretool.clear();
             done();
         }
         marker.on('load', () => {
@@ -725,5 +623,56 @@ describe('add analysis', () => {
                 measure();
             }, 100);
         });
+    });
+
+
+    it('ExcavateAnalysis', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol : {
+                url : modelUrl,
+                scaleX: 4,
+                scaleY: 4,
+                scaleZ: 4
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            const dataConfig = {
+                type: "3d-extrusion",
+                altitudeProperty: "height",
+                altitudeScale: 1,
+                defaultAltitude: 0,
+                top: false,
+                side: true
+            };
+            const material = {
+                baseColorFactor: [1, 1, 1, 1],
+            };
+            const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
+                [-0.0013518333435058594, 0.00009655952453613281],
+                [-0.0004184246063232422, -0.0005686283111288049],
+                [0.0005471706390380859, 0.00006437301638584358],
+                [0.0005042552947998047, 0.0006651878356649377]];
+            const polygon = new maptalks.Polygon(boundary, {
+                properties: {
+                    height: 50
+                }
+            });
+            const excavateAnalysis = new maptalks.ExcavateAnalysis('excavate', [polygon], {
+                dataConfig,
+                material
+            });
+            excavateAnalysis.excavate(gltflayer);
+            excavateAnalysis.addTo(gllayer);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                const pixel2 = pickPixel(map, 250, 100, 1, 1);
+                expect(pixelMatch([255, 137, 137, 255], pixel1)).to.be.eql(true);//挖方区颜色
+                expect(pixelMatch([145, 145, 145, 255], pixel2)).to.be.eql(true);//非挖方区颜色
+                done();
+            }, 500);
+        });
+        gllayer.addTo(map);
     });
 });

@@ -139,7 +139,6 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     remove() {
-        super.remove();
         if (this._helperLayer) {
             this._helperLayer.remove();
         }
@@ -149,7 +148,6 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     clear() {
-        super.clear();
         if (this._helperLayer) {
             this._helperLayer.clear();
         }

@@ -1178,18 +1178,17 @@ export default class MeshPainter {
         // 程序中无需管理buffer的销毁，Geometry中会维护buffer的引用计数来管理buffer的销毁
         const matInfo = gltf.materials && gltf.materials[gltfMesh.material];
         const khrTechniquesWebgl = gltf.extensions && gltf.extensions['KHR_techniques_webgl'];
+        const service =  this._layer._getNodeService(node._rootIdx);
         if (khrTechniquesWebgl && matInfo.extensions && matInfo.extensions['KHR_techniques_webgl']) {
             // s3m.vert 和 s3m.frag 是用webgl 2写的，所以是s3m时，要开启webgl2
             const khrMesh = this._createTechniqueMesh(gltfMesh, gltf, isI3DM, isS3M);
             material = khrMesh.material;
             geometry = khrMesh.geometry;
-            const service = this._layer._getNodeService(node._rootIdx);
             if (service['fillEmptyDataInMissingAttribute']) {
                 geometry.desc.fillEmptyDataInMissingAttribute = true;
             }
         } else {
             geometry = this._createGeometry(gltfMesh, isI3DM, DEFAULT_SEMANTICS);
-            const service =  this._layer._getNodeService(node._rootIdx);
             const ambientLight = service.ambientLight;
             let environmentExposure = service.environmentExposure;
             const materialInfo = service.material;
@@ -1202,6 +1201,16 @@ export default class MeshPainter {
             }
             material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1);
         }
+        Object.defineProperty(material.uniforms, 'alphaTest', {
+            enumerable: true,
+            get: function () {
+                const alphaTest = service['alphaTest'];
+                if (!isNil(alphaTest)) {
+                    return alphaTest;
+                }
+                return 0.1;
+            }
+        });
 
         if (material && !material.isReady()) {
             material._nodeId = node.id;
@@ -1655,6 +1664,7 @@ export default class MeshPainter {
             return new reshader.Material(matInfo);
         }
         matInfo['environmentExposure'] = environmentExposure;
+        matInfo.alphaTest = 0.1;
         if (material.extensions && material.extensions['KHR_materials_unlit']) {
             matInfo['environmentExposure'] = 1;
             matInfo.ambientColor = [1, 1, 1];
@@ -1662,7 +1672,6 @@ export default class MeshPainter {
             matInfo['lightSpecular'] = [0, 0, 0];
             return new reshader.PhongMaterial(matInfo);
         }
-        matInfo.alphaTest = 0.99;
 
         let meshMaterial = new reshader.pbr.StandardMaterial(matInfo);
         if (shader === 'phong') {

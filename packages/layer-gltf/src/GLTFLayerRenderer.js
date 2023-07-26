@@ -497,7 +497,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
     _getToRenderMeshes() {
         const meshes = [];
-        if (!Object.keys(this._toRenderMeshes).length) {
+        if (!this._toRenderMeshes || !Object.keys(this._toRenderMeshes).length) {
             return meshes;
         }
         for (const sName in this._toRenderMeshes) {

@@ -1002,6 +1002,21 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1 });
         });
 
+        it('alphaTest(issues/378)', done => {
+            const resPath = 'Cesium3DTiles/alphaTest/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        alphaTest: 0.5
+                    }
+                ]
+            });
+            runner(() => {
+                // assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
     });
 
     context('PNTS specs', () => {
@@ -1616,7 +1631,6 @@ describe('render specs', () => {
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
-
     });
 });
 

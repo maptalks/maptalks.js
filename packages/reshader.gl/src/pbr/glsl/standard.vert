@@ -163,7 +163,7 @@ vec2 rotateUV(vec2 uv, float rotation) {
 #ifdef PICKING_MODE
     #include <fbo_picking_vert>
 #endif
-
+#include <excavate_vert>
 void main() {
     mat4 localPositionMatrix = getPositionMatrix();
 
@@ -281,6 +281,10 @@ void main() {
             vertexColor_update();
         #endif
 
+        #ifdef HAS_EXCAVATE_ANALYSIS
+          vCoordinateTexcoord = getCoordinateTexcoord();
+          vHeight = getWorldHeight();
+        #endif
     //#ifdef PICKING_MODE的endif
     #endif
 

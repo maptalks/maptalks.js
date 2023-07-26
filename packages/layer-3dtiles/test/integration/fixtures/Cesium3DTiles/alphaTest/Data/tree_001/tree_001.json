@@ -1,0 +1,113 @@
+{
+  "asset": {
+    "version": "1.0"
+  },
+  "geometricError": 6.863098,
+  "root": {
+    "boundingVolume": {
+      "region": [
+        2.046677,
+        0.622794,
+        2.046678,
+        0.622795,
+        91.435304,
+        98.298402
+      ]
+    },
+    "geometricError": 0.104480,
+    "refine": "REPLACE",
+    "content": {
+      "uri": "tree_001.b3dm"
+    },
+    "children": [
+      {
+        "boundingVolume": {
+          "region": [
+            2.046677,
+            0.622794,
+            2.046678,
+            0.622795,
+            91.435304,
+            98.298402
+          ]
+        },
+        "geometricError": 0.052240,
+        "content": {
+          "uri": "tree_001_21.b3dm"
+        },
+        "children": [
+          {
+            "boundingVolume": {
+              "region": [
+                2.046677,
+                0.622794,
+                2.046678,
+                0.622795,
+                91.435304,
+                98.298402
+              ]
+            },
+            "geometricError": 0.026120,
+            "content": {
+              "uri": "tree_001_22.b3dm"
+            },
+            "children": [
+              {
+                "boundingVolume": {
+                  "region": [
+                    2.046677,
+                    0.622794,
+                    2.046678,
+                    0.622795,
+                    91.435304,
+                    98.298402
+                  ]
+                },
+                "geometricError": 0.013060,
+                "content": {
+                  "uri": "tree_001_23.b3dm"
+                },
+                "children": [
+                  {
+                    "boundingVolume": {
+                      "region": [
+                        2.046677,
+                        0.622794,
+                        2.046678,
+                        0.622795,
+                        91.435304,
+                        98.298402
+                      ]
+                    },
+                    "geometricError": 0.006530,
+                    "content": {
+                      "uri": "tree_001_24.b3dm"
+                    },
+                    "children": [
+                      {
+                        "boundingVolume": {
+                          "region": [
+                            2.046677,
+                            0.622794,
+                            2.046678,
+                            0.622795,
+                            91.435304,
+                            98.298402
+                          ]
+                        },
+                        "geometricError": 0.003265,
+                        "content": {
+                          "uri": "tree_001_25.json"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
