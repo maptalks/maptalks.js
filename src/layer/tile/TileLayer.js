@@ -297,6 +297,7 @@ class TileLayer extends Layer {
         const error = this._getRootError();
         const tiles = [];
         const z = 0;
+        const zoomOffset = this.options['zoomOffset'];
         for (let i = -left; i < right; i++) {
             for (let j = -top; j < bottom; j++) {
                 const y = scale.y < 0 ? j : -(j + 1);
@@ -309,7 +310,7 @@ class TileLayer extends Layer {
                     res,
                     extent2d: tileConfig.getTilePrjExtent(i, y, res).convertTo(c => map._prjToPointAtRes(c, res, TEMP_POINT)),
                     id: this._getTileId(i, y, z),
-                    url: this.getTileUrl(i, y, z + this.options['zoomOffset']),
+                    url: this.getTileUrl(i, y, z + zoomOffset),
                     offset: [0, 0],
                     error: error,
                     children: []
@@ -440,6 +441,7 @@ class TileLayer extends Layer {
     }
 
     _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer, glRes) {
+        const zoomOffset = this.options['zoomOffset'];
         const tileSystem = this._getTileConfig().tileSystem;
         const scaleY = tileSystem.scale.y;
         const z = node.z + 1;
@@ -506,7 +508,7 @@ class TileLayer extends Layer {
                         res,
                         id: tileId,
                         children: [],
-                        url: this.getTileUrl(childX, childY, z + this.options['zoomOffset']),
+                        url: this.getTileUrl(childX, childY, z + zoomOffset),
                         offset
                     };
                     this.tileInfoCache.add(tileId, childNode);
@@ -886,7 +888,7 @@ class TileLayer extends Layer {
             frustumMatrix = cascadeLevel === 0 ? map.cascadeFrustumMatrix0 : cascadeLevel === 1 ? map.cascadeFrustumMatrix1 : map.projViewMatrix;
         }
         const zoom = z + this.options['zoomOffset'];
-        const offset = this._getTileOffset(zoom),
+        const offset = this._getTileOffset(z),
             hasOffset = offset[0] || offset[1];
         const emptyGrid = {
             'zoom': z,
@@ -917,7 +919,7 @@ class TileLayer extends Layer {
             zoom: offset
         };
         const sr = this.getSpatialReference();
-        const res = sr.getResolution(zoom);
+        const res = sr.getResolution(z);
         // const glScale = res / map.getGLRes();
         let glScale;
         if (this._hasOwnSR) {
@@ -942,21 +944,21 @@ class TileLayer extends Layer {
         }
         //Get description of center tile including left and top offset
         const prjCenter = map._containerPointToPrj(containerExtent.getCenter(), TEMP_POINT0);
-        const centerPoint = map._prjToPoint(prjCenter, zoom, TEMP_POINT1);
+        const centerPoint = map._prjToPoint(prjCenter, z, TEMP_POINT1);
         let c;
         if (hasOffset) {
-            c = this._project(map._pointToPrj(centerPoint._add(offset), zoom, TEMP_POINT1), TEMP_POINT1);
+            c = this._project(map._pointToPrj(centerPoint._add(offset), z, TEMP_POINT1), TEMP_POINT1);
         } else {
             c = this._project(prjCenter, TEMP_POINT1);
         }
 
-        const extentScale = map.getGLScale() / map.getGLScale(zoom);
+        const extentScale = map.getGLScale() / map.getGLScale(z);
         TEMP_POINT2.x = extent2d.xmin * extentScale;
         TEMP_POINT2.y = extent2d.ymax * extentScale;
         TEMP_POINT3.x = extent2d.xmax * extentScale;
         TEMP_POINT3.y = extent2d.ymin * extentScale;
-        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), zoom, TEMP_POINT2), TEMP_POINT2);
-        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), zoom, TEMP_POINT3), TEMP_POINT3);
+        const pmin = this._project(map._pointToPrj(TEMP_POINT2._add(offset), z, TEMP_POINT2), TEMP_POINT2);
+        const pmax = this._project(map._pointToPrj(TEMP_POINT3._add(offset), z, TEMP_POINT3), TEMP_POINT3);
 
         const centerTile = tileConfig.getTileIndex(c, res, repeatWorld);
         const ltTile = tileConfig.getTileIndex(pmin, res, repeatWorld);
@@ -1058,7 +1060,7 @@ class TileLayer extends Layer {
                                 'offset': offset,
                                 'id': tileId,
                                 'res': tileRes,
-                                'url': this.getTileUrl(idx.x, idx.y, z)
+                                'url': this.getTileUrl(idx.x, idx.y, zoom)
                             };
                             if (parentRenderer) {
                                 tileInfo['layer'] = this.getId();
