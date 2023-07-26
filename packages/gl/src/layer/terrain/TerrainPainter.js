@@ -1,4 +1,4 @@
-import  { isNil } from '../util/util';
+import  { isNil, extend } from '../util/util';
 import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 
@@ -61,8 +61,16 @@ class TerrainPainter {
         mesh.setUniform('skin', emptyTexture);
         mesh.setUniform('heightTexture', terrainImage);
         mesh.setUniform('bias', 0);
+        this._updateMaskDefines(mesh);
         this.prepareMesh(mesh, tileInfo, terrainGeo);
         return mesh;
+    }
+
+    _updateMaskDefines(mesh) {
+        const renderer = this.layer.getRenderer();
+        if (renderer) {
+            renderer.updateMaskDefines(mesh);
+        }
     }
 
     _getPositionMatrix() {
@@ -222,11 +230,18 @@ class TerrainPainter {
     }
 
     initShader() {
-        const projViewModelMatrix = [];
+        const projViewModelMatrix = [], modelViewMatrix = [];
         this.shader = new reshader.MeshShader({
             vert,
             frag,
             uniforms: [
+                {
+                    name: 'modelViewMatrix',
+                    type: 'function',
+                    fn: function (context, props) {
+                        return mat4.multiply(modelViewMatrix, props['viewMatrix'], props['modelMatrix']);
+                    }
+                },
                 {
                     name: 'projViewModelMatrix',
                     type: 'function',
@@ -314,11 +329,15 @@ class TerrainPainter {
     getUniformValues() {
         const map = this.getMap();
         const projViewMatrix = map.projViewMatrix;
-
+        const renderer = this.layer.getRenderer();
+        const maskUniforms = renderer.getMaskUniforms();
         const uniforms = {
+            viewMatrix: map.viewMatrix,
+            projMatrix: map.projMatrix,
             projViewMatrix,
             heightScale: 1
         };
+        extend(uniforms, maskUniforms);
         return uniforms;
     }
 

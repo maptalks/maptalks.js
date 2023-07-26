@@ -2,6 +2,7 @@ import * as maptalks from 'maptalks';
 import TerrainLayerRenderer from './TerrainLayerRenderer';
 import { getTileIdsAtLevel, getSkinTileScale, getSkinTileRes, getCascadeTileIds } from './TerrainTileUtil';
 import  { extend } from '../util/util';
+import MaskLayerMixin from '../mask/MaskLayerMixin';
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
@@ -46,7 +47,7 @@ const base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 // 2. 每个skinLayer根据 terrainTiles 计算出自己需求请求哪些瓦片 skinTiles（需要注意多个terrainTile可能共享skinTile）
 // 3. 遍历 skinTiles，为每个 skinTiles 创建必要的 skinTexture，并绘制 skinTiles 到 skinTexture 中，因为做过去重，每个skinTile只会绘制一次
 // 4. 遍历 terrainTiles， 为每个 terrainTiles 创建 terrainMesh，并在frag shader中合成 skinTiles 的 skinTexture，最终绘制到地图场景中
-export default class TerrainLayer extends maptalks.TileLayer {
+export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
     getTileUrl(x, y, z) {
         let terrainUrl = super.getTileUrl(x, y, z);
         const type = this.options.type;

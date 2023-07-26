@@ -2,6 +2,10 @@ const resultCanvas = document.createElement('canvas');
 
 describe('gl tests', () => {
     let container, map;
+    const maskCoordinate = [[91.09087832763669, 29.694663476850423],
+        [91.08744510009763, 29.621270449579555],
+        [91.18597873046872, 29.62216580885527],
+        [91.18700869873044, 29.699733374620422]];
     beforeEach(() => {
         container = document.createElement('div');
         const width = 512, height = 512;
@@ -767,6 +771,209 @@ describe('gl tests', () => {
         });
     });
 
+    context('mask', () => {
+        it('ClipInsideMask', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const mask = new maptalks.ClipInsideMask(maskCoordinate);
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                masks: [mask]
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('ClipOutsideMask', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const mask = new maptalks.ClipOutsideMask(maskCoordinate);
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                masks: [mask]
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('FlatInsideMask', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            map.setPitch(45);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const mask = new maptalks.FlatInsideMask(maskCoordinate, {
+                flatHeight: 500
+            });
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                masks: [mask]
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 114, '1': 114, '2': 101, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('FlatOutsideMask', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            map.setPitch(45);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const mask = new maptalks.FlatOutsideMask(maskCoordinate, {
+                flatHeight: 500
+            });
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                masks: [mask]
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 176, '1': 175, '2': 155, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('ColorMask', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            map.setPitch(20);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const mask = new maptalks.ColorMask(maskCoordinate, {
+                symbol: {
+                    polygonFill: '#0f0',
+                    polygonOpacity: 0.8
+                }
+            });
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0,
+                masks: [mask]
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, {
+                terrain
+            });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 26, '1': 230, '2': 24, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+    });
 });
 
 function readPixel(canvas, x, y) {

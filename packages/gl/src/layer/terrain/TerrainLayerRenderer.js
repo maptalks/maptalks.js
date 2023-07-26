@@ -8,6 +8,7 @@ import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, inTerrainTile } fr
 import  { isNil, extend } from '../util/util';
 import TerrainPainter from './TerrainPainter';
 import TerrainLitPainter from './TerrainLitPainter';
+import MaskRendererMixin from '../mask/MaskRendererMixin';
 
 const POINT0 = new maptalks.Point(0, 0);
 const POINT1 = new maptalks.Point(0, 0);
@@ -22,7 +23,7 @@ const TERRAIN_CLEAR = {
     stencil: 0
 };
 
-class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
+class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayerCanvasRenderer) {
 
     isDrawable() {
         return true;
@@ -613,7 +614,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
         }
         delete image.skinImages;
         delete image.skin;
-        delete image.skinStatus;        
+        delete image.skinStatus;
         delete image.skinTileIds;
         delete image.terrainMesh;
         delete image.image;
@@ -854,6 +855,7 @@ class TerrainLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer {
             this._createREGLContext();
         }
         this.renderer = new reshader.Renderer(this.regl);
+        this.layer.fire('contextcreate', { regl: this.regl });
     }
 
     _createPainter() {

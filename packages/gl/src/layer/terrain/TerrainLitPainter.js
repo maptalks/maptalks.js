@@ -108,6 +108,7 @@ class TerrainLitPainter extends TerrainPainter {
         defines['HAS_TERRAIN_NORMAL'] = 1;
         defines['HAS_MAP'] = 1;
         mesh.defines = defines;
+        this._updateMaskDefines(mesh);
         mesh.setUniform('terrainTileResolution', tileInfo.res);
         this.prepareMesh(mesh, tileInfo, terrainGeo);
         return mesh;
@@ -145,8 +146,8 @@ class TerrainLitPainter extends TerrainPainter {
         const { iblTexes, dfgLUT } = getIBLResOnCanvas(canvas);
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
         const tileSize = this.layer.getTileSize().width;
-        // const renderer = this.layer.getRenderer();
-        // const maskUniforms = renderer.getMaskUniforms();
+        const renderer = this.layer.getRenderer();
+        const maskUniforms = renderer.getMaskUniforms();
         const terrainHeightScale = this._getPointZ(100) / 100;
         extend(uniforms, {
             viewMatrix: map.viewMatrix,
@@ -159,7 +160,7 @@ class TerrainLitPainter extends TerrainPainter {
             terrainHeightScale,
             terrainUnpackFactors: [6553.6, 25.6, 0.1, 10000.0]
         });
-        // extend(uniforms, maskUniforms);
+        extend(uniforms, maskUniforms);
         return uniforms;
     }
 

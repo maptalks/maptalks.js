@@ -393,6 +393,13 @@ export default class GLTFMarker extends Marker {
         return vec3.set(out, ratio / scale[0] , ratio / scale[1], ratio / scale[2]);
     }
 
+    getFitTranslate(out) {
+        const fixSizeScale = this._calFixSizeScale(out);
+        const bbox = this._gltfModelBBox;
+        const center = vec3.set(out, (bbox.min[0] + bbox.max[0]) * fixSizeScale[0] / 2, (bbox.min[1] + bbox.max[1]) * fixSizeScale[1] / 2, (bbox.min[1] + bbox.max[1]) * fixSizeScale[2] / 2);
+        return vec3.scale(center, center, -1);
+    }
+
     _calAnchorTranslation(gltfBBox) {
         const symbol = this.getSymbol();
         const anchorZ = (symbol && symbol.anchorZ) || 'center';

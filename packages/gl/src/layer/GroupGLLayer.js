@@ -513,6 +513,12 @@ export default class GroupGLLayer extends maptalks.Layer {
         this._updateTerrainSkinLayers();
         this._terrainLayer.on('tileload', this._onTerrainTileLoad, this);
         this._prepareLayer(this._terrainLayer);
+        const masks = info.masks;
+        if (masks && masks.length) {
+            this._terrainLayer.setMask(masks);
+        } else {
+            this._terrainLayer.removeMask();
+        }
         this.fire('terrainlayercreated');
         return this;
     }
