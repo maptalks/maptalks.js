@@ -170,7 +170,7 @@ function generateTiandituTerrain(buffer, terrainWidth) {
     const dZlib = decZlibBuffer(zBuffer);
     const heightBuffer = transformBuffer(dZlib);
     const heights = createHeightMap(heightBuffer, terrainWidth - 1);
-    heights.width = heights.height = terrainWidth;
+    heights.width = heights.height = terrainWidth - 1;
     return heights;
 }
 
