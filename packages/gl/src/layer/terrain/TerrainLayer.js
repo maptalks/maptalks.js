@@ -20,7 +20,7 @@ const options = {
     'renderer': 'gl',
     'pyramidMode': 1,
     'tileSize': 256,
-    'terrainWidth': null,
+    'terrainWidth': 65,
     'backZoomOffset': 0,
     'depthMask': true,
     'blendSrc': 'one',
@@ -48,14 +48,25 @@ const base62chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 // 3. 遍历 skinTiles，为每个 skinTiles 创建必要的 skinTexture，并绘制 skinTiles 到 skinTexture 中，因为做过去重，每个skinTile只会绘制一次
 // 4. 遍历 terrainTiles， 为每个 terrainTiles 创建 terrainMesh，并在frag shader中合成 skinTiles 的 skinTexture，最终绘制到地图场景中
 export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
+    constructor(id, options) {
+        if (options && !options.tileSystem) {
+            if ((options.type === 'cesium' || options.type === 'cesium-ion')) {
+                options.tileSystem = [1, 1, -180, -90];
+            } else if (options.type === 'tianditu') {
+                options.tileSystem = [1, -1, -180, 90];
+            }
+        }
+        super(id, options);
+    }
+
     getTileUrl(x, y, z) {
         let terrainUrl = super.getTileUrl(x, y, z);
         const type = this.options.type;
-        if (type === 'cesium') {
-            z = z - 1;
-            const yTiles = 1 << z;
-            y =  yTiles - y - 1;
-        }
+        // if (type === 'cesium') {
+        //     z = z - 1;
+        //     const yTiles = 1 << z;
+        //     y =  yTiles - y - 1;
+        // }
         if (type === 'mapbox') {
             if (this.options['requireSkuToken']) {
                 if (!this._skuToken) {
@@ -67,9 +78,9 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                     terrainUrl += '?sku=' + this._skuToken;
                 }
             }
-        } else if (type === 'cesium') {
+        }/* else if (type === 'cesium') {
             terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';
-        }
+        }*/
         return terrainUrl;
     }
 

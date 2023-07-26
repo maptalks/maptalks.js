@@ -122,7 +122,13 @@ export function inTerrainTile(tileInfo, x, y, res) {
     return tileInfo.extent2d.contains(point1);
 }
 
+// from Leaflet's GridLayer.js
 function getReverseY(tileConfig, y, res) {
     const fullExtent = tileConfig.fullExtent;
-    return Math.round((fullExtent['top'] - fullExtent['bottom']) / (tileConfig.tileSize.width * res) - y) - 1;
+    const tileSize = tileConfig.tileSize.width;
+    const max = Math.max(fullExtent.top, fullExtent.bottom);
+    const min = Math.min(fullExtent.top, fullExtent.bottom);
+    const top = Math.ceil(max / tileSize / res) - 1;
+    const bottom = Math.floor(min / tileSize / res);
+    return (top - bottom) - y;
 }
