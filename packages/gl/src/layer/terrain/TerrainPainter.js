@@ -88,7 +88,7 @@ class TerrainPainter {
 
         const scale = tileInfo.res / map.getGLRes();
 
-        const terrainScale = (tileSize + 2) / terrainWidth;
+        const terrainScale = tileSize / (terrainWidth - 2);
 
         const { extent2d, offset } = tileInfo;
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
@@ -107,6 +107,8 @@ class TerrainPainter {
         mesh.properties.skirtOffset = numTrianglesWithoutSkirts * 3;
         mesh.properties.skirtCount = triangles.length - numTrianglesWithoutSkirts * 3;
         mesh.properties.z = tileInfo.z;
+        mesh.properties.minHeight = terrainGeo.minHeight;
+        mesh.properties.maxHeight = terrainGeo.maxHeight;
         mesh.castShadow = false;
     }
 
@@ -149,7 +151,8 @@ class TerrainPainter {
             const { skirtOffset, skirtCount } = m.properties;
             // m.setUniform('polygonOpacity', 1);
             m.geometry.setDrawOffset(skirtOffset);
-            if (m.getUniform('skin') === this._emptyTileTexture) {
+            const { maxHeight } = m.properties;
+            if (m.getUniform('skin') === this._emptyTileTexture || maxHeight > 0) {
                 m.geometry.setDrawCount(0);
             } else {
                 m.geometry.setDrawCount(skirtCount);

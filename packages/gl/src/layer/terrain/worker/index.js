@@ -170,7 +170,7 @@ function generateTiandituTerrain(buffer, terrainWidth) {
     const dZlib = decZlibBuffer(zBuffer);
     const heightBuffer = transformBuffer(dZlib);
     const heights = createHeightMap(heightBuffer, terrainWidth - 1);
-    heights.width = heights.height = terrainWidth - 1;
+    heights.width = heights.height = terrainWidth;
     return heights;
 }
 
@@ -639,32 +639,6 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
 }
 
-// function createMartiniData(error, heights, width) {
-//     const martini = new Martini(width);
-//     const terrainTile = martini.createTile(heights);
-//     const mesh = terrainTile.getMesh(error);
-//     const { triangles, vertices } = mesh;
-//     const positions = [], texcoords = [];
-//     const skirtOffset = 0;//terrainStructure.skirtOffset;
-//     for (let i = 0; i < vertices.length / 2; i++) {
-//         const x = vertices[i * 2], y = vertices[i * 2 + 1];
-//         positions.push(x * (1 + skirtOffset));
-//         positions.push(-y * (1 + skirtOffset));
-//         positions.push(heights[y * width + x]);
-//         // if (i >= numVerticesWithoutSkirts) {
-//         //     positions.push(0);
-//         // } else {
-//         //     positions.push(heights[y * width + x]);
-//         // }
-//         texcoords.push(x / width);
-//         texcoords.push(y / width);
-//     }
-//     const terrain = {
-//         positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles
-//     };
-//     return terrain;
-// }
-
 function createMartiniData(error, heights, width, hasSkirts) {
     const martini = new Martini(width);
     const terrainTile = martini.createTile(heights);
@@ -680,6 +654,8 @@ function createMartiniData(error, heights, width, hasSkirts) {
     const positions = [], texcoords = [];
     const skirtOffset = 0;//terrainStructure.skirtOffset;
     const count = vertices.length / 2;
+    let minHeight = Infinity;
+    let maxHeight = -Infinity;
     // debugger
     for (let i = 0; i < count; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
@@ -713,6 +689,13 @@ function createMartiniData(error, heights, width, hasSkirts) {
             texcoords.push(x / width);
             texcoords.push(y / width);
         }
+        const height = positions[positions.length - 1];
+        if (height < minHeight) {
+            minHeight = height;
+        }
+        if (height > maxHeight) {
+            maxHeight = height;
+        }
     }
     const terrain = {
         positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles,
@@ -720,7 +703,10 @@ function createMartiniData(error, heights, width, hasSkirts) {
         rightSkirtIndex,
         bottomSkirtIndex,
         topSkirtIndex,
-        numTrianglesWithoutSkirts, numVerticesWithoutSkirts
+        numTrianglesWithoutSkirts,
+        numVerticesWithoutSkirts,
+        minHeight,
+        maxHeight
     };
     return terrain;
 }
