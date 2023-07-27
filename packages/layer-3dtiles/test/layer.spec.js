@@ -523,6 +523,39 @@ describe('3dtiles layer', () => {
         layer.addTo(map);
     });
 
+    it('can update service heightOffset, maptalks/issues#380', done => {
+        const resPath = 'Cesium3DTiles/Batched/BatchedWithTransformBox';
+        const service = {
+            url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+            shader: 'pbr',
+            heightOffset: -8000
+        };
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: []
+        });
+
+        layer.addService(service);
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        let count = 0;
+        layer.on('layerload', () => {
+            count++;
+            if (count === 2) {
+                layer.updateService(0, { heightOffset: 0 });
+            } else if (count === 3) {
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const color = ctx.getImageData(canvas.width / 2 - 43, canvas.height / 2 + 70, 1, 1);
+                    assert(color.data[3] === 255);
+                    done();
+                }, 10);
+            }
+        });
+        layer.addTo(map);
+    });
 });
 
 function toRadian(d) {

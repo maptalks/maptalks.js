@@ -466,6 +466,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         if (!boundingVolume._centerTransformed && (!node.boundingVolume || (!heightOffset && mat4.exactEquals(node.matrix, IDENTITY_MATRIX) && !hasOffset && coordOffset === EMPTY_COORD_OFFSET))) {
             return;
         }
+        if (boundingVolume.box && boundingVolume.region) {
+            // maptalks/issues#380
+            // region和box同时存在时，说明region是从box转换过来的，需要先删除，更新box再重新创建新的region。
+            delete boundingVolume.region;
+        }
         const { region, box, sphere } = boundingVolume;
         boundingVolume.coordOffset = [coordOffset[0], coordOffset[1]];
         boundingVolume.heightOffset = heightOffset;
