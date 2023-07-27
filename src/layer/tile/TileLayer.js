@@ -1184,12 +1184,7 @@ class TileLayer extends Layer {
     }
 
     _getTileOffset(z) {
-        if (!this._tileOffsets) {
-            this._tileOffsets = {};
-        }
-        if (this._tileOffsets[z]) {
-            return this._tileOffsets[z];
-        }
+        // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
         if (isFunction(offset)) {
             offset = offset.call(this, z);
@@ -1197,8 +1192,7 @@ class TileLayer extends Layer {
         if (isNumber(offset)) {
             offset = [offset, offset];
         }
-        this._tileOffsets[z] = offset || [0, 0];
-        return this._tileOffsets[z];
+        return offset || [0, 0];
     }
 
     _getTileId(x, y, zoom, id) {
