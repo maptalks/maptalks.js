@@ -17,6 +17,7 @@ import { project } from './Projection';
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
 const X_TO_Z = [0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1];
+const RATIO = 2 * Math.PI * 6378137 / 360;
 
 const textDecoder = typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8') : null;
 
@@ -250,7 +251,13 @@ export default class BaseLayerWorker {
                     if (NEED_COMPRESSED_ATTR[attrName] &&
                         attributes[attrName].array &&
                         attributes[attrName].array instanceof Float32Array) {
-                        const { array, range } = float32ToInt16(attributes[attrName].array, attributes[attrName].min, attributes[attrName].max);
+                        const proj = this.options.projection;
+                        let compressed_ratio = 1;
+                        if ((proj === 'EPSG:4326' || proj === 'EPSG:4490') && attrName === 'POSITION') {
+                            compressed_ratio = RATIO;
+                            primitive.compressed_int16_params['compressed_ratio'] = compressed_ratio;
+                        }
+                        const { array, range } = float32ToInt16(attributes[attrName].array, compressed_ratio, attributes[attrName].min, attributes[attrName].max);
                         attributes[attrName].array = array;
                         primitive.compressed_int16_params[attrName] = range;
                     }
@@ -974,9 +981,16 @@ function getNodeMatrix(out, matrices) {
     return nodeMatrix;
 }
 
-function float32ToInt16(inputArray, min, max) {
+function float32ToInt16(inputArray, compressed_ratio, min, max) {
+    if (compressed_ratio !== 1) {//compressed_ratio为1时不需要遍历
+        for (let i = 0; i < inputArray.length; i++) {
+            if ((i + 1) % 3 != 0) { //x,y弧度转为米
+                inputArray[i] *= compressed_ratio;
+            }
+        }
+    }
     let minElement, maxElement;
-    if (min && max) {//存在min,max则直接使用
+    if (min && max && compressed_ratio === 1) {//存在min, max则直接使用
         minElement = Math.min(...min);
         maxElement = Math.max(...max);
     } else {
@@ -984,13 +998,17 @@ function float32ToInt16(inputArray, min, max) {
         minElement = min;
         maxElement = max;
     }
-    const output = new Int16Array(inputArray.length);
-    for(let i = 0; i < inputArray.length; i++) {
-        const normalizeValue = (inputArray[i] - minElement) * 2 / (maxElement - minElement) -1;
+    return encodeFloat32(inputArray, minElement, maxElement);
+}
+
+function encodeFloat32(array, min, max) {
+    const output = new Int16Array(array.length);
+    for(let i = 0; i < array.length; i++) {
+        const normalizeValue = (array[i] - min) * 2 / (max - min) -1;
         const s = Math.max(-1, Math.min(1, normalizeValue)); //[-1, 1]
         output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
     }
-    return  { array: output, range: [minElement, maxElement] };
+    return  { array: output, range: [min, max] };
 }
 
 function findMinMax(array) {

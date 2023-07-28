@@ -1083,10 +1083,10 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     _renderWeather(tex) {
         let meshes = [];
         this.forEachRenderer((renderer, layer) => {
-            if (!renderer.getShadowMeshes || !layer.isVisible()) {
+            if (!renderer.getAnalysisMeshes || !layer.isVisible()) {
                 return;
             }
-            const renderMeshes = renderer.getShadowMeshes();
+            const renderMeshes = renderer.getAnalysisMeshes();
             meshes = meshes.concat(renderMeshes);
         });
         if (this._groundPainter) {

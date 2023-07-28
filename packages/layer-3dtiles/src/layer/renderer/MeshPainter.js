@@ -922,6 +922,9 @@ export default class MeshPainter {
         if (compressed_int16_params['TANGENT']) {
             mesh.setUniform('compressedTangentRange', compressed_int16_params['TANGENT']);
         }
+        if (compressed_int16_params['compressed_ratio']) {
+            mesh.setUniform('compressed_ratio', compressed_int16_params['compressed_ratio']);
+        }
     }
 
     _updateB3DMLocalMatrix(mesh, localTransform) {
@@ -1127,6 +1130,9 @@ export default class MeshPainter {
             }
             if (compressed_int16_params['TANGENT']) {
                 defines['HAS_COMPRESSED_INT16_TANGENT'] = 1;
+            }
+            if (compressed_int16_params['compressed_ratio']) {
+                defines['HAS_COMPRESSED_INT16_RATIO'] = 1;
             }
         }
     }

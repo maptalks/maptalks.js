@@ -111,7 +111,7 @@ export default class ViewshedPass extends AnalysisPass {
         angleX_Z = vector[1] >= 0 ? angleX_Z : Math.PI * 2 - angleX_Z;
         const rotation = quat.rotateZ(QUAT1, QUAT2, angleX_Z);
         let angleY_Z = vec3.angle(vec3.set(VEC32, vector[0], vector[1], 0), vector);
-        angleY_Z = vector[0] >= 0 ? angleY_Z : Math.PI * 2 - angleY_Z;
+        angleY_Z = vector[0] >= 0 ? -angleY_Z : Math.PI * 2 - angleY_Z;
         quat.rotateY(rotation, rotation, angleY_Z);
         mat4.fromRotationTranslationScale(modelMatrix, rotation, eyePos, [distance, distance * Math.tan(halfHorizontalAngle), distance * Math.tan(halfVerticalAngle)]);
         return modelMatrix;

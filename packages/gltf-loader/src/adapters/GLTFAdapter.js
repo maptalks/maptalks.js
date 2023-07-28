@@ -50,9 +50,7 @@ export default class GLTFAdapter {
             console.warn('missing transcoder for ' + source.mimeType, ', visit https://maptalks.com/docs/transcoders for details');
             return Promise.resolve(null);
         } else {
-            const blob = new Blob([dataview], { type: source.mimeType });
-            const sourceURI = URL.createObjectURL(blob);
-            return this._getImageInfo(source.id, sourceURI);
+            return this._getImageInfo(source.id, dataview);
         }
     }
 

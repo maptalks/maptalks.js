@@ -1632,5 +1632,49 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformSphere/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
     });
+
+    context('SpatialReference specs', () => {
+        it('epsg:4326', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420
+                    }
+                ]
+            });
+            map.setSpatialReference({
+                projection:'EPSG:4326'
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/4326/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+
+        it('epsg:4490', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420
+                    }
+                ]
+            });
+            map.setSpatialReference({
+                projection:'EPSG:4490'
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/4490/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+    });
 });
 

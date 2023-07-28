@@ -526,39 +526,49 @@ function requestImageOffscreen(url, cb) {
         offCanvas = new OffscreenCanvas(2, 2);
         offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
     }
-    fetch(url)
-        .then(response => response.arrayBuffer())
-        .then(arrayBuffer => {
-            // response.blob()方法似乎有内存泄漏
-            // 2022-03-09
-            const blob = new Blob([new Uint8Array(arrayBuffer)]);
-            return createImageBitmap(blob)
-        })
-        .then(bitmap => {
-            let { width, height } = bitmap;
-            if (!isPowerOfTwo(width)) {
-                width = floorPowerOfTwo(width);
-            }
-            if (!isPowerOfTwo(height)) {
-                height = floorPowerOfTwo(height);
-            }
-            const maxSize = this.options['maxTextureSize'];
-            if (maxSize) {
-                width = Math.min(maxSize, width);
-                height = Math.min(maxSize, height);
-            }
+    let promise = null;
+    if (isString(url)) {
+        promise = fetch(url)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                // response.blob()方法似乎有内存泄漏
+                // 2022-03-09
+                const blob = new Blob([new Uint8Array(arrayBuffer)]);
+                return createImageBitmap(blob);
+            });
+    } else {
+        const data = url;
+        const blob = new Blob([data]);
+        promise = createImageBitmap(blob);
+    }
+    promise.then(thenMethod.bind(this)).then(res =>{
+        cb(null, res);
+    }).catch(err => {
+        console.warn(err);
+        cb(err);
+    });
+}
 
-            offCanvas.width = width;
-            offCanvas.height = height;
-            offCtx.drawImage(bitmap, 0, 0, width, height);
-            bitmap.close();
-            const imgData = offCtx.getImageData(0, 0, width, height);
-            // debugger
-            cb(null, { width, height, data : new Uint8Array(imgData.data) });
-        }).catch(err => {
-            console.warn(err);
-            cb(err);
-        });
+function thenMethod(bitmap) {
+    let { width, height } = bitmap;
+    if (!isPowerOfTwo(width)) {
+        width = floorPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        height = floorPowerOfTwo(height);
+    }
+    const maxSize = this.options['maxTextureSize'];
+    if (maxSize) {
+        width = Math.min(maxSize, width);
+        height = Math.min(maxSize, height);
+    }
+
+    offCanvas.width = width;
+    offCanvas.height = height;
+    offCtx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+    const imgData = offCtx.getImageData(0, 0, width, height);
+    return { width, height, data : new Uint8Array(imgData.data) };
 }
 
 function isPowerOfTwo(value) {

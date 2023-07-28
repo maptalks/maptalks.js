@@ -71,6 +71,9 @@
     #ifdef HAS_COMPRESSED_INT16_NORMAL
       uniform vec2 compressedNormalRange;
     #endif
+    #ifdef HAS_COMPRESSED_INT16_RATIO
+      uniform float compressed_ratio;
+    #endif
     float int16ToFloat32(float value, vec2 range) {
         float v = (value >= 32768.0) ? -(65536.0 - value) / 32768.0 : value / 32767.0;
         return (v + 1.0) * (range.y - range.x) / 2.0 + range.x;
@@ -83,7 +86,11 @@ vec3 decode_getPosition(vec3 aPosition) {
         float x = int16ToFloat32(aPosition.x, compressedPositionRange);
         float y = int16ToFloat32(aPosition.y, compressedPositionRange);
         float z = int16ToFloat32(aPosition.z, compressedPositionRange);
-        position = vec3(x, y, z);
+        #ifdef HAS_COMPRESSED_INT16_RATIO
+          position = vec3(x / compressed_ratio, y / compressed_ratio, z);
+        #else
+          position = vec3(x, y, z);
+        #endif
     #endif
     #ifdef HAS_DRACO_POSITION
         return decodeDracoPosition(position);

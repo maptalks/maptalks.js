@@ -124,6 +124,7 @@ class WeatherPainter {
         options['viewMatrix'] = map.viewMatrix;
         options['cameraPosition'] = map.cameraPosition;
         options['fogDist'] = [start * ratio, end * ratio];
+        options['rainDepth'] = map.altitudeToPoint((config.rain && config.rain.rainDepth) || 0.1, map.getGLRes());
         const mixFactorMap = this._fogPass.render(meshes, options);
         const layerRenderer = this._layer.getRenderer();
         return layerRenderer._getFBOColor(mixFactorMap);

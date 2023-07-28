@@ -50,7 +50,8 @@ class FogPass{
             projMatrix: options.projMatrix,
             viewMatrix: options.viewMatrix,
             cameraPosition: options.cameraPosition,
-            fogDist: options.fogDist
+            fogDist: options.fogDist,
+            rainDepth: options.rainDepth
         };
         this.renderer.render(
             this._shader,

@@ -1294,6 +1294,10 @@ export default class GLTFMarker extends Marker {
         return symbol && symbol.modelHeight;
     }
 
+    getGLTFBBox() {
+        return this._gltfModelBBox;
+    }
+
     _isUniformsDirty() {
         return this._uniformDirty;
     }
