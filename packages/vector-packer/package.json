@@ -40,7 +40,7 @@
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "eslint": "^7.32.0",
-    "eslint-plugin-mocha": "^9.0.0",
+    "eslint-plugin-mocha": "^10.1.0",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1"
   }

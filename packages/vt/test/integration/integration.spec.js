@@ -1,4 +1,4 @@
-const remote = require('electron').remote;
+// const remote = require('electron').remote;
 const maptalks = require('maptalks');
 const assert = require('assert');
 const path = require('path');
@@ -9,7 +9,7 @@ const { GroupGLLayer } = require('@maptalks/gl');
 const startServer = require('../specs/server.js');
 const PORT = 4398;
 
-const GENERATE_MODE = (process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
+const GENERATE_MODE = false; //(process.env.BUILD || remote.getGlobal('process').env.BUILD) === 'fixtures';
 
 const DEFAULT_VIEW = {
     center: [0, 0],
