@@ -53,7 +53,7 @@ export { default as StandardLiteShader } from './shader/StandardLiteShader.js';
 export { default as FogPass } from './weather/fog/FogPass.js';
 export { default as FogShader } from './weather/fog/FogShader.js';
 export { default as RainRipplesPass } from './weather/rain/RainRipplesPass.js';
-export { default as ExtentPass } from './shader/ExtentPsss.js';
+export { default as ExtentPass } from './shader/ExtentPass.js';
 
 import * as GLTFHelper  from './GLTFHelper.js';
 export { GLTFHelper };

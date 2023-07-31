@@ -1,4 +1,3 @@
-import * as maptalks from 'maptalks';
 import Renderer from '../Renderer';
 import MeshShader from './MeshShader';
 import Scene from '../Scene';
@@ -6,6 +5,7 @@ import { mat4 } from 'gl-matrix';
 import vert from './glsl/extent.vert';
 import maskColorExtent from './glsl/maskColorExtent.frag';
 import maskModeExtent from './glsl/maskModeExtent.frag';
+import { isFunction } from '../common/Util';
 
 const CLEAR_COLOR = [0, 0, 0, 1];
 class ExtentPass {
@@ -97,8 +97,8 @@ class ExtentPass {
     }
 
     _resize() {
-        const width = maptalks.Util.isFunction(this._viewport.width) ? this._viewport.width() : this._viewport.width.data();
-        const height = maptalks.Util.isFunction(this._viewport.height) ? this._viewport.height() : this._viewport.height.data();
+        const width = isFunction(this._viewport.width) ? this._viewport.width() : this._viewport.width.data();
+        const height = isFunction(this._viewport.height) ? this._viewport.height() : this._viewport.height.data();
         if (this._maskColorFbo && (this._maskColorFbo.width !== width || this._maskColorFbo.height !== height)) {
             this._maskColorFbo.resize(width, height);
             this._maskModeFbo.resize(width, height);
