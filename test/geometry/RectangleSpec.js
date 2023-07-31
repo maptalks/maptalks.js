@@ -108,7 +108,7 @@ describe('Geometry.Rectangle', function () {
 
         happen.click(canvasContainer, {
             clientX: 400 + 8,
-            clientY: 300 + 8 - 2
+            clientY: 300 + 8 - 1
         });
         expect(spy.called).to.be.ok();
 
