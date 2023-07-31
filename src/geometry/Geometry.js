@@ -1396,8 +1396,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _hitTestTolerance() {
-        const layer = this.getLayer();
-        return layer && layer.options['geometryEventTolerance'] || 0;
+        return 0;
     }
 
 

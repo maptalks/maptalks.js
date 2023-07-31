@@ -113,7 +113,7 @@ class Sector extends Circle {
             return super._containsPoint(point, tolerance);
         }
         const center = map._pointToContainerPoint(this._getCenter2DPoint()),
-            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = this._hitTestTolerance() + (tolerance || 0),
             size = this.getSize(),
             pc = center,
             pp = point,

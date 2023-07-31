@@ -292,5 +292,23 @@ describe('Geometry.Events', function () {
         expect(spy.called).to.be.ok();
     });
 
+    it('geometryEventTolerance', function () {
+        layer.config('geometryEventTolerance', 5);
+        var center = map.getCenter();
+        var c1 = center.add(1, 0);
+        var line = new maptalks.LineString([center, c1]);
+        line.addTo(layer);
+        var domPosition = GET_PAGE_POSITION(container);
+        var point = map.coordinateToContainerPoint(center).add(domPosition);
+        var spy = sinon.spy();
+        line.on('click', spy);
+
+        happen.click(eventContainer, {
+            'clientX': point.x,
+            'clientY': point.y + 3
+        });
+        expect(spy.called).to.be.ok();
+    });
+
 
 });

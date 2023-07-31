@@ -11,12 +11,14 @@ import GeoJSON from '../geometry/GeoJSON';
  *                                                    In default, for performance reason, layer will be drawn in a frame requested by RAF(RequestAnimationFrame).<br>
  *                                                    Set drawImmediate to true to draw immediately.<br>
  *                                                    This is necessary when layer's drawing is wrapped with another frame requested by RAF.
+ * @property {Boolean} [options.geometryEventTolerance=1]         - tolerance for geometry events
  * @memberOf OverlayLayer
  * @instance
  */
 const options = {
     'drawImmediate': false,
-    'geometryEvents': true
+    'geometryEvents': true,
+    'geometryEventTolerance': 1
 };
 
 
