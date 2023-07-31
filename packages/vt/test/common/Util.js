@@ -9,7 +9,7 @@ function readPixel(target, x, y) {
     canvas.height = target.height;
     ctx.drawImage(target, 0, 0);
     const pixel = ctx.getImageData(x, y, 1, 1).data;
-    return pixel;
+    return [pixel[0], pixel[1], pixel[2], pixel[3]];
 }
 
 

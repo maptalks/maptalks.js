@@ -34,6 +34,17 @@ class Vector3DLayer extends maptalks.OverlayLayer {
         return Vector3DLayer.painters[name];
     }
 
+    getEvents() {
+        let events;
+        if (super.getEvents) {
+            events = super.getEvents();
+        } else {
+            events = {};
+        }
+        events['spatialreferencechange'] = this._onSpatialReferenceChange;
+        return events;
+    }
+
     onConfig(conf) {
         super.onConfig(conf);
         if (conf['enableBloom'] !== undefined) {
@@ -189,6 +200,14 @@ class Vector3DLayer extends maptalks.OverlayLayer {
     getTileSize() {
         // default tile size for painters
         return VECTOR_TILE_SIZE;
+    }
+
+    _onSpatialReferenceChange() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        renderer._onSpatialReferenceChange();
     }
 }
 

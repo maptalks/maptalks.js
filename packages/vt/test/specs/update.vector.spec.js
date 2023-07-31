@@ -62,6 +62,27 @@ describe('vector layers update style specs', () => {
         });
     });
 
+    it('should draw correctly when updating spatial reference, maptalks/issues#388', done => {
+        const marker = new maptalks.Marker([0, 0.25], {
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        assertChangeStyle(done, layer, [255, 0, 0, 255], () => {
+            map.setSpatialReference({
+                projection: 'EPSG:4326'
+            });
+            return 3;
+        });
+    });
+
     it('should can update marker zIndex', done => {
         const marker0 = new maptalks.Marker([0, 0], {
             symbol: {

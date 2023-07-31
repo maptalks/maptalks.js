@@ -1544,6 +1544,14 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         const map = this.getMap();
         return getCentiMeterScale(res, map);
     }
+
+    _onSpatialReferenceChange() {
+        const geometries = this.layer.getGeometries();
+        if (geometries) {
+            this._convertGeometries(geometries);
+        }
+        this._markRebuild();
+    }
 }
 
 function redraw(renderer) {
