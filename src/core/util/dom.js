@@ -29,7 +29,7 @@ const first = (props) => {
  */
 const testProp = IS_NODE ? first : (props) => {
 
-    const style = document.documentElement.style;
+    const style = (document.documentElement && document.documentElement.style) || {};
 
     for (let i = 0; i < props.length; i++) {
         if (props[i] in style) {

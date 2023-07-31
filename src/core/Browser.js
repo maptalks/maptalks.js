@@ -10,7 +10,7 @@ function getDevicePixelRatio() {
 
 if (!IS_NODE) {
     const ua = navigator.userAgent.toLowerCase(),
-        doc = document.documentElement,
+        doc = document.documentElement || { style: {}},
 
         ie = 'ActiveXObject' in window,
 
