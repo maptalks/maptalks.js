@@ -124,6 +124,34 @@ describe('Geometry.Marker', function () {
             expect(marker.getSize().toArray()).to.be.eql([30, 22]);
         });
 
+        it('should draw icon marker with vector marker added, #2035', function (done) {
+            var marker = new maptalks.Marker(center, {
+                symbol: {
+                    markerFile: 'resources/infownd-close-hover.png',
+                    markerWidth: 30,
+                    markerHeight: 22
+                }
+            });
+            var vlayer = new maptalks.VectorLayer('id1', [marker], { 'drawImmediate': true }).addTo(map);
+            vlayer.once('layerload', function () {
+                expect(vlayer).to.be.painted(0, -3);
+                done();
+            });
+            var marker1 = new maptalks.Marker(
+                center.sub(0.009, 0),
+                {
+                  'symbol' : {
+                    'markerType'   : 'ellipse',
+                    'markerWidth'  : 28,
+                    'markerHeight' : 40,
+                    'markerDx'     : 0,
+                    'markerDy'     : 100000,
+                    'markerOpacity': 1
+                  }
+                }
+              ).addTo(vlayer);
+        });
+
         it('can be text', function () {
             var marker = new maptalks.Marker(center, {
                 symbol: {

@@ -16,9 +16,9 @@ class OverlayLayerRenderer extends CanvasRenderer {
     // resources of old symbols will still be stored.
     // 2. removed geometries' resources won't be removed.
     checkResources() {
-        let geometries = this._geosToCheck;
-        if (!this._resourceChecked && !geometries) {
-            geometries = this.layer._geoList;
+        const geometries = this._geosToCheck || [];
+        if (!this._resourceChecked && this.layer._geoList) {
+            pushIn(geometries, this.layer._geoList);
         }
         if (!isArrayHasData(geometries)) {
             return [];
