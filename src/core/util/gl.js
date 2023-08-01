@@ -103,3 +103,17 @@ export function enableVertexAttrib(gl, program, attributes) {
         gl.enableVertexAttribArray(attr);
     }
 }
+
+const DEPTH_FUNC_CONSTANTS = {
+    'never':    0x0200,
+    '<':        0x0201,
+    '=':        0x0202,
+    '<=':       0x0203,
+    '>':        0x0204,
+    '!=':       0x0205,
+    '>=':       0x0206,
+    'always':   0x0207
+};
+export function getDepthFunc(v) {
+    return DEPTH_FUNC_CONSTANTS[v];
+}

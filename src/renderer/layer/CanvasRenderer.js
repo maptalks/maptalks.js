@@ -82,7 +82,12 @@ class CanvasRenderer extends Class {
                          * @property {Layer} target    - layer
                          */
                         this.layer.fire('resourceload');
+                        const map = this.layer.getMap();
                         this.setToRedraw();
+                        map.getRenderer().callInNextFrame(() => {
+                            // sometimes renderer still fails to fetch loaded images, an additional frame will solved it
+                            this.setToRedraw();
+                        });
                     }
                 });
             } else {
