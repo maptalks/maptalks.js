@@ -1,4 +1,5 @@
-import { extend } from '../core/util';
+import { extend, isNil } from '../core/util';
+import { getDepthFunc } from '../core/util/gl';
 import Browser from '../core/Browser';
 import Point from '../geo/Point';
 import ImageGLRenderable from '../renderer/layer/ImageGLRenderable';
@@ -11,12 +12,18 @@ import Layer from './Layer';
  * @property {Object}              options                     - ImageLayer's options
  * @property {String}              [options.crossOrigin=null]    - image's corssOrigin
  * @property {String}              [options.renderer=gl]         - ImageLayer's renderer, canvas or gl. gl tiles requires image CORS that canvas doesn't. canvas tiles can't pitch.
+ * @property {Number}              [options.alphaTest=0]         - only for gl renderer, pixels alpha <= alphaTest will be discarded
+ * @property {Boolean}             [options.depthMask=true]      - only for gl renderer, whether to write into depth buffer
+ * @property {Boolean}             [options.depthFunc=String]    - only for gl renderer, depth function, available values: never,<, =, <=, >, !=, >=, always
  * @memberOf ImageLayer
  * @instance
  */
 const options = {
     renderer: Browser.webgl ? 'gl' : 'canvas',
-    crossOrigin: null
+    crossOrigin: null,
+    alphaTest: 0,
+    depthMask: true,
+    depthFunc: '<='
 };
 
 const TEMP_POINT = new Point(0, 0);
@@ -148,13 +155,13 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
         this.setToRedraw();
     }
 
-    draw() {
+    draw(timestamp, context) {
         if (!this.isDrawable()) {
             return;
         }
         this.prepareCanvas();
         this._painted = false;
-        this._drawImages();
+        this._drawImages(timestamp, context);
         this.completeRender();
     }
 
@@ -210,6 +217,42 @@ export class ImageLayerCanvasRenderer extends CanvasRenderer {
 }
 
 export class ImageLayerGLRenderer extends ImageGLRenderable(ImageLayerCanvasRenderer) {
+    drawOnInteracting(event, timestamp, context) {
+        this.draw(timestamp, context);
+    }
+
+    _prepareGLContext() {
+        const gl = this.gl;
+        if (gl) {
+            gl.disable(gl.STENCIL_TEST);
+            gl.disable(gl.POLYGON_OFFSET_FILL);
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.depthFunc(getDepthFunc(this.layer.options['depthFunc']));
+            const depthMask = isNil(this.layer.options['depthMask']) || !!this.layer.options['depthMask'];
+            gl.depthMask(depthMask);
+        }
+    }
+
+    _drawImages(timestamp, parentContext) {
+        const gl = this.gl;
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                const framebuffer = parentContext.renderTarget.getFramebuffer(fbo);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            }
+        }
+        this._prepareGLContext();
+        super._drawImages();
+        if (parentContext && parentContext.renderTarget) {
+            const fbo = parentContext.renderTarget.fbo;
+            if (fbo) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            }
+        }
+    }
 
     //override to set to always drawable
     isDrawable() {
