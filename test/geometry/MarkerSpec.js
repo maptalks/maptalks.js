@@ -664,7 +664,8 @@ describe('Geometry.Marker', function () {
             var count = 0;
             layer.on('layerload', function () {
                 count++;
-                if (count === 2) {
+                // change from 2 to 3 as CanvasRenderer has one more setToRedraw
+                if (count === 3) {
                     expect(layer).to.be.painted(0, -3, [255, 255, 0]);
                     done();
                 }
