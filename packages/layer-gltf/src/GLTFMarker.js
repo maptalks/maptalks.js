@@ -1,6 +1,6 @@
-import { Marker, Util, Point, Extent} from 'maptalks';
+import { Marker, Util, Point, Extent } from 'maptalks';
 import { mat4, quat, vec3, vec4, reshader } from '@maptalks/gl';
-import { defined, coordinateToWorld, getAbsoluteValue, getFitExtent } from './common/Util';
+import { defined, coordinateToWorld, getAbsoluteValue } from './common/Util';
 import { loadFunctionTypes, hasFunctionDefinition } from '@maptalks/function-type';
 import { intersectsBox } from 'frustum-intersects';
 
@@ -12,6 +12,7 @@ const options = {
 const VEC41 = [], VEC42 = [], MAT4 = [], TEMP_SCALE = [1, 1, 1], TEMP_MAT = [], TEMP_TRANS = [], TEMP_FIXSIZE_SCALE = [1, 1, 1];
 const TEMP_BBOX = new reshader.BoundingBox();
 const Y_UP_TO_Z_UP = fromRotationTranslation(fromRotationX(Math.PI * 0.5), [0, 0, 0]);
+const TEMP_POINT = new Point(0, 0);
 const defaultColor = [186 / 255, 186 / 255, 186 / 255, 1];
 const defaultOpacity = 1;
 const phongUniforms = {
@@ -20,7 +21,7 @@ const phongUniforms = {
     'lightSpecular': [1.0, 1.0, 1.0],
     'lightDirection': [1.0, 1.0, 1.0]
 };
-const effectSymbols = new Set(['url', 'translationX', 'translationY', 'translationZ', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ', 'anchorZ', 'markerFixSize', 'modelHeight']);
+const effectSymbols = new Set(['url', 'translationX', 'translationY', 'translationZ', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ', 'anchorZ', 'markerPixelHeight', 'modelHeight']);
 
 export default class GLTFMarker extends Marker {
     constructor(coordinates, options) {
@@ -72,7 +73,7 @@ export default class GLTFMarker extends Marker {
                 return meshes;
             }
             let needUpdateMatrix = this.isAnimated() ||
-            (this._getMarkerFixSize() && map.isZooming()) ||
+            (this._getMarkerPixelHeight() && map.isZooming()) ||
             this._dirtyMarkerBBox ||
             (this.getGLTFMarkerType() === 'multigltfmarker' && this._dirty);
             if (!needUpdateMatrix) {
@@ -295,9 +296,9 @@ export default class GLTFMarker extends Marker {
         const {nodeMatrixMap, skinMap } = this._updateAnimation(timestamp);
         this._calSpatialScale(TEMP_SCALE);
         let zOffset = 0;
-        const markerFixSize = this._getMarkerFixSize();
+        const markerPixelHeight = this._getMarkerPixelHeight();
         const modelHeight = this.getModelHeight();
-        if (markerFixSize) {
+        if (markerPixelHeight && markerPixelHeight > 0) {
             const fixSizeScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE);
             vec3.multiply(TEMP_SCALE, TEMP_SCALE, fixSizeScale);
         } else if (modelHeight) {
@@ -381,22 +382,28 @@ export default class GLTFMarker extends Marker {
         const bbox = this._gltfModelBBox;
         const symbol = this.getSymbol();
         const scale = this.getScale();
-        const fixSize = symbol.markerFixSize;
-        if (!fixSize || fixSize < 0 || !bbox) {
+        const pixelHeight = symbol.markerPixelHeight;
+        if (!pixelHeight || pixelHeight < 0 || !bbox) {
             return out;
         }
         const map = this.getMap();
         const boxHeight = Math.abs(bbox.max[1] - bbox.min[1]);
         const pointZ = map.altitudeToPoint(boxHeight, map.getGLRes());
-        const fitExtent = getFitExtent(map, fixSize, map.getZoom());
-        const ratio = fitExtent / pointZ;
+        const heightInPoint = pixelHeight * map.getGLScale();
+        const ratio = heightInPoint / pointZ;
         return vec3.set(out, ratio / scale[0] , ratio / scale[1], ratio / scale[2]);
     }
 
+    getCurrentPixelHeight() {
+        const bbox = this._getBoundingBox();
+        const boxHeight = Math.abs(bbox.max[2] - bbox.min[2]);
+        const map = this.getMap();
+        return boxHeight / map.getGLScale();
+    }
+
     getFitTranslate(out) {
-        const fixSizeScale = this._calFixSizeScale(out);
         const bbox = this._gltfModelBBox;
-        const center = vec3.set(out, (bbox.min[0] + bbox.max[0]) * fixSizeScale[0] / 2, (bbox.min[1] + bbox.max[1]) * fixSizeScale[1] / 2, (bbox.min[1] + bbox.max[1]) * fixSizeScale[2] / 2);
+        const center = vec3.set(out, (bbox.min[0] + bbox.max[0]) / 2, (bbox.min[1] + bbox.max[1]) / 2, (bbox.min[2] + bbox.max[2]) / 2);
         return vec3.scale(center, center, -1);
     }
 
@@ -1022,9 +1029,9 @@ export default class GLTFMarker extends Marker {
     //     return this;
     // }
 
-    cancelMarkerFixSize() {
+    cancelMarkerPixelHeight() {
         return this.updateSymbol({
-            markerFixSize: null
+            markerPixelHeight: null
         });
     }
 
@@ -1279,9 +1286,9 @@ export default class GLTFMarker extends Marker {
         return this._skinMap;
     }
 
-    _getMarkerFixSize() {
+    _getMarkerPixelHeight() {
         const symbol = this['_getInternalSymbol']();
-        return symbol && symbol.markerFixSize;
+        return symbol && symbol.markerPixelHeight;
     }
 
     setModelHeight(modelHeight) {
@@ -1296,6 +1303,22 @@ export default class GLTFMarker extends Marker {
 
     getGLTFBBox() {
         return this._gltfModelBBox;
+    }
+
+    zoomTo(zoomOffset) {
+        const markerBBox = this._getBoundingBox();
+        const map = this.getMap();
+        const { min, max } = markerBBox;
+        TEMP_POINT.set(min[0], min[1]);
+        const minCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
+        TEMP_POINT.set(max[0], max[1]);
+        const maxCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
+        const extent = new Extent(minCoord, maxCoord);
+        map.fitExtent(extent, zoomOffset, {}, (params) => {
+            if (params.state.playState === 'finished') {
+                this.fire('zoomtoend', { target: this, extent });
+            }
+        });
     }
 
     _isUniformsDirty() {

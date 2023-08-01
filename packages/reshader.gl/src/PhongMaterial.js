@@ -46,6 +46,11 @@ class PhongMaterial extends Material {
             defines['HAS_COLOR0'] = 1;
             defines['COLOR0_SIZE'] = geometry.getColor0Size();
         }
+        if (geometry.data[geometry.desc.tangentAttribute]) {
+            defines['HAS_TANGENT'] = 1;
+        } else if (geometry.data[geometry.desc.normalAttribute]) {
+            defines['HAS_NORMAL'] = 1;
+        }
         if (!geometry.data[geometry.desc.uv0Attribute]) {
             return defines;
         }

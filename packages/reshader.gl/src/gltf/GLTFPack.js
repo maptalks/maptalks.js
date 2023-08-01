@@ -35,6 +35,7 @@ export default class GLTFPack {
         nodes.forEach((node) => {
             this._parserNode(node, this.geometries);
         });
+        this._checkBaseColorFactor();
         return this.geometries;
     }
 
@@ -65,6 +66,28 @@ export default class GLTFPack {
                 delete texture.image;
             }
         }
+    }
+
+    //所有baseColorFactor的alpha为0时，设置为1
+    _checkBaseColorFactor() {
+        if (!this._checkBaseColorFactorAlpha()) {
+            for (let i = 0; i < this.geometries.length; i++) {
+                const baseColorFactor = this.geometries[i].materialInfo['baseColorFactor'];
+                if (baseColorFactor && baseColorFactor[3] === 0) {
+                    baseColorFactor[3] = 1;
+                }
+            }
+        }
+    }
+
+    _checkBaseColorFactorAlpha() {
+        for (let i = 0; i < this.geometries.length; i++) {
+            const baseColorFactor = this.geometries[i].materialInfo['baseColorFactor'];
+            if (baseColorFactor && baseColorFactor[3] > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     dispose() {
@@ -418,7 +441,10 @@ function createGeometry(primitive, regl, hasAOMap) {
             color[i] = Math.round(aColor0.array[i] * 255);
         }
         aColor0.array = color;
-    } else if (aColor0 && aColor0.array instanceof Uint16Array) {
+    } else if (aColor0 && (aColor0.array instanceof Uint16Array ||
+        aColor0.array instanceof Int16Array ||
+        aColor0.array instanceof Uint32Array ||
+        aColor0.array instanceof Int32Array)) {
         const color = new Uint8Array(aColor0.array);
         aColor0.array = color;
     }

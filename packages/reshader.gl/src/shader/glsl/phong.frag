@@ -208,7 +208,7 @@ void main() {
         alpha = clamp(alpha, 0.0, 1.0);
         glFragColor *= alpha;
     #endif
-  if (glFragColor.a < alphaTest) {
+  if (glFragColor.a <= alphaTest) {
         discard;
     }
     #ifdef HAS_HEATMAP

@@ -1334,4 +1334,24 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('getCurrentPixelHeight', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                modelHeight: 100,
+                url: './models/yb/yb.gltf'
+            }
+        }).addTo(gltflayer);
+        map.setPitch(50);
+        map.setBearing(180);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const currentPixelHeight = marker.getCurrentPixelHeight();
+                expect(currentPixelHeight).to.be.eql(109.30195421642729);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });
