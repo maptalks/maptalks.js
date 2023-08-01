@@ -139,7 +139,7 @@ class Ellipse extends CenterMixin(Polygon) {
             return super._containsPoint(point, tolerance);
         }
         const projection = map.getProjection();
-        const t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+        const t = this._hitTestTolerance() + (tolerance || 0),
             pps = projection.projectCoords([this._coordinates, map.locate(this._coordinates, this.getWidth() / 2, this.getHeight() / 2)], this.options['antiMeridian']),
             p0 = map._prjToContainerPoint(pps[0]),
             p1 = map._prjToContainerPoint(pps[1]);

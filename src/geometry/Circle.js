@@ -113,7 +113,7 @@ class Circle extends CenterMixin(Polygon) {
         }
         const center = map._pointToContainerPoint(this._getCenter2DPoint()),
             size = this.getSize(),
-            t = isNil(tolerance) ? this._hitTestTolerance() : tolerance,
+            t = this._hitTestTolerance() + (tolerance || 0),
             se = center.add(size.width / 2, size.height / 2);
         return withInEllipse(point, center, se, t);
     }
