@@ -40,7 +40,7 @@ class CanvasRenderer extends Class {
         this.layer = layer;
         this._painted = false;
         this._drawTime = 0;
-        if (Browser.decodeImageInWorker && (layer.options['renderer'] === 'gl' || !Browser.safari && !Browser.iosWeixin)) {
+        if (Browser.decodeImageInWorker && !Browser.safari && !Browser.iosWeixin) {
             this._resWorkerConn = new ResourceWorkerConnection();
         }
         this.setToRedraw();
@@ -776,15 +776,17 @@ class CanvasRenderer extends Class {
     }
 
     _promiseResource(url) {
+        const layer = this.layer;
         const me = this, resources = this.resources,
-            crossOrigin = this.layer.options['crossOrigin'];
-        const renderer = this.layer.options['renderer'] || '';
+            crossOrigin = layer.options['crossOrigin'];
+        const renderer = layer.options['renderer'] || '';
         return function (resolve) {
             if (resources.isResourceLoaded(url, true)) {
                 resolve(url);
                 return;
             }
-            if (!isSVG(url[0]) && me._resWorkerConn) {
+            const fetchInWorker = !isSVG(url[0]) && me._resWorkerConn && (layer.options['renderer'] !== 'canvas' || layer.options['decodeImageInWorker']);
+            if (fetchInWorker) {
                 const uri = getAbsoluteURL(url[0]);
                 me._resWorkerConn.fetchImage(uri, (err, data) => {
                     if (err) {
