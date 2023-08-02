@@ -78,6 +78,13 @@ class Painter {
         return renderer.getTileLevelValue && renderer.getTileLevelValue(tileInfo, currentTileZoom) || 0;
     }
 
+    getAnalysisMeshes() {
+        if (this.getShadowMeshes) {
+            return this.getShadowMeshes();
+        }
+        return EMPTY_ARRAY;
+    }
+
     isVisible() {
         //TODO visibleFn没有支持多symbol
         // if (this._visibleFn && !this._visibleFn.isFeatureConstant) {

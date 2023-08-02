@@ -81,7 +81,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     getAnalysisMeshes() {
-        return EMPTY_ARRAY;
+        return this.painter.getAnalysisMeshes() || EMPTY_ARRAY;
     }
 
     getRayCastData() {

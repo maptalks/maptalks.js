@@ -107,10 +107,6 @@ export class PolygonLayerRenderer extends Vector3DLayerRenderer {
         });
     }
 
-    getAnalysisMeshes() {
-        return this.painter.getAnalysisMeshes();
-    }
-
     getRayCastData(mesh, indiceIndex) {
         const feature = this.painter.getRayCastData(mesh, indiceIndex);
         if (!feature || !feature.feature) {
