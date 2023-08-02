@@ -6,7 +6,7 @@ const pkg = require('./package.json');
 
 const testing = process.env.BUILD === 'test';
 const dev = process.env.BUILD === 'dev';
-console.log(process.env.BUILD);
+
 const isDebug = testing || dev;
 const plugins = testing ?
     [

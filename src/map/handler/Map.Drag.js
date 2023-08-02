@@ -51,7 +51,11 @@ class MapDragHandler extends Handler {
     _onMouseDown(param) {
         delete this.startDragTime;
         delete this._mode;
-        if (param.domEvent.button === 2 || param.domEvent.ctrlKey) {
+        const switchDragButton = this.target.options['switchDragButton'];
+        const rotateModeButton = switchDragButton ? 0 : 2;
+        const isTouch = param.domEvent.type === 'touchstart';
+        const isRotatonMode = switchDragButton && isTouch || param.domEvent.button === rotateModeButton || param.domEvent.ctrlKey;
+        if (isRotatonMode) {
             if (this.target.options['dragRotate'] || this.target.options['dragPitch']) {
                 this._mode = 'rotatePitch';
             }

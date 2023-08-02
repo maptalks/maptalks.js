@@ -61,7 +61,8 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Boolean} [options.dragPan=true]                           - if true, map can be dragged to pan.
  * @property {Boolean} [options.dragRotate=true]                        - default true. If true, map can be dragged to rotate by right click or ctrl + left click.
  * @property {Boolean} [options.dragPitch=true]                         - default true. If true, map can be dragged to pitch by right click or ctrl + left click.
- * @property {Boolean} [options.dragRotatePitch=true]                  - if true, map is dragged to pitch and rotate at the same time.
+ * @property {Boolean} [options.dragRotatePitch=true]                   - if true, map is dragged to pitch and rotate at the same time.
+ * @property {Number}  [options.switchDragButton=false]                 - switch to use left click (or touch on mobile) to rotate map and right click to move map.
  * @property {Boolean} [options.touchGesture=true]                      - whether to allow map to zoom/rotate/tilt by two finger touch gestures.
  * @property {Boolean} [options.touchZoom=true]                         - whether to allow map to zoom by touch pinch.
  * @property {Boolean} [options.touchRotate=true]                       - whether to allow map to rotate by touch pinch.
@@ -144,7 +145,9 @@ const options = {
     'preventWheelScroll': true,
     'preventTouch': true,
     //for plugin layer,such as threelayer
-    'supportPluginEvent': true
+    'supportPluginEvent': true,
+
+    'switchDragButton': false
 };
 
 /**
