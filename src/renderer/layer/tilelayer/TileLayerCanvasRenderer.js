@@ -411,7 +411,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (this.getMap().isInteracting()) {
             return this.layer.options['loadingLimitOnInteracting'];
         }
-        return 0;
+        return this.layer.options['loadingLimit'] || 0;
     }
 
     isDrawable() {

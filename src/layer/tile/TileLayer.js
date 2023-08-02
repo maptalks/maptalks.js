@@ -101,6 +101,7 @@ const options = {
     'background': true,
 
     'loadingLimitOnInteracting': 3,
+    'loadingLimit': 0,
 
     'tileRetryCount': 0,
 
