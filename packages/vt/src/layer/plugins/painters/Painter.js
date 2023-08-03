@@ -33,7 +33,7 @@ const levelNFilter = mesh => {
 
 class Painter {
     static getBloomSymbol() {
-        return 'bloom';
+        return ['bloom'];
     }
 
     constructor(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig) {
