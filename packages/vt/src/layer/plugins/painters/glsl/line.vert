@@ -203,14 +203,14 @@ void main() {
         vec2 dist = outset * extrude;
     #endif
 
-    float scale = tileResolution / resolution;
+    float resScale = tileResolution / resolution;
     // if (isRenderingTerrain == 1.0) {
-    //     scale = 1.0;
+    //     resScale = 1.0;
     // } else {
-    //     scale = tileResolution / resolution;
+    //     resScale = tileResolution / resolution;
     // }
 
-    vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+    vec4 localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / resScale, 1.0);
     gl_Position = projViewModelMatrix * positionMatrix * localVertex;
 
     // #284 解决倾斜大时的锯齿问题
@@ -227,7 +227,7 @@ void main() {
             dist += aaWidth * extrude;
             outset += aaWidth / 6.0;
             // 用新的dist计算新的端点位置
-            localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / scale, 1.0);
+            localVertex = vec4(position + vec3(dist, 0.0) * tileRatio / resScale, 1.0);
             gl_Position = projViewModelMatrix * positionMatrix * localVertex;
         }    
     }
@@ -266,10 +266,10 @@ void main() {
                     vLinesofar = aLinesofar / MAX_LINE_DISTANCE;
                     vGradIndex = aGradIndex;
                 #else
-                    // /scale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
-                    float linesofar = aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / scale * tileRatio;
-                    vLinesofar = linesofar / tileRatio * scale;
-                    // vLinesofar = (aLinesofar) / tileRatio * scale;
+                    // /resScale * tileRatio 是为了把像素宽度转换为瓦片内的值域(即tile extent 8192或4096)
+                    float linesofar = aLinesofar - halfwidth * aExtrude.z / EXTRUDE_SCALE / resScale * tileRatio;
+                    vLinesofar = linesofar / tileRatio * resScale;
+                    // vLinesofar = (aLinesofar) / tileRatio * resScale;
                 #endif
             #endif
 
