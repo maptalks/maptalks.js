@@ -1,4 +1,10 @@
-export function createAtlasTexture(regl, atlas, flipY) {
+import { reshader } from '@maptalks/gl';
+
+export function createAtlasTexture(regl, atlas, flipY, mipmap) {
+    if (mipmap) {
+        const data = reshader.Util.resizeToPowerOfTwo(atlas.data, atlas.width, atlas.height);
+        atlas.data = data;
+    }
     const image = atlas;
     const config = {
         width: image.width,
@@ -6,7 +12,7 @@ export function createAtlasTexture(regl, atlas, flipY) {
         data: image.data,
         format: image.format,
         mag: 'linear', //very important
-        min: 'linear', //very important
+        min: mipmap ? 'linear mipmap linear' : 'linear', //very important
         flipY,
         // 设成true解决矢量marker边缘的“漏光”问题
         premultiplyAlpha: true

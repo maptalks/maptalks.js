@@ -133,7 +133,7 @@ class LinePainter extends BasicPainter {
         const iconAtlas = geometry.properties.iconAtlas;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
         if (iconAtlas) {
-            uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false);
+            uniforms.linePatternFile = createAtlasTexture(this.regl, iconAtlas, false, true);
             uniforms.atlasSize = iconAtlas ? [iconAtlas.width, iconAtlas.height] : [0, 0];
             uniforms.flipY = isVectorTile ? -1 : 1;
             this.drawDebugAtlas(iconAtlas);

@@ -118,7 +118,7 @@ class FillPainter extends BasicPainter {
             });
             // uniforms.tileRatio = geometry.properties.tileResolution / resolution / geometry.properties.tileRatio;
             //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
-            uniforms.polygonPatternFile = createAtlasTexture(this.regl, iconAtlas, false);
+            uniforms.polygonPatternFile = createAtlasTexture(this.regl, iconAtlas, false, true);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
             this.drawDebugAtlas(iconAtlas);
         }
