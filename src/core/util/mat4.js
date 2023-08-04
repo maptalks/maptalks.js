@@ -272,7 +272,7 @@ export function invert(out, a) {
 
 /**
  * Set a mat4 to the identity matrix
- *
+ * @ignore
  * @param {mat4} out the receiving matrix
  * @returns {mat4} out
  */
@@ -298,7 +298,7 @@ export function identity(out) {
 
 /**
  * Copy the values from one mat4 to another
- *
+ * @ignore
  * @param {mat4} out the receiving matrix
  * @param {mat4} a the source matrix
  * @returns {mat4} out

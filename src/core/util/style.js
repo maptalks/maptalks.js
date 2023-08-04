@@ -209,6 +209,7 @@ function parseStops(value, replacer) {
 
 /**
  * geometry symbol has lineDasharray
+ * @memberOf Util
  */
 export function isDashLine(symbolizers = []) {
     if (!Array.isArray(symbolizers)) {
