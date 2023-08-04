@@ -784,6 +784,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             if (tileData) {
                 if (tileData.layers) {
                     tileData.layers.forEach(info => {
+                        if (!info) {
+                            return;
+                        }
                         const pluginTypeName = ('plugin_' + info.type).trim();
                         plugins.push(this._layerPlugins[info.layer][pluginTypeName].plugin);
                     });
