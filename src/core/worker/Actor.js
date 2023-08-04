@@ -44,7 +44,7 @@ const EMPTY_BUFFERS = [];
       console.log(data);
     });
  */
-export default class Actor {
+class Actor {
 
     constructor(workerKey) {
         this._delayMessages = [];
@@ -223,3 +223,4 @@ function asyncAll(array, fn, callback) {
         });
     });
 }
+export default Actor;

@@ -126,6 +126,7 @@ export function join(arr, seperator) {
  * Determine if an object has any properties.
  * @param object The object to check.
  * @returns {boolean} The object is empty
+ * @memberOf Util
  */
 export function isEmpty(object) {
     let property;

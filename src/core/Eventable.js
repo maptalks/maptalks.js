@@ -199,6 +199,7 @@ const Eventable = Base =>
          * Get all the listening event types
          *
          * @returns {String[]} events
+         * @function Eventable.getListeningEvents
          */
         getListeningEvents() {
             if (!this._eventMap) {

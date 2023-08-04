@@ -155,6 +155,7 @@ const MOUSEEVENT_ASSOCIATION_TABLE = {
 
 /**
  * geo validate
+ * @ignore
  *
  */
 const isGeo = (geometry) => {
