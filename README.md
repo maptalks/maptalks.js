@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/fusion.gl.svg)](https://badge.fury.io/js/fusion.gl)
 <!--[![codecov](https://codecov.io/gh/axmand/fusion.gl/branch/master/graph/badge.svg)](https://codecov.io/gh/axmand/fusion.gl)-->
 
-一个WebGL沙盒库，它能基于同一个WebGL Context，扩展出多个沙盒WebGL环境，方便使用的WebGL框架共享同一个WebGL Context。
+一个WebGL沙盒库，它能基于同一个WebGL Context，扩展出多个沙盒WebGL环境，方便不同WebGL框架共享同一个WebGL Context。
 
 它的主要特性：
 * 模拟了全部WebGL1和部分WebGL2接口
