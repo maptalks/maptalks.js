@@ -55,10 +55,11 @@ export default class IconAtlas {
 
     build() {
         const images = this.glyphMap;
+        const count = Object.keys(images).length;
         const positions = {};
         const pack = new ShelfPack(0, 0, { autoResize: true });
         const bins = [];
-        const padding = PADDING;
+        const padding = count > 1 ? PADDING : 0;
         for (const id in images) {
             const src = images[id];
             const bin = {
