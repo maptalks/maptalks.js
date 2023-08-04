@@ -9,7 +9,7 @@
 * 模拟了全部WebGL1和部分WebGL2接口
 * 每个沙盒WebGLContext的状态管理
 * 切换沙盒时，自动设置WebGL Context上的状态值，例如stencil，depth，blend的相关状态
-* 性能状态，如果某个WebGL语句设置的状态已经被设置过，则不去运行它
+* 性能提升，如果检测到某个WebGL语句设置的状态已经被设置过，则不去运行该指令
 
 ## 示例程序
 ```js
