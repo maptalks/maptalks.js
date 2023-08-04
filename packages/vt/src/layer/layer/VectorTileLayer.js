@@ -70,6 +70,17 @@ const defaultOptions = {
  */
 class VectorTileLayer extends maptalks.TileLayer {
 
+    // create a layer instance from given json
+    static loadFrom(url, fetchOptions) {
+        return fetch(url, fetchOptions || {})
+        .then(data => {
+            return data.json();
+        })
+        .then(json => {
+            return VectorTileLayer.fromJSON(json);
+        });
+    }
+
     constructor(id, options) {
         super(id, options);
         // if (options.spatialReference === undefined) {
