@@ -60,7 +60,7 @@ export default class GlyphRequestor {
                     sdf = cloneSDF(sdf);
                     glyphSdfs[font][charCode] = sdf;
                     buffers.push(sdf.bitmap.data.buffer);
-                    if (drawCount > this._limit) {
+                    if (this._framer && drawCount > this._limit) {
                         // console.log(`(下一帧)(${Math.round((performance.now() - now))}ms)渲染了${drawCount}个字符.`);
                         this._framer(closure(step, glyphSdfs, buffers));
                         return;
