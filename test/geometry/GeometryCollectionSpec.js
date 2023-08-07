@@ -85,6 +85,18 @@ describe('#GeometryCollection', function () {
         }
     });
 
+    it('miss properties of children #2042', function (done) {
+        var opts = {
+            properties: { name: 'hello' }
+        }
+        var collection = new maptalks.GeometryCollection([new maptalks.Marker(center)], opts);
+        var str1 = JSON.stringify(collection.getProperties());
+        const child = collection.getGeometries()[0];
+        var str2 = JSON.stringify(child.getProperties());
+        expect(str1).to.be.equal(str2);
+        done();
+    });
+
     describe('creation', function () {
 
         it('normal constructor', function () {
@@ -106,18 +118,18 @@ describe('#GeometryCollection', function () {
             var points = genPoints();
             points.forEach(function (p, index) {
                 p.setSymbol({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
 
             var collection = new maptalks.GeometryCollection(points);
             collection.forEach(function (f, index) {
                 expect(f.getSymbol()).to.be.eql({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
         });
@@ -126,9 +138,9 @@ describe('#GeometryCollection', function () {
             var points = genPoints();
             points.forEach(function (p, index) {
                 p.setSymbol({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
 
@@ -140,9 +152,9 @@ describe('#GeometryCollection', function () {
 
             c2.forEach(function (f, index) {
                 expect(f.getSymbol()).to.be.eql({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
         });
@@ -151,18 +163,18 @@ describe('#GeometryCollection', function () {
             var points = genPoints();
             points.forEach(function (p, index) {
                 p.setSymbol({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
 
             var c = new maptalks.GeometryCollection(points);
 
             var symbol = {
-                'markerType' : 'square',
-                'markerWidth' : 10,
-                'markerHeight' : 10
+                'markerType': 'square',
+                'markerWidth': 10,
+                'markerHeight': 10
             };
             c.setSymbol(symbol);
 
@@ -178,14 +190,14 @@ describe('#GeometryCollection', function () {
             var symbols = [];
             points.forEach(function (p, index) {
                 symbols.push({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
 
             var symbol = {
-                'children' : symbols
+                'children': symbols
             };
             c.setSymbol(symbol);
 
@@ -193,9 +205,9 @@ describe('#GeometryCollection', function () {
 
             c.forEach(function (f, index) {
                 expect(f.getSymbol()).to.be.eql({
-                    'markerType' : 'ellipse',
-                    'markerWidth' : index,
-                    'markerHeight' : index
+                    'markerType': 'ellipse',
+                    'markerWidth': index,
+                    'markerHeight': index
                 });
             });
         });
@@ -204,20 +216,20 @@ describe('#GeometryCollection', function () {
             var points = genPoints();
             var c = new maptalks.GeometryCollection(points);
             c.setSymbol({
-                'markerType' : 'ellipse',
-                'markerWidth' : 20,
-                'markerHeight' : 20
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 20
             });
 
             c.updateSymbol({
-                'opacity' : 1
+                'opacity': 1
             });
 
             var expected = {
-                'markerType' : 'ellipse',
-                'markerWidth' : 20,
-                'markerHeight' : 20,
-                'opacity' : 1
+                'markerType': 'ellipse',
+                'markerWidth': 20,
+                'markerHeight': 20,
+                'opacity': 1
             };
 
             expect(c.getSymbol()).to.be.eql(expected);
@@ -231,7 +243,7 @@ describe('#GeometryCollection', function () {
     describe('collection add to layer', function () {
         var layers = [
             new maptalks.VectorLayer('geometrycollection_test_svg'),
-            new maptalks.VectorLayer('geometrycollection_test_canvas', { 'render':'canvas' })
+            new maptalks.VectorLayer('geometrycollection_test_canvas', { 'render': 'canvas' })
         ];
         layers.forEach(function (layer) {
             it('can be add to layer', function () {
@@ -255,14 +267,14 @@ describe('#GeometryCollection', function () {
             var points = genPoints();
             var collection = new maptalks.GeometryCollection(points);
             var symbol = {
-                'markerFile' : 'test',
-                'markerWidth' : 40,
-                'markerHeight' : 50
+                'markerFile': 'test',
+                'markerWidth': 40,
+                'markerHeight': 50
             };
             var expected = {
-                'markerFile' : 'test',
-                'markerWidth' : 40,
-                'markerHeight' : 50
+                'markerFile': 'test',
+                'markerWidth': 40,
+                'markerHeight': 50
             };
 
             collection.setSymbol(symbol);
@@ -284,7 +296,7 @@ describe('#GeometryCollection', function () {
 
         var layers = [
             new maptalks.VectorLayer('geometrycollection_test_svg'),
-            new maptalks.VectorLayer('geometrycollection_test_canvas', { 'render':'canvas' })
+            new maptalks.VectorLayer('geometrycollection_test_canvas', { 'render': 'canvas' })
         ];
         layers.forEach(function (layer) {
             it('can be updated after added to layer', function () {
@@ -342,31 +354,31 @@ describe('#GeometryCollection', function () {
 function genPoints() {
     return [
         new maptalks.Marker([0, 0], {
-            properties : {
-                'foo1' : 1,
-                'foo2' : 'test1',
-                'foo3' : true
+            properties: {
+                'foo1': 1,
+                'foo2': 'test1',
+                'foo3': true
             }
         }),
         new maptalks.Marker([0, 0], {
-            properties : {
-                'foo1' : 2,
-                'foo2' : 'test2',
-                'foo3' : false
+            properties: {
+                'foo1': 2,
+                'foo2': 'test2',
+                'foo3': false
             }
         }),
         new maptalks.Marker([0, 0], {
-            properties : {
-                'foo1' : 3,
-                'foo2' : 'test3',
-                'foo3' : true
+            properties: {
+                'foo1': 3,
+                'foo2': 'test3',
+                'foo3': true
             }
         }),
         new maptalks.Marker([0, 0], {
-            properties : {
-                'foo1' : 4,
-                'foo2' : 'test4',
-                'foo3' : true
+            properties: {
+                'foo1': 4,
+                'foo2': 'test4',
+                'foo3': true
             }
         })
     ];
