@@ -1,5 +1,5 @@
 import { createFilter, isFeatureFilter } from '@maptalks/feature-filter';
-import { expression, featureFilter as createExpressionFilter } from '@mapbox/mapbox-gl-style-spec';
+import { expression, featureFilter as createExpressionFilter } from './mapbox-gl-style-spec';
 import { extend, isNil } from './Util';
 const { isExpression: isMapboxExpression, createExpression: createMapboxExpression } = expression;
 
