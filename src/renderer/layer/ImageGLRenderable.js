@@ -1,4 +1,4 @@
-import { IS_NODE, extend, isInteger, log2, isNil, isNumber } from '../../core/util';
+import { IS_NODE, extend, isInteger, isNil, isNumber } from '../../core/util';
 import { createGLContext, createProgram, enableVertexAttrib } from '../../core/util/gl';
 import Browser from '../../core/Browser';
 import * as mat4 from '../../core/util/mat4';
