@@ -1,4 +1,4 @@
-import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, isPowerOfTwo, floorPowerOfTwo } from './common/Util.js';
+import { isFunction, hasOwn, getTextureByteWidth, getTextureChannels, isArray, isPowerOfTwo, resizeToPowerOfTwo } from './common/Util.js';
 import Eventable from './common/Eventable.js';
 import { KEY_DISPOSED } from './common/Constants.js';
 
@@ -52,7 +52,7 @@ class AbstractTexture {
                         return data;
                     }
                     if ((data.data instanceof Image) && this._needPowerOf2()) {
-                        data.data = resize(data.data);
+                        data.data = resizeToPowerOfTwo(data.data);
                     }
                     self.onLoad(data);
                     if (!Array.isArray(data)) {
@@ -66,14 +66,9 @@ class AbstractTexture {
                 });
             } else if (config.data && this._needPowerOf2()) {
                 if ((config.data instanceof Image)) {
-                    config.data = resize(config.data);
-                    config.width = config.data.width;
-                    config.height = config.data.height;
-                }
-                if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
-                    config.data = resizeFromArray(config.data, config.width, config.height);
-                    config.width = config.data.width;
-                    config.height = config.data.height;
+                    config.data = resizeToPowerOfTwo(config.data);
+                } else if (!config.hdr && isArray(config.data) && (!isPowerOfTwo(config.width) || !isPowerOfTwo(config.height))) {
+                    config.data = resizeToPowerOfTwo(config.data, config.width, config.height);
                 }
             }
         }
@@ -177,60 +172,4 @@ class AbstractTexture {
 }
 
 export default Eventable(AbstractTexture);
-
-function resizeFromArray(arr, width, height) {
-    let newWidth = width;
-    let newHeight = height;
-    if (!isPowerOfTwo(width)) {
-        newWidth = floorPowerOfTwo(width);
-    }
-    if (!isPowerOfTwo(height)) {
-        newHeight = floorPowerOfTwo(height);
-    }
-
-    const imageData = new ImageData(new Uint8ClampedArray(arr), width, height);
-
-    const srcCanvas = document.createElement('canvas');
-    srcCanvas.width = width;
-    srcCanvas.height = height;
-    srcCanvas.getContext('2d').putImageData(imageData, 0, 0);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    canvas.getContext('2d').drawImage(srcCanvas, 0, 0, newWidth, newHeight);
-    console.warn(`Texture's size is not power of two, resize from (${width}, ${height}) to (${newWidth}, ${newHeight})`);
-    return canvas;
-}
-
-function resize(image) {
-    if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
-        return image;
-    }
-    let width = image.width;
-    let height = image.height;
-    if (!isPowerOfTwo(width)) {
-        width = floorPowerOfTwo(width);
-    }
-    if (!isPowerOfTwo(height)) {
-        height = floorPowerOfTwo(height);
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
-    const url = image.src;
-    const idx = url.lastIndexOf('/') + 1;
-    const filename = url.substring(idx);
-    console.warn(`Texture(${filename})'s size is not power of two, resize from (${image.width}, ${image.height}) to (${width}, ${height})`);
-    return canvas;
-}
-
-
-
-
-
-// function ceilPowerOfTwo(value) {
-//     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
-// }
 

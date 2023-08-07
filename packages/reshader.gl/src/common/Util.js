@@ -286,6 +286,74 @@ export function isPowerOfTwo(value) {
     return (value & (value - 1)) === 0 && value !== 0;
 }
 
-export function floorPowerOfTwo(value) {
+function floorPowerOfTwo(value) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+}
+
+// function ceilPowerOfTwo(value) {
+//     return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
+// }
+
+function resizeFromArray(arr, width, height) {
+    let newWidth = width;
+    let newHeight = height;
+    if (!isPowerOfTwo(width)) {
+        newWidth = floorPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        newHeight = floorPowerOfTwo(height);
+    }
+
+    const imageData = new ImageData(new Uint8ClampedArray(arr), width, height);
+
+    const srcCanvas = document.createElement('canvas');
+    srcCanvas.width = width;
+    srcCanvas.height = height;
+    srcCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    canvas.getContext('2d').drawImage(srcCanvas, 0, 0, width, height, 0, 0, newHeight, newHeight);
+    console.warn(`Texture's size is not power of two, resize from (${width}, ${height}) to (${newWidth}, ${newHeight})`);
+    let debugCanvas = document.getElementById('_debug_resize_canvas');
+    if (!debugCanvas) {
+        debugCanvas = document.createElement('canvas');
+        debugCanvas.id = '_debug_resize_canvas';
+        document.body.appendChild(debugCanvas);
+    }
+    debugCanvas.width = newWidth;
+    debugCanvas.height = newHeight;
+    debugCanvas.getContext('2d').drawImage(canvas, 0, 0);
+    return canvas;
+}
+
+export function resizeToPowerOfTwo(image, width, height) {
+    if (isArray(image)) {
+        if (!isPowerOfTwo(image.width) || !isPowerOfTwo(image.height)) {
+            return resizeFromArray(image, width, height);
+        } else {
+            return image;
+        }
+    }
+    if (isPowerOfTwo(image.width) && isPowerOfTwo(image.height)) {
+        return image;
+    }
+    width = image.width;
+    height = image.height;
+    if (!isPowerOfTwo(width)) {
+        width = floorPowerOfTwo(width);
+    }
+    if (!isPowerOfTwo(height)) {
+        height = floorPowerOfTwo(height);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const url = image.src;
+    const idx = url.lastIndexOf('/') + 1;
+    const filename = url.substring(idx);
+    console.warn(`Texture(${filename})'s size is not power of two, resize from (${image.width}, ${image.height}) to (${width}, ${height})`);
+    return canvas;
 }

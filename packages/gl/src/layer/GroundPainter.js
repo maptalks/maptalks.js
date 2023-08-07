@@ -459,7 +459,7 @@ class GroundPainter {
                         wrap: 'repeat',
                     } : texConf;
                     texConf.flipY = true;
-                    texConf.min = 'linear';
+                    texConf.min = 'linear mipmap linear';
                     texConf.mag = 'linear';
                     texConf.flipY = true;
                     // texConf.aniso = 4;
@@ -497,13 +497,14 @@ class GroundPainter {
     }
 
     _createPatternTexture(image) {
+        image = reshader.Util.resizeToPowerOfTwo(image);
         const regl = this._regl;
         const config = {
             width: image.width,
             height: image.height,
             data: image,
             mag: 'linear',
-            min: 'linear',
+            min: 'linear mipmap linear',
             flipY: false,
             wrap: 'repeat'
         };
