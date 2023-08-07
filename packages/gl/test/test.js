@@ -77,7 +77,7 @@ describe('gl tests', () => {
                 const terrainLayer = group.getTerrainLayer();
                 terrainLayer.once('terrainreadyandrender', () => {
                     const altitude = group.queryTerrain(map.getCenter());
-                    expect(altitude).to.be.eql([3654.39990234375, 1]);
+                    expect(altitude).to.be.eql([3655.46240234375, 1]);
                     done();
                 });
             });
@@ -266,7 +266,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 119, '1': 123, '2': 124, '3': 255 } });
                         done();
                     });
                 });
@@ -303,7 +303,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 149, '1': 153, '2': 155, '3': 127 } });
+                        expect(pixel).to.be.eql({ data: { '0': 118, '1': 122, '2': 124, '3': 127 } });
                         done();
                     });
                 });
@@ -336,7 +336,7 @@ describe('gl tests', () => {
                     group.once('layerload', () => {
                         const canvas = group.getRenderer().canvas;
                         const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 }});
+                        expect(pixel).to.be.eql({ data: { '0': 119, '1': 123, '2': 124, '3': 255 }});
                         done();
                     });
                 });
@@ -423,9 +423,9 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 152, '1': 156, '2': 157, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 120, '1': 124, '2': 125, '3': 255 } });
                         const altitude = group.queryTerrain(map.getCenter());
-                        expect(altitude).to.be.eql([3654.39990234375, 1]);
+                        expect(altitude).to.be.eql([3655.46240234375, 1]);
                         done();
                     });
                 });
@@ -585,7 +585,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 131, '1': 135, '2': 136, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 142, '1': 146, '2': 147, '3': 255 } });
                         done();
                     });
                 });
@@ -632,14 +632,14 @@ describe('gl tests', () => {
                             const canvas = map.getRenderer().canvas;
                             const ctx = canvas.getContext('2d');
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 154, '1': 158, '2': 159, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 135, '1': 139, '2': 140, '3': 255 } });
                             done();
                         });
                         expect(count).to.be.eql(1);
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 154, '1': 158, '2': 159, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 135, '1': 139, '2': 140, '3': 255 } });
                         group.getTerrainLayer().options.shader = 'default';
                     });
                 });
@@ -942,7 +942,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 148, '1': 152, '2': 153, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 119, '1': 123, '2': 124, '3': 255 } });
                         done();
                     });
                 });
@@ -983,7 +983,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 114, '1': 114, '2': 101, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 140, '1': 137, '2': 118, '3': 255 } });
                         done();
                     });
                 });
@@ -1024,7 +1024,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 176, '1': 175, '2': 155, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 162, '1': 151, '2': 135, '3': 255 } });
                         done();
                     });
                 });
@@ -1068,7 +1068,7 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 26, '1': 230, '2': 24, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 41, '1': 245, '2': 40, '3': 255 } });
                         done();
                     });
                 });
