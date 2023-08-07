@@ -92,7 +92,7 @@ class LightManager {
         if (url.top) {
             // ambient with 6 images
             const { front, back, right, left, top, bottom } = url;
-            const envUrls = [front, back, right, left, top, bottom];
+            const envUrls = [left, right, back, front, top, bottom];
             count = envUrls.length;
             for (let i = 0; i < count; i++) {
                 const img = new Image();
