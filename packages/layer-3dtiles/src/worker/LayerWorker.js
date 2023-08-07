@@ -982,7 +982,7 @@ function getNodeMatrix(out, matrices) {
 }
 
 function float32ToInt16(inputArray, compressed_ratio, min, max) {
-    if (compressed_ratio !== 1) {//compressed_ratio为1时不需要遍历
+    if (compressed_ratio && compressed_ratio > 1) {//compressed_ratio为1时不需要遍历
         for (let i = 0; i < inputArray.length; i++) {
             if ((i + 1) % 3 != 0) { //x,y弧度转为米
                 inputArray[i] *= compressed_ratio;

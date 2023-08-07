@@ -637,6 +637,7 @@ describe('add analysis', () => {
                 scaleZ: 4
             }
         }).addTo(gltflayer);
+        map.setPitch(45);
         marker.on('load', () => {
             const dataConfig = {
                 type: "3d-extrusion",
@@ -647,16 +648,17 @@ describe('add analysis', () => {
                 side: true
             };
             const material = {
-                baseColorFactor: [1, 1, 1, 1],
+                baseColorFactor: [0, 1, 1, 1],
             };
-            const boundary = [[ -0.0008475780487060547, 0.000815391540498922],
-                [-0.0013518333435058594, 0.00009655952453613281],
-                [-0.0004184246063232422, -0.0005686283111288049],
-                [0.0005471706390380859, 0.00006437301638584358],
-                [0.0005042552947998047, 0.0006651878356649377]];
+            const boundary = [[-0.0003325939178466797, 0.00039696693420410156],
+                [-0.00039696693420410156, -0.0002574920654012658],
+                [0.00037550926208496094, -0.00023603439328212517],
+                [0.00037550926208496094, 0.00046133995053310173]];
+            const mask = new maptalks.ClipInsideMask(boundary);
+            gltflayer.setMask([mask]);
             const polygon = new maptalks.Polygon(boundary, {
                 properties: {
-                    height: 50
+                    height: 500
                 }
             });
             const excavateAnalysis = new maptalks.ExcavateAnalysis('excavate', [polygon], {
@@ -667,9 +669,9 @@ describe('add analysis', () => {
             excavateAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                const pixel2 = pickPixel(map, 250, 100, 1, 1);
-                expect(pixelMatch([255, 137, 137, 255], pixel1)).to.be.eql(true);//挖方区颜色
-                expect(pixelMatch([145, 145, 145, 255], pixel2)).to.be.eql(true);//非挖方区颜色
+                const pixel2 = pickPixel(map, 200, 120, 1, 1);
+                expect(pixelMatch([255, 0, 0, 186], pixel1)).to.be.eql(true);//挖方区域颜色
+                expect(pixelMatch([75, 181, 181, 255], pixel2)).to.be.eql(true);//挖方测面颜色
                 done();
             }, 500);
         });
