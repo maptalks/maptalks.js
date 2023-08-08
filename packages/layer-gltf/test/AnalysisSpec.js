@@ -626,7 +626,7 @@ describe('add analysis', () => {
     });
 
 
-    it.only('ExcavateAnalysis', (done) => {
+    it('ExcavateAnalysis', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
         const marker = new maptalks.GLTFGeometry(center, {
