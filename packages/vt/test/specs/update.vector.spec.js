@@ -682,7 +682,7 @@ describe('vector layers update style specs', () => {
                 lineDasharray: [0, 0, 0, 0]
             }
         });
-        const layer = new LineStringLayer('vector', line,);
+        const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
@@ -722,7 +722,7 @@ describe('vector layers update style specs', () => {
                 lineDasharray: [0, 0, 0, 0]
             }
         });
-        const layer = new LineStringLayer('vector', line,);
+        const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;
@@ -759,7 +759,7 @@ describe('vector layers update style specs', () => {
                 lineDasharray: [0, 0, 0, 0]
             }
         });
-        const layer = new LineStringLayer('vector', line,);
+        const layer = new LineStringLayer('vector', line);
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
         let count = 0;

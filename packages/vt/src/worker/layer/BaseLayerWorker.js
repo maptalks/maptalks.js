@@ -327,7 +327,7 @@ export default class BaseLayerWorker {
             });
 
             buffers.push(targetData[typeIndex].styledFeatures.buffer);
-            const tileContext = { extent: EXTENT, zoom, tilePoint, ...context };
+            const tileContext = extend({}, context, { extent: EXTENT, zoom, tilePoint });
             if (this.options.debugTile) {
                 const debugTile = this.options.debugTile;
                 for (let i = 0; i < debugTile.length; i++) {

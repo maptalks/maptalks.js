@@ -13,7 +13,7 @@ export function getEmptyIconQuads() {
  * @private
  */
 export function getIconQuads(
-    shapedIcon, //: PositionedIcon,
+    shapedIcon //: PositionedIcon,
 ) {
     const image = shapedIcon.image;
 

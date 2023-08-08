@@ -143,7 +143,7 @@ function determineAverageLineWidth(logicalInput, //: string,
 function calculateBadness(lineWidth, //: number,
     targetWidth, //: number,
     penalty, //: number,
-    isLastBreak, //: boolean
+    isLastBreak //: boolean
 ) {
     const raggedness = Math.pow(lineWidth - targetWidth, 2);
     if (isLastBreak) {
