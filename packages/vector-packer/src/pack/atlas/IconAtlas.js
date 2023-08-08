@@ -11,29 +11,30 @@ const PADDING = 1;
 
 export class ImagePosition {
     //paddedRect : x, y, w, h
-    constructor(paddedRect, { pixelRatio }) {
+    constructor(paddedRect, padding, { pixelRatio }) {
         this.paddedRect = paddedRect;
         this.pixelRatio = pixelRatio || 1;
+        this.padding = padding;
     }
 
     get tl() {
         return [
-            this.paddedRect.x + PADDING,
-            this.paddedRect.y + PADDING
+            this.paddedRect.x + this.padding,
+            this.paddedRect.y + this.padding
         ];
     }
 
     get br() {
         return [
-            this.paddedRect.x + this.paddedRect.w - PADDING,
-            this.paddedRect.y + this.paddedRect.h - PADDING
+            this.paddedRect.x + this.paddedRect.w - this.padding,
+            this.paddedRect.y + this.paddedRect.h - this.padding
         ];
     }
 
     get displaySize() {
         return [
-            (this.paddedRect.w - PADDING * 2) / this.pixelRatio,
-            (this.paddedRect.h - PADDING * 2) / this.pixelRatio
+            (this.paddedRect.w - this.padding * 2) / this.pixelRatio,
+            (this.paddedRect.h - this.padding * 2) / this.pixelRatio
         ];
     }
 }
@@ -69,7 +70,7 @@ export default class IconAtlas {
                 h: src.data.height + 2 * padding,
             };
             bins.push(bin);
-            positions[id] = new ImagePosition(bin, src);
+            positions[id] = new ImagePosition(bin, padding, src);
         }
 
         pack.pack(bins, { inPlace: true });
