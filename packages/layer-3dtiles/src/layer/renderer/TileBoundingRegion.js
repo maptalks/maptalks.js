@@ -200,7 +200,7 @@ export default class TileBoundingRegion {
         const westVector = vec3.subtract(
             cartesian3Scratch,
             westernMidpointCartesian,
-            easternMidpointCartesian,
+            easternMidpointCartesian
         );
         const eastWestNormal = vec3.normalize(eastWestNormalScratch, westVector);
 
@@ -283,7 +283,7 @@ export default class TileBoundingRegion {
         const northNormal = vec3.cross(
             cartesian3Scratch3,
             westVector,
-            northSurfaceNormal,
+            northSurfaceNormal
         );
         vec3.normalize(tileBB.northNormal, northNormal);
     }

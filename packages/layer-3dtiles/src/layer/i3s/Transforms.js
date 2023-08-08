@@ -134,7 +134,7 @@ function fromHeadingPitchRoll(headingPitchRoll, result) {
         scratchHPRQuaternion,
         0,
         0,
-        -headingPitchRoll.heading,
+        -headingPitchRoll.heading
     );
     return quat.mul(result, scratchHeadingQuaternion, result);
 }

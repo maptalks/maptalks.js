@@ -36,12 +36,10 @@
     "gl-matrix": "^2.6.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.15.0",
-    "@babel/preset-env": "^7.15.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
-    "eslint": "^7.32.0",
-    "eslint-plugin-mocha": "^9.0.0",
+    "eslint": "^8.46.0",
+    "eslint-plugin-mocha": "^10.1.0",
     "expect.js": "^0.3.1",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",

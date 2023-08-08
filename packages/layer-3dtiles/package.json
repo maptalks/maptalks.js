@@ -43,8 +43,6 @@
     "parse-dds": "^1.2.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.15.0",
-    "@babel/preset-env": "^7.15.0",
     "@maptalks/gl": "^0.89.0",
     "@maptalks/transcoders.crn": "^0.89.0",
     "@maptalks/transcoders.draco": "^0.89.0",
@@ -54,8 +52,8 @@
     "@rollup/plugin-replace": "4.0.0",
     "electron": "^4.2.12",
     "electron-mocha": "^11.0.1",
-    "eslint": "^7.32.0",
-    "eslint-plugin-mocha": "^9.0.0",
+    "eslint": "^8.46.0",
+    "eslint-plugin-mocha": "^10.1.0",
     "express": "^4.17.1",
     "maptalks": "^1.0.0-rc.23",
     "pixelmatch": "^4.0.2",

@@ -181,7 +181,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                         xmin,
                         ymax - tileSize,
                         xmin + tileSize,
-                        ymax,
+                        ymax
                     );
                     skinTileIds.add(skinTile.id);
                     layerTiles.push(skinTile);
