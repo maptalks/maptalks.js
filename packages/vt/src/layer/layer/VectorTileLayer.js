@@ -56,6 +56,7 @@ const defaultOptions = {
     awareOfTerrain: true,
 
     altitudeQueryTimeLimitPerFrame: 3,
+    workerGlyph: true
 };
 
 /**
@@ -154,7 +155,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             features: this.options.debugTileData || this.options.features,
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry'],
-            projectionCode: this.getSpatialReference().getProjection().code
+            projectionCode: this.getSpatialReference().getProjection().code,
+            workerGlyph: this.options['workerGlyph']
         };
     }
 

@@ -65,6 +65,9 @@ describe('vector tile integration specs', () => {
             style.features = 0;
             // disable parents tiles
             style.tileStackDepth = 0;
+            if (style.workerGlyph === undefined) {
+                style.workerGlyph = false;
+            }
             // style.debug = true;
             const layer = new (style.ctor || GeoJSONVectorTileLayer)('gvt', style);
             let generated = false;

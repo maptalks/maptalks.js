@@ -8,6 +8,7 @@ let LIMIT_PER_FRAME = 15;
 
 export default class GlyphRequestor {
     constructor(framer, limit = LIMIT_PER_FRAME, isCompactChars) {
+        this._isWorker = (typeof document) === 'undefined';
         this.entries = {};
         this._cachedFont = {};
         this._cache = new LRUCache(2048, function () {});
@@ -152,8 +153,8 @@ export default class GlyphRequestor {
             metrics: {
                 width: width,
                 height: 24,
-                left: 0,
-                top: -7 - (buffer - 2),
+                left: this._isWorker ? 2 : 0,
+                top: (this._isWorker ? -5 : -7) - (buffer - 2),
                 // top: -buffer,
                 advance: width + buffer + advanceBuffer
             }

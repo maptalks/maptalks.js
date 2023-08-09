@@ -164,7 +164,7 @@ export default class BaseLayerWorker {
         //2019-03-20 win10 chrome 74 64位，OffscreenCanvas fillText性能只有主线程的10%，还不可用
         // 2021-02-25 Offscreen.fillText会造成程序出错，还不可用
         // 2023-07-32 改用Offscreen来创建glyph，用以提升性能
-        if (Browser.offscreenCanvas) {
+        if (this.options.workerGlyph && Browser.offscreenCanvas) {
             const promises = [];
             if (icons && Object.keys(icons).length) {
                 const promise = new Promise((resolve) => {
