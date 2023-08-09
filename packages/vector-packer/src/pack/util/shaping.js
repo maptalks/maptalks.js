@@ -315,7 +315,7 @@ function shapeLines(shaping, //: Shaping,
     spacing, //: number,
     verticalHeight) {
     // the y offset *should* be part of the font metadata
-    const yOffset = 8;//-24 + lineHeight;
+    const yOffset = 0;//-24 + lineHeight;
 
     let x = 0;
     let y = yOffset;

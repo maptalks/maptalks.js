@@ -38,8 +38,8 @@ export default function TinySDF(fontSize, buffer, radius, cutoff, fontFamily, fo
 TinySDF.prototype.draw = function (char, width, height) {
     this.ctx.clearRect(0, 0, this.size, this.size);
     // this.ctx.fillText(char, this.buffer, this.middle);
-    this.ctx.textBaseline = 'bottom';
-    this.ctx.fillText(char, this.buffer, height - this.buffer + 1);
+    this.ctx.textBaseline = 'top';
+    this.ctx.fillText(char, this.buffer, this.buffer);
 
     var imgData = this.ctx.getImageData(0, 0, width, height);
     var alphaChannel = new Uint8ClampedArray(width * height);

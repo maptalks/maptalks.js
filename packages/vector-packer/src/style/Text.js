@@ -1,6 +1,6 @@
 import { isString, isNil } from './Util';
 
-const DEFAULT_FONT = 'monospace';
+const DEFAULT_FONT = 'Open Sans Regular';
 /**
  * Returns CSS Font from a symbol with text styles.
  * @param  {Object} style symbol with text styles
