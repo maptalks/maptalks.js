@@ -60,6 +60,7 @@ describe('vector tile integration specs', () => {
             map = new maptalks.Map(container, options);
             style.debugCollision = true;
             style.tileLimitPerFrame = 0;
+            style.loadingLimit = 0;
             // GeoJSONVectorTileLayer的features默认是id，而VectorTileLayer则默认是0
             // 所以这里设置为0，模拟VectorTileLayer默认关闭features时的各种情况
             style.features = 0;
@@ -141,6 +142,7 @@ describe('vector tile integration specs', () => {
             style.features = 0;
             style.tileLimitPerFrame = 0;
             style.tileStackDepth = 0;
+            style.loadingLimit = 0;
             // style.debug = true;
             const layer = new GeoJSONVectorTileLayer('gvt', style);
             const sceneConfig = style.sceneConfig;

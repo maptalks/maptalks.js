@@ -25,6 +25,7 @@ const style = [
             markerTextFitPadding: [0, 0, 20, 20],
             textName: 'hello',
             textFill: '#fff',
+            textFaceName: '微软雅黑',
             textSize: {
                 stops: [
                     [1, 10],
