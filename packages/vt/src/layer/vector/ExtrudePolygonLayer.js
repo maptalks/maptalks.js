@@ -9,7 +9,8 @@ import { PROP_OMBB } from '../../common/Constant';
 import computeOMBB from '../../worker/builder/ombb.js';
 
 const options = {
-    cullFace: false
+    cullFace: false,
+    castShadow: true
 };
 
 class ExtrudePolygonLayer extends Vector3DLayer {
@@ -218,6 +219,12 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         const sceneConfig = {
             cullFace: this.layer.options.cullFace
         };
+        Object.defineProperty(sceneConfig, 'castShadow', {
+            enumerable: true,
+            get: () => {
+                return this.layer.options['castShadow'];
+            }
+        });
         const painter = new StandardPainter(this.regl, this.layer, this.painterSymbol, sceneConfig, 0, dataConfig);
         this.sidePainter = new StandardPainter(this.regl, this.layer, this.sidePainterSymbol, sceneConfig, 0, dataConfig);
         return painter;
@@ -373,7 +380,7 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         if (!this.painter) {
             return [];
         }
-        return this.meshes;
+        return this.painter.getShadowMeshes();
     }
 }
 

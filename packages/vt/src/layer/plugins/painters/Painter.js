@@ -360,11 +360,12 @@ class Painter {
             // 只绘制加载了地形数据的mesh
             meshes = meshes.filter(m => m.geometry && m.geometry.data.aTerrainAltitude);
         }
-
+        const castShadow = this.sceneConfig.castShadow === undefined || !!this.sceneConfig.castShadow;
         const isEnableBloom = !!(context && context.bloom);
         meshes.forEach(mesh => {
             const bloom = this.isBloom(mesh) && isEnableBloom;
             mesh.bloom = bloom;
+            mesh.castShadow = castShadow;
             let updated = false;
             const defines = mesh.defines || {};
             if (!!defines['HAS_BLOOM'] !== bloom) {
