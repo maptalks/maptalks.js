@@ -24,6 +24,7 @@ const options = {
         'WEBGL_depth_texture',
         'EXT_shader_texture_lod',
         'EXT_frag_depth',
+        'EXT_texture_filter_anisotropic',
         // compressed textures
         'WEBGL_compressed_texture_astc',
         'WEBGL_compressed_texture_etc',
