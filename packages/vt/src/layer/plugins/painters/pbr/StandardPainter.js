@@ -354,6 +354,9 @@ class StandardPainter extends MeshPainter {
                 }
             }
         }
+        if (material.alphaTest === undefined) {
+            material.alphaTest = 0.05;
+        }
         if (!this.material) {
             this.material = new reshader.pbr.StandardMaterial(material);
             this.material.once('complete', this._bindOnMaterialComplete);
