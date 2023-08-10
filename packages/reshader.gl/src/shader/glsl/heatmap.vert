@@ -1,16 +1,12 @@
 #define SHADER_NAME HEATMAP
 
-float unpack_mix_vec2(const vec2 packedValue, const float t) {
-    return mix(packedValue[0], packedValue[1], t);
-}
 uniform mat4 projViewModelMatrix;
 uniform float extrudeScale;
 uniform float heatmapIntensity;
 attribute vec3 aPosition;
 varying vec2 vExtrude;
 #ifdef HAS_HEAT_WEIGHT
-    uniform lowp float heatmapWeightT;
-    attribute highp vec2 aWeight;
+    attribute highp float aWeight;
     varying highp float weight;
 #else
     uniform highp float heatmapWeight;
@@ -21,7 +17,7 @@ const highp float ZERO = 1.0 / 255.0 / 16.0;
 #define GAUSS_COEF 0.3989422804014327
 void main(void) {
     #ifdef HAS_HEAT_WEIGHT
-        weight = unpack_mix_vec2(aWeight, heatmapWeightT);
+        weight = aWeight / 255.0;
     #else
         highp float weight = heatmapWeight;
     #endif
