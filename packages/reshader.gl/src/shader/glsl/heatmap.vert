@@ -17,15 +17,16 @@ const highp float ZERO = 1.0 / 255.0 / 16.0;
 #define GAUSS_COEF 0.3989422804014327
 void main(void) {
     #ifdef HAS_HEAT_WEIGHT
-        weight = aWeight / 255.0;
+        highp float heatweight = aWeight / 255.0;
     #else
-        highp float weight = heatmapWeight;
+        highp float heatweight = heatmapWeight;
     #endif
 
     mediump float radius = heatmapRadius;
 
     vec2 unscaledExtrude = vec2(mod(aPosition.xy, 2.0) * 2.0 - 1.0);
-    float S = sqrt(-2.0 * log(ZERO / weight / heatmapIntensity / GAUSS_COEF)) / 3.0;
+    float S = sqrt(-2.0 * log(ZERO / heatweight / heatmapIntensity / GAUSS_COEF)) / 3.0;
+    weight = heatweight;
     vExtrude = S * unscaledExtrude;
     vec2 extrude = vExtrude * radius * extrudeScale;
     vec4 pos = vec4(floor(aPosition.xy * 0.5) + extrude, aPosition.z, 1);
