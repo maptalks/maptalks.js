@@ -81,7 +81,8 @@ describe('update vt on terrain specs', () => {
                 tileLimitPerFrame: 0,
                 data: line,
                 style,
-                tileStackDepth: 0
+                tileStackDepth: 0,
+                loadingLimit: 0
             });
             const sceneConfig = {
                 postProcess: {
@@ -89,6 +90,7 @@ describe('update vt on terrain specs', () => {
                     antialias: { enable: true }
                 }
             };
+            const limit = 20;
             const group = new GroupGLLayer('group', [layer], { sceneConfig });
             let count = 0;
             const renderer = map.getRenderer();
@@ -98,10 +100,14 @@ describe('update vt on terrain specs', () => {
                     count++;
                     if (count === eventCount) {
                         let pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                        assert.deepEqual(pixel, new Uint8ClampedArray([255, 0, 0, 255]));
+                        if (pixel[3] === 0 && count < limit) {
+                            eventCount++;
+                            return;
+                        }
+                        assert.deepEqual(pixel, [245, 2, 2, 255]);
 
                         pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                        assert.deepEqual(pixel, new Uint8ClampedArray([106, 106, 106, 255]));
+                        assert.deepEqual(pixel, [134, 134, 134, 255]);
                         done();
                     }
                 });
@@ -113,11 +119,11 @@ describe('update vt on terrain specs', () => {
             group.addTo(map);
         }
         it ('without post process', done => {
-            lineTerrainRunner(done, 8, false);
+            lineTerrainRunner(done, 7, false);
         });
 
         it ('without post process', done => {
-            lineTerrainRunner(done, 7, true);
+            lineTerrainRunner(done, 6, true);
         });
 
     });

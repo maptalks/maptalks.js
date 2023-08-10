@@ -70,8 +70,10 @@ describe('vector tile on terrain integration specs', () => {
                 urlTemplate: 'http://localhost:' + PORT + '/mapbox-terrain/{z}/{x}/{y}.webp',
                 tileStackDepth: 0,
                 tileLimitPerFrame: 0,
+                loadingLimit: 0,
                 requireSkuToken: false,
                 fadeAnimation: false
+                // shader: 'lit'
             };
             const group = new GroupGLLayer('group', [layer], { terrain });
             group.addTo(map);

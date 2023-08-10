@@ -1330,8 +1330,10 @@ describe('vector layers update style specs', () => {
         layer.on('canvasisdirty', () => {
             count++;
         });
+        let finished = false;
         group.on('layerload', () => {
-            if (count >= 1) {
+            if (count >= 1 && !finished) {
+                finished = true;
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);

@@ -69,7 +69,7 @@ describe('priviledged specs', () => {
                 const point = {
                     type: 'mousedown',
                     clientX: map.width / 2 + 50,
-                    clientY: map.height / 2 - 40
+                    clientY: map.height / 2 - 20
                 }
                 const handlers = map._handlers;
                 for (let i = 0; i < handlers.length; i++) {

@@ -88,7 +88,7 @@ class TubePainter extends BasicPainter {
         if (ref === undefined) {
             geometry.generateBuffers(this.regl);
         }
-
+        uniforms.alphaTest = -1;
         const material = new reshader.pbr.StandardMaterial(uniforms);
         const mesh = new reshader.Mesh(geometry, material, {
             castShadow: false,

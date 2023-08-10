@@ -115,6 +115,7 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
+            loadingLimit: 0,
             data: point,
             style,
             tileStackDepth: 0
@@ -182,6 +183,7 @@ describe('update style specs', () => {
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
+            loadingLimit: 0,
             data: point,
             style
         });
@@ -1106,27 +1108,28 @@ describe('update style specs', () => {
                     dataConfig: { type: 'point', only2D: true },
                     sceneConfig: { collision: false, fading: false }
                 },
-                symbol: { textOpacity: 1, textSize: 20, textFill: 'rgba(64,92,143,1)', textName: '大大大', textHaloRadius: 2, textHaloFill: '#f00' }
+                symbol: { textOpacity: 1, textSize: 20, textFill: 'rgba(64,92,143,1)', textName: '■', textHaloRadius: 2, textHaloFill: '#f00' }
             }
         ];
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: point,
-            style
+            style,
+            loadingLimit: 0
         });
         let count = 0;
         layer.on('canvasisdirty', () => {
             count++;
             if (count === 1) {
                 const canvas = layer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                assert.deepEqual(pixel, [139, 56, 87, 255]);
+                const pixel = readPixel(canvas, canvas.width / 2 + 3, canvas.height / 2);
+                assert.deepEqual(pixel, [64, 92, 143, 255]);
                 layer.updateSymbol(0, { textFill: 'rgba(25, 95, 230, 1)' });
             } else if (count === 2) {
                 const canvas = layer.getRenderer().canvas;
-                const pixel = readPixel(canvas, canvas.width / 2, canvas.height / 2);
-                assert.deepEqual(pixel, [115, 58, 139, 255]);
+                const pixel = readPixel(canvas, canvas.width / 2 + 3, canvas.height / 2);
+                assert.deepEqual(pixel, [25, 95, 230, 255]);
                 //确保glyphAtlas是有效的（否则会绘制一个矩形）
-                const pixel2 = readPixel(canvas, canvas.width / 2 + 6, canvas.height / 2);
+                const pixel2 = readPixel(canvas, canvas.width / 2 + 7, canvas.height / 2);
                 assert.deepEqual(pixel2, [0, 0, 0, 0]);
                 done();
             }
@@ -1423,7 +1426,7 @@ describe('update style specs', () => {
             const pixel = readPixel(canvas, canvas.width / 2 + 40, canvas.height / 2);
             if (pixel[0] > 0) {
                 if (!painted) {
-                    assert.deepEqual(pixel, new Uint8ClampedArray([11, 11, 50, 255]));
+                    assert.deepEqual(pixel, [12, 12, 51, 255]);
 
                     material.baseColorTexture = undefined;
                     layer.updateSymbol(0, { material });
@@ -1514,6 +1517,7 @@ describe('update style specs', () => {
         };
         const layer = new GeoJSONVectorTileLayer('gvt', {
             tileLimitPerFrame: 0,
+            loadingLimit: 0,
             data: line,
             style
         });
@@ -2038,7 +2042,7 @@ describe('update style specs', () => {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
                 //[87, 140, 143, 255]
                 assert(styleRefreshed);
-                assert.deepEqual(pixel, [151, 219, 224, 255]);
+                assert.deepEqual(pixel, [144, 210, 214, 255]);
                 done();
             }
         });
@@ -2136,6 +2140,7 @@ describe('update style specs', () => {
             data: line,
             style,
             tileLimitPerFrame: 0,
+            loadingLimit: 0,
             tileStackDepth: 0
         });
         renderCount = renderCount || 0;

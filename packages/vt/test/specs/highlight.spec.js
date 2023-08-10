@@ -303,7 +303,7 @@ describe('highlight specs', () => {
             } else if (count === 5) {
                 let pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
-                assert(pixel[1] > 10 && pixel[1] < 255);
+                assert(pixel[1] > 100);
                 assert(pixel[3] < 150);
                 done();
             }

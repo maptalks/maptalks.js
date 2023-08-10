@@ -44,6 +44,7 @@ describe('picking specs', () => {
     const runner = (options, coord, expected, ignoreSymbol, done) => {
         map = new maptalks.Map(container, options.view || DEFAULT_VIEW);
         options.tileStackDepth = 0;
+        options.loadingLimit = 0;
         map.on('click', e => {
             console.log(e.coordinate);
         });
@@ -231,6 +232,7 @@ describe('picking specs', () => {
                         markerFile: ICON_PATH
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -260,6 +262,7 @@ describe('picking specs', () => {
                         markerPitchAlignment: 'map'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -314,6 +317,7 @@ describe('picking specs', () => {
                         textName: '未来'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -344,6 +348,7 @@ describe('picking specs', () => {
                         textPitchAlignment: 'map'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -374,6 +379,7 @@ describe('picking specs', () => {
                         textPlacement: 'line'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -405,6 +411,7 @@ describe('picking specs', () => {
                         textPlacement: 'line'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6,
@@ -469,6 +476,7 @@ describe('picking specs', () => {
                         markerOpacity: 0.5
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [0.5, 0.5],
                     zoom: 8
@@ -536,6 +544,7 @@ describe('picking specs', () => {
                         lineColor: '#f00'
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -598,6 +607,7 @@ describe('picking specs', () => {
                         lineWidth: 20
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -669,6 +679,7 @@ describe('picking specs', () => {
                         lineWidth: 20
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -739,6 +750,7 @@ describe('picking specs', () => {
                         polygonOpacity: 1
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -812,6 +824,7 @@ describe('picking specs', () => {
                         lineWidth: 10
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -904,6 +917,7 @@ describe('picking specs', () => {
                         polygonOpacity: 1
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -960,6 +974,7 @@ describe('picking specs', () => {
                         lineWidth: 20
                     }
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -1051,6 +1066,7 @@ describe('picking specs', () => {
                     renderPlugin,
                     symbol
                 }],
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -1072,6 +1088,7 @@ describe('picking specs', () => {
     context('vector layer\'s picking', () => {
         it('should pick point in PointLayer', done => {
             const options = {
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6
@@ -1126,6 +1143,7 @@ describe('picking specs', () => {
 
         it('should pick point with multiple symbols in PointLayer', done => {
             const options = {
+                loadingLimit: 0,
                 view: {
                     center: [0, 0],
                     zoom: 6
@@ -1187,6 +1205,7 @@ describe('picking specs', () => {
 
         it('should pick lines in LineStringLayer', done => {
             const options = {
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -1243,6 +1262,7 @@ describe('picking specs', () => {
 
         it('should pick polygon in polygonLayer', done => {
             const options = {
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -1308,6 +1328,7 @@ describe('picking specs', () => {
 
         it('should pick nothing in hided PolygonLayer', done => {
             const options = {
+                loadingLimit: 0,
                 view: {
                     center: [13.417226248848124, 52.52954504632825],
                     zoom: 18
@@ -1401,6 +1422,7 @@ describe('picking specs', () => {
             }
         },
         features: true,
+        loadingLimit: 0,
         view: {
             center: [0.5, 0.5],
             zoom: 8
