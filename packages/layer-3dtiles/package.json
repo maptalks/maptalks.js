@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/3dtiles",
-  "version": "0.89.1",
+  "version": "0.89.2",
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.es.js",
@@ -43,10 +43,10 @@
     "parse-dds": "^1.2.1"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.89.1",
-    "@maptalks/transcoders.crn": "^0.89.1",
-    "@maptalks/transcoders.draco": "^0.89.1",
-    "@maptalks/transcoders.ktx2": "^0.89.1",
+    "@maptalks/gl": "^0.89.2",
+    "@maptalks/transcoders.crn": "^0.89.2",
+    "@maptalks/transcoders.draco": "^0.89.2",
+    "@maptalks/transcoders.ktx2": "^0.89.2",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
