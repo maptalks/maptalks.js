@@ -6,18 +6,19 @@ import { setUniformFromSymbol } from '../Util';
 
 export default class HeatmapPainter extends BasicPainter {
     createFnTypeConfig(map, symbolDef) {
-        const heatWeightFn = interpolated(symbolDef['heatWeight']);
-        const u8 = new Int16Array(1);
+        const heatWeightFn = interpolated(symbolDef['heatmapWeight']);
+        const i16 = new Int16Array(1);
         return [
             {
                 attrName: 'aWeight',
-                symbolName: 'heatWeight',
-                type: Uint8Array,
-                size: 1,
+                symbolName: 'heatmapWeight',
+                type: Int16Array,
+                width: 1,
+                define: 'HAS_HEAT_WEIGHT',
                 evaluate: properties => {
                     const x = heatWeightFn(map.getZoom(), properties);
-                    u8[0] = x;
-                    return u8[0];
+                    i16[0] = x * 255;
+                    return i16[0];
                 }
             }
         ];

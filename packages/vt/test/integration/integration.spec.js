@@ -63,7 +63,9 @@ describe('vector tile integration specs', () => {
             style.loadingLimit = 0;
             // GeoJSONVectorTileLayer的features默认是id，而VectorTileLayer则默认是0
             // 所以这里设置为0，模拟VectorTileLayer默认关闭features时的各种情况
-            style.features = 0;
+            if (!style.features) {
+                style.features = 0;
+            }
             // disable parents tiles
             style.tileStackDepth = 0;
             if (style.workerGlyph === undefined) {
