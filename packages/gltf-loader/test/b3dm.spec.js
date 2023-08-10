@@ -45,7 +45,9 @@ describe('3dtiles layer', () => {
                 expect(mesh.attributes.POSITION.array instanceof Float32Array).to.be.ok();
 
                 const position = mesh.attributes.POSITION;
-                expect(position.array.slice(0, 3)).to.be.eql({ '0': -160.8174133300781, '1': -117.21524810791016, '2': -184.55604553222656 });
+                /* eslint-disable no-loss-of-precision */
+                expect(position.array.slice(0, 3)).to.be.eql({ '0': -160.81741333007812, '1': -117.21524810791016, '2': -184.55604553222656 });
+                /* eslint-enable no-loss-of-precision */
 
                 expect(mesh.attributes.TEXCOORD_0.array.length).to.be.eql(16242);
                 expect(mesh.attributes.TEXCOORD_0.array instanceof Float32Array).to.be.ok();
