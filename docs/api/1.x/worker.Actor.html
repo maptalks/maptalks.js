@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE">
-    <title>Class: Class</title>
+    <title>Class: Actor</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <body>
 
-<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: Class</h1></div>
+<div style="position:fixed;top:0px;left:0px;"><h1 class="page-title">Class: Actor</h1></div>
 <div id="main" style="margin-top:77px;">
     
 
@@ -28,7 +28,7 @@
 
 <nav class="classnav scroll-styled">
 
-    <h5><a href="#main" style="color:#000">class : Class</a></h5>
+    <h5><a href="#main" style="color:#000">class : worker.Actor</a></h5>
     
 
     
@@ -40,53 +40,45 @@
             
             
             
-            <h5>Static Methods</h5>
-            <ul>
             
-            
-                <li><a href="#.addInitHook">
-            
-                addInitHook</a></li>
-        
-            
-            
-            
-                <li><a href="#.include">
-            
-                include</a></li>
-        
-            
-            
-            
-                <li><a href="#.mergeOptions">
-            
-                mergeOptions</a></li>
-        
-        
-            </ul>
         
         <h5>Methods</h5>
         <ul>
         
             
-                <li><a href="#callInitHooks">
+                <li><a href="#isActive">
             
-                callInitHooks</a></li>
+                isActive</a></li>
         
             
-                <li><a href="#setOptions">
+                <li><a href="#broadcast">
             
-                setOptions</a></li>
+                broadcast</a></li>
         
             
-                <li><a href="#config">
+                <li><a href="#send">
             
-                config</a></li>
+                send</a></li>
         
             
-                <li><a href="#onConfig">
+                <li><a href="#receive">
             
-                onConfig</a></li>
+                receive</a></li>
+        
+            
+                <li><a href="#remove">
+            
+                remove</a></li>
+        
+            
+                <li><a href="#post">
+            
+                post</a></li>
+        
+            
+                <li><a href="#getDedicatedWorker">
+            
+                getDedicatedWorker</a></li>
         
         </ul>
     
@@ -101,9 +93,9 @@
 
 <header>
     
-        <h2>Class</h2>
+        <h2>Actor</h2>
         
-            <div class="class-description">This library uses ES2015 class system. <br />Class is the root class of class hierachy. <br />It provides utility methods to make it easier to manage configration options, merge mixins and add init hooks.</div>
+            <div class="class-description">An actor to exchange data from main-thread to workerscontains code from [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js)</div>
         
     
 </header>
@@ -115,16 +107,16 @@
 
     <!-- <h2>Constructor</h2> -->
     
-    <h4 class="name" id="Class"><span class="type-signature">(abstract) </span>new <a href="#Class">Class</a><span class="signature">(options)</span>
+    <h4 class="name" id="Actor"><span class="type-signature"></span>new <a href="#Actor">worker.Actor</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L34" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L47" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L34" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L47" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#Class" class="improvelink">[link]</a> -->
+    <!-- <a href="#Actor" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -133,15 +125,40 @@
 
 
 
-<div class="description">
-    Create an object, set options if given and call all the init hooks.<br />Options is where the object manages its configuration. Options passed to the object will be merged with parent's instead of overriding it.
-</div>
-
 
     <!--<h5>Example:</h5>-->
     
     
-        <pre class="prettyprint"><code>var defaultOptions = {    'foo' : 'bar'};class Foo extends maptalks.Class {    constructor(id, options) {        super(options);        this.setId(id);    }    setId(id) {        this.id = id;    }    whenCreated() {        // .....    }}Foo.mergeOptions(defaultOptions);Foo.addInitHook('whenCreated');</code></pre>
+        <pre class="prettyprint"><code>const workerKey = 'test_worker_key';
+    maptalks.registerWorkerAdapter(workerKey, function (exports, global) {
+      //will be called only for once when loaded in worker thread
+      exports.initialize = function () {
+        console.log('[worker] initialized');
+      };
+      //to receive message from main thread sent by maptalks.worker.Actor
+      exports.onmessage = function (message, postResponse) {
+        const data = message.data;
+        console.log(`[worker] received data : ` + data);
+        //send message back to main thread
+        //the parameters:
+        //error, data, buffers (arraybuffers in data)
+        postResponse(null, 'message from worker thread', null);
+      };
+    });
+
+    const MyActor = class extends maptalks.worker.Actor {
+      test(info, cb) {
+        //send data to worker thread
+        this.send(info, null, cb);
+      }
+    }
+
+    //must be same with workerKey for maptalks.registerWorkerAdapter
+    const actor = new MyActor(workerKey);
+    actor.test('hi', (err, data) => {
+      //received data from worker thread
+      console.log(data);
+    });</code></pre>
     
 
 
@@ -150,51 +167,6 @@
 <!--  -->
 
 
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">options to set</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -247,401 +219,6 @@
 
     
         
-                    <h3 class="subsection-title">Static Methods</h3>
-                
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".addInitHook"><span class="type-signature">(static) </span><a href="#.addInitHook">addInitHook</a><span class="signature">(fn, &hellip;args)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L186" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L186" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.addInitHook" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Add an init hook, which will be called when the object is initiated. <br>It is useful in plugin developing to do things when creating objects without changing class's constructor.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fn</code>
-                
-                    
-                    
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-|
-
-<span class="param-type">function</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">a hook function or name of the hook function</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code>
-                
-                    
-                    
-                    
-                        <span class="signature-attributes">repeatable</span>
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Any></span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">arguments for the init hook function</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".include"><span class="type-signature">(static) </span><a href="#.include">include</a><span class="signature">(&hellip;sources)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L203" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L203" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.include" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Mixin the specified objects into the class as prototype properties or methods.
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>sources</code>
-                
-                    
-                    
-                    
-                        <span class="signature-attributes">repeatable</span>
-                    
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">objects to mixin</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id=".mergeOptions"><span class="type-signature">(static) </span><a href="#.mergeOptions">mergeOptions</a><span class="signature">(options)</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L214" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L214" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#.mergeOptions" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Mixin options with the class's default options. <br />
-</div>
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">options to merge.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<hr>
-        
 
         
                     <h3 class="subsection-title">Methods</h3>
@@ -652,16 +229,16 @@
     
     <li>
     
-    <h4 class="name" id="callInitHooks"><span class="type-signature"></span><a href="#callInitHooks">callInitHooks</a><span class="signature">()</span>
+    <h4 class="name" id="isActive"><span class="type-signature"></span><a href="#isActive">isActive</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L80" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L91" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L80" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L91" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#callInitHooks" class="improvelink">[link]</a> -->
+    <!-- <a href="#isActive" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -673,7 +250,7 @@
 
 
 <div class="description">
-    Visit and call all the init hooks defined on Class and its parents.
+    If the actor is active
 </div>
 
 
@@ -715,13 +292,9 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature"><a href="Class.html">Class</a></span>:
+<span class="type-signature">Boolean</span>:
 
         
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
 
 
     
@@ -735,16 +308,16 @@
     
     <li>
     
-    <h4 class="name" id="setOptions"><span class="type-signature"></span><a href="#setOptions">setOptions</a><span class="signature">(options)</span>
+    <h4 class="name" id="broadcast"><span class="type-signature"></span><a href="#broadcast">broadcast</a><span class="signature">(data, buffers, cb)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L91" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L101" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L91" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L101" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#setOptions" class="improvelink">[link]</a> -->
+    <!-- <a href="#broadcast" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -756,7 +329,7 @@
 
 
 <div class="description">
-    Merges options with the default options of the object.
+    Broadcast a message to all Workers.
 </div>
 
 
@@ -788,7 +361,7 @@
 
         <tr>
             
-                <td class="name"><code>options</code>
+                <td class="name"><code>data</code>
                 
                 </td>
             
@@ -804,7 +377,609 @@
 
             
 
-            <td class="description last">options to set</td>
+            <td class="description last">data to send to worker thread</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buffers</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;ArrayBuffer></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">arraybuffers in data as transferables</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cb</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">callback function when received message from worker thread</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="send"><span class="type-signature"></span><a href="#send">send</a><span class="signature">(data, buffers, cb, workerId<span class="signature-attributes">opt</span>)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L121" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L121" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#send" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Sends a message from a main-thread to a Worker and call callback when response received.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">data to send to worker thread</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buffers</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;ArrayBuffer></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">arraybuffers in data as transferables</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cb</code>
+                
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">callback function when received message from worker thread</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>workerId</code>
+                
+                    
+                        <span class="signature-attributes">opt</span>
+                    
+                    
+                    
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">Optional, a particular worker id to which to send this message.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="receive"><span class="type-signature"></span><a href="#receive">receive</a><span class="signature">(message)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L140" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L140" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#receive" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    A listener callback for incoming message from worker thread.SHOULD NOT BE OVERRIDED only if you know what you are doing.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">response message from worker thread</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="remove"><span class="type-signature"></span><a href="#remove">remove</a><span class="signature">()</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L171" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L171" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#remove" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Remove the actor
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="post"><span class="type-signature"></span><a href="#post">post</a><span class="signature">(data, buffers, targetID)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L189" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L189" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#post" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    Send a message to a Worker.
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">data to send</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buffers</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;ArrayBuffer></span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">arraybuffers in data</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>targetID</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.</td>
         </tr>
 
     
@@ -843,11 +1018,11 @@
 
 
 <h5>Returns:</h5>
-<span class="type-signature"><a href="Class.html">Class</a></span>:
+<span class="type-signature">Number</span>:
 
         
 <!-- <div class="param-desc"> -->
-    this
+    The ID of the worker to which the message was sent.
 <!-- </div> -->
 
 
@@ -863,16 +1038,16 @@
     
     <li>
     
-    <h4 class="name" id="config"><span class="type-signature"></span><a href="#config">config</a><span class="signature">(conf)</span>
+    <h4 class="name" id="getDedicatedWorker"><span class="type-signature"></span><a href="#getDedicatedWorker">getDedicatedWorker</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L121" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L206" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L121" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/worker/Actor.js#L206" class="improvelink">[help to improve]</a>
      -->
-    <!-- <a href="#config" class="improvelink">[link]</a> -->
+    <!-- <a href="#getDedicatedWorker" class="improvelink">[link]</a> -->
     </h4>
 
     
@@ -884,142 +1059,7 @@
 
 
 <div class="description">
-    1. Return object's options if no parameter is provided. <br/>2. update an option and enable/disable the handler if a handler with the same name existed.
-</div>
-
-
-    <!--<h5>Example:</h5>-->
-    
-    
-        <pre class="prettyprint"><code>// Get marker's options;var options = marker.config();// Set map's option "draggable" to false and disable map's draggable handler.map.config('draggable', false);// You can update more than one options like this:map.config({    'scrollWheelZoom' : false,    'doubleClickZoom' : false});</code></pre>
-    
-
-
-
-
-<!--  -->
-
-
-
-
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Parameter</th>
-        
-        <th>Type</th>
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>conf</code>
-                
-                </td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            <td class="description last">config to update</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-<!-- event properties -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-<span class="type-signature"><a href="Class.html">Class</a></span>:
-
-        
-<!-- <div class="param-desc"> -->
-    this
-<!-- </div> -->
-
-
-
-    
-
-
-<hr>
-        
-            
-
-    <!-- <h2>Constructor</h2> -->
-    
-    <li>
-    
-    <h4 class="name" id="onConfig"><span class="type-signature"></span><a href="#onConfig">onConfig</a><span class="signature">()</span>
-    
-        
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L159" class="improvelink">[source]</a>
-        
-    
-    <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/core/Class.js#L159" class="improvelink">[help to improve]</a>
-     -->
-    <!-- <a href="#onConfig" class="improvelink">[link]</a> -->
-    </h4>
-
-    
-    </li>
-    
-    
-
-
-
-
-<div class="description">
-    Default callback when config is called
+    Get a dedicated worker in a round-robin fashion
 </div>
 
 
