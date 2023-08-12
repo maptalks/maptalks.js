@@ -130,6 +130,10 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         }
         const sr = skinLayer.getSpatialReference();
         const { x, y, z, res, offset } = terrainTileInfo;
+        let nw = terrainTileInfo.nw;
+        if (!nw) {
+            nw = terrainTileInfo.nw = this.getMap().pointAtResToCoord(terrainTileInfo.extent2d.getMin(POINT0), terrainTileInfo.res);
+        }
         const tileSize = this.layer.getTileSize().width;
         // const zoom = this.getCurrentTileZoom();
         const { res: myRes, zoom } = getSkinTileRes(sr, z, res);
@@ -141,7 +145,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         let skinTileIds = tileImage.skinTileIds[skinIndex];
         if (!skinTileIds) {
             const terrainTileScaleY = this.layer['_getTileConfig']().tileSystem.scale.y;
-            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
+            skinTileIds = tileImage.skinTileIds[skinIndex] = getCascadeTileIds(skinLayer, x, y, zoom, nw, offset, terrainTileScaleY, scale, SKIN_LEVEL_LIMIT);
         }
         const level0 = skinTileIds['0'];
         let complete = true;
@@ -270,8 +274,19 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         if (skinImages) {
             for (let i = 0; i < skinImages.length; i++) {
                 const layerSkinImages = skinImages[i];
+                const hasOffset = layerSkinImages.length > 1;
                 for (let ii = 0; ii < layerSkinImages.length; ii++) {
-                    const { tile, texture } = layerSkinImages[ii];
+                    const { tile, texture, layer } = layerSkinImages[ii];
+                    if (hasOffset) {
+                        const skinTileIds = terrainTileInfo.skinTileIds[layer.getId()];
+                        for (let j = 0; j < skinTileIds.length; j++) {
+                            if (tile.info.x === skinTileIds[j].x && tile.info.y === skinTileIds[j].y) {
+                                tile.info.offset = skinTileIds[j].offset;
+                                break;
+                            }
+                        }
+
+                    }
                     const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize);
                     const mesh = layerSkinImages[ii].skinMesh || new reshader.Mesh(this._skinGeometry);
                     mesh.setUniform('skinTexture', texture);

@@ -1,28 +1,27 @@
 import * as maptalks from 'maptalks';
 
-export function getCascadeTileIds(layer, x, y, z, offset, terrainTileScaleY, scale, levelLimit) {
+export function getCascadeTileIds(layer, x, y, z, center, offset, terrainTileScaleY, scale, levelLimit) {
     const result = {};
     for (let i = 0; i < levelLimit; i++) {
-        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, offset, terrainTileScaleY, scale, i);
+        result[i + ''] = getTileIdsAtLevel(layer, x, y, z, center, offset, terrainTileScaleY, scale, i);
     }
     return result;
 }
 
 const EMPTY_ARRAY = [];
-export function getTileIdsAtLevel(layer, x, y, z, offset, terrainTileScaleY, scale, level) {
+export function getTileIdsAtLevel(layer, x, y, z, center, offset, terrainTileScaleY, scale, level) {
     z -= level;
     if (z <= 0) {
         return EMPTY_ARRAY;
     }
     // 这里假设 tile offset 还在tileSize范围内，而不是跨越或超过1整张瓦片的那种偏移方式
     const tileSize = layer.getTileSize().width;
-    const layerOffset = layer['_getTileOffset'](z);
+    const layerOffset = layer['_getTileOffset'](z, center);
     const tileOffsetX = offset[0] - layerOffset[0];
     const tileOffsetY = layerOffset[1] - offset[1];
     const tileConfig = layer['_getTileConfig']();
     const sr = layer.getSpatialReference();
     const tileRes = sr.getResolution(z);
-    const tileXScale = tileConfig.tileSystem.scale.x;
     const tileYScale = tileConfig.tileSystem.scale.y;
 
     const delta = 1E-7;
@@ -32,14 +31,14 @@ export function getTileIdsAtLevel(layer, x, y, z, offset, terrainTileScaleY, sca
     let xEnd = scale;
     let yEnd = scale;
     if (tileOffsetX < 0) {
-        xEnd += tileXScale * Math.ceil(-tileOffsetX / tileSize - delta);
+        xEnd += Math.ceil(-tileOffsetX / tileSize - delta);
     } else if (tileOffsetX > 0) {
-        xStart -= tileXScale * Math.ceil(tileOffsetX / tileSize - delta);
+        xStart -= Math.ceil(tileOffsetX / tileSize - delta);
     }
     if (tileOffsetY > 0) {
-        yStart -= tileYScale * Math.ceil(tileOffsetY / tileSize - delta);
+        yStart -= Math.ceil(tileOffsetY / tileSize - delta);
     } else if (tileOffsetY < 0) {
-        yEnd += tileYScale * Math.ceil(-tileOffsetY / tileSize - delta);
+        yEnd += Math.ceil(-tileOffsetY / tileSize - delta);
     }
     if (xStart === 0 && yStart === 0 && xEnd <= 1 && yEnd <= 1) {
         const tx = Math.floor(x * scale);

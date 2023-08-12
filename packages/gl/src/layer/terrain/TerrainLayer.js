@@ -132,6 +132,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         if (!tiles.length) {
             return EMPTY_TILE_GRIDS;
         }
+        const map = this.getMap();
         const parents = grid.parents || EMPTY_ARRAY;
         const parentCount = parents.length;
         const allTiles = parents.concat(tiles);
@@ -149,6 +150,10 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         for (let i = 0; i < allTiles.length; i++) {
             const info = allTiles[i];
             const { res } = info;
+            let nw = info.nw;
+            if (!nw) {
+                nw = info.nw = map.pointAtResToCoord(info.extent2d.getMin(POINT0), info.res);
+            }
             const { res: skinRes, zoom } = getSkinTileRes(sr, info.z, res);
             const resScale = skinRes / res;
             const scale = getSkinTileScale(skinRes, tileSize, res, size);
@@ -162,7 +167,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             if (!info.skinTileIds[layerId]) {
                 const skinTileIds = new Set();
                 const layerTiles = [];
-                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, offset, dy, scale, 0);
+                const tileIds = getTileIdsAtLevel(layer, info.x, info.y, zoom, nw, offset, dy, scale, 0);
                 for (let j = 0; j < tileIds.length; j++) {
                     const skinTile = tileIds[j];
                     if (skinTileIds.has(skinTile.id)) {
@@ -301,8 +306,12 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         const terrainTileSize = this.getTileSize().width;
 
         const scale = getSkinTileScale(terrainRes, terrainTileSize, res, tileSize);
+        let nw = tileInfo.nw;
+        if (!nw) {
+            nw = tileInfo.nw = this.getMap().pointAtResToCoord(tileInfo.extent2d.getMin(POINT0), tileInfo.res);
+        }
 
-        const terrainTiles = getCascadeTileIds(this, x, y, zoom, offset, tc.tileSystem.scale.y, scale, 1)[0];
+        const terrainTiles = getCascadeTileIds(this, x, y, zoom, nw, offset, tc.tileSystem.scale.y, scale, 1)[0];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { x: tx, y: ty } = terrainTiles[i];
             const nw = tc.getTilePointNW(tx, ty, terrainRes, POINT0);
