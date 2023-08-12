@@ -749,7 +749,7 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
-        it.only('terrain with offset skin at zoom 12', done => {
+        it('terrain with offset skin at zoom 12', done => {
             map = new maptalks.Map(container, {
                 center: [94.50812103, 29.45595163],
                 zoom: 14
