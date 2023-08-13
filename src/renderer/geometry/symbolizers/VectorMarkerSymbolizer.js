@@ -1,6 +1,6 @@
 import { isNumber, isArrayHasData, getValueOrDefault } from '../../../core/util';
 import { isGradient, getGradientStamp } from '../../../core/util/style';
-import { isVectorSymbol, getVectorMarkerFixedExtent, calVectorMarkerSize, getVectorMarkerAnchor } from '../../../core/util/marker';
+import { isVectorSymbol, getVectorMarkerFixedExtent, calVectorMarkerSize, getVectorMarkerAnchor, getMarkerRotationExtent } from '../../../core/util/marker';
 import { drawVectorMarker, translateMarkerLineAndFill } from '../../../core/util/draw';
 import { hashCode } from '../../../core/util/strings';
 import { hasFunctionDefinition } from '../../../core/mapbox';
@@ -11,6 +11,7 @@ import PointSymbolizer from './PointSymbolizer';
 import { getDefaultVAlign, getDefaultHAlign, DEFAULT_MARKER_SYMBOLS } from '../../../core/util/marker';
 
 const MARKER_SIZE = [];
+const TEMP_EXTENT = new PointExtent();
 
 export default class VectorMarkerSymbolizer extends PointSymbolizer {
 
@@ -83,14 +84,22 @@ export default class VectorMarkerSymbolizer extends PointSymbolizer {
             let point = cookedPoints[i];
             // const origin = this._rotate(ctx, point, this._getRotationAt(i));
             const origin = this.getRotation() ? this._rotate(ctx, point, this._getRotationAt(i)) : null;
+            let extent;
             if (origin) {
+                //坐标对应的像素点
+                const pixel = point.sub(origin);
                 point = origin;
+                const rad = this._getRotationAt(i);
+                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, image.width, image.height, point, anchor);
+                extent._add(pixel);
             }
             const x = point.x + anchor.x, y = point.y + anchor.y;
             Canvas.image(ctx, image, x, y);
-            this._setBBOX(ctx, x, y, x + image.width, y + image.height);
             if (origin) {
                 ctx.restore();
+                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
+            } else {
+                this._setBBOX(ctx, x, y, x + image.width, y + image.height);
             }
         }
     }

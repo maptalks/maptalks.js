@@ -3,10 +3,12 @@ import { getAlignPoint } from '../../../core/util/strings';
 import { getImage } from '../../../core/util/draw';
 import Size from '../../../geo/Size';
 import PointExtent from '../../../geo/PointExtent';
-import { getImageMarkerFixedExtent, isImageSymbol } from '../../../core/util/marker';
+import { getImageMarkerFixedExtent, getMarkerRotationExtent, isImageSymbol } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 const TEMP_SIZE = new Size(1, 1);
+const TEMP_EXTENT = new PointExtent();
+
 
 export default class ImageMarkerSymbolizer extends PointSymbolizer {
 
@@ -65,10 +67,20 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
         const alignPoint = getAlignPoint(TEMP_SIZE, style['markerHorizontalAlignment'], style['markerVerticalAlignment']);
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
+            // //for debug
+            // ctx.fillStyle = 'red';
+            // ctx.fillRect(p.x - 2, p.y - 160, 4, 4);
             // const origin = this._rotate(ctx, p, this._getRotationAt(i));
             const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+            let extent;
             if (origin) {
+                //坐标对应的像素点
+                const pixel = p.sub(origin);
                 p = origin;
+                const rad = this._getRotationAt(i);
+                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
+                extent._add(pixel);
+
             }
             const x = p.x + alignPoint.x, y = p.y + alignPoint.y;
             Canvas.image(ctx, img,
@@ -78,7 +90,11 @@ export default class ImageMarkerSymbolizer extends PointSymbolizer {
             if (origin) {
                 ctx.restore();
             }
-            this._setBBOX(ctx, x, y, x + width, y + height);
+            if (origin) {
+                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
+            } else {
+                this._setBBOX(ctx, x, y, x + width, y + height);
+            }
         }
         if (alpha !== undefined) {
             ctx.globalAlpha = alpha;
