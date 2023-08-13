@@ -313,7 +313,7 @@ describe('Geometry.Events', function () {
         expect(spy.called).to.be.ok();
     });
 
-    it('marker roation #2047', function (done) {
+    it('marker rotation #2047', function (done) {
         var center = map.getCenter();
         const symbols = [
             {
