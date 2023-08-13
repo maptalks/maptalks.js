@@ -12,6 +12,107 @@ export const DEFAULT_MARKER_SYMBOLS = {
 };
 
 //-------------- methods for fixed extent of markers -------------
+const TEMP_DXDYPOINT = new Point(0, 0);
+
+/** p(0,0)
+ *   \
+ *    \
+ *     \
+ *      \
+ *     dxdy
+ */
+function getDxDyRad(dxdy) {
+    if (!dxdy) {
+        return 0;
+    }
+    const { x, y } = dxdy;
+    if (x === 0 && y === 0) {
+        return 0;
+    }
+    if (x === 0 || !x) {
+        if (y < 0) {
+            return -Math.PI / 2;
+        }
+        if (y > 0) {
+            return Math.PI / 2;
+        }
+    }
+    const tan = y / x;
+    if (y < 0 && x < 0) {
+        return Math.atan(tan) - Math.PI;
+    } else if (y > 0 && x < 0) {
+        return Math.atan(tan) + Math.PI;
+    }
+    return Math.atan(tan);
+
+}
+
+
+function getImageRotateBBOX(width, height, rad) {
+    /**
+     * p1(0,0)
+     * p2(0,height)
+     * p3(width,height)
+     * p4(width,0)
+     *
+     * p1 --------- p4
+     * |            |
+     * |            |
+     * |            |
+     * p2 --------- p3
+     */
+    const rad2 = Math.PI / 2 + rad;
+    const rad3 = Math.PI / 4 + rad;
+    const rad4 = rad;
+
+    const r2 = height;
+    const r3 = Math.sqrt(width * width + height * height);
+    const r4 = width;
+
+
+    const p1x = 0, p1y = 0;
+    const p2x = Math.cos(rad2) * r2, p2y = Math.sin(rad2) * r2;
+    const p3x = Math.cos(rad3) * r3, p3y = Math.sin(rad3) * r3;
+    const p4x = Math.cos(rad4) * r4, p4y = Math.sin(rad4) * r4;
+    const minx = Math.min(p2x, p3x, p4x, p1x);
+    const miny = Math.min(p2y, p3y, p4y, p1y);
+    const maxx = Math.max(p2x, p3x, p4x, p1x);
+    const maxy = Math.max(p2y, p3y, p4y, p1y);
+    return [minx, miny, maxx - minx, maxy - miny];
+}
+
+export function getMarkerRotationExtent(out, rad, width, height, dxdy, alignPoint) {
+    const x = dxdy.x + alignPoint.x, y = dxdy.y + alignPoint.y;
+    TEMP_DXDYPOINT.x = x;
+    TEMP_DXDYPOINT.y = y;
+    //dxdy rad
+    const dxdyRad = getDxDyRad(TEMP_DXDYPOINT);
+    //dxdy的半径
+    const radius = Math.sqrt(x * x + y * y);
+    //dydy 在 markerRaotation下的像素点新的位置
+    /**
+     *     p
+     *     /\
+     *    /  \
+     *   /    \
+     *  /      \
+     * /        \
+     * dxdy    rxry
+     */
+    const rx = Math.cos(rad + dxdyRad) * radius, ry = Math.sin(rad + dxdyRad) * radius;
+    //p像素点平移到 rxry所在的像素点
+    let minx = 0, miny = 0;
+    minx += rx;
+    miny += ry;
+    //计算旋转图形后新的图形的BBOX
+    const [offsetX, offsetY, w, h] = getImageRotateBBOX(width, height, rad, alignPoint);
+    minx += offsetX;
+    miny += offsetY;
+    const maxx = minx + Math.max(width, w), maxy = miny + Math.max(height, h);
+    out.set(minx, miny, maxx, maxy);
+    return out;
+}
+
 function getVectorPadding(/*symbol*/) {
     return 0.5;
 }
@@ -19,6 +120,9 @@ function getVectorPadding(/*symbol*/) {
 const DXDY = new Point(0, 0);
 function getFixedExtent(out, dx, dy, rotation, alignPoint, w, h) {
     const dxdy = DXDY.set(dx, dy);
+    if (rotation) {
+        return getMarkerRotationExtent(out, rotation, w, h, dxdy, alignPoint);
+    }
     const result = out.set(dxdy.x, dxdy.y, dxdy.x + w, dxdy.y + h);
     result._add(alignPoint);
     if (rotation) {
@@ -198,7 +302,7 @@ export function isPathSymbol(symbol) {
 }
 
 export const DYNAMIC_SYMBOL_PROPS = [
-    'markerWidth', 'markerHeight', 'markerHorizontalAlignment', 'markerVerticalAlignment', 'markerDx', 'markerDy',
+    'markerWidth', 'markerHeight', 'markerHorizontalAlignment', 'markerVerticalAlignment', 'markerDx', 'markerDy', 'markerRotation',
     'textName',
     'textSize', 'textDx', 'textDy', 'textVerticalAlignment', 'textHorizontalAlignment', 'textRotation'
 ];
