@@ -142,6 +142,7 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
             'lineWidth': getValueOrDefault(s['lineWidth'], 2),
             'lineOpacity': getValueOrDefault(s['lineOpacity'], 1),
             'lineDasharray': getValueOrDefault(s['lineDasharray'], []),
+            'lineDashOffset': getValueOrDefault(s['lineDashOffset'], 0),
             'lineCap': getValueOrDefault(s['lineCap'], 'butt'), //“butt”, “square”, “round”
             'lineJoin': getValueOrDefault(s['lineJoin'], 'miter'), //“bevel”, “round”, “miter”
             'linePatternFile': getValueOrDefault(s['linePatternFile'], null),

@@ -105,6 +105,9 @@ const Canvas = {
         if (ctx.setLineDash && isArrayHasData(style['lineDasharray'])) {
             ctx.setLineDash(style['lineDasharray']);
         }
+        if (style['lineDashOffset']) {
+            ctx.lineDashOffset = style['lineDashOffset'];
+        }
         const polygonPattern = style['polygonPatternFile'];
         let fill = style['polygonFill'] || DEFAULT_FILL_COLOR;
         if (testing) {
