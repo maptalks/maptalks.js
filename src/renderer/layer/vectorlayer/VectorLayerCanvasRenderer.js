@@ -10,7 +10,7 @@ const TEMP_EXTENT = new PointExtent();
 const TEMP_VEC3 = [];
 const TEMP_FIXEDEXTENT = new PointExtent();
 const PLACEMENT_CENTER = 'center';
-const collisionIndex = new CollisionIndex();
+const tempCollisionIndex = new CollisionIndex();
 
 
 /**
@@ -24,7 +24,7 @@ const collisionIndex = new CollisionIndex();
  */
 class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
-    _geoIsCollision(geo) {
+    _geoIsCollision(geo, collisionIndex) {
         if (!geo) {
             return false;
         }
@@ -294,11 +294,16 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
         if (!collision) {
             return this;
         }
-        collisionIndex.clear();
+        const collisionScope = this.layer.options['collisionScope'];
+        const map = this.layer.getMap();
+        const collisionIndex = collisionScope === 'map' ? map.getCollisionIndex() : tempCollisionIndex;
+        if (collisionIndex === tempCollisionIndex) {
+            collisionIndex.clear();
+        }
         const geos = this._geosToDraw;
         this._geosToDraw = [];
         for (let i = 0, len = geos.length; i < len; i++) {
-            if (this._geoIsCollision(geos[i])) {
+            if (this._geoIsCollision(geos[i], collisionIndex)) {
                 continue;
             }
             this._geosToDraw.push(geos[i]);
