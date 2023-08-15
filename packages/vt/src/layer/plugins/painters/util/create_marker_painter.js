@@ -426,11 +426,11 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         }
         const feature = features[pickingId] && features[pickingId].feature;
         const properties = feature && feature.properties || {};
-        properties['$layer'] = feature && feature.layer;
-        properties['$type'] = feature && feature.type;
+        // properties['$layer'] = feature && feature.layer;
+        // properties['$type'] = feature && feature.type;
         const textFit = markerTextFitFn ? markerTextFitFn(null, properties) : markerTextFit;
-        delete properties['$layer'];
-        delete properties['$type'];
+        // delete properties['$layer'];
+        // delete properties['$type'];
         if (currentLabel && pickingId === currentLabel.pickingId) {
             labelIndex[count++] = [currentLabel.start, currentLabel.end];
             const start = currentLabel.end;
@@ -538,15 +538,15 @@ function fillTextFitData(map, iconGeometry) {
             const feature = features[pickingId];
             const fea = feature && feature.feature || {};
             const properties = fea.properties || {};
-            properties['$layer'] = fea.layer;
-            properties['$type'] =  fea.type;
+            // properties['$layer'] = fea.layer;
+            // properties['$type'] =  fea.type;
             let v = markerTextFitFn(null, properties);
             if (isFunctionDefinition(v)) {
                 const fn = properties.textFitFn = properties.textFitFn || interpolated(v);
                 v = fn(null, properties);
             }
-            delete properties['$layer'];
-            delete properties['$type'];
+            // delete properties['$layer'];
+            // delete properties['$type'];
             if (v === 'both') {
                 fitWidthIcons.push(i / BOX_ELEMENT_COUNT);
                 fitHeightIcons.push(i / BOX_ELEMENT_COUNT);
@@ -685,8 +685,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
         const pickingId = aPickingId[idx];
         const feature = features[pickingId] && features[pickingId].feature;
         const properties = feature && feature.properties || {};
-        properties['$layer'] = feature && feature.layer;
-        properties['$type'] = feature && feature.type;
+        // properties['$layer'] = feature && feature.layer;
+        // properties['$type'] = feature && feature.type;
         let textSize = (textSizeFn ? textSizeFn(zoom, properties) : textSizeDef);
         if (isFunctionDefinition(textSize)) {
             const fn = properties.textSizeFn = properties.textSizeFn || interpolated(textSize);
@@ -708,8 +708,8 @@ export function updateMarkerFitSize(map, iconGeometry) {
                 aPadOffsetY = props.aPadOffsetY = new Int8Array(aMarkerWidth.length);
             }
         }
-        delete properties['$layer'];
-        delete properties['$type'];
+        // delete properties['$layer'];
+        // delete properties['$type'];
         if (aMarkerWidth && hasWidth) {
             //除以10是因为为了增加精度，shader中的aShape乘以了10
             const width = Math.abs((maxx - minx) / 10 * textSize) + ((fitPadding[1] + fitPadding[3]) || 0);

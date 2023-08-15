@@ -60,6 +60,8 @@ function proxyFea(feature) {
         return feature;
     }
     const properties = feature.customProps;
+    properties['$layer'] = feature.layer;
+    properties['$type'] = feature.type;
     properties[oldPropsKey] = originalProperties || EMPTY_PROPS;
     feature.properties = new Proxy(properties, proxyGetter);
     return feature;

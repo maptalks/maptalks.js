@@ -544,13 +544,13 @@ export default class TextPainter extends CollisionPainter {
                 const feature = features[current] && features[current].feature;
                 if (enableUniquePlacement && this.isMeshUniquePlaced(mesh) && feature && !feature.label) {
                     const properties = feature.properties || {};
-                    properties['$layer'] = feature.layer;
-                    properties['$type'] = feature.type;
+                    // properties['$layer'] = feature.layer;
+                    // properties['$type'] = feature.type;
                     const { symbolIndex } = mesh.properties;
                     const textName = symbolIndex && this._textNameFn[symbolIndex.index] ? this._textNameFn[symbolIndex.index](mesh.properties.z, properties) : this.getSymbol(mesh.properties.symbolIndex)['textName'];
                     const label = TextUtil.resolveText(textName, properties);
-                    delete properties['$layer'];
-                    delete properties['$type'];
+                    // delete properties['$layer'];
+                    // delete properties['$type'];
                     feature.label = label;
                 }
                 const end = i/*  === elements.length - 6 ? elements.length : i */;
@@ -586,7 +586,6 @@ export default class TextPainter extends CollisionPainter {
         if (!aProjectedAnchor) {
             aProjectedAnchor = geometry.properties.aProjectedAnchor = new Array(aAnchor.length / positionSize * 3);
         }
-        aProjectedAnchor.fill(INVALID_PROJECTED_ANCHOR);
         const aTextSize = geometry.properties['aTextSize'];
 
         // const layer = this.layer;
@@ -618,6 +617,9 @@ export default class TextPainter extends CollisionPainter {
         if (aTerrainAltitude) {
             const altitude = aTerrainAltitude[index];
             if (altitude === INVALID_ALTITUDE) {
+                aProjectedAnchor[index * 3] = INVALID_PROJECTED_ANCHOR;
+                aProjectedAnchor[index * 3 + 1] = INVALID_PROJECTED_ANCHOR;
+                aProjectedAnchor[index * 3 + 2] = INVALID_PROJECTED_ANCHOR;
                 return false;
             }
             if (altitude) {
@@ -636,6 +638,9 @@ export default class TextPainter extends CollisionPainter {
             if (!enableCollision) {
                 resetOffset(aOffset, meshElements, start, end);
             }
+            aProjectedAnchor[index * 3] = INVALID_PROJECTED_ANCHOR;
+            aProjectedAnchor[index * 3 + 1] = INVALID_PROJECTED_ANCHOR;
+            aProjectedAnchor[index * 3 + 2] = INVALID_PROJECTED_ANCHOR;
 
             //如果anchor在屏幕外，则直接不可见，省略掉后续逻辑
             return false;

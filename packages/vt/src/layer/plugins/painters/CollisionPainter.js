@@ -96,8 +96,12 @@ export default class CollisionPainter extends BasicPainter {
         const meshContext = this._collisionContext.tags[meshKey];
         if (this._canProceed && meshContext && this._meshCollisionStale) {
             const map = this.getMap();
-            meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0);
-            meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1);
+            if (!this._anchorCoord0) {
+                this._anchorCoord0 = new maptalks.Coordinate(0, 0);
+                this._anchorCoord1 = new maptalks.Coordinate(0, 0);
+            }
+            meshContext.anchor0 = map.containerPointToCoord(this._containerAnchor0, this._anchorCoord0);
+            meshContext.anchor1 = map.containerPointToCoord(this._containerAnchor1, this._anchorCoord1);
             meshContext.anchor0.z = map.getZoom();
             meshContext.anchor0.width = map.width;
             meshContext.anchor0.height = map.height;
