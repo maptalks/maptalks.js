@@ -450,6 +450,9 @@ export default class TextPainter extends CollisionPainter {
         if (!line) {
             return;
         }
+        const pitch = map.getPitch();
+        const bearing = map.getBearing();
+        const { lineTextPitch: linePitch, lineTextBearing: lineBearing } = mesh.properties;
 
         // this._counter++;
 
@@ -476,13 +479,18 @@ export default class TextPainter extends CollisionPainter {
         }
         const enableCollision = this.isEnableCollision();
         const visElemts = geometry.properties.visElemts = geometry.properties.visElemts || new allElements.constructor(allElements.length);
+        const visCache = geometry.properties.visCache = geometry.properties.visCache || [];
         if (enableCollision) {
             visElemts.count = 0;
         }
-
+        const needUpdate = linePitch === undefined || Math.abs(pitch - linePitch) > 2 || Math.abs(bearing - lineBearing) > 2;
         this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex) => {
             const { start, end } = meshBoxes[0];
-            let visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
+            let visible = visCache[labelIndex];
+            if (needUpdate) {
+                visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
+            }
+            visCache[labelIndex] = visible;
             // const meshKey = mesh.properties.meshKey;
             // let collision = this.getCachedCollision(meshKey, labelIndex);
             // let visible = true;
@@ -502,6 +510,10 @@ export default class TextPainter extends CollisionPainter {
                 visElemts.count = count;
             }
         });
+        if (needUpdate) {
+            mesh.properties.lineTextPitch = pitch;
+            mesh.properties.lineTextBearing = bearing;
+        }
         const aAltitudeArr = mesh.geometry.properties.aAltitude;
         if (aAltitudeArr && aAltitudeArr.dirty) {
             geometry.updateData('aAltitude', aAltitudeArr);

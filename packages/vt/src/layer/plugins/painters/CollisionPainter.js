@@ -21,7 +21,7 @@ const DEFAULT_SCENE_CONFIG = {
 };
 const MESH_ANCHOR_KEY = '__meshAnchorKey';
 const UINT8 = new Uint8Array(1);
-const COLLISION_OFFSET_THRESHOLD = 2;
+const COLLISION_OFFSET_THRESHOLD = 3;
 const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 

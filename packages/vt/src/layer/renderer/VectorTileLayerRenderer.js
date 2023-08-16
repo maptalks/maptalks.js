@@ -487,13 +487,18 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return !!(this._vtCurrentTiles && this._vtCurrentTiles[mesh.properties.tile.id]);
     }
 
-    isTileNearCamera(mesh) {
+    _getTileZoomDiff(mesh) {
         const layer = this.layer;
         let zoom = layer['_getTileZoom'](this.getMap().getZoom());
         const minZoom = layer.getMinZoom(),
             maxZoom = layer.getMaxZoom();
         zoom = maptalks.Util.clamp(zoom, minZoom, maxZoom);
         const gap = zoom - mesh.properties.tile.z;
+        return gap;
+    }
+
+    isTileNearCamera(mesh) {
+        const gap = this._getTileZoomDiff(mesh);
         return gap <= 1;
     }
 
