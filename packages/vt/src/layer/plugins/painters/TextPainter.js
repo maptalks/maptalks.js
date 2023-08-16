@@ -487,7 +487,7 @@ export default class TextPainter extends CollisionPainter {
         this.forEachBox(mesh, (mesh, meshBoxes, mvpMatrix, labelIndex) => {
             const { start, end } = meshBoxes[0];
             let visible = visCache[labelIndex];
-            if (needUpdate) {
+            if (visible === undefined || needUpdate) {
                 visible = this._updateLabelAttributes(mesh, allElements, start, end, line, mvpMatrix, isPitchWithMap ? planeMatrix : null, labelIndex);
             }
             visCache[labelIndex] = visible;
