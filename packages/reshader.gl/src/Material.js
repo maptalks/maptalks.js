@@ -30,6 +30,14 @@ class Material {
         return this._version;
     }
 
+    set doubleSided(value) {
+        this._doubleSided = value;
+    }
+
+    get doubleSided() {
+        return this._doubleSided;
+    }
+
     isReady() {
         return this._loadingCount <= 0;
     }

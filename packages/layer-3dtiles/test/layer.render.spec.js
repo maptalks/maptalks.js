@@ -1576,7 +1576,18 @@ describe('render specs', () => {
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1 });
         });
 
-
+        it('doubleSided', done => {
+            const resPath = 'Cesium3DTiles/doubleSided';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'pbr'
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 10 });
+        });
     });
 
     context('offset specs', () => {

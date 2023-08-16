@@ -221,7 +221,7 @@ class Shader {
         return activeVarsCache[cacheKey];
     }
 
-    createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO) {
+    createREGLCommand(regl, materialDefines, elements, isInstanced, disableVAO, commandProps = {}) {
         const isVAO = isSupportVAO(regl) && !disableVAO;
         const defines = extend({}, this.shaderDefines || {}, materialDefines || {});
         const vertSource = this._insertDefines(this.vert, defines);
@@ -283,7 +283,7 @@ class Shader {
         if (isInstanced) {
             command.instances = regl.prop('instances');
         }
-        extend(command, this.extraCommandProps);
+        extend(command, this.extraCommandProps, commandProps);
         const reglCommand = regl(command);
         activeAttributes.key = activeAttributes.map(attr => attr.name).join();
         reglCommand.activeAttributes = activeAttributes;

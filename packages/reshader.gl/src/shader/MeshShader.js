@@ -129,10 +129,11 @@ class MeshShader extends Shader {
         if (!command) {
             const defines = mesh.getDefines();
             const material = mesh.getMaterial();
+            const commandProps = {};
             if (material) {
                 const doubleSided = material.doubleSided;
                 if (doubleSided && this.extraCommandProps && this.extraCommandProps.cull) {
-                    this.extraCommandProps.cull.enable = false;
+                    commandProps.cull = { enable: false };
                 }
             }
             command = this.commands[dKey] =
@@ -141,7 +142,8 @@ class MeshShader extends Shader {
                     defines,
                     mesh.getElements(),
                     mesh instanceof InstancedMesh,
-                    mesh.disableVAO
+                    mesh.disableVAO,
+                    commandProps
                 );
         }
         return command;

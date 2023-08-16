@@ -194,7 +194,7 @@ void main() {
         #if defined(HAS_COLOR)
             alpha *= aColor.a;
         #endif
-        #if defined(HAS_COLOR0)
+        #if defined(HAS_COLOR0) && COLOR0_SIZE == 4
             alpha *= aColor0.a;
         #endif
 

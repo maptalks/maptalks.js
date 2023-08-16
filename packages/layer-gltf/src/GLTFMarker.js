@@ -1305,20 +1305,43 @@ export default class GLTFMarker extends Marker {
         return this._gltfModelBBox;
     }
 
-    zoomTo(zoomOffset) {
+    zoomTo(zoomOffset, options = { animation: true }) {
         const markerBBox = this._getBoundingBox();
         const map = this.getMap();
+        if (!map || !markerBBox) {
+            return;
+        }
         const { min, max } = markerBBox;
         TEMP_POINT.set(min[0], min[1]);
         const minCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
         TEMP_POINT.set(max[0], max[1]);
         const maxCoord = map.pointAtResToCoordinate(TEMP_POINT, map.getGLRes());
         const extent = new Extent(minCoord, maxCoord);
-        map.fitExtent(extent, zoomOffset, {}, (params) => {
+        map.fitExtent(extent, zoomOffset, options, (params) => {
             if (params.state.playState === 'finished') {
-                this.fire('zoomtoend', { target: this, extent });
+                this._zoomToEnd(min, max, extent);
             }
         });
+        if (options.animation === false) {
+            this._zoomToEnd(min, max, extent);
+        }
+    }
+
+    _zoomToEnd(min, max, extent) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const h = (min[2] + max[2]) / 2;
+        const height = h / map.altitudeToPoint(1, glRes);
+        const cameraPosition = map.cameraPosition;
+        const cameraCoordinate = map.pointAtResToCoordinate(new Point(cameraPosition), glRes);
+        const cameraHeight = cameraPosition[2] / map.altitudeToPoint(1, glRes);
+        cameraCoordinate.z = cameraHeight + height;
+        map.setCameraPosition({
+            position: [cameraCoordinate.x, cameraCoordinate.y, cameraCoordinate.z],
+            pitch: map.getPitch(),
+            bearing: map.getBearing()
+        });
+        this.fire('zoomtoend', { target: this, extent });
     }
 
     _isUniformsDirty() {

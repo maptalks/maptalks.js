@@ -205,6 +205,9 @@ class Mesh {
             const elementType = isNumber(this.getElements()) ? 'count' : 'elements';
             dKey += '_' + elementType;
             dKey += '_' + +(!!this.disableVAO);
+            if (this._material) {
+                dKey += '_' + +(!!this._material.doubleSided);
+            }
             this._commandKey = dKey;
             if (this._material) {
                 this._materialKeys = this._material.getUniformKeys();
