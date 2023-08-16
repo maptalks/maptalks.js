@@ -170,12 +170,13 @@ export default class PolygonPack extends VectorPack {
         }
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
         const BOUNDS = [-1, -1, feature.extent + 1, feature.extent + 1];
+        const flattened = this._flattened = this._flattened || this._arrayPool.get();
+        const holeIndices = this._holeIndices = this._holeIndices || this._arrayPool.get();
         for (let i = 0; i < rings.length; i++) {
             const polygon = rings[i];
             const triangleIndex = this.data.aPosition.length / positionSize;
-
-            const flattened = [];
-            const holeIndices = [];
+            flattened.setLength(0);
+            holeIndices.setLength(0);
 
             for (let ii = 0; ii < polygon.length; ii++) {
                 let ring = polygon[ii];

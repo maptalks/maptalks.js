@@ -15,6 +15,8 @@ export { default as StyledPoint } from './pack/StyledPoint';
 export { default as StyledVector } from './pack/StyledVector';
 import * as PackUtil from './pack/util/index.js';
 export { PackUtil };
+import ArrayPool from './pack/util/ArrayPool.js';
+export { ArrayPool };
 import * as TextUtil from './style/Text.js';
 export { TextUtil };
 import * as StyleUtil from './style/Util.js';

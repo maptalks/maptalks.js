@@ -4,7 +4,9 @@ import { buildExtrudeFaces } from './Extrusion';
 import { vec3, vec4 } from 'gl-matrix';
 import { buildNormals, buildTangents, packTangentFrame } from '@maptalks/tbn-packer';
 import { interpolated, piecewiseConstant, isFunctionDefinition } from '@maptalks/function-type';
-import { PACK_TEX_SIZE, StyleUtil, PackUtil } from '@maptalks/vector-packer';
+import { PACK_TEX_SIZE, StyleUtil, PackUtil, ArrayPool } from '@maptalks/vector-packer';
+
+const arrayPool = ArrayPool.getInstance();
 
 export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     localScale, centimeterToPoint, symbol, zoom, projectionCode, debugIndex, positionType, center) {
@@ -14,6 +16,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     if (dataConfig.side === undefined) {
         dataConfig.side = true;
     }
+    arrayPool.reset();
     const {
         altitudeScale,
         altitudeProperty,
@@ -61,13 +64,15 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             res,
             glScale,
             projectionCode
-        }, debugIndex);
+        }, debugIndex, arrayPool);
     const buffers = [];
     const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
-    const indices = new ctor(faces.indices);
+    const indices = ArrayPool.createTypedArray(faces.indices, ctor);
     delete faces.indices;
     buffers.push(indices.buffer, faces.pickingIds.buffer);
-    const normals = buildNormals(faces.vertices, indices);
+
+    const normalArr = new Float32Array(faces.vertices.length);
+    const normals = buildNormals(faces.vertices, indices, normalArr);
     let simpleNormal = true;
     const delta = 1E-6;
     //因为aPosition中的数据是在矢量瓦片坐标体系里的，y轴和webgl坐标体系相反，所以默认计算出来的normal是反的
@@ -85,7 +90,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     faces.normals = normals;
 
     if (tangent) {
-        let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices);
+        let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices, arrayPool.get());
         tangents = createQuaternion(faces.normals, tangents);
         faces.tangents = tangents;
         buffers.push(tangents.buffer);
@@ -96,15 +101,13 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
         //如果只有顶面，normal数据只有0, 1, -1时，则为simple normal，可以改用Int8Array
         if (simpleNormal) {
             faces.normals = new Int8Array(faces.normals);
-        } else {
-            faces.normals = new Float32Array(faces.normals);
         }
 
         buffers.push(faces.normals.buffer);
     }
     if (faces.uvs) {
         const uvs = faces.uvs;
-        faces.uvs = new Float32Array(uvs);
+        faces.uvs = ArrayPool.createTypedArray(uvs, Float32Array);
         buffers.push(faces.uvs.buffer);
     }
     if (center) {
@@ -121,8 +124,8 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     const data =  {
         data: {
             data: {
-                aVertexColorType: vertexColors.length <= 252 ? new Uint8Array(faces.verticeTypes) : new Uint16Array(faces.verticeTypes),
-                aPosition: new posArrayType(faces.vertices),
+                aVertexColorType: vertexColors.length <= 252 ? ArrayPool.createTypedArray(faces.verticeTypes, Uint8Array) : ArrayPool.createTypedArray(faces.verticeTypes, Uint16Array),
+                aPosition: ArrayPool.createTypedArray(faces.vertices, posArrayType),
                 aNormal: faces.normals,
                 aTexCoord0: faces.uvs,
                 aTangent: faces.tangents,

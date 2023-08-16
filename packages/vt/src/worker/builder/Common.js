@@ -63,6 +63,7 @@ export function fillPosArray(vertices, offset, segment, scale, altitude, isLine,
             offset += 3;
         }
     }
+    vertices.trySetLength(offset);
     return offset;
 }
 

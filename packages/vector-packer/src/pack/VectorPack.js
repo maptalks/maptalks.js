@@ -12,7 +12,7 @@ import { getHeightValue, generatePickingIndiceIndex } from './util/util';
 import StyledVector from './StyledVector';
 import { packPosition/*, unpackPosition*/ } from './util/pack_position';
 import { compileFilter, isExpression, createExpression, getExpressionType, isInterpolated } from '../style/Filter';
-
+import ArrayPool from './util/ArrayPool';
 
 //feature index defined in BaseLayerWorker
 export const KEY_IDX = '__fea_idx';
@@ -24,6 +24,7 @@ const feature = {};
 const featureState = {};
 const availableImages = [];
 
+const arrayPool = ArrayPool.getInstance();
 /**
  * abstract class for all vector packs
  */
@@ -427,18 +428,21 @@ export default class VectorPack {
         this.maxAltitude = 0;
         this.dynamicAttrs = {};
         const data = this.data = {};
-        let elements = this.elements = [];
+        this._arrayPool = arrayPool;
+        arrayPool.reset();
+        let elements = this.elements = arrayPool.get();
         //uniforms: opacity, u_size_t
 
         const format = this.getFormat(Array.isArray(vectors[0]) ? vectors[0][0].symbol : vectors[0].symbol);
         const positionSize = this.needAltitudeAttribute() ? 2 : 3;
+
         for (let i = 0; i < format.length; i++) {
-            data[format[i].name] = [];
+            data[format[i].name] = arrayPool.get();
         }
         //每个顶点的feature index, 用于构造 pickingId
-        let feaIdxValues = [];
+        let feaIdxValues = arrayPool.get();
         let maxFeaIndex = 0;
-        const featIds = [];
+        const featIds = arrayPool.get();
         let maxFeaId = 0;
         let hasNegative = false;
         let isIdUnique = true;
@@ -494,7 +498,7 @@ export default class VectorPack {
             return null;
         }
         const ArrType = getUnsignedArrayType(maxFeaIndex);
-        feaIdxValues = new ArrType(feaIdxValues);
+        feaIdxValues = ArrayPool.createTypedArray(feaIdxValues, ArrType);
 
         if (this.options.positionType) {
             format[0].type = this.options.positionType;
@@ -532,7 +536,9 @@ export default class VectorPack {
         }
 
         const ElementType = getIndexArrayType(this.maxIndex);
-        elements = new ElementType(elements);
+        elements = ArrayPool.createTypedArray(elements, ElementType);
+
+        // elements = new ElementType(elements);
         buffers.push(elements.buffer);
         const result = {
             data: arrays,
@@ -556,7 +562,7 @@ export default class VectorPack {
         if (featIds.length) {
             const feaCtor = hasNegative ? getPosArrayType(maxFeaId) : getUnsignedArrayType(maxFeaId);
             // featureIds 里存放的是 feature.id
-            result.featureIds = new feaCtor(featIds);
+            result.featureIds = ArrayPool.createTypedArray(featIds, feaCtor);
             buffers.push(result.featureIds.buffer);
         } else {
             result.featureIds = [];

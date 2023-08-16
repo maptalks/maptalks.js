@@ -1,7 +1,7 @@
 import { fillPosArray, isClippedEdge } from './Common';
 import { buildFaceUV, buildSideUV } from './UV';
 import { isNumber, pushIn } from '../../common/Util';
-import { PackUtil } from '@maptalks/vector-packer';
+import { PackUtil, ArrayPool } from '@maptalks/vector-packer';
 import earcut from 'earcut';
 import { KEY_IDX, PROP_OMBB } from '../../common/Constant';
 
@@ -31,7 +31,7 @@ export function buildExtrudeFaces(
         glScale,
         projectionCode
     },
-    debugIndex
+    debugIndex, arrayPool
 ) {
     // debugger
     let scale = EXTENT / features[0].extent;
@@ -44,17 +44,17 @@ export function buildExtrudeFaces(
     // const size = countVertexes(features) * 2;
     //featIndexes : index of indices for each feature
     // const arrCtor = getIndexArrayType(features.length);
-    const featIndexes = [];
-    const pickingIds = [];
-    const featIds = [];
-    const geoVertices = [];
-    const vertices = [];
-    const indices = [];
-    const verticeTypes = [];
+    const featIndexes = arrayPool.get();
+    const pickingIds = arrayPool.get();
+    const featIds = arrayPool.get();
+    const geoVertices = arrayPool.get();
+    const vertices = arrayPool.get();
+    const indices = arrayPool.get();
+    const verticeTypes = arrayPool.get();
     const generateUV = !!uv,
         generateTop = !!top,
         generateSide = !!side;
-    const uvs = generateUV ? [] : null;
+    const uvs = generateUV ? arrayPool.get() : null;
     // const clipEdges = [];
     function fillData(start, offset, holes, height, ombb, needReverseTriangle) {
         let typeStartOffset = offset;
@@ -94,7 +94,7 @@ export function buildExtrudeFaces(
             if (topThickness > 0 && !generateSide) {
                 offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, 0, topThickness, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
             }
-            verticeTypes.length = offset / 3;
+            verticeTypes.setLength(offset / 3);
             verticeTypes.fill(1, typeStartOffset / 3, offset / 3);
         }
         // debugger
@@ -104,7 +104,7 @@ export function buildExtrudeFaces(
             }
             typeStartOffset = offset;
             offset = buildSide(vertices, geoVertices, holes, indices, offset, uvs, topThickness, height, EXTENT, generateUV, sideUVMode || 0, sideVerticalUVMode || 0, textureYOrigin, uvSize, localScale, centimeterToPoint, needReverseTriangle);
-            verticeTypes.length = offset / 3;
+            verticeTypes.setLength(offset / 3);
             const count = geoVertices.length / 3;
             verticeTypes.fill(1, typeStartOffset / 3, typeStartOffset / 3 + count);
             verticeTypes.fill(0, typeStartOffset / 3 + count, typeStartOffset / 3 + 2 * count);
@@ -125,6 +125,7 @@ export function buildExtrudeFaces(
     }
     let maxFeaId = 0;
     let hasNegative = false;
+    const holes = arrayPool.get();
     for (; r < n; r++) {
         const feature = features[r];
         const feaId = feature.id;
@@ -149,8 +150,8 @@ export function buildExtrudeFaces(
 
         let exteriorIndex = 0;
         let start = offset;
-        let holes = [];
-        geoVertices.length = 0;
+        holes.setLength(0);
+        geoVertices.setLength(0);
         const shellIsClockwise = PackUtil.calculateSignedArea(geometry[0]) < 0;
         for (let i = 0, l = geometry.length; i < l; i++) {
             let ring = geometry[i];
@@ -165,8 +166,8 @@ export function buildExtrudeFaces(
                 ringOmbb = ombb && ombb[exteriorIndex];
                 //an exterior ring (multi polygon)
                 offset = fillData(start, offset, holes, height * scale, ringOmbb, needReverseTriangle, exteriorIndex); //need to multiply with scale as altitude is
-                geoVertices.length = 0;
-                holes = [];
+                geoVertices.setLength(0);
+                holes.setLength(0);
                 start = offset;
             }
             if (EXTENT !== Infinity) {
@@ -216,18 +217,18 @@ export function buildExtrudeFaces(
         vertices: vertices,        // vertexes
         verticeTypes,
         indices,                                    // indices for drawElements
-        pickingIds: new pickingCtor(pickingIds),   // vertex index of each feature
+        pickingIds: ArrayPool.createTypedArray(pickingIds, pickingCtor),   // vertex index of each feature
         featureIndexes: featIndexes
     };
     if (featIds.length) {
         const feaCtor = hasNegative ? PackUtil.getPosArrayType(maxFeaId) : PackUtil.getUnsignedArrayType(maxFeaId);
-        data.featureIds = new feaCtor(featIds);
+        data.featureIds = ArrayPool.createTypedArray(featIds, feaCtor);
     } else {
         data.featureIds = [];
     }
     if (uvs) {
         //因为vertices中最后一位不在indices中引用，uvs为保持位数与vertices一致，需补充2位
-        uvs.length = vertices.length / 3 * 2;
+        uvs.setLength(vertices.length / 3 * 2);
         //改成int16
         data.uvs = uvs;
     }
@@ -253,20 +254,24 @@ function buildSide(vertices, topVertices, holes, indices, offset, uvs, topThickn
     }
     offset += count;
     //top vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - topThickness;
-    }
+    // for (let i = 2, l = count; i < l; i += 3) {
+    //     vertices[offset + i - 2] = topVertices[i - 2];
+    //     vertices[offset + i - 1] = topVertices[i - 1];
+    //     vertices[offset + i - 0] = topVertices[i] - topThickness;
+    // }
+    vertices.trySetLength(offset + count);
+    vertices.copyWithin(offset, offset - 2 * count, offset - count);
     offset += count;
     //bottom vertexes
-    for (let i = 2, l = count; i < l; i += 3) {
-        vertices[offset + i - 2] = topVertices[i - 2];
-        vertices[offset + i - 1] = topVertices[i - 1];
-        vertices[offset + i - 0] = topVertices[i] - height;
-    }
+    vertices.trySetLength(offset + count);
+    vertices.copyWithin(offset, offset - 2 * count, offset - count);
+    // for (let i = 2, l = count; i < l; i += 3) {
+    //     vertices[offset + i - 2] = topVertices[i - 2];
+    //     vertices[offset + i - 1] = topVertices[i - 1];
+    //     vertices[offset + i - 0] = topVertices[i] - height;
+    // }
     offset += count;
-
+    // vertices.trySetLength(offset);
     holes = holes || [];
     holes.push(count / 3);
     for (let r = 0; r < holes.length; r++) {

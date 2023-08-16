@@ -11,9 +11,10 @@ export function fillTypedArray(format, data) {
         const type = d.type;
         const name = d.name;
         if (type === Array) {
-            arrays[name] = data[name];
+            arrays[name] = data[name].getArray();
         } else {
-            arrays[name] = new type(data[name]);
+            arrays[name] = createTypedArray(data[name], type);
+            // arrays[name] = new type(data[name].getArray());
         }
     }
     return arrays;
@@ -49,4 +50,13 @@ export function getUnsignedArrayType(max) {
     if (max < 65536) return Uint16Array;
     if (max < Math.pow(2, 32)) return Uint32Array;
     return Float64Array;
+}
+
+export function createTypedArray(values, ctor) {
+    const arr = new ctor(values.length);
+    const len = arr.length;
+    for (let i = 0; i < len; i++) {
+        arr[i] = values[i];
+    }
+    return arr;
 }
