@@ -274,8 +274,7 @@ class GroupTileLayer extends TileLayer {
         for (const key in tilesLoading) {
             cache = tilesLoading[key];
             if (validateCache()) {
-                renderer.abortTileLoading(cache.image);
-                delete tilesLoading[key];
+                renderer.abortTileLoading(cache.image, cache.info);
             }
         }
         return this;

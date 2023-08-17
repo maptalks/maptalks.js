@@ -537,7 +537,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return loadImage(tileImage, [url]);
     }
 
-    abortTileLoading(tileImage) {
+    abortTileLoading(tileImage, tileInfo) {
+        if (tileInfo && tileInfo.id !== undefined) {
+            this.removeTileLoading(tileInfo);
+        }
         if (!tileImage) return;
         tileImage.onload = falseFn;
         tileImage.onerror = falseFn;
@@ -545,7 +548,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     onTileLoad(tileImage, tileInfo) {
+        this.removeTileLoading(tileInfo);
         this._tileQueue.push({ tileInfo: tileInfo, tileData: tileImage });
+        this.setToRedraw();
+    }
+
+    removeTileLoading(tileInfo) {
+        delete this.tilesLoading[tileInfo.id];
+        // need to setToRedraw to let tiles blocked by loadingLimit continue to load
+        this.setToRedraw();
     }
 
     _consumeTileQueue() {
@@ -588,7 +599,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
-        const id = tileInfo['id'];
         if (!this.tilesInView) {
             // removed
             return;
@@ -608,7 +618,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         // let user update tileImage in listener if needed
         tileImage = e.tileImage;
         this.resetTileLoadTime(tileImage);
-        delete this.tilesLoading[id];
+        this.removeTileLoading(tileInfo);
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
     }
@@ -626,12 +636,14 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (tileRetryCount > tileImage.onerrorTick) {
             tileImage.onerrorTick++;
             this._fetchImage(tileImage, tileInfo);
+            this.removeTileLoading(tileInfo);
             return;
         }
         const errorUrl = this.layer.options['errorUrl'];
         if (errorUrl) {
             if ((tileImage instanceof Image) && tileImage.src !== errorUrl) {
                 tileImage.src = errorUrl;
+                this.removeTileLoading(tileInfo);
                 return;
             } else {
                 tileImage = new Image();
@@ -642,7 +654,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.abortTileLoading(tileImage, tileInfo);
 
         tileImage.loadTime = 0;
-        delete this.tilesLoading[tileInfo['id']];
+        this.removeTileLoading(tileInfo);
         this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
         /**
@@ -955,7 +967,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                     this.abortTileLoading(tile.image, tile.info);
                 }
                 this.deleteTile(tile);
-                delete this.tilesLoading[i];
+                this.removeTileLoading(tile.info);
             }
         }
         for (const i in this.tilesInView) {
