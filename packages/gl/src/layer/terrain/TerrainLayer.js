@@ -67,16 +67,14 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         //     const yTiles = 1 << z;
         //     y =  yTiles - y - 1;
         // }
-        if (type === 'mapbox') {
-            if (this.options['requireSkuToken']) {
-                if (!this._skuToken) {
-                    this._skuToken = this._createSkuToken();
-                }
-                if (terrainUrl.indexOf('?') > -1) {
-                    terrainUrl += '&sku=' + this._skuToken;
-                } else {
-                    terrainUrl += '?sku=' + this._skuToken;
-                }
+        if (type === 'mapbox' && this.options['requireSkuToken']) {
+            if (!this._skuToken) {
+                this._skuToken = this._createSkuToken();
+            }
+            if (terrainUrl.indexOf('?') > -1) {
+                terrainUrl += '&sku=' + this._skuToken;
+            } else {
+                terrainUrl += '?sku=' + this._skuToken;
             }
         }/* else if (type === 'cesium') {
             terrainUrl += '?extensions=octvertexnormals-watermask-metadata&v=1.2.0';

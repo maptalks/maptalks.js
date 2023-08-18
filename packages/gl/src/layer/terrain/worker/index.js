@@ -1,7 +1,7 @@
 import { Ajax } from '@maptalks/gltf-loader';
 import "./zlib.min";
-import Martini from '@maptalks/martini';
 import { vec2, vec3 } from 'gl-matrix';
+import { createMartiniData } from '../util/martini';
 // 保存当前的workerId，用于告知主线程结果回传给哪个worker
 let workerId;
 
@@ -639,77 +639,6 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
 }
 
-function createMartiniData(error, heights, width, hasSkirts) {
-    const martini = new Martini(width);
-    const terrainTile = martini.createTile(heights);
-    //TODO 需要增加判断，只有pbr渲染时，才需要把isolateSkirtVertices设成true
-    const isolateSkirtVertices = true;
-    const mesh = hasSkirts ? terrainTile.getMeshWithSkirts(error, isolateSkirtVertices) : terrainTile.getMesh(error);
-    const { triangles, vertices, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, topSkirtIndex } = mesh;
-    let { numVerticesWithoutSkirts, numTrianglesWithoutSkirts } = mesh;
-    if (!numVerticesWithoutSkirts) {
-        numVerticesWithoutSkirts = vertices.legnth / 3;
-        numTrianglesWithoutSkirts = triangles.length / 3;
-    }
-    const positions = [], texcoords = [];
-    const skirtOffset = 0;//terrainStructure.skirtOffset;
-    const count = vertices.length / 2;
-    let minHeight = Infinity;
-    let maxHeight = -Infinity;
-    // debugger
-    for (let i = 0; i < count; i++) {
-        const x = vertices[i * 2], y = vertices[i * 2 + 1];
-        if (i >= numVerticesWithoutSkirts) {
-            // positions.push(0);
-            const index = x / 2 * 3;
-            let height;
-            // 侧面因为顶底uv[1]相等，导致和normal合并计算tangent时会出现NaN，导致侧面的normal结果错误
-            // 给skirt顶面的uv的x和y都增加一点偏移量即能解决该问题
-            let texOffset = 0.001;
-            if (isolateSkirtVertices) {
-                const start = i < leftSkirtIndex / 2 ? numVerticesWithoutSkirts :
-                    i < rightSkirtIndex / 2 ? leftSkirtIndex / 2 :
-                        i < bottomSkirtIndex / 2 ? rightSkirtIndex / 2 : bottomSkirtIndex / 2;
-                if ((i - start) % 3 === 0) {
-                    height = 0;
-                    texOffset = 0;
-                } else {
-                    height = positions[index + 2];
-                }
-            } else {
-                height = 0;
-            }
-            positions.push(positions[index], positions[index + 1], height);
-            texcoords.push(positions[index] / width + texOffset);
-            texcoords.push(-positions[index + 1] / width + texOffset);
-        } else {
-            positions.push(x * (1 + skirtOffset));
-            positions.push(-y * (1 + skirtOffset));
-            positions.push(heights[y * width + x]);
-            texcoords.push(x / width);
-            texcoords.push(y / width);
-        }
-        const height = positions[positions.length - 1];
-        if (height < minHeight) {
-            minHeight = height;
-        }
-        if (height > maxHeight) {
-            maxHeight = height;
-        }
-    }
-    const terrain = {
-        positions: new Float32Array(positions), texcoords: new Float32Array(texcoords), triangles,
-        leftSkirtIndex,
-        rightSkirtIndex,
-        bottomSkirtIndex,
-        topSkirtIndex,
-        numTrianglesWithoutSkirts,
-        numVerticesWithoutSkirts,
-        minHeight,
-        maxHeight
-    };
-    return terrain;
-}
 
 // 把heights转换为width为terrainWidth的高程数组数据
 const cachedArray = {};
