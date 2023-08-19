@@ -126,8 +126,8 @@ Map.include(/** @lends Map.prototype */ {
                 //such as GroupGLLayer
                 if (isFunction(layer.getLayers)) {
                     const layers = layer.getLayers() || [];
-                    layers.forEach(chidLayer => {
-                        chidLayer.fire('identifyempty', opts);
+                    layers.forEach(childLayer => {
+                        childLayer.fire('identifyempty', opts);
                     });
                 }
             }
