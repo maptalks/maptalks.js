@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../core/Constants';
-import { isNil, isString, isArrayHasData, pushIn } from '../core/util';
+import { isNil, isString, isArrayHasData, pushIn, isFunction } from '../core/util';
 import Coordinate from '../geo/Coordinate';
 import Point from '../geo/Point';
 import Map from './Map';
@@ -123,6 +123,13 @@ Map.include(/** @lends Map.prototype */ {
             //fire layer identify empty event
             if ((!result || !result.length)) {
                 layer.fire('identifyempty', opts);
+                //such as GroupGLLayer
+                if (isFunction(layer.getLayers)) {
+                    const layers = layer.getLayers() || [];
+                    layers.forEach(chidLayer => {
+                        chidLayer.fire('identifyempty', opts);
+                    });
+                }
             }
             return result;
         });
