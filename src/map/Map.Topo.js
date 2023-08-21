@@ -124,8 +124,10 @@ Map.include(/** @lends Map.prototype */ {
             if ((!result || !result.length)) {
                 layer.fire('identifyempty', opts);
                 //such as GroupGLLayer
-                if (isFunction(layer.getLayers)) {
-                    const layers = layer.getLayers() || [];
+                if (layer.getLayers && isFunction(layer.getLayers)) {
+                    const layers = (layer.getLayers() || []).filter(childLayer => {
+                        return childLayer;
+                    });
                     layers.forEach(childLayer => {
                         childLayer.fire('identifyempty', opts);
                     });
