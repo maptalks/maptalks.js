@@ -336,7 +336,7 @@ describe('Geometry.Events', function () {
                 'markerPathHeight': 1024,
                 markerWidth: 40,
                 markerHeight: 40
-            }
+            },
         ];
         const rotations = [15, 45, 90, 100, 180, -15, -60, -90, -115, -135, -180];
 
@@ -370,6 +370,74 @@ describe('Geometry.Events', function () {
 
         function test() {
             console.log('markers.length:', markers.length);
+            if (markers.length === 0) {
+                done();
+            } else {
+                const marker = markers[0];
+                layer.clear();
+                var spy = sinon.spy();
+                marker.on('click', spy);
+                setTimeout(() => {
+                    const center = marker.getContainerExtent().getCenter();
+                    var point = center.add(domPosition);
+                    happen.click(eventContainer, {
+                        'clientX': point.x,
+                        'clientY': point.y
+                    });
+                    expect(spy.called).to.be.ok();
+                    markers.splice(0, 1);
+                    test();
+                }, 50);
+                marker.addTo(layer);
+            }
+        }
+        test();
+    });
+
+    it('text rotation #2061', function (done) {
+        var center = map.getCenter();
+        const symbols = [
+            {
+                textFaceName: "sans-serif",
+                textName: '■',
+                textSize: 22,
+                textFill: "blue",
+                textHaloFill: "black",
+                textHaloRadius: 12,
+            },
+        ];
+        const rotations = [15, 45, 90, 100, 180, -15, -60, -90, -115, -135, -180];
+
+        const dxdys = [
+            {
+                textDx: 0,
+                textDy: 0
+            },
+            {
+                textDx: Math.random() * 100,
+                textDy: Math.random() * 100
+            },
+            {
+                textDx: -Math.random() * 100,
+                textDy: -Math.random() * 100
+            }
+        ];
+        const markers = [];
+        symbols.forEach(symbol => {
+            rotations.forEach(rotation => {
+                dxdys.forEach(dxdy => {
+                    const marker = new maptalks.Marker(center.copy(), {
+                        symbol: Object.assign({}, symbol, { textRotation: rotation }, dxdy),
+                    });
+                    markers.push(marker);
+                });
+            });
+        });
+
+        var domPosition = GET_PAGE_POSITION(container);
+
+        function test() {
+            console.log('texts.length:', markers.length);
             if (markers.length === 0) {
                 done();
             } else {

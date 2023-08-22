@@ -2,15 +2,18 @@ import { DEFAULT_TEXT_SIZE } from '../../../core/Constants';
 import {
     isNumber,
     isArrayHasData,
-    getValueOrDefault
+    getValueOrDefault,
+    getAlignPoint
 } from '../../../core/util';
 import Point from '../../../geo/Point';
 import PointExtent from '../../../geo/PointExtent';
 import { hasFunctionDefinition } from '../../../core/mapbox';
-import { isTextSymbol, getTextMarkerFixedExtent } from '../../../core/util/marker';
+import { isTextSymbol, getTextMarkerFixedExtent, getMarkerRotationExtent } from '../../../core/util/marker';
 import Canvas from '../../../core/Canvas';
 import PointSymbolizer from './PointSymbolizer';
 import { replaceVariable, describeText } from '../../../core/util/strings';
+
+const TEMP_EXTENT = new PointExtent();
 
 export default class TextMarkerSymbolizer extends PointSymbolizer {
 
@@ -49,18 +52,30 @@ export default class TextMarkerSymbolizer extends PointSymbolizer {
         this._prepareContext(ctx);
         this.prepareCanvas(ctx, strokeAndFill, resources);
         Canvas.prepareCanvasFont(ctx, style);
+        const textHaloRadius = style.textHaloRadius || 0;
         for (let i = 0, len = cookedPoints.length; i < len; i++) {
             let p = cookedPoints[i];
             // const origin = this._rotate(ctx, p, this._getRotationAt(i));
             const origin = this.getRotation() ? this._rotate(ctx, p, this._getRotationAt(i)) : null;
+            let extent;
             if (origin) {
+                //坐标对应的像素点
+                const pixel = p.sub(origin);
                 p = origin;
+                const rad = this._getRotationAt(i);
+                const { width, height } = textDesc.size || { width: 0, height: 0 };
+                const alignPoint = getAlignPoint(textDesc.size, style['textHorizontalAlignment'], style['textVerticalAlignment']);
+                extent = getMarkerRotationExtent(TEMP_EXTENT, rad, width, height, p, alignPoint);
+                extent._add(pixel);
             }
             const bbox = Canvas.text(ctx, textContent, p, style, textDesc);
-            this._setBBOX(ctx, bbox);
             if (origin) {
+                this._setBBOX(ctx, extent.xmin, extent.ymin, extent.xmax, extent.ymax);
                 ctx.restore();
+            } else {
+                this._setBBOX(ctx, bbox);
             }
+            this._bufferBBOX(ctx, textHaloRadius);
         }
     }
 
