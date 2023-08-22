@@ -30,7 +30,9 @@ export default class DebugSymbolizer extends PointSymbolizer {
             op = 1;
         ctx.strokeStyle = color;
         ctx.fillStyle = color;
-
+        //set debug style
+        ctx.lineWidth = 1;
+        ctx.font = '18px  serif';
         //outline
         const outline = geometry.getContainerExtent().toArray();
         Canvas.polygon(ctx, [outline], op, 0);
