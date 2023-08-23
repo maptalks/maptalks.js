@@ -16,7 +16,7 @@ export const onmessage = function (message, postResponse) {
     } else {
         const command = data.command;
         this.dispatcher[command]({ actorId: message.actorId, mapId: data.mapId, layerId: data.layerId, params: data.params }, (err, data, buffers) => {
-            if (err && err.status !== 404) {
+            if (err && err.status !== 404 && err.status !== 204) {
                 console.error(command, err);
             }
             postResponse(err, data, buffers);

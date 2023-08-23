@@ -571,7 +571,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const { tiles } = this._requestingMVT[url];
         delete this._requestingMVT[url];
         if (err) {
-            if (err.status && err.status === 404) {
+            if (err.status && (err.status === 404 || err.status === 204)) {
                 //只处理404
                 for (let i = 0; i < tiles.length; i++) {
                     const tileInfo = tiles[i];
