@@ -532,6 +532,7 @@ export default class MeshPainter {
             null,
             count,
             {
+                static: true,
                 primitive: 'points',
                 positionAttribute: 'POSITION'
             }
@@ -708,8 +709,9 @@ export default class MeshPainter {
         let unreadyCount = 0;
         let ready = true;
         const meshes = [];
+        const gltfWeakResources = [];
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader);
+            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader, gltfWeakResources);
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
@@ -748,6 +750,8 @@ export default class MeshPainter {
             delete gltfMesh.attributes;
         });
 
+        trimGLTFWeakResources(gltfWeakResources);
+
         if (ready) {
             this._i3dmMeshes[id] = meshes;
             cb(null, { id: id, mesh: meshes });
@@ -780,6 +784,9 @@ export default class MeshPainter {
     }
 
     createB3DMMesh(data, id, node, cb) {
+        if (data.gltf) {
+            data.gltf.transferables = null;
+        }
         if (this._modelMeshes[id] || this._loading[id]) {
             const meshes = this._modelMeshes[id];
             console.warn(`mesh with id(${id}) was already created.`);
@@ -821,12 +828,13 @@ export default class MeshPainter {
             }
         }
 
+        const gltfWeakResources = [];
         const meshes = [];
         let unreadyCount = 0;
         let ready = true;
 
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader);
+            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader, gltfWeakResources);
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
@@ -895,6 +903,9 @@ export default class MeshPainter {
             meshes.push(mesh);
             delete gltfMesh.attributes;
         });
+
+        // trim indices/material images to save memories
+        trimGLTFWeakResources(gltfWeakResources);
 
         if (ready) {
             this._modelMeshes[id] = meshes;
@@ -1165,7 +1176,7 @@ export default class MeshPainter {
         }
     }
 
-    _processGLTF(gltfMesh, meshId, primId, gltf, node, isI3DM, shader) {
+    _processGLTF(gltfMesh, meshId, primId, gltf, node, isI3DM, shader, gltfWeakResources) {
         let isS3M = false;
         if (gltf.asset && gltf.asset.generator === 'S3M') {
             isS3M = true;
@@ -1178,6 +1189,7 @@ export default class MeshPainter {
             this._cachedGLTF[url].refCount++;
             return this._cachedGLTF[url];
         }
+        gltfWeakResources.push(gltfMesh);
         let material, geometry;
         //TODO 有些B3DM或I3DM里，多个 gltf.mesh 会共享同一个POSITION，MESH，TEXCOORD。
         // 效率更高的做法是为他们单独创建buffer后赋给Geometry
@@ -1205,7 +1217,7 @@ export default class MeshPainter {
                 // 老的ambientLight设置的兼容性代码
                 environmentExposure = ambientLight[0] / ambientValue;
             }
-            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1);
+            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1, gltfWeakResources);
             material.doubleSided = gltf.materials && gltf.materials[gltfMesh.material] && gltf.materials[gltfMesh.material].doubleSided;
         }
         Object.defineProperty(material.uniforms, 'alphaTest', {
@@ -1287,6 +1299,7 @@ export default class MeshPainter {
             indices,
             0,
             {
+                static: true,
                 positionAttribute: attributeSemantics['POSITION'],
                 normalAttribute: attributeSemantics['NORMAL'],
                 uv0Attribute: attributeSemantics['TEXCOORD_0'],
@@ -1597,7 +1610,7 @@ export default class MeshPainter {
         return uniforms;
     }
 
-    _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure) {
+    _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure, gltfWeakResources) {
         const material = gltf.materials && gltf.materials[materialIndex];
         if (!material || !material.baseColorTexture && !material.pbrMetallicRoughness) {
             return null;
@@ -1608,7 +1621,7 @@ export default class MeshPainter {
             const texInfo = gltf.textures[material.baseColorTexture.index];
             let texture;
             if (texInfo && !texInfo.image.color) {
-                texture = this._getTexture(texInfo);
+                texture = this._getTexture(texInfo, gltfWeakResources);
             }
             matInfo.baseColorFactor = texInfo && texInfo.image.color || material.baseColorFactor || [1, 1, 1, 1];
             if (texture) {
@@ -1618,19 +1631,19 @@ export default class MeshPainter {
             // GLTF 2.0
 
             if (material.normalTexture) {
-                const texture = this._getTexture(gltf.textures[material.normalTexture.index]);
+                const texture = this._getTexture(gltf.textures[material.normalTexture.index], gltfWeakResources);
                 const normalMapFactor = material.normalTexture.scale || 1;
                 matInfo.normalTexture = texture;
                 matInfo.normalMapFactor = normalMapFactor;
             }
             if (material.occlusionTexture) {
-                const texture = this._getTexture(gltf.textures[material.occlusionTexture.index]);
+                const texture = this._getTexture(gltf.textures[material.occlusionTexture.index], gltfWeakResources);
                 const occlusionFactor = material.occlusionTexture.strength || 1;
                 matInfo.occlusionTexture = texture;
                 matInfo.occlusionFactor = occlusionFactor;
             }
             if (material.emissiveTexture) {
-                const texture = this._getTexture(gltf.textures[material.emissiveTexture.index]);
+                const texture = this._getTexture(gltf.textures[material.emissiveTexture.index], gltfWeakResources);
                 matInfo.emissiveTexture = texture;
             }
             if (material.emissiveFactor) {
@@ -1648,7 +1661,7 @@ export default class MeshPainter {
                     if (texInfo.image && texInfo.image.color) {
                         matInfo.baseColorFactor = matInfo.baseColorFactor ? vec4.multiply(matInfo.baseColorFactor, matInfo.baseColorFactor, texInfo.image.color) : texInfo.image.color;
                     } else {
-                        matInfo.baseColorTexture = this._getTexture(texInfo);
+                        matInfo.baseColorTexture = this._getTexture(texInfo, gltfWeakResources);
                         // 调用getREGLTexture以回收bitmap
                         matInfo.baseColorTexture.getREGLTexture(this._regl);
                     }
@@ -1660,7 +1673,7 @@ export default class MeshPainter {
                     matInfo.roughnessFactor = pbrMetallicRoughness.roughnessFactor;
                 }
                 if (material.metallicRoughnessTexture) {
-                    const texture = this._getTexture(gltf.textures[material.metallicRoughnessTexture.index]);
+                    const texture = this._getTexture(gltf.textures[material.metallicRoughnessTexture.index], gltfWeakResources);
                     matInfo.metallicRoughnessTexture = texture;
                 }
             }
@@ -1696,7 +1709,7 @@ export default class MeshPainter {
         return meshMaterial;
     }
 
-    _getTexture(texInfo) {
+    _getTexture(texInfo, gltfWeakResources) {
         // texInfo.image.color 表示图片被精简成了颜色
         const config = {
             type: texInfo.type ? getMaterialType(texInfo.type) : 'uint8',
@@ -1705,6 +1718,7 @@ export default class MeshPainter {
         };
         //gltf 2.0
         const image = texInfo.image;
+        gltfWeakResources.push(image);
         if (image.array) {
             config.data = image.array;
         } else if (image.mipmap) {
@@ -1991,4 +2005,20 @@ function generateFeatureIndiceIndex(featureIds, indices) {
         index.push(idx);
     }
     return indiceIndex;
+}
+
+function trimGLTFWeakResources(gltfWeakResources) {
+    for (let i = 0; i < gltfWeakResources.length; i++) {
+        if (gltfWeakResources[i]) {
+            if (gltfWeakResources[i].array) {
+                gltfWeakResources[i].array = null;
+            }
+            if (gltfWeakResources[i].mipmap) {
+                gltfWeakResources[i].mipmap = null;
+            }
+            if (gltfWeakResources[i].indices) {
+                gltfWeakResources[i].indices = null;
+            }
+        }
+    }
 }

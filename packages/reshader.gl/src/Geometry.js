@@ -323,7 +323,7 @@ export default class Geometry {
                 }
 
             }
-            if (key !== positionName) {//保存POSITION原始数据，用来做额外计算
+            if (this.desc.static || key !== positionName) {//保存POSITION原始数据，用来做额外计算
                 delete data[key].array;
             }
         }
@@ -341,7 +341,7 @@ export default class Geometry {
             if (type) {
                 info.type = type;
             }
-            if (!this.elements.destroy) {
+            if (!this.desc.static && !this.elements.destroy) {
                 this.indices = new Uint16Array(this.elements.length);
                 for (let i = 0; i < this.elements.length; i++) {
                     this.indices[i] = this.elements[i];
