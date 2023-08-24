@@ -17,7 +17,7 @@ const options = {
     'maxGPUMemory' : 512,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
-    'loadingLimit' : 0,
+    'loadingLimit' : 5,
     // 'ajaxInMainThread' : false,
     'renderer' : 'gl',
     'forceRenderOnZooming' : true,
