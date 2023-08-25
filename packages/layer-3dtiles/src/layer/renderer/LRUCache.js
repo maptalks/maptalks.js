@@ -11,7 +11,8 @@ class LRUCache {
      * @param {number} max number of permitted values
      * @param {Function} onRemove callback called with items when they expire
      */
-    constructor(max, onRemove) {
+    constructor(layerId, max, onRemove) {
+        this._layerId = layerId;
         this.max = max;
         this.currentSize = 0;
         this.onRemove = onRemove;
@@ -73,14 +74,17 @@ class LRUCache {
 
     shrink() {
         if (this.currentSize > this.max) {
+            let warned = false;
             const iterator = this.data.keys();
             let item = iterator.next();
             while (this.currentSize > this.max && item.value !== undefined) {
-                if (!this.data.get(item.value).current) {
-                    const removedData = this.getAndRemove(item.value);
-                    if (removedData) {
-                        this.onRemove(removedData);
-                    }
+                if (!warned && this.data.get(item.value).current) {
+                    warned = true;
+                    console.warn(`layer(${this._layerId})'s maxGPUMemory is not enough, one or more current tiles will be discarded.`);
+                }
+                const removedData = this.getAndRemove(item.value);
+                if (removedData) {
+                    this.onRemove(removedData);
                 }
                 item = iterator.next();
             }

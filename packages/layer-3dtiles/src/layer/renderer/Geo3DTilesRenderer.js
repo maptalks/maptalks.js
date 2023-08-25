@@ -20,7 +20,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         super(layer);
         this.prepareWorker();
         this.tilesLoading = {};
-        this.tileCache = new LRUCache(layer.options['maxGPUMemory'] * 1024 * 1024, this.deleteTile.bind(this));
+        this.tileCache = new LRUCache(layer.getId(), layer.options['maxGPUMemory'] * 1024 * 1024, this.deleteTile.bind(this));
         this._requests = {};
         this._modelQueue = [];
         this._fnFetchNodepages = this._fetchI3DNodepages.bind(this);

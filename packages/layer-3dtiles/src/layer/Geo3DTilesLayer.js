@@ -14,7 +14,7 @@ import TileBoundingRegion from './renderer/TileBoundingRegion';
 
 const options = {
     // 'maximumScreenSpaceError' : 8,
-    'maxGPUMemory' : 512,
+    'maxGPUMemory' : maptalks.Browser.mobile ? 32 : 1024,
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
     'loadingLimit' : 5,
