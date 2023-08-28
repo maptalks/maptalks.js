@@ -3,6 +3,7 @@ export { default as GLTFMarker } from './GLTFMarker';
 export { default as GLTFGeometry } from './GLTFGeometry';
 export { default as GLTFMercatorGeometry } from './GLTFMercatorGeometry';
 export { default as MultiGLTFMarker } from './MultiGLTFMarker';
+export { default as GLTFLineString } from './GLTFLineString';
 export { default as EffectMarker } from './EffectMarker';
 export { default as EffectLayer } from  './EffectLayer';
 export { default as GlowMarker } from './GlowMarker';

@@ -29,7 +29,7 @@ const DEFAULT_COLOR = [1.0, 1.0, 1.0, 1.0], EMPTY_VEC = [], EMPTY_QUAT = [], DEF
 export default class MultiGLTFMarker extends GLTFMarker {
     constructor(data, options) {
         super(null, options);
-        this._data = data;
+        this._data = data || [];
         this._attributeMatrixs = [];
         this._centerPosition = [0, 0, 0];
         this._centerMatrix = mat4.identity([]);
@@ -64,6 +64,9 @@ export default class MultiGLTFMarker extends GLTFMarker {
 
     //增
     addData(item) {
+        if (!this._data) {
+            this._data = [];
+        }
         this._data.push(item);
         const layer = this.getLayer();
         if (layer) {
@@ -104,6 +107,14 @@ export default class MultiGLTFMarker extends GLTFMarker {
             this.updateData(i, name, value[i]);
         }
         return this;
+    }
+
+    removeAllData() {
+        if (!this._data) {
+            return;
+        }
+        this._data = [];
+        this._attributeMatrixs = [];
     }
 
     _updateAttributeMatrix() {
