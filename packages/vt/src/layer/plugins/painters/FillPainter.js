@@ -385,6 +385,17 @@ class FillPainter extends BasicPainter {
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
+
+    getBlendFunc() {
+        return {
+            src: () => {
+                return this.sceneConfig.blendSrc || 'one';
+            },
+            dst: () => {
+                return this.sceneConfig.blendDst || 'one minus src alpha';
+            }
+        };
+    }
 }
 
 export default FillPainter;
