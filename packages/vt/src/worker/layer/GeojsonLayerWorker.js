@@ -68,7 +68,11 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
                     cb(null, { extent: null, idMap: {} });
                     return;
                 }
-                const data = resp;
+                let data = resp;
+                if (this.options.convertFn) {
+                    const fn = new Function('data', this.options.convertFn + '\nreturn convert(data)');
+                    data = fn(data);
+                }
                 const features = Array.isArray(data) ? data : data.features;
                 this._genOMBB(features);
                 // debugger

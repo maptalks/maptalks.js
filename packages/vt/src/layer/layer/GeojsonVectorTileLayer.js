@@ -41,6 +41,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         options.simplifyTolerance = this.options.simplifyTolerance;
         options.projection = this.getSpatialReference().getProjection().code;
         options.generateOMBB = this.options.generateOMBB;
+        options.convertFn = this.options.convertFn + '';
         return options;
     }
 
