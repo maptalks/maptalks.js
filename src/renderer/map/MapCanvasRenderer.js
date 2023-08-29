@@ -471,7 +471,7 @@ class MapCanvasRenderer extends MapRenderer {
         for (let i = layers.length - 1; i >= 0; i--) {
             const layer = layers[i];
             // 此处如果未开启，无需执行后面判断
-            if (!layer.options['hitDetect'] || (layer.isEmpty && layer.isEmpty())) {
+            if (!layer.options['hitDetect'] || (layer.isEmpty && layer.isEmpty()) || !layer.options['geometryEvents']) {
                 continue;
             }
             const renderer = layer._getRenderer();
