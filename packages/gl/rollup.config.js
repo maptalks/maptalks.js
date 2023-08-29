@@ -116,7 +116,7 @@ module.exports = [
             // footer: ``
         },
         watch: {
-            include: ['src/layer/terrain/worker/**/*.js']
+            include: ['src/layer/terrain/worker/**/*.js', 'src/layer/terrain/util/**/*.js']
         }
     },
     {

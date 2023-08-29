@@ -369,6 +369,9 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     testIfNeedRedraw() {
+        if (this.layer.options['forceRedrawPerFrame']) {
+            return true;
+        }
         if (this['_toRedraw']) {
             this['_toRedraw'] = false;
             return true;

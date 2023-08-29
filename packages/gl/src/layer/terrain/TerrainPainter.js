@@ -18,7 +18,6 @@ class TerrainPainter {
         this.regl = layer.getRenderer().regl;
         this.renderer = new reshader.Renderer(this.regl);
         this._leafScene = new reshader.Scene();
-        this._parentScene = new reshader.Scene();
         const pixels = new Uint8Array(16);
         pixels.fill(255);
         this._emptyTileTexture = this.regl.texture({
@@ -42,21 +41,24 @@ class TerrainPainter {
             this.initShader();
         }
         this._leafScene.clear();
-        this._parentScene.clear();
     }
 
-    createTerrainMesh(tileInfo, terrainGeo, terrainImage) {
+    createTerrainMesh(tileInfo, terrainGeo, terrainImage, mesh) {
         const { positions, texcoords, triangles } = terrainGeo;
-        const geo = new reshader.Geometry({
-            aPosition: positions,
-            aTexCoord: texcoords
-        },
-        triangles,
-        0);
-
-        geo.generateBuffers(this.regl);
-
-        const mesh = new reshader.Mesh(geo);
+        if (mesh) {
+            mesh.geometry.updateData('aPosition', positions);
+            mesh.geometry.updateData('aTexCoord', texcoords);
+            mesh.geometry.setElements(triangles);
+        } else {
+            const geo = new reshader.Geometry({
+                aPosition: positions,
+                aTexCoord: texcoords
+            },
+            triangles,
+            0);
+            geo.generateBuffers(this.regl);
+            mesh = new reshader.Mesh(geo);
+        }
         const emptyTexture = this.getEmptyTexture();
         mesh.setUniform('skin', emptyTexture);
         mesh.setUniform('heightTexture', terrainImage);
@@ -80,15 +82,13 @@ class TerrainPainter {
         return positionMatrix;
     }
 
-    _getLocalTransform(tileInfo) {
+    _getLocalTransform(tileInfo, terrainWidth) {
         const map = this.getMap();
         const layerOptions = this.layer.options;
         const tileSize = layerOptions['tileSize'];
-        const terrainWidth = isNil(layerOptions.terrainWidth) ? tileSize + 1 : layerOptions.terrainWidth;
-
         const scale = tileInfo.res / map.getGLRes();
 
-        const terrainScale = tileSize / (terrainWidth - 2);
+        const terrainScale = tileSize / (terrainWidth - 1);
 
         const { extent2d, offset } = tileInfo;
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
@@ -101,31 +101,26 @@ class TerrainPainter {
     }
 
     prepareMesh(mesh, tileInfo, terrainGeo) {
-        mesh.localTransform = this._getLocalTransform(tileInfo);
+        const { triangles, numTrianglesWithoutSkirts, terrainWidth } = terrainGeo;
+        mesh.localTransform = this._getLocalTransform(tileInfo, terrainWidth);
         mesh.positionMatrix = this._getPositionMatrix();
-        const { triangles, numTrianglesWithoutSkirts } = terrainGeo;
         mesh.properties.skirtOffset = numTrianglesWithoutSkirts * 3;
         mesh.properties.skirtCount = triangles.length - numTrianglesWithoutSkirts * 3;
         mesh.properties.z = tileInfo.z;
         mesh.properties.minHeight = terrainGeo.minHeight;
         mesh.properties.maxHeight = terrainGeo.maxHeight;
+        mesh.properties.terrainWidth = terrainWidth;
         mesh.castShadow = false;
     }
 
-    addTerrainImage(tileInfo, tileImage, opacity) {
+    addTerrainImage(tileInfo, tileImage) {
         const mesh = tileImage.terrainMesh;
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
-            mesh.setUniform('polygonOpacity', opacity);
-            const maxZoom = this.layer.getSpatialReference().getMaxZoom();
+            mesh.setUniform('polygonOpacity', 1.0);
             const isLeaf = this.layer.getRenderer().drawingCurrentTiles === true;
-            mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
             mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
-            if (isLeaf) {
-                this._leafScene.addMesh(mesh);
-            } else {
-                this._parentScene.addMesh(mesh);
-            }
+            this._leafScene.addMesh(mesh);
         }
     }
 
@@ -133,90 +128,14 @@ class TerrainPainter {
         this.updateIBLDefines(this.shader);
         let renderCount = 0;
 
-        const enableFading = true;//this.layer.options['fadeAnimation'] && this.layer.options['fadeDuration'] > 0;
-
         const uniforms = this.getUniformValues();
 
         const fbo = this._getRenderFBO(context);
-        uniforms.cullFace = 'front';
-        uniforms.enableStencil = false;
-        uniforms.colorMask = false;
-        uniforms.depthMask = true;
-        this.shader.filter = context && context.sceneFilter;
-        this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
-
-        //.绘制 parent 背面的 skirt，并开启颜色，避免下凹的地形（露出skirt时）会出现空白
-        uniforms.colorMask = true;
-        this._parentScene.meshes.forEach(m => {
-            const { skirtOffset, skirtCount } = m.properties;
-            // m.setUniform('polygonOpacity', 1);
-            m.geometry.setDrawOffset(skirtOffset);
-            const { maxHeight } = m.properties;
-            if (m.getUniform('skin') === this._emptyTileTexture || maxHeight > 0) {
-                m.geometry.setDrawCount(0);
-            } else {
-                m.geometry.setDrawCount(skirtCount);
-            }
-        });
-        this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
-
-        uniforms.enableStencil = true;
-        uniforms.colorMask = true;
         uniforms.cullFace = 'back';
-
-        this._parentScene.meshes.sort(terrainMeshCompare);
-
-        if (enableFading) {
-            // draw parent terrain surface，禁用深度值写入，作为叶子瓦片fading的背景
-            uniforms.depthMask = false;
-            this._parentScene.meshes.forEach(m => {
-                const skirtOffset = m.properties.skirtOffset;
-                m.geometry.setDrawOffset(0);
-                m.geometry.setDrawCount(skirtOffset);
-            });
-            renderCount += this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
-            uniforms.depthMask = true;
-        }
-
-        // draw leafs terrain surface
-        this._leafScene.meshes.forEach(m => {
-            const skirtOffset = m.properties.skirtOffset;
-            m.geometry.setDrawOffset(0);
-            m.geometry.setDrawCount(skirtOffset);
-        });
-        renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
-
-        // write parent terrain surface depth，因为上面已经绘制过，这里无需再次绘制
-        if (enableFading) {
-            uniforms.colorMask = false;
-        }
-        this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
-
-        // draw parent terrain skirts
+        uniforms.enableStencil = false;
         uniforms.colorMask = true;
-        // this._parentScene.meshes.forEach(m => {
-        //     const { skirtOffset, skirtCount } = m.properties;
-        //     m.geometry.setDrawOffset(skirtOffset);
-        //     if (m.getUniform('skin') === this._emptyTileTexture) {
-        //         m.geometry.setDrawCount(0);
-        //     } else {
-        //         m.geometry.setDrawCount(skirtCount);
-        //     }
-        // });
-        // renderCount += this.renderer.render(this.shader, uniforms, this._parentScene, fbo);
+        uniforms.depthMask = true;
 
-        // draw leafs skirts
-
-        this._leafScene.meshes.forEach(m => {
-            const { skirtOffset, skirtCount } = m.properties;
-            m.setUniform('polygonOpacity', 1);
-            m.geometry.setDrawOffset(skirtOffset);
-            if (m.getUniform('skin') === this._emptyTileTexture) {
-                m.geometry.setDrawCount(0);
-            } else {
-                m.geometry.setDrawCount(skirtCount);
-            }
-        });
         renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
         return renderCount;
     }

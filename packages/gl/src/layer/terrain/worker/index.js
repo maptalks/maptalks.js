@@ -478,7 +478,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 // aborted by user
                 cb({ error: res || { canceled: true }});
             } else {
-                const terrainData = createEmtpyTerrainImage(terrainWidth);
+                const terrainData = createEmtpyTerrainHeights(terrainWidth);
                 // console.warn(e);
                 triangulateTerrain(error, terrainData, terrainWidth, false, null, null, true, false, (data, transferables) => {
                     data.originalError = res;
@@ -505,7 +505,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
 
                 // terrain = generateMapboxTerrain(buffer);
                 // terrain.then(imgBitmap => {
-                //     const terrainData = createEmtpyTerrainImage(terrainWidth);
+                //     const terrainData = createEmtpyTerrainHeights(terrainWidth);
                 //     // console.warn(e);
                 //     triangulateTerrain(error, terrainData, terrainWidth, false, null, imgBitmap,  true, false, (data, transferables) => {
                 //         cb(data, transferables);
@@ -515,7 +515,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
         }
     }).catch(e => {
         delete terrainRequests[url];
-        const terrainData = createEmtpyTerrainImage(terrainWidth);
+        const terrainData = createEmtpyTerrainHeights(terrainWidth);
         // console.warn(e);
         triangulateTerrain(error, terrainData, terrainWidth, false, null, null,  true, false, (data, transferables) => {
             data.originalError = e;
@@ -525,7 +525,7 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
     });
 }
 
-function createEmtpyTerrainImage(size) {
+function createEmtpyTerrainHeights(size) {
     const length = size * size;
     return {
         data: new Uint8Array(length),

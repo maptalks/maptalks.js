@@ -76,7 +76,8 @@ export function createMartiniData(error, heights, width, hasSkirts) {
         numTrianglesWithoutSkirts,
         numVerticesWithoutSkirts,
         minHeight,
-        maxHeight
+        maxHeight,
+        terrainWidth: width
     };
     return terrain;
 }
