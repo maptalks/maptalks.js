@@ -541,6 +541,9 @@ const Canvas = {
             TEMP_CANVAS.width = ctx.canvas.width;
             TEMP_CANVAS.height = ctx.canvas.height;
             ctx = TEMP_CANVAS.getContext('2d');
+            if (ctx.setLineDash && isArrayHasData(lineDashArray)) {
+                ctx.setLineDash(lineDashArray);
+            }
             copyProperties(ctx, savedCtx);
         }
         // function fillPolygon(points, i, op) {
