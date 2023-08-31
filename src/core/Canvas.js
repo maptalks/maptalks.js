@@ -541,6 +541,9 @@ const Canvas = {
             TEMP_CANVAS.width = ctx.canvas.width;
             TEMP_CANVAS.height = ctx.canvas.height;
             ctx = TEMP_CANVAS.getContext('2d');
+            //reset lineDashArray
+            setLineDash(ctx, []);
+            setLineDash(ctx, lineDashArray);
             copyProperties(ctx, savedCtx);
         }
         // function fillPolygon(points, i, op) {
@@ -1035,4 +1038,12 @@ function copyProperties(ctx, savedCtx) {
     ctx.shadowOffsetX = savedCtx.shadowOffsetX;
     ctx.shadowOffsetY = savedCtx.shadowOffsetY;
     ctx.strokeStyle = savedCtx.strokeStyle;
+}
+
+function setLineDash(ctx, lineDashArray) {
+    if (!lineDashArray || !ctx.setLineDash || !Array.isArray(lineDashArray)) {
+        return;
+    }
+    ctx.setLineDash(lineDashArray);
+
 }
