@@ -169,12 +169,43 @@ export default class StrokeAndFillSymbolizer extends CanvasSymbolizer {
         if (!Array.isArray(points) || !points.length) {
             return;
         }
-        const len = points.length;
-        const grad = ctx.createLinearGradient(points[0].x, points[0].y, points[len - 1].x, points[len - 1].y);
+        const [p1, p2] = getGradientPoints(points);
+        if (!p1 || (!p2)) {
+            console.error('unable create canvas LinearGradient,error data:', points);
+            return;
+        }
+        const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
         lineColor['colorStops'].forEach(function (stop) {
             grad.addColorStop.apply(grad, stop);
         });
         ctx.strokeStyle = grad;
     }
 
+}
+
+function getGradientPoints(points) {
+    let pts;
+    let isLine = true;
+    //polygon rings
+    if (Array.isArray(points[0])) {
+        pts = points[0];
+        isLine = false;
+    } else {
+        pts = points;
+    }
+    const len = pts.length;
+    if (isLine) {
+        return [pts[0], pts[len - 1]];
+    }
+    const p1 = pts[0];
+    let distance = 0, p2;
+    for (let i = 1; i < len; i++) {
+        const p = pts[i];
+        const dis = p1.distanceTo(p);
+        if (dis > distance) {
+            distance = dis;
+            p2 = p;
+        }
+    }
+    return [p1, p2];
 }
