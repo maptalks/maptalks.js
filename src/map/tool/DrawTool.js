@@ -1,5 +1,5 @@
 import { INTERNAL_LAYER_PREFIX } from '../../core/Constants';
-import { extend, isFunction, isNil } from '../../core/util';
+import { extend, isFunction, isNil, isNumber } from '../../core/util';
 import { extendSymbol } from '../../core/util/style';
 import { getExternalResources } from '../../core/util/resource';
 import { stopPropagation } from '../../core/util/dom';
@@ -14,6 +14,7 @@ import MapTool from './MapTool';
  * @property {Boolean} [options.once=null]  - whether disable immediately once drawn a geometry.
  * @property {Boolean} [options.autoPanAtEdge=false]  - Whether to make edge judgement or not.
  * @property {Boolean} [options.blockGeometryEvents=false]  - Whether Disable geometryEvents when drawing.
+ * @property {Number} [options.zIndex=Number.MAX_VALUE]  - drawlayer zIndex.The default drawn layer will be at the top
  * @memberOf DrawTool
  * @instance
  */
@@ -30,7 +31,8 @@ const options = {
     'once': false,
     'autoPanAtEdge': false,
     'ignoreMouseleave': true,
-    'blockGeometryEvents': false
+    'blockGeometryEvents': false,
+    'zIndex': Number.MAX_VALUE
 };
 
 const registeredMode = {};
@@ -683,10 +685,12 @@ class DrawTool extends MapTool {
         if (!drawToolLayer) {
             drawToolLayer = new VectorLayer(drawLayerId, {
                 'enableSimplify': false,
-                'enableAltitude': this.options['enableAltitude']
+                'enableAltitude': this.options['enableAltitude'],
+                'zIndex': this.options.zIndex
             });
             this._map.addLayer(drawToolLayer);
         }
+        this._pushLayers(drawToolLayer);
         return drawToolLayer;
     }
 
@@ -700,6 +704,60 @@ class DrawTool extends MapTool {
             param.tempGeometry = this._geometry;
         }
         MapTool.prototype._fireEvent.call(this, eventName, param);
+    }
+
+    _pushLayers(layers) {
+        if (!layers) {
+            return this;
+        }
+        if (!Array.isArray(layers)) {
+            layers = [layers];
+        }
+        this._layers = this._layers || [];
+        layers.forEach(layer => {
+            if (this._layers.indexOf(layer) === -1) {
+                this._layers.push(layer);
+            }
+        });
+        return this;
+    }
+
+    _outLayers(layers) {
+        if (!layers) {
+            return this;
+        }
+        if (!Array.isArray(layers)) {
+            layers = [layers];
+        }
+        this._layers = this._layers || [];
+        layers.forEach(layer => {
+            for (let i = 0, len = this._layers.length; i < len; i++) {
+                if (layer === this._layers[i]) {
+                    this._layers.splice(i, 1);
+                    break;
+                }
+            }
+        });
+        return this;
+    }
+
+    /**
+    * set draw inner layers zIndex
+    * @param  {Number} zIndex -  draw layer zIndex
+    * @return {this}
+    */
+    setLayerZIndex(zIndex) {
+        if (!isNumber(zIndex)) {
+            return this;
+        }
+        this.options.zIndex = zIndex;
+        this._layers = this._layers || [];
+        this._layers.forEach(layer => {
+            if (layer && layer.setZIndex) {
+                layer.setZIndex(zIndex);
+            }
+        });
+        return this;
     }
 
 }

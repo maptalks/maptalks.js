@@ -125,6 +125,7 @@ class DistanceTool extends DrawTool {
         }
         delete this._lastMeasure;
         delete this._lastVertex;
+        this._outLayers(this._measureLayers);
         this._measureLayers = [];
         return this;
     }
@@ -230,15 +231,21 @@ class DistanceTool extends DrawTool {
         const uid = UID();
         const layerId = 'distancetool_' + uid;
         const markerLayerId = 'distancetool_markers_' + uid;
+        const zIndex = this.options.zIndex;
         if (!map.getLayer(layerId)) {
-            this._measureLineLayer = new VectorLayer(layerId).addTo(map);
-            this._measureMarkerLayer = new VectorLayer(markerLayerId).addTo(map);
+            this._measureLineLayer = new VectorLayer(layerId, {
+                zIndex
+            }).addTo(map);
+            this._measureMarkerLayer = new VectorLayer(markerLayerId, {
+                zIndex
+            }).addTo(map);
         } else {
             this._measureLineLayer = map.getLayer(layerId);
             this._measureMarkerLayer = map.getLayer(markerLayerId);
         }
         this._measureLayers.push(this._measureLineLayer);
         this._measureLayers.push(this._measureMarkerLayer);
+        this._pushLayers([this._measureLineLayer, this._measureMarkerLayer]);
         //start marker
         const marker = new Marker(param['coordinate'], {
             'symbol': this.options['vertexSymbol']
