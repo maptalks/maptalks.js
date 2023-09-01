@@ -436,6 +436,19 @@ class DrawTool extends MapTool {
         const prjCoord = this.getMap()._pointToPrj(event['point2d']);
         const symbol = this.getSymbol();
         if (!this._geometry) {
+            /**
+            * drawprepare event.Note that it occurs before drawstart
+            *
+            * @event DrawTool#drawprepare
+            * @type {Object}
+            * @property {String} type - drawprepare
+            * @property {DrawTool} target - draw tool
+            * @property {Coordinate} coordinate - coordinate of the event
+            * @property {Point} containerPoint  - container point of the event
+            * @property {Point} viewPoint       - view point of the event
+            * @property {Event} domEvent                 - dom event
+            */
+            this._fireEvent('drawprepare', event);
             this._clickCoords = [prjCoord];
             event.drawTool = this;
             this._geometry = registerMode['create'](this.getMap().getProjection(), this._clickCoords, event);
