@@ -499,6 +499,7 @@ class TileLayer extends Layer {
                         extent = new PointExtent(swx, swy, swx + width, swy + height);
                     }
                     childNode = {
+                        parent: node.id,
                         x: childX,
                         y: childY,
                         idx: childIdx,

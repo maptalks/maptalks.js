@@ -132,9 +132,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 this.loadTileQueue(currentTiles.tileQueue);
             }
         }
-        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount } = currentTiles;
+        const { tiles, childTiles, parentTiles, placeholders, loading, loadingCount, missedTiles } = currentTiles;
 
-        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context);
+        this._drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles);
         if (!loadingCount) {
             if (!loading) {
                 //redraw to remove parent tiles if any left in last paint
@@ -158,6 +158,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     _getTilesInCurrentFrame() {
         const map = this.getMap();
         const layer = this.layer;
+        const terrainTileMode = layer._isPyramidMode() && layer.options['terrainTileMode'];
         let tileGrids = layer.getTiles();
         this._frameTileGrids = tileGrids;
         tileGrids = tileGrids.tileGrids;
@@ -185,6 +186,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 
+        let dirtyParentTiles = null;
+        let missingTiles = null;
+        if (terrainTileMode) {
+            dirtyParentTiles = new Set();
+            missingTiles = [];
+        }
+
         for (let i = 0; i < l; i++) {
             const tileGrid = tileGrids[i];
             const gridTiles = tileGrid['tiles'];
@@ -203,11 +211,12 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                 const isParentTile = j < parentCount;
                 //load tile in cache at first if it has.
                 let tileLoading = false;
+                const tilesCount = tiles.length;
                 if (this._isLoadingTile(tileId)) {
                     tileLoading = loading = true;
-                    this.tilesLoading[tileId].current = true;
+                    this.markCurrent(this.tilesLoading[tileId], true);
                 } else {
-                    const cached = this._getCachedTile(tileId, isParentTile);
+                    const cached = this.getCachedTile(tile, isParentTile);
                     if (cached) {
                         if (!isParentTile) {
                             if (cached.image && this.isTileFadingIn(cached.image)) {
@@ -229,6 +238,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
                         }
                     }
                 }
+
+                if (terrainTileMode && !isParentTile) {
+                    if (tiles.length === tilesCount) {
+                        missingTiles.push(tile);
+                    } else {
+                        checkedTiles[tile.id] = 1;
+                        if (tile.parent) {
+                            dirtyParentTiles.add(tile.parent);
+                        }
+                    }
+                }
+
+                if (terrainTileMode) continue;
                 if (isParentTile) continue;
                 if (!tileLoading) continue;
                 if (checkedTiles[tileId]) continue;
@@ -271,6 +293,57 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
+        // 遍历 missingTiles ，
+        const missedTiles = [];
+        if (terrainTileMode) {
+            for (let i = 0; i < missingTiles.length; i++) {
+                const tile = missingTiles[i];
+                if (!tile.parent || checkedTiles[tile.id]) {
+                    continue;
+                }
+
+                if (dirtyParentTiles.has(tile.parent) || tile.z < this._tileZoom) {
+                    // 如果sibling tile已经被加载过，或者是远处的上级瓦片，则直接加入missedTiles
+                    checkedTiles[tile.id] = 1;
+                    missedTiles.push(tile);
+                } else {
+                    // 遍历当前级别瓦片，如果四个sibling tile都没有加载，则把parentTile加入到missedTiles，减少要处理的瓦片数量
+                    let parentTile = parentKeys[tile.parent];
+                    if (parentTile || parentTile === null) {
+                        // parentTile已被处理过
+                        // 1. parentTile存在，则parentTile已经被加入到missedTile，作为parentTile的儿子瓦片的tile可以忽略
+                        // 2. parentTile不存在，则把当前瓦片加入到missedTile
+                        if (parentTile === null) {
+                            checkedTiles[tile.id] = 1;
+                            missedTiles.push(tile);
+                        }
+                        continue;
+                    }
+                    // 只查询上一级的parentTile
+                    parentTile = this._findParentTile(tile, 1) || undefined;
+                    if (parentTile && parentTile.image) {
+                        // 父级瓦片存在，则把parentTile放入到tiles列表直接绘制
+                        tiles.push(parentTile);
+                        parentKeys[tile.parent] = parentTile;
+                    } else {
+                        const parentTileInfo = layer.tileInfoCache.get(tile.parent);
+                        // 根据parentTileInfo是否存在，选择把parentTileInfo或者tile加入到missedTiles
+                        if (parentTileInfo) {
+                            if (!checkedTiles[parentTileInfo.id]) {
+                                checkedTiles[parentTileInfo.id] = 1;
+                                missedTiles.push(parentTileInfo);
+                            }
+                            parentKeys[tile.parent] = parentTileInfo;
+                        } else {
+                            checkedTiles[tile.id] = 1;
+                            missedTiles.push(tile);
+                            parentKeys[tile.parent] = null;
+                        }
+                    }
+                }
+            }
+        }
+
         this.tileCache.shrink();
 
         // if (parentTiles.length) {
@@ -278,7 +351,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         //     this._childTiles.length = 0;
         // }
         return {
-            childTiles, parentTiles, tiles, placeholders, loading, loadingCount, tileQueue
+            childTiles, missedTiles, parentTiles, tiles, placeholders, loading, loadingCount, tileQueue
         };
     }
 
@@ -739,6 +812,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return xyz[length - 3] + '/' + xyz[length - 2] + '/' + xyz[length - 1];
     }
 
+    findChildTiles(info) {
+        return this._findChildTiles(info);
+    }
+
     _findChildTiles(info) {
         const layer = this._getLayerOfTile(info.layer);
         if (!layer || !layer.options['background'] || info.z > this.layer.getMaxZoom()) {
@@ -824,21 +901,31 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         }
     }
 
-    _findParentTile(info) {
+    findParentTile(info, targetDiff) {
+        return this._findParentTile(info, targetDiff);
+    }
+
+    _findParentTile(info, targetDiff) {
         const map = this.getMap(),
             layer = this._getLayerOfTile(info.layer);
-        if (!layer || !layer.options['background']) {
+        if (!layer || !layer.options['background'] && !layer.options['terrainTileMode']) {
             return null;
         }
         const minZoom = layer.getMinZoom();
-        const zoomDiff = info.z - minZoom;
+        const zoomDiff = targetDiff || info.z - minZoom;
         if (layer._isPyramidMode()) {
-            for (let z = info.z - 1; z >= minZoom; z--) {
+            const endZoom = info.z - zoomDiff;
+            for (let z = info.z - 1; z >= endZoom; z--) {
                 const diff = info.z - z;
                 const scale = Math.pow(2, diff);
                 const x = Math.floor(info.x / scale);
                 const y = Math.floor(info.y / scale);
-                const id = layer._getTileId(x, y, z, info.layer);
+                let id;
+                if (z === info.z - 1) {
+                    id = info.parent;
+                } else {
+                    id = layer._getTileId(x, y, z, info.layer);
+                }
                 const tile = this.tileCache.getAndRemove(id);
                 if (tile) {
                     if (this.isValidCachedTile(tile)) {
@@ -882,7 +969,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         return this.layer.getChildLayer ? this.layer.getChildLayer(layerId) : this.layer;
     }
 
-    _getCachedTile(tileId, isParent) {
+    getCachedTile(tile, isParent) {
+        const tileId = tile.id;
         const tilesInView = this.tilesInView;
         let cached = this.tileCache.getAndRemove(tileId);
         if (cached) {
@@ -891,7 +979,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
             const tilesLoading = this.tilesLoading;
             if (tilesLoading && tilesLoading[tileId]) {
-                tilesLoading[tileId].current = false;
+                this.markCurrent(tilesLoading[tileId], false);
                 const { image, info } = tilesLoading[tileId];
                 this.abortTileLoading(image, info);
                 delete tilesLoading[tileId];
@@ -940,18 +1028,21 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         super.onRemove();
     }
 
+    markCurrent(tile, isCurrent) {
+        tile.current = isCurrent;
+    }
 
     _markTiles() {
         let a = 0, b = 0;
         if (this.tilesLoading) {
             for (const p in this.tilesLoading) {
-                this.tilesLoading[p].current = false;
+                this.markCurrent(this.tilesLoading[p], false);
                 a++;
             }
         }
         if (this.tilesInView) {
             for (const p in this.tilesInView) {
-                this.tilesInView[p].current = false;
+                this.markCurrent(this.tilesInView[p], false);
                 b++;
             }
         }
