@@ -208,7 +208,7 @@ export function convertResourceUrl(symbol) {
 }
 
 function _convertUrl(res) {
-    if (isFunctionDefinition(res)) {
+    if (isFunctionDefinition(res) && res.stops) {
         const stops = res.stops;
         for (let i = 0; i < stops.length; i++) {
             stops[i][1] = _convertUrl(stops[i][1]);
