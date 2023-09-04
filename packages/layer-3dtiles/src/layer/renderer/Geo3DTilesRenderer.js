@@ -12,6 +12,8 @@ import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3
 import { fillNodepagesToCache } from '../i3s/Util';
 import I3SNode from '../i3s/I3SNode';
 
+const REPORTED_ERRORS = new Set();
+
 const EMPTY_ARRAY = [];
 
 export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.renderer.CanvasRenderer) {
@@ -522,8 +524,14 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         }
         // debugger
         const url = errorUrl || node.content.url;
-        console.warn('failed to load 3d tile: ' + url);
-        console.warn(err);
+
+        const info = err && err.message || err;
+        if (!REPORTED_ERRORS.has(info)) {
+            console.warn('failed to load 3d tile: ' + url);
+            console.warn(err);
+            REPORTED_ERRORS.add(info);
+        }
+
 
         // const emptyB3DM = gltf.B3DMLoader.createEmptyB3DM();
         // emptyB3DM.loadTime = 0;

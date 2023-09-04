@@ -223,6 +223,8 @@ export default class BaseLayerWorker {
             }).catch(err => {
                 cb(err);
             });
+        } else {
+            cb(new Error('unsupported tile format: ' + magic));
         }
     }
 
