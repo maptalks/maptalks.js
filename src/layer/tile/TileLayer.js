@@ -442,18 +442,9 @@ class TileLayer extends Layer {
     }
 
     _splitNode(node, projectionView, queue, tiles, gridExtent, maxZoom, offset, parentRenderer, glRes) {
-        const zoomOffset = this.options['zoomOffset'];
-        const tileSystem = this._getTileConfig().tileSystem;
-        const scaleY = tileSystem.scale.y;
         const z = node.z + 1;
         const sr = this.getSpatialReference();
-        const { x, y, extent2d, idx, idy } = node;
-        const childScale = 2;
-        const width = extent2d.getWidth() / 2 * childScale;
-        const height = extent2d.getHeight() / 2 * childScale;
-        const minx = extent2d.xmin * childScale;
-        const maxy = extent2d.ymax * childScale;
-        const miny = extent2d.ymin * childScale;
+        const { idx, idy } = node;
 
         const renderer = parentRenderer || this.getRenderer();
 
@@ -464,8 +455,6 @@ class TileLayer extends Layer {
         for (let i = 0; i < 4; i++) {
             const dx = (i % 2);
             const dy = (i >> 1);
-            const childX = (x << 1) + dx;
-            const childY = (y << 1) + dy;
             const childIdx = (idx << 1) + dx;
             const childIdy = (idy << 1) + dy;
 
@@ -479,7 +468,6 @@ class TileLayer extends Layer {
                 node.children[i] = tileId;
             }
             const cached = renderer.isTileCachedOrLoading(tileId);
-            let extent;
             let childNode = cached && cached.info;
             if (!childNode) {
                 if (!this.tileInfoCache) {
@@ -487,33 +475,7 @@ class TileLayer extends Layer {
                 }
                 childNode = this.tileInfoCache.get(tileId);
                 if (!childNode) {
-                    if (scaleY < 0) {
-                        const nwx = minx + dx * width;
-                        const nwy = maxy - dy * height;
-                        // extent2d 是 node.z 级别上的 extent
-                        extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
-
-                    } else {
-                        const swx = minx + dx * width;
-                        const swy = miny + dy * height;
-                        extent = new PointExtent(swx, swy, swx + width, swy + height);
-                    }
-                    childNode = {
-                        parent: node.id,
-                        x: childX,
-                        y: childY,
-                        idx: childIdx,
-                        idy: childIdy,
-                        z,
-                        extent2d: extent,
-                        error: node.error / 2,
-                        res,
-                        id: tileId,
-                        children: [],
-                        url: this.getTileUrl(childX, childY, z + zoomOffset),
-                        offset
-                    };
-                    this.tileInfoCache.add(tileId, childNode);
+                    childNode = this._createChildNode(node, dx, dy, offset, tileId);
                 }
                 if (parentRenderer) {
                     childNode['layer'] = this.getId();
@@ -546,7 +508,54 @@ class TileLayer extends Layer {
             queue.push(...children);
         }
 
+    }
 
+    _createChildNode(node, dx, dy, offset, tileId) {
+        const zoomOffset = this.options['zoomOffset'];
+        const { x, y, idx, idy, extent2d } = node;
+        const z = node.z + 1;
+        const childX = (x << 1) + dx;
+        const childY = (y << 1) + dy;
+        const childIdx = (idx << 1) + dx;
+        const childIdy = (idy << 1) + dy;
+        const childScale = 2;
+        const width = extent2d.getWidth() / 2 * childScale;
+        const height = extent2d.getHeight() / 2 * childScale;
+        const minx = extent2d.xmin * childScale;
+        const maxy = extent2d.ymax * childScale;
+        const miny = extent2d.ymin * childScale;
+        const tileSystem = this._getTileConfig().tileSystem;
+        const scaleY = tileSystem.scale.y;
+        tileId = tileId || this._getTileId(childIdx, childIdy, z);
+        let extent;
+        if (scaleY < 0) {
+            const nwx = minx + dx * width;
+            const nwy = maxy - dy * height;
+            // extent2d 是 node.z 级别上的 extent
+            extent = new PointExtent(nwx, nwy - height, nwx + width, nwy);
+
+        } else {
+            const swx = minx + dx * width;
+            const swy = miny + dy * height;
+            extent = new PointExtent(swx, swy, swx + width, swy + height);
+        }
+        const childNode = {
+            parent: node.id,
+            x: childX,
+            y: childY,
+            idx: childIdx,
+            idy: childIdy,
+            z,
+            extent2d: extent,
+            error: node.error / 2,
+            res: node.res / 2,
+            id: tileId,
+            children: [],
+            url: this.getTileUrl(childX, childY, z + zoomOffset),
+            offset
+        };
+        this.tileInfoCache.add(tileId, childNode);
+        return childNode;
     }
 
     _isTileVisible(node, projectionView, glScale, maxZoom, offset) {
