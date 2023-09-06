@@ -86,6 +86,7 @@ class TileHashset {
  * @property {String}              [options.token=null]       - token to replace {token} in template http://foo/bar/{z}/{x}/{y}?token={token}
  * @property {Object}              [options.fetchOptions=object]       - fetch params,such as fetchOptions: { 'headers': { 'accept': '' } }, about accept value more info https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation/List_of_default_Accept_values
  * @property {Boolean}             [options.awareOfTerrain=true]       - if the tile layer is aware of terrain.
+ * @property {Number}             [options.bufferPixel=0.5]       - tile buffer size,the unit is pixel
  * @memberOf TileLayer
  * @instance
  */
@@ -146,7 +147,8 @@ const options = {
     'tileStackStartDepth': 7,
     'tileStackDepth': 3,
 
-    'awareOfTerrain': true
+    'awareOfTerrain': true,
+    'bufferPixel': 0.5
 };
 
 const URL_PATTERN = /\{ *([\w_]+) *\}/g;
