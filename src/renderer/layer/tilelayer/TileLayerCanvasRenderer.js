@@ -695,14 +695,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             y = cp.y;
         let w = tileInfo.extent2d.xmax - tileInfo.extent2d.xmin;
         let h = tileInfo.extent2d.ymax - tileInfo.extent2d.ymin;
+        const layer = this.layer;
+        const bufferPixel = (layer ? layer.options.bufferPixel : 0);
         if (transformed) {
             ctx.save();
             ctx.translate(x, y);
             if (bearing) {
                 ctx.rotate(-bearing * Math.PI / 180);
             }
-            w += 0.5;
-            h += 0.5;
+            w += bufferPixel;
+            h += bufferPixel;
             const res = map._getResolution();
             if (res !== tileInfo.res) {
                 const scale = tileInfo.res / res;
