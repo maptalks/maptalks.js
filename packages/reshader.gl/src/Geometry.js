@@ -452,17 +452,19 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
-        const oldVertexCount = this._vertexCount;
+        // const oldVertexCount = this._vertexCount;
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
         }
-        const vertexCount = this.getVertexCount();
+        // const vertexCount = this.getVertexCount();
         if (buffer) {
-            if (vertexCount <= oldVertexCount) {
-                buffer.buffer.subdata(data);
-            } else {
-                buffer.buffer(data);
-            }
+            // if (vertexCount <= oldVertexCount) {
+            //     buffer.buffer.subdata(data);
+            // } else {
+            //     buffer.buffer(data);
+            // }
+            // 用subdata时，地形的数据更新会有bug
+            buffer.buffer(data);
             this.data[name] = buffer;
         }
         this._prepareData(false);

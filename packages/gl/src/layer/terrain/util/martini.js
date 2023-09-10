@@ -22,6 +22,7 @@ export function createMartiniData(error, heights, width, hasSkirts) {
     const skirtOffset = 0;//terrainStructure.skirtOffset;
     let minHeight = Infinity;
     let maxHeight = -Infinity;
+    const maxWidth = width - 1;
     // debugger
     for (let i = 0; i < count; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
@@ -49,15 +50,15 @@ export function createMartiniData(error, heights, width, hasSkirts) {
             positions[i * 3 + 1] = positions[index + 1];
             positions[i * 3 + 2] = height;
 
-            texcoords[i * 2] = positions[index] / width + texOffset;
-            texcoords[i * 2 + 1] = positions[index] / width + texOffset;
+            texcoords[i * 2] = positions[index] / maxWidth + texOffset;
+            texcoords[i * 2 + 1] = positions[index] / maxWidth + texOffset;
         } else {
             positions[i * 3] = x * (1 + skirtOffset);
             positions[i * 3 + 1] = -y * (1 + skirtOffset);
             positions[i * 3 + 2] = heights[y * width + x];
 
-            texcoords[i * 2] = x / width;
-            texcoords[i * 2 + 1] = y / width;
+            texcoords[i * 2] = x / maxWidth;
+            texcoords[i * 2 + 1] = y / maxWidth;
         }
         const height = positions[positions.length - 1];
         if (height < minHeight) {

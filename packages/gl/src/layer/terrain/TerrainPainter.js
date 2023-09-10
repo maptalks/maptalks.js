@@ -1,4 +1,4 @@
-import  { isNil, extend } from '../util/util';
+import  { extend } from '../util/util';
 import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 
@@ -49,6 +49,7 @@ class TerrainPainter {
             mesh.geometry.updateData('aPosition', positions);
             mesh.geometry.updateData('aTexCoord', texcoords);
             mesh.geometry.setElements(triangles);
+            // mesh.geometry.generateBuffers(this.regl);
         } else {
             const geo = new reshader.Geometry({
                 aPosition: positions,
@@ -56,11 +57,15 @@ class TerrainPainter {
             },
             triangles,
             0);
+            mesh = new reshader.Mesh(geo, null, {
+                disableVAO: true
+            });
             geo.generateBuffers(this.regl);
-            mesh = new reshader.Mesh(geo);
         }
-        const emptyTexture = this.getEmptyTexture();
-        mesh.setUniform('skin', emptyTexture);
+        if (!mesh.uniforms.skin) {
+            const emptyTexture = this.getEmptyTexture();
+            mesh.setUniform('skin', emptyTexture);
+        }
         mesh.setUniform('heightTexture', terrainImage);
         mesh.setUniform('bias', 0);
         this._updateMaskDefines(mesh);
@@ -75,14 +80,14 @@ class TerrainPainter {
         }
     }
 
-    _getPositionMatrix() {
+    _getPositionMatrix(out) {
         const heightScale = this._getPointZ(100) / 100;
-        const positionMatrix = mat4.identity([]);
+        const positionMatrix = mat4.identity(out);
         mat4.scale(positionMatrix, positionMatrix, [1, 1, heightScale]);
         return positionMatrix;
     }
 
-    _getLocalTransform(tileInfo, terrainWidth) {
+    _getLocalTransform(out, tileInfo, terrainWidth) {
         const map = this.getMap();
         const layerOptions = this.layer.options;
         const tileSize = layerOptions['tileSize'];
@@ -92,7 +97,7 @@ class TerrainPainter {
 
         const { extent2d, offset } = tileInfo;
         vec3.set(V3, (extent2d.xmin - offset[0]) * scale, (tileInfo.extent2d.ymax - offset[1]) * scale, 0);
-        const localTransform = mat4.identity([]);
+        const localTransform = mat4.identity(out);
         mat4.translate(localTransform, localTransform, V3);
 
         vec3.set(SCALE3, scale * terrainScale, scale * terrainScale, 1);
@@ -102,8 +107,8 @@ class TerrainPainter {
 
     prepareMesh(mesh, tileInfo, terrainGeo) {
         const { triangles, numTrianglesWithoutSkirts, terrainWidth } = terrainGeo;
-        mesh.localTransform = this._getLocalTransform(tileInfo, terrainWidth);
-        mesh.positionMatrix = this._getPositionMatrix();
+        mesh.localTransform = this._getLocalTransform(mesh.localTransform || [], tileInfo, terrainWidth);
+        mesh.positionMatrix = this._getPositionMatrix(mesh.positionMatrix || []);
         mesh.properties.skirtOffset = numTrianglesWithoutSkirts * 3;
         mesh.properties.skirtCount = triangles.length - numTrianglesWithoutSkirts * 3;
         mesh.properties.z = tileInfo.z;

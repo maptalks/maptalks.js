@@ -374,8 +374,8 @@ export default class MeshPainter {
             } else {
                 const cached = this._cachedGLTF[url];
                 if (cached) {
-                    cached.refCount--;
-                    if (cached.refCount <= 0) {
+                    cached.refMeshes.delete(mesh.uuid);
+                    if (!cached.refMeshes.size) {
                         cached.geometry.dispose();
                         cached.material.dispose();
                         delete this._cachedGLTF[url];
@@ -711,12 +711,17 @@ export default class MeshPainter {
         const meshes = [];
         const gltfWeakResources = [];
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader, gltfWeakResources);
+            const gltfResource = this._processGLTF(gltfMesh, meshId, primId, gltf, node, true, shader, gltfWeakResources);
+            const { geometry, material } = gltfResource;
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
             }
             const mesh = new reshader.InstancedMesh(instanceBuffers, instanceCount, geometry, material);
+            if (!gltfResource.refMeshes) {
+                gltfResource.refMeshes = new Set();
+                gltfResource.refMeshes.add(mesh.uuid);
+            }
             mesh.properties.magic = 'i3dm';
             mesh.properties.id = id;
             mesh.properties.count = count;
@@ -1186,7 +1191,6 @@ export default class MeshPainter {
         }
         const url = gltf.url + '-' + meshId + '-' + primId;
         if (this._cachedGLTF[url]) {
-            this._cachedGLTF[url].refCount++;
             return this._cachedGLTF[url];
         }
         gltfWeakResources.push(gltfMesh);

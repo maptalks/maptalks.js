@@ -13,6 +13,7 @@ const options = {
     'forceRenderOnMoving': true,
     'forceRenderOnZooming': true,
     'forceRenderOnRotating': true,
+    'fadeAnimation': false,
     'fadeDuration': (1000 / 60 * 15),
     'tileLimitPerFrame': 2,
     'newTerrainTileRenderLimitPerFrameOnInteracting': 1,
@@ -29,7 +30,9 @@ const options = {
     'cesiumIonTokenURL': 'https://api.cesium.com/v1/assets/1/endpoint?access_token=',
     'tileRetryCount': 0,
     'maxCacheSize': 300,
-    'shader': 'default'
+    'shader': 'default',
+    'terrainTileMode': true,
+    'tempTileCacheSize': 64
 };
 
 const EMPTY_TILE_GRIDS = {
@@ -82,16 +85,8 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         return terrainUrl;
     }
 
-    _getTileZoom(zoom) {
-        // 防止触发
-        this['_isUpdatingOptions'] = true;
-        const maxAvailableZoom = this.options['maxAvailableZoom'];
-        // 忽略原有的 maxAvailableZoom 逻辑，改为如果zoom超过 maxAvailableZoom 则用父瓦片分割
-        this.options['maxAvailableZoom'] = null;
-        const tileZoom = super['_getTileZoom'](zoom);
-        this.options['maxAvailableZoom'] = maxAvailableZoom;
-        this['_isUpdatingOptions'] = false;
-        return tileZoom;
+    _getMaxAvailbleZoom() {
+        return Infinity;
     }
 
     _createSkuToken() {
@@ -355,15 +350,15 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
     }
 }
 
-TerrainLayer.include({
-    '_getTileId': (x, y, z) => {
-        // always assume terrain layer is pyramid mode
-        // 由字符串操作改为数值操作，提升性能
-        const total = Math.pow(4, z + 1);
-        const row = Math.sqrt(total / 4);
-        return '' + (total + x * row + y);
-    }
-})
+// TerrainLayer.include({
+//     '_getTileId': (x, y, z) => {
+//         // always assume terrain layer is pyramid mode
+//         // 由字符串操作改为数值操作，提升性能
+//         const total = Math.pow(4, z + 1);
+//         const row = Math.sqrt(total / 4);
+//         return '' + (total + x * row + y);
+//     }
+// })
 
 TerrainLayer.mergeOptions(options);
 TerrainLayer.registerJSONType('TerrainLayer');
