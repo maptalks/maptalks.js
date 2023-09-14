@@ -866,16 +866,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             if (image.temp) {
                 refKey += '-temp';
             }
-            if (image.resetId) {
-                refKey = image.resetId + '-temp';
-            }
             for (let i = 0; i < skinImages.length; i++) {
                 const layerSkinImages = skinImages[i];
                 if (!layerSkinImages) {
                     continue;
                 }
                 for (let ii = 0; ii < layerSkinImages.length; ii++) {
-                    if (!layerSkinImages[ii]) {
+                    if (!layerSkinImages[ii] || !layerSkinImages[ii].tile) {
                         continue;
                     }
                     const skinTileId = layerSkinImages[ii].tile.info.id;
@@ -904,7 +901,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         delete image.data;
         delete image.rendered;
         // delete image.temp;
-        delete image.resetId;
     }
 
     _deleteCachedSkinImage(cached, refKey, skinImagesToDel) {
@@ -1467,7 +1463,7 @@ function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
     const dy = offset[1] - terrainOffset[1];
     const left = xmin - extent.xmin + dx;
     const bottom = extent.ymin - ymin + dy;
-    return [left, -bottom, scale * terrainTileSize / info.tileSize];
+    return [left, -bottom, scale * info.tileSize / terrainTileSize];
 }
 
 function createEmtpyTerrainHeights(height, size) {
