@@ -144,7 +144,7 @@ const options = {
     'tileLimitPerFrame': 0,
 
     'tileStackStartDepth': 7,
-    'tileStackDepth': 3,
+    'tileStackDepth': 5,
 
     'awareOfTerrain': true
 };
@@ -353,7 +353,7 @@ class TileLayer extends Layer {
             z = this._getTileZoom(map.getZoom());
         }
         const sr = this.getSpatialReference();
-        const maxZoom = Math.min(z, this.getMaxZoom(), this.options['maxAvailableZoom'] || Infinity);
+        const maxZoom = Math.min(z, this.getMaxZoom(), this.getMaxAvailableZoom() || Infinity);
         const projectionView = map.projViewMatrix;
         const fullExtent = this._getTileFullExtent();
 
@@ -873,7 +873,7 @@ class TileLayer extends Layer {
             const dz = Math.log(res1 / res0) * Math.LOG2E; // polyfill of Math.log2
             zoom += dz;
         }
-        const maxZoom = this.options['maxAvailableZoom'];
+        const maxZoom = this.getMaxAvailableZoom();
         if (!isNil(maxZoom) && zoom > maxZoom) {
             zoom = maxZoom;
         }
@@ -884,6 +884,15 @@ class TileLayer extends Layer {
         return zoom;
     }
 
+    /**
+     * Get tileLayer's max available zoom, either options['maxAvailableZoom'] or spatialReference's maxZoom
+     *
+     * @returns {Number}
+     **/
+    getMaxAvailableZoom() {
+        const sr = this.getSpatialReference();
+        return this.options['maxAvailableZoom'] || sr && sr.getMaxZoom();
+    }
 
     _getTiles(tileZoom, containerExtent, cascadeLevel, parentRenderer, ignoreMinZoom) {
         // rendWhenReady = false;
@@ -1204,6 +1213,10 @@ class TileLayer extends Layer {
             offset = [offset, offset];
         }
         return offset || [0, 0];
+    }
+
+    getTileId(x, y, zoom, id) {
+        return this._getTileId(x, y, zoom, id);
     }
 
     _getTileId(x, y, zoom, id) {
