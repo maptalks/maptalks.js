@@ -19,10 +19,10 @@ export function prepareMesh(modelName, translate, rotation, scale, color, pickin
     promise.then(data => {
         const gltfPack = reshader.GLTFHelper.exportGLTFPack(data);
         const geometries = gltfPack.getMeshesInfo();
-        const material = new reshader.Material({ color });
-        geometries.forEach(g => {
+        geometries.forEach((g, i) => {
+            const material = new reshader.Material({ color: color || g.materialInfo.baseColorFactor });
             const mesh = new reshader.Mesh(g.geometry, material);
-            mesh.setUniform('uPickingId', pickingId);
+            mesh.setUniform('uPickingId', pickingId + i);
             const defines = mesh.getDefines();
             defines.HAS_PICKING_ID = 2;
             mesh.setDefines(defines);
@@ -31,7 +31,7 @@ export function prepareMesh(modelName, translate, rotation, scale, color, pickin
             mesh.scaling = scale;
             mat4.multiply(mesh.localTransform, modelMatrix, g.nodeMatrix);
             mesh.originTransform = mat4.copy([], mesh.localTransform);
-            mesh.originColor = color;
+            mesh.originColor = color || g.materialInfo.baseColorFactor;
             meshes.push(mesh);
         });
     });

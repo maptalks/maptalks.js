@@ -28,7 +28,7 @@ describe('transform-control', () => {
             transformControl.transform(gltfmarker);
             const transformTarget = transformControl.getTransformTarget();
             expect(transformTarget).to.be.ok();
-            expect(transformTarget.getId()).to.be.eql('gltfmarker1');
+            expect(transformTarget.getTargets()[0].getId()).to.be.eql('gltfmarker1');
             transformControl.remove();
             done();
         }, 100);
@@ -155,7 +155,8 @@ describe('transform-control', () => {
         transformControl.addTo(map);
         transformControl.on('transforming', e => {
             const target = transformControl.getTransformTarget();
-            target.setTRS(e.translate, e.rotation, e.scale);
+            const marker = target.getTargets()[0];
+            marker.setTRS(e.translate, e.rotation, e.scale);
         });
 
         map.on('mousedown', e => {
@@ -217,8 +218,7 @@ describe('transform-control', () => {
         const transformControl = new maptalks.TransformControl();
         transformControl.addTo(map);
         transformControl.on('transforming', e => {
-            const target = transformControl.getTransformTarget();
-            target.setTRS(e.translate, e.rotation, e.scale);
+            marker.setTRS(e.translate, e.rotation, e.scale);
         });
 
         map.on('mousedown', e => {
@@ -252,7 +252,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.7240783990069692, 0.7240783990069692, 0.7240783990069692]);
+                expect(scale).to.be.eql([0.7508746173013956, 0.7508746173013956, 0.7508746173013956]);
                 done();
             }, 100);
         }
@@ -283,8 +283,7 @@ describe('transform-control', () => {
         const transformControl = new maptalks.TransformControl();
         transformControl.addTo(map);
         transformControl.on('positionchange', e => {
-            const target = transformControl.getTransformTarget();
-            target.setCoordinates(e.coordinate);
+            marker.setCoordinates(e.coordinate);
         });
 
         map.on('mousedown', e => {
@@ -327,6 +326,139 @@ describe('transform-control', () => {
             setTimeout(function() {
                 moveTransformControl();
             }, 100);
+        }, 100);
+    });
+
+    it('xyz scale', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('transform');
+        const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 2 / 3,
+                scaleY: 2 / 3,
+                scaleZ: 2 / 3
+            }
+        }).addTo(gltflayer);
+        const transformControl = new maptalks.TransformControl({ mode: 'xyzScale' });
+        transformControl.addTo(map);
+        transformControl.on('transforming', e => {
+            marker.setTRS(e.translate, e.rotation, e.scale);
+        });
+
+        map.on('mousedown', e => {
+            const identifyData = groupgllayer.identify(e.coordinate);
+            if (identifyData.length) {
+                transformControl.enable();
+                transformControl.transform(identifyData[0].data);
+            } else if (!transformControl.picked(e.coordinate)) {
+                transformControl.disable();
+            }
+        });
+        function moveTransformControl() {
+            const point = map.coordinateToContainerPoint(center).add(100, 0);
+            happen.mousemove(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            for (let i = 0; i < 10; i++) {
+                happen.mousemove(eventContainer, {
+                    'clientX':point.x + i,
+                    'clientY':point.y
+                });
+            }
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                const newCoord = marker.getCoordinates();
+                expect(newCoord.x).to.be.eql(0);
+                expect(newCoord.y).to.be.eql(0);
+                const scale = marker.getScale();
+                expect(scale).to.be.eql([0.7598385662453444, 0.6666666666666666, 0.6666666666666666]);
+                done();
+            }, 100);
+        }
+        setTimeout(function() {
+            const point = map.coordinateToContainerPoint(center);
+            happen.mousedown(eventContainer, {
+                'clientX': point.x,
+                'clientY': point.y
+            });
+            happen.mouseup(eventContainer);
+            moveTransformControl();
+        }, 100);
+    });
+
+    it('transform several targets', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('transform');
+        const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
+        const symbol = {
+            scaleX: 2 / 3,
+            scaleY: 2 / 3,
+            scaleZ: 2 / 3
+        }
+        const marker1 = new maptalks.GLTFGeometry(center.add(-0.001, 0), {
+            symbol
+        }).addTo(gltflayer);
+        const marker2 = new maptalks.GLTFGeometry(center, {
+            symbol
+        }).addTo(gltflayer);
+        const marker3 = new maptalks.GLTFGeometry(center.add(0.001, 0), {
+            symbol
+        }).addTo(gltflayer);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        transformControl.on('transforming', e => {
+            marker.setTRS(e.translate, e.rotation, e.scale);
+        });
+
+        map.on('mousedown', e => {
+            const identifyData = groupgllayer.identify(e.coordinate);
+            if (identifyData.length) {
+                transformControl.enable();
+                transformControl.transform([marker1, marker2, marker3]);
+            } else if (!transformControl.picked(e.coordinate)) {
+                transformControl.disable();
+            }
+        });
+        function moveTransformControl() {
+            const point = map.coordinateToContainerPoint(center).add(50, 0);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            for (let i = 0; i < 20; i++) {
+                happen.mousemove(eventContainer, {
+                    'clientX':point.x + i,
+                    'clientY':point.y
+                });
+            }
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                const newCoord = marker1.getCoordinates();
+                expect(newCoord.x).to.be.eql(-0.0007961521148445172);
+                expect(newCoord.y).to.be.eql(0);
+
+                const newCoord2 = marker2.getCoordinates();
+                expect(newCoord2.x).to.be.eql(0.00020384788513183594);
+                expect(newCoord2.y).to.be.eql(0);
+
+                const newCoord3 = marker3.getCoordinates();
+                expect(newCoord3.x).to.be.eql(0.001203847885108189);
+                expect(newCoord3.y).to.be.eql(0);
+                done();
+            }, 100);
+        }
+        setTimeout(function() {
+            const point = map.coordinateToContainerPoint(center);
+            happen.mousedown(eventContainer, {
+                'clientX': point.x,
+                'clientY': point.y
+            });
+            happen.mouseup(eventContainer);
+            moveTransformControl();
         }, 100);
     });
 });

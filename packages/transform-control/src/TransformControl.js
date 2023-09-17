@@ -4,6 +4,7 @@ import TransformHelper from './helper/TransformHelper';
 import { calFixedScale, getTranslationPoint } from './common/Util';
 import vert from './common/helper.vert';
 import frag from './common/helper.frag';
+import TransformTarget from './TransformTarget';
 
 const translatePickingIds = [5, 6, 7, 8, 9, 10];
 const translatePickingIds0 = [5, 7, 8, 9, 10];
@@ -19,13 +20,14 @@ const options = {
 };
 
 export default class TransformControl extends Eventable(Handlerable(Class)) {
-    constructor(options) {
+    constructor(options = {}) {
         super(options);
         this.options = options;
         this.mouseAction = 'moving';
-        this._mode = 'translate';
+        this._mode = this.options.mode || 'translate';
         this._enabled = true;
         this.TransformHelper = new TransformHelper();
+        this._target = new TransformTarget();
         this.helperScene = new reshader.Scene([]);
         this.addToMapCount = 0;
     }
@@ -49,6 +51,17 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         return this;
     }
 
+    setMode(mode) {
+        this._mode = mode;
+        if (this.layerRenderer) {
+            this.layerRenderer.setToRedraw();
+        }
+    }
+    
+    getMode() {
+        return this._mode;
+    }
+
     isEnable() {
         return this._enabled;
     }
@@ -60,7 +73,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             this._mode = 'rotation';
         } else if (scalePickingIds.indexOf(pickingId) > -1) {
             this._mode = 'scaling';
-        } else {
+        } else if (this._mode !== 'xyzScale') {
             this._mode = 'translate';
         }
     }
@@ -102,9 +115,9 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         if (!this.container || !this.map) {
             return;
         }
-        this.map.off('mousemove', this._mouseMoveHandle, this);
-        this.map.off('mousedown', this._mousedownHandle, this);
-        this.map.off('mouseup', this._mouseupHandle, this);
+        this.map.off('dom:mousemove', this._mouseMoveHandle, this);
+        this.map.off('dom:mousedown', this._mousedownHandle, this);
+        this.map.off('dom:mouseup', this._mouseupHandle, this);
         this.map.off('zooming moving dragrotating', this._viewchanging, this);
         if (this.layer) {
             this.layer.off('renderend', this.render, this);
@@ -178,7 +191,9 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             this.fire('transformend', { action: this._task, type: 'transformend' });
         }
         this.mouseAction = 'moving';
-        this._mode = 'translate';
+        if (this._mode !== 'xyzScale') {
+            this._mode = 'translate';
+        }
         this.map.config('zoomable', true);
         this.map.config('draggable', true);
         if (this.layerRenderer) {
@@ -286,11 +301,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         if (this.mouseAction === 'transform') {
             const mode = this._getMode();
             const currentTrans = getTranslationPoint(this.map, this._target.getTranslation());
-            const z = this._target.getPointZ();
-            const currentCoordinate = this._target.getCoordinates();
-            const currentWorldPos = this.map.coordinateToPointAtRes(currentCoordinate, this.map.getGLRes());
-            const currentRotation = this._target.getRotation();
-            const currentScaling = this._target.getScale();
+            const z = this._target._getPointZ();
             let planeInteract = null, lastPlaneInteract = null;
             if (currentTrans[2] + z < 0.01 && this._task !== 'z-translate') { //target不是贴着地面的情况下
                 planeInteract = this._getWorldPosition(this.currentMousePosition);
@@ -304,7 +315,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
                 }
             }
             const deltaTranslate = [0, 0, 0];
-            const rotation = [0, 0, 0];
+            const deltaRotation = [0, 0, 0];
             let deltaScale = 0;
             let deltaAngle = 0;
             let helperDeltaScale = 0;
@@ -344,42 +355,16 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
                 } else {
                     this.TransformHelper._setRotateClockwise(false);
                 }
-                rotation[2] += deltaAngle;
-            } else if (mode === 'scaling') {
+                deltaRotation[2] += deltaAngle;
+            } else if (mode === 'scaling' || mode === 'xyzScale') {
                 const center = this._getCurrentCenter();
                 const firstDistance = vec2.length(vec2.set(EMPTY_VEC, this.firstDownPoint.point[0] - center[0], this.firstDownPoint.point[1] - center[1]));
                 const scaleDistance = vec2.length(vec2.set(EMPTY_VEC, lastPlaneInteract.point[0] - center[0], lastPlaneInteract.point[1] - center[1]));
-                deltaScale = this._calDirection(planeInteract.point, lastPlaneInteract.point, center, scaleDistance, currentScaling);
+                deltaScale = this._calDirection(planeInteract.point, lastPlaneInteract.point, center, scaleDistance);
                 helperDeltaScale = this._calDirection(planeInteract.point, lastPlaneInteract.point, center, firstDistance);
             }
-            const currentWorlPosition = vec3.set([], currentWorldPos.x, currentWorldPos.y, currentCoordinate.z || 0);
-            const targetWorldPosition = vec3.add(currentWorlPosition, currentWorlPosition, deltaTranslate);
-            const targetCoordinate = this.map.pointAtResToCoordinate(new Coordinate(targetWorldPosition[0], targetWorldPosition[1]), this.map.getGLRes());
-            targetCoordinate.z = targetWorldPosition[2];
-            let tempScale = null;
-            //放大时，拉伸的空间可无限大，但是缩小时，是向圈内缩放，空间有限，需要增加缩小的倍数
-            if (deltaScale >= 0) {
-                tempScale = deltaScale;
-            } else {
-                tempScale = deltaScale * (this.options && this.options.scaleStrength || 1.0);
-            }
-            const targetScale = vec3.add(currentScaling, vec3.set(EMPTY_VEC, tempScale, tempScale * (currentScaling[1] / currentScaling[0]), tempScale * (currentScaling[2] / currentScaling[0])), currentScaling);
-            const minScale = Math.min(...targetScale);
-            //minScale可能会出现<=0的情况，所以minScale只作为判断是否要限定scale的依据，计算的逻辑则用当前target的scale去计算，当前marker的scale可以保证>=0.01
-            if (minScale < limitScale) {
-                const currentMinScale = Math.min(...currentScaling);
-                targetScale[0] = currentScaling[0] * (limitScale / currentMinScale);
-                targetScale[1] = currentScaling[1] * (limitScale / currentMinScale);
-                targetScale[2] = currentScaling[2] * (limitScale / currentMinScale);
-            }
-            const targetRotation = vec3.add(currentRotation, rotation, currentRotation);
-            this.TransformHelper.updateMatrix(this.map, this._target, deltaAngle, helperDeltaScale, deltaTranslate);
-            if (this._task.indexOf('translate') > -1) {
-                this.fire('positionchange', { action: this._task, type: 'positionchange', target: this._target, coordinate: targetCoordinate });
-            } else {
-                this.fire('transforming', { action: this._task, type: 'transforming', target: this._target, translate: currentTrans, rotation: targetRotation, scale: targetScale });
-            }
-
+            this.TransformHelper.updateMatrix(this.map, this._target, deltaAngle, helperDeltaScale, deltaTranslate);//TC自己转动
+            this._target._updateTRS(this._task, deltaTranslate, deltaRotation, deltaScale, limitScale, this.map, this);
         }
         this.lastMousePosition = mousePosition;
         this.lastPickingObject = this.currentPickingObject;
@@ -546,12 +531,8 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         if (!this.map || !this._target) {
             return;
         }
-        this._target.setTranslation(this._target.originTrans);
-        this._target.setRotation(this._originRotation);
-        this._target.setScale(this._originScale);
-        const currentTrans = getTranslationPoint(this.map, this._target.getTranslation());
-        vec3.scale(currentTrans, currentTrans, -1);
-        this.TransformHelper.updateMatrix(this.map, this._target, 0, 1, [0, 0, 0]);
+        this._target._reset();
+        this.TransformHelper.updateMatrix(this.map, this._target, 0, 0, [0, 0, 0]);
     }
 
     _calAngle(to, from) {
@@ -565,7 +546,15 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
 
     _setTask(pickingId) {
         //根据pickingId来判断被鼠标命中的是哪个辅助部件，从而判定当前执行的操作
-        if (pickingId === 5) {
+        if (pickingId === 113 || pickingId === 114) {
+            this._task = 'x-scale';
+        } else if (pickingId === 115 || pickingId === 116) {
+            this._task = 'z-scale';
+        } else if (pickingId === 117 || pickingId === 118) {
+            this._task = 'y-scale';
+        } else if (pickingId === 119) {
+            this._task = 'xyz-scale';
+        } else if (pickingId === 5) {
             this._task = 'xy-translate';
         } else if (pickingId === 6) {
             this._task = 'z-translate';
@@ -581,28 +570,27 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         return this._task;
     }
 
-    transform(target) {
+    transform(targets) {
+        if (!targets) {
+            return;
+        }
         if (this.layerRenderer && this.layerRenderer.layer) {
             this.layerRenderer.layer.off('renderend', this.render);
             this.layerRenderer.layer.off('resizeCanvas', this._resize);
         }
-        if (this._target) {
-            this._target.off('remove', this._onRemoveTarget, this);
-            delete this._target;
-        }
-        this._target = target;
-        this._target.on('remove', this._onRemoveTarget, this);
         if (!this.map) {
             console.error('should add to a target first');
             return;
         }
-        const map = this.map;
-        if (!this._target.originTrans) {
-            this._target.originTrans = getTranslationPoint(map, this._target.getTranslation());
-            this._target.originRotation = this._target.getRotation();
-            this._target.originScale = this._target.getScale();
+        if (this._target) {
+            this._target._clear();
+            this._target._add(targets);
         }
-        this.TransformHelper.updateMatrix(map, target, 0, 0, [0, 0, 0]);
+        if (!this._target.getTargets().length) {
+            return;
+        }
+        const map = this.map;
+        this.TransformHelper.updateMatrix(map, this._target, 0, 0, [0, 0, 0]);
         this._prepareContext();
         this._needRefreshPicking = true;
     }
@@ -616,7 +604,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
     }
 
     _prepareContext() {
-        const layer = this._target.getLayer();
+        const layer = this._target._getLayer();
         if (layer) {
             layer.off('renderend', this.render);
             layer.off('resizeCanvas', this._resize);
@@ -764,8 +752,10 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         }
         //为避免z轴被其他mesh覆盖，最后绘制z轴的mesh
         const translateMeshes = meshMap['translate'];
-        for (let i = 0; i < translateMeshes.length; i++) {
-            meshes = meshes.concat(translateMeshes[i]);
+        if (translateMeshes) {
+            for (let i = 0; i < translateMeshes.length; i++) {
+                meshes = meshes.concat(translateMeshes[i]);
+            }
         }
         return meshes;
     }
@@ -773,7 +763,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
     _isAvailable() {
         const renderer = this.layerRenderer;
         const layer = renderer && renderer.layer;
-        return renderer && this._target && layer && layer.isVisible() && this._target.isVisible() && this.regl && this._enabled;
+        return renderer && this._target && layer && layer.isVisible() && this._target._isVisible() && this.regl && this._enabled;
     }
 }
 

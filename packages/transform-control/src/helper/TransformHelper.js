@@ -4,6 +4,7 @@ import RotationHelper from './RotationHelper';
 import ScalingHelper from './ScalingHelper';
 import PlaneHelper from './PlaneHelper';
 import { prepareMesh, calFixedScale, getTranslationPoint } from '../common/Util.js';
+import XyzScaleHelper from './XyzScaleHelper';
 
 const VEC3 = [], TRANS = [], MAT4 = [], QUAT = [], SCALE = [], ratio = [177 / 170, 177 / 170, 177 / 170];
 const scaleChangePickingIds = [1, 2, 3, 4, 12];
@@ -14,6 +15,7 @@ export default class TransformHelper {
         this.rotation = new RotationHelper();
         this.scaling = new ScalingHelper();
         this.planeHelper = new PlaneHelper();
+        this.xyzScaleHelper = new XyzScaleHelper();
         this._meshes = this._prepareMeshes();
         this._rotateClockwise = true;
     }
@@ -24,6 +26,7 @@ export default class TransformHelper {
         meshes['rotation'] = this.rotation.getMeshes();
         meshes['scaling'] = this.scaling.getMeshes();
         meshes['planeHelper'] = this.planeHelper.getMeshes();
+        meshes['xyzScale'] = this.xyzScaleHelper.getMeshes();
         const scale = 340 / 177;
         const wn = prepareMesh('yuanhuan41', [-2.745 * scale, 2.745 * scale, 0], [90, 0, 0], [scale * 0.5, scale * 0.5, scale * 0.5], [149 / 255, 179 / 255, 199 / 255, 0.6], 1);//缩放
         const en = prepareMesh('yuanhuan41', [2.745 * scale, 2.745 * scale, 0], [-90, 0, 180], [scale * 0.5, scale * 0.5, scale * 0.5], [50 / 255, 130 / 255, 184 / 255, 0.5], 2);
@@ -38,7 +41,7 @@ export default class TransformHelper {
     updateMatrix(map, target, angle, scalar, deltaTrans) {
         const coordinate = target.getCoordinates();
         const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
-        const z = target.getPointZ();
+        const z = target._getPointZ();
         vec3.set(TRANS, p.x, p.y, z);
         const deltaTranslate = vec3.copy(VEC3, deltaTrans);
         const currentTrans = getTranslationPoint(map, target.getTranslation()); //由于gltfmarker中translation单位改成了米，不能直接这样加，需要转换一下
@@ -86,7 +89,12 @@ export default class TransformHelper {
                     }
                     const rotate = quat.fromEuler(QUAT, rotation[0], rotation[1], rotation[2]);
                     vec3.add(translate, translate, TRANS);
-                    mat4.fromRotationTranslationScale(mesh.localTransform, rotate, translate, fixedScale);
+                    if (name === 'xyzScale') {
+                        const sm = mat4.fromRotationTranslationScale([], rotate, translate, fixedScale);
+                        mat4.multiply(mesh.localTransform, sm, mesh.originTransform);
+                    } else {
+                        mat4.fromRotationTranslationScale(mesh.localTransform, rotate, translate, fixedScale);
+                    }
                 }
             }
         }
@@ -94,9 +102,16 @@ export default class TransformHelper {
 
     getMeshes(mode) {
         const meshes = {};
-        meshes['translate'] = this._meshes.translate;
-        if (mode && mode !== 'translate') {
+        if (!mode) {
+            return meshes;
+        }
+        if (mode === 'xyzScale') {
             meshes[mode] = this._meshes[mode];
+        } else {
+            meshes['translate'] = this._meshes.translate;
+            if (mode !== 'translate') {
+                meshes[mode] = this._meshes[mode];
+            }
         }
         return meshes;
     }
