@@ -2,6 +2,7 @@
 
 attribute vec3 aPosition;
 attribute vec2 aTexCoord;
+uniform float minAltitude;
 uniform mat4 projViewModelMatrix;
 uniform mat4 projMatrix;
 uniform mat4 modelMatrix;
@@ -11,7 +12,7 @@ uniform float heightScale;
 varying vec2 vUv;
 #include <mask_vert>
 void main() {
-    vec3 position = vec3(aPosition.xy, aPosition.z * heightScale);
+    vec3 position = vec3(aPosition.xy, (aPosition.z + minAltitude) * heightScale);
     #ifdef HAS_MASK_EXTENT
         gl_Position = projMatrix * getMaskPosition(positionMatrix * vec4(position, 1.0), modelMatrix);
     #else

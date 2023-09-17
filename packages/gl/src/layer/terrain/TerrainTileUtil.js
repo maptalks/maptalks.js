@@ -1,4 +1,5 @@
 import * as maptalks from 'maptalks';
+import { createMartiniData } from './util/martini.js';
 
 export function getCascadeTileIds(layer, x, y, z, center, offset, terrainTileScaleY, scale, levelLimit) {
     const result = {};
@@ -131,3 +132,20 @@ function getReverseY(tileConfig, y, res) {
     const bottom = Math.floor(min / tileSize / res);
     return (top - bottom) - y;
 }
+
+export function createEmtpyTerrainHeights(height, size) {
+    const length = size * size;
+    const data = height !== 0 ? new Float32Array(length) : new Uint8Array(length);
+    data.fill(height);
+    return {
+        data,
+        width: size,
+        height: size,
+        max: 0,
+        min: 0
+    };
+}
+
+const emptyHeights = createEmtpyTerrainHeights(0, 5);
+export const EMPTY_TERRAIN_GEO =  createMartiniData(1, emptyHeights.data, emptyHeights.width, true);
+EMPTY_TERRAIN_GEO.empty = true;

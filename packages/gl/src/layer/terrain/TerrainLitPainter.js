@@ -49,7 +49,8 @@ class TerrainLitPainter extends TerrainPainter {
         logoutIBLResOnCanvas(canvas, this.getMap());
     }
 
-    createTerrainMesh(tileInfo, terrainGeo, terrainImage) {
+    createTerrainMesh(tileInfo, terrainImage) {
+        const { mesh: terrainGeo, image: heightTexture } = terrainImage;
         const { positions, texcoords, triangles, leftSkirtIndex, rightSkirtIndex, bottomSkirtIndex, numVerticesWithoutSkirts } = terrainGeo;
         const normals = new Int8Array(positions.length);
         for (let i = 2; i < normals.length; i += 3) {
@@ -84,11 +85,11 @@ class TerrainLitPainter extends TerrainPainter {
         geo.generateBuffers(this.regl);
 
         let terrainHeightTexture;
-        if (terrainImage) {
+        if (heightTexture) {
             terrainHeightTexture = this.regl.texture({
-                width: terrainImage.width,
-                height: terrainImage.height,
-                data: terrainImage,
+                width: heightTexture.width,
+                height: heightTexture.height,
+                data: heightTexture,
                 min: 'linear',
                 mag: 'linear'
             });
@@ -114,7 +115,7 @@ class TerrainLitPainter extends TerrainPainter {
         return mesh;
     }
 
-    addTerrainImage(tileInfo, tileImage, opacity) {
+    addTerrainImage(tileInfo, tileImage) {
         const mesh = tileImage.terrainMesh;
         if (mesh) {
             if (this._material && mesh.properties.matVer !== this._matVer) {

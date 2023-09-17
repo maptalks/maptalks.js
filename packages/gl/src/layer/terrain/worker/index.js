@@ -159,19 +159,22 @@ function transformBuffer(zlibData){
 }
 
 function generateTiandituTerrain(buffer, terrainWidth) {
-    const view = new DataView(buffer);
-    const zBuffer = new Uint8Array(view.byteLength);
-    let index = 0;
-    while (index < view.byteLength) {
-        zBuffer[index] = view.getUint8(index, true);
-        index++;
-    }
-    //解压数据
+    const zBuffer = new Uint8Array(buffer);
+
     const dZlib = decZlibBuffer(zBuffer);
+    if (!dZlib) {
+        throw new Error(uint8ArrayToString(new Uint8Array(buffer)));
+    }
     const heightBuffer = transformBuffer(dZlib);
     const heights = createHeightMap(heightBuffer, terrainWidth - 1);
     heights.width = heights.height = terrainWidth;
     return heights;
+}
+
+
+const textDecoder = new TextDecoder('utf-8');
+function uint8ArrayToString(fileData){
+    return textDecoder.decode(fileData);
 }
 
 function zigZagDecode(value) {
@@ -476,14 +479,15 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
         if (!res || res.message) {
             if (!res) {
                 // aborted by user
-                cb({ error: res || { canceled: true }});
+                cb({ error: { canceled: true }});
             } else {
-                const terrainData = createEmtpyTerrainHeights(terrainWidth);
-                // console.warn(e);
-                triangulateTerrain(error, terrainData, terrainWidth, false, null, null, true, false, (data, transferables) => {
-                    data.originalError = res;
-                    cb(data, transferables);
-                });
+                // const terrainData = createEmtpyTerrainHeights(terrainWidth);
+                // // console.warn(e);
+                // triangulateTerrain(error, terrainData, terrainWidth, false, null, null, true, false, (data, transferables) => {
+                //     data.originalError = res;
+                //     cb(data, transferables);
+                // });
+                cb({ empty: true, originalError: res });
             }
         } else {
             const buffer = res.data;
@@ -514,27 +518,28 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
             }
         }
     }).catch(e => {
+
         delete terrainRequests[url];
-        const terrainData = createEmtpyTerrainHeights(terrainWidth);
-        // console.warn(e);
-        triangulateTerrain(error, terrainData, terrainWidth, false, null, null,  true, false, (data, transferables) => {
-            data.originalError = e;
-            cb(data, transferables);
-        });
-        // cb({ error: e});
+        // const terrainData = createEmtpyTerrainHeights(terrainWidth);
+        // // console.warn(e);
+        // triangulateTerrain(error, terrainData, terrainWidth, false, null, null,  true, false, (data, transferables) => {
+        //     data.originalError = e;
+        //     cb(data, transferables);
+        // });
+        cb({ empty: true, originalError: e });
     });
 }
 
-function createEmtpyTerrainHeights(size) {
-    const length = size * size;
-    return {
-        data: new Uint8Array(length),
-        width: size,
-        height: size,
-        max: 0,
-        min: 0
-    };
-}
+// function createEmtpyTerrainHeights(size) {
+//     const length = size * size;
+//     return {
+//         data: new Uint8Array(length),
+//         width: size,
+//         height: size,
+//         max: 0,
+//         min: 0
+//     };
+// }
 
 
 function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imageBitmap, isTransferData, hasSkirts, cb) {

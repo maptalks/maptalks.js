@@ -68,6 +68,10 @@ mat4 getPositionMatrix() {
     return worldMatrix;
 }
 
+#ifdef HAS_MIN_ALTITUDE
+uniform float minAltitude;
+#endif
+
 vec4 getPosition(vec3 aPosition) {
     vec3 position = decode_getPosition(aPosition);
     #ifdef HAS_MORPH
@@ -79,6 +83,9 @@ vec4 getPosition(vec3 aPosition) {
     #endif
     #ifdef HAS_TERRAIN_ALTITUDE
         POSITION.z += aTerrainAltitude * 100.0;
+    #endif
+    #ifdef HAS_MIN_ALTITUDE
+        POSITION.z += minAltitude;
     #endif
     return POSITION;
 }

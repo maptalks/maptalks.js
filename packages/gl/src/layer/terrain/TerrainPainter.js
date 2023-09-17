@@ -1,6 +1,7 @@
-import  { extend } from '../util/util';
+import  { extend, hasOwn } from '../util/util';
 import { vec3, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
+import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
@@ -26,6 +27,7 @@ class TerrainPainter {
             data: pixels
         });
         this._resLoader = new reshader.ResourceLoader(this._emptyTileTexture);
+        this._createEmptyTerrainGeo();
     }
 
     setToRedraw() {
@@ -43,31 +45,43 @@ class TerrainPainter {
         this._leafScene.clear();
     }
 
-    createTerrainMesh(tileInfo, terrainGeo, terrainImage, mesh) {
-        const { positions, texcoords, triangles } = terrainGeo;
-        if (mesh) {
+    createTerrainMesh(tileInfo, terrainImage) {
+        const { mesh: terrainGeo, image: heightTexture } = terrainImage;
+        let mesh = terrainImage.terrainMesh;
+        const { positions, texcoords, triangles, empty } = terrainGeo;
+        if (mesh && mesh.geometry !== this._emptyTerrainGeometry) {
             mesh.geometry.updateData('aPosition', positions);
             mesh.geometry.updateData('aTexCoord', texcoords);
             mesh.geometry.setElements(triangles);
-            // mesh.geometry.generateBuffers(this.regl);
         } else {
-            const geo = new reshader.Geometry({
+            const geo = empty ? this._emptyTerrainGeometry : new reshader.Geometry({
                 aPosition: positions,
                 aTexCoord: texcoords
             },
             triangles,
             0);
-            mesh = new reshader.Mesh(geo, null, {
-                disableVAO: true
-            });
-            geo.generateBuffers(this.regl);
+            if (mesh) {
+                mesh.geometry = geo;
+            } else {
+                mesh = new reshader.Mesh(geo, null, {
+                    disableVAO: true
+                });
+                geo.generateBuffers(this.regl);
+            }
         }
         if (!mesh.uniforms.skin) {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('skin', emptyTexture);
         }
-        mesh.setUniform('heightTexture', terrainImage);
-        mesh.setUniform('bias', 0);
+        if (!hasOwn(mesh.uniforms, 'minAltitude')) {
+            Object.defineProperty(mesh.uniforms, 'minAltitude', {
+                enumerable: true,
+                get: () => {
+                    return terrainImage.minAltitude || 0;
+                }
+            });
+        }
+        mesh.setUniform('heightTexture', heightTexture);
         this._updateMaskDefines(mesh);
         this.prepareMesh(mesh, tileInfo, terrainGeo);
         return mesh;
@@ -153,6 +167,21 @@ class TerrainPainter {
         if (this._emptyTileTexture) {
             this._emptyTileTexture.destroy();
             delete this._emptyTileTexture;
+        }
+        if (this._emptyTerrainGeometry) {
+            this._emptyTerrainGeometry.dispose();
+            delete this._emptyTerrainGeometry;
+        }
+    }
+
+    deleteMesh(terrainMesh) {
+        if (!terrainMesh) {
+            return;
+        }
+        const geo = terrainMesh.geometry;
+        terrainMesh.dispose();
+        if (geo !== this._emptyTerrainGeometry) {
+            geo.dispose();
         }
     }
 
@@ -303,10 +332,24 @@ class TerrainPainter {
             shader.shaderDefines = shaderDefines;
         }
     }
+
+    _createEmptyTerrainGeo() {
+        const emptyTerrainGeo = EMPTY_TERRAIN_GEO;
+        const { positions, texcoords, triangles } = emptyTerrainGeo;
+        this._emptyTerrainGeometry = new reshader.Geometry({
+            aPosition: positions,
+            aTexCoord: texcoords
+        },
+        triangles,
+        0);
+        this._emptyTerrainGeometry.generateBuffers(this.regl);
+    }
 }
 
 export default TerrainPainter;
 
-function terrainMeshCompare(m0, m1) {
-    return m1.properties.z - m0.properties.z;
-}
+// function terrainMeshCompare(m0, m1) {
+//     return m1.properties.z - m0.properties.z;
+// }
+
+
