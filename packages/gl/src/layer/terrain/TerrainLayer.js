@@ -29,10 +29,11 @@ const options = {
     'requireSkuToken': true,
     'cesiumIonTokenURL': 'https://api.cesium.com/v1/assets/1/endpoint?access_token=',
     'tileRetryCount': 0,
-    'maxCacheSize': 300,
     'shader': 'default',
     'terrainTileMode': true,
-    'tempTileCacheSize': 64
+    'tempTileCacheSize': 64,
+    'tileStackStartDepth': 7,
+    'tileStackDepth': 6
 };
 
 const EMPTY_TILE_GRIDS = {
