@@ -86,8 +86,9 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         return terrainUrl;
     }
 
-    _getMaxAvailbleZoom() {
-        return Infinity;
+    getMaxAvailableZoom() {
+        const sr = this.getSpatialReference();
+        return sr.getMaxZoom();
     }
 
     _createSkuToken() {

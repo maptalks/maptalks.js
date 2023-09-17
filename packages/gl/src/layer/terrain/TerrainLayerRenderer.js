@@ -673,22 +673,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         }
     }
 
-    _findParentAvailableTile(tile) {
-        const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
-        let z = tile.z;
-        let cached;
-        while(z > maxAvailableZoom && tile) {
-            cached = this.findParentTile(tile);
-            tile = cached && cached.info;
-            z = tile && tile.z;
-        }
-        return cached;
-    }
-
-    // _findParentTileInfo(tile) {
-
-    // }
-
     _clipParentTerrain(parentTile, tile) {
         const { image, info } = parentTile;
         const terrainData = image.data;
@@ -1173,11 +1157,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             this._skinGeometry.dispose();
             delete this._skinGeometry;
         }
+        super.onRemove();
         if (this._painter) {
             this._painter.delete();
             delete this._painter;
         }
-        super.onRemove();
     }
 
     prepareWorker() {
