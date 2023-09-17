@@ -7,6 +7,7 @@ import LRUCache from './LRUCache';
 import MeshPainter from './MeshPainter';
 import { readBatchArray } from '../../common/TileHelper';
 import { extend, isBase64, base64URLToArrayBuffer, pushIn } from '../../common/Util.js';
+import { isRelativeURL } from '../../common/UrlUtil';
 import { CANDIDATE_MAX_ERROR } from '../../common/Constants.js';
 import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3SHelper';
 import { fillNodepagesToCache } from '../i3s/Util';
@@ -338,7 +339,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             });
         }
 
-        if (node && url.indexOf('http://') === -1 && url.indexOf('https://') === -1 && !isI3SMesh(url)) {
+        if (node && isRelativeURL(url) && !isI3SMesh(url)) {
             url = node.baseUrl + url;
         }
         const service = this.layer._getNodeService(node._rootIdx);
