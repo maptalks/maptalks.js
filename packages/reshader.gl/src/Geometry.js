@@ -452,11 +452,10 @@ export default class Geometry {
         if (buf.buffer && buf.buffer.destroy) {
             buffer = buf;
         }
-        // const oldVertexCount = this._vertexCount;
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
+            this.getVertexCount();
         }
-        // const vertexCount = this.getVertexCount();
         if (buffer) {
             // if (vertexCount <= oldVertexCount) {
             //     buffer.buffer.subdata(data);
