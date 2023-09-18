@@ -1,4 +1,4 @@
-import { vec2, vec3, mat2, mat4, reshader, quat } from '@maptalks/gl';
+import { vec2, vec3, vec4, mat2, mat4, reshader, quat } from '@maptalks/gl';
 import { interpolated, isFunctionDefinition } from '@maptalks/function-type';
 import CollisionPainter from './CollisionPainter';
 import { extend, isNil } from '../Util';
@@ -75,6 +75,8 @@ const availableImages = [];
 const ELEVATED_ANCHOR = [];
 
 const IDENTITY_ARR = mat4.identity([]);
+
+const BOX = [];
 
 export default class TextPainter extends CollisionPainter {
     static getBloomSymbol() {
@@ -645,8 +647,9 @@ export default class TextPainter extends CollisionPainter {
         } else {
             elevatedAnchor = projLabelAnchor;
         }
-
-        if (map.isOffscreen(elevatedAnchor)) {
+        const dpr = map.getDevicePixelRatio();
+        vec4.scale(BOX, elevatedAnchor, 1 / dpr);
+        if (map.isOffscreen(BOX)) {
             if (!enableCollision) {
                 resetOffset(aOffset, meshElements, start, end);
             }

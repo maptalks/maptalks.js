@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { reshader } from '@maptalks/gl';
+import { reshader, vec4 } from '@maptalks/gl';
 import collisionVert from './glsl/collision.vert';
 import collisionFrag from './glsl/collision.frag';
 import BasicPainter from './BasicPainter';
@@ -26,6 +26,7 @@ const MESH_ANCHORS = [];
 const NO_COLLISION = { collides: 0, boxes: [] };
 
 const MESHES = [];
+const BOX = [];
 
 export default class CollisionPainter extends BasicPainter {
 
@@ -613,7 +614,9 @@ export default class CollisionPainter extends BasicPainter {
     isCollides(box/*, tileInfo*/) {
         const layer = this.layer,
             map = layer.getMap();
-        if (map.isOffscreen(box)) {
+        const dpr = map.getDevicePixelRatio();
+        vec4.scale(BOX, box, 1 / dpr);
+        if (map.isOffscreen(BOX)) {
             return -1;
         }
         // const isBackground = layer.getRenderer().isCurrentTile(tileInfo.id);
@@ -659,7 +662,9 @@ export default class CollisionPainter extends BasicPainter {
             indices: []
         };
         const map = this.getMap();
-        if (map.isOffscreen(box)) {
+        const dpr = map.getDevicePixelRatio();
+        vec4.scale(BOX, box, 1 / dpr);
+        if (map.isOffscreen(BOX)) {
             return;
         }
         const count = allBoxes.aPosition.length / 2;
@@ -784,7 +789,7 @@ export default class CollisionPainter extends BasicPainter {
                     primitive: 'lines'
                 }
             );
-
+            geometry.generateBuffers(this.regl);
             this._collisionMesh = new reshader.Mesh(geometry);
             this._collisionScene = new reshader.Scene();
             this._collisionScene.addMesh(this._collisionMesh);
