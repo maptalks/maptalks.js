@@ -6,6 +6,7 @@ import * as maptalks from 'maptalks';
 import { vec3, mat3, mat4, MaskLayerMixin } from '@maptalks/gl';
 import { intersectsSphere, intersectsBox, intersectsOrientedBox } from 'frustum-intersects';
 import { isFunction, extend, isNil, toRadian, toDegree, getAbsoluteURL, isBase64, pushIn } from '../common/Util';
+import { isRelativeURL } from '../common/UrlUtil';
 import { DEFAULT_MAXIMUMSCREENSPACEERROR } from '../common/Constants';
 import Geo3DTilesRenderer from './renderer/Geo3DTilesRenderer';
 import { radianToCartesian3, cartesian3ToDegree } from '../common/Transform';
@@ -373,7 +374,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                             if (url) {
                                 if (isBase64(url) || url.indexOf('i3s:') >= 0) {
                                     children[i].baseUrl = node.baseUrl;
-                                } else if (url.indexOf('http://') === -1 && (url.indexOf('https://') === -1)) {
+                                } else if (isRelativeURL(url)) {
                                     children[i].content.url = node.baseUrl + url;
                                 } else {
                                     children[i].baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
@@ -638,7 +639,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 parent.content.url = parent.content.uri;
                 delete parent.content.uri;
             }
-            if (!isI3S && url && !isBase64(url) && url.indexOf('http://') === -1 && url.indexOf('https://') === -1) {
+            if (!isI3S && url && !isBase64(url) && isRelativeURL(url)) {
                 parent.content.url = parent.baseUrl + url;
             }
         }
