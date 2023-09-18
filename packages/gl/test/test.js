@@ -789,7 +789,7 @@ describe('gl tests', () => {
                             ._sub(map.coordToPoint(targetCoord, z, POINT1));
                         return offset._round().toArray();
                     },
-                    urlTemplate: '/fixtures/tiles/tile-green-256.png',
+                    urlTemplate: '/fixtures/tiles/UV_Grid_Sm.jpg',
                 })
             ];
             const terrain = {
@@ -806,7 +806,53 @@ describe('gl tests', () => {
                         const canvas = map.getRenderer().canvas;
                         const ctx = canvas.getContext('2d');
                         const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
+                        expect(pixel).to.be.eql({ data: { '0': 230, '1': 144, '2': 161, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
+        it('512 terrain with offset skin at zoom 12', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const targetCoord = new maptalks.Coordinate(0, 0);
+            const POINT0 = new maptalks.Coordinate(0, 0);
+            const POINT1 = new maptalks.Coordinate(0, 0);
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    offset: function(z, center) {
+                        center = center || map.getCenter();
+                        const c = maptalks.CRSTransform.transform(center.toArray(), "GCJ02", "WGS84");
+                        targetCoord.set(c[0], c[1]);
+                        const offset = map
+                            .coordToPoint(center, z, POINT0)
+                            ._sub(map.coordToPoint(targetCoord, z, POINT1));
+                        return offset._round().toArray();
+                    },
+                    urlTemplate: '/fixtures/tiles/UV_Grid_Sm.jpg',
+                })
+            ];
+            const terrain = {
+                fadeAnimation: false,
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            };
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 190, '1': 77, '2': 125, '3': 255 } });
                         done();
                     });
                 });
