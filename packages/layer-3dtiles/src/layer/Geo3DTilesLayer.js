@@ -177,7 +177,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             const len = subdomains.length;
             if (len) {
                 const urlArr = [...url];
-                const index = urlArr.reduce((a, char) => a + char.charCodeAt() - 96, 0);
+                const index = urlArr.reduce((a, char) => a + char.charCodeAt(), 0);
                 const domain = index % len;
                 // {s} is encoded in getAbsoluteUrl
                 return url.replace(rootNode.domainKey, subdomains[domain]);
