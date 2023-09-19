@@ -40,7 +40,7 @@ class StandardLiteMaterial extends Material {
         if (uniforms['baseColorTexture']) {
             defines['HAS_BASECOLOR_MAP'] = 1;
         }
-        if (uniforms['occlusionTexture']) {
+        if (uniforms['occlusionTexture'] && geometry.data[geometry.desc['uv1Attribute']]) {
             defines['HAS_AO_MAP'] = 1;
         }
         if (uniforms['emissiveTexture']) {

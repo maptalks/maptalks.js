@@ -53,11 +53,8 @@ export default class InstancedMesh extends Mesh {
                 const buffers = [];
                 for (let i = 0; i < attributes.length; i++) {
                     const data = geoBuffers[attributes[i]];
-                    if (data && data.buffer) {
-                        buffers.push(data.buffer);
-                    } else {
-                        buffers.push(this.instancedData[attributes[i]]);
-                    }
+                    const buffer = data && data.buffer || this.instancedData[attributes[i]];
+                    buffers.push(buffer);
                 }
                 const vaoData = {
                     attributes: buffers,

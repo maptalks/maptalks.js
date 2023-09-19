@@ -106,7 +106,7 @@ class StandardMaterial extends Material {
         if (uniforms['metallicRoughnessTexture']) {
             defines['HAS_METALLICROUGHNESS_MAP'] = 1;
         }
-        if (uniforms['occlusionTexture']) {
+        if (uniforms['occlusionTexture'] && geometry.data[geometry.desc['uv1Attribute']]) {
             defines['HAS_AO_MAP'] = 1;
         }
         if (uniforms['emissiveTexture']) {
