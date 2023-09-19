@@ -31,7 +31,6 @@ const defaultOptions = {
     tileLimitPerFrame: 1,
     loadingLimitOnInteracting: 1,
     loadingLimit: 1,
-    maxCacheSize: 72,
     antialias: false,
     iconErrorUrl: null,
     collisionFrameLimit: 1.5,
