@@ -60,6 +60,9 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         };
         if (this.options.projection) {
             options.projection = this.options.projection;
+            if (options.projection === 'EPSG:4490') {
+                options.projection = 'EPSG:4326';
+            }
         }
         if (isString(data) && data.substring(0, 1) != '{' || data.url) {
             Ajax.getJSON(data.url ? data.url : data, data.url ? data : {}, (err, resp) => {
