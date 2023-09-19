@@ -174,6 +174,16 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
+    clearLayers() {
+        const layers = this.getLayers();
+        for (let i = 0; i < layers.length; i++) {
+            if (layers[i]) {
+                layers[i].remove();
+            }
+        }
+        return this;
+    }
+
     _updatePolygonOffset() {
         let total = 0;
         for (let i = 0; i < this.layers.length; i++) {
@@ -201,7 +211,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @returns {TileLayer[]}
      */
     getLayers() {
-        return this.layers;
+        return this.layers.splice();
     }
 
     /**

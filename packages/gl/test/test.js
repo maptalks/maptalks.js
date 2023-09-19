@@ -55,46 +55,6 @@ describe('gl tests', () => {
     });
 
     context('tilelayer tests', () => {
-        it('GroupGLLayer.queryTerrain', done => {
-            map = new maptalks.Map(container, {
-                center: [91.14478,29.658272],
-                zoom: 12
-            });
-            const skinLayers = [
-                new maptalks.TileLayer('base', {
-                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
-                })
-            ];
-            const terrain = {
-                type: 'mapbox',
-                tileSize: 512,
-                spatialReference: 'preset-vt-3857',
-                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
-                tileStackDepth: 0
-            }
-            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
-            let hit = false;
-            group.once('terrainlayercreated', () => {
-                const terrainLayer = group.getTerrainLayer();
-                terrainLayer.once('terrainreadyandrender', () => {
-                    group.on('layerload', () => {
-                        if (!hit) {
-                            const altitude = group.queryTerrain(map.getCenter());
-                            if (!altitude[0]) {
-                                return;
-                            }
-                            hit = true;
-                            expect(altitude).to.be.eql([3652.620361328125, 1]);
-                            done();
-                        }
-
-                    });
-
-                });
-            });
-            group.addTo(map);
-        });
-
         it('support tilelayer in post process, maptalks/issues#148', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
@@ -198,7 +158,132 @@ describe('gl tests', () => {
         });
     });
 
+    context('GroupGLLayer tests', () => {
+        it('layer.remove, maptalks/issues#435', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const greenLayer = new maptalks.TileLayer('black', {
+                urlTemplate: './fixtures/tiles/tile-green-256.png',
+                zIndex: 1,
+                fadeAnimation: false
+            });
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: './fixtures/tiles/tile-red-256.png',
+                zIndex: 0,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [greenLayer, redLayer], {
+                sceneConfig
+            });
+            group.addTo(map);
+            setTimeout(() => {
+                greenLayer.remove();
+                redLayer.remove();
+            }, 200);
+            setTimeout(() => {
+                const layers = group.getLayers();
+                expect(layers.length).to.be.eql(0);
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
+                done();
+            }, 500);
+        });
+
+        it('GroupGLLayer.clearLayers(), maptalks/issues#416', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const greenLayer = new maptalks.TileLayer('black', {
+                urlTemplate: './fixtures/tiles/tile-green-256.png',
+                zIndex: 1,
+                fadeAnimation: false
+            });
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: './fixtures/tiles/tile-red-256.png',
+                zIndex: 0,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [greenLayer, redLayer], {
+                sceneConfig
+            });
+            group.addTo(map);
+            setTimeout(() => {
+                group.clearLayers();
+            }, 200);
+            setTimeout(() => {
+                const layers = group.getLayers();
+                expect(layers.length).to.be.eql(0);
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
+                done();
+            }, 500);
+        });
+    });
+
     context('terrain tests', () =>{
+        it('GroupGLLayer.queryTerrain', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    urlTemplate: '/fixtures/google-256/{z}/{x}/{y}.jpg'
+                })
+            ];
+            const terrain = {
+                type: 'mapbox',
+                tileSize: 512,
+                spatialReference: 'preset-vt-3857',
+                urlTemplate: '/fixtures/mapbox-terrain/{z}/{x}/{y}.webp',
+                tileStackDepth: 0
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            let hit = false;
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.on('layerload', () => {
+                        if (!hit) {
+                            const altitude = group.queryTerrain(map.getCenter());
+                            if (!altitude[0]) {
+                                return;
+                            }
+                            hit = true;
+                            expect(altitude).to.be.eql([3652.620361328125, 1]);
+                            done();
+                        }
+
+                    });
+
+                });
+            });
+            group.addTo(map);
+        });
+
         it('remove and add skinLayers', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
