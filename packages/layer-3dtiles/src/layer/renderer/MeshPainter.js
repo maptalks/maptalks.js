@@ -1222,7 +1222,7 @@ export default class MeshPainter {
                 environmentExposure = ambientLight[0] / ambientValue;
             }
             material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1, gltfWeakResources);
-            material.doubleSided = gltf.materials && gltf.materials[gltfMesh.material] && gltf.materials[gltfMesh.material].doubleSided;
+            material.doubleSided = service.doubleSided || gltf.materials && gltf.materials[gltfMesh.material] && gltf.materials[gltfMesh.material].doubleSided;
         }
         Object.defineProperty(material.uniforms, 'alphaTest', {
             enumerable: true,
