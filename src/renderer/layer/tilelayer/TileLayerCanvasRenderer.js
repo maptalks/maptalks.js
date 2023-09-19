@@ -861,6 +861,47 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const map = this.getMap();
         const children = [];
         if (layer._isPyramidMode()) {
+            if (!terrainTileMode) {
+                // a faster one
+                const layer = this._getLayerOfTile(info.layer);
+                const zoomDiff = 2;
+                const cx = info.x * 2;
+                const cy = info.y * 2;
+                const cz = info.z + 1;
+                const queue = [];
+                for (let j = 0; j < 2; j++) {
+                    for (let jj = 0; jj < 2; jj++) {
+                        queue.push(cx + j, cy + jj, cz);
+                    }
+                }
+                while (queue.length) {
+                    const z = queue.pop();
+                    const y = queue.pop();
+                    const x = queue.pop();
+                    const id = layer._getTileId(x, y, z, info.layer);
+                    const canVisit = z + 1 <= info.z + zoomDiff;
+                    const tile = this.tileCache.getAndRemove(id);
+                    if (tile) {
+                        if (this.isValidCachedTile(tile)) {
+                            children.push(tile);
+                            this.tileCache.add(id, tile);
+                        } else if (canVisit) {
+                            for (let j = 0; j < 2; j++) {
+                                for (let jj = 0; jj < 2; jj++) {
+                                    queue.push(x * 2 + j, y * 2 + jj, z + 1);
+                                }
+                            }
+                        }
+                    } else if (canVisit) {
+                        for (let j = 0; j < 2; j++) {
+                            for (let jj = 0; jj < 2; jj++) {
+                                queue.push(x * 2 + j, y * 2 + jj, z + 1);
+                            }
+                        }
+                    }
+                }
+                return children;
+            }
             let missedTiles;
             if (terrainTileMode) {
                 missedTiles = [];
