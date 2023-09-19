@@ -409,24 +409,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         for (let i = 0; i < geometry.length; i++) {
             if (!Array.isArray(geometry[i][0])) {
                 if (!isNaN(+geometry[i][0]) && !isNaN(+geometry[i][1])) {
-                    center[0] += geometry[i][0];
-                    center[1] += geometry[i][1];
-                    center[3] += 1;
+                    this._addCoord(center, geometry[i][0], geometry[i][1], 1);
                 }
             } else {
                 for (let ii = 0; ii < geometry[i].length; ii++) {
                     if (!Array.isArray(geometry[i][ii][0])) {
                         if (!isNaN(+geometry[i][ii][0]) && !isNaN(+geometry[i][ii][1])) {
-                            center[0] += geometry[i][ii][0];
-                            center[1] += geometry[i][ii][1];
-                            center[3] += 1;
+                            this._addCoord(center, geometry[i][ii][0], geometry[i][ii][1], 1);
                         }
                     } else {
                         for (let iii = 0; iii < geometry[i][ii].length; iii++) {
                             if (!isNaN(+geometry[i][ii][iii][0]) && !isNaN(+geometry[i][ii][iii][1])) {
-                                center[0] += geometry[i][ii][iii][0];
-                                center[1] += geometry[i][ii][iii][1];
-                                center[3] += 1;
+                                this._addCoord(center, geometry[i][ii][iii][0], geometry[i][ii][iii][1], 1);
                             }
                         }
                     }
@@ -434,6 +428,26 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             }
         }
     }
+
+
+    _addCoord(coord, x, y, z) {
+        let invalid = false;
+        if (x > 180 || x < -180) {
+            invalid = true;
+            console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${x}`);
+        }
+        if (y > 90 || y < -90) {
+            invalid = true;
+            console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${y}`);
+        }
+        if (invalid) {
+            return;
+        }
+        coord[0] += x;
+        coord[1] += y;
+        coord[2] += z;
+    }
+
 
     _fillCommonProps(geometry) {
         const map = this.getMap();
