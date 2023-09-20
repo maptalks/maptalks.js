@@ -761,6 +761,14 @@ export default class GLTFMarker extends Marker {
             this._gltfManager.logoutGLTF(url);
             delete this._gltfManager;
         }
+        if (this._skinMap) {
+            for (const p in this._skinMap) {
+                if (this._skinMap[p] && this._skinMap[p].jointTexture) {
+                    this._skinMap[p].jointTexture.destroy();
+                }
+            }
+            delete this._skinMap;
+        }
         delete this._gltfData;
         delete this.gltfPack;
         super.remove();
@@ -1279,10 +1287,6 @@ export default class GLTFMarker extends Marker {
 
     _getSkinMap() {
         this._skinMap = this._skinMap || {};
-        for (const node in this._skinMap) {
-            this._skinMap[node].jointTexture.destroy();
-            delete this._skinMap[node];
-        }
         return this._skinMap;
     }
 

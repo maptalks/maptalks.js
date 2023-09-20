@@ -141,12 +141,14 @@ export default class GLTFPack {
             const node = this.gltf.nodes[index];
             const nodeMatrix = nodeMatrixMap[node.nodeIndex];
             if (node.skin && nodeMatrix) {
-                const jointTexture = node.skin.update(nodeMatrix, nodeMatrixMap);
-                skinMap[node.nodeIndex] = {
-                    jointTextureSize: [4, 6],
-                    numJoints: node.skin.joints.length,
-                    jointTexture
-                };
+                const jointTexture = node.skin.update(nodeMatrix, nodeMatrixMap, skinMap[node.nodeIndex] && skinMap[node.nodeIndex].jointTexture);
+                if (!skinMap[node.nodeIndex]) {
+                    skinMap[node.nodeIndex] =  {
+                        jointTextureSize: node.skin.jointTextureSize,
+                        numJoints: node.skin.joints.length
+                    };
+                }
+                skinMap[node.nodeIndex].jointTexture = jointTexture;
             }
         }
         return;

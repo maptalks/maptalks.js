@@ -21,7 +21,7 @@ export default class Skin {
         this.jointTextureSize = [4, 6];
     }
 
-    update(nodeMatrix, nodeMatrixMap) {
+    update(nodeMatrix, nodeMatrixMap, joinTexture) {
         mat4.invert(globalWorldInverse, nodeMatrix);
         for (let j = 0; j < this.joints.length; ++j) {
             const joint = this.joints[j];
@@ -30,11 +30,17 @@ export default class Skin {
             mat4.multiply(dst, dst, this.inverseBindMatrices[j]);
         }
         // const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
-        return this._regl.texture({
+        const texInfo = {
             width: 4,
             type: 'float',
             height: this.joints.length,
             data: this.jointData
-        });
+        };
+        if (!joinTexture) {
+            joinTexture = this._regl.texture(texInfo);
+        } else {
+            joinTexture(texInfo)
+        }
+        return joinTexture;
     }
 }
