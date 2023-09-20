@@ -354,7 +354,7 @@ class StandardPainter extends MeshPainter {
                 }
             }
         }
-        if (material.alphaTest === undefined) {
+        if (material.alphaTest === undefined && this.getMaterialClazz) {
             material.alphaTest = 0.05;
         }
         if (!this.material) {
