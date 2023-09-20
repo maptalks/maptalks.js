@@ -186,7 +186,6 @@ export default class GLTFPack {
                 this._updateNodeMatrix(animationName, time, child, nodeMatrixMap[node.nodeIndex], nodeMatrixMap);
             });
         }
-        this._updateSkinTexture(node);
     }
 
     //更新morph的基本思路是，计算node下每一帧的weights，然后对weights排序，最后根据
@@ -243,27 +242,6 @@ export default class GLTFPack {
         });
     }
 
-    _updateSkinTexture(node) {
-        if (!this.gltf.joints) {
-            return;
-        }
-        const animations = this.gltf.animations;
-        if (!animations) {
-            return;
-        }
-        const jointsLength = this.gltf.joints.length;
-        animations.forEach(animation => {
-            const channels = animation.channels;
-            for (let i = 0; i < channels.length; i++) {
-                const channel = channels[i];
-                const index = node.nodeIndex;
-                if (channel.target.node === index) {
-                    const skin = node.skin;
-                    skin.updateJointTexture(jointsLength);
-                }
-            }
-        });
-    }
 
     _parserNode(node, geometries, parentNodeMatrix) {
         if (node.isParsed) {
