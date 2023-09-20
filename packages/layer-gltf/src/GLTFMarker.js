@@ -282,6 +282,7 @@ export default class GLTFMarker extends Marker {
             } else {
                 mesh.geometry = mesh.properties.geometryResource.geometry;
             }
+            // 如果mesh上已经有老的material，因为material上的纹理是在GLTFPack中管理的，老的material无需dispose，可以直接替换
             mesh.material = material;
         });
     }
