@@ -609,7 +609,7 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
     _getLayers() {
-        return this.layer.getLayers();
+        return this.layer._getLayers();
     }
 
     forEachRenderer(fn) {

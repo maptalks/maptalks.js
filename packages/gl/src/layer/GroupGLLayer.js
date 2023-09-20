@@ -214,6 +214,10 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this.layers.splice();
     }
 
+    _getLayers() {
+        return this.layers;
+    }
+
     /**
      * Export the GroupTileLayer's profile json. <br>
      * Layer's profile is a snapshot of the layer in JSON format. <br>
