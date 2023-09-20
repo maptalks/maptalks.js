@@ -1,5 +1,6 @@
 import * as GLTFHelper  from '../GLTFHelper.js';
 import { simpleModels, getSimpleModel } from './SimpleModel';
+import { defined } from '../common/Util';
 
 export default class GLTFManager {
     constructor(regl) {
@@ -68,7 +69,7 @@ export default class GLTFManager {
             gltfPack,
             resources: geometries,
             //目前只用到gltf原始数据中的assets和animations,为避免占用内存，只保存需要用到的信息
-            json: { asset: gltf.asset, animations: gltf.animations ? gltf.animations.map((animation, index) => { return { name: animation.name || index }; }) : null },
+            json: { asset: gltf.asset, animations: gltf.animations ? gltf.animations.map((animation, index) => { return { name: defined(animation.name) ? animation.name : index }; }) : null },
             refCount: this.resourceMap[url] ? this.resourceMap[url].refCount : 0 //这里不能设置为0，由于是异步，会把前面累增的量重置为0
         };
         return resourceMap;
