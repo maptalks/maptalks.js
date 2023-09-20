@@ -83,7 +83,7 @@ const GLTFMixin = Base =>
             return EMPTY_ARRAY;
         }
 
-        createMesh(geo, transform, { tileTranslationMatrix, tileExtent }) {
+        createMesh(geo, transform, { tileTranslationMatrix, tileExtent }, { timestamp }) {
             if (!this._ready) {
                 return null;
             }
@@ -133,6 +133,7 @@ const GLTFMixin = Base =>
                 if (!meshInfos) {
                     continue;
                 }
+                const gltfPack = this._gltfPack[i][0];
                 const { fixSizeOnZoom } = symbol;
                 let trsMatrix = mat4.identity([]);
                 // let translationInMeters;
@@ -163,8 +164,8 @@ const GLTFMixin = Base =>
                 //     vec3.add(anchorTranslation, translationInMeters, anchorTranslation);
                 // }
                 //
-                const childMeshes = meshInfos.map(info => {
-                    const { geometry: gltfGeo, nodeMatrix, materialInfo, skin, morphWeights, extraInfo } = info;
+                const childMeshes = meshInfos.map((info, meshIndex) => {
+                    const { geometry: gltfGeo, materialInfo, morphWeights, extraInfo, nodeIndex } = info;
                     if (symbol.alphaTest) {
                         materialInfo.alphaTest = symbol.alphaTest;
                     }
@@ -177,11 +178,13 @@ const GLTFMixin = Base =>
                         // castShadow: false,
                         picking: true
                     });
-                    if (skin) {
-                        mesh.setUniform('jointTexture', skin.jointTexture);
-                        mesh.setUniform('jointTextureSize', skin.jointTextureSize);
-                        mesh.setUniform('numJoints', skin.numJoints);
-                        mesh.setUniform('skinAnimation', 0);
+                    if (gltfPack.hasSkinAnimation()) {
+                        const skinObj = this._updateAnimation(mesh, i, 0)[nodeIndex];
+                        mesh.setUniform('jointTexture', skinObj.jointTexture);
+                        mesh.setUniform('jointTextureSize', skinObj.jointTextureSize);
+                        mesh.setUniform('numJoints', skinObj.numJoints);
+                        mesh.setUniform('skinAnimation', +this._isSkinAnimating(i));
+                        mesh.properties.startTime = timestamp;
                         defines['HAS_SKIN'] = 1;
                     }
                     if (morphWeights) {
@@ -193,17 +196,20 @@ const GLTFMixin = Base =>
                     mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
                     setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'markerFill', DEFAULT_MARKER_FILL, createColorSetter(this.colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'markerOpacity', 1);
+                    mesh.setUniform('layerOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], trsMatrix, nodeMatrix));
-                    const positionMatrix = mat4.multiply([], Y_TO_Z, nodeMatrix);
-                    mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
-                    mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
-                    const matrix = mat4.identity(TEMP_MATRIX)
-                    if (zOffset !== 0) {
-                        mat4.fromTranslation(matrix, anchorTranslation);
-                        mat4.multiply(positionMatrix, matrix, positionMatrix);
-                    }
-
+                    const positionMatrix = [];
                     mesh.setPositionMatrix(() => {
+                        const nodeMatrix = this._getMeshNodeMatrix(i, meshIndex, nodeIndex);
+                        mat4.multiply(positionMatrix, Y_TO_Z, nodeMatrix);
+                        this._getSymbolTRSMatrix(trsMatrix);
+                        mat4.multiply(positionMatrix, trsMatrix, positionMatrix);
+                        mat4.multiply(positionMatrix, meterToPointMat, positionMatrix);
+                        const matrix = mat4.identity(TEMP_MATRIX)
+                        if (zOffset !== 0) {
+                            mat4.fromTranslation(matrix, anchorTranslation);
+                            mat4.multiply(positionMatrix, matrix, positionMatrix);
+                        }
                         if (isNumber(fixSizeOnZoom)) {
                             const scale = map.getGLScale() / map.getGLScale(fixSizeOnZoom);
                             vec3.set(V3, scale, scale, scale);
@@ -247,6 +253,37 @@ const GLTFMixin = Base =>
             return meshes;
         }
 
+        _getMeshNodeMatrix(symbolIndex, meshIndex, nodeIndex) {
+            const i = symbolIndex;
+            const meshInfos = this._gltfMeshInfos[i];
+            const meshInfo = meshInfos[meshIndex];
+            if (!this._isSkinAnimating(symbolIndex)) {
+                return meshInfo.nodeMatrix;
+            }
+            return this._nodeMatrixMap && this._nodeMatrixMap[nodeIndex] || meshInfo.nodeMatrix;
+        }
+
+        _updateAnimation(mesh, symbolIndex, timestamp) {
+            if (!this._gltfPack) {
+                return;
+            }
+            const gltfPack = this._gltfPack[symbolIndex][0];
+            if (!this._skinMap) {
+                this._skinMap = {};
+            }
+            this._nodeMatrixMap = {};
+            if (!this._skinMap[mesh.uuid]) {
+                this._skinMap[mesh.uuid] = {};
+            }
+            const symbols = this.getSymbols();
+            const symbol = symbols[symbolIndex];
+            const gltfJSON = this._gltfJSON[symbolIndex];
+            const { loop, speed, animationName } = symbol;
+            const currentAnimation = animationName || gltfJSON.animations[0].name;
+            gltfPack.updateAnimation(timestamp, loop || false, speed || 1, currentAnimation, mesh.properties.startTime || 0, this._nodeMatrixMap, this._skinMap[mesh.uuid]);
+            return this._skinMap[mesh.uuid];
+        }
+
         // _calFitScale(gltfBBox) {
         //     const maxLength = Math.max(gltfBBox.max[0] - gltfBBox.min[0], gltfBBox.max[1] - gltfBBox.min[1], gltfBBox.max[2] - gltfBBox.min[2]);
         //     const fitExtent = getFitExtent(this.getMap(), this.layer.options['gltfFitSize']);
@@ -283,6 +320,7 @@ const GLTFMixin = Base =>
             // if (isRenderingTerrainVector) {
             //     meshes = meshes.filter(m => m.properties.tile.terrainTileInfos);
             // }
+            const timestamp = context.timestamp;
             for (let i = 0; i < meshes.length; i++) {
                 if (!meshes[i] || !meshes[i].geometry) {
                     continue;
@@ -290,7 +328,11 @@ const GLTFMixin = Base =>
                 if (meshes[i].instancedData.aTerrainAltitude) {
                     this._updateTerrainAltitude(meshes[i], meshes[i].instancedData, meshes[i].properties, 3, context);
                 }
-                const isAnimated = this._isSkinAnimating(meshes[i].properties.symbolIndex.index);
+                const symbolIndex = meshes[i].properties.symbolIndex.index;
+                const isAnimated = this._isSkinAnimating(symbolIndex);
+                if (isAnimated) {
+                    this._updateAnimation(meshes[i], symbolIndex, timestamp);
+                }
                 meshes[i].setUniform('skinAnimation', +isAnimated);
             }
             this.scene.addMesh(meshes);
@@ -318,13 +360,14 @@ const GLTFMixin = Base =>
                 if (hasAnim && this._gltfPack[i]) {
                     if (!isAnimated) {
                         isAnimated = true;
+                        break;
                     }
-                    let speed = symbol.speed;
-                    const loop = !!symbol.loop;
-                    if (isNil(speed)) {
-                        speed = 1;
-                    }
-                    this._gltfPack[i].updateAnimation(context.timestamp, loop, speed);
+                    // let speed = symbol.speed;
+                    // const loop = !!symbol.loop;
+                    // if (isNil(speed)) {
+                    //     speed = 1;
+                    // }
+                    // this._gltfPack[i].updateAnimation(context.timestamp, loop, speed);
                 }
             }
 
@@ -347,7 +390,7 @@ const GLTFMixin = Base =>
         _isSkinAnimating(index) {
             const symbols = this.getSymbols();
             const symbol = symbols[index];
-            return symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index].hasSkinAnimation();
+            return !!(symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index][0] && this._gltfPack[index][0].hasSkinAnimation());
         }
 
         _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features) {
@@ -469,9 +512,9 @@ const GLTFMixin = Base =>
             let ry = symbolDef['rotationY'] || 0;
             let rz = symbolDef['rotationZ'] || 0;
 
-            let sx = symbolDef['scaleX'] || 0;
-            let sy = symbolDef['scaleY'] || 0;
-            let sz = symbolDef['scaleZ'] || 0;
+            let sx = symbolDef['scaleX'] || 1;
+            let sy = symbolDef['scaleY'] || 1;
+            let sz = symbolDef['scaleZ'] || 1;
 
             const idx = aPickingId && aPickingId[i];
             const feature = features && features[idx];
@@ -573,6 +616,7 @@ const GLTFMixin = Base =>
                 return;
             }
             this._gltfPack = [];
+            this._gltfJSON = [];
             const symbols = this.getSymbols();
             this._loaded = 0;
             for (let i = 0; i < symbols.length; i++) {
@@ -589,9 +633,10 @@ const GLTFMixin = Base =>
                             }
                             return;
                         }
-                        const { gltfPack: pack } = gltfData;
+                        const { gltfPack: pack, json } = gltfData;
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();
+                        this._gltfJSON[i] = json;
                         this._loaded++;
                         if (this._loaded >= symbols.length) {
                             this._ready = true;
@@ -599,10 +644,11 @@ const GLTFMixin = Base =>
                         this.setToRedraw(true);
                     });
                 } else {
-                    const { gltfPack: pack } = gltfRes;
+                    const { gltfPack: pack, json } = gltfRes;
                     if (pack) {
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();
+                        this._gltfJSON[i] = json;
                         this._loaded++;
                     }
                 }
@@ -623,6 +669,16 @@ const GLTFMixin = Base =>
             this.scene.removeMesh(meshes);
             //geometry应该一直保留，在painter.delete中才删除
             for (let i = 0; i < meshes.length; i++) {
+                const skinmap = this._skinMap && this._skinMap[meshes[i].uuid];
+                if (skinmap) {
+                    for (const p in skinmap) {
+                        if (skinmap[p].jointTexture) {
+                            skinmap[p].jointTexture.destroy();
+                        }
+                    }
+
+                    delete this._skinMap[meshes[i].uuid];
+                }
                 meshes[i].disposeInstanceData();
                 meshes[i].dispose();
             }
@@ -635,6 +691,18 @@ const GLTFMixin = Base =>
                 const url = symbols[i].url || 'pyramid';
                 this._gltfManager.logoutGLTF(url);
             }
+            if (this._skinMap) {
+                for (const uuid in this._skinMap) {
+                    const skinmap = this._skinMap[uuid];
+                    for (const p in skinmap) {
+                        if (skinmap[p].jointTexture) {
+                            skinmap[p].jointTexture.destroy();
+                        }
+                    }
+                }
+                delete this._skinMap;
+            }
+            delete this._nodeMatrixMap;
 
         }
 
