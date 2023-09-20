@@ -1,6 +1,12 @@
 import { mat4 } from 'gl-matrix';
 
 const globalWorldInverse = [];
+
+
+const TEX_INFO = {
+    width: 4,
+    type: 'float'
+};
 export default class Skin {
     constructor(regl, joints, inverseBindMatrixData) {
         this._regl = regl;
@@ -30,16 +36,13 @@ export default class Skin {
             mat4.multiply(dst, dst, this.inverseBindMatrices[j]);
         }
         // const type = this._regl.hasExtension('OES_texture_half_float') ? 'float16' : 'float';
-        const texInfo = {
-            width: 4,
-            type: 'float',
-            height: this.joints.length,
-            data: this.jointData
-        };
+        TEX_INFO.height = this.joints.length;
+        TEX_INFO.data = this.jointData;
+        const texInfo = TEX_INFO;
         if (!joinTexture) {
             joinTexture = this._regl.texture(texInfo);
         } else {
-            joinTexture(texInfo)
+            joinTexture(texInfo);
         }
         return joinTexture;
     }
