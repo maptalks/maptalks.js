@@ -19,17 +19,13 @@
     "dist/fusiongl.es.js"
   ],
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.11.1",
-    "eslint-config-maptalks": "^0.3.0",
+    "eslint": "^8.46.0",
     "rollup": "^1.0.1",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-terser": "^4.0.1"
   },
   "dependencies": {
-    "fast-deep-equal": "^2.0.1",
-    "regl": "^2.1.0",
-    "three": "^0.155.0"
+    "fast-deep-equal": "^2.0.1"
   }
 }
