@@ -3,8 +3,7 @@
  * @modify 2018/5/2
  * @author yellow
  */
-import { include, createDefaultStates } from "./Utils";
-import GLConstants from "./GLConstants";
+import { createDefaultStates } from "./Utils";
 import MockExtensions from "./extensions/Mocks";
 
 let uid = 1;
