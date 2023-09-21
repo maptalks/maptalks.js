@@ -129,7 +129,7 @@ include(GLContext.prototype, {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texSubImage2D
      */
-    texSubImage2D(args) {
+    texSubImage2D(...args) {
         this._checkAndRestore();
         if (this._is2) {
             //webgl2的texImage2D，存在type不在倒数第二位的情况

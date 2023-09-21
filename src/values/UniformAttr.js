@@ -116,65 +116,36 @@ include(GLContext.prototype, {
         this._checkAndRestore();
         return this._gl.uniform1f(location, v);
     },
-    uniform1fv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform1fv(location, v);
-    },
+
     uniform1i(location, v) {
         this._checkAndRestore();
         return this._gl.uniform1i(location, v);
-    },
-    uniform1iv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform1iv(location, v);
     },
     uniform2f(location, v0, v1) {
         this._checkAndRestore();
         return this._gl.uniform2f(location, v0, v1);
     },
-    uniform2fv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform2fv(location, v);
-    },
+
     uniform2i(location, v0, v1) {
         this._checkAndRestore();
         return this._gl.uniform2i(location, v0, v1);
     },
-    uniform2iv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform2iv(location, v);
-    },
+
     uniform3f(location, v0, v1, v2) {
         this._checkAndRestore();
         return this._gl.uniform3f(location, v0, v1, v2);
-    },
-    uniform3fv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform3fv(location, v);
     },
     uniform3i(location, v0, v1, v2) {
         this._checkAndRestore();
         return this._gl.uniform3i(location, v0, v1, v2);
     },
-    uniform3iv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform3iv(location, v);
-    },
     uniform4f(location, v0, v1, v2, v3) {
         this._checkAndRestore();
         return this._gl.uniform4f(location, v0, v1, v2, v3);
     },
-    uniform4fv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform4fv(location, v);
-    },
     uniform4i(location, v0, v1, v2, v3) {
         this._checkAndRestore();
         return this._gl.uniform4i(location, v0, v1, v2, v3);
-    },
-    uniform4iv(location, v) {
-        this._checkAndRestore();
-        return this._gl.uniform4iv(location, v);
     },
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/uniform
@@ -195,157 +166,131 @@ include(GLContext.prototype, {
         this._checkAndRestore();
         return this._gl.uniform4ui(location, v0, v1, v2, v3);
     },
-    uniform1fv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform1fv(location, data);
-    },
-    uniform1fv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform1fv(location, data, srcOffset);
-    },
+
     uniform1fv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform1fv(location, data, srcOffset, srcLength);
-    },
-    uniform2fv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform2fv(location, data);
-    },
-    uniform2fv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform2fv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform1fv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform1fv(location, data, srcOffset);
+        } else {
+            this._gl.uniform1fv(location, data);
+        }
     },
 
     uniform2fv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform2fv(location, data, srcOffset, srcLength);
+        if (srcLength !== undefined) {
+            this._gl.uniform2fv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform2fv(location, data, srcOffset);
+        } else {
+            this._gl.uniform2fv(location, data);
+        }
     },
-    uniform3fv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform3fv(location, data);
-    },
-    uniform3fv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform3fv(location, data, srcOffset);
-    },
+
     uniform3fv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform3fv(location, data, srcOffset, srcLength);
-    },
-    uniform4fv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform4fv(location, data);
-    },
-    uniform4fv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform4fv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform3fv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform3fv(location, data, srcOffset);
+        } else {
+            this._gl.uniform3fv(location, data);
+        }
     },
     uniform4fv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform4fv(location, data, srcOffset, srcLength);
-    },
-    uniform1iv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform1iv(location, data);
-    },
-    uniform1iv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform1iv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform4fv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform4fv(location, data, srcOffset);
+        } else {
+            this._gl.uniform4fv(location, data);
+        }
     },
     uniform1iv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform1iv(location, data, srcOffset, srcLength);
-    },
-
-    uniform2iv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform2iv(location, data);
-    },
-    uniform2iv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform2iv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform1iv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform1iv(location, data, srcOffset);
+        } else {
+            this._gl.uniform1iv(location, data);
+        }
     },
     uniform2iv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform2iv(location, data, srcOffset, srcLength);
-    },
-
-    uniform3iv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform3iv(location, data);
-    },
-    uniform3iv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform3iv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform2iv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform2iv(location, data, srcOffset);
+        } else {
+            this._gl.uniform2iv(location, data);
+        }
     },
     uniform3iv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform3iv(location, data, srcOffset, srcLength);
-    },
-
-    uniform4iv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform4iv(location, data);
-    },
-    uniform4iv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform4iv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform3iv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform3iv(location, data, srcOffset);
+        } else {
+            this._gl.uniform3iv(location, data);
+        }
     },
     uniform4iv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform4iv(location, data, srcOffset, srcLength);
+        if (srcLength !== undefined) {
+            this._gl.uniform4iv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform4iv(location, data, srcOffset);
+        } else {
+            this._gl.uniform4iv(location, data);
+        }
     },
 
-    uniform1uiv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform1uiv(location, data);
-    },
-    uniform1uiv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform1uiv(location, data, srcOffset);
-    },
     uniform1uiv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform1uiv(location, data, srcOffset, srcLength);
+        if (srcLength !== undefined) {
+            this._gl.uniform1uiv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform1uiv(location, data, srcOffset);
+        } else {
+            this._gl.uniform1uiv(location, data);
+        }
     },
 
-    uniform2uiv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform2uiv(location, data);
-    },
-    uniform2uiv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform2uiv(location, data, srcOffset);
-    },
     uniform2uiv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform2uiv(location, data, srcOffset, srcLength);
+        if (srcLength !== undefined) {
+            this._gl.uniform2uiv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform2uiv(location, data, srcOffset);
+        } else {
+            this._gl.uniform2uiv(location, data);
+        }
     },
 
-    uniform3uiv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform3uiv(location, data);
-    },
-    uniform3uiv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform3uiv(location, data, srcOffset);
-    },
     uniform3uiv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform3uiv(location, data, srcOffset, srcLength);
-    },
-
-    uniform4uiv(location, data) {
-        this._checkAndRestore();
-        return this._gl.uniform4uiv(location, data);
-    },
-    uniform4uiv(location, data, srcOffset) {
-        this._checkAndRestore();
-        return this._gl.uniform4uiv(location, data, srcOffset);
+        if (srcLength !== undefined) {
+            this._gl.uniform3uiv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform3uiv(location, data, srcOffset);
+        } else {
+            this._gl.uniform3uiv(location, data);
+        }
     },
     uniform4uiv(location, data, srcOffset, srcLength) {
         this._checkAndRestore();
-        return this._gl.uniform4uiv(location, data, srcOffset, srcLength);
+        if (srcLength !== undefined) {
+            this._gl.uniform4uiv(location, data, srcOffset, srcLength);
+        } else if (srcOffset !== undefined) {
+            this._gl.uniform4uiv(location, data, srcOffset);
+        } else {
+            this._gl.uniform4uiv(location, data);
+        }
     },
 
     /**

@@ -1,4 +1,4 @@
-﻿<!--
+<!--
  * @Author: wenrongz 2920356983@qq.com
  * @Date: 2023-08-14 09:38:23
  * @LastEditors: wenrongz 2920356983@qq.com
@@ -13,7 +13,7 @@
     <meta charset="utf-8" />
     <title></title>
     <script src="../dist/fusion.gl-dev.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/three@0.142.0/three.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/three@0.142.0/build/three.js"></script>
     <script type="text/javascript" src="https://unpkg.com/three@0.142.0/examples/js/loaders/GLTFLoader.js"></script>
 
 </head>
@@ -58,10 +58,12 @@
                 console.error(e);
             }
         );
+
         renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             context: gl
         });
+
 
         window.gl = gl;
 
@@ -69,62 +71,17 @@
         renderer.setSize(800, 600);
         renderer.render(scene, camera);
 
-        const gl1 = new fusion.GLContext(realGL);
-        const camera1 = new THREE.PerspectiveCamera(70, 800 / 600, 0.01, 10000);
-        camera1.position.z = 1;
-        var scene1 = new THREE.Scene();
-        var light1 = new THREE.DirectionalLight(0xffffff);
-        light1.position.set(0, -10, 10).normalize();
-        scene1.add(light);
-        var geometry1 = new THREE.BoxGeometry(0.5, 0.3, 0.8);
-        var material1 = new THREE.MeshStandardMaterial({
-            color: 0xFFB6C1,
-            // roughness: 0.1,
-            // metalness: 0.1,
-            side: THREE.FrontSide,
-            // envMap: reflectionCube
-        });
 
-        var mesh1 = new THREE.Mesh(geometry1, material1);
-        mesh1.rotation.x += 0.1;
-        mesh1.rotation.y += 0.2;
-        let model1;
-        loader.load(
-            "./model/szlk_rj.glb",
-            function (gltf) {
-                model1 = gltf.scene;
-                model1.rotation.x = Math.PI / 2;
-                model1.position.set(0, 0, 0);
-                model1.rotation.x += 0.1;
-                //  model.scale.set(100, 100, 100);
-                scene1.add(model1);
-            },
-            undefined,
-            function (e) {
-                console.error(e);
-            }
-        );
-        scene1.add(mesh1);
-        window.scene = scene;
-        window.scene1 = scene1;
-        var renderer1 = new THREE.WebGLRenderer({
-            canvas: canvas,
-            context: gl1
-        });
-        renderer1.autoClear = false;
-        renderer1.setSize(800, 600);
-        renderer1.render(scene1, camera1);
 
         function animate() {
             requestAnimationFrame(animate);
             renderer.clear(true, true, true);
-            renderer1.clear(true, true, true);
+
             mesh.rotation.x -= 0.01;
             mesh.rotation.y -= 0.02;
-            mesh1.rotation.x += 0.01;
-            mesh1.rotation.y += 0.02;
+
             renderer.render(scene, camera);
-            renderer1.render(scene1, camera1);
+
         }
 
         animate();

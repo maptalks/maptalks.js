@@ -34,7 +34,13 @@ class GLContext {
         this._is2 =
             typeof WebGL2RenderingContext !== "undefined" &&
             this._gl instanceof WebGL2RenderingContext;
-        console.log("是否webgl2", this._is2);
+
+        const myProto = Object.getPrototypeOf(this);
+        if (this._is2) {
+            Object.setPrototypeOf(myProto, WebGL2RenderingContext.prototype);
+        } else {
+            Object.setPrototypeOf(myProto, WebGLRenderingContext.prototype);
+        }
 
         this._attrLimit = gl.getParameter(gl["MAX_VERTEX_ATTRIBS"]);
     }
@@ -529,6 +535,6 @@ class GLContext {
     }
 }
 
-include(GLContext.prototype, GLConstants);
+// include(GLContext.prototype, GLConstants);
 
 export default GLContext;

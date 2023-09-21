@@ -898,7 +898,7 @@ const GLConstants = {
     DRAW_BUFFER13_WEBGL: 0x8832, // Draw buffer
     DRAW_BUFFER14_WEBGL: 0x8833, // Draw buffer
     DRAW_BUFFER15_WEBGL: 0x8834, // Draw buffer
-    DRAW_FRAMEBUFFER: 0x8ca9, // Draw buffer
+
     MAX_COLOR_ATTACHMENTS_WEBGL: 0x8cdf, // Maximum number of framebuffer color attachment points
     MAX_DRAW_BUFFERS_WEBGL: 0x8824, // Maximum number of draw buffers
 
