@@ -233,13 +233,13 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
             return ALTITUDE;
         }
         const map = this.getMap();
-        const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
-        const tileInfo = renderer._getTerrainTileAtPoint(worldPos, 1);
+        const tileInfo = renderer._getTerrainTileAtPrjCoord(prjCoord);
         if (!tileInfo) {
             ALTITUDE[0] = null;
             ALTITUDE[1] = 0;
             return ALTITUDE;
         }
+        const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
         return renderer._queryTerrain(ALTITUDE, tileInfo.id, tileInfo, worldPos, 1);
     }
 
@@ -353,7 +353,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
 }
 
 // TerrainLayer.include({
-//     '_getTileId': (x, y, z) => {
+//     getTileId: (x, y, z) => {
 //         // always assume terrain layer is pyramid mode
 //         // 由字符串操作改为数值操作，提升性能
 //         const total = Math.pow(4, z + 1);

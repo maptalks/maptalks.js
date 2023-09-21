@@ -967,15 +967,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         super.onTileError(data, tile);
     }
 
-    _getTerrainTileAtPoint(point, res) {
-        const cache = this.tileCache.data;
-        const values = cache.values();
-        for (const tile of values) {
-            if (inTerrainTile(tile.info, point.x, point.y, res)) {
-                return tile.info;
-            }
-        }
-        return null;
+    _getTerrainTileAtPrjCoord(prjCoord) {
+        const zoom = this.getCurrentTileZoom();
+        const sp = this.layer.getSpatialReference();
+        const res = sp.getResolution(zoom);
+        const tileIndex = this.layer['_getTileConfig']().getTileIndex(prjCoord, res, this.layer.options['repeatWorld']);
+        tileIndex.z = zoom;
+        return tileIndex;
     }
 
     _queryTerrain(out, terrainTileId, tileIndex, worldPos, res) {
