@@ -591,7 +591,7 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
     const heights = new Float32Array(terrainWidth * terrainWidth);
 
-    const stride = Math.floor(width / terrainWidth);
+    const stride = Math.round(width / terrainWidth);
 
     for (let i = 0; i < terrainWidth; i++) {
         for (let j = 0; j < terrainWidth; j++) {
@@ -604,8 +604,14 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
             for (let k = 0; k < stride; k++) {
                 for (let l = 0; l < stride; l++) {
-                    const x = tx * stride + k;
-                    const y = ty * stride + l;
+                    let x = tx * stride + k;
+                    let y = ty * stride + l;
+                    if (y > width - 1) {
+                        y = width - 1;
+                    }
+                    if (x > width - 1) {
+                        x = width - 1;
+                    }
                     const imageIndex = x + y * width;
                     const R = imgData[imageIndex * 4];
                     const G = imgData[imageIndex * 4 + 1];
