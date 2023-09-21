@@ -401,6 +401,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         if (this.map) {
             this.map.removeLayer(this);
         }
+        this.fire('remove');
         return this;
     }
 

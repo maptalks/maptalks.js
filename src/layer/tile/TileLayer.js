@@ -1203,11 +1203,11 @@ class TileLayer extends Layer {
         return tileInfo;
     }
 
-    _getTileOffset(z) {
+    _getTileOffset(...params) {
         // offset result can't be cached, as it varies with map's center.
         let offset = this.options['offset'];
         if (isFunction(offset)) {
-            offset = offset.call(this, z);
+            offset = offset.call(this, ...params);
         }
         if (isNumber(offset)) {
             offset = [offset, offset];
