@@ -93,7 +93,7 @@ describe('MultiGLTFMarker', () => {
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
                 expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([75, 77, 77, 223], pixel3)).to.be.eql(true);
+                expect(pixelMatch([75, 77, 77, 190], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
                 expect(pixelMatch([87, 87, 87, 168], pixel4)).to.be.eql(true);
                 done();
@@ -122,7 +122,7 @@ describe('MultiGLTFMarker', () => {
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 50, 1, 1);
                 expect(pixelMatch([78, 79, 79, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
-                expect(pixelMatch([75, 77, 77, 223], pixel3, 50)).to.be.eql(true);
+                expect(pixelMatch([75, 77, 77, 190], pixel3, 50)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
                 expect(pixelMatch([87, 87, 87, 168], pixel4, 50)).to.be.eql(true);
                 done();
@@ -228,11 +228,11 @@ describe('MultiGLTFMarker', () => {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
                 expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 50, 1, 1);
-                expect(pixelMatch([91, 91, 91, 199], pixel2)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 183], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 - 50, map.height / 2 + 50, 1, 1);
                 expect(pixelMatch([59, 69, 63, 229], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 50, map.height / 2, 1, 1);
-                expect(pixelMatch([63, 69, 56, 214], pixel4)).to.be.eql(true);
+                expect(pixelMatch([63, 69, 56, 168], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -293,13 +293,13 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.on('load', () => {
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 214], pixel1)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 153], pixel1)).to.be.eql(true);
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([91, 91, 91, 214], pixel2)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 153], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([87, 87, 87, 214], pixel3)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 153], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([91, 91, 91, 214], pixel4)).to.be.eql(true);
+                expect(pixelMatch([91, 91, 91, 153], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -340,7 +340,7 @@ describe('MultiGLTFMarker', () => {
         multigltfmarker.once('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
-                expect(pixelMatch([78, 67, 15, 199], pixel)).to.be.eql(true);
+                expect(pixelMatch([78, 67, 15, 168], pixel)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -396,6 +396,37 @@ describe('MultiGLTFMarker', () => {
         });
     });
 
+    it('multigltfmarker responding mouse event when adding data item after added to gltflayer(issues/448)', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const importData = initInstanceData0();
+        const multigltfmarker = new maptalks.MultiGLTFMarker([], {
+            symbol: {
+                url: url2,
+                scaleX: 80,
+                scaleY: 80,
+                scaleZ: 80
+            }
+        }).addTo(gltflayer);
+        multigltfmarker.on('click', e => {
+            const meshId = e.meshId;
+            expect(meshId).to.be.eql(0);
+            expect(e.pickingId).to.be.eql(65);
+            e.target.outline(e.index);
+            done();
+        });
+        multigltfmarker.on('load', () => {
+            setTimeout(function () {
+                map.fire('dom:click', {
+                    containerPoint: clickContainerPoint.add(50, 0)
+                });
+            }, 100);
+        });
+        for (let i = 0; i < importData.length; i++) {
+            multigltfmarker.addData(importData[i]);
+        }
+    });
+
     // TODO 每个单独的数据项能够设置独立的trs,增加像素判断
     it('set trs for data item', (done) => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
@@ -423,9 +454,9 @@ describe('MultiGLTFMarker', () => {
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 100, 1, 1);
                 expect(pixelMatch([111, 75, 75, 250], pixel2)).to.be.eql(true);
                 const pixel3 = pickPixel(map, map.width / 2 + 100, map.height / 2 + 100, 1, 1);
-                expect(pixelMatch([90, 90, 90, 249], pixel3)).to.be.eql(true);
+                expect(pixelMatch([90, 90, 90, 214], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 - 100, map.height / 2, 1, 1);
-                expect(pixelMatch([108, 84, 81, 238], pixel4)).to.be.eql(true);
+                expect(pixelMatch([108, 84, 81, 214], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });

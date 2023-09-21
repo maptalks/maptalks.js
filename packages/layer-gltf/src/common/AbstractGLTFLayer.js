@@ -89,7 +89,8 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
             }
             marker.fire('add', { type : 'add', target : marker, layer : this });
             if (marker.getGLTFMarkerType() === 'multigltfmarker') {
-                this.pickingId += marker.getCount();
+                const deltaId = marker.getCount() || 1;//count为0时，本身也需要要占用一个pickingId
+                this.pickingId += deltaId;
             } else {
                 this.pickingId++;
             }

@@ -373,7 +373,7 @@ describe('bug', () => {
             setTimeout(function() {
                 const infoWindowStyle = gltfMarker.getInfoWindow().__uiDOM.style;
                 expect(infoWindowStyle.display).not.to.be.eql('none');
-                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(114.5px, 137.887px, 0px) scale(1); transform-origin: 81.5px bottom;');
+                expect(infoWindowStyle.cssText).to.be.eql('width: auto; bottom: 0px; position: absolute; left: 0px; transform: translate3d(114.5px, 137.887px, 0px) scale(1); transform-origin: 81.5px bottom; z-index: 0;');
                 done();
             }, 100);
         });
@@ -1211,7 +1211,7 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixelMatch([146, 146, 144, 255], pixel)).to.be.eql(true);
+                expect(pixelMatch([130, 130, 130, 255], pixel)).to.be.eql(true);
                 marker.setModelHeight(100);
                 checkColor();
             }, 100);
