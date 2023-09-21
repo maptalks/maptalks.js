@@ -57,81 +57,82 @@ const GLConstants = {
     // Constants passed to blendEquation() or blendEquationSeparate() to control
     // how the blending is calculated (for both, RBG and alpha, or separately).
     FUNC_ADD: 0x8006, // Passed to blendEquation or blendEquationSeparate to set an addition blend function.
-    FUNC_SUBSTRACT: 0x800A, // Passed to blendEquation or blendEquationSeparate to specify a subtraction blend function (source - destination).
-    FUNC_REVERSE_SUBTRACT: 0x800B, // Passed to blendEquation or blendEquationSeparate to specify a reverse subtraction blend function (destination - source).
+    FUNC_SUBSTRACT: 0x800a, // Passed to blendEquation or blendEquationSeparate to specify a subtraction blend function (source - destination).
+    FUNC_SUBTRACT: 0x800a, //Passed to blendEquation or blendEquationSeparate to specify a subtraction blend function (source - destination).
+    FUNC_REVERSE_SUBTRACT: 0x800b, // Passed to blendEquation or blendEquationSeparate to specify a reverse subtraction blend function (destination - source).
     // Getting GL parameter information
     // Constants passed to getParameter() to specify what information to return.
     BLEND_EQUATION: 0x8009, // Passed to getParameter to get the current RGB blend function.
     BLEND_EQUATION_RGB: 0x8009, // Passed to getParameter to get the current RGB blend function. Same as BLEND_EQUATION
-    BLEND_EQUATION_ALPHA: 0x883D, // Passed to getParameter to get the current alpha blend function. Same as BLEND_EQUATION
-    BLEND_DST_RGB: 0x80C8, // Passed to getParameter to get the current destination RGB blend function.
-    BLEND_SRC_RGB: 0x80C9, // Passed to getParameter to get the current destination RGB blend function.
-    BLEND_DST_ALPHA: 0x80CA, // Passed to getParameter to get the current destination alpha blend function.
-    BLEND_SRC_ALPHA: 0x80CB, // Passed to getParameter to get the current source alpha blend function.
+    BLEND_EQUATION_ALPHA: 0x883d, // Passed to getParameter to get the current alpha blend function. Same as BLEND_EQUATION
+    BLEND_DST_RGB: 0x80c8, // Passed to getParameter to get the current destination RGB blend function.
+    BLEND_SRC_RGB: 0x80c9, // Passed to getParameter to get the current destination RGB blend function.
+    BLEND_DST_ALPHA: 0x80ca, // Passed to getParameter to get the current destination alpha blend function.
+    BLEND_SRC_ALPHA: 0x80cb, // Passed to getParameter to get the current source alpha blend function.
     BLEND_COLOR: 0x8005, // Passed to getParameter to return a the current blend color.
     ARRAY_BUFFER_BINDING: 0x8894, // Passed to getParameter to get the array buffer binding.
     ELEMENT_ARRAY_BUFFER_BINDING: 0x8895, // Passed to getParameter to get the current element array buffer.
-    LINE_WIDTH: 0x0B21, // Passed to getParameter to get the current lineWidth (set by the lineWidth method).
-    ALIASED_POINT_SIZE_RANGE: 0x846D, // Passed to getParameter to get the current size of a point drawn with gl.POINTS
-    ALIASED_LINE_WIDTH_RANGE: 0x846E, // Passed to getParameter to get the range of available widths for a line. Returns a length-2 array with the lo value at 0, and hight at 1.
-    CULL_FACE_MODE: 0x0B45, // Passed to getParameter to get the current value of cullFace. Should return FRONT, BACK, or FRONT_AND_BACK
-    FRONT_FACE: 0x0B46, // Passed to getParameter to determine the current value of frontFace. Should return CW or CCW.
-    DEPTH_RANGE: 0x0B70, // Passed to getParameter to return a length-2 array of floats giving the current depth range.
-    DEPTH_WRITEMASK: 0x0B72, // Passed to getParameter to determine if the depth write mask is enabled.
-    DEPTH_CLEAR_VALUE: 0x0B73, // Passed to getParameter to determine the current depth clear value.
-    DEPTH_FUNC: 0x0B74, // Passed to getParameter to get the current depth function. Returns NEVER, ALWAYS, LESS, EQUAL, LEQUAL, GREATER, GEQUAL, or NOTEQUAL.
-    STENCIL_CLEAR_VALUE: 0x0B91, // Passed to getParameter to get the value the stencil will be cleared to.
-    STENCIL_FUNC: 0x0B92, // Passed to getParameter to get the current stencil function. Returns NEVER, ALWAYS, LESS, EQUAL, LEQUAL, GREATER, GEQUAL, or NOTEQUAL.
-    STENCIL_FAIL: 0x0B94, // Passed to getParameter to get the current stencil fail function. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
-    STENCIL_PASS_DEPTH_FAIL: 0x0B95, // Passed to getParameter to get the current stencil fail function should the depth buffer test fail. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
-    STENCIL_PASS_DEPTH_PASS: 0x0B96, // Passed to getParameter to get the current stencil fail function should the depth buffer test pass. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
-    STENCIL_REF: 0x0B97, // Passed to getParameter to get the reference value used for stencil tests.
-    STENCIL_VALUE_MASK: 0x0B93,
-    STENCIL_WRITEMASK: 0x0B98,
+    LINE_WIDTH: 0x0b21, // Passed to getParameter to get the current lineWidth (set by the lineWidth method).
+    ALIASED_POINT_SIZE_RANGE: 0x846d, // Passed to getParameter to get the current size of a point drawn with gl.POINTS
+    ALIASED_LINE_WIDTH_RANGE: 0x846e, // Passed to getParameter to get the range of available widths for a line. Returns a length-2 array with the lo value at 0, and hight at 1.
+    CULL_FACE_MODE: 0x0b45, // Passed to getParameter to get the current value of cullFace. Should return FRONT, BACK, or FRONT_AND_BACK
+    FRONT_FACE: 0x0b46, // Passed to getParameter to determine the current value of frontFace. Should return CW or CCW.
+    DEPTH_RANGE: 0x0b70, // Passed to getParameter to return a length-2 array of floats giving the current depth range.
+    DEPTH_WRITEMASK: 0x0b72, // Passed to getParameter to determine if the depth write mask is enabled.
+    DEPTH_CLEAR_VALUE: 0x0b73, // Passed to getParameter to determine the current depth clear value.
+    DEPTH_FUNC: 0x0b74, // Passed to getParameter to get the current depth function. Returns NEVER, ALWAYS, LESS, EQUAL, LEQUAL, GREATER, GEQUAL, or NOTEQUAL.
+    STENCIL_CLEAR_VALUE: 0x0b91, // Passed to getParameter to get the value the stencil will be cleared to.
+    STENCIL_FUNC: 0x0b92, // Passed to getParameter to get the current stencil function. Returns NEVER, ALWAYS, LESS, EQUAL, LEQUAL, GREATER, GEQUAL, or NOTEQUAL.
+    STENCIL_FAIL: 0x0b94, // Passed to getParameter to get the current stencil fail function. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
+    STENCIL_PASS_DEPTH_FAIL: 0x0b95, // Passed to getParameter to get the current stencil fail function should the depth buffer test fail. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
+    STENCIL_PASS_DEPTH_PASS: 0x0b96, // Passed to getParameter to get the current stencil fail function should the depth buffer test pass. Should return KEEP, REPLACE, INCR, DECR, INVERT, INCR_WRAP, or DECR_WRAP.
+    STENCIL_REF: 0x0b97, // Passed to getParameter to get the reference value used for stencil tests.
+    STENCIL_VALUE_MASK: 0x0b93,
+    STENCIL_WRITEMASK: 0x0b98,
     STENCIL_BACK_FUNC: 0x8800,
     STENCIL_BACK_FAIL: 0x8801,
     STENCIL_BACK_PASS_DEPTH_FAIL: 0x8802,
     STENCIL_BACK_PASS_DEPTH_PASS: 0x8803,
-    STENCIL_BACK_REF: 0x8CA3,
-    STENCIL_BACK_VALUE_MASK: 0x8CA4,
-    STENCIL_BACK_WRITEMASK: 0x8CA5,
-    VIEWPORT: 0x0BA2, // Returns an Int32Array with four elements for the current viewport dimensions.
-    SCISSOR_BOX: 0x0C10, // Returns an Int32Array with four elements for the current scissor box dimensions.
-    COLOR_CLEAR_VALUE: 0x0C22,
-    COLOR_WRITEMASK: 0x0C23,
-    UNPACK_ALIGNMENT: 0x0CF5,
-    PACK_ALIGNMENT: 0x0D05,
-    MAX_TEXTURE_SIZE: 0x0D33,
-    MAX_VIEWPORT_DIMS: 0x0D3A,
-    SUBPIXEL_BITS: 0x0D50,
-    RED_BITS: 0x0D52,
-    GREEN_BITS: 0x0D53,
-    BLUE_BITS: 0x0D54,
-    ALPHA_BITS: 0x0D55,
-    DEPTH_BITS: 0x0D56,
-    STENCIL_BITS: 0x0D57,
-    POLYGON_OFFSET_UNITS: 0x2A00,
+    STENCIL_BACK_REF: 0x8ca3,
+    STENCIL_BACK_VALUE_MASK: 0x8ca4,
+    STENCIL_BACK_WRITEMASK: 0x8ca5,
+    VIEWPORT: 0x0ba2, // Returns an Int32Array with four elements for the current viewport dimensions.
+    SCISSOR_BOX: 0x0c10, // Returns an Int32Array with four elements for the current scissor box dimensions.
+    COLOR_CLEAR_VALUE: 0x0c22,
+    COLOR_WRITEMASK: 0x0c23,
+    UNPACK_ALIGNMENT: 0x0cf5,
+    PACK_ALIGNMENT: 0x0d05,
+    MAX_TEXTURE_SIZE: 0x0d33,
+    MAX_VIEWPORT_DIMS: 0x0d3a,
+    SUBPIXEL_BITS: 0x0d50,
+    RED_BITS: 0x0d52,
+    GREEN_BITS: 0x0d53,
+    BLUE_BITS: 0x0d54,
+    ALPHA_BITS: 0x0d55,
+    DEPTH_BITS: 0x0d56,
+    STENCIL_BITS: 0x0d57,
+    POLYGON_OFFSET_UNITS: 0x2a00,
     POLYGON_OFFSET_FACTOR: 0x8038,
     TEXTURE_BINDING_2D: 0x8069,
-    SAMPLE_BUFFERS: 0x80A8,
-    SAMPLES: 0x80A9,
-    SAMPLE_COVERAGE_VALUE: 0x80AA,
-    SAMPLE_COVERAGE_INVERT: 0x80AB,
-    COMPRESSED_TEXTURE_FORMATS: 0x86A3,
-    VENDOR: 0x1F00,
-    RENDERER: 0x1F01,
-    VERSION: 0x1F02,
-    IMPLEMENTATION_COLOR_READ_TYPE: 0x8B9A,
-    IMPLEMENTATION_COLOR_READ_FORMAT: 0x8B9B,
+    SAMPLE_BUFFERS: 0x80a8,
+    SAMPLES: 0x80a9,
+    SAMPLE_COVERAGE_VALUE: 0x80aa,
+    SAMPLE_COVERAGE_INVERT: 0x80ab,
+    COMPRESSED_TEXTURE_FORMATS: 0x86a3,
+    VENDOR: 0x1f00,
+    RENDERER: 0x1f01,
+    VERSION: 0x1f02,
+    IMPLEMENTATION_COLOR_READ_TYPE: 0x8b9a,
+    IMPLEMENTATION_COLOR_READ_FORMAT: 0x8b9b,
     BROWSER_DEFAULT_WEBGL: 0x9244,
 
     // Buffers
     // Constants passed to bufferData(), bufferSubData(), bindBuffer(), or
     // getBufferParameter().
 
-    STATIC_DRAW: 0x88E4, // Passed to bufferData as a hint about whether the contents of the buffer are likely to be used often and not change often.
-    STREAM_DRAW: 0x88E0, // Passed to bufferData as a hint about whether the contents of the buffer are likely to not be used often.
-    DYNAMIC_DRAW: 0x88E8, // Passed to bufferData as a hint about whether the contents of the buffer are likely to be used often and change often.
+    STATIC_DRAW: 0x88e4, // Passed to bufferData as a hint about whether the contents of the buffer are likely to be used often and not change often.
+    STREAM_DRAW: 0x88e0, // Passed to bufferData as a hint about whether the contents of the buffer are likely to not be used often.
+    DYNAMIC_DRAW: 0x88e8, // Passed to bufferData as a hint about whether the contents of the buffer are likely to be used often and change often.
     ARRAY_BUFFER: 0x8892, // Passed to bindBuffer or bufferData to specify the type of buffer being used.
     ELEMENT_ARRAY_BUFFER: 0x8893, // Passed to bindBuffer or bufferData to specify the type of buffer being used.
     BUFFER_SIZE: 0x8764, // Passed to getBufferParameter to get a buffer's size.
@@ -145,14 +146,14 @@ const GLConstants = {
     VERTEX_ATTRIB_ARRAY_SIZE: 0x8623,
     VERTEX_ATTRIB_ARRAY_STRIDE: 0x8624,
     VERTEX_ATTRIB_ARRAY_TYPE: 0x8625,
-    VERTEX_ATTRIB_ARRAY_NORMALIZED: 0x886A,
+    VERTEX_ATTRIB_ARRAY_NORMALIZED: 0x886a,
     VERTEX_ATTRIB_ARRAY_POINTER: 0x8645,
-    VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: 0x889F,
+    VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: 0x889f,
 
     // Culling
     // Constants passed to cullFace().
 
-    CULL_FACE: 0x0B44, // Passed to enable/disable to turn on/off culling. Can also be used with getParameter to find the current culling method.
+    CULL_FACE: 0x0b44, // Passed to enable/disable to turn on/off culling. Can also be used with getParameter to find the current culling method.
     FRONT: 0x0404, // Passed to cullFace to specify that only front faces should be drawn.
     BACK: 0x0405, // Passed to cullFace to specify that only back faces should be drawn.
     FRONT_AND_BACK: 0x0408, // Passed to cullFace to specify that front and back faces should be drawn.
@@ -160,18 +161,18 @@ const GLConstants = {
     // Enabling and disabling
     // Constants passed to enable() or disable().
 
-    BLEND: 0x0BE2, // Passed to enable/disable to turn on/off blending. Can also be used with getParameter to find the current blending method.
-    DEPTH_TEST: 0x0B71, // Passed to enable/disable to turn on/off the depth test. Can also be used with getParameter to query the depth test.
-    DITHER: 0x0BD0, // Passed to enable/disable to turn on/off dithering. Can also be used with getParameter to find the current dithering method.
+    BLEND: 0x0be2, // Passed to enable/disable to turn on/off blending. Can also be used with getParameter to find the current blending method.
+    DEPTH_TEST: 0x0b71, // Passed to enable/disable to turn on/off the depth test. Can also be used with getParameter to query the depth test.
+    DITHER: 0x0bd0, // Passed to enable/disable to turn on/off dithering. Can also be used with getParameter to find the current dithering method.
     POLYGON_OFFSET_FILL: 0x8037, // Passed to enable/disable to turn on/off the polygon offset. Useful for rendering hidden-line images, decals, and or solids with highlighted edges. Can also be used with getParameter to query the scissor test.
-    SAMPLE_ALPHA_TO_COVERAGE: 0x809E, // Passed to enable/disable to turn on/off the alpha to coverage. Used in multi-sampling alpha channels.
-    SAMPLE_COVERAGE: 0x80A0, // Passed to enable/disable to turn on/off the sample coverage. Used in multi-sampling.
-    SCISSOR_TEST: 0x0C11, // Passed to enable/disable to turn on/off the scissor test. Can also be used with getParameter to query the scissor test.
+    SAMPLE_ALPHA_TO_COVERAGE: 0x809e, // Passed to enable/disable to turn on/off the alpha to coverage. Used in multi-sampling alpha channels.
+    SAMPLE_COVERAGE: 0x80a0, // Passed to enable/disable to turn on/off the sample coverage. Used in multi-sampling.
+    SCISSOR_TEST: 0x0c11, // Passed to enable/disable to turn on/off the scissor test. Can also be used with getParameter to query the scissor test.
     /**
      *  模版缓冲区测试，发生在透明度测试之后，和深度测试之前
      *  Passed to enable/disable to turn on/off the stencil test. Can also be used with getParameter to query the stencil test.
      */
-    STENCIL_TEST: 0x0B90,
+    STENCIL_TEST: 0x0b90,
 
     // Errors
     // Constants returned from getError().
@@ -220,7 +221,7 @@ const GLConstants = {
     RGB: 0x1907,
     RGBA: 0x1908,
     LUMINANCE: 0x1909,
-    LUMINANCE_ALPHA: 0x190A,
+    LUMINANCE_ALPHA: 0x190a,
 
     // Pixel types
 
@@ -232,35 +233,35 @@ const GLConstants = {
     // Shaders
     // Constants passed to createShader() or getShaderParameter()
 
-    FRAGMENT_SHADER: 0x8B30, // Passed to createShader to define a fragment shader.
-    VERTEX_SHADER: 0x8B31, // Passed to createShader to define a vertex shader
+    FRAGMENT_SHADER: 0x8b30, // Passed to createShader to define a fragment shader.
+    VERTEX_SHADER: 0x8b31, // Passed to createShader to define a vertex shader
     /**
      * shader 编译状态，
      * Passed to getShaderParamter to get the status of the compilation. Returns false if the shader was not compiled. You can then query getShaderInfoLog to find the exact error
      */
-    COMPILE_STATUS: 0x8B81,
-    DELETE_STATUS: 0x8B80, // Passed to getShaderParamter to determine if a shader was deleted via deleteShader. Returns true if it was, false otherwise.
-    LINK_STATUS: 0x8B82, // Passed to getProgramParameter after calling linkProgram to determine if a program was linked correctly. Returns false if there were errors. Use getProgramInfoLog to find the exact error.
-    VALIDATE_STATUS: 0x8B83, // Passed to getProgramParameter after calling validateProgram to determine if it is valid. Returns false if errors were found.
-    ATTACHED_SHADERS: 0x8B85, // Passed to getProgramParameter after calling attachShader to determine if the shader was attached correctly. Returns false if errors occurred.
+    COMPILE_STATUS: 0x8b81,
+    DELETE_STATUS: 0x8b80, // Passed to getShaderParamter to determine if a shader was deleted via deleteShader. Returns true if it was, false otherwise.
+    LINK_STATUS: 0x8b82, // Passed to getProgramParameter after calling linkProgram to determine if a program was linked correctly. Returns false if there were errors. Use getProgramInfoLog to find the exact error.
+    VALIDATE_STATUS: 0x8b83, // Passed to getProgramParameter after calling validateProgram to determine if it is valid. Returns false if errors were found.
+    ATTACHED_SHADERS: 0x8b85, // Passed to getProgramParameter after calling attachShader to determine if the shader was attached correctly. Returns false if errors occurred.
     /**
      * 获取program里可用的attributes，【map到program里方便upload属性】
      */
-    ACTIVE_ATTRIBUTES: 0x8B89, // Passed to getProgramParameter to get the number of attributes active in a program.
+    ACTIVE_ATTRIBUTES: 0x8b89, // Passed to getProgramParameter to get the number of attributes active in a program.
     /**
      * 获取program里可用的uniforms，【map到program里方便upload属性】
      */
-    ACTIVE_UNIFORMS: 0x8B86, // Passed to getProgramParamter to get the number of uniforms active in a program.
+    ACTIVE_UNIFORMS: 0x8b86, // Passed to getProgramParamter to get the number of uniforms active in a program.
     MAX_VERTEX_ATTRIBS: 0x8869,
-    MAX_VERTEX_UNIFORM_VECTORS: 0x8DFB,
-    MAX_VARYING_VECTORS: 0x8DFC,
-    MAX_COMBINED_TEXTURE_IMAGE_UNITS: 0x8B4D,
-    MAX_VERTEX_TEXTURE_IMAGE_UNITS: 0x8B4C,
+    MAX_VERTEX_UNIFORM_VECTORS: 0x8dfb,
+    MAX_VARYING_VECTORS: 0x8dfc,
+    MAX_COMBINED_TEXTURE_IMAGE_UNITS: 0x8b4d,
+    MAX_VERTEX_TEXTURE_IMAGE_UNITS: 0x8b4c,
     MAX_TEXTURE_IMAGE_UNITS: 0x8872, // Implementation dependent number of maximum texture units. At least 8.
-    MAX_FRAGMENT_UNIFORM_VECTORS: 0x8DFD,
-    SHADER_TYPE: 0x8B4F,
-    SHADING_LANGUAGE_VERSION: 0x8B8C,
-    CURRENT_PROGRAM: 0x8B8D,
+    MAX_FRAGMENT_UNIFORM_VECTORS: 0x8dfd,
+    SHADER_TYPE: 0x8b4f,
+    SHADING_LANGUAGE_VERSION: 0x8b8c,
+    CURRENT_PROGRAM: 0x8b8d,
 
     // Depth or stencil tests
     // Constants passed to depthFunc() or stencilFunc().
@@ -285,11 +286,11 @@ const GLConstants = {
     // Stencil actions
     // Constants passed to stencilOp().
 
-    KEEP: 0x1E00,
-    REPLACE: 0x1E01,
-    INCR: 0x1E02,
-    DECR: 0x1E03,
-    INVERT: 0x150A,
+    KEEP: 0x1e00,
+    REPLACE: 0x1e01,
+    INCR: 0x1e02,
+    DECR: 0x1e03,
+    INVERT: 0x150a,
     INCR_WRAP: 0x8507,
     DECR_WRAP: 0x8508,
 
@@ -307,7 +308,7 @@ const GLConstants = {
     TEXTURE_MIN_FILTER: 0x2801,
     TEXTURE_WRAP_S: 0x2802,
     TEXTURE_WRAP_T: 0x2803,
-    TEXTURE_2D: 0x0DE1,
+    TEXTURE_2D: 0x0de1,
     TEXTURE: 0x1702,
     TEXTURE_CUBE_MAP: 0x8513,
     TEXTURE_BINDING_CUBE_MAP: 0x8514,
@@ -316,30 +317,45 @@ const GLConstants = {
     TEXTURE_CUBE_MAP_POSITIVE_Y: 0x8517,
     TEXTURE_CUBE_MAP_NEGATIVE_Y: 0x8518,
     TEXTURE_CUBE_MAP_POSITIVE_Z: 0x8519,
-    TEXTURE_CUBE_MAP_NEGATIVE_Z: 0x851A,
-    MAX_CUBE_MAP_TEXTURE_SIZE: 0x851C,
+    TEXTURE_CUBE_MAP_NEGATIVE_Z: 0x851a,
+    MAX_CUBE_MAP_TEXTURE_SIZE: 0x851c,
     // TEXTURE0 - 31 0x84C0 - 0x84DF A texture unit.
-    TEXTURE0:0x84C0, // A texture unit.
-    TEXTURE1:0x84C1,
-    TEXTURE2:0x84C2,
-    TEXTURE3:0x84C3,
-    TEXTURE4:0x84C4,
-    TEXTURE5:0x84C5,
-    TEXTURE6:0x84C6,
-    TEXTURE7:0x84C7,
-    TEXTURE8:0x84C8,
-    TEXTURE9:0x84C9,
-    TEXTURE10:0x84CA,
-    TEXTURE11:0x84CB,
-    TEXTURE12:0x84CC,
-    TEXTURE13:0x84CD,
-    TEXTURE14:0x84CE,
-    TEXTURE15:0x84CF,
-    TEXTURE16:0x84D0,
+    TEXTURE0: 0x84c0, // A texture unit.
+    TEXTURE1: 0x84c1,
+    TEXTURE2: 0x84c2,
+    TEXTURE3: 0x84c3,
+    TEXTURE4: 0x84c4,
+    TEXTURE5: 0x84c5,
+    TEXTURE6: 0x84c6,
+    TEXTURE7: 0x84c7,
+    TEXTURE8: 0x84c8,
+    TEXTURE9: 0x84c9,
+    TEXTURE10: 0x84ca,
+    TEXTURE11: 0x84cb,
+    TEXTURE12: 0x84cc,
+    TEXTURE13: 0x84cd,
+    TEXTURE14: 0x84ce,
+    TEXTURE15: 0x84cf,
+    TEXTURE16: 0x84d0,
+    TEXTURE17: 0x84d1,
+    TEXTURE18: 0x84d2,
+    TEXTURE19: 0x84d3,
+    TEXTURE20: 0x84d4,
+    TEXTURE21: 0x84d5,
+    TEXTURE22: 0x84d6,
+    TEXTURE23: 0x84d7,
+    TEXTURE24: 0x84d8,
+    TEXTURE25: 0x84d9,
+    TEXTURE26: 0x84da,
+    TEXTURE27: 0x84db,
+    TEXTURE28: 0x84dc,
+    TEXTURE29: 0x84dd,
+    TEXTURE30: 0x84de,
+    TEXTURE31: 0x84df,
     // The current active texture unit.
-    ACTIVE_TEXTURE: 0x84E0,
+    ACTIVE_TEXTURE: 0x84e0,
     REPEAT: 0x2901,
-    CLAMP_TO_EDGE: 0x812F,
+    CLAMP_TO_EDGE: 0x812f,
     MIRRORED_REPEAT: 0x8370,
 
     // Emulation
@@ -348,83 +364,83 @@ const GLConstants = {
 
     // Uniform types
 
-    FLOAT_VEC2: 0x8B50,
-    FLOAT_VEC3: 0x8B51,
-    FLOAT_VEC4: 0x8B52,
-    INT_VEC2: 0x8B53,
-    INT_VEC3: 0x8B54,
-    INT_VEC4: 0x8B55,
-    BOOL: 0x8B56,
-    BOOL_VEC2: 0x8B57,
-    BOOL_VEC3: 0x8B58,
-    BOOL_VEC4: 0x8B59,
-    FLOAT_MAT2: 0x8B5A,
-    FLOAT_MAT3: 0x8B5B,
-    FLOAT_MAT4: 0x8B5C,
-    SAMPLER_2D: 0x8B5E,
-    SAMPLER_CUBE: 0x8B60,
+    FLOAT_VEC2: 0x8b50,
+    FLOAT_VEC3: 0x8b51,
+    FLOAT_VEC4: 0x8b52,
+    INT_VEC2: 0x8b53,
+    INT_VEC3: 0x8b54,
+    INT_VEC4: 0x8b55,
+    BOOL: 0x8b56,
+    BOOL_VEC2: 0x8b57,
+    BOOL_VEC3: 0x8b58,
+    BOOL_VEC4: 0x8b59,
+    FLOAT_MAT2: 0x8b5a,
+    FLOAT_MAT3: 0x8b5b,
+    FLOAT_MAT4: 0x8b5c,
+    SAMPLER_2D: 0x8b5e,
+    SAMPLER_CUBE: 0x8b60,
 
     // Shader precision-specified types
 
-    LOW_FLOAT: 0x8DF0,
-    MEDIUM_FLOAT: 0x8DF1,
-    HIGH_FLOAT: 0x8DF2,
-    LOW_INT: 0x8DF3,
-    MEDIUM_INT: 0x8DF4,
-    HIGH_INT: 0x8DF5,
+    LOW_FLOAT: 0x8df0,
+    MEDIUM_FLOAT: 0x8df1,
+    HIGH_FLOAT: 0x8df2,
+    LOW_INT: 0x8df3,
+    MEDIUM_INT: 0x8df4,
+    HIGH_INT: 0x8df5,
 
     // Framebuffers and renderbuffers
     /**
      * 绑定framebuffer
      */
-    FRAMEBUFFER: 0x8D40,
+    FRAMEBUFFER: 0x8d40,
     /**
      * 绑定 renderbuffer
      */
-    RENDERBUFFER: 0x8D41,
+    RENDERBUFFER: 0x8d41,
     RGBA4: 0x8056,
     RGB5_A1: 0x8057,
-    RGB565: 0x8D62,
-    DEPTH_COMPONENT16: 0x81A5,
+    RGB565: 0x8d62,
+    DEPTH_COMPONENT16: 0x81a5,
     STENCIL_INDEX: 0x1901,
-    STENCIL_INDEX8: 0x8D48,
+    STENCIL_INDEX8: 0x8d48,
     /**
      * 一般用于 bufferStorage，支持深度和缓冲区数据存储
      */
-    DEPTH_STENCIL: 0x84F9,
-    RENDERBUFFER_WIDTH: 0x8D42,
-    RENDERBUFFER_HEIGHT: 0x8D43,
-    RENDERBUFFER_INTERNAL_FORMAT: 0x8D44,
-    RENDERBUFFER_RED_SIZE: 0x8D50,
-    RENDERBUFFER_GREEN_SIZE: 0x8D51,
-    RENDERBUFFER_BLUE_SIZE: 0x8D52,
-    RENDERBUFFER_ALPHA_SIZE: 0x8D53,
-    RENDERBUFFER_DEPTH_SIZE: 0x8D54,
-    RENDERBUFFER_STENCIL_SIZE: 0x8D55,
-    FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: 0x8CD0,
-    FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: 0x8CD1,
-    FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: 0x8CD2,
-    FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: 0x8CD3,
-    COLOR_ATTACHMENT0: 0x8CE0,
-    DEPTH_ATTACHMENT: 0x8D00,
-    STENCIL_ATTACHMENT: 0x8D20,
+    DEPTH_STENCIL: 0x84f9,
+    RENDERBUFFER_WIDTH: 0x8d42,
+    RENDERBUFFER_HEIGHT: 0x8d43,
+    RENDERBUFFER_INTERNAL_FORMAT: 0x8d44,
+    RENDERBUFFER_RED_SIZE: 0x8d50,
+    RENDERBUFFER_GREEN_SIZE: 0x8d51,
+    RENDERBUFFER_BLUE_SIZE: 0x8d52,
+    RENDERBUFFER_ALPHA_SIZE: 0x8d53,
+    RENDERBUFFER_DEPTH_SIZE: 0x8d54,
+    RENDERBUFFER_STENCIL_SIZE: 0x8d55,
+    FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: 0x8cd0,
+    FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: 0x8cd1,
+    FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: 0x8cd2,
+    FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: 0x8cd3,
+    COLOR_ATTACHMENT0: 0x8ce0,
+    DEPTH_ATTACHMENT: 0x8d00,
+    STENCIL_ATTACHMENT: 0x8d20,
     /**
      * 深度和缓冲区附着，webgl2支持
      */
-    DEPTH_STENCIL_ATTACHMENT: 0x821A,
+    DEPTH_STENCIL_ATTACHMENT: 0x821a,
     NONE: 0,
-    FRAMEBUFFER_COMPLETE: 0x8CD5,
-    FRAMEBUFFER_INCOMPLETE_ATTACHMENT: 0x8CD6,
-    FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: 0x8CD7,
-    FRAMEBUFFER_INCOMPLETE_DIMENSIONS: 0x8CD9,
-    FRAMEBUFFER_UNSUPPORTED: 0x8CDD,
-    FRAMEBUFFER_BINDING: 0x8CA6,
-    RENDERBUFFER_BINDING: 0x8CA7,
-    MAX_RENDERBUFFER_SIZE: 0x84E8,
+    FRAMEBUFFER_COMPLETE: 0x8cd5,
+    FRAMEBUFFER_INCOMPLETE_ATTACHMENT: 0x8cd6,
+    FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: 0x8cd7,
+    FRAMEBUFFER_INCOMPLETE_DIMENSIONS: 0x8cd9,
+    FRAMEBUFFER_UNSUPPORTED: 0x8cdd,
+    FRAMEBUFFER_BINDING: 0x8ca6,
+    RENDERBUFFER_BINDING: 0x8ca7,
+    MAX_RENDERBUFFER_SIZE: 0x84e8,
     INVALID_FRAMEBUFFER_OPERATION: 0x0506,
 
-    // READ_FRAMEBUFFER: 0x8CA8,
-    // DRAW_FRAMEBUFFER: 0x8CA9,
+    READ_FRAMEBUFFER: 0x8ca8,
+    DRAW_FRAMEBUFFER: 0x8ca9,
 
     // Pixel storage modes
     // Constants passed to pixelStorei().
@@ -443,33 +459,33 @@ const GLConstants = {
     // Constants passed to getParameter()
     // to specify what information to return.
 
-    READ_BUFFER: 0x0C02,
-    UNPACK_ROW_LENGTH: 0x0CF2,
-    UNPACK_SKIP_ROWS: 0x0CF3,
-    UNPACK_SKIP_PIXELS: 0x0CF4,
-    PACK_ROW_LENGTH: 0x0D02,
-    PACK_SKIP_ROWS: 0x0D03,
-    PACK_SKIP_PIXELS: 0x0D04,
+    READ_BUFFER: 0x0c02,
+    UNPACK_ROW_LENGTH: 0x0cf2,
+    UNPACK_SKIP_ROWS: 0x0cf3,
+    UNPACK_SKIP_PIXELS: 0x0cf4,
+    PACK_ROW_LENGTH: 0x0d02,
+    PACK_SKIP_ROWS: 0x0d03,
+    PACK_SKIP_PIXELS: 0x0d04,
     // TEXTURE_BINDING_3D: 0x806A,
-    UNPACK_SKIP_IMAGES: 0x806D,
-    UNPACK_IMAGE_HEIGHT: 0x806E,
+    UNPACK_SKIP_IMAGES: 0x806d,
+    UNPACK_IMAGE_HEIGHT: 0x806e,
     MAX_3D_TEXTURE_SIZE: 0x8073,
-    MAX_ELEMENTS_VERTICES: 0x80E8,
-    MAX_ELEMENTS_INDICES: 0x80E9,
-    MAX_TEXTURE_LOD_BIAS: 0x84FD,
-    MAX_FRAGMENT_UNIFORM_COMPONENTS: 0x8B49,
-    MAX_VERTEX_UNIFORM_COMPONENTS: 0x8B4A,
-    MAX_ARRAY_TEXTURE_LAYERS: 0x88FF,
+    MAX_ELEMENTS_VERTICES: 0x80e8,
+    MAX_ELEMENTS_INDICES: 0x80e9,
+    MAX_TEXTURE_LOD_BIAS: 0x84fd,
+    MAX_FRAGMENT_UNIFORM_COMPONENTS: 0x8b49,
+    MAX_VERTEX_UNIFORM_COMPONENTS: 0x8b4a,
+    MAX_ARRAY_TEXTURE_LAYERS: 0x88ff,
     MIN_PROGRAM_TEXEL_OFFSET: 0x8904,
     MAX_PROGRAM_TEXEL_OFFSET: 0x8905,
-    MAX_VARYING_COMPONENTS: 0x8B4B,
-    FRAGMENT_SHADER_DERIVATIVE_HINT: 0x8B8B,
-    RASTERIZER_DISCARD: 0x8C89,
-    VERTEX_ARRAY_BINDING: 0x85B5,
+    MAX_VARYING_COMPONENTS: 0x8b4b,
+    FRAGMENT_SHADER_DERIVATIVE_HINT: 0x8b8b,
+    RASTERIZER_DISCARD: 0x8c89,
+    VERTEX_ARRAY_BINDING: 0x85b5,
     MAX_VERTEX_OUTPUT_COMPONENTS: 0x9122,
     MAX_FRAGMENT_INPUT_COMPONENTS: 0x9125,
     MAX_SERVER_WAIT_TIMEOUT: 0x9111,
-    MAX_ELEMENT_INDEX: 0x8D6B,
+    MAX_ELEMENT_INDEX: 0x8d6b,
 
     // Textures
     // Constants passed to texParameteri(),
@@ -479,46 +495,47 @@ const GLConstants = {
     RGB8: 0x8051,
     RGBA8: 0x8058,
     RGB10_A2: 0x8059,
-    TEXTURE_3D: 0x806F,
+    TEXTURE_3D: 0x806f,
     TEXTURE_WRAP_R: 0x8072,
-    TEXTURE_MIN_LOD: 0x813A,
-    TEXTURE_MAX_LOD: 0x813B,
-    TEXTURE_BASE_LEVEL: 0x813C,
-    TEXTURE_MAX_LEVEL: 0x813D,
-    TEXTURE_COMPARE_MODE: 0x884C,
-    TEXTURE_COMPARE_FUNC: 0x884D,
-    SRGB: 0x8C40,
-    SRGB8: 0x8C41,
-    SRGB8_ALPHA8: 0x8C43,
-    COMPARE_REF_TO_TEXTURE: 0x884E,
+    TEXTURE_MIN_LOD: 0x813a,
+    TEXTURE_MAX_LOD: 0x813b,
+    TEXTURE_BASE_LEVEL: 0x813c,
+    TEXTURE_MAX_LEVEL: 0x813d,
+    TEXTURE_COMPARE_MODE: 0x884c,
+    TEXTURE_COMPARE_FUNC: 0x884d,
+    SRGB: 0x8c40,
+    SRGB8: 0x8c41,
+    SRGB8_ALPHA8: 0x8c43,
+    COMPARE_REF_TO_TEXTURE: 0x884e,
     RGBA32F: 0x8814,
     RGB32F: 0x8815,
-    RGBA16F: 0x881A,
-    RGB16F: 0x881B,
-    TEXTURE_2D_ARRAY: 0x8C1A,
-    TEXTURE_BINDING_2D_ARRAY: 0x8C1D,
-    R11F_G11F_B10F: 0x8C3A,
-    RGB9_E5: 0x8C3D,
-    RGBA32UI: 0x8D70,
-    RGB32UI: 0x8D71,
-    RGBA16UI: 0x8D76,
-    RGB16UI: 0x8D77,
-    RGBA8UI: 0x8D7C,
-    RGB8UI: 0x8D7D,
-    RGBA32I: 0x8D82,
-    RGB32I: 0x8D83,
-    RGBA16I: 0x8D88,
-    RGB16I: 0x8D89,
-    RGBA8I: 0x8D8E,
-    RGB8I: 0x8D8F,
-    RED_INTEGER: 0x8D94,
-    RGB_INTEGER: 0x8D98,
-    RGBA_INTEGER: 0x8D99,
+    RGBA16F: 0x881a,
+    RGB16F: 0x881b,
+    TEXTURE_2D_ARRAY: 0x8c1a,
+    TEXTURE_BINDING_2D_ARRAY: 0x8c1d,
+    TEXTURE_BINDING_3D: 0x806a,
+    R11F_G11F_B10F: 0x8c3a,
+    RGB9_E5: 0x8c3d,
+    RGBA32UI: 0x8d70,
+    RGB32UI: 0x8d71,
+    RGBA16UI: 0x8d76,
+    RGB16UI: 0x8d77,
+    RGBA8UI: 0x8d7c,
+    RGB8UI: 0x8d7d,
+    RGBA32I: 0x8d82,
+    RGB32I: 0x8d83,
+    RGBA16I: 0x8d88,
+    RGB16I: 0x8d89,
+    RGBA8I: 0x8d8e,
+    RGB8I: 0x8d8f,
+    RED_INTEGER: 0x8d94,
+    RGB_INTEGER: 0x8d98,
+    RGBA_INTEGER: 0x8d99,
     R8: 0x8229,
-    RG8: 0x822B,
-    R16F: 0x822D,
-    R32F: 0x822E,
-    RG16F: 0x822F,
+    RG8: 0x822b,
+    R16F: 0x822d,
+    R32F: 0x822e,
+    RG16F: 0x822f,
     RG32F: 0x8230,
     R8I: 0x8231,
     R8UI: 0x8232,
@@ -529,14 +546,14 @@ const GLConstants = {
     RG8I: 0x8237,
     RG8UI: 0x8238,
     RG16I: 0x8239,
-    RG16UI: 0x823A,
-    RG32I: 0x823B,
-    RG32UI: 0x823C,
-    R8_SNORM: 0x8F94,
-    RG8_SNORM: 0x8F95,
-    RGB8_SNORM: 0x8F96,
-    RGBA8_SNORM: 0x8F97,
-    RGB10_A2UI: 0x906F,
+    RG16UI: 0x823a,
+    RG32I: 0x823b,
+    RG32UI: 0x823c,
+    R8_SNORM: 0x8f94,
+    RG8_SNORM: 0x8f95,
+    RGB8_SNORM: 0x8f96,
+    RGBA8_SNORM: 0x8f97,
+    RGB10_A2UI: 0x906f,
 
     /* covered by extension
     COMPRESSED_R11_EAC : 0x9270,
@@ -550,28 +567,28 @@ const GLConstants = {
     COMPRESSED_RGBA8_ETC2_EAC: 0x9278,
     COMPRESSED_SRGB8_ALPHA8_ETC2_EAC : 0x9279,
     */
-    TEXTURE_IMMUTABLE_FORMAT: 0x912F,
-    TEXTURE_IMMUTABLE_LEVELS: 0x82DF,
+    TEXTURE_IMMUTABLE_FORMAT: 0x912f,
+    TEXTURE_IMMUTABLE_LEVELS: 0x82df,
 
     // Pixel types
 
     UNSIGNED_INT_2_10_10_10_REV: 0x8368,
-    UNSIGNED_INT_10F_11F_11F_REV: 0x8C3B,
-    UNSIGNED_INT_5_9_9_9_REV: 0x8C3E,
-    FLOAT_32_UNSIGNED_INT_24_8_REV: 0x8DAD,
-    UNSIGNED_INT_24_8: 0x84FA,
-    HALF_FLOAT: 0x140B,
+    UNSIGNED_INT_10F_11F_11F_REV: 0x8c3b,
+    UNSIGNED_INT_5_9_9_9_REV: 0x8c3e,
+    FLOAT_32_UNSIGNED_INT_24_8_REV: 0x8dad,
+    UNSIGNED_INT_24_8: 0x84fa,
+    HALF_FLOAT: 0x140b,
     RG: 0x8227,
     RG_INTEGER: 0x8228,
-    INT_2_10_10_10_REV: 0x8D9F,
+    INT_2_10_10_10_REV: 0x8d9f,
 
     // Queries
 
     CURRENT_QUERY: 0x8865,
     QUERY_RESULT: 0x8866,
     QUERY_RESULT_AVAILABLE: 0x8867,
-    ANY_SAMPLES_PASSED: 0x8C2F,
-    ANY_SAMPLES_PASSED_CONSERVATIVE: 0x8D6A,
+    ANY_SAMPLES_PASSED: 0x8c2f,
+    ANY_SAMPLES_PASSED_CONSERVATIVE: 0x8d6a,
 
     // Draw buffers
 
@@ -581,100 +598,100 @@ const GLConstants = {
     DRAW_BUFFER2: 0x8827,
     DRAW_BUFFER3: 0x8828,
     DRAW_BUFFER4: 0x8829,
-    DRAW_BUFFER5: 0x882A,
-    DRAW_BUFFER6: 0x882B,
-    DRAW_BUFFER7: 0x882C,
-    DRAW_BUFFER8: 0x882D,
-    DRAW_BUFFER9: 0x882E,
-    DRAW_BUFFER10: 0x882F,
+    DRAW_BUFFER5: 0x882a,
+    DRAW_BUFFER6: 0x882b,
+    DRAW_BUFFER7: 0x882c,
+    DRAW_BUFFER8: 0x882d,
+    DRAW_BUFFER9: 0x882e,
+    DRAW_BUFFER10: 0x882f,
     DRAW_BUFFER11: 0x8830,
     DRAW_BUFFER12: 0x8831,
     DRAW_BUFFER13: 0x8832,
     DRAW_BUFFER14: 0x8833,
     DRAW_BUFFER15: 0x8834,
-    MAX_COLOR_ATTACHMENTS: 0x8CDF,
-    COLOR_ATTACHMENT1: 0x8CE1,
-    COLOR_ATTACHMENT2: 0x8CE2,
-    COLOR_ATTACHMENT3: 0x8CE3,
-    COLOR_ATTACHMENT4: 0x8CE4,
-    COLOR_ATTACHMENT5: 0x8CE5,
-    COLOR_ATTACHMENT6: 0x8CE6,
-    COLOR_ATTACHMENT7: 0x8CE7,
-    COLOR_ATTACHMENT8: 0x8CE8,
-    COLOR_ATTACHMENT9: 0x8CE9,
-    COLOR_ATTACHMENT10: 0x8CEA,
-    COLOR_ATTACHMENT11: 0x8CEB,
-    COLOR_ATTACHMENT12: 0x8CEC,
-    COLOR_ATTACHMENT13: 0x8CED,
-    COLOR_ATTACHMENT14: 0x8CEE,
-    COLOR_ATTACHMENT15: 0x8CEF,
+    MAX_COLOR_ATTACHMENTS: 0x8cdf,
+    COLOR_ATTACHMENT1: 0x8ce1,
+    COLOR_ATTACHMENT2: 0x8ce2,
+    COLOR_ATTACHMENT3: 0x8ce3,
+    COLOR_ATTACHMENT4: 0x8ce4,
+    COLOR_ATTACHMENT5: 0x8ce5,
+    COLOR_ATTACHMENT6: 0x8ce6,
+    COLOR_ATTACHMENT7: 0x8ce7,
+    COLOR_ATTACHMENT8: 0x8ce8,
+    COLOR_ATTACHMENT9: 0x8ce9,
+    COLOR_ATTACHMENT10: 0x8cea,
+    COLOR_ATTACHMENT11: 0x8ceb,
+    COLOR_ATTACHMENT12: 0x8cec,
+    COLOR_ATTACHMENT13: 0x8ced,
+    COLOR_ATTACHMENT14: 0x8cee,
+    COLOR_ATTACHMENT15: 0x8cef,
 
     // Samplers
 
-    SAMPLER_3D: 0x8B5F,
-    SAMPLER_2D_SHADOW: 0x8B62,
-    SAMPLER_2D_ARRAY: 0x8DC1,
-    SAMPLER_2D_ARRAY_SHADOW: 0x8DC4,
-    SAMPLER_CUBE_SHADOW: 0x8DC5,
-    INT_SAMPLER_2D: 0x8DCA,
-    INT_SAMPLER_3D: 0x8DCB,
-    INT_SAMPLER_CUBE: 0x8DCC,
-    INT_SAMPLER_2D_ARRAY: 0x8DCF,
-    UNSIGNED_INT_SAMPLER_2D: 0x8DD2,
-    UNSIGNED_INT_SAMPLER_3D: 0x8DD3,
-    UNSIGNED_INT_SAMPLER_CUBE: 0x8DD4,
-    UNSIGNED_INT_SAMPLER_2D_ARRAY: 0x8DD7,
-    MAX_SAMPLES: 0x8D57,
+    SAMPLER_3D: 0x8b5f,
+    SAMPLER_2D_SHADOW: 0x8b62,
+    SAMPLER_2D_ARRAY: 0x8dc1,
+    SAMPLER_2D_ARRAY_SHADOW: 0x8dc4,
+    SAMPLER_CUBE_SHADOW: 0x8dc5,
+    INT_SAMPLER_2D: 0x8dca,
+    INT_SAMPLER_3D: 0x8dcb,
+    INT_SAMPLER_CUBE: 0x8dcc,
+    INT_SAMPLER_2D_ARRAY: 0x8dcf,
+    UNSIGNED_INT_SAMPLER_2D: 0x8dd2,
+    UNSIGNED_INT_SAMPLER_3D: 0x8dd3,
+    UNSIGNED_INT_SAMPLER_CUBE: 0x8dd4,
+    UNSIGNED_INT_SAMPLER_2D_ARRAY: 0x8dd7,
+    MAX_SAMPLES: 0x8d57,
     SAMPLER_BINDING: 0x8919,
 
     // Buffers
 
-    PIXEL_PACK_BUFFER: 0x88EB,
-    PIXEL_UNPACK_BUFFER: 0x88EC,
-    PIXEL_PACK_BUFFER_BINDING: 0x88ED,
-    PIXEL_UNPACK_BUFFER_BINDING: 0x88EF,
-    COPY_READ_BUFFER: 0x8F36,
-    COPY_WRITE_BUFFER: 0x8F37,
-    COPY_READ_BUFFER_BINDING: 0x8F36,
-    COPY_WRITE_BUFFER_BINDING: 0x8F37,
+    PIXEL_PACK_BUFFER: 0x88eb,
+    PIXEL_UNPACK_BUFFER: 0x88ec,
+    PIXEL_PACK_BUFFER_BINDING: 0x88ed,
+    PIXEL_UNPACK_BUFFER_BINDING: 0x88ef,
+    COPY_READ_BUFFER: 0x8f36,
+    COPY_WRITE_BUFFER: 0x8f37,
+    COPY_READ_BUFFER_BINDING: 0x8f36,
+    COPY_WRITE_BUFFER_BINDING: 0x8f37,
 
     // Data types
 
-    FLOAT_MAT2x3: 0x8B65,
-    FLOAT_MAT2x4: 0x8B66,
-    FLOAT_MAT3x2: 0x8B67,
-    FLOAT_MAT3x4: 0x8B68,
-    FLOAT_MAT4x2: 0x8B69,
-    FLOAT_MAT4x3: 0x8B6A,
-    UNSIGNED_INT_VEC2: 0x8DC6,
-    UNSIGNED_INT_VEC3: 0x8DC7,
-    UNSIGNED_INT_VEC4: 0x8DC8,
-    UNSIGNED_NORMALIZED: 0x8C17,
-    SIGNED_NORMALIZED: 0x8F9C,
+    FLOAT_MAT2x3: 0x8b65,
+    FLOAT_MAT2x4: 0x8b66,
+    FLOAT_MAT3x2: 0x8b67,
+    FLOAT_MAT3x4: 0x8b68,
+    FLOAT_MAT4x2: 0x8b69,
+    FLOAT_MAT4x3: 0x8b6a,
+    UNSIGNED_INT_VEC2: 0x8dc6,
+    UNSIGNED_INT_VEC3: 0x8dc7,
+    UNSIGNED_INT_VEC4: 0x8dc8,
+    UNSIGNED_NORMALIZED: 0x8c17,
+    SIGNED_NORMALIZED: 0x8f9c,
 
     // Vertex attributes
 
-    VERTEX_ATTRIB_ARRAY_INTEGER: 0x88FD,
-    VERTEX_ATTRIB_ARRAY_DIVISOR: 0x88FE,
+    VERTEX_ATTRIB_ARRAY_INTEGER: 0x88fd,
+    VERTEX_ATTRIB_ARRAY_DIVISOR: 0x88fe,
 
     // Transform feedback
 
-    TRANSFORM_FEEDBACK_BUFFER_MODE: 0x8C7F,
-    MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: 0x8C80,
-    TRANSFORM_FEEDBACK_VARYINGS: 0x8C83,
-    TRANSFORM_FEEDBACK_BUFFER_START: 0x8C84,
-    TRANSFORM_FEEDBACK_BUFFER_SIZE: 0x8C85,
-    TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: 0x8C88,
-    MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: 0x8C8A,
-    MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: 0x8C8B,
-    INTERLEAVED_ATTRIBS: 0x8C8C,
-    SEPARATE_ATTRIBS: 0x8C8D,
-    TRANSFORM_FEEDBACK_BUFFER: 0x8C8E,
-    TRANSFORM_FEEDBACK_BUFFER_BINDING: 0x8C8F,
-    TRANSFORM_FEEDBACK: 0x8E22,
-    TRANSFORM_FEEDBACK_PAUSED: 0x8E23,
-    TRANSFORM_FEEDBACK_ACTIVE: 0x8E24,
-    TRANSFORM_FEEDBACK_BINDING: 0x8E25,
+    TRANSFORM_FEEDBACK_BUFFER_MODE: 0x8c7f,
+    MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS: 0x8c80,
+    TRANSFORM_FEEDBACK_VARYINGS: 0x8c83,
+    TRANSFORM_FEEDBACK_BUFFER_START: 0x8c84,
+    TRANSFORM_FEEDBACK_BUFFER_SIZE: 0x8c85,
+    TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN: 0x8c88,
+    MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: 0x8c8a,
+    MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS: 0x8c8b,
+    INTERLEAVED_ATTRIBS: 0x8c8c,
+    SEPARATE_ATTRIBS: 0x8c8d,
+    TRANSFORM_FEEDBACK_BUFFER: 0x8c8e,
+    TRANSFORM_FEEDBACK_BUFFER_BINDING: 0x8c8f,
+    TRANSFORM_FEEDBACK: 0x8e22,
+    TRANSFORM_FEEDBACK_PAUSED: 0x8e23,
+    TRANSFORM_FEEDBACK_ACTIVE: 0x8e24,
+    TRANSFORM_FEEDBACK_BINDING: 0x8e25,
 
     // Framebuffers and renderbuffers
 
@@ -689,43 +706,43 @@ const GLConstants = {
     FRAMEBUFFER_DEFAULT: 0x8218,
     // DEPTH_STENCIL_ATTACHMENT : 0x821A,
     // DEPTH_STENCIL: 0x84F9,
-    DEPTH24_STENCIL8: 0x88F0,
-    DRAW_FRAMEBUFFER_BINDING: 0x8CA6,
+    DEPTH24_STENCIL8: 0x88f0,
+    DRAW_FRAMEBUFFER_BINDING: 0x8ca6,
     // READ_FRAMEBUFFER : 0x8CA8,
     // DRAW_FRAMEBUFFER : 0x8CA9,
-    READ_FRAMEBUFFER_BINDING: 0x8CAA,
-    RENDERBUFFER_SAMPLES: 0x8CAB,
-    FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: 0x8CD4,
-    FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: 0x8D56,
+    READ_FRAMEBUFFER_BINDING: 0x8caa,
+    RENDERBUFFER_SAMPLES: 0x8cab,
+    FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER: 0x8cd4,
+    FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: 0x8d56,
 
     // Uniforms
 
-    UNIFORM_BUFFER: 0x8A11,
-    UNIFORM_BUFFER_BINDING: 0x8A28,
-    UNIFORM_BUFFER_START: 0x8A29,
-    UNIFORM_BUFFER_SIZE: 0x8A2A,
-    MAX_VERTEX_UNIFORM_BLOCKS: 0x8A2B,
-    MAX_FRAGMENT_UNIFORM_BLOCKS: 0x8A2D,
-    MAX_COMBINED_UNIFORM_BLOCKS: 0x8A2E,
-    MAX_UNIFORM_BUFFER_BINDINGS: 0x8A2F,
-    MAX_UNIFORM_BLOCK_SIZE: 0x8A30,
-    MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: 0x8A31,
-    MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: 0x8A33,
-    UNIFORM_BUFFER_OFFSET_ALIGNMENT: 0x8A34,
-    ACTIVE_UNIFORM_BLOCKS: 0x8A36,
-    UNIFORM_TYPE: 0x8A37,
-    UNIFORM_SIZE: 0x8A38,
-    UNIFORM_BLOCK_INDEX: 0x8A3A,
-    UNIFORM_OFFSET: 0x8A3B,
-    UNIFORM_ARRAY_STRIDE: 0x8A3C,
-    UNIFORM_MATRIX_STRIDE: 0x8A3D,
-    UNIFORM_IS_ROW_MAJOR: 0x8A3E,
-    UNIFORM_BLOCK_BINDING: 0x8A3F,
-    UNIFORM_BLOCK_DATA_SIZE: 0x8A40,
-    UNIFORM_BLOCK_ACTIVE_UNIFORMS: 0x8A42,
-    UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: 0x8A43,
-    UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: 0x8A44,
-    UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: 0x8A46,
+    UNIFORM_BUFFER: 0x8a11,
+    UNIFORM_BUFFER_BINDING: 0x8a28,
+    UNIFORM_BUFFER_START: 0x8a29,
+    UNIFORM_BUFFER_SIZE: 0x8a2a,
+    MAX_VERTEX_UNIFORM_BLOCKS: 0x8a2b,
+    MAX_FRAGMENT_UNIFORM_BLOCKS: 0x8a2d,
+    MAX_COMBINED_UNIFORM_BLOCKS: 0x8a2e,
+    MAX_UNIFORM_BUFFER_BINDINGS: 0x8a2f,
+    MAX_UNIFORM_BLOCK_SIZE: 0x8a30,
+    MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS: 0x8a31,
+    MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS: 0x8a33,
+    UNIFORM_BUFFER_OFFSET_ALIGNMENT: 0x8a34,
+    ACTIVE_UNIFORM_BLOCKS: 0x8a36,
+    UNIFORM_TYPE: 0x8a37,
+    UNIFORM_SIZE: 0x8a38,
+    UNIFORM_BLOCK_INDEX: 0x8a3a,
+    UNIFORM_OFFSET: 0x8a3b,
+    UNIFORM_ARRAY_STRIDE: 0x8a3c,
+    UNIFORM_MATRIX_STRIDE: 0x8a3d,
+    UNIFORM_IS_ROW_MAJOR: 0x8a3e,
+    UNIFORM_BLOCK_BINDING: 0x8a3f,
+    UNIFORM_BLOCK_DATA_SIZE: 0x8a40,
+    UNIFORM_BLOCK_ACTIVE_UNIFORMS: 0x8a42,
+    UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES: 0x8a43,
+    UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER: 0x8a44,
+    UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER: 0x8a46,
 
     // Sync objects
 
@@ -737,10 +754,10 @@ const GLConstants = {
     SYNC_GPU_COMMANDS_COMPLETE: 0x9117,
     UNSIGNALED: 0x9118,
     SIGNALED: 0x9119,
-    ALREADY_SIGNALED: 0x911A,
-    TIMEOUT_EXPIRED: 0x911B,
-    CONDITION_SATISFIED: 0x911C,
-    WAIT_FAILED: 0x911D,
+    ALREADY_SIGNALED: 0x911a,
+    TIMEOUT_EXPIRED: 0x911b,
+    CONDITION_SATISFIED: 0x911c,
+    WAIT_FAILED: 0x911d,
     SYNC_FLUSH_COMMANDS_BIT: 0x00000001,
 
     // Miscellaneous constants
@@ -750,16 +767,16 @@ const GLConstants = {
     STENCIL: 0x1802,
     MIN: 0x8007,
     MAX: 0x8008,
-    DEPTH_COMPONENT24: 0x81A6,
-    STREAM_READ: 0x88E1,
-    STREAM_COPY: 0x88E2,
-    STATIC_READ: 0x88E5,
-    STATIC_COPY: 0x88E6,
-    DYNAMIC_READ: 0x88E9,
-    DYNAMIC_COPY: 0x88EA,
-    DEPTH_COMPONENT32F: 0x8CAC,
-    DEPTH32F_STENCIL8: 0x8CAD,
-    INVALID_INDEX: 0xFFFFFFFF,
+    DEPTH_COMPONENT24: 0x81a6,
+    STREAM_READ: 0x88e1,
+    STREAM_COPY: 0x88e2,
+    STATIC_READ: 0x88e5,
+    STATIC_COPY: 0x88e6,
+    DYNAMIC_READ: 0x88e9,
+    DYNAMIC_COPY: 0x88ea,
+    DEPTH_COMPONENT32F: 0x8cac,
+    DEPTH32F_STENCIL8: 0x8cad,
+    INVALID_INDEX: 0xffffffff,
     TIMEOUT_IGNORED: -1,
     MAX_CLIENT_WAIT_TIMEOUT_WEBGL: 0x9247,
 
@@ -767,7 +784,7 @@ const GLConstants = {
 
     // ANGLE_instanced_arrays
 
-    VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE: 0x88FE, // Describes the frequency divisor used for instanced rendering.
+    VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE: 0x88fe, // Describes the frequency divisor used for instanced rendering.
 
     // WEBGL_debug_renderer_info
 
@@ -776,15 +793,15 @@ const GLConstants = {
 
     // EXT_texture_filter_anisotropic
 
-    MAX_TEXTURE_MAX_ANISOTROPY_EXT: 0x84FF, // Returns the maximum available anisotropy.
-    TEXTURE_MAX_ANISOTROPY_EXT: 0x84FE, // Passed to texParameter to set the desired maximum anisotropy for a texture.
+    MAX_TEXTURE_MAX_ANISOTROPY_EXT: 0x84ff, // Returns the maximum available anisotropy.
+    TEXTURE_MAX_ANISOTROPY_EXT: 0x84fe, // Passed to texParameter to set the desired maximum anisotropy for a texture.
 
     // WEBGL_compressed_texture_s3tc
 
-    COMPRESSED_RGB_S3TC_DXT1_EXT: 0x83F0, // A DXT1-compressed image in an RGB image format.
-    COMPRESSED_RGBA_S3TC_DXT1_EXT: 0x83F1, // A DXT1-compressed image in an RGB image format with a simple on/off alpha value.
-    COMPRESSED_RGBA_S3TC_DXT3_EXT: 0x83F2, // A DXT3-compressed image in an RGBA image format. Compared to a 32-bit RGBA texture, it offers 4:1 compression.
-    COMPRESSED_RGBA_S3TC_DXT5_EXT: 0x83F3, // A DXT5-compressed image in an RGBA image format. It also provides a 4:1 compression, but differs to the DXT3 compression in how the alpha compression is done.
+    COMPRESSED_RGB_S3TC_DXT1_EXT: 0x83f0, // A DXT1-compressed image in an RGB image format.
+    COMPRESSED_RGBA_S3TC_DXT1_EXT: 0x83f1, // A DXT1-compressed image in an RGB image format with a simple on/off alpha value.
+    COMPRESSED_RGBA_S3TC_DXT3_EXT: 0x83f2, // A DXT3-compressed image in an RGBA image format. Compared to a 32-bit RGBA texture, it offers 4:1 compression.
+    COMPRESSED_RGBA_S3TC_DXT5_EXT: 0x83f3, // A DXT5-compressed image in an RGBA image format. It also provides a 4:1 compression, but differs to the DXT3 compression in how the alpha compression is done.
 
     // WEBGL_compressed_texture_es3
 
@@ -801,35 +818,35 @@ const GLConstants = {
 
     // WEBGL_compressed_texture_pvrtc
 
-    COMPRESSED_RGB_PVRTC_4BPPV1_IMG: 0x8C00, // RGB compression in 4-bit mode. One block for each 4×4 pixels.
-    COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: 0x8C02, // RGBA compression in 4-bit mode. One block for each 4×4 pixels.
-    COMPRESSED_RGB_PVRTC_2BPPV1_IMG: 0x8C01, // RGB compression in 2-bit mode. One block for each 8×4 pixels.
-    COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: 0x8C03, // RGBA compression in 2-bit mode. One block for each 8×4 pixe
+    COMPRESSED_RGB_PVRTC_4BPPV1_IMG: 0x8c00, // RGB compression in 4-bit mode. One block for each 4×4 pixels.
+    COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: 0x8c02, // RGBA compression in 4-bit mode. One block for each 4×4 pixels.
+    COMPRESSED_RGB_PVRTC_2BPPV1_IMG: 0x8c01, // RGB compression in 2-bit mode. One block for each 8×4 pixels.
+    COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: 0x8c03, // RGBA compression in 2-bit mode. One block for each 8×4 pixe
 
     // WEBGL_compressed_texture_etc1
 
-    COMPRESSED_RGB_ETC1_WEBGL: 0x8D64, // Compresses 24-bit RGB data with no alpha channel.
+    COMPRESSED_RGB_ETC1_WEBGL: 0x8d64, // Compresses 24-bit RGB data with no alpha channel.
 
     // WEBGL_compressed_texture_atc
 
-    COMPRESSED_RGB_ATC_WEBGL: 0x8C92, //  Compresses RGB textures with no alpha channel.
-    COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL: 0x8C92, // Compresses RGBA textures using explicit alpha encoding (useful when alpha transitions are sharp).
-    COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL: 0x87EE, // Compresses RGBA textures using interpolated alpha encoding (useful when alpha transitions are gradient).
+    COMPRESSED_RGB_ATC_WEBGL: 0x8c92, //  Compresses RGB textures with no alpha channel.
+    COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL: 0x8c92, // Compresses RGBA textures using explicit alpha encoding (useful when alpha transitions are sharp).
+    COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL: 0x87ee, // Compresses RGBA textures using interpolated alpha encoding (useful when alpha transitions are gradient).
 
     // WEBGL_depth_texture
 
-    UNSIGNED_INT_24_8_WEBGL: 0x84FA, // Unsigned integer type for 24-bit depth texture data.
+    UNSIGNED_INT_24_8_WEBGL: 0x84fa, // Unsigned integer type for 24-bit depth texture data.
 
     // OES_texture_half_float
 
-    HALF_FLOAT_OES: 0x8D61, // Half floating-point type (16-bit).
+    HALF_FLOAT_OES: 0x8d61, // Half floating-point type (16-bit).
 
     // WEBGL_color_buffer_float
 
     RGBA32F_EXT: 0x8814, // RGBA 32-bit floating-point color-renderable format.
     RGB32F_EXT: 0x8815, // RGB 32-bit floating-point color-renderable format.
     FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE_EXT: 0x8211,
-    UNSIGNED_NORMALIZED_EXT: 0x8C17,
+    UNSIGNED_NORMALIZED_EXT: 0x8c17,
 
     // EXT_blend_minmax
 
@@ -838,55 +855,56 @@ const GLConstants = {
 
     // EXT_sRGB
 
-    SRGB_EXT: 0x8C40, // Unsized sRGB format that leaves the precision up to the driver.
-    SRGB_ALPHA_EXT: 0x8C42, // Unsized sRGB format with unsized alpha component.
-    SRGB8_ALPHA8_EXT: 0x8C43, // Sized (8-bit) sRGB and alpha formats.
+    SRGB_EXT: 0x8c40, // Unsized sRGB format that leaves the precision up to the driver.
+    SRGB_ALPHA_EXT: 0x8c42, // Unsized sRGB format with unsized alpha component.
+    SRGB8_ALPHA8_EXT: 0x8c43, // Sized (8-bit) sRGB and alpha formats.
     FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT: 0x8210, // Returns the framebuffer color encoding.
 
     // OES_standard_derivatives
 
-    FRAGMENT_SHADER_DERIVATIVE_HINT_OES: 0x8B8B, // Indicates the accuracy of the derivative calculation for the GLSL built-in functions: dFdx, dFdy, and fwidth.
+    FRAGMENT_SHADER_DERIVATIVE_HINT_OES: 0x8b8b, // Indicates the accuracy of the derivative calculation for the GLSL built-in functions: dFdx, dFdy, and fwidth.
 
     // WEBGL_draw_buffers
 
-    COLOR_ATTACHMENT0_WEBGL: 0x8CE0, // Framebuffer color attachment point
-    COLOR_ATTACHMENT1_WEBGL: 0x8CE1, // Framebuffer color attachment point
-    COLOR_ATTACHMENT2_WEBGL: 0x8CE2, // Framebuffer color attachment point
-    COLOR_ATTACHMENT3_WEBGL: 0x8CE3, // Framebuffer color attachment point
-    COLOR_ATTACHMENT4_WEBGL: 0x8CE4, // Framebuffer color attachment point
-    COLOR_ATTACHMENT5_WEBGL: 0x8CE5, // Framebuffer color attachment point
-    COLOR_ATTACHMENT6_WEBGL: 0x8CE6, // Framebuffer color attachment point
-    COLOR_ATTACHMENT7_WEBGL: 0x8CE7, // Framebuffer color attachment point
-    COLOR_ATTACHMENT8_WEBGL: 0x8CE8, // Framebuffer color attachment point
-    COLOR_ATTACHMENT9_WEBGL: 0x8CE9, // Framebuffer color attachment point
-    COLOR_ATTACHMENT10_WEBGL: 0x8CEA, // Framebuffer color attachment point
-    COLOR_ATTACHMENT11_WEBGL: 0x8CEB, // Framebuffer color attachment point
-    COLOR_ATTACHMENT12_WEBGL: 0x8CEC, // Framebuffer color attachment point
-    COLOR_ATTACHMENT13_WEBGL: 0x8CED, // Framebuffer color attachment point
-    COLOR_ATTACHMENT14_WEBGL: 0x8CEE, // Framebuffer color attachment point
-    COLOR_ATTACHMENT15_WEBGL: 0x8CEF, // Framebuffer color attachment point
+    COLOR_ATTACHMENT0_WEBGL: 0x8ce0, // Framebuffer color attachment point
+    COLOR_ATTACHMENT1_WEBGL: 0x8ce1, // Framebuffer color attachment point
+    COLOR_ATTACHMENT2_WEBGL: 0x8ce2, // Framebuffer color attachment point
+    COLOR_ATTACHMENT3_WEBGL: 0x8ce3, // Framebuffer color attachment point
+    COLOR_ATTACHMENT4_WEBGL: 0x8ce4, // Framebuffer color attachment point
+    COLOR_ATTACHMENT5_WEBGL: 0x8ce5, // Framebuffer color attachment point
+    COLOR_ATTACHMENT6_WEBGL: 0x8ce6, // Framebuffer color attachment point
+    COLOR_ATTACHMENT7_WEBGL: 0x8ce7, // Framebuffer color attachment point
+    COLOR_ATTACHMENT8_WEBGL: 0x8ce8, // Framebuffer color attachment point
+    COLOR_ATTACHMENT9_WEBGL: 0x8ce9, // Framebuffer color attachment point
+    COLOR_ATTACHMENT10_WEBGL: 0x8cea, // Framebuffer color attachment point
+    COLOR_ATTACHMENT11_WEBGL: 0x8ceb, // Framebuffer color attachment point
+    COLOR_ATTACHMENT12_WEBGL: 0x8cec, // Framebuffer color attachment point
+    COLOR_ATTACHMENT13_WEBGL: 0x8ced, // Framebuffer color attachment point
+    COLOR_ATTACHMENT14_WEBGL: 0x8cee, // Framebuffer color attachment point
+    COLOR_ATTACHMENT15_WEBGL: 0x8cef, // Framebuffer color attachment point
     DRAW_BUFFER0_WEBGL: 0x8825, // Draw buffer
     DRAW_BUFFER1_WEBGL: 0x8826, // Draw buffer
     DRAW_BUFFER2_WEBGL: 0x8827, // Draw buffer
     DRAW_BUFFER3_WEBGL: 0x8828, // Draw buffer
     DRAW_BUFFER4_WEBGL: 0x8829, // Draw buffer
-    DRAW_BUFFER5_WEBGL: 0x882A, // Draw buffer
-    DRAW_BUFFER6_WEBGL: 0x882B, // Draw buffer
-    DRAW_BUFFER7_WEBGL: 0x882C, // Draw buffer
-    DRAW_BUFFER8_WEBGL: 0x882D, // Draw buffer
-    DRAW_BUFFER9_WEBGL: 0x882E, // Draw buffer
-    DRAW_BUFFER10_WEBGL: 0x882F, // Draw buffer
+    DRAW_BUFFER5_WEBGL: 0x882a, // Draw buffer
+    DRAW_BUFFER6_WEBGL: 0x882b, // Draw buffer
+    DRAW_BUFFER7_WEBGL: 0x882c, // Draw buffer
+    DRAW_BUFFER8_WEBGL: 0x882d, // Draw buffer
+    DRAW_BUFFER9_WEBGL: 0x882e, // Draw buffer
+    DRAW_BUFFER10_WEBGL: 0x882f, // Draw buffer
     DRAW_BUFFER11_WEBGL: 0x8830, // Draw buffer
     DRAW_BUFFER12_WEBGL: 0x8831, // Draw buffer
     DRAW_BUFFER13_WEBGL: 0x8832, // Draw buffer
     DRAW_BUFFER14_WEBGL: 0x8833, // Draw buffer
     DRAW_BUFFER15_WEBGL: 0x8834, // Draw buffer
-    MAX_COLOR_ATTACHMENTS_WEBGL: 0x8CDF, // Maximum number of framebuffer color attachment points
+    DRAW_FRAMEBUFFER: 0x8ca9, // Draw buffer
+    MAX_COLOR_ATTACHMENTS_WEBGL: 0x8cdf, // Maximum number of framebuffer color attachment points
     MAX_DRAW_BUFFERS_WEBGL: 0x8824, // Maximum number of draw buffers
 
     // OES_vertex_array_object
 
-    VERTEX_ARRAY_BINDING_OES: 0x85B5, // The bound vertex array object (VAO).
+    VERTEX_ARRAY_BINDING_OES: 0x85b5, // The bound vertex array object (VAO).
 
     // EXT_disjoint_timer_query
 
@@ -894,9 +912,9 @@ const GLConstants = {
     CURRENT_QUERY_EXT: 0x8865, // The currently active query.
     QUERY_RESULT_EXT: 0x8866, // The query result.
     QUERY_RESULT_AVAILABLE_EXT: 0x8867, // A Boolean indicating whether or not a query result is available.
-    TIME_ELAPSED_EXT: 0x88BF, // Elapsed time (in nanoseconds).
-    TIMESTAMP_EXT: 0x8E28, // The current time.
-    GPU_DISJOINT_EXT: 0x8FBB // A Boolean indicating whether or not the GPU performed any disjoint operation.
+    TIME_ELAPSED_EXT: 0x88bf, // Elapsed time (in nanoseconds).
+    TIMESTAMP_EXT: 0x8e28, // The current time.
+    GPU_DISJOINT_EXT: 0x8fbb, // A Boolean indicating whether or not the GPU performed any disjoint operation.
 };
 
 export default GLConstants;

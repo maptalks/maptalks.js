@@ -1,5 +1,5 @@
-import GLContext from '../GLContext';
-import { include } from '../Utils';
+import GLContext from "../GLContext";
+import { include } from "../Utils";
 
 include(GLContext.prototype, {
     bindAttribLocation(program, index, name) {
@@ -83,6 +83,18 @@ include(GLContext.prototype, {
     },
 
     /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/uniformBlockBinding
+     */
+    uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding) {
+        this._checkAndRestore();
+        return this._gl.uniformBlockBinding(
+            program,
+            uniformBlockIndex,
+            uniformBlockBinding
+        );
+    },
+
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/uniformMatrix
      */
     uniformMatrix2fv(location, transpose, value) {
@@ -92,7 +104,6 @@ include(GLContext.prototype, {
     uniformMatrix3fv(location, transpose, value) {
         this._checkAndRestore();
         return this._gl.uniformMatrix3fv(location, transpose, value);
-
     },
     uniformMatrix4fv(location, transpose, value) {
         this._checkAndRestore();
@@ -166,6 +177,178 @@ include(GLContext.prototype, {
         return this._gl.uniform4iv(location, v);
     },
     /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/uniform
+     */
+    uniform1ui(location, v0) {
+        this._checkAndRestore();
+        return this._gl.uniform1ui(location, v0);
+    },
+    uniform2ui(location, v0, v1) {
+        this._checkAndRestore();
+        return this._gl.uniform2ui(location, v0, v1);
+    },
+    uniform3ui(location, v0, v1, v2) {
+        this._checkAndRestore();
+        return this._gl.uniform3ui(location, v0, v1, v2);
+    },
+    uniform4ui(location, v0, v1, v2, v3) {
+        this._checkAndRestore();
+        return this._gl.uniform4ui(location, v0, v1, v2, v3);
+    },
+    uniform1fv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform1fv(location, data);
+    },
+    uniform1fv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform1fv(location, data, srcOffset);
+    },
+    uniform1fv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform1fv(location, data, srcOffset, srcLength);
+    },
+    uniform2fv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform2fv(location, data);
+    },
+    uniform2fv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform2fv(location, data, srcOffset);
+    },
+
+    uniform2fv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform2fv(location, data, srcOffset, srcLength);
+    },
+    uniform3fv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform3fv(location, data);
+    },
+    uniform3fv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform3fv(location, data, srcOffset);
+    },
+    uniform3fv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform3fv(location, data, srcOffset, srcLength);
+    },
+    uniform4fv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform4fv(location, data);
+    },
+    uniform4fv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform4fv(location, data, srcOffset);
+    },
+    uniform4fv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform4fv(location, data, srcOffset, srcLength);
+    },
+    uniform1iv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform1iv(location, data);
+    },
+    uniform1iv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform1iv(location, data, srcOffset);
+    },
+    uniform1iv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform1iv(location, data, srcOffset, srcLength);
+    },
+
+    uniform2iv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform2iv(location, data);
+    },
+    uniform2iv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform2iv(location, data, srcOffset);
+    },
+    uniform2iv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform2iv(location, data, srcOffset, srcLength);
+    },
+
+    uniform3iv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform3iv(location, data);
+    },
+    uniform3iv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform3iv(location, data, srcOffset);
+    },
+    uniform3iv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform3iv(location, data, srcOffset, srcLength);
+    },
+
+    uniform4iv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform4iv(location, data);
+    },
+    uniform4iv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform4iv(location, data, srcOffset);
+    },
+    uniform4iv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform4iv(location, data, srcOffset, srcLength);
+    },
+
+    uniform1uiv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform1uiv(location, data);
+    },
+    uniform1uiv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform1uiv(location, data, srcOffset);
+    },
+    uniform1uiv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform1uiv(location, data, srcOffset, srcLength);
+    },
+
+    uniform2uiv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform2uiv(location, data);
+    },
+    uniform2uiv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform2uiv(location, data, srcOffset);
+    },
+    uniform2uiv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform2uiv(location, data, srcOffset, srcLength);
+    },
+
+    uniform3uiv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform3uiv(location, data);
+    },
+    uniform3uiv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform3uiv(location, data, srcOffset);
+    },
+    uniform3uiv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform3uiv(location, data, srcOffset, srcLength);
+    },
+
+    uniform4uiv(location, data) {
+        this._checkAndRestore();
+        return this._gl.uniform4uiv(location, data);
+    },
+    uniform4uiv(location, data, srcOffset) {
+        this._checkAndRestore();
+        return this._gl.uniform4uiv(location, data, srcOffset);
+    },
+    uniform4uiv(location, data, srcOffset, srcLength) {
+        this._checkAndRestore();
+        return this._gl.uniform4uiv(location, data, srcOffset, srcLength);
+    },
+
+    /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttrib
      */
     vertexAttrib1f(index, v0) {
@@ -199,5 +382,21 @@ include(GLContext.prototype, {
     vertexAttrib4fv(index, v) {
         this._checkAndRestore();
         return this._gl.vertexAttrib4fv(index, v);
-    }
+    },
+    vertexAttribI4i(index, v0, v1, v2, v3) {
+        this._checkAndRestore();
+        return this._gl.vertexAttribI4i(index, v0, v1, v2, v3);
+    },
+    vertexAttribI4ui(index, v0, v1, v2, v3) {
+        this._checkAndRestore();
+        return this._gl.vertexAttribI4ui(index, v0, v1, v2, v3);
+    },
+    vertexAttribI4iv(index, value) {
+        this._checkAndRestore();
+        return this._gl.vertexAttribI4iv(index, value);
+    },
+    vertexAttribI4uiv(index, value) {
+        this._checkAndRestore();
+        return this._gl.vertexAttribI4uiv(index, value);
+    },
 });

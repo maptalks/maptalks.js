@@ -3,9 +3,9 @@
  * @modify 2018/5/2
  * @author yellow
  */
-import { include, createDefaultStates } from './Utils';
-import GLConstants from './GLConstants';
-import MockExtensions from './extensions/Mocks';
+import { include, createDefaultStates } from "./Utils";
+import GLConstants from "./GLConstants";
+import MockExtensions from "./extensions/Mocks";
 
 let uid = 1;
 
@@ -29,11 +29,14 @@ class GLContext {
          */
         this._gl = gl;
 
-        this._gl['_fusiongl_drawCalls'] = 0;
+        this._gl["_fusiongl_drawCalls"] = 0;
 
-        this._is2 = (typeof WebGL2RenderingContext !== 'undefined') && (this._gl instanceof WebGL2RenderingContext);
+        this._is2 =
+            typeof WebGL2RenderingContext !== "undefined" &&
+            this._gl instanceof WebGL2RenderingContext;
+        console.log("是否webgl2", this._is2);
 
-        this._attrLimit = gl.getParameter(gl['MAX_VERTEX_ATTRIBS']);
+        this._attrLimit = gl.getParameter(gl["MAX_VERTEX_ATTRIBS"]);
     }
 
     /**
@@ -71,26 +74,32 @@ class GLContext {
         return this._gl;
     }
 
-
     get buffersOES() {
         if (!this._buffersOES) {
-            this._buffersOES = this._gl.getExtension('WEBGL_draw_buffers');
+            this._buffersOES = this._gl.getExtension("WEBGL_draw_buffers");
         }
         return this._buffersOES;
     }
 
     get vaoOES() {
         if (!this._vaoOES) {
-            this._vaoOES = this._gl.getExtension('OES_vertex_array_object');
+            this._vaoOES = this._gl.getExtension("OES_vertex_array_object");
         }
         return this._vaoOES;
     }
 
     get angleOES() {
         if (!this._angleOES) {
-            this._angleOES = this._gl.getExtension('ANGLE_instanced_arrays');
+            this._angleOES = this._gl.getExtension("ANGLE_instanced_arrays");
         }
         return this._angleOES;
+    }
+
+    get standOES() {
+        if (!this._standOES) {
+            this._standOES = this._gl.getExtension("OES_standard_derivatives");
+        }
+        return this._standOES;
     }
 
     /**
@@ -175,6 +184,9 @@ class GLContext {
         return this._gl.linkProgram(program);
     }
 
+    makeXRCompatible() {
+        return this._gl.makeXRCompatible();
+    }
 
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getShaderParameter
@@ -260,6 +272,10 @@ class GLContext {
         return this._gl.getParameter(pname);
     }
 
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isEnabled
+     * @param {boolean} cap
+     */
     isEnabled(cap) {
         return this._gl.isEnabled(cap);
     }
@@ -313,15 +329,15 @@ class GLContext {
     }
 
     _addDrawCall() {
-        this._gl['_fusiongl_drawCalls']++;
+        this._gl["_fusiongl_drawCalls"]++;
     }
 
     resetDrawCalls() {
-        this._gl['_fusiongl_drawCalls'] = 0;
+        this._gl["_fusiongl_drawCalls"] = 0;
     }
 
     getDrawCalls() {
-        return this._gl['_fusiongl_drawCalls'];
+        return this._gl["_fusiongl_drawCalls"];
     }
 
     _saveDataStatus() {
@@ -330,19 +346,27 @@ class GLContext {
         const max = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
         const buffers = [];
         for (let i = 0; i < max; i++) {
-            buffers.push(gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING));
+            buffers.push(
+                gl.getVertexAttrib(i, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING)
+            );
         }
         this._dataStatus = {
             buffers,
-            elements : gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING),
-            framebuffer: gl.getParameter(gl.FRAMEBUFFER_BINDING)
+            elements: gl.getParameter(gl.ELEMENT_ARRAY_BUFFER_BINDING),
+            framebuffer: gl.getParameter(gl.FRAMEBUFFER_BINDING),
         };
         if (window.DEBUGGING) {
             console.log(this.uid, this._dataStatus);
             console.log(this.uid, this.states.attributes);
-            console.log(this.states.attributes[0].buffer === this._dataStatus.buffers[0]);
-            console.log(this.states.attributes[1].buffer === this._dataStatus.buffers[1]);
-            console.log(this.states.attributes[2].buffer === this._dataStatus.buffers[2]);
+            console.log(
+                this.states.attributes[0].buffer === this._dataStatus.buffers[0]
+            );
+            console.log(
+                this.states.attributes[1].buffer === this._dataStatus.buffers[1]
+            );
+            console.log(
+                this.states.attributes[2].buffer === this._dataStatus.buffers[2]
+            );
             // console.trace();
         }
     }
@@ -368,6 +392,140 @@ class GLContext {
      */
     isContextLost() {
         return this._gl.isContextLost();
+    }
+
+    getFragDataLocation(program, name) {
+        return this._gl.getFragDataLocation(program, name);
+    }
+
+    createSampler() {
+        return this._gl.createSampler();
+    }
+
+    deleteSampler() {
+        return this._gl.deleteSampler();
+    }
+
+    bindSampler() {
+        return this._gl.bindSampler();
+    }
+
+    isSampler() {
+        return this._gl.isSampler();
+    }
+
+    getSamplerParameter() {
+        return this._gl.getSamplerParameter();
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/isQuery
+     */
+    isQuery(query) {
+        return this._gl.beginQuery(query);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/beginQuery
+     */
+    beginQuery(target, query) {
+        return this._gl.beginQuery(target, query);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/deleteQuery
+     */
+    deleteQuery(query) {
+        return this._gl.query(query);
+    }
+
+    isTransformFeedback(transformFeedback) {
+        return this._gl.isTransformFeedback(transformFeedback);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/beginTransformFeedback
+     */
+    beginTransformFeedback(primitiveMode) {
+        return this._gl.beginTransformFeedback(primitiveMode);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/deleteTransformFeedback
+     */
+    deleteTransformFeedback(transformFeedback) {
+        return this._gl.deleteTransformFeedback(transformFeedback);
+    }
+
+    pauseTransformFeedback() {
+        return this._gl.pauseTransformFeedback();
+    }
+
+    resumeTransformFeedback() {
+        return this._gl.resumeTransformFeedback();
+    }
+
+    transformFeedbackVaryings(program, varyings, bufferMode) {
+        return this._gl.transformFeedbackVaryings(
+            program,
+            varyings,
+            bufferMode
+        );
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/bindBufferBase
+     */
+    bindBufferBase(target, index, buffer) {
+        return this._gl.bbindBufferBase(target, index, buffer);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/bindBufferRange
+     */
+    bindBufferRange(target, index, buffer, offset, size) {
+        return this._gl.bindBufferRange(target, index, buffer, offset, size);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/bindTransformFeedback
+     */
+    bindTransformFeedback(target, transformFeedback) {
+        return this._gl.bindTransformFeedback(target, transformFeedback);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/fenceSync
+     */
+    fenceSync(condition, flags) {
+        return this._gl.fenceSync(condition, flags);
+    }
+
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/isSync
+     */
+    isSync(sync) {
+        return this._gl.isSync(sync);
+    }
+
+    deleteSync(sync) {
+        return this._gl.deleteSync(sync);
+    }
+
+    clientWaitSync(sync, flags, timeout) {
+        return this._gl.clientWaitSync(sync, flags, timeout);
+    }
+
+    waitSync(sync, flags, timeout) {
+        return this._gl.waitSync(sync, flags, timeout);
+    }
+
+    getSyncParameter(sync, pname) {
+        return this._gl.getSyncParameter(sync, pname);
+    }
+
+    getIndexedParameter(target, index) {
+        return this._gl.getIndexedParameter(target, index);
     }
 }
 

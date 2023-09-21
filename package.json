@@ -2,7 +2,7 @@
   "name": "@maptalks/fusiongl",
   "version": "0.5.2",
   "description": "",
-  "main": "dist/fusiongl.es.js",
+  "main": "dist/fusion.gl-dev.js",
   "module": "dist/fusiongl.es.js",
   "scripts": {
     "build": "rollup -c --environment BUILD:production",
@@ -28,6 +28,8 @@
     "rollup-plugin-terser": "^4.0.1"
   },
   "dependencies": {
-    "fast-deep-equal": "^2.0.1"
+    "fast-deep-equal": "^2.0.1",
+    "regl": "^2.1.0",
+    "three": "^0.155.0"
   }
 }

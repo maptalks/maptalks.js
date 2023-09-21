@@ -1,8 +1,15 @@
-import GLContext from '../GLContext';
-import { include } from '../Utils';
+/*
+ * @Author: wenrongz 2920356983@qq.com
+ * @Date: 2023-08-23 11:31:56
+ * @LastEditors: wenrongz 2920356983@qq.com
+ * @LastEditTime: 2023-09-11 17:10:01
+ * @FilePath: \fusion.gl\src\values\Buffer.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+import GLContext from "../GLContext";
+import { include } from "../Utils";
 
 include(GLContext.prototype, {
-
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/bufferData
      * @param  {...any} args
@@ -70,5 +77,27 @@ include(GLContext.prototype, {
      */
     isBuffer(buffer) {
         return this._gl.isBuffer(buffer);
-    }
+    },
+
+    /**
+     * hhttps://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/copyBufferSubData
+     * @param {*} readTarget
+     * @param {*} writeTarget
+     * @param {*} readOffset
+     * @param {*} writeOffset
+     * @param {*}  size
+     */
+    copyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size) {
+        return this._gl.isBuffer(
+            readTarget,
+            writeTarget,
+            readOffset,
+            writeOffset,
+            size
+        );
+    },
+
+    readBuffer(source) {
+        return this._gl.readBuffer(source);
+    },
 });
