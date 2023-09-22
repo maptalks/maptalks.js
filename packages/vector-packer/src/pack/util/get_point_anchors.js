@@ -4,15 +4,14 @@ import { getAnchors } from './get_anchors';
 import classifyRings from './classify_rings';
 import findPoleOfInaccessibility from './find_pole_of_inaccessibility';
 
-const TEXT_MAX_ANGLE = 45 * Math.PI / 100;
-
-export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placement, spacing, is3DPitchText, altitudeToTileScale) {
+export function getPointAnchors(point, lineVertex, textMaxAngle, shape, scale, EXTENT, placement, spacing, is3DPitchText, altitudeToTileScale) {
     const { feature, size, symbol } = point;
     const glyphSize = size ? 24 : 0;
     const fontScale = size ? size[0] / glyphSize : 1;
     const textBoxScale = scale * fontScale;
     if (placement === 'line') {
         const anchors = [];
+        anchors.countOutOfAngle = 0;
         let lines = feature.geometry;
         if (EXTENT) {
             lines = clipLine(feature.geometry, 0, 0, EXTENT, EXTENT);
@@ -21,7 +20,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
         for (let i = 0; i < lines.length; i++) {
             const lineAnchors = getAnchors(lines[i],
                 spacing,
-                TEXT_MAX_ANGLE,
+                textMaxAngle,
                 symbol['isIconText'] ? null : shape && shape.vertical || shape && shape.horizontal || shape,
                 null, //shapedIcon,
                 glyphSize,
@@ -46,6 +45,7 @@ export function getPointAnchors(point, lineVertex, shape, scale, EXTENT, placeme
                     lineVertex.push(lines[i][ii].x, lines[i][ii].y, lines[i][ii].z || 0);
                 }
             }
+            anchors.countOutOfAngle += lineAnchors.countOutOfAngle || 0;
         }
         return anchors;
     } else {

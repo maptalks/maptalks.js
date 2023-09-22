@@ -114,7 +114,7 @@ function getAnchors(line,
 
 
 function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent, is3DPitchText, altitudeToTileScale) {
-
+    let count = 0;
     const halfLabelLength = labelLength / 2;
     const lineLength = getLineLength(line);
 
@@ -159,6 +159,8 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                     anchors.push(anchor);
+                } else if (angleWindowSize) {
+                    count++;
                 }
             }
         }
@@ -175,6 +177,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
         anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent, is3DPitchText, altitudeToTileScale);
     }
 
+    anchors.countOutOfAngle = count;
     return anchors;
 }
 

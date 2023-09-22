@@ -494,6 +494,9 @@ export default class VectorPack {
             }
             maxFeaIndex = Math.max(maxFeaIndex, vectors[i].featureIdx);
         }
+        if (this.countOutOfAngle > 0) {
+            console.warn('text anchor along line is ignored as anchor\'s line angle is bigger than textMaxAngle.');
+        }
         if (this.hasElements() && !elements.length) {
             return null;
         }

@@ -8,6 +8,8 @@ import mergeLines from './util/merge_lines';
 import { isFunctionDefinition } from '@maptalks/function-type';
 import { normalizeColor } from '../style/Util';
 
+const TEXT_MAX_ANGLE = 80;
+
 const DEFAULT_SPACING = 250;
 const DEFAULT_UNIFORMS = {
     'textFill': [0, 0, 0, 1],
@@ -380,6 +382,7 @@ export default class PointPack extends VectorPack {
                 this.empty = true;
             }
         }
+        this.countOutOfAngle = 0;
         this.lineVertex = [];
         const pack = super.createDataPack.apply(this, arguments);
         if (!pack) {
@@ -396,6 +399,7 @@ export default class PointPack extends VectorPack {
             return;
         }
         const anchors = this._getAnchors(point, shape, scale);
+        this.countOutOfAngle += anchors.countOutOfAngle || 0;
         const count = anchors.length;
         if (count === 0) {
             return;
@@ -736,9 +740,15 @@ export default class PointPack extends VectorPack {
             (textSpacingFn ? textSpacingFn(null, properties) : symbol['textSpacing']) ||
             DEFAULT_SPACING
         ) * scale;
+        let textMaxAngle = symbol['textMaxAngle'];
+        if (isNil(textMaxAngle)) {
+            textMaxAngle = TEXT_MAX_ANGLE;
+        }
+        textMaxAngle *= Math.PI / 180;
         const EXTENT = this.options.EXTENT;
         const altitudeToTileScale = this.options['altitudeToTileScale'];
-        const anchors = getPointAnchors(point, this.lineVertex, shape, scale, EXTENT, placement, spacing, this._is3DPitchText(), altitudeToTileScale);
+        const is3DPitchText = this._is3DPitchText();
+        const anchors = getPointAnchors(point, this.lineVertex, textMaxAngle, shape, scale, EXTENT, placement, spacing, is3DPitchText, altitudeToTileScale);
         return anchors;
     }
 
