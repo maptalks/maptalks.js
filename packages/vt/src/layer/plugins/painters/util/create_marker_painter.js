@@ -395,7 +395,7 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
     let labelVisitEnd = false;
     let hasLabel = false;
     let count = 0;
-    const unused = [];
+    const unused = new Set();
     //遍历所有的icon，当icon和aPickingId和text的相同时，则认为是同一个icon + text，并记录它的序号
     for (let i = 0; i < iconElements.length; i += BOX_ELEMENT_COUNT) {
         const idx = iconElements[i];
@@ -442,25 +442,20 @@ function buildLabelIndex(iconGeometry, textGeometry, markerTextFit) {
         } else if (textFit && textFit !== 'none') {
             //如果icon设置了markerTextFit，但没有label，则从elements中去掉这个icon
             for (let ii = i; ii < i + BOX_ELEMENT_COUNT; ii++) {
-                unused.push(ii);
+                unused.add(ii);
             }
         } else {
             labelIndex[count++] = [-1, -1];
         }
     }
-    if (unused.length) {
-        if (unused.length === iconElements.length) {
+    if (unused.size) {
+        if (unused.size === iconElements.length) {
             iconGeometry.setElements([]);
         } else {
             const elements = [];
-            let cur = 0;
-            let delIndex = unused[cur];
             for (let i = 0; i < iconElements.length; i++) {
-                if (i < delIndex) {
+                if (!unused.has(i)) {
                     elements.push(iconElements[i]);
-                } else if (i === delIndex) {
-                    cur++;
-                    delIndex = unused[cur];
                 }
             }
             iconGeometry.setElements(new iconElements.constructor(elements));

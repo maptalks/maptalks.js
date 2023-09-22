@@ -15,6 +15,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     const glRes = map.getGLRes();
     let coordinates = geo.getCoordinates();
     const geometry = [];
+    const coords = [];
     let type = 1;
     if (geo instanceof maptalks.Marker || geo instanceof maptalks.MultiPoint) {
         if (geo instanceof maptalks.Marker) {
@@ -23,6 +24,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         for (let i = 0; i < coordinates.length; i++) {
             map.coordToPointAtRes(coordinates[i], glRes, POINT);
             geometry.push([POINT.x, POINT.y, (coordinates[i].z || 0)]);
+            coords.push([coordinates[i].x, coordinates[i].y]);
         }
     } else if (geo instanceof maptalks.LineString || geo instanceof maptalks.MultiLineString) {
         type = 2;
@@ -31,9 +33,11 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
         for (let i = 0; i < coordinates.length; i++) {
             geometry[i] = [];
+            coords[i] = [];
             for (let ii = 0; ii < coordinates[i].length; ii++) {
                 map.coordToPointAtRes(coordinates[i][ii], glRes, POINT);
                 geometry[i].push([POINT.x, POINT.y, (coordinates[i][ii].z || 0)]);
+                coords[i].push([coordinates[i][ii].x, coordinates[i][ii].y]);
             }
         }
     } else if (geo instanceof maptalks.Polygon || geo instanceof maptalks.MultiPolygon) {
@@ -41,15 +45,17 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         if (geo instanceof maptalks.Polygon) {
             coordinates = [coordinates];
         }
-        let ringCount = 0;
+        let ringIndex = 0;
         for (let i = 0; i < coordinates.length; i++) {
             for (let ii = 0; ii < coordinates[i].length; ii++) {
-                geometry[ringCount] = [];
+                geometry[ringIndex] = [];
+                coords[ringIndex] = [];
                 for (let iii = 0; iii < coordinates[i][ii].length; iii++) {
                     map.coordToPointAtRes(coordinates[i][ii][iii], glRes, POINT);
-                    geometry[ringCount].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
+                    geometry[ringIndex].push([POINT.x, POINT.y, (coordinates[i][ii][iii].z || 0)]);
+                    coords[ringIndex].push([coordinates[i][ii][iii].x, coordinates[i][ii][iii].y]);
                 }
-                ringCount++;
+                ringIndex++;
             }
         }
     }
@@ -79,6 +85,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
                 properties: props,
                 visible: geo.isVisible(),
                 geometry,
+                coordinates: coords,
                 extent: Infinity
             };
             fea[keyName] = pickingId;
@@ -105,6 +112,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         properties,
         visible: geo.isVisible(),
         geometry,
+        coordinates: coords,
         extent: Infinity
     };
     feature[keyName] = pickingId;

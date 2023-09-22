@@ -271,7 +271,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                     if (!fea.visible) {
                         this._showHideUpdated = true;
                     }
-                    this._addCoordsToCenter(fea.geometry, center);
+                    this._addCoordsToCenter(fea.geometry, center, fea.coordinates);
                     // fea[KEY_IDX_NAME] = count++;
                     features.push(fea);
                 }
@@ -285,7 +285,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
                         continue;
                     }
                 }
-                this._addCoordsToCenter(feature.geometry, center);
+                this._addCoordsToCenter(feature.geometry, center, feature.coordinates);
                 // feature[KEY_IDX_NAME] = count++;
                 features.push(feature);
             }
@@ -405,22 +405,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         };
     }
 
-    _addCoordsToCenter(geometry, center) {
+    _addCoordsToCenter(geometry, center, coordinates) {
         for (let i = 0; i < geometry.length; i++) {
             if (!Array.isArray(geometry[i][0])) {
                 if (!isNaN(+geometry[i][0]) && !isNaN(+geometry[i][1])) {
-                    this._addCoord(center, geometry[i][0], geometry[i][1], 1);
+                    this._addCoord(center, geometry[i][0], geometry[i][1], 1, coordinates[i]);
                 }
             } else {
                 for (let ii = 0; ii < geometry[i].length; ii++) {
                     if (!Array.isArray(geometry[i][ii][0])) {
                         if (!isNaN(+geometry[i][ii][0]) && !isNaN(+geometry[i][ii][1])) {
-                            this._addCoord(center, geometry[i][ii][0], geometry[i][ii][1], 1);
+                            this._addCoord(center, geometry[i][ii][0], geometry[i][ii][1], 1, coordinates[i][ii]);
                         }
                     } else {
                         for (let iii = 0; iii < geometry[i][ii].length; iii++) {
                             if (!isNaN(+geometry[i][ii][iii][0]) && !isNaN(+geometry[i][ii][iii][1])) {
-                                this._addCoord(center, geometry[i][ii][iii][0], geometry[i][ii][iii][1], 1);
+                                this._addCoord(center, geometry[i][ii][iii][0], geometry[i][ii][iii][1], 1, coordinates[i][ii][iii]);
                             }
                         }
                     }
@@ -430,22 +430,22 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
 
-    _addCoord(coord, x, y, z) {
+    _addCoord(center, x, y, z, coordinates) {
         let invalid = false;
-        if (x > 180 || x < -180) {
+        if (coordinates[0] > 180 || coordinates[0] < -180) {
             invalid = true;
-            console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${x}`);
+            console.warn(`Layer(${this.layer.getId()}) has invalid longitude value: ${coordinates[0]}`);
         }
-        if (y > 90 || y < -90) {
+        if (coordinates[1] > 90 || coordinates[1] < -90) {
             invalid = true;
-            console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${y}`);
+            console.warn(`Layer(${this.layer.getId()}) has invalid latitude value: ${coordinates[1]}`);
         }
         if (invalid) {
             return;
         }
-        coord[0] += x;
-        coord[1] += y;
-        coord[2] += z;
+        center[0] += x;
+        center[1] += y;
+        center[2] += z;
     }
 
 
