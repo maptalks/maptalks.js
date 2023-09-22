@@ -34,17 +34,27 @@ if (production) {
     );
 }
 
-export default {
-    input: "./src/index.js",
-    // external: ["fast-deep-equal"],
-    output: {
-        sourcemap: false,
-        banner,
-        // format: "es",
-        format: "umd",
-        // file: pkg.module,
-        file: pkg.main,
-        name: "fusion",
+export default [
+    {
+        input: "./src/index.js",
+        output: {
+            sourcemap: true,
+            banner,
+            format: "umd",
+            file: "dist/fusiongl-dev.js",
+            name: "fusion",
+        },
+        plugins,
     },
-    plugins,
-};
+    {
+        input: "./src/index.js",
+        external: ["fast-deep-equal"],
+        output: {
+            sourcemap: false,
+            banner,
+            format: "es",
+            file: pkg.module
+        },
+        plugins,
+    }
+];
