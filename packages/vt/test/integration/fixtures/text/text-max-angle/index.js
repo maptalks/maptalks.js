@@ -53,7 +53,7 @@ const style = [
             textPlacement: 'line',
             // 文字会因为textMaxAngle较小，不再绘制
             textMaxAngle: {
-                stops:[[0, 40], [20, 40]]
+                stops: [[0, 40], [20, 40]]
             }
         }
     }

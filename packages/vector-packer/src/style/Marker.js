@@ -1,4 +1,5 @@
 import { extend, isNil, isString, isNumber, isFunction, hasOwn, isObject } from './Util';
+import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 /**
  * Get SVG Base64 String from a marker symbol with (markerType : path)
@@ -160,6 +161,7 @@ export function evaluateIconSize(symbol, symbolDef, properties, zoom, markerWidt
 }
 
 const DEFAULT_TEXT_SIZE = 16;
+const FN_STOPS_KEY = '___fn_in_stops';
 
 export function evaluateTextSize(symbol, symbolDef, properties, zoom) {
     const keyName = '__fn_textSize'.trim();
@@ -176,6 +178,18 @@ export function evaluateTextSize(symbol, symbolDef, properties, zoom) {
         size[0] = textSize(zoom, properties);
     } else {
         size[0] = textSize;
+    }
+    if (isFunctionDefinition(size[0])) {
+        const key = size[0]['__fn_key'] = size[0]['__fn_key'] || JSON.stringify(size[0]);
+        if (!symbol[FN_STOPS_KEY]) {
+            symbol[FN_STOPS_KEY] = {};
+        }
+        if(!symbol[FN_STOPS_KEY][key]) {
+            symbol[FN_STOPS_KEY][key] = interpolated(size[0]);
+        }
+
+        const fn = symbol[FN_STOPS_KEY][key];
+        size[0] = fn(zoom, properties);
     }
 
     size[1] = size[0];
