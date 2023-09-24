@@ -657,6 +657,19 @@ export default class GroupGLLayer extends maptalks.Layer {
         }
         return super._bindMap(...args);
     }
+
+    fire(...args) {
+        if (args[0] === 'layerload') {
+            const layers = this._getLayers();
+            for (const layer of layers) {
+                const renderer = layer.getRenderer();
+                if (renderer) {
+                    layer.fire('layerload');
+                }
+            }
+        }
+        super.fire(...args);
+    }
 }
 
 GroupGLLayer.mergeOptions(options);
