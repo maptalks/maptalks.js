@@ -222,7 +222,9 @@ export function getAlignPoint(size, horizontalAlignment, verticalAlignment) {
     return new Point(alignW, alignH);
 }
 
-const DEFAULT_FONT = 'monospace';
+//export it for plugin develop
+export const DEFAULT_FONT = 'monospace';
+export const DEFAULT_TEXTSIZE = 14;
 
 /**
  * Returns CSS Font from a symbol with text styles.
@@ -234,9 +236,13 @@ export function getFont(style) {
     if (style['textFont']) {
         return style['textFont'];
     } else {
+        let textSize = style.textSize;
+        if (isNil(textSize)) {
+            textSize = DEFAULT_TEXTSIZE;
+        }
         return (style['textStyle'] && style['textStyle'] !== 'normal' ? style['textStyle'] + ' ' : '') +
             (style['textWeight'] && style['textWeight'] !== 'normal' ? style['textWeight'] + ' ' : '') +
-            style['textSize'] + 'px ' +
+            textSize + 'px ' +
             (!style['textFaceName'] ? DEFAULT_FONT : (style['textFaceName'][0] === '"' ? style['textFaceName'] : '"' + style['textFaceName'] + '"'));
     }
 }

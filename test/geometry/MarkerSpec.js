@@ -140,16 +140,16 @@ describe('Geometry.Marker', function () {
             var marker1 = new maptalks.Marker(
                 center.sub(0.009, 0),
                 {
-                  'symbol' : {
-                    'markerType'   : 'ellipse',
-                    'markerWidth'  : 28,
-                    'markerHeight' : 40,
-                    'markerDx'     : 0,
-                    'markerDy'     : 100000,
-                    'markerOpacity': 1
-                  }
+                    'symbol': {
+                        'markerType': 'ellipse',
+                        'markerWidth': 28,
+                        'markerHeight': 40,
+                        'markerDx': 0,
+                        'markerDy': 100000,
+                        'markerOpacity': 1
+                    }
                 }
-              ).addTo(vlayer);
+            ).addTo(vlayer);
         });
 
         it('can be text', function () {
@@ -874,5 +874,39 @@ describe('Geometry.Marker', function () {
             var newCoords = marker.getCoordinates().toArray();
             expect(newCoords).to.be.eql([118.62842615841328, 32.17932019575247]);
         });
+    });
+
+    //https://github.com/maptalks/issues/issues/422
+    it('marker size when textSize missing', function (done) {
+        const texts = ['Maptalks', 'Hello\nWorld', Math.random() * 100, '中国人', '没有设置textSize时', '没有设置textSize时\nmarker的getSize方法返回的值不正确 '];
+        function createMaker(text, textSize) {
+            const symbol = {
+                textName: text,
+                textFill: 'red',
+                textSize: textSize
+            };
+            if (!symbol.textSize) {
+                delete symbol.textSize;
+            }
+            return new maptalks.Marker(map.getCenter(), {
+                symbol
+            });
+        }
+
+        function getMarkerWidth(marker) {
+            return Math.round(marker.getSize().width);
+        }
+
+        texts.forEach(text => {
+            layer.clear();
+            const marker1 = createMaker(text, 14);
+            marker1.addTo(layer);
+            const marker2 = createMaker(text);
+            marker2.addTo(layer);
+            const w1 = getMarkerWidth(marker1);
+            const w2 = getMarkerWidth(marker2);
+            expect(w1).to.be.eql(w2);
+        });
+        done();
     });
 });
