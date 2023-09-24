@@ -52,7 +52,9 @@ const style = [
             textFill: '#000',
             textPlacement: 'line',
             // 文字会因为textMaxAngle较小，不再绘制
-            textMaxAngle: 40
+            textMaxAngle: {
+                stops:[[0, 40], [20, 40]]
+            }
         }
     }
 ];

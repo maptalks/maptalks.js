@@ -734,13 +734,13 @@ export default class PointPack extends VectorPack {
         const { feature, symbol } = point;
         const placement = this._getPlacement(point, symbol);
         const properties = feature.properties;
-        const { markerSpacingFn, textSpacingFn } = this._fnTypes;
+        const { markerSpacingFn, textSpacingFn, textMaxAngleFn } = this._fnTypes;
         const spacing = (
             (markerSpacingFn ? markerSpacingFn(null, properties) : symbol['markerSpacing']) ||
             (textSpacingFn ? textSpacingFn(null, properties) : symbol['textSpacing']) ||
             DEFAULT_SPACING
         ) * scale;
-        let textMaxAngle = symbol['textMaxAngle'];
+        let textMaxAngle = textMaxAngleFn ? (textMaxAngleFn(this.options['zoom'], properties)) : symbol['textMaxAngle'];
         if (isNil(textMaxAngle)) {
             textMaxAngle = TEXT_MAX_ANGLE;
         }
