@@ -400,6 +400,10 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
     remove() {
         if (this.map) {
             this.map.removeLayer(this);
+            const renderer = this.map.getRenderer();
+            if (renderer) {
+                renderer.setToRedraw();
+            }
         }
         this.fire('remove');
         return this;
