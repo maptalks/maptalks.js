@@ -353,12 +353,14 @@ const ImageGLRenderable = Base => {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            if (!isPowerOfTwo(image.width) || !isPowerOfTwo(image.height)) {
+            const genMipmap = this.layer.options['mipmapTexture'];
+            if (genMipmap && (!isPowerOfTwo(image.width) || !isPowerOfTwo(image.height))) {
                 image = resize(image);
             }
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-            gl.generateMipmap(gl.TEXTURE_2D);
-
+            if (genMipmap) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
             return texture;
         }
 
@@ -396,12 +398,14 @@ const ImageGLRenderable = Base => {
                 image.texture = texture;
             }
             gl.bindTexture(gl.TEXTURE_2D, texture);
-            if (map.isMoving() && map.getRenderer().isViewChanged()) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-            } else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            const genMipmap = this.layer.options['mipmapTexture'];
+            if (genMipmap) {
+                if (map.isMoving() && map.getRenderer().isViewChanged()) {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                } else {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                }
             }
-
             return texture;
         }
 
@@ -636,15 +640,17 @@ function resize(image) {
     let width = image.width;
     let height = image.height;
     if (!isPowerOfTwo(width)) {
-        width = floorPowerOfTwo(width);
+        width = ceilPowerOfTwo(width);
     }
     if (!isPowerOfTwo(height)) {
-        height = floorPowerOfTwo(height);
+        height = ceilPowerOfTwo(height);
     }
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(image, 0, 0, width, height);
     return canvas;
 }
 
@@ -654,4 +660,8 @@ export function isPowerOfTwo(value) {
 
 export function floorPowerOfTwo(value) {
     return Math.pow(2, Math.floor(Math.log(value) / Math.LN2));
+}
+
+function ceilPowerOfTwo(value) {
+    return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 }
