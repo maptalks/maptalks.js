@@ -211,7 +211,7 @@ export default class GroupGLLayer extends maptalks.Layer {
      * @returns {TileLayer[]}
      */
     getLayers() {
-        return this.layers.splice();
+        return this.layers.slice();
     }
 
     _getLayers() {
@@ -663,7 +663,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             const layers = this._getLayers();
             for (const layer of layers) {
                 const renderer = layer.getRenderer();
-                if (renderer) {
+                if (renderer && renderer.isRenderComplete()) {
                     layer.fire('layerload');
                 }
             }
