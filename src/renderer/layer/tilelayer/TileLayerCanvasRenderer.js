@@ -481,7 +481,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _drawTileAndCache(tile, parentContext) {
         if (this.isValidCachedTile(tile)) {
-            this.tilesInView[tile.info.id] = tile;
+            this._addTileToCache(tile.info, tile.image);
+            // this.tilesInView[tile.info.id] = tile;
         }
         this._drawTile(tile.info, tile.image, parentContext);
     }
@@ -649,9 +650,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.removeTileLoading(tileInfo);
         }
         if (!tileImage) return;
-        tileImage.onload = falseFn;
-        tileImage.onerror = falseFn;
-        tileImage.src = emptyImageUrl;
+        if (tileImage instanceof Image) {
+            tileImage.onload = falseFn;
+            tileImage.onerror = falseFn;
+            tileImage.src = emptyImageUrl;
+        }
     }
 
     onTileLoad(tileImage, tileInfo) {
@@ -674,6 +677,9 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         /* eslint-disable no-unmodified-loop-condition */
         while (queue.length && (limit <= 0 || count < limit)) {
             const { tileData, tileInfo } = queue.shift();
+            if (!this._tileQueueIds.has(tileInfo.id)) {
+                continue;
+            }
             this._tileQueueIds.delete(tileInfo.id);
             if (!this.checkTileInQueue(tileData, tileInfo)) {
                 continue;
@@ -1126,11 +1132,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
     }
 
     _addTileToCache(tileInfo, tileImage) {
-        this.tilesInView[tileInfo.id] = {
-            image: tileImage,
-            current: true,
-            info: tileInfo
-        };
+        if (this.isValidCachedTile({ info: tileInfo, image: tileImage })) {
+            this.tilesInView[tileInfo.id] = {
+                image: tileImage,
+                current: true,
+                info: tileInfo
+            };
+        }
     }
 
     getTileOpacity(tileImage, tileInfo) {
@@ -1207,11 +1215,17 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!tile || !tile.image) {
             return;
         }
+        const tileId = tile.info.id;
+        if (this._tileQueueIds.has(tileId)) {
+            this._tileQueueIds.delete(tileId);
+        }
         if (tile.image.close) {
             tile.image.close();
         }
-        tile.image.onload = null;
-        tile.image.onerror = null;
+        if (tile.image instanceof Image) {
+            tile.image.onload = null;
+            tile.image.onerror = null;
+        }
     }
 
     _generatePlaceHolder(res) {
