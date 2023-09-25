@@ -671,35 +671,18 @@ include(
                 this._vaoOES.bindVertexArrayOES(null);
             }
 
-            const limit = this._attrLimit;
+            // if (target.attribOrder === 1) {
+            //     this._restoreAttribs(target, gl);
+            //     this._restoreVAO(target, gl);
+            //     console.log(1);
+            // } else {
+            //     this._restoreVAO(target, gl);
+            //     this._restoreAttribs(target, gl);
+            //     console.log(2);
+            // }
 
-            const attrs = target.attributes;
-            for (let i = 0; i < limit; i++) {
-                const attribute = attrs[i];
-                if (attribute) {
-                    if (attribute.buffer) {
-                        gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
-                        gl.vertexAttribPointer(...attribute.args);
-                        if (attribute.divisor !== undefined) {
-                            if (this._is2) {
-                                gl.vertexAttribDivisor(i, attribute.divisor);
-                            } else {
-                                this.angleOES.vertexAttribDivisorANGLE(
-                                    i,
-                                    attribute.divisor
-                                );
-                            }
-                        }
-                    }
-                    if (attribute.enable) {
-                        gl.enableVertexAttribArray(i);
-                    } else {
-                        gl.disableVertexAttribArray(i);
-                    }
-                } else {
-                    gl.disableVertexAttribArray(i);
-                }
-            }
+            // this._restoreVAO(target, gl);
+            this._restoreAttribs(target, gl);
 
             //restore attributes
             // const attrs = target.attributes,
@@ -731,6 +714,10 @@ include(
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
 
             //TODO vao和buffer的顺序可能会有冲突
+
+        },
+
+        _restoreVAO(target, gl) {
             const vao = target.vao;
             if (vao) {
                 if (this._is2) {
@@ -740,5 +727,41 @@ include(
                 }
             }
         },
+
+        _restoreAttribs(target, gl) {
+            const limit = this._attrLimit;
+
+            // const attrs = target.attributes;
+            // let invalidIndex = -1;
+            for (let i = 0; i < limit; i++) {
+                gl.disableVertexAttribArray(i);
+                // const attribute = attrs[i];
+                // if (invalidIndex < 0 && attribute && attribute.buffer) {
+                //     gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+                //     gl.vertexAttribPointer(...attribute.args);
+                //     if (attribute.divisor !== undefined) {
+                //         if (this._is2) {
+                //             gl.vertexAttribDivisor(i, attribute.divisor);
+                //         } else {
+                //             this.angleOES.vertexAttribDivisorANGLE(
+                //                 i,
+                //                 attribute.divisor
+                //             );
+                //         }
+                //     }
+
+                //     if (attribute.enable) {
+                //         gl.enableVertexAttribArray(i);
+                //     } else {
+                //         gl.disableVertexAttribArray(i);
+                //     }
+                // } else {
+                //     if (invalidIndex === -1) {
+                //         invalidIndex = i;
+                //     }
+                //     gl.disableVertexAttribArray(i);
+                // }
+            }
+        }
     }
 );
