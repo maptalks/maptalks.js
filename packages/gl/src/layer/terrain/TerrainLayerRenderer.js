@@ -92,11 +92,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         parentTile = parentTile || this.findParentTile(tile);
         const res = (parentTile && parentTile.info || tile).res;
         const error = this.getMap().pointAtResToDistance(1, 1, res);
-        const heights = parentTile && this._clipParentTerrain(parentTile, tile);
+        const heights = parentTile && parentTile.image.data && this._clipParentTerrain(parentTile, tile);
         if (!heights || heights.width < 5) {
             // find sibling tile's minAltitude
             const minAltitude = this._findTileMinAltitude(tile, parentTile);
-            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom: null };
+            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom: -1 };
         }
         const terrainWidth = heights.width;
         const mesh = createMartiniData(error, heights.data, terrainWidth, true);
@@ -121,7 +121,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 }
             }
         }
-        return this._currentMinAltitude;
+        return 0;
     }
 
     consumeTile(tileImage, tileInfo) {
@@ -132,6 +132,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 const minAltitude = this._findTileMinAltitude(tileInfo);
                 tileImage.data = createEmtpyTerrainHeights(minAltitude || 0, 5);
                 tileImage.minAltitude = minAltitude;
+                tileImage.sourceZoom = -1;
             } else {
                 tileImage = this._createTerrainFromParent(tileInfo, parentTile);
             }
@@ -195,10 +196,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     }
 
     _drawTiles(tiles, parentTiles, childTiles, placeholders, context, missedTiles, incompleteTiles) {
-        this._currentMinAltitude = this._getTilesMinAltitude(tiles);
-
         const skinImagesToDel = [];
 
+        //TODO tiles中如果存在empty瓦片，且sourceZoom精度不够的，可以重新切分精度更高的数据
         const tempTiles = this._getTempTilesForMissed(missedTiles, skinImagesToDel);
         // this._tempTilesPool.shrink();
         this._newTerrainTileCounter = 0;
@@ -252,6 +252,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                     tile = { info: tileInfo };
                 } else if (tile.image) {
                     this._resetTerrainImage(tile.info, tile.image, skinImagesToDel);
+                    tile.image.temp = true;
                 }
             }
             tile.current = true;
@@ -273,7 +274,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         // 虽然流程中尽量做了删除，但skinImageCache中仍会出现没人引用的冗余image对象
         // 因为排查困难，且未来的逻辑修改可能会带来新的内存泄露，采用该机制至少能彻底防止skinImageCache中的
         const currentTimestamp = this.getCurrentTimestamp();
-        if (this._clearSkinImageTimestamp && currentTimestamp - this._clearSkinImageTimestamp < 10 * 1000) {
+        if (this._clearSkinImageTimestamp && currentTimestamp - this._clearSkinImageTimestamp < 1000) {
             return;
         }
         const currentImages = new Set();
@@ -804,6 +805,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         const maxAvailableZoom = this.layer.options['maxAvailableZoom'];
 
         if (maxAvailableZoom && tile.z > maxAvailableZoom) {
+            // 检查 maxAvailableZoom 的tile是否存在，如果没有存在，则请求它，并在返回结果后clip
             const terrainData = this._createTerrainFromParent(tile);
             this.onTileLoad(terrainData, tile);
             return terrainData;
@@ -1413,19 +1415,6 @@ maptalks.renderer.TileLayerCanvasRenderer.include({
 
     deleteTerrainTexture(texture) {
         texture.destroy();
-    },
-
-    _getTilesMinAltitude(tiles) {
-        let min = Infinity;
-        for (let i = 0; i < tiles.length; i++) {
-            if (!tiles[i] || !tiles[i].info) {
-                continue;
-            }
-            if (tiles[i].info.minAltitude > min) {
-                min = tiles[i].info.minAltitude;
-            }
-        }
-        return min === Infinity ? undefined : min;
     }
 });
 
