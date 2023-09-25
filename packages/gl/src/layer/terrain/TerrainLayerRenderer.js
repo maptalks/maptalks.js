@@ -4,7 +4,7 @@ import { createREGL } from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 import skinVert from './glsl/terrainSkin.vert';
 import skinFrag from './glsl/terrainSkin.frag';
-import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, inTerrainTile, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
+import { getCascadeTileIds, getSkinTileScale, getSkinTileRes, createEmtpyTerrainHeights, EMPTY_TERRAIN_GEO } from './TerrainTileUtil';
 import { createMartiniData } from './util/martini';
 import  { isNil, extend, pushIn } from '../util/util';
 import TerrainPainter from './TerrainPainter';
@@ -36,6 +36,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             return tile;
         }
         const tempTerrain = this._createTerrainFromParent(tileInfo);
+        tempTerrain.temp = true;
         if (!tile.image) {
             tile.image = tempTerrain;
         }
@@ -72,10 +73,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                         skinImagesToDel.push(cached);
                     }
                 }
+                delete cachedImages.currentSkins;
+                delete cachedImages.tileIds;
             }
-            delete skinImages.tileIds;
         }
-
+        delete image.sourceZoom;
         delete image.skinImages;
         delete image.skinStatus;
         delete image.skinTileIds;
@@ -94,12 +96,12 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         if (!heights || heights.width < 5) {
             // find sibling tile's minAltitude
             const minAltitude = this._findTileMinAltitude(tile, parentTile);
-            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, temp: true };
+            return { data: createEmtpyTerrainHeights(minAltitude || 0, 5), minAltitude, mesh: EMPTY_TERRAIN_GEO, sourceZoom: null };
         }
         const terrainWidth = heights.width;
         const mesh = createMartiniData(error, heights.data, terrainWidth, true);
 
-        return { data: heights, mesh, temp: true };
+        return { data: heights, mesh, sourceZoom: parentTile.info.z };
     }
 
     _findTileMinAltitude(tile, parentTile) {
@@ -142,9 +144,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     _createMesh(tileImage, tileInfo) {
         if (tileImage && tileImage.mesh) {
             tileImage.terrainMesh = this._painter.createTerrainMesh(tileInfo, tileImage);
-            delete tileImage.mesh;
             tileInfo.minAltitude = tileImage.data.min;
             tileInfo.maxAltitude = tileImage.data.max;
+            delete tileImage.mesh;
             const tileInfoCache = this.layer.tileInfoCache;
             if (tileInfoCache && tileInfo.parent && !tileImage.empty && !tileImage.temp) {
                 const parentNode = tileInfoCache.get(tileInfo.parent);
@@ -305,13 +307,19 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     }
 
     _collectSkinImages(tile, currentImages) {
-        const currentSkins = tile.image && tile.image.currentSkins;
-        if (!currentSkins || !currentSkins.size) {
+        const skinImages = tile.image && tile.image.skinImages;
+        if (!skinImages || !skinImages.length) {
             return;
         }
-        for (const tileId of currentSkins) {
-            currentImages.add(tileId);
+        for (let i = 0; i < skinImages.length; i++) {
+            const currentSkins = skinImages[i] && skinImages.currentSkins;
+            if (currentSkins) {
+                for (const tileId of currentSkins) {
+                    currentImages.add(tileId);
+                }
+            }
         }
+
     }
 
     _renderChildTerrainSkin(skinIndex, terrainTiles, visitedSkinTiles, skinImagesToDel) {
@@ -366,6 +374,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         if (!tileImage.skinTileIds) {
             tileImage.skinTileIds = [];
         }
+
         const status = tileImage.skinStatus[skinIndex];
         if (status && !(renderer.needToRefreshTerrainTile && renderer.needToRefreshTerrainTile())) {
             return false;
@@ -412,9 +421,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             tiles.push(cachedTile);
         }
 
-        tileImage.currentSkins = tileImage.currentSkins || new Set();
-
         const skinImages = tileImage.skinImages[skinIndex] || [];
+        skinImages.currentSkins = skinImages.currentSkins || new Set();
         const prevSkins = new Set();
         let skinImageRetired = false;
         for (let i = 0; i < skinImages.length; i++) {
@@ -426,7 +434,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             prevSkins.add(id);
         }
         if (!tiles.length) {
-            tileImage.currentSkins.clear();
+            skinImages.currentSkins.clear();
             tileImage.skinImages[skinIndex] = [];
             // this._clearPrevSkinImages(terrainTileInfo, tileImage, prevSkins, null, skinImagesToDel);
             return false;
@@ -439,9 +447,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         skinImages.tileIds = ids;
         let updated = false;
         // if (skinImages.length < tiles.length) {
-        tileImage.currentSkins.clear();
+        skinImages.currentSkins.clear();
         skinImages.length = 0;
-        const currentSkins = tileImage.currentSkins;
+        const currentSkins = skinImages.currentSkins;
         let refKey = terrainTileInfo.id;
         if (tileImage.temp) {
             refKey += '-temp';
@@ -835,6 +843,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         if (!tile || !tile.image) {
             return;
         }
+        super.deleteTile(tile);
         const { info, image } = tile;
         if (image.temp) {
             return;
@@ -894,6 +903,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         delete image.terrainMesh;
         delete image.image;
         delete image.data;
+        delete image.mesh;
         delete image.rendered;
         // delete image.temp;
     }

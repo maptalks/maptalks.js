@@ -141,8 +141,8 @@ export function createEmtpyTerrainHeights(height, size) {
         data,
         width: size,
         height: size,
-        max: 0,
-        min: 0
+        max: height,
+        min: height
     };
 }
 
