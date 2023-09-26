@@ -63,10 +63,7 @@ class LineGlowPainter extends LinePainter {
                 },
                 blend: {
                     enable: true,
-                    func: {
-                        src: 'src alpha',
-                        dst: 'one'
-                    },
+                    func: this.getBlendFunc(),
                     equation: 'add'
                 },
             }

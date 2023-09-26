@@ -141,10 +141,7 @@ class PhongPainter extends MeshPainter {
                 },
                 blend: {
                     enable: true,
-                    func: {
-                        src: 'src alpha',
-                        dst: 'one minus src alpha',
-                    },
+                    func: this.getBlendFunc(),
                     equation: 'add'
                 },
                 viewport,

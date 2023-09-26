@@ -550,17 +550,6 @@ class LinePainter extends BasicPainter {
         };
     }
 
-    getBlendFunc() {
-        return {
-            src: () => {
-                // src 设成 one 是因为 maptalks-designer#968
-                return this.sceneConfig.blendSrc || 'one';
-            },
-            dst: () => {
-                return this.sceneConfig.blendDst || 'one minus src alpha';
-            }
-        };
-    }
 
     getUniformValues(map, context) {
         const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;

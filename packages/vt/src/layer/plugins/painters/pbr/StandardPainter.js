@@ -248,10 +248,7 @@ class StandardPainter extends MeshPainter {
                 enable: (_, props) => {
                     return props['hasAlpha'] === undefined || !!props['hasAlpha'];
                 },
-                func: {
-                    src: 'one',
-                    dst: 'one minus src alpha'
-                },
+                func: this.getBlendFunc(),
                 equation: 'add'
             },
             polygonOffset: this.getPolygonOffset()

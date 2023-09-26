@@ -796,17 +796,6 @@ class IconPainter extends CollisionPainter {
         }
     }
 
-    getBlendFunc() {
-        return {
-            src: () => {
-                return this.sceneConfig.blendSrc || 1;
-            },
-            dst: () => {
-                return this.sceneConfig.blendDst || 'one minus src alpha';
-            }
-        };
-    }
-
     getUniformValues(map, context) {
         const isRenderingTerrainSkin = context && context.isRenderingTerrainSkin;
         const tileSize = this.layer.getTileSize().width;

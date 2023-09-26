@@ -554,6 +554,8 @@ class Painter {
     getBlendFunc() {
         return {
             src: () => {
+                // src 设成 one 是因为 maptalks-designer#968
+                // 另外设成one，options.opacity < 1时，直接绘制的透明度才和直接添加到map上一致
                 return this.sceneConfig.blendSrc || 'one';
             },
             dst: () => {
