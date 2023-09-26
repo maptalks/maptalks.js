@@ -1,4 +1,5 @@
 import { createTypedArray } from './array.js';
+const inWorker = typeof WorkerGlobalScope !== 'undefined' && (self instanceof WorkerGlobalScope);
 
 class ArrayItem extends Array {
 
@@ -56,6 +57,17 @@ const ArrayItemProxy = {
   }
 };
 
+class MainThreadArrayItem extends Array {
+    // 主线程中不能重用array，返回新的array对象，并实现setLength和trySetLength方法
+    setLength(len) {
+        super.length = len;
+    }
+
+    trySetLength(len) {
+        super.length = len;
+    }
+}
+
 let arrayPool;
 
 class ArrayPool {
@@ -73,6 +85,9 @@ class ArrayPool {
     }
 
     get() {
+        if (!inWorker) {
+            return new MainThreadArrayItem();
+        }
         const array = this._arrays[this._index] = this._arrays[this._index] || new Proxy(new ArrayItem(), ArrayItemProxy);
         array.reset();
         this._index++;

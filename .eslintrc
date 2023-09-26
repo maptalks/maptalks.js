@@ -10,7 +10,8 @@
     "sourceType": "module"
   },
   "globals": {
-    "importScripts" : true
+    "importScripts" : true,
+    "WorkerGlobalScope": true
   },
   "rules": {
     "object-curly-spacing": [2, "always"],
