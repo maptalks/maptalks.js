@@ -515,9 +515,11 @@ class Painter {
     }
 
     _setLayerUniforms(uniforms) {
+        const renderer = this.layer.getRenderer();
         const layerOpacity = this.layer.options['opacity'];
         const altitude = this.layer.options['altitude'] || 0;
-        uniforms.layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
+        // 不在GroupGLLayer中时，MapCanvasRenderer会读取opacity并按照透明度绘制，所以layerOpacity设成1
+        uniforms.layerOpacity = renderer._isInGroupGLLayer() ? (isNil(layerOpacity) ? 1 : layerOpacity) : 1;
         uniforms.minAltitude = altitude;
     }
 

@@ -196,7 +196,6 @@ const GLTFMixin = Base =>
                     mesh.setUniform('hasAlpha', extraInfo.alphaMode && extraInfo.alphaMode.toUpperCase() === 'BLEND');
                     setUniformFromSymbol(mesh.uniforms, 'polygonFill', symbol, 'markerFill', DEFAULT_MARKER_FILL, createColorSetter(this.colorCache));
                     setUniformFromSymbol(mesh.uniforms, 'polygonOpacity', symbol, 'markerOpacity', 1);
-                    mesh.setUniform('layerOpacity', 1);
                     // mesh.setPositionMatrix(mat4.multiply([], trsMatrix, nodeMatrix));
                     const positionMatrix = [];
                     mesh.setPositionMatrix(() => {

@@ -110,7 +110,8 @@ class TubePainter extends BasicPainter {
         mesh.setLocalTransform(transform);
 
         const defines = {
-            'IS_LINE_EXTRUSION': 1
+            'IS_LINE_EXTRUSION': 1,
+            'HAS_LAYER_OPACITY': 1
         };
         if (this.dataConfig.type === 'square-tube') {
             defines['IS_SQUARE_TUBE'] = 1;

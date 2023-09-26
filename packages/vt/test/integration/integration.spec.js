@@ -383,6 +383,7 @@ describe('vector tile integration specs', () => {
                     };
                 }
                 specs[p].opacity = 0.5;
+                specs[p].groupSceneConfig = {};
                 it(p, runner(p, specs[p]));
             }
         }

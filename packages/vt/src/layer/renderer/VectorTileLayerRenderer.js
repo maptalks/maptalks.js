@@ -214,6 +214,11 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return false;
     }
 
+    _isInGroupGLLayer() {
+        const inGroup = this.canvas && this.canvas.gl && this.canvas.gl.wrap;
+        return !!inGroup;
+    }
+
     createContext() {
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
         if (inGroup) {
