@@ -11,8 +11,9 @@ uniform float layerOpacity;
 
 void main()
 {
-    gl_FragColor = lineColor * lineOpacity * layerOpacity;
+    gl_FragColor = lineColor * lineOpacity;
     #if defined(HAS_COLOR)
         gl_FragColor *= vColor;
     #endif
+    gl_FragColor *= layerOpacity;
 }

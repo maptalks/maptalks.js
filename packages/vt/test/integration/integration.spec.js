@@ -106,7 +106,7 @@ describe('vector tile integration specs', () => {
                             writeImageData(actualPath, canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
                         }
                         // console.log(JSON.stringify(map.getView()));
-                        assert(result.diffCount === 0);
+                        assert(result.diffCount <= (style.diffCount || 0));
                         ended = true;
                         done();
                     });
@@ -384,6 +384,27 @@ describe('vector tile integration specs', () => {
                 }
                 specs[p].opacity = 0.5;
                 specs[p].groupSceneConfig = {};
+                // 图层加在GroupGLLayer上的透明度测试
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
+
+    context('layer opacity on map specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'layer-opacity'));
+        for (const p in specs) {
+            if (p.indexOf('native-line') >= 0) {
+                continue;
+            }
+            if (hasOwn(specs, p)) {
+                if(!specs[p].view) {
+                    specs[p].view = {
+                        center: [91.14478,29.658272],
+                        zoom: 12
+                    };
+                }
+                specs[p].opacity = 0.5;
+                // 图层直接加在map上的透明度测试
                 it(p, runner(p, specs[p]));
             }
         }

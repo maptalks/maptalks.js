@@ -249,7 +249,7 @@ class StandardPainter extends MeshPainter {
                     return props['hasAlpha'] === undefined || !!props['hasAlpha'];
                 },
                 func: {
-                    src: 'src alpha',
+                    src: 'one',
                     dst: 'one minus src alpha'
                 },
                 equation: 'add'

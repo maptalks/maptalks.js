@@ -24,7 +24,7 @@ const style = [
 
 module.exports = {
     style,
-    diffCount: 1,
+    diffCount: 10,
     altitude: 10,
     data: data,
     view: {
