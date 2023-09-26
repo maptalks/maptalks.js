@@ -1,6 +1,6 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import { PackUtil } from '@maptalks/vector-packer';
-import { setUniformFromSymbol, createColorSetter, isNil, isNumber, extend } from '../Util';
+import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Util';
 import { getCentiMeterScale } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
@@ -90,7 +90,7 @@ const GLTFMixin = Base =>
             const map = this.getMap();
             const { geometry } = geo;
             const { positionSize, features } = geometry;
-            const { aPosition, aPickingId, aXYRotation, aZRotation } = geometry.data;
+            const { aPosition, aPickingId, aXYRotation, aZRotation, aAltitude } = geometry.data;
             const count = aPosition.length / positionSize;
             if (count === 0) {
                 return null;
@@ -102,7 +102,7 @@ const GLTFMixin = Base =>
                 // 'instance_color': [],
                 'aPickingId': []
             };
-            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features);
+            const instanceCenter = this._updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, geometry.properties.z, aPosition, aAltitude, aXYRotation, aZRotation, positionSize, aPickingId, features);
             if (geometry.data.aTerrainAltitude) {
                 instanceData.aTerrainAltitude = geometry.data.aTerrainAltitude;
             }
@@ -241,6 +241,7 @@ const GLTFMixin = Base =>
                         defines['HAS_INSTANCE_TERRAIN_ALTITUDE'] = 1;
                         mesh.setUniform('terrainAltitudeScale', this.layer.getRenderer().getZScale() * 100);
                     }
+                    defines['HAS_LAYER_OPACITY'] = 1;
                     extend(mesh.properties, geometry.properties);
                     mesh.setDefines(defines);
                     mesh.properties.symbolIndex = {
@@ -402,7 +403,7 @@ const GLTFMixin = Base =>
             return !!(symbol && symbol.animation && this._gltfPack[index] && this._gltfPack[index][0] && this._gltfPack[index][0].hasSkinAnimation());
         }
 
-        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, aXYRotation, aZRotation, positionSize, aPickingId, features) {
+        _updateInstanceData(instanceData, tileTranslationMatrix, tileExtent, tileZoom, aPosition, aAltitude, aXYRotation, aZRotation, positionSize, aPickingId, features) {
             function setInstanceData(name, idx, matrix, col) {
                 instanceData[name][idx * 4] = matrix[col];
                 instanceData[name][idx * 4 + 1] = matrix[col + 4];
@@ -420,13 +421,18 @@ const GLTFMixin = Base =>
             const position = [];
             const vertex = [];
             for (let i = 0; i < count; i++) {
-                PackUtil.unpackPosition(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aPosition[i * positionSize + 2]);
+                if (aAltitude) {
+                    vec3.set(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aAltitude[i]);
+                } else {
+                    PackUtil.unpackPosition(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aPosition[i * positionSize + 2]);
+                }
+
                 const pos = vec3.set(
                     position,
                     vertex[0] * tileScale,
                     //vt中的y轴方向与opengl(maptalks世界坐标系)相反
                     -vertex[1] * tileScale,
-                    positionSize === 2 ? 0 : (vertex[2] + altitudeOffset) * zScale
+                    (vertex[2] + altitudeOffset) * zScale
                 );
                 if (pos[0] < minx) {
                     minx = pos[0];
@@ -457,7 +463,11 @@ const GLTFMixin = Base =>
             const zAxis = [0, 0, 1];
 
             for (let i = 0; i < count; i++) {
-                PackUtil.unpackPosition(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aPosition[i * positionSize + 2]);
+                if (aAltitude) {
+                    vec3.set(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aAltitude[i]);
+                } else {
+                    PackUtil.unpackPosition(vertex, aPosition[i * positionSize], aPosition[i * positionSize + 1], aPosition[i * positionSize + 2]);
+                }
                 const x = vertex[0];
                 const y = vertex[1];
                 const pos = vec3.set(
@@ -465,7 +475,7 @@ const GLTFMixin = Base =>
                     x * tileScale  - cx,
                     //vt中的y轴方向与opengl(maptalks世界坐标系)相反
                     -y * tileScale - cy,
-                    positionSize === 2 ? 0 : ((vertex[2] + altitudeOffset) * zScale - cz)
+                    (vertex[2] + altitudeOffset) * zScale - cz
                 );
 
                 const xyRotation = aXYRotation && aXYRotation[i] || 0;

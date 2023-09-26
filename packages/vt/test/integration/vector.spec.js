@@ -125,6 +125,24 @@ describe('vector 3d integration specs', () => {
             }
         }
     });
+
+    context('layer opacity and altitude specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'vector-fixtures', 'opacity-min-altitude'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                if (!specs[p].options) {
+                    specs[p].options = {};
+                }
+                if (specs[p].options.opacity === undefined) {
+                    specs[p].options.opacity = 0.5;
+                }
+                if (specs[p].options.altitude === undefined) {
+                    specs[p].options.altitude = 80000;
+                }
+                it('options-' + p, runner(p, getLayerClazz(specs[p].layerClass), specs[p]));
+            }
+        }
+    });
 });
 
 const canvas = document.createElement('canvas');
@@ -140,4 +158,17 @@ function writeImageData(path, arr, width, height) {
     const dataURL = canvas.toDataURL();
     const base64Data = dataURL.replace(/^data:image\/png;base64,/, '');
     fs.writeFileSync(path, base64Data, 'base64');
+}
+
+
+function getLayerClazz(className) {
+    if (className === 'ExtrudePolygonLayer') {
+        return ExtrudePolygonLayer;
+    } else if (className === 'LineStringLayer') {
+        return LineStringLayer;
+    } else if (className === 'PolygonLayer') {
+        return PolygonLayer;
+    } else if (className === 'PointLayer') {
+        return PointLayer;
+    }
 }

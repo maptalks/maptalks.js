@@ -145,6 +145,7 @@ class MeshPainter extends Painter {
             }
         }
         defines['HAS_MIN_ALTITUDE'] = 1;
+        defines['HAS_LAYER_OPACITY'] = 1;
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setPositionMatrix(this.getAltitudeOffsetMatrix());

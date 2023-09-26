@@ -10,7 +10,7 @@ uniform float minAltitude;
             // aTerrainAltitude的单位是米，在vt中需要转换为厘米
             altitude += aTerrainAltitude * 100.0;
         #endif
-        altitude += minAltitude;
+        altitude += minAltitude * 100.0;
         return vec3(aPosition, altitude);
     }
 #else
