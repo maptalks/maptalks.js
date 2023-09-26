@@ -85,7 +85,7 @@ vec4 getPosition(vec3 aPosition) {
         POSITION.z += aTerrainAltitude * 100.0;
     #endif
     #ifdef HAS_MIN_ALTITUDE
-        POSITION.z += minAltitude;
+        POSITION.z += minAltitude * 100.0;
     #endif
     return POSITION;
 }
