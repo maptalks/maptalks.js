@@ -6,6 +6,7 @@ precision highp sampler2D;
 #include <hsv_frag>
 uniform vec3 hsv;
 uniform float contrast;
+uniform float layerOpacity;
 
 #if defined(HAS_SHADOWING)
     #include <vsm_shadow_frag>
@@ -515,5 +516,5 @@ void main() {
         gl_FragColor = hsv_apply(gl_FragColor, hsv);
     }
 
-    gl_FragColor = highlight_blendColor(gl_FragColor);
+    gl_FragColor = highlight_blendColor(gl_FragColor) * layerOpacity;
 }

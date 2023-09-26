@@ -14,6 +14,8 @@ precision mediump float;
     uniform lowp float lineOpacity;
 #endif
 
+uniform float layerOpacity;
+
 uniform lowp float lineBlur;
 uniform float lineGradientTextureHeight;
 uniform float tileExtent;
@@ -68,7 +70,7 @@ void main() {
     #else
         float opacity = lineOpacity;
     #endif
-    gl_FragColor = color * opacity;
+    gl_FragColor = color * opacity * layerOpacity;
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();

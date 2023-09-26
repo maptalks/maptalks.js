@@ -15,6 +15,7 @@ precision mediump float;
 
 uniform vec3 markerFill;
 uniform float markerOpacity;
+uniform float layerOpacity;
 
 void main() {
     float alpha = 1.0;
@@ -32,7 +33,7 @@ void main() {
         #endif
     #endif
 
-    glFragColor = vec4(markerFill, 1.0) * markerOpacity * alpha;
+    glFragColor = vec4(markerFill, 1.0) * markerOpacity * alpha * layerOpacity;
 
     #if __VERSION__ == 100
         gl_FragColor = glFragColor;

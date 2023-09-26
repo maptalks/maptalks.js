@@ -371,6 +371,22 @@ describe('vector tile integration specs', () => {
             }
         }
     });
+
+    context('layer opacity specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'layer-opacity'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                if(!specs[p].view) {
+                    specs[p].view = {
+                        center: [91.14478,29.658272],
+                        zoom: 12
+                    };
+                }
+                specs[p].opacity = 0.5;
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
 });
 
 

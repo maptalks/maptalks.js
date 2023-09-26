@@ -16,6 +16,7 @@ uniform highp float textHaloBlur;
 #else
     uniform float textHaloOpacity;
 #endif
+uniform float layerOpacity;
 
 varying vec2 vTexCoord;
 varying float vSize;
@@ -81,7 +82,7 @@ void main() {
     float alpha = clamp(smoothstep(buff - gammaScaled, buff + gammaScaled, dist), 0.0, 1.0);
     // float alpha = smoothstep(buff - gammaScaled, buff + gammaScaled, dist);
     // gl_FragColor = vec4(textFill.rgb, alpha * textFill.a);
-    gl_FragColor = color * (alpha * textOpacity * vOpacity);
+    gl_FragColor = color * (alpha * textOpacity * vOpacity * layerOpacity);
 
     gl_FragColor = highlight_blendColor(gl_FragColor);
 }

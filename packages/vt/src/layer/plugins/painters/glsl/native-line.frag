@@ -3,6 +3,7 @@ precision mediump float;
 
 uniform float lineOpacity;
 uniform vec4 lineColor;
+uniform float layerOpacity;
 
 #if defined(HAS_COLOR)
     varying vec4 vColor;
@@ -10,7 +11,7 @@ uniform vec4 lineColor;
 
 void main()
 {
-    gl_FragColor = lineColor * lineOpacity;
+    gl_FragColor = lineColor * lineOpacity * layerOpacity;
     #if defined(HAS_COLOR)
         gl_FragColor *= vColor;
     #endif

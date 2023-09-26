@@ -58,6 +58,7 @@ precision mediump float;
 #else
     uniform lowp float polygonOpacity;
 #endif
+uniform float layerOpacity;
 
 uniform float tileExtent;
 // #ifndef ENABLE_TILE_STENCIL
@@ -95,6 +96,7 @@ void main() {
         // gl_FragColor = vec4(color.rgb, color.a * polygonOpacity);
         gl_FragColor = color * polygonOpacity;
     #endif
+    gl_FragColor *= layerOpacity;
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();

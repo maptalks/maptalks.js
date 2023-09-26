@@ -31,6 +31,8 @@ uniform float isRenderingTerrain;
     uniform lowp float lineOpacity;
 #endif
 
+uniform float layerOpacity;
+
 #ifdef HAS_PATTERN
     uniform sampler2D linePatternFile;
     uniform vec2 atlasSize;
@@ -215,7 +217,7 @@ void main() {
     #else
         float opacity = lineOpacity;
     #endif
-    gl_FragColor = color * opacity;
+    gl_FragColor = color * opacity * layerOpacity;
 
     #if defined(HAS_SHADOWING) && !defined(HAS_BLOOM)
         float shadowCoeff = shadow_computeShadow();

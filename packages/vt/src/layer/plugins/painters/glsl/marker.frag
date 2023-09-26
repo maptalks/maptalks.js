@@ -7,6 +7,7 @@ precision mediump float;
 uniform sampler2D iconTex;
 uniform lowp float markerOpacity;
 uniform lowp float blendSrcIsOne;
+uniform float layerOpacity;
 
 #include <highlight_frag>
 
@@ -14,7 +15,7 @@ varying vec2 vTexCoord;
 varying float vOpacity;
 
 void main() {
-    vec4 fragColor = texture2D(iconTex, vTexCoord) * markerOpacity * vOpacity;
+    vec4 fragColor = texture2D(iconTex, vTexCoord) * markerOpacity * vOpacity * layerOpacity;
     // if (blendSrcIsOne == 1.0) {
     //     fragColor *= fragColor.a;
     // }
