@@ -1,6 +1,7 @@
 #ifdef HAS_TERRAIN_ALTITUDE
     attribute float aTerrainAltitude;
 #endif
+uniform float minAltitude;
 
 #ifdef HAS_ALTITUDE
     vec3 unpackVTPosition() {
@@ -25,6 +26,7 @@
             // aTerrainAltitude的单位是米，在vt中需要转换为厘米
             altitude += aTerrainAltitude * 100.0;
         #endif
+        altitude += minAltitude;
         return vec3(pos, altitude);
     }
 #endif

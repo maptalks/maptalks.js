@@ -506,9 +506,19 @@ class Painter {
             }
             renderMeshes.push(mesh);
         });
+
+        this._setLayerUniforms(uniforms);
+
         this.scene.setMeshes(renderMeshes);
         this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
         this.scene.setMeshes(meshes);
+    }
+
+    _setLayerUniforms(uniforms) {
+        const layerOpacity = this.layer.options['opacity'];
+        const altitude = this.layer.options['altitude'] || 0;
+        uniforms.layerOpacity = isNil(layerOpacity) ? 1 : layerOpacity;
+        uniforms.minAltitude = altitude;
     }
 
     getRenderFBO(context) {
@@ -559,6 +569,7 @@ class Painter {
         }
         const map = this.getMap();
         const uniforms = this.getUniformValues(map);
+        this._setLayerUniforms(uniforms);
         for (let i = 0; i < this.picking.length; i++) {
             const picking = this.picking[i];
             picking.render(this.scene.getMeshes(), uniforms, true);

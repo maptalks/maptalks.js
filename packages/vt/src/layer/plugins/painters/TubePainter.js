@@ -16,6 +16,14 @@ class TubePainter extends BasicPainter {
         return super.needToRedraw() || this.isAnimating();
     }
 
+    isTerrainSkin() {
+        return false;
+    }
+
+    isTerrainVector() {
+        return true;
+    }
+
     supportRenderMode(mode) {
         if (this.isAnimating()) {
             return mode === 'fxaa' || mode === 'fxaaAfterTaa';
