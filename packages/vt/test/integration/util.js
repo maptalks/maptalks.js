@@ -45,6 +45,10 @@ module.exports = {
                 continue;
             }
             const name = dir.name;
+            const indexPath = path.resolve(specPath, name, 'index.js');
+            if (!fs.existsSync(indexPath)) {
+                continue;
+            }
             specs[name] = require(path.resolve(specPath, name));
             specs[name].expected = path.resolve(specPath, name, 'expected.png');
         }
