@@ -219,8 +219,17 @@ const GLTFMixin = Base =>
                             return positionMatrix;
                         }
                     });
-                    const localTransform = mat4.translate([], tileTranslationMatrix, instanceCenter);
-                    mesh.setLocalTransform(localTransform);
+                    // const localTransform = mat4.translate([], tileTranslationMatrix, instanceCenter);
+                    const zScale = this.layer.getRenderer().getZScale();
+                    const localTransform = [];
+                    const center = [];
+                    mesh.setLocalTransform(() => {
+                        const altitude = this.layer.options['altitude'] || 0;
+                        vec3.copy(center, instanceCenter);
+                        center[2] += altitude * 100 * zScale;
+                        mat4.translate(localTransform, tileTranslationMatrix, center);
+                        return localTransform;
+                    });
 
                     gltfGeo.generateBuffers(this.regl, { excludeElementsInVAO: true });
                     //上面已经生成了buffer，无需再生成

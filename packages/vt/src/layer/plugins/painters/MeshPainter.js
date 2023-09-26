@@ -144,6 +144,7 @@ class MeshPainter extends Painter {
                 }
             }
         }
+        defines['HAS_MIN_ALTITUDE'] = 1;
         geometry.generateBuffers(this.regl);
         mesh.setDefines(defines);
         mesh.setPositionMatrix(this.getAltitudeOffsetMatrix());
@@ -154,6 +155,12 @@ class MeshPainter extends Painter {
             mesh.castShadow = false;
         }
         mesh.setUniform('maxAltitude', mesh.geometry.properties.maxAltitude);
+        Object.defineProperty(mesh.uniforms, 'minAltitude', {
+            enumerable: true,
+            get: () => {
+                return this.layer.options['altitude'] || 0;
+            }
+        })
 
         const map = this.getMap();
         const glRes = map.getGLRes();

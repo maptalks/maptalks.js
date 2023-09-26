@@ -353,6 +353,24 @@ describe('vector tile integration specs', () => {
             }
         }
     });
+
+    context('min altitude specs', () => {
+        const specs = readSpecs(path.resolve(__dirname, 'fixtures', 'min-altitude'));
+        for (const p in specs) {
+            if (hasOwn(specs, p)) {
+                if (!specs[p].altitude) {
+                    specs[p].altitude = 2000;
+                }
+                if(!specs[p].view) {
+                    specs[p].view = {
+                        center: [91.14478,29.658272],
+                        zoom: 12
+                    };
+                }
+                it(p, runner(p, specs[p]));
+            }
+        }
+    });
 });
 
 
