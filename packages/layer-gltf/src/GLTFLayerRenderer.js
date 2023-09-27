@@ -9,7 +9,6 @@ import extentFrag from './common/glsl/extent.frag';
 import GLTFWorkerConnection from './common/GLTFWorkerConnection';
 
 const uniformDeclares = [], tempBBox = [];
-const halton = [0.2107, -0.0202];
 const pointLineModes = ['points', 'lines', 'line strip', 'line loop'];
 class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayerCanvasRenderer) {
 
@@ -97,16 +96,15 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         }
     }
 
-    _prepareRenderUniforms(context) {
+    _prepareRenderUniforms() {
         const renderUniforms = {};
         this._uniforms.outSize = [this.canvas.width, this.canvas.height];
-        if (context) {
-            //加到grouplayer
-            this._uniforms.halton = context.jitter || [0, 0];
-        } else {
-            //直接加到地图上
-            this._uniforms.halton = halton;
-        }
+        this._uniforms.minAltitude = this.layer.options.altitude || 0;
+        const inGroup = this.canvas.gl && this.canvas.gl.wrap;
+        // 如果不在group里，map会以options.opacity透明度绘制layer canvas，所以layerOpacity需要设置为1
+        const layerOpacity = inGroup ? (this.layer.options.opacity || 0) : 1;
+        renderUniforms.layerOpacity = layerOpacity;
+
         maptalks.Util.extend(renderUniforms, this._uniforms);
         //for mask
         const maskUniforms = this.getMaskUniforms();

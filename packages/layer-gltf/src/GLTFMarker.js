@@ -585,6 +585,8 @@ export default class GLTFMarker extends Marker {
         if (geometryResource.extraInfo && geometryResource.extraInfo.alphaMode === 'MASK') {
             defines['HAS_ALPHAMODE'] = 1;
         }
+        defines['HAS_MIN_ALTITUDE'] = 1;
+        defines['HAS_LAYER_OPACITY'] = 1;
         modelMesh.setDefines(defines);
         return modelMesh;
     }
