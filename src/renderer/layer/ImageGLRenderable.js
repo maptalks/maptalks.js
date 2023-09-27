@@ -192,6 +192,8 @@ const ImageGLRenderable = Base => {
                 x2, y2
             ), gl.DYNAMIC_DRAW);
             gl.uniform1f(this.program['u_debug_line'], 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
+            this.enableVertexAttrib(['a_texCoord', 2, 'UNSIGNED_BYTE']);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
             gl.enable(gl.DEPTH_TEST);
         }
