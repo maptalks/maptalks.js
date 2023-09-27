@@ -61,7 +61,7 @@ export function convertToFeature(geo, kidGen, currentFeature) {
     }
     const properties = geo.getProperties() ? Object.assign({}, geo.getProperties()) : {};
     const symbol = geo['_getInternalSymbol']() || getDefaultSymbol(geo);
-    const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0][keyName] : currentFeature[keyName]) : kidGen.id++;
+    const kid = currentFeature ? (Array.isArray(currentFeature) ? currentFeature[0]['id'] : currentFeature['id']) : kidGen.id++;
     if (Array.isArray(symbol) && symbol.length) {
         // symbol为数组时，则重复添加相同的Feature
         const features = [];
