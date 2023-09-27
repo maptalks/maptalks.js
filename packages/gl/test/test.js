@@ -54,6 +54,42 @@ describe('gl tests', () => {
         });
     });
 
+    context('imagelayer tests', () => {
+        it('support imageLayer in post process', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const imageLayer = new maptalks.ImageLayer('images', [{
+                url: "./fixtures/tiles/tile-green-256.png",
+                extent: [
+                    91.14478, 29.658272,
+                    91.15578, 29.668272
+                ]
+            }]);
+            const group = new maptalks.GroupGLLayer('group', [imageLayer], {
+                sceneConfig
+            });
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2 + 10, canvas.height / 2 - 10, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
+                done();
+            }, 200)
+            group.addTo(map);
+        });
+
+    });
+
     context('tilelayer tests', () => {
         it('support tilelayer in post process, maptalks/issues#148', done => {
             map = new maptalks.Map(container, {
