@@ -133,8 +133,11 @@ const ImageGLRenderable = Base => {
             v2[1] = 2;
             v2[2] = image.glBuffer.type;
             this.enableVertexAttrib(v2); // ['a_position', 3]
-            // gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
-            // this.enableVertexAttrib(['a_texCoord', 2, 'UNSIGNED_BYTE']);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.texBuffer);
+            v2[0] = 'a_texCoord';
+            v2[1] = 2;
+            v2[2] = 'UNSIGNED_BYTE';
+            this.enableVertexAttrib(v2);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             if (debug) {
