@@ -1588,6 +1588,42 @@ describe('render specs', () => {
             });
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 10 });
         });
+        it('layer opacity', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                opacity: 0.5,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/layerOpacity/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
+        });
+
+        it('layer altitude', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                altitude: -5,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/layerAltitude/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
+        });
+
     });
 
     context('offset specs', () => {
@@ -1604,7 +1640,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209432, 40.04253061 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140768, 40.04200494 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformBox/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1621,7 +1657,7 @@ describe('render specs', () => {
                 ]
             });
             const assertion = layer => {
-                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61209431, 40.04253061 ]);
+                assert.deepEqual(layer.getMap().getCenter().toArray(), [ -75.61140766, 40.04200494 ]);
             };
             runner(done, layer, { path: `./integration/expected/offset/BatchedWithTransformRegion/expected.png`, diffCount: 0, renderCount: 1 }, assertion);
         });
@@ -1685,6 +1721,93 @@ describe('render specs', () => {
                 assert(map.getCenter().x.toFixed(3) === '108.959');
                 done();
             }, layer, { path: `./integration/expected/${resPath}/4490/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
+        });
+    });
+
+    context('set rotation and scale for layer', () => {
+        it('set ratation and scale', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420,
+                        scale: [4, 4, 4],
+                        rotation: [0, 0, 45]
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/trs/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+        });
+
+        it('update service rotation and scale', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420,
+                        scale: [4, 4, 4],
+                        rotation: [0, 0, 45]
+                    }
+                ]
+            });
+            layer.updateService(0, {
+                rotation: [0, 0, 90],
+                scale: [2, 2, 2]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/rotation/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+        });
+
+        it('show debug boundingVolume', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420,
+                        scale: [4, 4, 4],
+                        rotation: [0, 0, 45],
+                        debugShowBoundingVolume: true
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/debugBoundingBox/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: -2 });
+        });
+
+        it('issue#424', done => {
+            const resPath = 'Cesium3DTiles/issue-424';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'phong',
+                        ambientLight: [1, 1, 1],
+                        heightOffset: 0,
+                        scale: [1, 1, 1],
+                        rotation: [0, 0, 0],
+                        debugShowBoundingVolume: true
+                    }
+                ]
+            });
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 0, renderCount: 1, noGroup: true });
         });
     });
 });

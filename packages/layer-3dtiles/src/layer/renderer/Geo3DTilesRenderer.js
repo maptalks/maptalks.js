@@ -410,6 +410,9 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             } else {
                 this.onTilesetLoad(data, tile, url);
             }
+            if (service['debugShowBoundingVolume']) {
+                this.painter._createBBoxMesh(tile);
+            }
 
             // if (magic === 'b3dm') {
             //     // this.painter.createB3DMMesh(data, tile.id, tile, (err, { mesh }) => {
@@ -635,6 +638,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         this.painter = new MeshPainter(this.regl, layer);
 
         this.layer._resumeHighlights();
+        this.layer.fire('contextcreate', { regl: this.regl });
     }
 
     prepareWorker() {

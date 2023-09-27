@@ -48,7 +48,7 @@ describe('render specs', () => {
         map = new maptalks.Map(container, option);
     }
 
-    function add3DTilesLayer() {
+    function add3DTilesLayer(mask) {
         const resPath = 'BatchedDraco/dayanta/';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services : [
@@ -60,6 +60,9 @@ describe('render specs', () => {
                 }
             ]
         });
+        if (mask) {
+            layer.setMask(mask);
+        }
         const group = new GroupGLLayer('group', [layer]);
         group.addTo(map);
         return layer;
@@ -174,7 +177,7 @@ describe('render specs', () => {
                 const pixel = pickPixel(map, 255, 497, 1, 1);
                 assert(pixelMatch([238, 35, 35, 255], pixel) === true);
                 done();
-            }, 200);
+            }, 300);
         });
     }).timeout(10000);
 
@@ -225,6 +228,22 @@ describe('render specs', () => {
                 assert(pixelMatch([238, 35, 35, 255], pixel) === true);
                 done();
             }, 200);
+        });
+    }).timeout(10000);
+
+    it('set mask before layer added to map', done => {
+        const mask = new ColorMask(coordinates, {
+            symbol
+        });
+        const layer = add3DTilesLayer(mask);
+        layer.once('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+            setTimeout(function() {
+                const pixel = pickPixel(map, 255, 497, 1, 1);
+                assert(pixelMatch([238, 35, 35, 255], pixel) === true);
+                done();
+            }, 300);
         });
     }).timeout(10000);
 });

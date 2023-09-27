@@ -1,0 +1,48 @@
+{
+"properties":{
+"Latitude":{"minimum":0.680092,"maximum":0.680142},
+"Longitude":{"minimum":2.067785,"maximum":2.067828},
+"Height":{"minimum":-6.433037,"maximum":36.555578}
+},
+"geometricError":343.908914,"refine":"REPLACE",
+"root":
+{
+
+"boundingVolume": { "region": [2.0677849365948945959, 0.68009199633702366317, 2.067828136046460763, 0.68014232999393720025, -6.4330366459093912823, 36.555577598941781048]},
+"refine":"REPLACE",
+"geometricError":776.981873
+,"children":[
+{
+
+"content":{"uri":"1/tileset.json","boundingVolume":{ "region": [2.067801680715281698, 0.68011345034142012267, 2.0678283811917523849, 0.68014612055046286265, -19.523781666767703769, 41.512402391458422812]}},
+"boundingVolume": { "region": [2.067801680715281698, 0.68011345034142012267, 2.0678283811917523849, 0.68014612055046286265, -19.523781666767703769, 41.512402391458422812]},
+"refine":"REPLACE",
+"geometricError":776.981873}
+]
+}
+,"asset":{"version": "1.0"}
+,"extensions" : {
+"SKYLINE_o3dml_Header" : {
+"GUID":"a07792cd-0d10-4ee2-8447-ef9aebb98aed" 
+,"BestResolution": 0.015625
+,"WorstResolution": 256.000000
+,"Tags": {"Creator":"SLMeshConverter", "CreatorVersion" : "7,4,1,20825"}
+,"version": 1.0
+, "nodeCount" : 50
+,"wkt":"GEOCCS[\"WGS 84\", DATUM[\"WGS_1984\", SPHEROID[\"WGS 84\", 6378137, 298.257223563, AUTHORITY[\"EPSG\", \"7030\"]], AUTHORITY[\"EPSG\", \"6326\"]], PRIMEM[\"Greenwich\", 0, AUTHORITY[\"EPSG\", \"8901\"]], UNIT[\"metre\", 1, AUTHORITY[\"EPSG\", \"9001\"]], AXIS[\"Geocentric X\", OTHER], AXIS[\"Geocentric Y\", OTHER], AXIS[\"Geocentric Z\", NORTH], AUTHORITY[\"EPSG\", \"4978\"]]" 
+,"original_wkt":"COMPD_CS[\"WGS84 Coordinate System + (Assumed)EGM96 Vertical Datum\",GEOGCS[\"WGS84 Coordinate System\",DATUM[\"WGS 1984\",SPHEROID[\"WGS 1984\",6378137,298.257223563],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433],AUTHORITY[\"EPSG\",\"4326\"],AUTHORITY[\"SBMG\",\"LAT-LONG,LAT-LONG,WGS84,METERS\"]],VERT_CS[\"EGM96 geoid height\",VERT_DATUM[\"EGM96 geoid\",2005,AUTHORITY[\"EPSG\",\"5171\"],EXTENSION[\"PROJ4_GRIDS\",\"egm96_15.gtx\"]],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Up\",UP],AUTHORITY[\"EPSG\",\"5773\"]]]]" 
+}
+,"SKYLINE_o3dml_DB" : {
+"featuresNames" : [
+{
+"name" : "DUXI1","layerId" : 0,"url":"."
+,"table":"ThreeDML_Table1_FeatureLayer1"}
+]
+}
+}
+,"extensionsUsed" : [
+"SKYLINE_o3dml_Header"
+,"SKYLINE_o3dml_DB"
+]
+}
+  

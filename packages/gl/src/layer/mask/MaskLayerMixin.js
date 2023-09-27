@@ -12,6 +12,9 @@ function updateExtent(type) {
         return;
     }
     const map = this.getMap();
+    if (!map) {
+        return;
+    }
     const renderer = this.getRenderer();
     if (renderer && !this['_maskList'].length) {
         renderer['_clearMask']();
@@ -166,6 +169,11 @@ export default function (Base) {
             });
             updateExtent.call(this, 'shapechange');
             return this;
+        }
+
+        onAdd() {
+            super.onAdd();
+            updateExtent.call(this, 'shapechange');
         }
 
         getMasks() {

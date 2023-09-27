@@ -59,7 +59,7 @@ const options = {
 // const projection = maptalks.projection.EPSG3857;
 
 const TEMP_EXTENT = new maptalks.Extent(0, 0, 0, 0);
-const TEMP_EXTENT_1 = new maptalks.Extent(0, 0, 0, 0);
+// const TEMP_EXTENT_1 = new maptalks.Extent(0, 0, 0, 0);
 const TEMP_VEC3_0 = [];
 const TEMP_VEC3_1 = [];
 const TEMP_SCALE = [];
@@ -72,6 +72,24 @@ const TEMP_MAT3_0 = [];
 const CAMERA_COORD = new maptalks.Coordinate(0, 0);
 const IDENTITY_MATRIX = mat4.identity([]);
 const EMPTY_COORD_OFFSET = [0, 0];
+
+// BOX template
+//    v2----- v1
+//   / |     /|
+//  v3------v0|
+//  |  |v6  | /v5
+//  | /     |/
+//  v7------v4
+const BOX_POS = [
+    1.0, 1.0, 1.0,
+    1.0, -1.0, 1.0,
+    -1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    1.0, 1.0, -1.0,
+    1.0, -1.0, -1.0,
+    -1.0, -1.0, -1.0,
+    -1.0, 1.0, -1.0
+]
 /**
  * A layer to stream AnalyticalGraphicsInc's 3d-tiles geospatial data
  * 3d-tiles 规范：https://github.com/AnalyticalGraphicsInc/3d-tiles/
@@ -642,6 +660,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             if (!isI3S && url && !isBase64(url) && isRelativeURL(url)) {
                 parent.content.url = parent.baseUrl + url;
             }
+            if (tileset.root && !parent.parent) {
+                this._updateRootCenter(parent);
+            }
         }
         this._setToRedraw();
         this.fire('loadtileset', { tileset, index: parent && parent._rootIdx, url });
@@ -650,6 +671,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     _isVisible(node, maxExtent, projectionView) {
         node._cameraDistance = Infinity;
         if (node._level === 0 || node._empty) {
+            this._updateRootCenter(node);
             return 1;
         }
         this._offsetBoundingVolume(node);
@@ -661,6 +683,10 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // }
             return -1;
         }
+        // const service = this._getNodeService(node._rootIdx);
+        // if (service['debugShowBoundingVolume']) {
+        //     this._createBBoxMesh(node);
+        // }
         if (node.geometricError === 0) {
             return 1;
         }
@@ -689,42 +715,29 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _isTileInFrustum(node, maxExtent, projectionView) {
         const id = node.id;
-        let nodeBox = this._nodeBoxes[id];
+        let nodeBox = this._nodeBoxes[id] && this._nodeBoxes[id].obbox;
         const { boundingVolume } = node;
-        const sphere = boundingVolume.sphere;
-        let region = boundingVolume.region;
+        // let region = boundingVolume.region;
+        // const box = boundingVolume.box;
+
+        const region = boundingVolume.region;
         const box = boundingVolume.box;
+        const sphere = boundingVolume.sphere;
         if (!nodeBox) {
-            let extent, top, bottom;
-            if (box) {
-                region = convertBoxToRegion(box, node.matrix);
-                boundingVolume.region = region;
-            }
             if (region) {
-                extent = TEMP_EXTENT.set(toDegree(region[0]), toDegree(region[1]), toDegree(region[2]), toDegree(region[3]));
-                const center = extent.getCenter();
-
-                const scale = this._getBoxScale(center);
-
-                extent = extent.convertTo(c => this._coordToPoint(c, TEMP_POINT), TEMP_EXTENT_1);
-                bottom = region[4];
-                top = region[5];
-                //[[xmin, ymin, bottom], [xmax, ymax, top]]
-                nodeBox = this._nodeBoxes[id] = [[extent.xmin, extent.ymin, bottom * scale[2]], [extent.xmax, extent.ymax, top * scale[2]]];
-                nodeBox.center = center;
+                this._nodeBoxes[id] = this._createRegionBox(node);
+                nodeBox = this._nodeBoxes[id].bbox;
+                nodeBox.center = this._nodeBoxes[id].coordCenter;
+            } else if (box) {
+                this._nodeBoxes[id] = this._createBBox(node);
+                nodeBox = this._nodeBoxes[id].obbox;
+                nodeBox.center = this._nodeBoxes[id].coordCenter;
             } else if (sphere) {
-                // let nodeCenter = sphere.slice(0, 3);
-                // const nodeCenter = vec3.transformMat4(sphere, sphere, node.matrix);
+                //[xcenter, ycenter, radius]
+                nodeBox = this._nodeBoxes[id] = this._createSphere(node);
                 const nodeCenter = sphere;
                 const center = cartesian3ToDegree(TEMP_VEC3_0, nodeCenter);
                 const coord = new maptalks.Coordinate(center);
-                const pcenter = this._coordToPoint(coord, TEMP_POINT).toArray();
-
-                const scale = this._getBoxScale(coord);
-
-                pcenter.push(center[2] * scale[2]);
-                //[xcenter, ycenter, radius]
-                nodeBox = this._nodeBoxes[id] = [pcenter, sphere[3] * scale[2]];
                 nodeBox.center = coord;
             } /*else if (box) {
                 // let nodeCenter = nodeBox.slice(0, 3);
@@ -791,6 +804,198 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             return intersectsOrientedBox(projectionView, nodeBox);
         }
         return false;
+    }
+
+    _createRegionBox(node) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const region = node.boundingVolume.region;
+        let { ws, en } = convertRegionToBox(region);
+        ws = new maptalks.Coordinate(ws);
+        en = new maptalks.Coordinate(en);
+        const pointWS = map.coordToPointAtRes(ws, glRes);
+        pointWS.z = map.altitudeToPoint(ws.z, glRes);
+        const pointEN = map.coordToPointAtRes(en, glRes);
+        pointEN.z = map.altitudeToPoint(en.z, glRes);
+        const boxPosition = [
+            pointEN.x, pointWS.y, pointEN.z,
+            pointEN.x, pointEN.y, pointEN.z,
+            pointWS.x, pointEN.y, pointEN.z,
+            pointWS.x, pointWS.y, pointEN.z,
+            pointEN.x, pointWS.y, pointWS.z,
+            pointEN.x, pointEN.y, pointWS.z,
+            pointWS.x, pointEN.y, pointWS.z,
+            pointWS.x, pointWS.y, pointWS.z,
+        ];
+        const pointCenter = [(boxPosition[0] + boxPosition[18]) / 2, (boxPosition[1] + boxPosition[19]) / 2, (boxPosition[2] + boxPosition[20]) / 2];
+        const coordCenter = map.pointAtResToCoord(new maptalks.Point(pointCenter), glRes);
+        coordCenter.z = (ws.z + en.z) / 2;
+        const service = this._getNodeService(node._rootIdx);
+        const bboxPointCenter = service._bboxCenter;
+        const bbox = [
+            boxPosition.slice(21, 24),
+            boxPosition.slice(3, 6)
+        ];
+        if (bboxPointCenter) {
+            for (let i = 0; i < boxPosition.length; i += 3) {
+                boxPosition[i] -= bboxPointCenter[0];
+                boxPosition[i + 1] -= bboxPointCenter[1];
+                boxPosition[i + 2] -= bboxPointCenter[2];
+            }
+        }
+        return { bbox, boxPosition, pointCenter, coordCenter };
+    }
+
+    _createBBox(node) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const nodeBox = node.boundingVolume.box;
+        const center = nodeBox.slice(0, 3);
+        const halfAxes = this._createHalfAxes(nodeBox, node.matrix);
+        const modelMatrix = fromRotationTranslation(halfAxes, center);
+        const boxCenter = this._calBoxCenter(node);
+        const boxPosition = [];
+        const service = this._getNodeService(node._rootIdx);
+        const bboxPointCenter = service._bboxCenter;
+        TEMP_POINT.set(bboxPointCenter[0], bboxPointCenter[1]);
+        const coordCenter = map.pointAtResToCoord(TEMP_POINT, glRes);
+        for (let i = 0; i < BOX_POS.length; i += 3) {
+            const pos = BOX_POS.slice(i, i + 3);
+            vec3.transformMat4(pos, pos, modelMatrix);
+            const coord = new maptalks.Coordinate(cartesian3ToDegree(pos, pos));
+            let point = map.coordToPointAtRes(coord, glRes);
+            point = [point.x, point.y, map.altitudeToPoint(coord.z, glRes)];
+            boxPosition[i] = point[0] - bboxPointCenter[0];
+            boxPosition[i + 1] = point[1] - bboxPointCenter[1];
+            boxPosition[i + 2] = point[2] - bboxPointCenter[2];
+        }
+        const obbox = this._generateOBBox(boxPosition, boxCenter);
+        return { obbox, boxPosition, boxCenter, coordCenter };
+    }
+
+    _createSphere(node) {
+        const map = this.getMap();
+        const sphere = node.boundingVolume.sphere
+        const nodeCenter = sphere;
+        let center = TEMP_VEC3_0;
+        if (nodeCenter[0] === 0 && nodeCenter[1] === 0 && nodeCenter[2] === 0) {
+            center = [0, 0, -6378137];
+        } else {
+            cartesian3ToDegree(center, nodeCenter);
+        }
+        const coord = new maptalks.Coordinate(center);
+        const sphereCenter = this._coordToPoint(coord, TEMP_POINT).toArray();
+        sphereCenter[2] = map.altitudeToPoint(coord.z, map.getGLRes());
+        const scale = this._getBoxScale(coord);
+        return [sphereCenter, center[2] * scale[2]];
+    }
+
+    _generateOBBox(boxPosition, boxCenter) {
+        const xAxis = [(boxPosition[1 * 3] + boxPosition[4 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[4 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[4 * 3 + 2]) / 2];
+        const yAxis = [(boxPosition[1 * 3] + boxPosition[6 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[6 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[6 * 3 + 2]) / 2];
+        const zAxis = [(boxPosition[1 * 3] + boxPosition[3 * 3]) / 2, (boxPosition[1 * 3 + 1] + boxPosition[3 * 3 + 1]) / 2, (boxPosition[1 * 3 + 2] + boxPosition[3 * 3 + 2]) / 2];
+        const obbox = boxCenter.slice(0);
+        //中心点指向x轴方向
+        obbox[3] = xAxis[0] - boxCenter[0];
+        obbox[4] = xAxis[1] - boxCenter[1];
+        obbox[5] = xAxis[2] - boxCenter[2];
+
+        obbox[6] = yAxis[0] - boxCenter[0];
+        obbox[7] = yAxis[1] - boxCenter[1];
+        obbox[8] = yAxis[2] - boxCenter[2];
+
+        obbox[9] = zAxis[0] - boxCenter[0];
+        obbox[10] = zAxis[1] - boxCenter[1];
+        obbox[11] = zAxis[2] - boxCenter[2];
+        return obbox;
+    }
+
+    _calBoxCenter(node) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const nodeBox = node.boundingVolume.box;
+        const center = nodeBox.slice(0, 3);
+        const halfAxes = this._createHalfAxes(nodeBox, node.matrix);
+        const modelMatrix = fromRotationTranslation(halfAxes, center);
+        const box_center = [0, 0, 0];
+        vec3.transformMat4(box_center, box_center, modelMatrix);
+        const box_center_coord = new maptalks.Coordinate(cartesian3ToDegree(box_center, box_center));
+        const point_center = map.coordToPointAtRes(box_center_coord, glRes);
+        return [point_center.x, point_center.y, map.altitudeToPoint(box_center_coord.z, glRes)];
+    }
+
+    _updateRootCenter(rootNode) {
+        if (!rootNode.boundingVolume) {
+            return;
+        }
+        const box = rootNode.boundingVolume.box;
+        const region = rootNode.boundingVolume.region;
+        const sphere = rootNode.boundingVolume.sphere;
+        const service = this._getNodeService(rootNode._rootIdx);
+        let pointCenter = null;
+        if (box) {
+            const center = this._updateRootBBoxCenter(rootNode);
+            pointCenter = center.pointCenter;
+        } else if (region) {
+            const center = this._updateRootRegionCenter(rootNode);
+            pointCenter = center.pointCenter;
+        } else if (sphere) {
+            pointCenter = this._createSphere(rootNode)[0];
+        }
+        const heightOffset = service.heightOffset || 0;
+        const coordOffset = service.coordOffset || [0, 0];
+        service._originCoordOffset = [coordOffset[0] || 0, coordOffset[1] || 0];
+        service._originHeightOffset = heightOffset;
+        service._bboxCenter = pointCenter;
+    }
+
+    _updateRootRegionCenter(rootNode) {
+        if (!rootNode.boundingVolume) {
+            return null;
+        }
+        this._offsetBoundingVolume(rootNode);
+        const regionBox = this._createRegionBox(rootNode);
+        return regionBox;
+    }
+
+    _updateRootBBoxCenter(rootNode) {
+        if (!rootNode.boundingVolume) {
+            return null;
+        }
+        this._offsetBoundingVolume(rootNode);
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const box = rootNode.boundingVolume.box;
+        const center = box.slice(0, 3);
+        const halfAxes = this._createHalfAxes(box, rootNode.matrix);
+        const modelMatrix = fromRotationTranslation(halfAxes, center);
+        const boxCenter = [0, 0, 0];
+        vec3.transformMat4(boxCenter, boxCenter, modelMatrix);
+        const coordCenter = new maptalks.Coordinate(cartesian3ToDegree(boxCenter, boxCenter));
+        let pointCenter = map.coordToPointAtRes(coordCenter, glRes);
+        pointCenter.z = map.altitudeToPoint(coordCenter.z, glRes);
+        pointCenter = [pointCenter.x, pointCenter.y, pointCenter.z];
+        return { pointCenter, coordCenter };
+    }
+
+    _createHalfAxes(box, transform) {
+        let halfAxes = box.slice(3, 12);
+        const rotationScale = this._getMatrix3(transform, []);
+        halfAxes = Matrix3Multiply(rotationScale, halfAxes, halfAxes);
+        return halfAxes;
+    }
+
+    _getMatrix3(matrix, result) {
+        result[0] = matrix[0];
+        result[1] = matrix[1];
+        result[2] = matrix[2];
+        result[3] = matrix[4];
+        result[4] = matrix[5];
+        result[5] = matrix[6];
+        result[6] = matrix[8];
+        result[7] = matrix[9];
+        result[8] = matrix[10];
+        return result;
     }
 
     _getBoxScale(center) {
@@ -1018,6 +1223,18 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         return this;
     }
 
+    setServiceDebugBoundingVolume(idx, visible) {
+        const service = this.options.services[idx];
+        if (service) {
+            service.debugShowBoundingVolume = visible;
+        }
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return this;
+        }
+        renderer.setToRedraw();
+        return this;
+    }
 }
 
 Geo3DTilesLayer.mergeOptions(options);
@@ -1140,107 +1357,206 @@ function isI3SNode(node) {
     return node.content && node.content.uri && node.content.uri.indexOf('i3s:') >= 0;
 }
 
-const BOX_CENTER = [];
-const X_AXIS = [];
-const Y_AXIS = [];
-const Z_AXIS = [];
-const CORNERS = [];
-const CORNERCOORDS = [];
-const CORNER_Xs = [];
-const CORNER_Ys = [];
-const CORNER_Zs = [];
-const HALF_AXES = [];
-const RADIUS = 6378137;
-function convertBoxToRegion(box, matrix) {
-    for (let i = 0; i < 9; i++) {
-        if (box[i + 3] === Infinity || box[i + 3] === -Infinity) {
-            box[i + 3] = Math.sign(box[i + 3]) * RADIUS * 3;
-        }
-        HALF_AXES[i] = box[i + 3];
-    }
-    const halfAxes = HALF_AXES;
-    if (!mat4.exactEquals(matrix, IDENTITY_MATRIX)) {
-        mat3.multiply(halfAxes, mat3.fromMat4(TEMP_MAT3_0, matrix), halfAxes);
-    }
-    const center = vec3.copy(BOX_CENTER, box);
-    // const coordCenter = cartesian3ToDegree(COORD_CENTER, center);
-    // COORD.set(coordCenter[0], coordCenter[1]);
-    // const pointCenter = map.coordToPointAtRes(COORD, glRes, POINT_CENTER);
-    // const centerZ = coordCenter[2] * scaleZ;
+// const BOX_CENTER = [];
+// const X_AXIS = [];
+// const Y_AXIS = [];
+// const Z_AXIS = [];
+// const CORNERS = [];
+// const CORNERCOORDS = [];
+// const CORNER_Xs = [];
+// const CORNER_Ys = [];
+// const CORNER_Zs = [];
+// const HALF_AXES = [];
+// const RADIUS = 6378137;
+// function convertBoxToRegion(box, matrix) {
+//     for (let i = 0; i < 9; i++) {
+//         if (box[i + 3] === Infinity || box[i + 3] === -Infinity) {
+//             box[i + 3] = Math.sign(box[i + 3]) * RADIUS * 3;
+//         }
+//         HALF_AXES[i] = box[i + 3];
+//     }
+//     const halfAxes = HALF_AXES;
+//     if (!mat4.exactEquals(matrix, IDENTITY_MATRIX)) {
+//         mat3.multiply(halfAxes, mat3.fromMat4(TEMP_MAT3_0, matrix), halfAxes);
+//     }
+//     const center = vec3.copy(BOX_CENTER, box);
+//     // const coordCenter = cartesian3ToDegree(COORD_CENTER, center);
+//     // COORD.set(coordCenter[0], coordCenter[1]);
+//     // const pointCenter = map.coordToPointAtRes(COORD, glRes, POINT_CENTER);
+//     // const centerZ = coordCenter[2] * scaleZ;
 
-    const xAxis = vec3.set(X_AXIS, halfAxes[0], halfAxes[1], halfAxes[2]);
-    const yAxis = vec3.set(Y_AXIS, halfAxes[3], halfAxes[4], halfAxes[5]);
-    const zAxis = vec3.set(Z_AXIS, halfAxes[6], halfAxes[7], halfAxes[8]);
+//     const xAxis = vec3.set(X_AXIS, halfAxes[0], halfAxes[1], halfAxes[2]);
+//     const yAxis = vec3.set(Y_AXIS, halfAxes[3], halfAxes[4], halfAxes[5]);
+//     const zAxis = vec3.set(Z_AXIS, halfAxes[6], halfAxes[7], halfAxes[8]);
 
-    CORNERS[0] = CORNERS[0] || [];
-    const corner0 = vec3.copy(CORNERS[0], center);
-    vec3.sub(corner0, corner0, xAxis);
-    vec3.sub(corner0, corner0, yAxis);
-    vec3.sub(corner0, corner0, zAxis);
+//     CORNERS[0] = CORNERS[0] || [];
+//     const corner0 = vec3.copy(CORNERS[0], center);
+//     vec3.sub(corner0, corner0, xAxis);
+//     vec3.sub(corner0, corner0, yAxis);
+//     vec3.sub(corner0, corner0, zAxis);
 
-    CORNERS[1] = CORNERS[1] || [];
-    const corner1 = vec3.copy(CORNERS[1], center);
-    vec3.sub(corner1, corner1, xAxis);
-    vec3.sub(corner1, corner1, yAxis);
-    vec3.add(corner1, corner1, zAxis);
-
-
-    CORNERS[2] = CORNERS[2] || [];
-    const corner2 = vec3.copy(CORNERS[2], center);
-    vec3.sub(corner2, corner2, xAxis);
-    vec3.add(corner2, corner2, yAxis);
-    vec3.sub(corner2, corner2, zAxis);
+//     CORNERS[1] = CORNERS[1] || [];
+//     const corner1 = vec3.copy(CORNERS[1], center);
+//     vec3.sub(corner1, corner1, xAxis);
+//     vec3.sub(corner1, corner1, yAxis);
+//     vec3.add(corner1, corner1, zAxis);
 
 
-    CORNERS[3] = CORNERS[3] || [];
-    const corner3 = vec3.copy(CORNERS[3], center);
-    vec3.sub(corner3, corner3, xAxis);
-    vec3.add(corner3, corner3, yAxis);
-    vec3.add(corner3, corner3, zAxis);
+//     CORNERS[2] = CORNERS[2] || [];
+//     const corner2 = vec3.copy(CORNERS[2], center);
+//     vec3.sub(corner2, corner2, xAxis);
+//     vec3.add(corner2, corner2, yAxis);
+//     vec3.sub(corner2, corner2, zAxis);
 
 
-    CORNERS[4] = CORNERS[4] || [];
-    const corner4 = vec3.copy(CORNERS[4], center);
-    vec3.add(corner4, corner4, xAxis);
-    vec3.sub(corner4, corner4, yAxis);
-    vec3.sub(corner4, corner4, zAxis);
+//     CORNERS[3] = CORNERS[3] || [];
+//     const corner3 = vec3.copy(CORNERS[3], center);
+//     vec3.sub(corner3, corner3, xAxis);
+//     vec3.add(corner3, corner3, yAxis);
+//     vec3.add(corner3, corner3, zAxis);
 
 
-    CORNERS[5] = CORNERS[5] || [];
-    const corner5 = vec3.copy(CORNERS[5], center);
-    vec3.add(corner5, corner5, xAxis);
-    vec3.sub(corner5, corner5, yAxis);
-    vec3.add(corner5, corner5, zAxis);
+//     CORNERS[4] = CORNERS[4] || [];
+//     const corner4 = vec3.copy(CORNERS[4], center);
+//     vec3.add(corner4, corner4, xAxis);
+//     vec3.sub(corner4, corner4, yAxis);
+//     vec3.sub(corner4, corner4, zAxis);
 
 
-    CORNERS[6] = CORNERS[6] || [];
-    const corner6 = vec3.copy(CORNERS[6], center);
-    vec3.add(corner6, corner6, xAxis);
-    vec3.add(corner6, corner6, yAxis);
-    vec3.sub(corner6, corner6, zAxis);
-
-    CORNERS[7] = CORNERS[7] || [];
-    const corner7 = vec3.copy(CORNERS[7], center);
-    vec3.add(corner7, corner7, xAxis);
-    vec3.add(corner7, corner7, yAxis);
-    vec3.add(corner7, corner7, zAxis);
-
-    for (let i = 0; i < CORNERS.length; i++) {
-        CORNERCOORDS[i] = CORNERCOORDS[i] || [];
-        cartesian3ToDegree(CORNERCOORDS[i], CORNERS[i]);
-        CORNER_Xs[i] = CORNERCOORDS[i][0];
-        CORNER_Ys[i] = CORNERCOORDS[i][1];
-        CORNER_Zs[i] = CORNERCOORDS[i][2];
-    }
+//     CORNERS[5] = CORNERS[5] || [];
+//     const corner5 = vec3.copy(CORNERS[5], center);
+//     vec3.add(corner5, corner5, xAxis);
+//     vec3.sub(corner5, corner5, yAxis);
+//     vec3.add(corner5, corner5, zAxis);
 
 
+//     CORNERS[6] = CORNERS[6] || [];
+//     const corner6 = vec3.copy(CORNERS[6], center);
+//     vec3.add(corner6, corner6, xAxis);
+//     vec3.add(corner6, corner6, yAxis);
+//     vec3.sub(corner6, corner6, zAxis);
 
-    return [
-        toRadian(Math.min(...CORNER_Xs)),
-        toRadian(Math.min(...CORNER_Ys)),
-        toRadian(Math.max(...CORNER_Xs)),
-        toRadian(Math.max(...CORNER_Ys)),
-        Math.min(...CORNER_Zs),
-        Math.max(...CORNER_Zs)
-    ];
+//     CORNERS[7] = CORNERS[7] || [];
+//     const corner7 = vec3.copy(CORNERS[7], center);
+//     vec3.add(corner7, corner7, xAxis);
+//     vec3.add(corner7, corner7, yAxis);
+//     vec3.add(corner7, corner7, zAxis);
+
+//     for (let i = 0; i < CORNERS.length; i++) {
+//         CORNERCOORDS[i] = CORNERCOORDS[i] || [];
+//         cartesian3ToDegree(CORNERCOORDS[i], CORNERS[i]);
+//         CORNER_Xs[i] = CORNERCOORDS[i][0];
+//         CORNER_Ys[i] = CORNERCOORDS[i][1];
+//         CORNER_Zs[i] = CORNERCOORDS[i][2];
+//     }
+
+
+
+//     return [
+//         toRadian(Math.min(...CORNER_Xs)),
+//         toRadian(Math.min(...CORNER_Ys)),
+//         toRadian(Math.max(...CORNER_Xs)),
+//         toRadian(Math.max(...CORNER_Ys)),
+//         Math.min(...CORNER_Zs),
+//         Math.max(...CORNER_Zs)
+//     ];
+// }
+
+function convertRegionToBox(region) {
+    const west = region[0], south = region[1], east = region[2], north = region[3], minHeight = region[4], maxHeight = region[5];
+    const ws = radianToCartesian3([], west, south, minHeight);
+    const en = radianToCartesian3([], east, north, maxHeight);
+    const ws_coord = cartesian3ToDegree(ws, ws);
+    const en_coord = cartesian3ToDegree(en, en);
+    return { ws: ws_coord, en: en_coord };
+}
+function fromRotationTranslation(rotation, translation) {
+    return new Matrix4(
+        rotation[0],
+        rotation[3],
+        rotation[6],
+        translation[0],
+        rotation[1],
+        rotation[4],
+        rotation[7],
+        translation[1],
+        rotation[2],
+        rotation[5],
+        rotation[8],
+        translation[2],
+        0.0,
+        0.0,
+        0.0,
+        1.0
+    );
+}
+
+function Matrix4(
+    column0Row0,
+    column1Row0,
+    column2Row0,
+    column3Row0,
+    column0Row1,
+    column1Row1,
+    column2Row1,
+    column3Row1,
+    column0Row2,
+    column1Row2,
+    column2Row2,
+    column3Row2,
+    column0Row3,
+    column1Row3,
+    column2Row3,
+    column3Row3
+) {
+    this[0] = column0Row0 || 0.0;
+    this[1] = column0Row1 || 0.0;
+    this[2] = column0Row2 || 0.0;
+    this[3] = column0Row3 || 0.0;
+    this[4] = column1Row0 || 0.0;
+    this[5] = column1Row1 || 0.0;
+    this[6] = column1Row2 || 0.0;
+    this[7] = column1Row3 || 0.0;
+    this[8] = column2Row0 || 0.0;
+    this[9] = column2Row1 || 0.0;
+    this[10] = column2Row2 || 0.0;
+    this[11] = column2Row3 || 0.0;
+    this[12] = column3Row0 || 0.0;
+    this[13] = column3Row1 || 0.0;
+    this[14] = column3Row2 || 0.0;
+    this[15] = column3Row3 || 0.0;
+}
+
+function Matrix3Multiply(left, right, result) {
+    const column0Row0 =
+      left[0] * right[0] + left[3] * right[1] + left[6] * right[2];
+    const column0Row1 =
+      left[1] * right[0] + left[4] * right[1] + left[7] * right[2];
+    const column0Row2 =
+      left[2] * right[0] + left[5] * right[1] + left[8] * right[2];
+
+    const column1Row0 =
+      left[0] * right[3] + left[3] * right[4] + left[6] * right[5];
+    const column1Row1 =
+      left[1] * right[3] + left[4] * right[4] + left[7] * right[5];
+    const column1Row2 =
+      left[2] * right[3] + left[5] * right[4] + left[8] * right[5];
+
+    const column2Row0 =
+      left[0] * right[6] + left[3] * right[7] + left[6] * right[8];
+    const column2Row1 =
+      left[1] * right[6] + left[4] * right[7] + left[7] * right[8];
+    const column2Row2 =
+      left[2] * right[6] + left[5] * right[7] + left[8] * right[8];
+
+    result[0] = column0Row0;
+    result[1] = column0Row1;
+    result[2] = column0Row2;
+    result[3] = column1Row0;
+    result[4] = column1Row1;
+    result[5] = column1Row2;
+    result[6] = column2Row0;
+    result[7] = column2Row1;
+    result[8] = column2Row2;
+    return result;
 }

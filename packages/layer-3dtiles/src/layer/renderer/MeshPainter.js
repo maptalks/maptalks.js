@@ -53,6 +53,12 @@ const TEMP_OFFSET = [];
 const TEMP_TRANSLATION = [];
 const TEMP_MATRIX1 = [];
 const TEMP_MATRIX2 = [];
+const TEMP_MATRIX3 = [];
+const TEMP_QUAT_1 = [];
+const TEMP_QUAT_2 = [];
+const TEMP_TRANS = [0, 0, 0];
+const TEMP_TRANS_1 = [];
+const TEMP_TRANS_2 = [];
 
 const DEFAULT_SEMANTICS = {
     'POSITION': 'POSITION',
@@ -63,6 +69,23 @@ const DEFAULT_SEMANTICS = {
     'TANGENT': 'TANGENT',
     '_BATCHID': '_BATCHID',
 };
+
+const BOX_INDEX = [
+    0, 1,
+    1, 2,
+    2, 3,
+    3, 0,
+    0, 4,
+    1, 5,
+    2, 6,
+    3, 7,
+    4, 5,
+    5, 6,
+    6, 7,
+    7, 4
+];
+const SPHERE_POS = generateSphere(100, 1);
+const BOX_ROTATE = [0, 0, 0, 1], BOX_SCALE = [1, 1, 1];
 
 export default class MeshPainter {
     constructor(regl, layer) {
@@ -82,6 +105,7 @@ export default class MeshPainter {
         this._modelScene = new reshader.Scene();
         this._pntsScene = new reshader.Scene();
         this._i3dmScene = new reshader.Scene();
+        this._boxScene = new reshader.Scene();
         this._regionScene = new reshader.Scene();
         this._resLoader = new reshader.ResourceLoader(regl.texture(2));
         this._bindedListener = this._onResourceLoad.bind(this);
@@ -136,7 +160,7 @@ export default class MeshPainter {
         const i3dmMeshes = [];
 
         const levelMap = this._getLevelMap(tiles);
-
+        const boxMeshes = [];
         for (let i = 0, l = tiles.length; i < l; i++) {
             const node = tiles[i].data.node;
             let mesh = this._getMesh(node);
@@ -144,6 +168,9 @@ export default class MeshPainter {
                 continue;
             }
             const service = this._layer._getNodeService(node._rootIdx);
+            if (node._boxMesh && service['debugShowBoundingVolume']) {
+                boxMeshes.push(node._boxMesh);
+            }
             const heightOffset = service.heightOffset || 0;
             const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
             if (this._cmptMeshes[node.id]) {
@@ -167,6 +194,7 @@ export default class MeshPainter {
                 const magic = mesh[ii].properties.magic;
                 if (mesh[ii].properties.heightOffset !== heightOffset || mesh[ii].properties.coordOffset[0] !== coordOffset[0] || mesh[ii].properties.coordOffset[1] !== coordOffset[1]) {
                     this._updateMeshLocalTransform(mesh[ii]);
+                    mesh[ii]._originLocalTransform = mat4.copy([], mesh[ii].localTransform);
                 }
                 if (magic === 'b3dm') {
                     if (mesh[ii].getBoundingBox && !intersectsBox(projViewMatrix, mesh[ii].getBoundingBox())) {
@@ -217,6 +245,7 @@ export default class MeshPainter {
                     parentMeshes.push(mesh[ii]);
                 }
                 this._updateMaskDefines(mesh[ii]);
+                this._updateServiceMatrix(mesh[ii], node);
             }
         }
 
@@ -250,8 +279,27 @@ export default class MeshPainter {
             i3dmMeshes,
             b3dmMeshes: meshes
         };
+        boxMeshes.forEach(mesh => {
+            this._updateBBoxMatrix(mesh);
+        });
+        this._boxScene.setMeshes(boxMeshes);
+        this._renderer.render(this._edgeShader, uniforms, this._boxScene, renderTarget && renderTarget.fbo);
 
         return drawCount;
+    }
+
+    _updateBBoxMatrix(mesh) {
+        const node = mesh.properties.node;
+        const service = this._layer._getNodeService(node._rootIdx);
+        const heightOffset = service.heightOffset || 0;
+        const heightScale = this._getHeightScale();
+        const originHeightOffset = service._originHeightOffset;
+        const translation = vec3.set(TEMP_TRANS_1, 0, 0, heightScale * (heightOffset - originHeightOffset));
+        let rotation = service['rotation'] || [0, 0, 0];
+        rotation = quat.fromEuler(TEMP_QUAT_1, rotation[0], rotation[1], rotation[2]);
+        const scale = service['scale'] || [1, 1, 1];
+        const trsMatrix = mat4.fromRotationTranslationScale(TEMP_MATRIX3, rotation, translation, scale);
+        mat4.multiply(mesh.localTransform, mesh._originLocalTransform, trsMatrix);
     }
 
     _callShader(shader, uniforms, filter, renderTarget, parentMeshes, meshes, i3dmMeshes) {
@@ -323,6 +371,11 @@ export default class MeshPainter {
 
     deleteTile(tileData) {
         const node = tileData.node;
+        if (node._boxMesh) {
+            node._boxMesh.geometry.dispose();
+            node._boxMesh.dispose();
+            delete node._boxMesh;
+        }
         const id = node.id;
         this._disposeMesh(id);
     }
@@ -373,7 +426,7 @@ export default class MeshPainter {
                 }
             } else {
                 const cached = this._cachedGLTF[url];
-                if (cached) {
+                if (cached && cached.refMeshes) {
                     cached.refMeshes.delete(mesh.uuid);
                     if (!cached.refMeshes.size) {
                         cached.geometry.dispose();
@@ -430,6 +483,11 @@ export default class MeshPainter {
         if (this._regionShader) {
             this._regionShader.dispose();
             delete this._regionShader;
+        }
+
+        if (this._edgeShader) {
+            this._edgeShader.dispose();
+            delete this._edgeShader;
         }
 
         this._khrTechniqueWebglManager.dispose();
@@ -600,6 +658,7 @@ export default class MeshPainter {
         });
         this._setCompressedInt16Uniforms(mesh, compressed_int16_params);
         this._updatePNTSLocalTransform(mesh);
+        mesh._originLocalTransform = mat4.copy([], mesh.localTransform);
         this._pntsMeshes[id] = mesh;
         cb(null, { id: id, mesh: [mesh] });
         return [mesh];
@@ -614,7 +673,7 @@ export default class MeshPainter {
         mat4.multiply(localTransform, localTransform, scaleTransform);
         const service = this._layer._getNodeService(node._rootIdx);
         if (service.coordOffset) {
-            const coordOffsetMatrix = this._computeCoordOffsetMatrix(node._rootIdx, rtcCoord);
+            const coordOffsetMatrix = this._computeCoordOffsetMatrix(TEMP_MATRIX2, node._rootIdx, rtcCoord);
             mat4.multiply(localTransform, coordOffsetMatrix, localTransform);
         }
         mesh.setLocalTransform(localTransform);
@@ -753,6 +812,7 @@ export default class MeshPainter {
             mesh.properties.polygonOffset = { offset: 0, factor: 0 };
             meshes.push(mesh);
             delete gltfMesh.attributes;
+            mesh._originLocalTransform = mat4.copy([], mesh.localTransform);
         });
 
         trimGLTFWeakResources(gltfWeakResources);
@@ -778,7 +838,7 @@ export default class MeshPainter {
         const service = this._layer._getNodeService(node._rootIdx);
         const matrix = mesh.localTransform || [];
         if (service.coordOffset) {
-            const coordOffsetMatrix = this._computeCoordOffsetMatrix(node._rootIdx, rtcCoord);
+            const coordOffsetMatrix = this._computeCoordOffsetMatrix(TEMP_MATRIX2, node._rootIdx, rtcCoord);
             mat4.multiply(matrix, coordOffsetMatrix, localTransform);
         } else {
             mat4.copy(matrix, localTransform);
@@ -907,6 +967,7 @@ export default class MeshPainter {
             this._updateB3DMLocalMatrix(mesh, localTransform);
             meshes.push(mesh);
             delete gltfMesh.attributes;
+            mesh._originLocalTransform = mat4.copy([], mesh.localTransform);
         });
 
         // trim indices/material images to save memories
@@ -920,6 +981,43 @@ export default class MeshPainter {
             meshes._callback = cb;
         }
         return meshes;
+    }
+
+    _createBBoxMesh(node) {
+        const nodeBox = this._layer._nodeBoxes[node.id];
+        if (!nodeBox) {
+            return;
+        }
+        let vertices, indices, translate, scale;
+        if (!nodeBox.length) { //region、box
+            vertices = nodeBox.boxPosition;
+            indices = BOX_INDEX;
+            const service = this._layer._getNodeService(node._rootIdx);
+            translate = service._bboxCenter;
+            scale = BOX_SCALE;
+        } else if (nodeBox.length === 2) { //sphere
+            const sphereCenter = nodeBox[0], radius = nodeBox[1];
+            vertices = SPHERE_POS.vertices;
+            indices = SPHERE_POS.indices;
+            translate = sphereCenter;
+            scale = [radius, radius, radius];
+        }
+        const geometry = new reshader.Geometry({
+            POSITION: vertices
+        },
+        indices,
+        0,
+        {
+            primitive : 'lines',
+            positionAttribute: 'POSITION'
+        });
+        const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1, 1.0], lineOpacity: 1 }));
+        const localTransform = mat4.identity([]);
+        mat4.fromRotationTranslationScale(localTransform, BOX_ROTATE, translate, scale);
+        mesh.localTransform = localTransform;
+        mesh._originLocalTransform = mat4.copy([], localTransform);
+        mesh.properties.node = node;
+        node._boxMesh = mesh;
     }
 
     _setCompressedInt16Uniforms(mesh, compressed_int16_params) {
@@ -1123,6 +1221,8 @@ export default class MeshPainter {
         if (gltfMesh.attributes && gltfMesh.attributes['TEXCOORD_0'] && gltfMesh.attributes['TEXCOORD_0'].extensions === 'WEB3D_quantized_attributes') {
             defines['HAS_WEB3D_quantized_attributes_TEXCOORD'] = 1;
         }
+        defines['HAS_MIN_ALTITUDE'] = 1;
+        defines['HAS_LAYER_OPACITY'] = 1;
         this._setCompressedInt16Defines(defines, gltfMesh.compressed_int16_params);
         const compressDefines = gltfMesh.compressDefines;
         extend(defines, compressDefines);
@@ -1130,7 +1230,7 @@ export default class MeshPainter {
     }
 
     _setCompressedInt16Defines(defines, compressed_int16_params) {
-        if (compressed_int16_params) {
+        if (compressed_int16_params && Object.keys(compressed_int16_params).length > 0) {
             defines['HAS_COMPRESSED_INT16'] = 1;
             if (compressed_int16_params['POSITION']) {
                 defines['HAS_COMPRESSED_INT16_POSITION'] = 1;
@@ -1221,19 +1321,20 @@ export default class MeshPainter {
                 // 老的ambientLight设置的兼容性代码
                 environmentExposure = ambientLight[0] / ambientValue;
             }
-            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1, gltfWeakResources);
-            material.doubleSided = service.doubleSided || gltf.materials && gltf.materials[gltfMesh.material] && gltf.materials[gltfMesh.material].doubleSided;
+            material = this._createMaterial(gltfMesh.material, gltf, shader, materialInfo || DEFAULT_MATERIAL_INFO, environmentExposure || 1, gltfWeakResources, service);
         }
-        Object.defineProperty(material.uniforms, 'alphaTest', {
-            enumerable: true,
-            get: function () {
-                const alphaTest = service['alphaTest'];
-                if (!isNil(alphaTest)) {
-                    return alphaTest;
+        if (material) {
+            Object.defineProperty(material.uniforms, 'alphaTest', {
+                enumerable: true,
+                get: function () {
+                    const alphaTest = service['alphaTest'];
+                    if (!isNil(alphaTest)) {
+                        return alphaTest;
+                    }
+                    return 0.1;
                 }
-                return 0.1;
-            }
-        });
+            });
+        }
 
         if (material && !material.isReady()) {
             material._nodeId = node.id;
@@ -1348,6 +1449,23 @@ export default class MeshPainter {
         vec3.set(scale, zoomScale, zoomScale, heightScale);
         mat4.scale(localTransform, localTransform, scale);
         return localTransform;
+    }
+
+    _updateServiceMatrix(mesh, node) {
+        const service = this._layer._getNodeService(node._rootIdx);
+        const bboxCenter = service._bboxCenter;
+        let rotation = service['rotation'] || [0, 0, 0];
+        rotation = quat.fromEuler(TEMP_QUAT_2, rotation[0], rotation[1], rotation[2]);
+        const scale = service['scale'] || [1, 1, 1];
+        const trsMatrix = mat4.fromRotationTranslationScale([], rotation, TEMP_TRANS, scale);
+        const toBBoxCenterMatrix = mat4.identity([]);
+        const toPointCenterMatrix = mat4.identity([]);
+        mat4.translate(toBBoxCenterMatrix, toBBoxCenterMatrix, vec3.scale(TEMP_TRANS_2, bboxCenter, -1));
+        mat4.translate(toPointCenterMatrix, toPointCenterMatrix, bboxCenter);
+        const pMat = mat4.multiply(toBBoxCenterMatrix, toBBoxCenterMatrix, mesh._originLocalTransform);//平移至整体中心点坐标系
+        mat4.multiply(trsMatrix, trsMatrix, pMat);//trs变换
+        const resetMat = mat4.multiply(toPointCenterMatrix, toPointCenterMatrix, trsMatrix);//还原至世界坐标
+        mesh.localTransform = resetMat;
     }
 
     _getTransform(out, rtcCoord) {
@@ -1479,6 +1597,29 @@ export default class MeshPainter {
             // ],
 
         });
+        //用于绘制bbox
+        this._edgeShader = new reshader.EdgeShader({ extraCommandProps: {
+            viewport: {
+                x : 0,
+                y : 0,
+                width : () => {
+                    return this._canvas ? this._canvas.width : 1;
+                },
+                height : () => {
+                    return this._canvas ? this._canvas.height : 1;
+                }
+            },
+            blend: {
+                enable: true,
+                func: {
+                    srcRGB: 'src alpha',
+                    srcAlpha: 1,
+                    dstRGB: 'one minus src alpha',
+                    dstAlpha: 'one minus src alpha'
+                },
+                equation: 'add'
+            }
+        } });
 
         const layer = this._layer;
         loginIBLResOnCanvas(layer.getRenderer().canvas, this._regl, layer.getMap());
@@ -1600,6 +1741,10 @@ export default class MeshPainter {
         const uniforms = getPBRUniforms(map, iblTexes, dfgLUT);
         const renderer = this._layer.getRenderer();
         const maskUniforms = renderer.getMaskUniforms();
+        uniforms.minAltitude = layer.options.altitude || 0;
+        const inGroup = renderer.canvas.gl && renderer.canvas.gl.wrap;
+        const layerOpacity = inGroup ? (layer.options.opacity || 0) : 1;
+        uniforms.layerOpacity = layerOpacity;
         extend(uniforms, {
             czm_lightDirectionEC: uniforms['light0_viewDirection'],
             lightSpecular: [1.0, 1.0, 1.0],
@@ -1614,7 +1759,7 @@ export default class MeshPainter {
         return uniforms;
     }
 
-    _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure, gltfWeakResources) {
+    _createMaterial(materialIndex, gltf, shader, materialInfo, environmentExposure, gltfWeakResources, service) {
         const material = gltf.materials && gltf.materials[materialIndex];
         if (!material || !material.baseColorTexture && !material.pbrMetallicRoughness) {
             return null;
@@ -1708,7 +1853,7 @@ export default class MeshPainter {
             meshMaterial.set('khr_rotation', extensions['KHR_texture_transform'].rotation || 0);
             meshMaterial.set('khr_scale', extensions['KHR_texture_transform'].scale || [1, 1]);
         }
-
+        meshMaterial.doubleSided = !!(service.doubleSided || material.doubleSided);
         meshMaterial.once('complete', this._bindedListener);
         return meshMaterial;
     }
@@ -2025,4 +2170,50 @@ function trimGLTFWeakResources(gltfWeakResources) {
             }
         }
     }
+}
+
+function generateSphere(count, radius) {
+    const angle = Math.PI * 2 / count;
+    const vertices = [];
+    const indices = [];
+    for (let i = 0; i <= count; i++) {
+        const posX = Math.cos(angle * i) * radius;
+        const posY = Math.sin(angle * i) * radius;
+        const posZ = 0;
+        vertices[i * 3] = posX;
+        vertices[i * 3 + 1] = posY;
+        vertices[i * 3 + 2] = posZ;
+    }
+    for (let i = count; i <= count * 2; i++) {
+        const posY = Math.cos(angle * i) * radius;
+        const posZ = Math.sin(angle * i) * radius;
+        const posX = 0;
+        vertices[i * 3] = posX;
+        vertices[i * 3 + 1] = posY;
+        vertices[i * 3 + 2] = posZ;
+    }
+    for (let i = count * 2; i <= count * 3; i++) {
+        const posX = Math.cos(angle * i) * radius;
+        const posZ = Math.sin(angle * i) * radius;
+        const posY = 0;
+        vertices[i * 3] = posX;
+        vertices[i * 3 + 1] = posY;
+        vertices[i * 3 + 2] = posZ;
+    }
+    const len = vertices.length / 3 - 1;
+    for (let i = 0; i < len; i++) {
+        if (i === count - 1  || i === count * 2 -1) {
+            continue;
+        }
+        indices[i * 2] = i;
+        indices[i * 2 + 1] = i + 1;
+    }
+    vertices.push(0, 0, 0);
+    vertices.push(radius, 0, 0);
+    vertices.push(0, radius, 0);
+    vertices.push(0, 0, radius);
+    indices.push(len + 1, len + 2);
+    indices.push(len + 1, len + 3);
+    indices.push(len + 1, len + 4);
+    return { vertices, indices };
 }

@@ -1312,7 +1312,7 @@ export default class GLTFMarker extends Marker {
         return this._gltfModelBBox;
     }
 
-    zoomTo(zoomOffset, options = { animation: true }) {
+    zoomTo(zoomOffset, options = { animation: false }) {
         const markerBBox = this._getBoundingBox();
         const map = this.getMap();
         if (!map || !markerBBox) {

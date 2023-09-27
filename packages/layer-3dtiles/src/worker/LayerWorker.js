@@ -43,6 +43,10 @@ const TMP_INV_MATRIX = [];
 const TEMP_DEGREE = [];
 const TEMP_PROJ = [];
 const NEED_COMPRESSED_ATTR = { 'POSITION': 1, 'TEXCOORD_0': 1, 'TEXCOORD_1': 1, 'NORMAL': 1, 'TANGENT': 1};
+const COMPRESSED_ERROR = {
+    'TEXCOORD_0': 0.0001,
+    'TEXCOORD_1': 0.0001
+};
 
 export default class BaseLayerWorker {
 
@@ -259,7 +263,11 @@ export default class BaseLayerWorker {
                             compressed_ratio = RATIO;
                             primitive.compressed_int16_params['compressed_ratio'] = compressed_ratio;
                         }
-                        const { array, range } = float32ToInt16(attributes[attrName].array, compressed_ratio, attributes[attrName].min, attributes[attrName].max);
+                        const compressed = float32ToInt16(attributes[attrName].array, compressed_ratio, attributes[attrName].min, attributes[attrName].max, attrName);
+                        if (!compressed) {
+                            continue;
+                        }
+                        const { array, range } = compressed;
                         attributes[attrName].array = array;
                         primitive.compressed_int16_params[attrName] = range;
                     }
@@ -278,7 +286,13 @@ export default class BaseLayerWorker {
             if (NEED_COMPRESSED_ATTR[attrName] &&
                 pntsData[attrName].array &&
                 pntsData[attrName].array instanceof Float32Array) {
-                const { array, range } = float32ToInt16(pntsData[attrName].array, pntsData[attrName].min, pntsData[attrName].max);
+                const proj = this.options.projection;
+                let compressed_ratio = 1;
+                if ((proj === 'EPSG:4326' || proj === 'EPSG:4490') && attrName === 'POSITION') {
+                    compressed_ratio = RATIO;
+                    pnts.compressed_int16_params['compressed_ratio'] = compressed_ratio;
+                }
+                const { array, range } = float32ToInt16(pntsData[attrName].array, compressed_ratio, pntsData[attrName].min, pntsData[attrName].max, attrName);
                 pntsData[attrName].array = array;
                 pnts.compressed_int16_params[attrName] = range;
             }
@@ -983,7 +997,7 @@ function getNodeMatrix(out, matrices) {
     return nodeMatrix;
 }
 
-function float32ToInt16(inputArray, compressed_ratio, min, max) {
+function float32ToInt16(inputArray, compressed_ratio, min, max, name) {
     if (compressed_ratio && compressed_ratio > 1) {//compressed_ratio为1时不需要遍历
         for (let i = 0; i < inputArray.length; i++) {
             if ((i + 1) % 3 != 0) { //x,y弧度转为米
@@ -1000,17 +1014,41 @@ function float32ToInt16(inputArray, compressed_ratio, min, max) {
         minElement = min;
         maxElement = max;
     }
+    if (!checkError(inputArray, minElement, maxElement, name) && COMPRESSED_ERROR[name]) {
+        console.warn(`${name} is not compressed!`);
+        return null;
+    }
     return encodeFloat32(inputArray, minElement, maxElement);
+}
+//检查压缩与解压后的误差
+function checkError(inputArray, minElement, maxElement, name) {
+    for(let i = 0; i < inputArray.length; i++) {
+        const enValue = encodeValue(inputArray[i], minElement, maxElement);
+        const deValue = decodeFloat32(enValue, minElement, maxElement);
+        if (Math.abs(deValue - inputArray[i]) > COMPRESSED_ERROR[name]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function decodeFloat32(value, min, max) {
+    const v = (value >= 32768.0) ? -(65536.0 - value) / 32768.0 : value / 32767.0;
+    return (v + 1.0) * (max -min) / 2.0 + min;
 }
 
 function encodeFloat32(array, min, max) {
     const output = new Int16Array(array.length);
     for(let i = 0; i < array.length; i++) {
-        const normalizeValue = (array[i] - min) * 2 / (max - min) -1;
-        const s = Math.max(-1, Math.min(1, normalizeValue)); //[-1, 1]
-        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        output[i] = encodeValue(array[i], min, max);
     }
     return  { array: output, range: [min, max] };
+}
+
+function encodeValue(value, min, max) {
+    const normalizeValue = (value - min) * 2 / (max - min) -1;
+    const s = Math.max(-1, Math.min(1, normalizeValue)); //[-1, 1]
+    return s < 0 ? s * 0x8000 : s * 0x7FFF;
 }
 
 function findMinMax(array) {

@@ -49,6 +49,10 @@ varying vec3 vFragPos;
     uniform vec4 polygonFill;
 #endif
 
+#ifdef HAS_LAYER_OPACITY
+    uniform float layerOpacity;
+#endif
+
 #ifdef IS_LINE_EXTRUSION
     uniform float lineOpacity;
 #else
@@ -216,6 +220,10 @@ void main() {
     #endif
 
     glFragColor = highlight_blendColor(glFragColor);
+
+    #ifdef HAS_LAYER_OPACITY
+        glFragColor *= layerOpacity;
+    #endif
     #ifdef HAS_MASK_EXTENT
         glFragColor = setMask(glFragColor);
     #endif
