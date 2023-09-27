@@ -98,6 +98,50 @@ describe('update style specs', () => {
         server.close();
     });
 
+    it('GeoJSONVectorTileLayer  in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '■■■', textSize: 10, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            tileLimitPerFrame: 0,
+            loadingLimit: 0,
+            data: point,
+            style,
+            tileStackDepth: 0
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
+    });
+
     it('should update childLayer id and remove it', done => {
         const style = [
             {

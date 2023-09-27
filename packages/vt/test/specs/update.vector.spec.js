@@ -1203,6 +1203,114 @@ describe('vector layers update style specs', () => {
         group.addTo(map);
     });
 
+    it('PointLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
+        const marker = new maptalks.Marker(map.getCenter(), {
+            id: 0,
+            symbol: {
+                markerType: 'ellipse',
+                markerFill: '#f00',
+                markerWidth: 30,
+                markerHeight: 30,
+                markerVerticalAlignment: 'middle',
+                markerOpacity: 1
+            }
+        });
+
+        const layer = new PointLayer('point', marker);
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
+    });
+
+    it('LineStringLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
+        const line = new maptalks.LineString([[-1, 0], [1, 0]]);
+        const layer = new LineStringLayer('vector', line, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        lineColor: '#f00',
+                        lineWidth: 20
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
+    });
+
+    it('PolygonLayer in GroupGLLayer remove and add again to map, maptalks/issues#256', done => {
+        const polygon = new maptalks.Polygon([[[-1, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]]]);
+        const layer = new PolygonLayer('vector', polygon, {
+            style: [
+                {
+                    filter: true,
+                    symbol: {
+                        polygonFill: '#f00'
+                    }
+                }
+            ]
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                outline: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                    assert.deepEqual(pixel, [255, 0, 0, 255]);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
+    });
+
     it('line should can hide and show', done => {
         const line = new maptalks.LineString([[-1, 0], [1, 0]]);
         const layer = new LineStringLayer('vector', line, {
