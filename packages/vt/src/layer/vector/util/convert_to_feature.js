@@ -42,7 +42,9 @@ export function convertToFeature(geo, kidGen, currentFeature) {
         }
     } else if (geo instanceof maptalks.Polygon || geo instanceof maptalks.MultiPolygon) {
         type = 3;
-        if (geo instanceof maptalks.Polygon) {
+        if (geo instanceof maptalks.Circle || geo instanceof maptalks.Rectangle || geo instanceof maptalks.Ellipse || geo instanceof maptalks.Sector) {
+            coordinates = [[geo.getShell()]];
+        } else if (geo instanceof maptalks.Polygon) {
             coordinates = [coordinates];
         }
         let ringIndex = 0;
