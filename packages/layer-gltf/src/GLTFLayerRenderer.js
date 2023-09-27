@@ -100,6 +100,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         const renderUniforms = {};
         this._uniforms.outSize = [this.canvas.width, this.canvas.height];
         this._uniforms.minAltitude = this.layer.options.altitude || 0;
+        this._uniforms.halton = [0, 0];
         const inGroup = this.canvas.gl && this.canvas.gl.wrap;
         // 如果不在group里，map会以options.opacity透明度绘制layer canvas，所以layerOpacity需要设置为1
         const layerOpacity = inGroup ? (this.layer.options.opacity || 0) : 1;
