@@ -789,7 +789,6 @@ export default class CollisionPainter extends BasicPainter {
                     primitive: 'lines'
                 }
             );
-            geometry.generateBuffers(this.regl);
             this._collisionMesh = new reshader.Mesh(geometry);
             this._collisionScene = new reshader.Scene();
             this._collisionScene.addMesh(this._collisionMesh);
