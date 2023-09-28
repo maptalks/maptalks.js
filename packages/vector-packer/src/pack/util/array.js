@@ -11,7 +11,7 @@ export function fillTypedArray(format, data) {
         const type = d.type;
         const name = d.name;
         if (type === Array) {
-            arrays[name] = data[name].getArray();
+            arrays[name] = data[name];
         } else {
             arrays[name] = createTypedArray(data[name], type);
             // arrays[name] = new type(data[name].getArray());
