@@ -409,18 +409,18 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         for (let i = 0; i < geometry.length; i++) {
             if (!Array.isArray(geometry[i][0])) {
                 if (!isNaN(+geometry[i][0]) && !isNaN(+geometry[i][1])) {
-                    this._addCoord(center, geometry[i][0], geometry[i][1], 1, coordinates[i]);
+                    this._addCoord(center, geometry[i][0], geometry[i][1], geometry[i][2], 1, coordinates[i]);
                 }
             } else {
                 for (let ii = 0; ii < geometry[i].length; ii++) {
                     if (!Array.isArray(geometry[i][ii][0])) {
                         if (!isNaN(+geometry[i][ii][0]) && !isNaN(+geometry[i][ii][1])) {
-                            this._addCoord(center, geometry[i][ii][0], geometry[i][ii][1], 1, coordinates[i][ii]);
+                            this._addCoord(center, geometry[i][ii][0], geometry[i][ii][1], geometry[i][ii][2], 1, coordinates[i][ii]);
                         }
                     } else {
                         for (let iii = 0; iii < geometry[i][ii].length; iii++) {
                             if (!isNaN(+geometry[i][ii][iii][0]) && !isNaN(+geometry[i][ii][iii][1])) {
-                                this._addCoord(center, geometry[i][ii][iii][0], geometry[i][ii][iii][1], 1, coordinates[i][ii][iii]);
+                                this._addCoord(center, geometry[i][ii][iii][0], geometry[i][ii][iii][1], geometry[i][ii][iii][2], 1, coordinates[i][ii][iii]);
                             }
                         }
                     }
@@ -430,7 +430,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
     }
 
 
-    _addCoord(center, x, y, z, coordinates) {
+    _addCoord(center, x, y, z, count, coordinates) {
         let invalid = false;
         if (coordinates[0] > 180 || coordinates[0] < -180) {
             invalid = true;
@@ -445,7 +445,8 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         }
         center[0] += x;
         center[1] += y;
-        center[2] += z;
+        center[2] += (z || 0);
+        center[3] += count;
     }
 
 
