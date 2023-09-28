@@ -94,6 +94,10 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                     renderer.clear();
                     this.onWorkerReady(null, params);
                     renderer.setToRedraw();
+                    setTimeout(() => {
+                        // 解决偶发性不重绘的问题
+                        renderer.setToRedraw();
+                    }, 500);
                 });
             }
         }
