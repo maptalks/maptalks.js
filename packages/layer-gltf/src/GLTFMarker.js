@@ -635,6 +635,13 @@ export default class GLTFMarker extends Marker {
         }
         modelMesh.properties.pickingId = this._getPickingId();
         this._setPolygonFill(modelMesh);
+        const layer = this.getLayer();
+        Object.defineProperty(modelMesh.uniforms, 'minAltitude', {
+            enumerable: true,
+            get: () => {
+                return layer.options['altitude'] || 0;
+            }
+        });
         return modelMesh;
     }
 
@@ -772,6 +779,7 @@ export default class GLTFMarker extends Marker {
             }
             delete this._skinMap;
         }
+        this._login = false;
         delete this._gltfData;
         delete this.gltfPack;
         super.remove();

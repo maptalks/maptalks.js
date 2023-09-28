@@ -7,7 +7,7 @@ import { GeoJSON, GEOJSON_TYPES } from './GeoJSON';
 import SHADER_MAP from './ShaderMap';
 
 //鼠标事件列表
-const MAP_EVENTS = ['mousedown', 'mouseup', 'mousemove', 'contextmenu', 'click', 'dbclick', 'touchstart', 'touchmove', 'touchend'];
+const MAP_EVENTS = ['mousedown', 'mouseup', 'mousemove', 'contextmenu', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend'];
 const options = {
     'renderer': 'gl',
     'doubleBuffer': false,

@@ -1354,4 +1354,29 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('dblclick', function (done) {
+        const gltflayer = new maptalks.GLTFLayer('gltf7').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        gltflayer.addGeometry(marker);
+        marker.on('dblclick', e => {
+            const meshId = e.meshId;
+            const target = e.target;
+            expect(meshId).to.be.eql(0);
+            expect(target instanceof maptalks.GLTFMarker).to.be.ok();
+            done();
+        });
+        marker.on('load', () => {
+            setTimeout(function () {
+                map.fire('dom:dblclick', {
+                    coordinate: clickPoint,
+                    containerPoint: clickContainerPoint
+                });
+            }, 100);
+        });
+    });
 });

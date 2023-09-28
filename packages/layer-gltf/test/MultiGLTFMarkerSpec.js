@@ -95,7 +95,7 @@ describe('MultiGLTFMarker', () => {
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
                 expect(pixelMatch([75, 77, 77, 190], pixel3)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 168], pixel4)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 183], pixel4)).to.be.eql(true);
                 done();
             }, 100);
         });
@@ -124,7 +124,7 @@ describe('MultiGLTFMarker', () => {
                 const pixel3 = pickPixel(map, map.width / 2 + 50, map.height / 2 - 50, 1, 1);
                 expect(pixelMatch([75, 77, 77, 190], pixel3, 50)).to.be.eql(true);
                 const pixel4 = pickPixel(map, map.width / 2 + 50, map.height / 2, 1, 1);
-                expect(pixelMatch([87, 87, 87, 168], pixel4, 50)).to.be.eql(true);
+                expect(pixelMatch([87, 87, 87, 183], pixel4, 50)).to.be.eql(true);
                 done();
             }, 100);
         });

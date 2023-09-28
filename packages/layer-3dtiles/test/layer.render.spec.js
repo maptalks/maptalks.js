@@ -105,8 +105,10 @@ describe('render specs', () => {
         if (expected.noGroup) {
             layer.addTo(map);
         } else {
-            const group = new GroupGLLayer('group', [layer]);
-            group.addTo(map);
+            if (!expected.noAddToMap) {
+                const group = new GroupGLLayer('group', [layer]);
+                group.addTo(map);
+            }
         }
 
     };
@@ -1624,6 +1626,29 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/layerAltitude/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
         });
 
+        it('remove groupgllayer from map and then add it to map again', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        ambientLight: [1, 1, 1],
+                        heightOffset: -420
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                setTimeout(() => {
+                    const group = map.getLayer('group');
+                    group.remove();
+                    setTimeout(() => {
+                        runner(done, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected-add.png`, diffCount: 0, renderCount: 1, noGroup: false, noAddToMap: true });
+                        group.addTo(map);
+                    }, 200);
+                }, 200);
+            }, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
+        });
     });
 
     context('offset specs', () => {

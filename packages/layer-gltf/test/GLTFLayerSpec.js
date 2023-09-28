@@ -84,7 +84,7 @@ describe('maptalks.gltf', function () {
 
     it('fromJSON', (done) => {//TODO 增加像素判断
         const gltflayer1 = new maptalks.GLTFLayer('gltf1').addTo(map);
-        const marker = new maptalks.GLTFGeometry(center, {
+        const marker = new maptalks.GLTFMarker(center, {
             symbol:{
                 url: url1,
                 animation: true
@@ -731,5 +731,67 @@ describe('maptalks.gltf', function () {
                 });
             }, 100);
         });
+    });
+
+    it('layer opacity', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { opacity: 0.5 });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url3,
+                modelHeight: 100
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([135, 112, 16, 127], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('layer altitude', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf', { altitude: 2 });
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url3,
+                modelHeight: 100
+            }
+        }).addTo(gltflayer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 + 120, 1, 1);
+                expect(pixelMatch([154, 130, 18, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
+
+    it('remove groupgllayer from map and then add it to map again', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url3,
+                modelHeight: 100
+            }
+        }).addTo(gltflayer);
+        const group = new maptalks.GroupGLLayer('group', [gltflayer], { sceneConfig });
+        group.addTo(map);
+        setTimeout(() => {
+            group.remove();
+            setTimeout(() => {
+                marker.addTo(gltflayer);
+                group.addTo(map);
+                setTimeout(() => {
+                    const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                    expect(pixelMatch([130, 110, 17, 255], pixel)).to.be.eql(true);
+                    done();
+                }, 200);
+            }, 200);
+        }, 200);
     });
 });
