@@ -1,8 +1,7 @@
-const path = require('path');
 const assert = require('assert');
-const { readPixel, compareExpected } = require('../common/Util');
+const { readPixel } = require('../common/Util');
 const maptalks = require('maptalks');
-const { PointLayer, LineStringLayer, PolygonLayer, ExtrudePolygonLayer, GeoJSONVectorTileLayer } = require('../../dist/maptalks.vt.js');
+const { PointLayer } = require('../../dist/maptalks.vt.js');
 const { GroupGLLayer } = require('@maptalks/gl');
 const happen = require('happen');
 
