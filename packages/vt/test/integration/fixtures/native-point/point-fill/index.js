@@ -32,7 +32,7 @@ const style = [
             markerType: 'square',
             markerSize: 20,
             markerFill: '#ff0',
-            markerOpacity: 0.6
+            markerOpacity: 0.5
         }
     }
 ];

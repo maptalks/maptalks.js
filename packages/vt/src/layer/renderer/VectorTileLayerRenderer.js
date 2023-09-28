@@ -1866,6 +1866,12 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             plugin.cancelAllHighlight();
         });
     }
+
+    _getLayerOpacity() {
+        const layerOpacity = this.layer.options['opacity'];
+        // 不在GroupGLLayer中时，MapCanvasRenderer会读取opacity并按照透明度绘制，所以layerOpacity设成1
+        return this._isInGroupGLLayer() ? (isNil(layerOpacity) ? 1 : layerOpacity) : 1;
+    }
 }
 
 VectorTileLayerRenderer.include({

@@ -515,11 +515,9 @@ class Painter {
     }
 
     _setLayerUniforms(uniforms) {
-        const renderer = this.layer.getRenderer();
-        const layerOpacity = this.layer.options['opacity'];
         const altitude = this.layer.options['altitude'] || 0;
-        // 不在GroupGLLayer中时，MapCanvasRenderer会读取opacity并按照透明度绘制，所以layerOpacity设成1
-        uniforms.layerOpacity = renderer._isInGroupGLLayer() ? (isNil(layerOpacity) ? 1 : layerOpacity) : 1;
+        const renderer = this.layer.getRenderer();
+        uniforms.layerOpacity = renderer._getLayerOpacity();
         uniforms.minAltitude = altitude;
     }
 
@@ -627,6 +625,8 @@ class Painter {
         delete result.feature.customProps;
         result.feature.properties = extend({}, feature.properties, feature.properties[oldPropsKey]);
         delete result.feature.properties[oldPropsKey];
+        delete result.feature.properties['$layer'];
+        delete result.feature.properties['$type'];
         return result;
     }
 
@@ -998,6 +998,7 @@ class Painter {
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        this._setLayerUniforms(uniforms);
 
         const meshes = this._findMeshesHasFeaId(featureId);
         if (!meshes.length) {
@@ -1052,6 +1053,7 @@ class Painter {
             }
         }
         const uniforms = this.getUniformValues(this.getMap(), this._renderContext);
+        this._setLayerUniforms(uniforms);
         uniforms.highlightPickingId = -1;
         for (let j = 0; j < this._outlineShaders.length; j++) {
             this.renderer.render(this._outlineShaders[j], uniforms, this.scene, fbo);

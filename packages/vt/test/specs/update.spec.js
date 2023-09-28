@@ -1577,7 +1577,7 @@ describe('update style specs', () => {
             if (pixel[0] > 0) {
 
                 if (!painted) {
-                    assert.deepEqual(pixel, [78, 78, 78, 255]);
+                    assert.deepEqual(pixel, [80, 80, 80, 255]);
 
                     material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
                     layer.updateSymbol(0, { material });
@@ -1586,7 +1586,7 @@ describe('update style specs', () => {
                     count++;
                     if (count >= 3) {
                         finished = true;
-                        assert.deepEqual(pixel, [60, 70, 68, 255]);
+                        assert.deepEqual(pixel, [62, 72, 71, 255]);
                         done();
                     }
                 }

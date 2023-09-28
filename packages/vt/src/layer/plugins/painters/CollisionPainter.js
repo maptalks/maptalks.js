@@ -837,7 +837,10 @@ export default class CollisionPainter extends BasicPainter {
                 },
                 blend: {
                     enable: true,
-                    func: this.getBlendFunc(),
+                    func: {
+                        src: 'src alpha',
+                        dst: 'one minus src alpha'
+                    },
                     equation: 'add'
                 }
             }

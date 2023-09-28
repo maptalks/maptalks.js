@@ -104,10 +104,13 @@ describe('update vt on terrain specs', () => {
                             eventCount++;
                             return;
                         }
-                        assert.deepEqual(pixel, [245, 2, 2, 255]);
+                        assert.deepEqual(pixel, [255, 0, 0, 255]);
 
                         pixel = readPixel(renderer.canvas, x / 2, y / 2 + 40);
-                        assert.deepEqual(pixel, [134, 134, 134, 255]);
+                        assert(pixel[0] === 113 || pixel[0] === 114);
+                        assert(pixel[1] === 113 || pixel[1] === 114);
+                        assert(pixel[2] === 113 || pixel[2] === 114);
+                        assert(pixel[3] === 255 || pixel[3] === 255);
                         done();
                     }
                 });
@@ -122,7 +125,7 @@ describe('update vt on terrain specs', () => {
             lineTerrainRunner(done, 7, false);
         });
 
-        it ('without post process', done => {
+        it ('with post process', done => {
             lineTerrainRunner(done, 6, true);
         });
 

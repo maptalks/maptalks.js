@@ -3,7 +3,7 @@ import { reshader, mat3, mat4, vec4, GroundPainter } from '@maptalks/gl';
 import waterVert from './glsl/water.vert';
 import waterFrag from './glsl/water.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { extend } from '../Util';
+import { isNil, extend } from '../Util';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
@@ -415,6 +415,8 @@ class WaterPainter extends BasicPainter {
             hsv: symbol.hsv || EMPTY_HSV
         };
         extend(uniforms, waterUniforms);
+        const renderer = this.layer.getRenderer();
+        uniforms.layerOpacity = renderer._getLayerOpacity();
         this.setIncludeUniformValues(uniforms, context);
         if (context && context.ssr && context.ssr.renderUniforms) {
             extend(uniforms, context.ssr.renderUniforms);
