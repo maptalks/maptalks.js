@@ -66,12 +66,16 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
             projectionCode
         }, debugIndex, arrayPool);
     const buffers = [];
-    const ctor = PackUtil.getIndexArrayType(faces.vertices.length / 3);
+    const vertexCount = faces.vertices.length / 3;
+    const ctor = PackUtil.getIndexArrayType(vertexCount);
     const indices = ArrayPool.createTypedArray(faces.indices, ctor);
     delete faces.indices;
     buffers.push(indices.buffer, faces.pickingIds.buffer);
 
-    const normalArr = new Float32Array(faces.vertices.length);
+    const normalArr = tangent ? arrayPool.get() : new Float32Array(vertexCount * 3);
+    if (normalArr.setLength) {
+        normalArr.setLength(vertexCount * 3);
+    }
     const normals = buildNormals(faces.vertices, indices, normalArr);
     let simpleNormal = true;
     const delta = 1E-6;
@@ -88,9 +92,10 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
         }
     }
     faces.normals = normals;
-
     if (tangent) {
-        let tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices, arrayPool.get());
+        let tangents = arrayPool.get();
+        tangents.setLength(vertexCount * 4);
+        tangents = buildTangents(faces.vertices, faces.normals, faces.uvs, indices, tangents);
         tangents = createQuaternion(faces.normals, tangents);
         faces.tangents = tangents;
         buffers.push(tangents.buffer);
@@ -100,7 +105,7 @@ export default function (features, dataConfig, extent, uvOrigin, res, glScale,
     if (faces.normals) {
         //如果只有顶面，normal数据只有0, 1, -1时，则为simple normal，可以改用Int8Array
         if (simpleNormal) {
-            faces.normals = new Int8Array(faces.normals);
+            faces.normals = ArrayPool.createTypedArray(faces.normals, Int8Array);
         }
 
         buffers.push(faces.normals.buffer);

@@ -27,7 +27,7 @@
     "@maptalks/geojson-bbox": "^1.0.4",
     "@maptalks/geojson-vt": "^3.4.1",
     "@maptalks/gl": "^0.89.3",
-    "@maptalks/tbn-packer": "^1.4.0",
+    "@maptalks/tbn-packer": "^1.4.1",
     "@maptalks/vector-packer": "^0.87.0",
     "@maptalks/vt-plugin": "^0.87.0",
     "animation-easings": "^0.1.0",
