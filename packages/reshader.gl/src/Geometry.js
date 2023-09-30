@@ -454,15 +454,9 @@ export default class Geometry {
         }
         if (name === this.desc.positionAttribute) {
             this.updateBoundingBox();
-            this.getVertexCount();
         }
+        this.getVertexCount();
         if (buffer) {
-            // if (vertexCount <= oldVertexCount) {
-            //     buffer.buffer.subdata(data);
-            // } else {
-            //     buffer.buffer(data);
-            // }
-            // 用subdata时，地形的数据更新会有bug
             buffer.buffer(data);
             this.data[name] = buffer;
         }
