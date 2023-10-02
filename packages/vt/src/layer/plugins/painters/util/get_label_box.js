@@ -45,10 +45,10 @@ export function getLabelBox(out, anchor, projAnchor, mesh, textSize, textHaloRad
 
     if (!isAlongLine) {
         const { aShape } = geoProps;
-        let tl = vec2.set(V2_0, aShape[i * 2] / 10, aShape[i * 2 + 1] / 10),
-            tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, aShape[i * 2 + 3] / 10),
-            bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, aShape[i * 2 + 5] / 10),
-            br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, aShape[i * 2 + 7] / 10);
+        let tl = vec2.set(V2_0, aShape[i * 2] / 10, -aShape[i * 2 + 1] / 10),
+            tr = vec2.set(V2_1, aShape[i * 2 + 2] / 10, -aShape[i * 2 + 3] / 10),
+            bl = vec2.set(V2_2, aShape[i * 2 + 4] / 10, -aShape[i * 2 + 5] / 10),
+            br = vec2.set(V2_3, aShape[i * 2 + 6] / 10, -aShape[i * 2 + 7] / 10);
 
         if (uniforms['flipY'] === 0.0 && pitchWithMap === 1.0) {
             vec2.multiply(tl, tl, AXIS_FACTOR);

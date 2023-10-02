@@ -66,7 +66,8 @@ export default class StyledPoint {
                 textLetterSpacing,
                 textOffset,
                 oneEm, //verticalHeight
-                WritingMode.horizontal
+                WritingMode.horizontal,
+                this.options.isVector3D
             );
             if (isAllowLetterSpacing && textAlongLine && keepUpright) {
                 shape.vertical = shapeText(text, glyphs, textWrapWidth, lineHeight,
@@ -81,7 +82,7 @@ export default class StyledPoint {
             const hAlignment = markerHorizontalAlignmentFn ? markerHorizontalAlignmentFn(null, properties) : symbol['markerHorizontalAlignment'];
             const vAlignment = markerVerticalAlignmentFn ? markerVerticalAlignmentFn(null, properties) : symbol['markerVerticalAlignment'];
             const markerAnchor = getAnchor(hAlignment, vAlignment);
-            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon.url], markerAnchor);
+            shape = shapeIcon(iconAtlas.positions[iconGlyph.icon.url], markerAnchor, this.options.isVector3D);
             if (!this.size) {
                 this.size = shape.image.displaySize;
             }

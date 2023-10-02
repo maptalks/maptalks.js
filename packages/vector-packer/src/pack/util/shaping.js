@@ -273,19 +273,19 @@ function determineLineBreaks(logicalInput, //: string,
             true));
 }
 
-function getAnchorAlignment(anchor) {
+function getAnchorAlignment(anchor, isVector3D) {
     let horizontalAlign = 0.5, verticalAlign = 0.5;
 
     switch (anchor) {
     case 'right':
     case 'top-right':
     case 'bottom-right':
-        horizontalAlign = 1;
+        horizontalAlign = isVector3D ? 1 : 0;
         break;
     case 'left':
     case 'top-left':
     case 'bottom-left':
-        horizontalAlign = 0;
+        horizontalAlign = isVector3D ? 0 : 1;
         break;
     }
 
@@ -293,12 +293,12 @@ function getAnchorAlignment(anchor) {
     case 'bottom':
     case 'bottom-right':
     case 'bottom-left':
-        verticalAlign = 1;
+        verticalAlign = isVector3D ? 1 : 0;
         break;
     case 'top':
     case 'top-right':
     case 'top-left':
-        verticalAlign = 0;
+        verticalAlign = isVector3D ? 0 : 1;
         break;
     }
 
@@ -313,7 +313,8 @@ function shapeLines(shaping, //: Shaping,
     textJustify, //: TextJustify,
     writingMode, //: 1 | 2,
     spacing, //: number,
-    verticalHeight) {
+    verticalHeight,
+    isVector3D) {
     // the y offset *should* be part of the font metadata
     const yOffset = 0;//-24 + lineHeight;
 
@@ -369,7 +370,7 @@ function shapeLines(shaping, //: Shaping,
         y -= lineHeight;
     }
 
-    const { horizontalAlign, verticalAlign } = getAnchorAlignment(textAnchor);
+    const { horizontalAlign, verticalAlign } = getAnchorAlignment(textAnchor, isVector3D);
     align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, lines.length);
 
     // Calculate the bounding box
@@ -436,9 +437,17 @@ function align(positionedGlyphs, //: Array<PositionedGlyph>,
 
 function shapeIcon(image, //: ImagePosition,
     // iconOffset, //: [number, number],
-    iconAnchor//: SymbolAnchor
+    iconAnchor,//: SymbolAnchor
+    isVector3D
 ) {
-    const { horizontalAlign, verticalAlign } = getAnchorAlignment(iconAnchor);
+    let { horizontalAlign, verticalAlign } = getAnchorAlignment(iconAnchor, isVector3D);
+    if (!isVector3D) {
+        //TODO vt图层下vertical需要反过来，原因未知
+        verticalAlign = 1 - verticalAlign;
+    } else {
+        //TODO Vector 3D图层下horizontal需要反过来，原因未知
+        horizontalAlign = 1 - horizontalAlign;
+    }
     // const dx = iconOffset[0];
     // const dy = iconOffset[1];
     // const dx = 0;

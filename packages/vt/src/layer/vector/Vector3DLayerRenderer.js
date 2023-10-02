@@ -670,7 +670,7 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
 
     _updateMarkerMesh(marker) {
         const symbols = marker['_getInternalSymbol']();
-        const options = { zoom: this.getMap().getZoom() };
+        const options = { zoom: this.getMap().getZoom(), isVector3D: true };
         const uid = this._convertGeo(marker);
         if (!this._markerMeshes) {
             return false;

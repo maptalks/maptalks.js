@@ -264,7 +264,7 @@ export default class VectorPack {
         const features = this.features;
         if (!features || !features.length) return Promise.resolve(null);
         const iconReqs = {}, glyphReqs = {};
-        const options = { zoom: this.options.zoom };
+        const options = { zoom: this.options.zoom, isVector3D: !!this.options.center };
         const params = [];
         const symbol = loadFunctionTypes(this.symbolDef, () => {
             params[0] = options.zoom;

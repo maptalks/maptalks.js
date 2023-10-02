@@ -4,25 +4,25 @@ const marker = new maptalks.Marker([0, 0], {
     symbol: {
         textName: '{name}',
         textFill: [1, 0, 0, 1],
-        textSize: 30,
+        textSize: 18,
         textHorizontalAlignment: 'left',
         textVerticalAlignment: 'top'
     },
     properties: {
-        name: 'test'
+        name: 'left-top'
     }
 });
 
 const marker2 = new maptalks.Marker([0, 0.2], {
     symbol: {
         textName: '{name}',
-        textSize: 30,
+        textSize: 18,
         textFill: '#0f0',
         textHorizontalAlignment: 'right',
         textVerticalAlignment: 'bottom'
     },
     properties: {
-        name: 'test'
+        name: 'right-bottom'
     }
 });
 

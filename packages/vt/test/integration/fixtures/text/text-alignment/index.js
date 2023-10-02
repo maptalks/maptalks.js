@@ -11,10 +11,10 @@ const style = [
             }
         },
         symbol: {
-            textName: '貔貅',
-            textSize: 30,
-            textHorizontalAlignment: 'right',
-            textVerticalAlignment: 'top'
+            textName: 'left-bottom',
+            textSize: 18,
+            textHorizontalAlignment: 'left',
+            textVerticalAlignment: 'bottom'
         }
     },
     {
