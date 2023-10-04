@@ -404,8 +404,9 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
             if (renderer) {
                 renderer.setToRedraw();
             }
+        } else {
+            this.fire('remove');
         }
-        this.fire('remove');
         return this;
     }
 
