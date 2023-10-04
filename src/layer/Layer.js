@@ -399,7 +399,13 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      */
     remove() {
         if (this.map) {
+            const renderer = this.map.getRenderer();
             this.map.removeLayer(this);
+            if (renderer) {
+                renderer.setToRedraw();
+            }
+        } else {
+            this.fire('remove');
         }
         return this;
     }
