@@ -84,6 +84,7 @@
             
             
             
+            
         
             </ul>
         
@@ -129,6 +130,11 @@
                 <li><a href="#endDraw">
             
                 endDraw</a></li>
+        
+            
+                <li><a href="#setLayerZIndex">
+            
+                setLayerZIndex</a></li>
         
             
                 <li><a class="inherit" href="#addTo">
@@ -229,6 +235,8 @@
         
             <li><a href="#event:drawvertex">drawvertex</a></li>
         
+            <li><a href="#event:drawprepare">drawprepare</a></li>
+        
             <li><a href="#event:drawstart">drawstart</a></li>
         
             <li><a href="#event:mousemove">mousemove</a></li>
@@ -271,11 +279,11 @@
     <h4 class="name" id="DrawTool"><span class="type-signature"></span>new <a href="#DrawTool">DrawTool</a><span class="signature">(options<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L52" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L54" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L52" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L54" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#DrawTool" class="improvelink">[link]</a> -->
     </h4>
@@ -562,6 +570,8 @@
 <ul>
     <li><a href="#event:drawvertex">drawvertex</a></li>
 
+    <li><a href="#event:drawprepare">drawprepare</a></li>
+
     <li><a href="#event:drawstart">drawstart</a></li>
 
     <li><a href="#event:mousemove">mousemove</a></li>
@@ -624,7 +634,7 @@
 <h4 class="name" id="options"><span class="type-signature">(constant) </span>options<span class="type-signature"></span>
 
 <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L20" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L21" class="improvelink">[help to improve]</a>
     
     <a href="#options" class="improvelink">[link]</a></h4> -->
 </li>
@@ -909,6 +919,43 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>zIndex</code>
+                    
+                        
+                           <span class="signature-attributes">opt</span>
+                        
+                        
+
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+
+
+            
+                <td class="default">
+                
+                    Number.MAX_VALUE
+                
+                </td>
+            
+
+            <td class="description last">drawlayer zIndex.The default drawn layer will be at the top</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -951,7 +998,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L20">line 20</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L21">line 21</a>
         
 
     </li></ul></dd>
@@ -986,11 +1033,11 @@
     <h4 class="name" id=".registerMode"><span class="type-signature">(static) </span><a href="#.registerMode">registerMode</a><span class="signature">(name, modeAction)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L74" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L76" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L74" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L76" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#.registerMode" class="improvelink">[link]</a> -->
     </h4>
@@ -1256,11 +1303,11 @@
     <h4 class="name" id=".getRegisterMode"><span class="type-signature">(static) </span><a href="#.getRegisterMode">getRegisterMode</a><span class="signature">(name)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L83" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L85" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L83" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L85" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#.getRegisterMode" class="improvelink">[link]</a> -->
     </h4>
@@ -1388,11 +1435,11 @@
     <h4 class="name" id="getMode"><span class="type-signature"></span><a href="#getMode">getMode</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L121" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L123" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L121" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L123" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getMode" class="improvelink">[link]</a> -->
     </h4>
@@ -1471,11 +1518,11 @@
     <h4 class="name" id="setMode"><span class="type-signature"></span><a href="#setMode">setMode</a><span class="signature">(mode)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L133" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L135" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L133" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L135" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setMode" class="improvelink">[link]</a> -->
     </h4>
@@ -1588,11 +1635,11 @@
     <h4 class="name" id="getSymbol"><span class="type-signature"></span><a href="#getSymbol">getSymbol</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L154" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L156" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L154" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L156" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getSymbol" class="improvelink">[link]</a> -->
     </h4>
@@ -1671,11 +1718,11 @@
     <h4 class="name" id="setSymbol"><span class="type-signature"></span><a href="#setSymbol">setSymbol</a><span class="signature">(symbol)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L168" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L170" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L168" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L170" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#setSymbol" class="improvelink">[link]</a> -->
     </h4>
@@ -1799,11 +1846,11 @@
     <h4 class="name" id="getCurrentGeometry"><span class="type-signature"></span><a href="#getCurrentGeometry">getCurrentGeometry</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L183" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L185" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L183" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L185" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#getCurrentGeometry" class="improvelink">[link]</a> -->
     </h4>
@@ -1882,11 +1929,11 @@
     <h4 class="name" id="undo"><span class="type-signature"></span><a href="#undo">undo</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L232" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L234" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L232" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L234" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#undo" class="improvelink">[link]</a> -->
     </h4>
@@ -1965,11 +2012,11 @@
     <h4 class="name" id="redo"><span class="type-signature"></span><a href="#redo">redo</a><span class="signature">()</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L247" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L249" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L247" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L249" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#redo" class="improvelink">[link]</a> -->
     </h4>
@@ -2048,11 +2095,11 @@
     <h4 class="name" id="endDraw"><span class="type-signature"></span><a href="#endDraw">endDraw</a><span class="signature">(param<span class="signature-attributes">opt</span>)</span>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L587" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L602" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L587" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L602" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#endDraw" class="improvelink">[link]</a> -->
     </h4>
@@ -2174,6 +2221,130 @@
     this
 <!-- </div> -->
 
+
+
+    
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="setLayerZIndex"><span class="type-signature"></span><a href="#setLayerZIndex">setLayerZIndex</a><span class="signature">(zIndex)</span>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L762" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L762" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#setLayerZIndex" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    set draw inner layers zIndex
+</div>
+
+
+
+
+<!--  -->
+
+
+
+
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Parameter</th>
+        
+        <th>Type</th>
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>zIndex</code>
+                
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            <td class="description last">draw layer zIndex</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+<span class="type-signature">this</span>:
+
+        
 
 
     
@@ -4770,11 +4941,11 @@
     <h4 class="name" id="event:drawvertex"><a href="#event:drawvertex">drawvertex</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L402" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L404" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L402" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L404" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:drawvertex" class="improvelink">[link]</a> -->
     </h4>
@@ -5057,7 +5228,311 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L402">line 402</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L404">line 404</a>
+        
+
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<hr>
+        
+            
+
+    <!-- <h2>Constructor</h2> -->
+    
+    <li>
+    
+    <h4 class="name" id="event:drawprepare"><a href="#event:drawprepare">drawprepare</a>
+    
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L441" class="improvelink">[source]</a>
+        
+    
+    <!-- 
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L441" class="improvelink">[help to improve]</a>
+     -->
+    <!-- <a href="#event:drawprepare" class="improvelink">[link]</a> -->
+    </h4>
+
+    
+    </li>
+    
+    
+
+
+
+
+<div class="description">
+    drawprepare event.Note that it occurs before drawstart
+</div>
+
+
+
+
+<!-- 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+ -->
+
+
+
+
+
+<!-- event properties -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">drawprepare</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="DrawTool.html">DrawTool</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">draw tool</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>coordinate</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Coordinate.html">Coordinate</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">coordinate of the event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>containerPoint</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Point.html">Point</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">container point of the event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>viewPoint</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Point.html">Point</a></span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">view point of the event</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>domEvent</code>
+                    
+                </td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+
+
+            
+
+            <td class="description last">dom event</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L441">line 441</a>
         
 
     </li></ul></dd>
@@ -5099,11 +5574,11 @@
     <h4 class="name" id="event:drawstart"><a href="#event:drawstart">drawstart</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L448" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L463" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L448" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L463" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:drawstart" class="improvelink">[link]</a> -->
     </h4>
@@ -5361,7 +5836,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L448">line 448</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L463">line 463</a>
         
 
     </li></ul></dd>
@@ -5403,11 +5878,11 @@
     <h4 class="name" id="event:mousemove"><a href="#event:mousemove">mousemove</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L522" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L537" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L522" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L537" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:mousemove" class="improvelink">[link]</a> -->
     </h4>
@@ -5690,7 +6165,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L522">line 522</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L537">line 537</a>
         
 
     </li></ul></dd>
@@ -5732,11 +6207,11 @@
     <h4 class="name" id="event:drawend"><a href="#event:drawend">drawend</a>
     
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L596" class="improvelink">[source]</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L611" class="improvelink">[source]</a>
         
     
     <!-- 
-        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L596" class="improvelink">[help to improve]</a>
+        <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L611" class="improvelink">[help to improve]</a>
      -->
     <!-- <a href="#event:drawend" class="improvelink">[link]</a> -->
     </h4>
@@ -6019,7 +6494,7 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         
-            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L596">line 596</a>
+            <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js">map/tool/DrawTool.js</a>, <a target="_blank" href="https://github.com/maptalks/maptalks.js/tree/master/src/map/tool/DrawTool.js#L611">line 611</a>
         
 
     </li></ul></dd>
@@ -6899,13 +7374,13 @@
 </div>
 
 <nav class="page-nav">
-    <h2><a href="index.html">V1.0.0-rc.25</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="Layer.html">Layer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="ImageLayer.html">ImageLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="Geometry.html">Geometry</a></li><li><a href="Path.html">Path</a></li><li><a href="Marker.html">Marker</a></li><li><a href="TextMarker.html">TextMarker</a></li><li><a href="Label.html">Label</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Curve.html">Curve</a></li><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Position.html">Position</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="MapTool.html">MapTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="AreaTool.html">AreaTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.Menu.html">ui.Menu</a></li></ul><h5>Control</h5><ul><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Zoom.html">control.Zoom</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Overview.html">control.Overview</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li><li><a href="worker.Actor.html">worker.Actor</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="Handler.html">Handler</a></li><li><a href="DragHandler.html">DragHandler</a></li></ul><h5>Other</h5><ul><li><a href="CollisionIndex.html">CollisionIndex</a></li><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="renderer.html">renderer</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#RESOURCE_PROPERTIES">RESOURCE_PROPERTIES</a></li><li><a href="global.html#RESOURCE_SIZE_PROPERTIES">RESOURCE_SIZE_PROPERTIES</a></li><li><a href="global.html#NUMERICAL_PROPERTIES">NUMERICAL_PROPERTIES</a></li><li><a href="global.html#COLOR_PROPERTIES">COLOR_PROPERTIES</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#getDxDyRad">getDxDyRad</a></li><li><a href="global.html#registerWorkerAdapter">registerWorkerAdapter</a></li></ul>
+    <h2><a href="index.html">V1.0.0-rc.26</a></h2><h4>Classes</h4><ul></ul><h5>Map</h5><ul><li><a href="Map.html">Map</a></li></ul><h5>Layer</h5><ul><li><a href="Layer.html">Layer</a></li><li><a href="TileSystem.html">TileSystem</a></li><li><a href="TileLayer.html">TileLayer</a></li><li><a href="GroupTileLayer.html">GroupTileLayer</a></li><li><a href="WMSTileLayer.html">WMSTileLayer</a></li><li><a href="OverlayLayer.html">OverlayLayer</a></li><li><a href="VectorLayer.html">VectorLayer</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="ParticleLayer.html">ParticleLayer</a></li><li><a href="ImageLayer.html">ImageLayer</a></li></ul><h5>Geometry</h5><ul><li><a href="Geometry.html">Geometry</a></li><li><a href="Path.html">Path</a></li><li><a href="Marker.html">Marker</a></li><li><a href="TextMarker.html">TextMarker</a></li><li><a href="Label.html">Label</a></li><li><a href="TextBox.html">TextBox</a></li><li><a href="Polygon.html">Polygon</a></li><li><a href="LineString.html">LineString</a></li><li><a href="Curve.html">Curve</a></li><li><a href="ArcCurve.html">ArcCurve</a></li><li><a href="QuadBezierCurve.html">QuadBezierCurve</a></li><li><a href="CubicBezierCurve.html">CubicBezierCurve</a></li><li><a href="ConnectorLine.html">ConnectorLine</a></li><li><a href="ArcConnectorLine.html">ArcConnectorLine</a></li><li><a href="Ellipse.html">Ellipse</a></li><li><a href="Circle.html">Circle</a></li><li><a href="Sector.html">Sector</a></li><li><a href="Rectangle.html">Rectangle</a></li><li><a href="GeometryCollection.html">GeometryCollection</a></li><li><a href="MultiGeometry.html">MultiGeometry</a></li><li><a href="MultiPoint.html">MultiPoint</a></li><li><a href="MultiLineString.html">MultiLineString</a></li><li><a href="MultiPolygon.html">MultiPolygon</a></li><li><a href="GeoJSON.html">GeoJSON</a></li><li><a href="GeometryEditor.html">GeometryEditor</a></li></ul><h5>Basic types</h5><ul><li><a href="Coordinate.html">Coordinate</a></li><li><a href="Extent.html">Extent</a></li><li><a href="Point.html">Point</a></li><li><a href="PointExtent.html">PointExtent</a></li><li><a href="Position.html">Position</a></li><li><a href="Size.html">Size</a></li></ul><h5>Maptool</h5><ul><li><a href="MapTool.html">MapTool</a></li><li><a href="DrawTool.html">DrawTool</a></li><li><a href="DistanceTool.html">DistanceTool</a></li><li><a href="AreaTool.html">AreaTool</a></li></ul><h5>Ui</h5><ul><li><a href="ui.UIComponent.html">ui.UIComponent</a></li><li><a href="ui.UIMarker.html">ui.UIMarker</a></li><li><a href="ui.InfoWindow.html">ui.InfoWindow</a></li><li><a href="ui.ToolTip.html">ui.ToolTip</a></li><li><a href="ui.Menu.html">ui.Menu</a></li></ul><h5>Control</h5><ul><li><a href="control.Control.html">control.Control</a></li><li><a href="control.Zoom.html">control.Zoom</a></li><li><a href="control.LayerSwitcher.html">control.LayerSwitcher</a></li><li><a href="control.Attribution.html">control.Attribution</a></li><li><a href="control.Panel.html">control.Panel</a></li><li><a href="control.Toolbar.html">control.Toolbar</a></li><li><a href="control.Overview.html">control.Overview</a></li></ul><h5>Core</h5><ul><li><a href="Ajax.html">Ajax</a></li><li><a href="Class.html">Class</a></li><li><a href="MapboxUtil.html">MapboxUtil</a></li><li><a href="Util.html">Util</a></li><li><a href="DomUtil.html">DomUtil</a></li><li><a href="StringUtil.html">StringUtil</a></li><li><a href="worker.Actor.html">worker.Actor</a></li></ul><h5>Animation</h5><ul><li><a href="animation.Easing.html">animation.Easing</a></li><li><a href="animation.Frame.html">animation.Frame</a></li><li><a href="animation.Player.html">animation.Player</a></li><li><a href="animation.Animation.html">animation.Animation</a></li></ul><h5>Geo</h5><ul><li><a href="CRS.html">CRS</a></li><li><a href="measurer.Identity.html">measurer.Identity</a></li><li><a href="measurer.DEFAULT.html">measurer.DEFAULT</a></li><li><a href="measurer.Measurer.html">measurer.Measurer</a></li><li><a href="measurer.WGS84Sphere.html">measurer.WGS84Sphere</a></li><li><a href="measurer.BaiduSphere.html">measurer.BaiduSphere</a></li><li><a href="projection.DEFAULT.html">projection.DEFAULT</a></li><li><a href="projection.BAIDU.html">projection.BAIDU</a></li><li><a href="projection.EPSG3857.html">projection.EPSG3857</a></li><li><a href="projection.EPSG4326.html">projection.EPSG4326</a></li><li><a href="projection.EPSG4490.html">projection.EPSG4490</a></li><li><a href="projection.IDENTITY.html">projection.IDENTITY</a></li><li><a href="Transformation.html">Transformation</a></li></ul><h5>Handler</h5><ul><li><a href="Handler.html">Handler</a></li><li><a href="DragHandler.html">DragHandler</a></li></ul><h5>Other</h5><ul><li><a href="CollisionIndex.html">CollisionIndex</a></li><li><a href="renderer.CanvasRenderer.html">renderer.CanvasRenderer</a></li></ul><h4>Namespaces</h4><ul><li><a href="measurer.html">measurer</a></li><li><a href="projection.html">projection</a></li><li><a href="renderer.html">renderer</a></li></ul><h4>Mixins</h4><ul><li><a href="Eventable.html">Eventable</a></li><li><a href="JSONAble.html">JSONAble</a></li><li><a href="measurer.Common.html">measurer.Common</a></li><li><a href="projection.Common.html">projection.Common</a></li><li><a href="Handlerable.html">Handlerable</a></li><li><a href="CenterMixin.html">CenterMixin</a></li><li><a href="TextEditable.html">TextEditable</a></li><li><a href="Renderable.html">Renderable</a></li><li><a href="ui.Menuable.html">ui.Menuable</a></li></ul><h3>Global</h3><ul><li><a href="global.html#INTERNAL_LAYER_PREFIX">INTERNAL_LAYER_PREFIX</a></li><li><a href="global.html#RESOURCE_PROPERTIES">RESOURCE_PROPERTIES</a></li><li><a href="global.html#RESOURCE_SIZE_PROPERTIES">RESOURCE_SIZE_PROPERTIES</a></li><li><a href="global.html#NUMERICAL_PROPERTIES">NUMERICAL_PROPERTIES</a></li><li><a href="global.html#COLOR_PROPERTIES">COLOR_PROPERTIES</a></li><li><a href="global.html#IS_NODE">IS_NODE</a></li><li><a href="global.html#getDxDyRad">getDxDyRad</a></li><li><a href="global.html#registerWorkerAdapter">registerWorkerAdapter</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Thu Aug 17 2023 11:45:28 GMT+0800 (香港标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Thu Oct 05 2023 11:54:19 GMT+0800 (香港标准时间)
 </footer>
 
 <script> prettyPrint(); </script>
