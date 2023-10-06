@@ -1135,7 +1135,8 @@ describe('bug', () => {
         marker.on('load', () => {
             setTimeout(function() {
                 gltflayer.remove();
-                const newLayer = new maptalks.GLTFLayer('gltf');
+                // map上remove layer时 会有一帧的延迟，所以图层id相同时会出现id duplicate 报错
+                const newLayer = new maptalks.GLTFLayer('gltf2');
                 new maptalks.GLTFGeometry(center, {
                     symbol: {
                         scaleX: 80,
