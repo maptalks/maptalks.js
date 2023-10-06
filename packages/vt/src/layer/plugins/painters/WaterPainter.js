@@ -3,7 +3,7 @@ import { reshader, mat3, mat4, vec4, GroundPainter } from '@maptalks/gl';
 import waterVert from './glsl/water.vert';
 import waterFrag from './glsl/water.frag';
 import pickingVert from './glsl/fill.picking.vert';
-import { isNil, extend } from '../Util';
+import { extend } from '../Util';
 
 const { getPBRUniforms } = reshader.pbr.PBRUtils;
 
