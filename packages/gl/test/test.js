@@ -415,11 +415,11 @@ describe('gl tests', () => {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                             group.removeLayer('base');
-                        } else if (count === 2) {
+                        } else if (count === 4) {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                            expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
+                            expect(pixel).to.be.eql({ data: { '0': 0, '1': 0, '2': 0, '3': 0 } });
                             group.addLayer(skinLayers[0]);
-                        } else if (count === 3) {
+                        } else if (count === 5) {
                             const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
                             expect(pixel).to.be.eql({ data: { '0': 0, '1': 255, '2': 0, '3': 255 } });
                             done();

@@ -934,7 +934,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         delete cached.layer;
         cached.refs.clear();
         if (cached.texture) {
-            renderer.deleteTerrainTexture(cached.texture);
+            if (!renderer && cached.texture.destroy) {
+                cached.texture.destroy
+            } else {
+                renderer.deleteTerrainTexture(cached.texture);
+            }
             delete cached.texture;
         }
         if (cached.skinMesh) {
