@@ -55,7 +55,7 @@
     "eslint": "^8.46.0",
     "eslint-plugin-mocha": "^10.1.0",
     "express": "^4.17.1",
-    "maptalks": "^1.0.0-rc.23",
+    "maptalks": "^1.0.0-rc.26",
     "pixelmatch": "^4.0.2",
     "rollup": "^2.56.2",
     "rollup-plugin-terser": "^5.3.1"
