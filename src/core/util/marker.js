@@ -310,7 +310,7 @@ export function isPathSymbol(symbol) {
 export const DYNAMIC_SYMBOL_PROPS = [
     'markerWidth', 'markerHeight', 'markerHorizontalAlignment', 'markerVerticalAlignment', 'markerDx', 'markerDy', 'markerRotation',
     'textName',
-    'textSize', 'textDx', 'textDy', 'textVerticalAlignment', 'textHorizontalAlignment', 'textRotation'
+    'textSize', 'textDx', 'textDy', 'textVerticalAlignment', 'textHorizontalAlignment', 'textRotation', 'textWrapWidth'
 ];
 
 export const SIZE_SYMBOL_PROPS = [

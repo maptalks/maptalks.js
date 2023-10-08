@@ -260,7 +260,7 @@ export function splitTextToRow(text, style) {
         size = stringLength(text, font, style['textSize']),
         textWidth = size['width'],
         textHeight = size['height'],
-        wrapChar = style['textWrapCharacter'],
+        wrapChar = style['textWrapCharacter'] || '\n',
         textRows = [];
     let wrapWidth = style['textWrapWidth'];
     if (!wrapWidth || wrapWidth > textWidth) {
