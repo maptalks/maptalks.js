@@ -101,12 +101,12 @@ describe('SymbolTextSpec', function () {
         textNames.push(líneasNuevas(randomName));
 
         var v = new maptalks.VectorLayer('v', { 'drawImmediate': true }).addTo(map);
-        textNames.forEach(textMame => {
+        textNames.forEach(textName => {
             v.clear();
-            const lineRows = textMame.split('\n');
+            const lineRows = textName.split('\n');
             var geometry = new maptalks.Marker(center.copy(), {
                 symbol: {
-                    'textName': textMame,
+                    'textName': textName,
                     "textFaceName": "楷体",
                     "textSize": { "stops": [[8, 14], [20, 32]] },
                     "textFill": "#000",
