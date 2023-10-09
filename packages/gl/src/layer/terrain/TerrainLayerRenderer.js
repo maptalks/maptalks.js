@@ -1464,7 +1464,7 @@ function drawDebug(ctx, debugInfo, color, lineWidth, left, top, width, height, t
 }
 
 function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
-    const { res, extent2d: extent, offset: terrainOffset } = terrainTileInfo;
+    const { res, extent2d: terrainExtent, offset: terrainOffset } = terrainTileInfo;
     const { info } = tile;
     const scale = info.res / res;
     const offset = info.offset;
@@ -1472,8 +1472,8 @@ function computeSkinDimension(terrainTileInfo, tile, terrainTileSize) {
     const ymin = info.extent2d.ymin * scale;
     const dx = terrainOffset[0] - offset[0];
     const dy = offset[1] - terrainOffset[1];
-    const left = xmin - extent.xmin + dx;
-    const bottom = extent.ymin - ymin + dy;
+    const left = xmin - terrainExtent.xmin + dx;
+    const bottom = terrainExtent.ymin - ymin + dy;
     return [left, -bottom, scale * info.tileSize / terrainTileSize];
 }
 

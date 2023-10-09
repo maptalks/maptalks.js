@@ -141,6 +141,7 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         const parentSkinTiles = [];
         const skinTiles = [];
         const allSkinTileIds = new Set();
+        const scaleY = this['_getTileConfig']().tileSystem.scale.y;
 
         for (let i = 0; i < allTiles.length; i++) {
             const info = allTiles[i];
@@ -177,12 +178,23 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
                     const yOffset = dy * (skinTile.skinY - topY) * tileSize;
                     const xmin = extent2d.xmin * resScale + xOffset;
                     const ymax = extent2d.ymax * resScale + yOffset;
-                    skinTile.extent2d = new maptalks.PointExtent(
-                        xmin,
-                        ymax - tileSize,
-                        xmin + tileSize,
-                        ymax
-                    );
+                    const ymin = extent2d.ymin * resScale + yOffset;
+                    if (scaleY > 0) {
+                        skinTile.extent2d = new maptalks.PointExtent(
+                            xmin,
+                            ymin,
+                            xmin + tileSize,
+                            ymin + tileSize
+                        );
+                    } else {
+                        skinTile.extent2d = new maptalks.PointExtent(
+                            xmin,
+                            ymax - tileSize,
+                            xmin + tileSize,
+                            ymax
+                        );
+                    }
+
                     skinTileIds.add(skinTile.id);
                     layerTiles.push(skinTile);
                 }

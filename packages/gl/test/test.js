@@ -997,6 +997,43 @@ describe('gl tests', () => {
             group.addTo(map);
         });
 
+        it('4326 terrain with 512 tile with revered tileSystem.y, fix maptalks/issues#468', done => {
+            map = new maptalks.Map(container, {
+                center: [94.50812103, 29.45595163],
+                spatialReference: { projection: 'EPSG:4326' },
+                zoom: 14
+            });
+            const skinLayers = [
+                new maptalks.TileLayer('base', {
+                    tileSize: 512,
+                    tileSystem: [1, -1, -180, 90],
+                    urlTemplate: '/fixtures/tiles/UV_Grid_Sm_512.jpg',
+                })
+            ];
+            const terrain = {
+                tileSystem: [1, 1, -180, -90],
+                zoomOffset: -1,
+                type: 'cesium',
+                terrainWidth: 65,
+                urlTemplate: '#',
+                debug: true
+            }
+            const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
+            group.once('terrainlayercreated', () => {
+                const terrainLayer = group.getTerrainLayer();
+                terrainLayer.once('terrainreadyandrender', () => {
+                    group.once('layerload', () => {
+                        const canvas = map.getRenderer().canvas;
+                        const ctx = canvas.getContext('2d');
+                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                        expect(pixel).to.be.eql({ data: { '0': 121, '1': 83, '2': 168, '3': 255 } });
+                        done();
+                    });
+                });
+            });
+            group.addTo(map);
+        });
+
         it('512 terrain with offset skin at zoom 12', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
