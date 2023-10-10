@@ -589,6 +589,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             const debugTexture = tileImage.debugTexture || this._createDebugTexture(terrainTileInfo, tileSize);
             tileImage.debugTexture = debugTexture;
             tileImage.skinDebugMesh = debugMesh;
+            debugMesh.setUniform('opacity', 1);
             debugMesh.setUniform('skinTexture', debugTexture);
             debugMesh.setUniform('skinDim', [0, 0, 1]);
             debugMesh.setUniform('tileSize', tileSize);
@@ -696,7 +697,9 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         let ymin = (parentExtent.ymax - extent2d.ymax * res / parentRes) / height * (terrainWidth - 1);
         const xmax = (extent2d.xmax * res / parentRes - parentExtent.xmin) / width * (terrainWidth - 1);
 
-        const tileWidth = Math.round(xmax - xmin) + 1;
+        let tileWidth = Math.round(xmax - xmin);
+        const log = Math.log2(tileWidth);
+        tileWidth = Math.pow(2, Math.round(log)) + 1;
         xmin = Math.floor(xmin);
         ymin = Math.floor(ymin);
 
