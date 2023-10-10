@@ -569,6 +569,7 @@ export default class GroupGLLayer extends maptalks.Layer {
             if (renderer.renderTerrainSkin) {
                 if (renderer.deleteTile === emptyMethod) {
                     // 已经被初始化过了
+                    skinLayers.push(layers[i]);
                     continue;
                 }
                 layer.getTiles = () => {

@@ -221,6 +221,44 @@ describe('gl tests', () => {
                 done();
             }, 500);
         });
+
+        it.only('add skinLayers, maptalks/issues#469', done => {
+            map = new maptalks.Map(container, {
+                center: [91.14478,29.658272],
+                zoom: 12
+            });
+            const sceneConfig = {
+                postProcess: {
+                    enable: true,
+                    antialias: {
+                        enable: true
+                    }
+                }
+            };
+            const greenLayer = new maptalks.TileLayer('black', {
+                urlTemplate: './fixtures/tiles/tile-green-256.png',
+                opacity: 0.5,
+                fadeAnimation: false
+            });
+            const redLayer = new maptalks.TileLayer('red', {
+                urlTemplate: './fixtures/tiles/tile-red-256.png',
+                opacity: 0.5,
+                fadeAnimation: false
+            });
+            const group = new maptalks.GroupGLLayer('group', [], {
+                sceneConfig
+            });
+            group.addTo(map);
+            group.addLayer(greenLayer);
+            group.addLayer(redLayer);
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 170, '1': 85, '2': 0, '3': 191 } });
+                done();
+            }, 500);
+        });
     });
 
     context('GroupGLLayer tests', () => {

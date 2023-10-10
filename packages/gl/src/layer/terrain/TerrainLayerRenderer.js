@@ -571,6 +571,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                     const skinDim = computeSkinDimension(terrainTileInfo, tile, tileSize);
                     const mesh = layerSkinImages[ii].skinMesh || new reshader.Mesh(this._skinGeometry);
                     mesh.setUniform('skinTexture', texture);
+                    const skinTileOpacity = layer.getOpacity();
+                    mesh.setUniform('opacity', isNil(skinTileOpacity) ? 1 : skinTileOpacity);
                     mesh.setUniform('skinDim', skinDim);
                     mesh.setUniform('tileSize', tileSize);
                     mesh.setUniform('x', terrainTileInfo.x);
