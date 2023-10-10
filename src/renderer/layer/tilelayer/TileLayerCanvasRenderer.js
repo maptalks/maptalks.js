@@ -862,7 +862,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
     _findChildTiles(info) {
         const layer = this._getLayerOfTile(info.layer);
-        const terrainTileMode = layer.options['terrainTileMode'] && layer._isPyramidMode();
+        const terrainTileMode = layer && layer.options['terrainTileMode'] && layer._isPyramidMode();
         if (!layer || !layer.options['background'] && !terrainTileMode || info.z > this.layer.getMaxZoom()) {
             return EMPTY_ARRAY;
         }
