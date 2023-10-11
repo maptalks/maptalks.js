@@ -395,7 +395,7 @@ export default class PointPack extends VectorPack {
 
     placeVector(point, scale) {
         const shape = point.getShape(this.iconAtlas, this.glyphAtlas);
-        if (!this.options['allowEmptyPack'] && !shape) {
+        if (!this.options['allowEmptyPack'] && (!shape || !shape.horizontal && !shape.vertical)) {
             return;
         }
         const anchors = this._getAnchors(point, shape, scale);
