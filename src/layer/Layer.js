@@ -429,23 +429,40 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
      * @returns {Layer} this
      */
     setMask(mask) {
-        if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
-            throw new Error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
+        //support array. Maintain the same behavior as the gl library
+        let masks = mask;
+        if (!Array.isArray(mask)) {
+            masks = [mask];
         }
-        mask._bindLayer(this);
-        if (mask.type === 'Point') {
-            mask.updateSymbol({
+        masks = masks.filter(mask => {
+            if (!((mask.type === 'Point' && mask._isVectorMarker()) || mask.type === 'Polygon' || mask.type === 'MultiPolygon')) {
+                console.error('Mask for a layer must be a marker with vector marker symbol or a Polygon(MultiPolygon).');
+                return false;
+            }
+            return true;
+        });
+        if (masks.length > 1) {
+            console.warn('find Multiple masks, please use MultiPolygon instand of masks', masks);
+        }
+        //for Compatibility, only take the first mask
+        const clipMask = masks[0];
+        if (!clipMask) {
+            return this;
+        }
+        clipMask._bindLayer(this);
+        if (clipMask.type === 'Point') {
+            clipMask.updateSymbol({
                 'markerLineColor': 'rgba(0, 0, 0, 0)',
                 'markerFillOpacity': 0
             });
         } else {
-            mask.setSymbol({
+            clipMask.setSymbol({
                 'lineColor': 'rgba(0, 0, 0, 0)',
                 'polygonOpacity': 0
             });
         }
-        this._mask = mask;
-        this.options.mask = mask.toJSON();
+        this._mask = clipMask;
+        this.options.mask = clipMask.toJSON();
         if (!this.getMap() || this.getMap().isZooming()) {
             return this;
         }
