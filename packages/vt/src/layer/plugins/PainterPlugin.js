@@ -363,6 +363,13 @@ function createPainterPlugin(type, Painter) {
             return this.painter.needToRetireFrames();
         },
 
+        isAnimating() {
+           if (!this.painter) {
+                return false;
+            }
+            return this.painter.isAnimating();
+        },
+
         needToRefreshTerrainTile: function () {
             if (!this.painter) {
                 return false;

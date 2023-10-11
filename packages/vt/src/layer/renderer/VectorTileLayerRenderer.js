@@ -204,6 +204,16 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         return false;
     }
 
+    isAnimating() {
+        const plugins = this._getFramePlugins();
+        for (let i = 0; i < plugins.length; i++) {
+            if (plugins[i] && plugins[i].isAnimating()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     needToRefreshTerrainTile() {
         const plugins = this._getFramePlugins();
         for (let i = 0; i < plugins.length; i++) {
