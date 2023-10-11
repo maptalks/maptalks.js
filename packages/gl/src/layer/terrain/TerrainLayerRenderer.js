@@ -376,8 +376,13 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             tileImage.skinTileIds = [];
         }
 
+        const isAnimating  = renderer.isAnimating && renderer.isAnimating();
+
         const status = tileImage.skinStatus[skinIndex];
-        if (status && !(renderer.needToRefreshTerrainTile && renderer.needToRefreshTerrainTile())) {
+
+        const isLayerAskToRefresh = renderer.needToRefreshTerrainTileOnZooming && renderer.needToRefreshTerrainTileOnZooming();
+        const needRefreshTerrainTile = isAnimating || isLayerAskToRefresh && tileImage.renderedZoom !== map.getZoom();
+        if (status && !needRefreshTerrainTile) {
             return false;
         }
         const sr = skinLayer.getSpatialReference();
@@ -442,7 +447,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         }
 
         const ids = tiles.length ? tiles.map(t => t.info.id).join() : tiles[0].info.id;
-        if (!skinImageRetired && skinImages.tileIds === ids) {
+        if (!needRefreshTerrainTile && !skinImageRetired && skinImages.tileIds === ids) {
             return false;
         }
         skinImages.tileIds = ids;
@@ -485,7 +490,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         tileImage.skinImages[skinIndex] = skinImages;
 
         skinLayer.fire('renderterrainskin', { tile: terrainTileInfo, skinTiles: tiles });
-
         if (complete) {
             tileImage.skinStatus[skinIndex] = 1;
             // save some memory
@@ -536,7 +540,8 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         // if (!skinImages) {
         //     return;
         // }
-        if (tileImage.rendered && !this._needRefreshTerrainSkins()) {
+        const needRefreshSkins = this._needRefreshTerrainSkins(tileImage.renderedZoom);
+        if (tileImage.rendered && !needRefreshSkins) {
             return;
         }
         if (!tileImage.skin) {
@@ -612,6 +617,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         }
 
         tileImage.rendered = this._isSkinReady(tileImage);
+        tileImage.renderedZoom = map.getZoom();
     }
 
     _createDebugTexture(tileInfo, tileSize) {
@@ -773,14 +779,19 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         return true;
     }
 
-    _needRefreshTerrainSkins() {
+    _needRefreshTerrainSkins(renderedZoom) {
+        // 只在有缩放地图，或者layer有动画时，才重绘skin
+        const zoom = this.getMap().getZoom();
         const skinLayers = this.layer.getSkinLayers();
         for (let i = 0; i < skinLayers.length; i++) {
             const renderer = skinLayers[i] && skinLayers[i].getRenderer();
             if (!renderer) {
                 continue;
             }
-            if (renderer.needToRefreshTerrainTile && renderer.needToRefreshTerrainTile()) {
+            if (renderer.isAnimating && renderer.isAnimating()) {
+                return true;
+            }
+            if (renderer.needToRefreshTerrainTileOnZooming && renderer.needToRefreshTerrainTileOnZooming() && renderedZoom !== zoom) {
                 return true;
             }
         }
