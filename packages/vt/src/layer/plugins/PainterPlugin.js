@@ -370,11 +370,11 @@ function createPainterPlugin(type, Painter) {
             return this.painter.isAnimating();
         },
 
-        needToRefreshTerrainTile: function () {
+        needToRefreshTerrainTileOnZooming: function () {
             if (!this.painter) {
                 return false;
             }
-            return this.painter.needToRefreshTerrainTile();
+            return this.painter.needToRefreshTerrainTileOnZooming();
         },
 
         isTerrainSkin: function () {

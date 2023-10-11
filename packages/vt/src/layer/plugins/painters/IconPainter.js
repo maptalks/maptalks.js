@@ -73,7 +73,7 @@ class IconPainter extends CollisionPainter {
         this._meshesToCheck = [];
     }
 
-    needToRefreshTerrainTile() {
+    needToRefreshTerrainTileOnZooming() {
         for (let i = 0; i < this.symbolDef.length; i++) {
             const symbolDef = this.symbolDef[i];
             const pitchAlignment = symbolDef['markerPitchAlignment'];
@@ -85,11 +85,11 @@ class IconPainter extends CollisionPainter {
     }
 
     isTerrainVector() {
-        return this.layer.options.awareOfTerrain && !this.needToRefreshTerrainTile();
+        return this.layer.options.awareOfTerrain && !this.needToRefreshTerrainTileOnZooming();
     }
 
     isTerrainSkin() {
-        return super.isTerrainSkin() && this.needToRefreshTerrainTile();
+        return super.isTerrainSkin() && this.needToRefreshTerrainTileOnZooming();
     }
 
     setTextShaderDefines(defines) {

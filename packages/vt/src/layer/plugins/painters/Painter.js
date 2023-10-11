@@ -149,7 +149,7 @@ class Painter {
         return this._needRetire;
     }
 
-    needToRefreshTerrainTile() {
+    needToRefreshTerrainTileOnZooming() {
         return true;
     }
 
