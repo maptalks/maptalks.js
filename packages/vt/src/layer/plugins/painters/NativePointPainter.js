@@ -1,9 +1,12 @@
+import Color from 'color';
 import { reshader, mat4 } from '@maptalks/gl';
 import BasicPainter from './BasicPainter';
 import vert from './glsl/native-point.vert';
 import frag from './glsl/native-point.frag';
 import pickingVert from './glsl/native-point.vert';
-import { setUniformFromSymbol, createColorSetter } from '../Util';
+import { setUniformFromSymbol, createColorSetter, toUint8ColorInGlobalVar } from '../Util';
+import { isFunctionDefinition, piecewiseConstant } from '@maptalks/function-type';
+import { prepareFnTypeData } from './util/fn_type_util';
 
 const DEFAULT_UNIFORMS = {
     markerFill: [0, 0, 0],
@@ -29,6 +32,9 @@ class NativePointPainter extends BasicPainter {
         const { geometry, symbolIndex, ref } = geo;
         const symbol = this.getSymbol(symbolIndex);
         if (ref === undefined) {
+            const symbolDef = this.getSymbolDef(symbolIndex);
+            const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
+            prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
             geometry.generateBuffers(this.regl);
         }
 
@@ -60,11 +66,40 @@ class NativePointPainter extends BasicPainter {
         if (mesh.geometry.data.aAltitude) {
             defines['HAS_ALTITUDE'] = 1;
         }
+        if (geometry.data.aColor) {
+            defines['HAS_COLOR'] = 1;
+        }
         mesh.setDefines(defines);
         mesh.positionMatrix = this.getAltitudeOffsetMatrix();
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
+    }
+
+    createFnTypeConfig(map, symbolDef) {
+        const aColorFn = piecewiseConstant(symbolDef['markerFill']);
+        return [
+            {
+                //geometry.data 中的属性数据
+                attrName: 'aColor',
+                //symbol中的function-type属性
+                symbolName: 'markerFill',
+                type: Uint8Array,
+                width: 4,
+                define: 'HAS_COLOR',
+                evaluate: (properties, geometry) => {
+                    let color = aColorFn(map.getZoom(), properties);
+                    if (isFunctionDefinition(color)) {
+                        color = this.evaluateInFnTypeConfig(color, geometry, map, properties, true);
+                    }
+                    if (!Array.isArray(color)) {
+                        color = this.colorCache[color] = this.colorCache[color] || Color(color).unitArray();
+                    }
+                    color = toUint8ColorInGlobalVar(color);
+                    return color;
+                }
+            }
+        ];
     }
 
     init() {

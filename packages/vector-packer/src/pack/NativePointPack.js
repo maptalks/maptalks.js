@@ -2,6 +2,8 @@ import VectorPack from './VectorPack';
 import clipLine from './util/clip_line';
 import { getAnchors } from './util/get_anchors';
 import { getFeatureAnchors } from './util/get_point_anchors';
+import { normalizeColor } from '../style/Util';
+import { isFunctionDefinition } from '@maptalks/function-type';
 
 const MAX_ANGLE = 45 * Math.PI / 100;
 const DEFAULT_SPACING = 250;
@@ -11,8 +13,10 @@ const DEFAULT_SPACING = 250;
  */
 export default class NativePointPack extends VectorPack {
     getFormat() {
+        const { markerFillFn } = this._fnTypes;
+        let format;
         if (this.symbol.markerRotationAlignment === 'line') {
-            return [
+            format = [
                 ...this.getPositionFormat(),
                 {
                     type: Float32Array,
@@ -31,13 +35,38 @@ export default class NativePointPack extends VectorPack {
                 }
             ];
         } else {
-            return [
+            format = [
                 ...this.getPositionFormat()
             ];
         }
+        if (markerFillFn) {
+            format.push(
+                {
+                    type: Uint8Array,
+                    width: 4,
+                    name: 'aColor'
+                }
+            );
+        }
+        return format;
     }
 
     placeVector(point) {
+        const feature = point.feature;
+        const properties = feature.properties;
+        const { markerFillFn } = this._fnTypes;
+        let feaColor;
+        if (markerFillFn) {
+            // 为了支持和linePattern合成，把默认lineColor设为白色
+            feaColor = markerFillFn(this.options['zoom'], properties) || [255, 255, 255, 255];
+            if (isFunctionDefinition(feaColor)) {
+                this.dynamicAttrs['aColor'] = 1;
+                // 说明是identity返回的仍然是个fn-type，fn-type-util.js中会计算刷新，这里不用计算
+                feaColor = [0, 0, 0, 0];
+            } else {
+                feaColor = normalizeColor([], feaColor);
+            }
+        }
         const spacing = this.symbol['markerSpacing'] || DEFAULT_SPACING;
         const placement = this.symbol['markerPlacement'] || 'point';
         const hasRotation = this.symbol.markerRotationAlignment === 'line';
@@ -50,6 +79,9 @@ export default class NativePointPack extends VectorPack {
                 // this.data.aXRotation.push(point.xRotation || 0);
                 this.data.aXYRotation.push(point.xyRotation || 0);
                 this.data.aZRotation.push(point.zRotation || 0);
+            }
+            if (feaColor) {
+                this.data.aColor.push(...feaColor);
             }
             const max = Math.max(Math.abs(point.x), Math.abs(point.y));
             if (max > this.maxPos) {
