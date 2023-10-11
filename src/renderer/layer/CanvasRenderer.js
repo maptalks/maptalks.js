@@ -541,8 +541,9 @@ class CanvasRenderer extends Class {
             });
             return null;
         }
+        const isOutSide = this.layer._isOutSideMask();
         const maskExtent2D = this._maskExtent = mask._getMaskPainter().get2DExtent();
-        if (!maskExtent2D.intersects(this._extent2D)) {
+        if (!isOutSide && !maskExtent2D.intersects(this._extent2D)) {
             this.layer.fire('renderstart', {
                 'context': this.context,
                 'gl': this.gl
@@ -580,6 +581,9 @@ class CanvasRenderer extends Class {
             context.save();
             context.scale(dpr, dpr);
         }
+        const isOutSide = this.layer._isOutSideMask();
+        const size = map.getSize();
+        const { width, height } = size;
         // Handle MultiPolygon
         if (mask.getGeometries) {
             context.isMultiClip = true;
@@ -589,6 +593,9 @@ class CanvasRenderer extends Class {
                 const painter = _mask._getMaskPainter();
                 painter.paint(null, context);
             });
+            if (isOutSide) {
+                context.rect(0, 0, width, height);
+            }
             context.stroke();
             context.isMultiClip = false;
         } else {
@@ -596,12 +603,20 @@ class CanvasRenderer extends Class {
             context.beginPath();
             const painter = mask._getMaskPainter();
             painter.paint(null, context);
+            if (isOutSide) {
+                context.rect(0, 0, width, height);
+            }
             context.isClip = false;
         }
+
         if (dpr !== 1) {
             context.restore();
         }
-        context.clip();
+        if (isOutSide) {
+            context.clip('evenodd');
+        } else {
+            context.clip();
+        }
         this.southWest = old;
         return true;
     }

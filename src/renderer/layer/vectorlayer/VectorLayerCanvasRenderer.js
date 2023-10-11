@@ -332,7 +332,8 @@ class VectorLayerRenderer extends OverlayLayerCanvasRenderer {
 
     _updateDisplayExtent() {
         let extent2D = this.canvasExtent2D;
-        if (this._maskExtent) {
+        const isOutSide = this.layer._isOutSideMask();
+        if (this._maskExtent && !isOutSide) {
             if (!this._maskExtent.intersects(extent2D)) {
                 this.completeRender();
                 return;

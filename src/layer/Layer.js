@@ -418,6 +418,11 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
         return this._mask;
     }
 
+    _isOutSideMask() {
+        const mask = this.getMask();
+        return mask && mask.isOutSideMask && mask.isOutSideMask();
+    }
+
     /**
      * Set a mask geometry on the layer, only the area in the mask will be displayed.
      * @param {Geometry} mask - mask geometry, can only be a Marker with vector symbol, a Polygon or a MultiPolygon
