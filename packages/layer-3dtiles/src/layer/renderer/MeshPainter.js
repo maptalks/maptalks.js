@@ -899,12 +899,17 @@ export default class MeshPainter {
         let ready = true;
 
         iterateMesh(gltf, (gltfMesh, meshId, primId, gltf) => {
-            const { geometry, material } = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader, gltfWeakResources);
+            const gltfResource = this._processGLTF(gltfMesh, meshId, primId, gltf, node, false, shader, gltfWeakResources);
+            const { geometry, material } = gltfResource;
             if (material && !material.isReady()) {
                 ready = false;
                 unreadyCount++;
             }
             const mesh = new reshader.Mesh(geometry, material);
+            if (!gltfResource.refMeshes) {
+                gltfResource.refMeshes = new Set();
+                gltfResource.refMeshes.add(mesh.uuid);
+            }
             mesh.properties.magic = 'b3dm';
             mesh.properties.id = id;
             mesh.properties.node = node;
@@ -1343,7 +1348,6 @@ export default class MeshPainter {
         }
 
         const gltfGeo = {
-            refCount: 1,
             geometry, material
         };
         geometry.properties.url = url;
