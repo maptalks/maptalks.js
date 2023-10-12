@@ -5,8 +5,6 @@ import { stopPropagation } from './util/dom';
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin Eventable
  */
-const ONCE_FLAG = '__once';
-
 const Eventable = Base =>
 
     class extends Base {
@@ -260,10 +258,10 @@ const Eventable = Base =>
                 } else {
                     handler.apply(this, arguments);
                 }
+                onceHandler._called = true;
                 // me.off(evtType, onceHandler, this);
             };
             fn[key] = handler;
-            fn[ONCE_FLAG] = true;
             return fn;
         }
 
@@ -325,9 +323,12 @@ const Eventable = Base =>
             //in case of deleting a listener in a execution, copy the handlerChain to execute.
             const queue = handlerChain.slice(0);
             let context, bubble, passed;
-            const queueExcludeOnce = [];
             for (let i = 0, len = queue.length; i < len; i++) {
                 if (!queue[i]) {
+                    continue;
+                }
+                const handler = queue[i].handler;
+                if (handler._called) {
                     continue;
                 }
                 context = queue[i].context;
@@ -344,11 +345,18 @@ const Eventable = Base =>
                         stopPropagation(param['domEvent']);
                     }
                 }
-                if (!queue[i].handler[ONCE_FLAG]) {
-                    queueExcludeOnce.push(queue[i]);
-                }
             }
-            this._eventMap[eventType] = queueExcludeOnce;
+            const eventQueue = this._eventMap[eventType];
+            if (eventQueue) {
+                const queueExcludeOnce = [];
+                for (let i = 0, len = eventQueue.length; i < len; i++) {
+                    const handler = eventQueue[i].handler;
+                    if (!handler._called) {
+                        queueExcludeOnce.push(eventQueue[i]);
+                    }
+                }
+                this._eventMap[eventType] = queueExcludeOnce;
+            }
             return this;
         }
     };
