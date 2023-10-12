@@ -887,7 +887,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const sphereCenter = this._coordToPoint(coord, TEMP_POINT).toArray();
         sphereCenter[2] = map.altitudeToPoint(coord.z, map.getGLRes());
         const scale = this._getBoxScale(coord);
-        return [sphereCenter, center[2] * scale[2]];
+        return [sphereCenter, sphere[3] * scale[2]];
     }
 
     _generateOBBox(boxPosition, boxCenter) {
