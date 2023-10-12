@@ -836,8 +836,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
             type: layerOptions.type,
             accessToken: layerOptions.accessToken,
             cesiumIonTokenURL: layerOptions.cesiumIonTokenURL,
-            error: error,
-            maxAvailable: maxAvailableZoom === tile.z
+            error: error
         };
         this.workerConn.fetchTerrain(terrainUrl, options, (err, resource) => {
             delete terrainData.loading;
@@ -1087,7 +1086,7 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
         const extent2d = TEMP_EXTENT.set(POINT0.x, POINT0.y, POINT1.x, POINT1.y);
 
         // martini 需要一点多余的数据
-        const terrainSize = (layer.options['tileSize'] || 256) + 1;
+        const terrainSize = layer.getTileSize().width + 1;
         // 扩大一个像素
         extent2d._expand(extent2d.getWidth() / terrainSize);
         out.array = out.array || new Float32Array(terrainSize * terrainSize);

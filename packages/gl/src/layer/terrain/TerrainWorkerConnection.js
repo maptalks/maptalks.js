@@ -28,8 +28,7 @@ export default class TerrainWorkerConnection extends maptalks.worker.Actor {
                 type: options.type,
                 accessToken: options.accessToken,
                 cesiumIonTokenURL: options.cesiumIonTokenURL,
-                error: options.error,
-                maxAvailable: options.maxAvailable
+                error: options.error
             }
         };
         this.send(data, null, (err, data) => {

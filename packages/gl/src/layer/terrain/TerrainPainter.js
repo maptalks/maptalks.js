@@ -103,8 +103,7 @@ class TerrainPainter {
 
     _getLocalTransform(out, tileInfo, terrainWidth) {
         const map = this.getMap();
-        const layerOptions = this.layer.options;
-        const tileSize = layerOptions['tileSize'];
+        const tileSize = this.layer.getTileSize().width;
         const scale = tileInfo.res / map.getGLRes();
 
         const terrainScale = tileSize / (terrainWidth - 1);
@@ -137,8 +136,9 @@ class TerrainPainter {
         if (mesh && mesh.geometry && tileImage.skin) {
             mesh.setUniform('skin', tileImage.skin.color[0]);
             mesh.setUniform('polygonOpacity', 1.0);
-            const isLeaf = this.layer.getRenderer().drawingCurrentTiles === true;
-            mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
+            // const { skirtOffset, skirtCount } = mesh.properties;
+            // mesh.geometry.setDrawOffset(skirtOffset);
+            // mesh.geometry.setDrawCount(skirtCount);
             this._leafScene.addMesh(mesh);
         }
     }

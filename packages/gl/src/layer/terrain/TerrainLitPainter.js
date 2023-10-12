@@ -128,10 +128,9 @@ class TerrainLitPainter extends TerrainPainter {
                 mesh.material.set('skinTexture', tileImage.skin);
             }
             mesh.setUniform('polygonOpacity', 1.0);
-            const maxZoom = this.layer.getSpatialReference().getMaxZoom();
-            const isLeaf = this.layer.getRenderer().drawingCurrentTiles === true;
-            mesh.setUniform('stencilRef', isLeaf ? 0 : 1 + maxZoom - tileInfo.z);
-            mesh.setUniform('debugColor', isLeaf ? [1, 1, 1, 1] : [1, 1, 1, 1]);
+            // const { skirtOffset, skirtCount } = mesh.properties;
+            // mesh.geometry.setDrawOffset(skirtOffset);
+            // mesh.geometry.setDrawCount(skirtCount);
             this._leafScene.addMesh(mesh);
         }
     }

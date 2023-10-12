@@ -433,17 +433,17 @@ function generateMapboxTerrain(buffer) {
 }
 
 function loadTerrain(params, cb) {
-    const { url, origin, type, accessToken, terrainWidth, error, maxAvailable } = params;
+    const { url, origin, type, accessToken, terrainWidth, error } = params;
     const headers = params.headers || requestHeaders[type];
     if (type === 'tianditu') {
-        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, cb);
     } else if (type === 'cesium-ion') {
         const tokenUrl = params.cesiumIonTokenURL + accessToken;
         if (cesium_access_token) {
-            fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+            fetchTerrain(url, headers, type, terrainWidth, error, cb);
         } else if (cesiumAccessTokenPromise) {
             cesiumAccessTokenPromise.then(() => {
-                fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, cb);
             });
         } else {
             cesiumAccessTokenPromise = fetch(tokenUrl, {
@@ -461,17 +461,17 @@ function loadTerrain(params, cb) {
                 cesiumAccessTokenPromise = null;
             });
             cesiumAccessTokenPromise.then(() => {
-                fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+                fetchTerrain(url, headers, type, terrainWidth, error, cb);
             });
         }
     } else if (type === 'cesium') {
-        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, cb);
     } else if (type === 'mapbox') {
-        fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb);
+        fetchTerrain(url, headers, type, terrainWidth, error, cb);
     }
 }
 
-function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb) {
+function fetchTerrain(url, headers, type, terrainWidth, error, cb) {
     if (type === 'cesium-ion') {
         headers['Authorization'] = 'Bearer ' + cesium_access_token;
     }
@@ -481,12 +481,6 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
                 // aborted by user
                 cb({ error: { canceled: true }});
             } else {
-                // const terrainData = createEmtpyTerrainHeights(terrainWidth);
-                // // console.warn(e);
-                // triangulateTerrain(error, terrainData, terrainWidth, false, null, null, true, false, (data, transferables) => {
-                //     data.originalError = res;
-                //     cb(data, transferables);
-                // });
                 cb({ empty: true, originalError: res });
             }
         } else {
@@ -494,72 +488,37 @@ function fetchTerrain(url, headers, type, terrainWidth, error, maxAvailable, cb)
             let terrain = null;
             if (type === 'tianditu') {
                 const terrainData = generateTiandituTerrain(buffer, terrainWidth);
-                triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, null, null, true, true, cb);
+                triangulateTerrain(error, terrainData, terrainWidth, null, true, cb);
             } else if (type === 'cesium-ion' || type === 'cesium') {
                 terrain = generateCesiumTerrain(buffer);
                 const terrainData = cesiumTerrainToHeights(terrain, terrainWidth);
-                triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, null, null, true, true, cb);
+                triangulateTerrain(error, terrainData, terrainWidth, null, true, cb);
             } else if (type === 'mapbox') {
                 terrain = generateMapboxTerrain(buffer);
                 terrain.then(imgBitmap => {
                     const imageData = bitmapToImageData(imgBitmap);
                     const terrainData = mapboxBitMapToHeights(imageData, terrainWidth);
-                    triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imgBitmap, true, true, cb);
+                    triangulateTerrain(error, terrainData, terrainWidth, imgBitmap, true, cb);
                 });
-
-                // terrain = generateMapboxTerrain(buffer);
-                // terrain.then(imgBitmap => {
-                //     const terrainData = createEmtpyTerrainHeights(terrainWidth);
-                //     // console.warn(e);
-                //     triangulateTerrain(error, terrainData, terrainWidth, false, null, imgBitmap,  true, false, (data, transferables) => {
-                //         cb(data, transferables);
-                //     });
-                // });
             }
         }
     }).catch(e => {
-
         delete terrainRequests[url];
-        // const terrainData = createEmtpyTerrainHeights(terrainWidth);
-        // // console.warn(e);
-        // triangulateTerrain(error, terrainData, terrainWidth, false, null, null,  true, false, (data, transferables) => {
-        //     data.originalError = e;
-        //     cb(data, transferables);
-        // });
         cb({ empty: true, originalError: e });
     });
 }
 
-// function createEmtpyTerrainHeights(size) {
-//     const length = size * size;
-//     return {
-//         data: new Uint8Array(length),
-//         width: size,
-//         height: size,
-//         max: 0,
-//         min: 0
-//     };
-// }
 
-
-function triangulateTerrain(error, terrainData, terrainWidth, maxAvailable, imageData, imageBitmap, isTransferData, hasSkirts, cb) {
-    const mesh = createMartiniData(error, terrainData.data, terrainWidth, true);
+function triangulateTerrain(error, terrainData, terrainWidth, imageBitmap, hasSkirts, cb) {
+    const mesh = createMartiniData(error, terrainData.data, terrainWidth, hasSkirts);
     const transferables = [mesh.positions.buffer, mesh.texcoords.buffer, mesh.triangles.buffer];
     if (imageBitmap) {
         transferables.push(imageBitmap);
     }
     const data = { mesh };
     data.image = imageBitmap;
-    if (isTransferData) {
-        data.data = terrainData;
-        if (maxAvailable && imageData) {
-            const originalTerrainData = mapboxBitMapToHeights(imageData, imageData.width + 1);
-            data.data = originalTerrainData;
-            transferables.push(originalTerrainData.data.buffer);
-        } else {
-            transferables.push(terrainData.data.buffer);
-        }
-    }
+    data.data = terrainData;
+    transferables.push(terrainData.data.buffer);
     cb(data, transferables);
 }
 
@@ -590,7 +549,6 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
 
 
     const heights = new Float32Array(terrainWidth * terrainWidth);
-
     const stride = Math.round(width / terrainWidth);
 
     for (let i = 0; i < terrainWidth; i++) {
@@ -635,65 +593,8 @@ function mapboxBitMapToHeights(imageData, terrainWidth) {
             heights[index] = height;
         }
     }
-    // debugger
-    // const terrainData = createMartiniData(heights, terrainWidth);
-    // offscreenCanvasContext.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-    return { data: heights, /*terrainData, */width: terrainWidth, height: terrainWidth, min, max };
+    return { data: heights, width: terrainWidth, height: terrainWidth, min, max };
 
-}
-
-
-// 把heights转换为width为terrainWidth的高程数组数据
-const cachedArray = {};
-function convertHeightWidth(heights, terrainWidth) {
-    const { data, width } = heights;
-    const result = cachedArray[terrainWidth] = cachedArray[terrainWidth] || new Float32Array(terrainWidth * terrainWidth);
-    let min = Infinity;
-    let max = -Infinity;
-    const stride = width > terrainWidth ? Math.round(width / terrainWidth) : Math.round(terrainWidth / width);
-
-    const edge = terrainWidth - 1;
-
-    for (let i = 0; i < terrainWidth; i++) {
-        for (let j = 0; j < terrainWidth; j++) {
-            const index = i + j * terrainWidth;
-            let height = 0;
-            let tx = i;
-            let ty = j;
-            if (tx >= edge) {
-                tx = edge;
-            }
-            if (ty >= edge) {
-                ty = edge;
-            }
-            if (width > terrainWidth) {
-                for (let k = 0; k < stride; k++) {
-                    for (let l = 0; l < stride; l++) {
-                        const x = tx * stride + k;
-                        const y = ty * stride + l;
-
-                        const imageIndex = x + y * width;
-                        height += data[imageIndex];
-                    }
-                }
-                const count = stride * stride;
-                height = height / (count || 1);
-            } else {
-                const x = Math.floor(tx / stride);
-                const y = Math.floor(ty / stride);
-                const imageIndex = x + y * width;
-                height = data[imageIndex];
-            }
-            if (height > max) {
-                max = height;
-            }
-            if (height < min) {
-                min = height;
-            }
-            result[index] = height;
-        }
-    }
-    return { data: result, width: terrainWidth, height: terrainWidth, min, max };
 }
 
 export const onmessage = function (message, postResponse) {
@@ -702,17 +603,6 @@ export const onmessage = function (message, postResponse) {
         // 保存当前worker的workerId。
         workerId = message.workerId;
         self.postMessage({type: '<response>', actorId: data.actorId, workerId, params: 'ok', callback: message.callback });
-    } else if (data.command === 'createTerrainMesh') {
-        const { error, terrainHeights, terrainWidth } = data.params;
-        let terrainData = terrainHeights;
-        if (terrainHeights.width !== terrainWidth) {
-            terrainData = convertHeightWidth(terrainHeights, terrainWidth);
-        }
-        triangulateTerrain(error, terrainData, terrainWidth, false, null, null, false, true, (data, transferables) => {
-            data.data = terrainHeights;
-            transferables.push(terrainHeights.data.buffer);
-            postResponse(data.error, data, transferables);
-        });
     } else if (data.command === 'fetchTerrain') {
         //加载地形数据的逻辑
         loadTerrain(data.params, (data, transferables) => {

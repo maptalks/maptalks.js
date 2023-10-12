@@ -23,7 +23,6 @@ export function createMartiniData(error, heights, width, hasSkirts) {
     let minHeight = Infinity;
     let maxHeight = -Infinity;
     const maxWidth = width - 1;
-    // debugger
     for (let i = 0; i < count; i++) {
         const x = vertices[i * 2], y = vertices[i * 2 + 1];
         if (i >= numVerticesWithoutSkirts) {
@@ -51,7 +50,7 @@ export function createMartiniData(error, heights, width, hasSkirts) {
             positions[i * 3 + 2] = height;
 
             texcoords[i * 2] = positions[index] / maxWidth + texOffset;
-            texcoords[i * 2 + 1] = positions[index] / maxWidth + texOffset;
+            texcoords[i * 2 + 1] = -positions[index + 1] / maxWidth + texOffset;
         } else {
             positions[i * 3] = x * (1 + skirtOffset);
             positions[i * 3 + 1] = -y * (1 + skirtOffset);
