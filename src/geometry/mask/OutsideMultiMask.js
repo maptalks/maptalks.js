@@ -8,3 +8,5 @@ export default class OutsideMultiMask extends MultiPolygon {
     }
 
 }
+
+OutsideMultiMask.registerJSONType('OutsideMultiMask');
