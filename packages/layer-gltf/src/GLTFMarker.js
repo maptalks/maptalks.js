@@ -1,6 +1,6 @@
 import { Marker, Util, Point, Extent } from 'maptalks';
 import { mat4, quat, vec3, vec4, reshader } from '@maptalks/gl';
-import { defined, coordinateToWorld, getAbsoluteValue } from './common/Util';
+import { defined, coordinateToWorld, getAbsoluteValue, getGLTFAnchorsAlongLine } from './common/Util';
 import { loadFunctionTypes, hasFunctionDefinition } from '@maptalks/function-type';
 import { intersectsBox } from 'frustum-intersects';
 
@@ -22,6 +22,38 @@ const phongUniforms = {
     'lightDirection': [1.0, 1.0, 1.0]
 };
 const effectSymbols = new Set(['url', 'translationX', 'translationY', 'translationZ', 'rotationX', 'rotationY', 'rotationZ', 'scaleX', 'scaleY', 'scaleZ', 'anchorZ', 'markerPixelHeight', 'modelHeight']);
+
+// BOX template
+//    v2----- v1
+//   / |     /|
+//  v3------v0|
+//  |  |v6  | /v5
+//  | /     |/
+//  v7------v4
+const BOX_POS = [
+    1.0, 1.0, 1.0,
+    1.0, -1.0, 1.0,
+    -1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    1.0, 1.0, -1.0,
+    1.0, -1.0, -1.0,
+    -1.0, -1.0, -1.0,
+    -1.0, 1.0, -1.0
+]
+const BOX_INDEX = [
+    0, 1,
+    1, 2,
+    2, 3,
+    3, 0,
+    0, 4,
+    1, 5,
+    2, 6,
+    3, 7,
+    4, 5,
+    5, 6,
+    6, 7,
+    7, 4
+];
 
 export default class GLTFMarker extends Marker {
     constructor(coordinates, options) {
@@ -59,6 +91,66 @@ export default class GLTFMarker extends Marker {
 
     static fromJSON(json) {
         return new GLTFMarker(json.coordinates, json.options);
+    }
+
+    static getGLTFAnchorsAlongLineString(coordinates, bboxWidth, map, options) {
+        const markerBatchs = [];
+        for (let i = 0; i < coordinates.length - 1; i++) {
+            const from = coordinates[i], to = coordinates[i + 1];
+            const dataArr = getGLTFAnchorsAlongLine(from, to, {
+                map,
+                bboxWidth, //模型boundingBox
+                gapLength: options.gapLength || 0, //bbox之间间距
+                count: options.count, //复制模型的数量
+                rotateAlongLine: options.rotateAlongLine, //是否沿线方向旋转
+                snapToEndVertexes: options.snapToEndVertexes, //首末端点是否对齐
+                scaleEndModel: options.scaleEndModel //是否缩放尾部端点处的模型
+            });
+            Util.pushIn(markerBatchs, dataArr);
+        }
+        return markerBatchs;
+    }
+
+    static combineGLTFBoundingBox(markers) {
+        const bboxes = [];
+        for (let i = 0; i < markers.length; i++) {
+            const bbox = markers[i]._getBoundingBox();
+            bboxes.push([bbox.min, bbox.max]);
+        }
+        const bbox0 = bboxes[0];
+        const min = vec3.copy([], bbox0[0]), max = vec3.copy([], bbox0[1]);
+        for (let i = 1; i < bboxes.length; i++) {
+            const bbox = bboxes[i];
+            const bboxMin = vec3.copy([], bbox[0]), bboxMax = vec3.copy([], bbox[1]);
+            if (bboxMin[0] < min[0]) {
+                min[0] = bboxMin[0];
+            }
+            if (bboxMin[1] < min[1]) {
+                min[1] = bboxMin[1];
+            }
+            if (bboxMin[2] < min[2]) {
+                min[2] = bboxMin[2];
+            }
+
+            if (bboxMax[0] > max[0]) {
+                max[0] = bboxMax[0];
+            }
+            if (bboxMax[1] > max[1]) {
+                max[1] = bboxMax[1];
+            }
+            if (bboxMax[2] > max[2]) {
+                max[2] = bboxMax[2];
+            }
+        }
+        return { min, max };
+    }
+
+    setTransformOrigin(coordinate) {
+        this._transformOrigin = coordinate;
+    }
+
+    getTransformOrigin() {
+        return this._transformOrigin || this.getCenter();
     }
 
     getMeshes(gltfManager, regl, timestamp) {
@@ -342,10 +434,16 @@ export default class GLTFMarker extends Marker {
                 mesh.material.set('skinAnimation', 0);
             }
         });
+        const bboxMesh = this._getBoundingBoxMesh();
+        if (bboxMesh) {
+            mat4.scale(tmpMat, modelMatrix, TEMP_SCALE);
+            mat4.multiply(tmpMat, tmpMat, Y_UP_TO_Z_UP);
+            this._bboxMesh.localTransform = mat4.multiply(this._bboxMesh.localTransform, tmpMat, this._bboxMesh._originLocalTransform);
+        }
         if (zOffset !== 0) {
+            vec3.set(TEMP_TRANS, 0, 0, zOffset);
+            const matrix = mat4.fromTranslation(TEMP_MAT, TEMP_TRANS);
             meshes.forEach(mesh => {
-                vec3.set(TEMP_TRANS, 0, 0, zOffset);
-                const matrix = mat4.fromTranslation(TEMP_MAT, TEMP_TRANS);
                 if (mesh instanceof reshader.InstancedMesh) {
                     mesh.positionMatrix = mat4.multiply(mesh.positionMatrix, matrix, mesh.positionMatrix);
                     this._updateInstancedMeshData(mesh);
@@ -354,12 +452,58 @@ export default class GLTFMarker extends Marker {
                     mesh.localTransform = localTransform;
                 }
             });
+            if (bboxMesh) {
+                this._bboxMesh.localTransform = mat4.multiply(this._bboxMesh.localTransform, matrix, this._bboxMesh.localTransform);
+            }
         }
         meshes.forEach(mesh => {
             if (mesh instanceof reshader.InstancedMesh) {
                 this._updateInstancedMeshData(mesh);
             }
         });
+    }
+
+    getBoundingBoxCenter() {
+        const bbox = this._gltfModelBBox;
+        const map = this.getMap();
+        if (!bbox || !this._bboxMesh || !map) {
+            return null;
+        }
+        const glRes = map.getGLRes();
+        const { min, max } = bbox;
+        const center = vec3.add([], min, max);
+        vec3.scale(center, center, 0.5);
+        vec3.transformMat4(center, center, this._bboxMesh.localTransform);
+        const pCenter = new Point(center);
+        const coordinate = map.pointAtResToCoordinate(pCenter, glRes);
+        coordinate.z = (100 / map.altitudeToPoint(100, glRes)) * center[2];
+        return coordinate;
+    }
+
+    getBoundingBoxWidth(axis) {
+        const bbox = this._gltfModelBBox;
+        if (!bbox) {
+            return 0;
+        }
+        const idx = axis || 0;
+        const { min, max } = bbox;
+        let scale = this.getScale()[idx];
+        const modelHeight = this.getModelHeight();
+        if (modelHeight) {
+            const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE);
+            scale = modelHeightScale[idx]
+        } else {
+            scale = this.getScale()[idx];
+        }
+        return (max[idx] - min[idx]) * scale;
+    }
+
+    getAxisXWidth() {
+        return this.getBoundingBoxWidth(0);
+    }
+
+    getAxisYWidth() {
+        return this.getBoundingBoxWidth(1);
     }
 
     _calSpatialScale(out) {
@@ -487,6 +631,79 @@ export default class GLTFMarker extends Marker {
             console.warn('Model\'s size on screen is too small, try to increase its symbol.scaleX/Y/Z');
             this.fire('smallonscreen');
         }
+    }
+
+    //    v2----- v1
+    //   / |     /|
+    //  v3------v0|
+    //  |  |v6  | /v5
+    //  | /     |/
+    //  v7------v4
+    _getBoundingBoxMesh() {
+        if (this._bboxMesh) {
+            return this._bboxMesh;
+        }
+        const bbox = this._gltfModelBBox;
+        if (!bbox) {
+            return null;
+        }
+        const { min, max } = bbox;
+        BOX_POS[0] = max[0];
+        BOX_POS[1] = min[1];
+        BOX_POS[2] = max[2];
+
+        BOX_POS[3] = max[0];
+        BOX_POS[4] = max[1];
+        BOX_POS[5] = max[2];
+
+        BOX_POS[6] = min[0];
+        BOX_POS[7] = max[1];
+        BOX_POS[8] = max[2];
+
+        BOX_POS[9] = min[0];
+        BOX_POS[10] = min[1];
+        BOX_POS[11] = max[2];
+
+        BOX_POS[12] = max[0];
+        BOX_POS[13] = min[1];
+        BOX_POS[14] = min[2];
+
+        BOX_POS[15] = max[0];
+        BOX_POS[16] = max[1];
+        BOX_POS[17] = min[2];
+
+        BOX_POS[18] = min[0];
+        BOX_POS[19] = max[1];
+        BOX_POS[20] = min[2];
+
+        BOX_POS[21] = min[0];
+        BOX_POS[22] = min[1];
+        BOX_POS[23] = min[2];
+
+        const geometry = new reshader.Geometry({
+            POSITION: BOX_POS
+        },
+        BOX_INDEX,
+        0,
+        {
+            primitive : 'lines',
+            positionAttribute: 'POSITION'
+        });
+        geometry.generateBuffers(this.regl);
+        const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1, 1.0], lineOpacity: 1 }));
+        this._bboxMesh = mesh;
+        this._bboxMesh._originLocalTransform = mat4.copy([], mesh.localTransform);
+        return mesh;
+    }
+
+    showBoundingBox() {
+        this.options['showDebugBoundingBox'] = true;
+        this._dirty = true;
+    }
+
+    hideBoundingBox() {
+        this.options['showDebugBoundingBox'] = false;
+        this._dirty = true;
     }
 
     _getBoundingBox() {
@@ -779,6 +996,11 @@ export default class GLTFMarker extends Marker {
             }
             delete this._skinMap;
         }
+        if (this._bboxMesh) {
+            this._bboxMesh.geometry.dispose();
+            this._bboxMesh.dispose();
+            delete this._bboxMesh;
+        }
         this._login = false;
         delete this._gltfData;
         delete this.gltfPack;
@@ -938,7 +1160,7 @@ export default class GLTFMarker extends Marker {
 
     setTRS(translation, rotation, scale) {
         const trans = translation || this._defaultTRS.translation;
-        super.updateSymbol({
+        this.updateSymbol({
             translationX: trans[0],
             translationY: trans[1],
             translationZ: trans[2],

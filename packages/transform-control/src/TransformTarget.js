@@ -1,7 +1,7 @@
-import { Coordinate } from "maptalks";
-import { vec3 } from '@maptalks/gl';
+import { Coordinate, Point } from "maptalks";
+import { vec3, mat4, quat } from '@maptalks/gl';
 
-const EMPTY_VEC = [];
+const EMPTY_VEC = [], EMPTY_QUAT = [], EMPTY_MAT = [], TEMP_POINT = new Point(0, 0), TEMP_VEC_1 = [], TEMP_VEC_2 = [], TEMP_SCALE = [];
 export default class TransformTarget {
     constructor() {
         this._targetList = [];
@@ -38,13 +38,13 @@ export default class TransformTarget {
         for (let i = 0; i < this._targetList.length; i++) {
             const target = this._targetList[i];
             const currentCoordinate = target.getCoordinates();
-            const currentWorldPos = map.coordinateToPointAtRes(currentCoordinate, map.getGLRes());
+            const currentWorldPos = map.coordinateToPointAtRes(currentCoordinate, map.getGLRes(), TEMP_POINT);
             const currentRotation = target.getRotation();
             const currentScaling = target.getScale();
-            const currentWorlPosition = vec3.set([], currentWorldPos.x, currentWorldPos.y, currentCoordinate.z || 0);
+            const currentWorlPosition = vec3.set(EMPTY_VEC, currentWorldPos.x, currentWorldPos.y, currentCoordinate.z || 0);
 
             const targetWorldPosition = vec3.add(currentWorlPosition, currentWorlPosition, deltaTranslate);
-            const targetCoordinate = map.pointAtResToCoordinate(new Coordinate(targetWorldPosition[0], targetWorldPosition[1]), map.getGLRes());
+            const targetCoordinate = this._calNewCenter(map, target, deltaScale, deltaRotation, deltaTranslate);
             targetCoordinate.z = targetWorldPosition[2];
             let tempScale = null;
             //放大时，拉伸的空间可无限大，但是缩小时，是向圈内缩放，空间有限，需要增加缩小的倍数
@@ -53,7 +53,7 @@ export default class TransformTarget {
             } else {
                 tempScale = deltaScale * (this.options && this.options.scaleStrength || 1.0);
             }
-            const targetScale = vec3.add([], vec3.set(EMPTY_VEC, tempScale, tempScale * (currentScaling[1] / currentScaling[0]), tempScale * (currentScaling[2] / currentScaling[0])), currentScaling);
+            const targetScale = vec3.add(TEMP_SCALE, vec3.set(EMPTY_VEC, tempScale, tempScale * (currentScaling[1] / currentScaling[0]), tempScale * (currentScaling[2] / currentScaling[0])), currentScaling);
             const minScale = Math.min(...targetScale);
             //minScale可能会出现<=0的情况，所以minScale只作为判断是否要限定scale的依据，计算的逻辑则用当前target的scale去计算，当前target的scale可以保证>=0.01
             if (minScale < limitScale) {
@@ -63,16 +63,40 @@ export default class TransformTarget {
                 targetScale[2] = targetScale[2] * (limitScale / currentMinScale);
             }
             const targetRotation = vec3.add(currentRotation, deltaRotation, currentRotation);
-            if (task.indexOf('translate') > -1) {
-                transformcontrol.fire('positionchange', { action: task, type: 'positionchange', target: this, coordinate: targetCoordinate });
-                target.setCoordinates(targetCoordinate);
-            } else {
-                this._scaleXYZ(task, targetScale, currentScaling);
-                const currentTrans = target.getTranslation();
-                target.setTRS(currentTrans, targetRotation, targetScale);
-                transformcontrol.fire('transforming', { action: this._task, type: 'transforming', target: this, translate: currentTrans, rotation: targetRotation, scale: targetScale });
-            }
+            target.setCoordinates(targetCoordinate);
+            this._scaleXYZ(task, targetScale, currentScaling);
+            const currentTrans = target.getTranslation();
+            target.setTRS(currentTrans, targetRotation, targetScale);
         }
+        vec3.set(TEMP_SCALE, deltaScale, deltaScale, deltaScale);
+        vec3.add(this._rotation, deltaRotation, this._rotation);
+        vec3.add(this._scaling, TEMP_SCALE, this._scaling);
+        vec3.add(this._translating, deltaTranslate, this._translating);
+        if (task.indexOf('translate') > -1) {
+            transformcontrol.fire('positionchange', { action: task, type: 'positionchange', target: this._targetList, center: this.getCoordinates(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
+        } else {
+            transformcontrol.fire('transforming', { action: task, type: 'transforming', target: this._targetList, center: this._targetList[0].getTransformOrigin(), scale: this._scaling, rotation: this._rotation, translation: this._translating, deltaTranslate, deltaRotation, deltaScale });
+        }
+    }
+
+    _calNewCenter(map, target, deltaScale, deltaRotation, deltaTranslate) {
+        const center = target.getCenter();
+        const originCenter = target.getTransformOrigin();
+        const glRes = map.getGLRes();
+        const pCenter = map.coordinateToPointAtRes(center, glRes, TEMP_POINT);
+        vec3.set(TEMP_VEC_1, pCenter.x, pCenter.y, pCenter.z || 0);
+        const pOriginCenter = map.coordinateToPointAtRes(originCenter, glRes, TEMP_POINT);
+        vec3.set(TEMP_VEC_2, pOriginCenter.x , pOriginCenter.y, pOriginCenter.z || 0);
+        const point = vec3.sub(EMPTY_VEC, TEMP_VEC_1, TEMP_VEC_2);
+        const rotation = quat.fromEuler(EMPTY_QUAT, 0, 0, deltaRotation[2]);
+        vec3.set(TEMP_SCALE, deltaScale + 1, deltaScale + 1, deltaScale + 1);
+        const trsMatrix = mat4.fromRotationTranslationScale(EMPTY_MAT, rotation, deltaTranslate, TEMP_SCALE);
+        vec3.transformMat4(point, point, trsMatrix);
+        vec3.add(point, point, TEMP_VEC_2);
+        TEMP_POINT.set(point[0], point[1]);
+        const newCenter = map.pointAtResToCoordinate(TEMP_POINT, glRes);
+        newCenter.z = point[2] / map.altitudeToPoint(1, glRes);
+        return newCenter;
     }
 
     _scaleXYZ(task, targetScale, currentScaling) {
@@ -133,7 +157,11 @@ export default class TransformTarget {
         cx = cx / len;
         cy = cy / len;
         cz = cz / len;
-        return new Coordinate(cx, cy, cz);
+        const newCenter = new Coordinate(cx, cy, cz);
+        for (let i = 0; i < len; i++) {
+            this._targetList[i].setTransformOrigin(newCenter);
+        }
+        return newCenter;
     }
 
     _onRemoveTarget(e) {

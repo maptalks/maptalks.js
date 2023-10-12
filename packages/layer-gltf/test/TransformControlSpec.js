@@ -121,10 +121,10 @@ describe('transform-control', () => {
                 transformControl.disable();
             }
             setTimeout(function() {
-                const pixel1 = pickPixel(map, map.width / 2 - 157, map.height / 2, 1, 1);
-                const pixel2 = pickPixel(map, map.width / 2, 2, 1, 1);
-                const pixel3 = pickPixel(map, map.width / 2 + 157, map.height / 2, 1, 1);
-                const pixel4 = pickPixel(map, map.width / 2, 299, 1, 1);
+                const pixel1 = pickPixel(map, map.width / 2 - 78, map.height / 2, 1, 1);
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                const pixel3 = pickPixel(map, map.width / 2 + 78, map.height / 2, 1, 1);
+                const pixel4 = pickPixel(map, map.width / 2, 150, 1, 1);
                 expect(hasColor(pixel1)).to.be.ok();
                 expect(hasColor(pixel2)).to.be.ok();
                 expect(hasColor(pixel3)).to.be.ok();
@@ -169,7 +169,7 @@ describe('transform-control', () => {
             }
         });
         function moveTransformControl() {
-            const point = map.coordinateToContainerPoint(center).add(132, -86);
+            const point = map.coordinateToContainerPoint(center).add(67, -43);
             happen.mousemove(eventContainer, {
                 'clientX':point.x,
                 'clientY':point.y
@@ -190,7 +190,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const rotation = marker.getRotation();
-                expect(rotation).to.be.eql([0, 0, 4.684808692706349]);
+                expect(rotation).to.be.eql([0, 0, 9.35407120135497]);
                 done();
             }, 100);
         }
@@ -231,7 +231,7 @@ describe('transform-control', () => {
             }
         });
         function moveTransformControl() {
-            const point = map.coordinateToContainerPoint(center).add(120, 100);
+            const point = map.coordinateToContainerPoint(center).add(60, 50);
             happen.mousemove(eventContainer, {
                 'clientX':point.x,
                 'clientY':point.y
@@ -252,7 +252,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.7508746173013956, 0.7508746173013956, 0.7508746173013956]);
+                expect(scale).to.be.eql([1.1752355859492067, 1.1752355859492067, 1.1752355859492067]);
                 done();
             }, 100);
         }
@@ -283,7 +283,7 @@ describe('transform-control', () => {
         const transformControl = new maptalks.TransformControl();
         transformControl.addTo(map);
         transformControl.on('positionchange', e => {
-            marker.setCoordinates(e.coordinate);
+            marker.setCoordinates(e.center);
         });
 
         map.on('mousedown', e => {
@@ -297,7 +297,7 @@ describe('transform-control', () => {
         });
 
         function moveTransformControl() {
-            const point = map.coordinateToContainerPoint(center).add(50, 0);
+            const point = map.coordinateToContainerPoint(center).add(25, 0);
             happen.mousedown(eventContainer, {
                 'clientX':point.x,
                 'clientY':point.y
@@ -341,9 +341,6 @@ describe('transform-control', () => {
         }).addTo(gltflayer);
         const transformControl = new maptalks.TransformControl({ mode: 'xyzScale' });
         transformControl.addTo(map);
-        transformControl.on('transforming', e => {
-            marker.setTRS(e.translate, e.rotation, e.scale);
-        });
 
         map.on('mousedown', e => {
             const identifyData = groupgllayer.identify(e.coordinate);
@@ -355,7 +352,7 @@ describe('transform-control', () => {
             }
         });
         function moveTransformControl() {
-            const point = map.coordinateToContainerPoint(center).add(100, 0);
+            const point = map.coordinateToContainerPoint(center).add(50, 0);
             happen.mousemove(eventContainer, {
                 'clientX':point.x,
                 'clientY':point.y
@@ -376,7 +373,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.7598385662453444, 0.6666666666666666, 0.6666666666666666]);
+                expect(scale).to.be.eql([0.8571506832979845, 0.6666666666666666, 0.6666666666666666]);
                 done();
             }, 100);
         }

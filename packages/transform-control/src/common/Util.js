@@ -72,7 +72,7 @@ export function calFixedScale(target, map) {
     const currentTrans = getTranslationPoint(map, target.getTranslation());
     vec3.add(trans, trans, currentTrans);
     const containerPoint = pointToContainerPoint(map, new maptalks.Point(trans[0], trans[1]), map.getGLRes());
-    containerPoint.x += 170;
+    containerPoint.x += 85;
     const worldCoordExtend = containerPointToPoint(map, containerPoint, map.getGLRes());
     const currentLength = Math.sqrt(Math.pow(worldCoordExtend.x - trans[0], 2) + Math.pow(worldCoordExtend.y - trans[1], 2));
     const fixedScale = currentLength / 5.272881136101205;

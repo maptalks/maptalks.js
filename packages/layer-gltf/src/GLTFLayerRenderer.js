@@ -68,6 +68,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             drawCount += this.renderer.render(pointLineShader, renderUniforms, pointLineScene, targetFBO);
             renderCount++;
         }
+        this._renderBBox(renderUniforms, targetFBO);
         if (drawCount) {
             this.layer.fire('canvasisdirty', { renderCount: drawCount });
         }
@@ -79,6 +80,28 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
 
         this._drawContext = context;
         this._currentFrameTime = timestamp;
+    }
+
+    _renderBBox(uniforms, targetFBO) {
+        if (!this._bboxScene) {
+            this._bboxScene = new reshader.Scene();
+        }
+        const markers = this.layer.getGeometries();
+        const bboxMeshes = [];
+        for (let i = 0; i < markers.length; i++) {
+            if (!markers[i].options['showDebugBoundingBox']) {
+                continue;
+            }
+            const bboxMesh = markers[i]._getBoundingBoxMesh();
+            if (bboxMesh) {
+                bboxMeshes.push(bboxMesh);
+            }
+        }
+        if (!bboxMeshes.length) {
+            return;
+        }
+        this._bboxScene.setMeshes(bboxMeshes);
+        this.renderer.render(this._shaderList['wireframe'].shader, uniforms, this._bboxScene, targetFBO);
     }
 
     _prepareRenderMeshes(timestamp) {

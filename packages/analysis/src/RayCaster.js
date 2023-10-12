@@ -16,6 +16,7 @@ const CUBE_POSITIONS = [1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1,
         20, 21, 22, 20, 22, 23],
     BBOX_POSITIONS = [];
 const TRIANGLE = [], LINE = [], POINT = [], VEC3 = [], POS_A = [], POS_B = [], POS_C = [], TEMP_POINT = new Point(0, 0), NULL_ALTITUDES = [];
+const TEMP_VEC_AB = [], TEMP_VEC_AC = [];
 export default class RayCaster {
     constructor(from, to, options = {}) {
         this.setFromPoint(from);
@@ -33,6 +34,10 @@ export default class RayCaster {
     setToPoint(to) {
         this._to = this._adaptCoordinate(to);
         this._incrVersion();
+    }
+
+    setOptions(options) {
+        this._options = options;
     }
 
     _incrVersion() {
@@ -68,7 +73,7 @@ export default class RayCaster {
                     mesh,
                     coordinates
                 };
-                results.push(result);      
+                results.push(result);
                 this._intersectCache[key] = result;
             }
         }
@@ -88,6 +93,8 @@ export default class RayCaster {
             const pB = this._toWorldPosition(POS_B, map, positions.slice(b * positionSize, b * positionSize + positionSize), altitudes[b] / 100, localTransform);
             const pC = this._toWorldPosition(POS_C, map, positions.slice(c * positionSize, c * positionSize + positionSize), altitudes[c] / 100, localTransform);
             const triangle = vec3.set(TRIANGLE, pA, pB, pC);
+            const vAB = vec3.sub(TEMP_VEC_AB, pA, pB);
+            const vAC = vec3.sub(TEMP_VEC_AC, pA, pC);
             const intersectPoint = this._testIntersection(triangle, line);
             if (intersectPoint) {
                 if (!intersectPoint[0] || !intersectPoint[1]) {
@@ -100,7 +107,8 @@ export default class RayCaster {
                 const coordinate = new Coordinate(coord.x, coord.y, altitude);
                 coordinates.push({
                     coordinate,
-                    indices: [a, b, c]
+                    indices: [a, b, c],
+                    normal: vec3.cross([], vAB, vAC)
                 });
             }
         }
@@ -151,8 +159,10 @@ export default class RayCaster {
         const y = n * t + b;
         const z = p * t + c;
         const point = vec3.set(POINT, x, y, z);
-        if (this._isPointInTriangle(triangle, point) && this._isPointInLine(line, point)) {
-            return [x, y, z];
+        if (this._isPointInTriangle(triangle, point)) {
+            if (this._options['allowPointNotOnLine'] || this._isPointOnLine(line, point)) { //只要在线段之间的都返回，或者如果即使不在线段之间，但是设置了返回线段外的点，也返回
+                return [x, y, z];
+            }
         }
         return null;
     }
@@ -171,7 +181,7 @@ export default class RayCaster {
         return true;
     }
 
-    _isPointInLine(line, point) {
+    _isPointOnLine(line, point) {
         const tolerance = this._options['tolerance'] || 1;
         const p0 = line[0], p1 = line[1], p = point;
         const lengthp0p1 = vec3.length(vec3.sub(VEC3, p0, p1));

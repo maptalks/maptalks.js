@@ -1100,6 +1100,14 @@ class GroupGLLayerRenderer extends maptalks.renderer.CanvasRenderer {
         return this._weatherPainter.paint(tex, meshes, weatherConfig);
     }
 
+    getGroundMesh() {
+        if (this._groundPainter) {
+            const groundMesh = this._groundPainter.getRenderMeshes();
+            return groundMesh;
+        }
+        return [];
+    }
+
     _getFramebufferTarget() {
         const sceneConfig =  this.layer._getSceneConfig();
         const config = sceneConfig && sceneConfig.postProcess;

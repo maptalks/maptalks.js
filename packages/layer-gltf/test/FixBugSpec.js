@@ -1380,4 +1380,89 @@ describe('bug', () => {
             }, 100);
         });
     });
+
+    it('show and hide boundingBox', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        gltflayer.addGeometry(marker);
+        marker.showBoundingBox();
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([204, 204, 25, 255], pixel)).to.be.eql(true);
+                hideBoundingBox();
+            }, 100);
+        });
+
+        function hideBoundingBox() {
+            marker.hideBoundingBox();
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+    });
+
+    it('combineGLTFBoundingBox', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker1 = new maptalks.GLTFGeometry(center.add(-0.001, 0.001), { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        const marker2 = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                scaleX: 40,
+                scaleY: 40,
+                scaleZ: 40,
+                url: url1
+            }
+        }).addTo(gltflayer);
+        const marker3 = new maptalks.GLTFGeometry(center.add(0.001, -0.001), {
+            symbol: {
+                modelHeight: 100,
+                url: url3
+            }
+        }).addTo(gltflayer);
+        const markers = [marker1, marker2, marker3];
+        gltflayer.addGeometry(markers);
+        gltflayer.on('modelload', () => {
+            setTimeout(function() {
+                const bbox = maptalks.GLTFMarker.combineGLTFBoundingBox(markers);
+                const { min, max } = bbox;
+                expect(max).to.be.eql([2.2732110643209387, 2.052021745737641, 2.0583606767769975]);
+                expect(min).to.be.eql([-1.5934618772151878, -1.9143420394135475, -1.3162279709491824]);
+                done();
+            }, 100);
+        });
+    });
+
+    it('getGLTFAnchorsAlongLineString', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, {
+            symbol: {
+                modelHeight: 50,
+                url: url3
+            }
+        }).addTo(gltflayer);
+        const coordinates = [center, center.add(0.001, 0.001)];
+        marker.on('load', () => {
+            const bboxWidth = marker.getBoundingBoxWidth();
+            const copyMarkers = maptalks.GLTFMarker.getGLTFAnchorsAlongLineString(coordinates, bboxWidth, map, {
+                rotateAlongLine: true,
+                snapToEndVertexes: true,
+                gapLength: 1
+            });
+            expect(copyMarkers.length).to.eql(3);
+            expect(copyMarkers[0].coordinates.toArray().slice(0, 2)).to.eql([0, 0]);
+            expect(copyMarkers[1].coordinates.toArray().slice(0, 2)).to.eql([0.0003475369637709948, 0.0003475369637709948]);
+            expect(copyMarkers[2].coordinates.toArray().slice(0, 2)).to.eql([0.0006950739275419895, 0.0006950739275419895]);
+            done();
+        });
+    });
 });
