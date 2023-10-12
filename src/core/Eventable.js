@@ -5,6 +5,7 @@ import { stopPropagation } from './util/dom';
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin Eventable
  */
+const ONCE_FLAG = '__once';
 
 const Eventable = Base =>
 
@@ -245,7 +246,7 @@ const Eventable = Base =>
         }
 
         _wrapOnceHandler(evtType, handler, context) {
-            const me = this;
+            // const me = this;
             const key = 'Z__' + evtType;
             let called = false;
             const fn = function onceHandler() {
@@ -259,9 +260,10 @@ const Eventable = Base =>
                 } else {
                     handler.apply(this, arguments);
                 }
-                me.off(evtType, onceHandler, this);
+                // me.off(evtType, onceHandler, this);
             };
             fn[key] = handler;
+            fn[ONCE_FLAG] = true;
             return fn;
         }
 
@@ -310,7 +312,8 @@ const Eventable = Base =>
             if (!this._eventMap) {
                 return this;
             }
-            const handlerChain = this._eventMap[eventType.toLowerCase()];
+            eventType = eventType.toLowerCase();
+            const handlerChain = this._eventMap[eventType];
             if (!handlerChain) {
                 return this;
             }
@@ -322,6 +325,7 @@ const Eventable = Base =>
             //in case of deleting a listener in a execution, copy the handlerChain to execute.
             const queue = handlerChain.slice(0);
             let context, bubble, passed;
+            const queueExcludeOnce = [];
             for (let i = 0, len = queue.length; i < len; i++) {
                 if (!queue[i]) {
                     continue;
@@ -340,7 +344,11 @@ const Eventable = Base =>
                         stopPropagation(param['domEvent']);
                     }
                 }
+                if (!queue[i].handler[ONCE_FLAG]) {
+                    queueExcludeOnce.push(queue[i]);
+                }
             }
+            this._eventMap[eventType] = queueExcludeOnce;
             return this;
         }
     };
