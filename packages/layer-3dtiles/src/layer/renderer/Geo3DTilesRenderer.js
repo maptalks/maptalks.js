@@ -296,9 +296,6 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         const context = { tiles, leaves };
         this.onDrawTileStart(context);
         const count = this.painter.paint(tiles, leaves, parentContext);
-        // if (this.layer.options['debug']) {
-        //     this.painter.paintRegion(tiles, { color : this.layer.options['debugOutline'] }, sceneFilter, renderTarget);
-        // }
 
         this.onDrawTileEnd(context);
         if (count) {

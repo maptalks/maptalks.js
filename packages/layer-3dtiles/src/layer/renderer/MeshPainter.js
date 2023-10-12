@@ -1,8 +1,6 @@
 import * as maptalks from 'maptalks';
 import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil } from '@maptalks/gl';
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
-import regionVert from './glsl/region.vert';
-import regionFrag from './glsl/region.frag';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
 import { toDegree, isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
@@ -96,7 +94,6 @@ export default class MeshPainter {
         this._regl = regl;
         this._renderer = new reshader.Renderer(regl);
         this._loading = {};
-        this._regionMeshes = {};
         this._modelMeshes = {};
         this._pntsMeshes = {};
         this._i3dmMeshes = {};
@@ -106,7 +103,6 @@ export default class MeshPainter {
         this._pntsScene = new reshader.Scene();
         this._i3dmScene = new reshader.Scene();
         this._boxScene = new reshader.Scene();
-        this._regionScene = new reshader.Scene();
         this._resLoader = new reshader.ResourceLoader(regl.texture(2));
         this._bindedListener = this._onResourceLoad.bind(this);
         this._defaultMaterial = new reshader.PhongMaterial({
@@ -341,34 +337,6 @@ export default class MeshPainter {
         return b._node._cameraDistance - a._node._cameraDistance;
     }
 
-    paintRegion(tiles, parentTiles, options, filter, renderTarget) {
-        const map = this.getMap();
-        if (!tiles.length && !parentTiles.length) {
-            return;
-        }
-        const projViewMatrix = map.projViewMatrix;
-        tiles = tiles.concat(parentTiles);
-
-        const meshes = [];
-        for (let i = 0, l = tiles.length; i < l; i++) {
-            const node = tiles[i].node;
-            const mesh = this._createRegionMesh(node);
-            if (!mesh) {
-                continue;
-            }
-            if (mesh.getBoundingBox && !intersectsBox(projViewMatrix, mesh.getBoundingBox())) {
-                continue;
-            }
-            meshes.push(mesh);
-        }
-        this._regionShader.filter = filter;
-
-        this._regionScene.setMeshes(meshes);
-        const uniforms = this._getRegionUniforms(options);
-
-        this._renderer.render(this._regionShader, uniforms, this._regionScene, renderTarget && renderTarget.fbo);
-    }
-
     deleteTile(tileData) {
         const node = tileData.node;
         if (node._boxMesh) {
@@ -381,12 +349,6 @@ export default class MeshPainter {
     }
 
     _disposeMesh(id) {
-        const regionMesh = this._regionMeshes[id];
-        if (regionMesh) {
-            regionMesh.geometry.dispose();
-            regionMesh.dispose();
-            delete this._regionMeshes[id];
-        }
         const mesh = this._modelMeshes[id] || this._pntsMeshes[id] || this._i3dmMeshes[id] || this._cmptMeshes[id] || this._loading[id];
         if (this._cmptMeshes[id]) {
             this._disposeCMPT(id);
@@ -463,11 +425,6 @@ export default class MeshPainter {
             this._disposeMesh(id);
         }
         this._loading = {};
-        for (const id in this._regionMeshes) {
-            this._disposeMesh(id);
-        }
-        this._regionMeshes = {};
-
         if (this._phongShader) {
             this._phongShader.dispose();
             delete this._phongShader;
@@ -480,10 +437,6 @@ export default class MeshPainter {
             this._pntsShader.dispose();
             delete this._pntsShader;
         }
-        if (this._regionShader) {
-            this._regionShader.dispose();
-            delete this._regionShader;
-        }
 
         if (this._edgeShader) {
             this._edgeShader.dispose();
@@ -495,65 +448,6 @@ export default class MeshPainter {
         if (this.picking) {
             this.picking.dispose();
         }
-    }
-
-    _createRegionMesh(node) {
-        if (!node.boundingVolume || !node.boundingVolume.region) {
-            return null;
-        }
-        if (this._regionMeshes[node.id]) {
-            return this._regionMeshes[node.id];
-        }
-        const region = node.boundingVolume.region;
-        let min = new maptalks.Coordinate(toDegree(region[0]), toDegree(region[1])),
-            max = new maptalks.Coordinate(toDegree(region[2]), toDegree(region[3]));
-        min = this._coordToPoint(min);
-        max = this._coordToPoint(max);
-        const center = min.add(max)._multi(1 / 2);
-        min._sub(center);
-        max._sub(center);
-        const heights = this._distanceToPoint(region[4], region[5]),
-            bottom = heights.x,
-            top = heights.y;
-        const aPosition = [
-            //top
-            min.x, min.y, top,
-            max.x, min.y, top,
-            max.x, max.y, top,
-            min.x, max.y, top,
-
-            //bottom
-            min.x, min.y, bottom,
-            max.x, min.y, bottom,
-            max.x, max.y, bottom,
-            min.x, max.y, bottom,
-        ];
-
-        const indices = [
-            //top
-            0, 1, 1, 2, 2, 3, 3, 0,
-            //side
-            0, 4, 1, 5, 2, 6, 3, 7,
-            //bottom
-            4, 5, 5, 6, 6, 7, 7, 4
-        ];
-
-        const geometry = new reshader.Geometry(
-            {
-                aPosition
-            },
-            indices,
-            0,
-            {
-                primitive : 'lines'
-            }
-        );
-        geometry.generateBuffers(this._regl);
-        const mesh = new reshader.Mesh(geometry);
-        const modelMat = mat4.identity([]);
-        mesh.setLocalTransform(mat4.translate(modelMat, modelMat, [center.x, center.y, 0]));
-        this._regionMeshes[node.id] = mesh;
-        return mesh;
     }
 
     _getMesh(node) {
@@ -1505,23 +1399,6 @@ export default class MeshPainter {
                 return this._canvas ? this._canvas.height : 1;
             }
         };
-        this._regionShader = new reshader.MeshShader({
-            vert: regionVert,
-            frag: regionFrag,
-            uniforms : [
-                'color',
-                {
-                    name: 'projViewModelMatrix',
-                    type: 'function',
-                    fn: (_, props) => {
-                        return mat4.multiply([], props['projViewMatrix'], props['modelMatrix']);
-                    }
-                }
-            ],
-            extraCommandProps: {
-                viewport
-            }
-        });
 
         const modelNormalMatrix = [];
         const projViewModelMatrix = [];
@@ -1713,14 +1590,6 @@ export default class MeshPainter {
                     return props.meshProperties.polygonOffset;
                 }
             }
-        };
-    }
-
-    _getRegionUniforms(options) {
-        const map = this.getMap();
-        return {
-            projViewMatrix : map.projViewMatrix,
-            color : options && options.color || [0, 1, 0]
         };
     }
 
@@ -1921,15 +1790,6 @@ export default class MeshPainter {
 
     _coordToPoint(c) {
         return this._layer._coordToPoint(c);
-    }
-
-    _distanceToPoint(x, y) {
-        const map = this.getMap();
-        if (map.getGLZoom) {
-            return map.distanceToPoint(x, y, map.getGLZoom());
-        } else {
-            return map.distanceToPointAtRes(x, y, map.getGLRes());
-        }
     }
 
     _pointToPrj(c) {

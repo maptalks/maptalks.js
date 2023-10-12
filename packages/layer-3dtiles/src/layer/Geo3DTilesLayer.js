@@ -25,7 +25,6 @@ const options = {
     'forceRenderOnRotating' : true,
     'forceRenderOnMoving' : true,
     'debug' : false,
-    'debugOutline' : [0, 1, 0],
     'meshLimitPerFrame': 1,
     'i3sNodepageLimitPerFrame': 1,
     'enableI3SCompressedGeometry': true,
@@ -507,14 +506,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             region[4] = volume[4] + heightOffset + (coordOffset[2] || 0);
             region[5] = volume[5] + heightOffset + (coordOffset[2] || 0);
         } else if (box || sphere) {
-            // const volume = box || sphere;
-            // const cart3 = vec3.transformMat4(TEMP_VEC3_0, volume, node.matrix);
-            // const matInvert = mat4.invert(TEMP_MAT, node.matrix);
-            // const center = cartesian3ToDegree(TEMP_VEC3_1, cart3);
-            // center[2] += heightOffset;
-            // radianToCartesian3(cart3, toRadian(center[0]), toRadian(center[1]), center[2]);
-            // vec3.transformMat4(volume, cart3, matInvert);
-
             if (!boundingVolume.originalVolume) {
                 boundingVolume.originalVolume = (box || sphere).slice(0);
             }
@@ -527,33 +518,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             center[1] = offsetCenter.y;
             center[2] += heightOffset + (coordOffset[2] || 0);
             radianToCartesian3(volume, toRadian(center[0]), toRadian(center[1]), center[2]);
-
-            // if (box) {
-            //     const boxCenter = new maptalks.Coordinate(center);
-            //     const map = this.getMap();
-            //     const hScale = 1 / (map.getGLZoom ? map.getResolution(map.getGLZoom()) : map.getGLRes());//
-            //     const pcenter = this._coordToPoint(boxCenter);
-            //     const centerHeight = center[2];
-
-            //     const halfAxes = box.slice(3);
-            //     mat3.multiply(halfAxes, mat3.fromMat4([], node.matrix), halfAxes);
-
-            //     const xAxis = this._convertAxis(box, halfAxes.slice(0, 3), pcenter, centerHeight, hScale);
-            //     const yAxis = this._convertAxis(box, halfAxes.slice(3, 6), pcenter, centerHeight, hScale);
-            //     const zAxis = this._convertAxis(box, halfAxes.slice(6, 9), pcenter, centerHeight, hScale);
-
-            //     box[3] = xAxis[0];
-            //     box[4] = xAxis[1];
-            //     box[5] = xAxis[2];
-
-            //     box[6] = yAxis[0];
-            //     box[7] = yAxis[1];
-            //     box[8] = yAxis[2];
-
-            //     box[9] = zAxis[0];
-            //     box[10] = zAxis[1];
-            //     box[11] = zAxis[2];
-            // }
         }
         boundingVolume._centerTransformed =  true;
     }
@@ -565,15 +529,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const coordOffset = service.coordOffset || EMPTY_COORD_OFFSET;
         return boundingVolume.coordOffset[0] !== coordOffset[0] || boundingVolume.coordOffset[1] !== coordOffset[1] || boundingVolume.heightOffset !== heightOffset;
     }
-
-    // _convertAxis(cartCenter, axis, pcenter, centerHeight, hScale) {
-    //     const xCorner = vec3.add(TEMP_VEC3_0, cartCenter, axis);
-    //     const degree = cartesian3ToDegree(TEMP_VEC3_1, xCorner);
-    //     const point = this._coordToPoint(new maptalks.Coordinate(degree));
-    //     return [point.x - pcenter.x, point.y - pcenter.y, (degree[2] - centerHeight) * hScale];
-
-    //     // return [axis[0] * hScale, axis[1] * hScale, axis[2] * hScale]
-    // }
 
     _isEmpty(node) {
         return node.geometricError === undefined || !node.boundingVolume;/*  &&
@@ -717,9 +672,6 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const id = node.id;
         let nodeBox = this._nodeBoxes[id] && this._nodeBoxes[id].obbox;
         const { boundingVolume } = node;
-        // let region = boundingVolume.region;
-        // const box = boundingVolume.box;
-
         const region = boundingVolume.region;
         const box = boundingVolume.box;
         const sphere = boundingVolume.sphere;
@@ -739,34 +691,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
                 const center = cartesian3ToDegree(TEMP_VEC3_0, nodeCenter);
                 const coord = new maptalks.Coordinate(center);
                 nodeBox.center = coord;
-            } /*else if (box) {
-                // let nodeCenter = nodeBox.slice(0, 3);
-                // const nodeCenter = vec3.transformMat4(nodeBox, nodeBox, node.matrix);
-                const nodeCenter = box;
-                const center = cartesian3ToDegree(TEMP_VEC3_0, nodeCenter);
-                const coord = new maptalks.Coordinate(center);
-                const scale = this._getBoxScale(coord);
-                const pointBox = convertBoxToPointSpace(this.getMap(), box, node.matrix, scale[2]);
-                // const pcenter = pointBox.slice(0, 3);
-                // const center = cartesian3ToDegree(TEMP_VEC3_0, nodeCenter);
-                // const coord = new maptalks.Coordinate(center);
-                // const pcenter = this._coordToPoint(coord, TEMP_POINT).toArray();
-
-
-
-                // pcenter.push(center[2] * scale[2]);
-                // const halfAxes = box.slice(3);
-                // if (!mat4.exactEquals(node.matrix, IDENTITY_MATRIX)) {
-                //     mat3.multiply(halfAxes, mat3.fromMat4(TEMP_MAT3_0, node.matrix), halfAxes);
-                // }
-                // for (let i = 0; i < halfAxes.length; i++) {
-                //     halfAxes[i] *= scale[i % 3];
-                //     box[3 + i] = halfAxes[i];
-                // }
-                //[[xcenter, ycenter, z], half-x, half-y, half-z]
-                nodeBox = this._nodeBoxes[id] = pointBox;
-                nodeBox.center = coord;
-            }*/
+            }
         }
 
 
@@ -1254,34 +1179,12 @@ function computeSphereDistanceToCamera(boundingVolume, cameraCartesian3) {
     }
 }
 
-// function computeSphereCenterToCamera(node, cameraCartesian3) {
-//     const center = node.boundingVolume.sphere;
-//     const distance = vec3.dist(center, cameraCartesian3);
-//     return distance;
-// }
-
-// function computeBoxCenterToCamera(node, cameraCartesian3) {
-//     const center = node.boundingVolume.box;
-//     const distance = vec3.dist(center, cameraCartesian3);
-//     return distance;
-// }
-
 function computeBoxDistanceToCamera(boundingVolume, cameraCartesian3) {
     const box = boundingVolume.box;
     const boxCenter = vec3.set(TEMP_VEC3_0, box[0], box[1], box[2]);
     const halfAxes = mat3.set(TEMP_MAT3_0, box[3], box[4], box[5], box[6], box[7], box[8], box[9], box[10], box[11]);
     return distanceToCamera(boxCenter, halfAxes, cameraCartesian3);
 }
-
-// const REGION_MIN = [];
-// const REGION_MAX = [];
-// function computeRegionCenterToCamera(node, cameraCartesian3) {
-//     const region = node.boundingVolume.region;
-//     const min = radianToCartesian3(REGION_MIN, region[0], region[1], region[4]),
-//         max  = radianToCartesian3(REGION_MAX, region[2], region[3], region[5]);
-//     const center = vec3.scale(min, vec3.add(min, min, max), 1 / 2);
-//     return vec3.dist(center, cameraCartesian3);
-// }
 
 /**
  * 计算 node 到 cameraCartesian3 的距离，遍历 node 的 topPlane 的四个端点，取最小值
@@ -1315,15 +1218,6 @@ function createRootTile(url, idx, service) {
     return root;
 }
 
-
-// function distanceScale(center) {
-//     const target = projection.locate(center, 100, 0);
-//     const p0 = projection.project(center),
-//         p1 = projection.project(target);
-//     p1['_sub'](p0)['_abs']();
-//     return p1.x / 100;
-// }
-
 function inViewerRequestVolume(cameraLocation, cameraCartesian3, volume) {
     if (volume.region) {
         const region = volume.region;
@@ -1340,127 +1234,9 @@ function inViewerRequestVolume(cameraLocation, cameraCartesian3, volume) {
     return false;
 }
 
-// function toSphere(box) {
-//     const sphere = [box[0], box[1], box[2], 0];
-//     const u = [box[3], box[4], box[5]];
-//     const v = [box[6], box[7], box[8]];
-//     const w = [box[9], box[10], box[11]];
-
-//     vec3.add(u, u, v);
-//     vec3.add(u, u, w);
-
-//     sphere[3] = vec3.length(u);
-//     return sphere;
-// }
-
 function isI3SNode(node) {
     return node.content && node.content.uri && node.content.uri.indexOf('i3s:') >= 0;
 }
-
-// const BOX_CENTER = [];
-// const X_AXIS = [];
-// const Y_AXIS = [];
-// const Z_AXIS = [];
-// const CORNERS = [];
-// const CORNERCOORDS = [];
-// const CORNER_Xs = [];
-// const CORNER_Ys = [];
-// const CORNER_Zs = [];
-// const HALF_AXES = [];
-// const RADIUS = 6378137;
-// function convertBoxToRegion(box, matrix) {
-//     for (let i = 0; i < 9; i++) {
-//         if (box[i + 3] === Infinity || box[i + 3] === -Infinity) {
-//             box[i + 3] = Math.sign(box[i + 3]) * RADIUS * 3;
-//         }
-//         HALF_AXES[i] = box[i + 3];
-//     }
-//     const halfAxes = HALF_AXES;
-//     if (!mat4.exactEquals(matrix, IDENTITY_MATRIX)) {
-//         mat3.multiply(halfAxes, mat3.fromMat4(TEMP_MAT3_0, matrix), halfAxes);
-//     }
-//     const center = vec3.copy(BOX_CENTER, box);
-//     // const coordCenter = cartesian3ToDegree(COORD_CENTER, center);
-//     // COORD.set(coordCenter[0], coordCenter[1]);
-//     // const pointCenter = map.coordToPointAtRes(COORD, glRes, POINT_CENTER);
-//     // const centerZ = coordCenter[2] * scaleZ;
-
-//     const xAxis = vec3.set(X_AXIS, halfAxes[0], halfAxes[1], halfAxes[2]);
-//     const yAxis = vec3.set(Y_AXIS, halfAxes[3], halfAxes[4], halfAxes[5]);
-//     const zAxis = vec3.set(Z_AXIS, halfAxes[6], halfAxes[7], halfAxes[8]);
-
-//     CORNERS[0] = CORNERS[0] || [];
-//     const corner0 = vec3.copy(CORNERS[0], center);
-//     vec3.sub(corner0, corner0, xAxis);
-//     vec3.sub(corner0, corner0, yAxis);
-//     vec3.sub(corner0, corner0, zAxis);
-
-//     CORNERS[1] = CORNERS[1] || [];
-//     const corner1 = vec3.copy(CORNERS[1], center);
-//     vec3.sub(corner1, corner1, xAxis);
-//     vec3.sub(corner1, corner1, yAxis);
-//     vec3.add(corner1, corner1, zAxis);
-
-
-//     CORNERS[2] = CORNERS[2] || [];
-//     const corner2 = vec3.copy(CORNERS[2], center);
-//     vec3.sub(corner2, corner2, xAxis);
-//     vec3.add(corner2, corner2, yAxis);
-//     vec3.sub(corner2, corner2, zAxis);
-
-
-//     CORNERS[3] = CORNERS[3] || [];
-//     const corner3 = vec3.copy(CORNERS[3], center);
-//     vec3.sub(corner3, corner3, xAxis);
-//     vec3.add(corner3, corner3, yAxis);
-//     vec3.add(corner3, corner3, zAxis);
-
-
-//     CORNERS[4] = CORNERS[4] || [];
-//     const corner4 = vec3.copy(CORNERS[4], center);
-//     vec3.add(corner4, corner4, xAxis);
-//     vec3.sub(corner4, corner4, yAxis);
-//     vec3.sub(corner4, corner4, zAxis);
-
-
-//     CORNERS[5] = CORNERS[5] || [];
-//     const corner5 = vec3.copy(CORNERS[5], center);
-//     vec3.add(corner5, corner5, xAxis);
-//     vec3.sub(corner5, corner5, yAxis);
-//     vec3.add(corner5, corner5, zAxis);
-
-
-//     CORNERS[6] = CORNERS[6] || [];
-//     const corner6 = vec3.copy(CORNERS[6], center);
-//     vec3.add(corner6, corner6, xAxis);
-//     vec3.add(corner6, corner6, yAxis);
-//     vec3.sub(corner6, corner6, zAxis);
-
-//     CORNERS[7] = CORNERS[7] || [];
-//     const corner7 = vec3.copy(CORNERS[7], center);
-//     vec3.add(corner7, corner7, xAxis);
-//     vec3.add(corner7, corner7, yAxis);
-//     vec3.add(corner7, corner7, zAxis);
-
-//     for (let i = 0; i < CORNERS.length; i++) {
-//         CORNERCOORDS[i] = CORNERCOORDS[i] || [];
-//         cartesian3ToDegree(CORNERCOORDS[i], CORNERS[i]);
-//         CORNER_Xs[i] = CORNERCOORDS[i][0];
-//         CORNER_Ys[i] = CORNERCOORDS[i][1];
-//         CORNER_Zs[i] = CORNERCOORDS[i][2];
-//     }
-
-
-
-//     return [
-//         toRadian(Math.min(...CORNER_Xs)),
-//         toRadian(Math.min(...CORNER_Ys)),
-//         toRadian(Math.max(...CORNER_Xs)),
-//         toRadian(Math.max(...CORNER_Ys)),
-//         Math.min(...CORNER_Zs),
-//         Math.max(...CORNER_Zs)
-//     ];
-// }
 
 function convertRegionToBox(region) {
     const west = region[0], south = region[1], east = region[2], north = region[3], minHeight = region[4], maxHeight = region[5];
