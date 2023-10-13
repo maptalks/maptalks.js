@@ -180,16 +180,7 @@ export default class I3SNode {
                 obb.halfSize,
                 obb.quaternion
             );
-            // 计算box的半径
-            const x = box[3] + box[6] + box[9];
-            const y = box[4] + box[7] + box[10];
-            const z = box[5] + box[8] + box[11];
-            vec3.set(TEMP_VEC3, x, y, z);
-            const radius = vec3.len(TEMP_VEC3);
-            boundingVolume.sphere = [
-                ...position,
-                radius
-            ];
+            boundingVolume.box = box;
         }
 
         // compute the geometric error
