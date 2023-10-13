@@ -778,10 +778,12 @@ export default class MeshPainter {
         }
         const service = this._layer._getNodeService(node._rootIdx);
         let shader = service.shader || 'pbr';
-        if (gltf.materials) {
+        if (service.unlit) {
+            shader = 'phong';
+        } else if (gltf.materials) {
             for (let i = 0; i < gltf.materials.length; i++) {
                 if (gltf.materials[i] && gltf.materials[i].extensions && gltf.materials[i].extensions['KHR_materials_unlit']) {
-                    shader = service.shader = 'phong';
+                    shader = 'phong';
                     break;
                 }
             }
@@ -1707,8 +1709,7 @@ export default class MeshPainter {
         }
         matInfo['environmentExposure'] = environmentExposure;
         matInfo.alphaTest = 0.1;
-        if (material.extensions && material.extensions['KHR_materials_unlit']) {
-            matInfo['environmentExposure'] = 1;
+        if (service.unlit || material.extensions && material.extensions['KHR_materials_unlit']) {
             matInfo.ambientColor = [1, 1, 1];
             matInfo['light0_diffuse'] = [0, 0, 0, 0];
             matInfo['lightSpecular'] = [0, 0, 0];
