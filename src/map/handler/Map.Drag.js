@@ -45,7 +45,7 @@ class MapDragHandler extends Handler {
         if (param.domEvent) {
             param = param.domEvent;
         }
-        return this.target._ignoreEvent(param);
+        return this.target._ignoreEvent(param) || this.target._isEventOutMap(param);
     }
 
     _onMouseDown(param) {

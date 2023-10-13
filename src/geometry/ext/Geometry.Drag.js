@@ -166,8 +166,11 @@ class GeometryDragHandler extends Handler {
 
     _dragging(param) {
         const target = this.target;
-        const map = target.getMap(),
-            e = map._parseEvent(param['domEvent']);
+        const map = target.getMap();
+        if (map._isEventOutMap(param['domEvent'])) {
+            return;
+        }
+        const e = map._parseEvent(param['domEvent']);
 
         const domEvent = e['domEvent'];
         if (domEvent.touches && domEvent.touches.length > 1) {
