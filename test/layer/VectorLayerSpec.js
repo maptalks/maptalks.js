@@ -133,8 +133,8 @@ describe('VectorLayer.Spec', function () {
 
         it('all type of geometry in seamlessZoom', function (done) {
             map.config('seamlessZoom', true);
-            layer.on('forceRenderOnZooming', true);
-            layer.on('drawImmediate', true);
+            layer.config('forceRenderOnZooming', true);
+            layer.config('drawImmediate', true);
             var geometries = GEN_GEOMETRIES_OF_ALL_TYPES();
             map.on('zoomend', function () {
                 done();

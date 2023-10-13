@@ -10,47 +10,6 @@ function generateWrapKey(eventType) {
     return 'Z__' + eventType;
 }
 
-/**
- * 二分查找
- * @param {*} id
- * @param {*} listeners
- * @returns
- */
-function findChainById(id, listeners) {
-    const len = listeners.length;
-    let index = -1;
-    if (len === 0) {
-        return index;
-    }
-    if (len === 1) {
-        const handler = listeners[0].handler;
-        if (handler._id === id) {
-            index = 0;
-        }
-        return index;
-    }
-    let left = 0, right = len;
-    let idx = Math.floor((left + right) / 2);
-    while (index === -1) {
-        const handler = listeners[idx].handler;
-        if (handler._id === id) {
-            index = idx;
-            break;
-        }
-        if (idx === 0 || idx === len) {
-            break;
-        }
-        if (handler._id < id) {
-            left = idx;
-        } else {
-            right = idx;
-        }
-        idx = Math.floor((left + right) / 2);
-    }
-    return index;
-
-}
-
 const Eventable = Base =>
 
     class extends Base {
@@ -85,7 +44,6 @@ const Eventable = Base =>
             }
             //检测handler是否被监听过
             const isAdd = isNumber(handler._id);
-            //为每个handler分配id,注意这个id是自增的，自然就是排序好的,性能提升的主要策略
             handler._id = UID();
             let handlerChain;
             for (let ii = 0, ll = eventTypes.length; ii < ll; ii++) {
@@ -204,23 +162,11 @@ const Eventable = Base =>
                 if (!listeners) {
                     continue;
                 }
-                //not once
-                if (!handler._parent) {
-                    const index = findChainById(handler._id, listeners);
-                    if (index > -1) {
-                        const listener = listeners[index];
-                        if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
-                            delete listener.handler[wrapKey];
-                            listeners.splice(index, 1);
-                        }
-                    }
-                } else {
-                    for (let i = listeners.length - 1; i >= 0; i--) {
-                        const listener = listeners[i];
-                        if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
-                            delete listener.handler[wrapKey];
-                            listeners.splice(i, 1);
-                        }
+                for (let i = listeners.length - 1; i >= 0; i--) {
+                    const listener = listeners[i];
+                    if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
+                        delete listener.handler[wrapKey];
+                        listeners.splice(i, 1);
                     }
                 }
                 if (!listeners.length) {
@@ -340,7 +286,6 @@ const Eventable = Base =>
                 // me.off(evtType, onceHandler, this);
             };
             fn[key] = handler;
-            handler._parent = fn;
             return fn;
         }
 
