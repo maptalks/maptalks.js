@@ -204,21 +204,25 @@ const Eventable = Base =>
                 if (!listeners) {
                     continue;
                 }
-                const index = findChainById(handler._id, listeners);
-                if (index > -1) {
-                    const listener = listeners[index];
-                    if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
-                        delete listener.handler[wrapKey];
-                        listeners.splice(index, 1);
+                //not once
+                if (!handler._parent) {
+                    const index = findChainById(handler._id, listeners);
+                    if (index > -1) {
+                        const listener = listeners[index];
+                        if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
+                            delete listener.handler[wrapKey];
+                            listeners.splice(index, 1);
+                        }
+                    }
+                } else {
+                    for (let i = listeners.length - 1; i >= 0; i--) {
+                        const listener = listeners[i];
+                        if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
+                            delete listener.handler[wrapKey];
+                            listeners.splice(i, 1);
+                        }
                     }
                 }
-                // for (let i = listeners.length - 1; i >= 0; i--) {
-                //     const listener = listeners[i];
-                //     if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
-                //         delete listener.handler[wrapKey];
-                //         listeners.splice(i, 1);
-                //     }
-                // }
                 if (!listeners.length) {
                     delete this._eventMap[eventType];
                 }
@@ -336,6 +340,7 @@ const Eventable = Base =>
                 // me.off(evtType, onceHandler, this);
             };
             fn[key] = handler;
+            handler._parent = fn;
             return fn;
         }
 
