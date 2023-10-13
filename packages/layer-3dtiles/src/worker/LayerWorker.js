@@ -13,6 +13,7 @@ import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
 // import { convertS3MJSON } from './parsers/s3m/S3MHelper';
 // import parseS3M from './parsers/s3m/S3MParser';
 import { isI3SURL, loadI3STile } from './parsers/i3s/I3SWorkerHelper';
+import { buildTangents, buildNormals } from '@maptalks/tbn-packer';
 import { project } from './Projection';
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];
@@ -242,15 +243,68 @@ export default class BaseLayerWorker {
         }
     }
 
+    _createMissedAttrs(primitive, gltf) {
+        const material = gltf.materials[primitive.material];
+        const isUnlit = material && material.extensions && material.extensions['KHR_materials_unlit'];
+        if (isUnlit) {
+            return;
+        }
+        const tangentAttr = primitive.attributes['TANGENT'];
+        if (tangentAttr) {
+            return;
+        }
+        const texCoordAttr = primitive.attributes['TEXCOORD_0'];
+        if (!texCoordAttr) {
+            return;
+        }
+        if (!primitive.attributes['NORMAL']) {
+            const positions = primitive.attributes['POSITION'].array;
+            const indices = primitive.indices.array;
+            const normals = buildNormals(positions, indices, new Float32Array(positions.length));
+            primitive.attributes['NORMAL'] = {
+                array: normals,
+                byteLength: normals.byteLength,
+                byteOffset: 0,
+                byteStride: 0,
+                componentType: 5126,
+                count: normals.length / 3,
+                itemSize: 3,
+                name: 'NORMAL',
+                type: 'VEC3'
+            };
+            // const tangents = buildTangents(
+            //     positions,
+            //     normals,
+            //     texCoordAttr.array,
+            //     indices,
+            //     new Float32Array(positions.length / 3 * 4)
+            // );
+            // primitive.attributes['TANGENT'] = {
+            //     array: tangents,
+            //     byteLength: tangents.byteLength,
+            //     byteOffset: 0,
+            //     byteStride: 0,
+            //     componentType: 5126,
+            //     count: tangents.length / 4,
+            //     itemSize: 4,
+            //     name: 'TANGENT',
+            //     type: 'VEC4'
+            // };
+            // delete primitive.attributes['TEXCOORD_0'];
+        }
+    }
+
     _compressAttrFloat32ToInt16(gltf) {
         //采用KHR_techniques_webgl的模型是自定义shader，这里不做压缩处理
         if (!gltf || !gltf.meshes || (gltf.extensionsUsed && gltf.extensionsUsed.indexOf('KHR_techniques_webgl') > -1)) {
             return;
         }
         const meshes = gltf.meshes;
+
         for (const primitiveIndex in meshes) {
             const primitives = meshes[primitiveIndex].primitives;
             primitives.forEach(primitive => {
+                this._createMissedAttrs(primitive, gltf);
                 primitive.compressed_int16_params = {};
                 const attributes = primitive.attributes;
                 for (const attrName in attributes) {

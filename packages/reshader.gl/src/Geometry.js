@@ -690,7 +690,7 @@ export default class Geometry {
     // 2. Object形式（regl的buffer定义）
 
     _getAttributeData(name) {
-        const data = this.data[name];
+        const data = this.data[name] && this.data[name].array ? this.data[name].array : this.data[name];
         const bufKey = data.buffer;
         if (!isInterleaved(data)) {
             return data;
