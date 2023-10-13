@@ -13,7 +13,7 @@ import { iterateMesh, iterateBufferData } from '../common/GLTFHelpers';
 // import { convertS3MJSON } from './parsers/s3m/S3MHelper';
 // import parseS3M from './parsers/s3m/S3MParser';
 import { isI3SURL, loadI3STile } from './parsers/i3s/I3SWorkerHelper';
-import { buildTangents, buildNormals } from '@maptalks/tbn-packer';
+import { buildNormals } from '@maptalks/tbn-packer';
 import { project } from './Projection';
 
 const Y_TO_Z = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1];

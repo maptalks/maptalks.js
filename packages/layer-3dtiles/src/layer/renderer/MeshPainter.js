@@ -3,7 +3,7 @@ import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil } from '@maptalks
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
-import { toDegree, isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
+import { isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
 // import { getKHR_techniques } from './s3m/S3MTechnique';

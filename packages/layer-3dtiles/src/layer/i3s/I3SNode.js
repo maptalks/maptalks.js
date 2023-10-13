@@ -1,9 +1,7 @@
 import { radianToCartesian3 } from '../../common/Transform';
 import { toRadian } from '../../common/Util';
-import { vec3, mat3, mat4 } from 'gl-matrix';
+import { mat3, mat4 } from 'gl-matrix';
 import { fillNodepagesToCache } from './Util';
-
-const TEMP_VEC3 = [];
 
 export default class I3SNode {
     constructor(url, rootIdx, nodeCache, fnFetchNodepages) {
