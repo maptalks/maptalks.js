@@ -42,7 +42,7 @@ class MapRenderer extends Class {
         DRAGEVENTS.forEach(eventName => {
             off(container, eventName, dragEventHanlder);
         });
-        on(container, 'drop', this._thisDropEvent);
+        off(container, 'drop', this._thisDropEvent);
     }
 
     callInNextFrame(fn) {
