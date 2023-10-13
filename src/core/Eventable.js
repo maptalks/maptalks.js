@@ -1,10 +1,56 @@
 import Browser from './Browser';
-import { extend, isString, isNil } from './util';
+import { extend, isString, isNil, UID, isNumber } from './util';
 import { stopPropagation } from './util/dom';
 /**
  * This provides methods used for event handling. It's a mixin and not meant to be used directly.
  * @mixin Eventable
  */
+
+function generateWrapKey(eventType) {
+    return 'Z__' + eventType;
+}
+
+/**
+ * 二分查找
+ * @param {*} id
+ * @param {*} listeners
+ * @returns
+ */
+function findChainById(id, listeners) {
+    const len = listeners.length;
+    let index = -1;
+    if (len === 0) {
+        return index;
+    }
+    if (len === 1) {
+        const handler = listeners[0].handler;
+        if (handler._id === id) {
+            index = 0;
+        }
+        return index;
+    }
+    let left = 0, right = len;
+    let idx = Math.floor((left + right) / 2);
+    while (index === -1) {
+        const handler = listeners[idx].handler;
+        if (handler._id === id) {
+            index = idx;
+            break;
+        }
+        if (idx === 0 || idx === len) {
+            break;
+        }
+        if (handler._id < id) {
+            left = idx;
+        } else {
+            right = idx;
+        }
+        idx = Math.floor((left + right) / 2);
+    }
+    return index;
+
+}
+
 const Eventable = Base =>
 
     class extends Base {
@@ -37,13 +83,29 @@ const Eventable = Base =>
             if (!context) {
                 context = this;
             }
+            //检测handler是否被监听过
+            const isAdd = isNumber(handler._id);
+            //为每个handler分配id,注意这个id是自增的，自然就是排序好的,性能提升的主要策略
+            handler._id = UID();
             let handlerChain;
             for (let ii = 0, ll = eventTypes.length; ii < ll; ii++) {
                 evtType = eventTypes[ii];
+                const wrapKey = generateWrapKey(evtType);
+                if (handler[wrapKey]) {
+                    handler[wrapKey]._id = handler._id;
+                }
                 handlerChain = this._eventMap[evtType];
                 if (!handlerChain) {
                     handlerChain = [];
                     this._eventMap[evtType] = handlerChain;
+                }
+                //没有监听过的handler直接入列
+                if (!isAdd) {
+                    handlerChain.push({
+                        handler: handler,
+                        context: context
+                    });
+                    continue;
                 }
                 const l = handlerChain.length;
                 if (l > 0) {
@@ -126,6 +188,10 @@ const Eventable = Base =>
             if (!handler) {
                 return this;
             }
+            //没有监听过的handler直接忽略
+            if (!isNumber(handler._id)) {
+                return this;
+            }
             const eventTypes = eventsOff.split(' ');
             let eventType, listeners, wrapKey;
             if (!context) {
@@ -133,18 +199,26 @@ const Eventable = Base =>
             }
             for (let j = 0, jl = eventTypes.length; j < jl; j++) {
                 eventType = eventTypes[j].toLowerCase();
-                wrapKey = 'Z__' + eventType;
+                wrapKey = generateWrapKey(eventType);
                 listeners = this._eventMap[eventType];
                 if (!listeners) {
-                    return this;
+                    continue;
                 }
-                for (let i = listeners.length - 1; i >= 0; i--) {
-                    const listener = listeners[i];
+                const index = findChainById(handler._id, listeners);
+                if (index > -1) {
+                    const listener = listeners[index];
                     if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
                         delete listener.handler[wrapKey];
-                        listeners.splice(i, 1);
+                        listeners.splice(index, 1);
                     }
                 }
+                // for (let i = listeners.length - 1; i >= 0; i--) {
+                //     const listener = listeners[i];
+                //     if ((handler === listener.handler || handler === listener.handler[wrapKey]) && listener.context === context) {
+                //         delete listener.handler[wrapKey];
+                //         listeners.splice(i, 1);
+                //     }
+                // }
                 if (!listeners.length) {
                     delete this._eventMap[eventType];
                 }
@@ -245,7 +319,7 @@ const Eventable = Base =>
 
         _wrapOnceHandler(evtType, handler, context) {
             // const me = this;
-            const key = 'Z__' + evtType;
+            const key = generateWrapKey(evtType);
             let called = false;
             const fn = function onceHandler() {
                 if (called) {
