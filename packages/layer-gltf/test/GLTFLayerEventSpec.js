@@ -1,7 +1,8 @@
 describe('gltf layer\'s event', function () {
-    let map;
+    let map, eventContainer;
     beforeEach(function() {
         map = createMap();
+        eventContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {
@@ -24,9 +25,9 @@ describe('gltf layer\'s event', function () {
         });
         marker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    coordinate: clickPoint,
-                    containerPoint: clickContainerPoint
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });
@@ -57,8 +58,9 @@ describe('gltf layer\'s event', function () {
         gltflayer.on('modelload', () => {
             setTimeout(function () {
                 for (let i = 0; i < 5; i++) {
-                    map.fire('dom:click', {
-                        containerPoint: clickContainerPoint.add(i * 55 - 110, 0)
+                    happen.click(eventContainer, {
+                        'clientX':clickContainerPoint.x + i * 55 - 110,
+                        'clientY':clickContainerPoint.y
                     });
                 }
             }, 100);
@@ -83,9 +85,9 @@ describe('gltf layer\'s event', function () {
         });
         marker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    coordinate: clickPoint,
-                    containerPoint: clickContainerPoint
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });
@@ -107,31 +109,6 @@ describe('gltf layer\'s event', function () {
         marker.addTo(gltflayer);
     });
 
-    it('addEvents and removeEvents', function (done) {
-        const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
-        expect(gltflayer.getMapEvents()).to.be.eql('');
-        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url1,
-            scaleX: 40,
-            scaleY: 40,
-            scaleZ: 40
-        }}, {
-            animation:false
-        }).addTo(gltflayer);
-        const handler = function (e) {
-            return e;
-        };
-        marker.on('a b c mouseenter', handler);
-        expect(gltflayer.getMapEvents() === 'a b c mouseenter').not.to.be.ok();
-        expect(gltflayer.getMapEvents() === 'mousemove').to.be.ok();
-        setTimeout(() => {
-            marker.off('mouseenter', handler);
-            marker.remove();
-            expect(gltflayer.getMapEvents() === '').to.be.ok();
-            expect(map._eventMap.mousemove).not.to.be.ok();
-            done();
-        }, 100);
-    });
-
     it('need refresh picking', function (done) {
         const gltflayer = new maptalks.GLTFLayer('gltf12').addTo(map);
         const marker1 = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
@@ -146,8 +123,9 @@ describe('gltf layer\'s event', function () {
             const target = e.target;
             expect(meshId).to.be.eql(0);
             expect(target instanceof maptalks.GLTFMarker).to.be.ok();
-            map.fire('dom:click', {
-                containerPoint: clickContainerPoint.add(110, 0)
+            happen.click(eventContainer, {
+                'clientX':clickContainerPoint.x + 110,
+                'clientY':clickContainerPoint.y
             });
         });
         const marker2 = marker1.copy().addTo(gltflayer);
@@ -161,8 +139,9 @@ describe('gltf layer\'s event', function () {
         });
         marker1.on('load', () => {
             setTimeout(() => {
-                map.fire('dom:click', {
-                    containerPoint: clickContainerPoint
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });

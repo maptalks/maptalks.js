@@ -22,6 +22,29 @@ describe('render specs', () => {
     });
 
     let container, map;
+    const skyboxDir = `http://localhost:${PORT}/integration/fixtures/withSkyBox`;
+    const lightWithSkybox = {
+        directional: {
+            direction: [1, 0, -1],
+            color: [1, 1, 1],
+        },
+        ambient: {
+            resource: {
+                url: {
+                    front: `${skyboxDir}/img/background.png`,
+                    back: `${skyboxDir}/img/background.png`,
+                    left: `${skyboxDir}/img/background.png`,
+                    right: `${skyboxDir}/img/background.png`,
+                    top: `${skyboxDir}/img/background.png`,
+                    bottom: `${skyboxDir}/img/background.png`,
+                },
+                prefilterCubeSize: 32
+            },
+            exposure: 1,
+            hsv: [1, 1, 1],
+            orientation: 1
+        }
+    };
 
     function createMap(center) {
         const option = {
@@ -201,12 +224,25 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        shader: 'pbr',
-                        ambientLight: [1, 1, 1]
+                        shader: 'pbr'
                     }
                 ]
             });
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 10, renderCount: 1, zoomOffset: 1, noGroup: true });
+        }).timeout(10000);
+
+        it('set ambientLight', done => {
+            const resPath = 'BatchedDraco/ktx2/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        ambientLight: [1, 1, 1],
+                        shader: 'pbr'
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/BatchedDraco/ambientLight/expected.png`, diffCount: 10, renderCount: 1, zoomOffset: 1, noGroup: true });
         }).timeout(10000);
 
         it('crn', done => {
@@ -269,7 +305,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -287,7 +322,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420,
                         coordOffset: [0.001, 0]
                     }
@@ -305,7 +339,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -429,8 +462,7 @@ describe('render specs', () => {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         // shader: 'phong',
                         fillEmptyDataInMissingAttribute: 1,
-                        maximumScreenSpaceError: 1,
-                        ambientLight: [1, 1, 1]
+                        maximumScreenSpaceError: 1
                     }
                 ]
             });
@@ -1597,7 +1629,6 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -1608,6 +1639,26 @@ describe('render specs', () => {
             }, layer, { path: `./integration/expected/${resPath}/layerOpacity/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
         });
 
+
+        it('set polygonFill and hsv(issue#465)', done => {
+            const resPath = 'BatchedDraco/dayanta/';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                        shader: 'pbr',
+                        heightOffset: -420,
+                        polygonFill: '#e33',
+                        hsv: [1, 0, 0]
+                    }
+                ]
+            });
+            runner(() => {
+                assert(map.getCenter().x.toFixed(3) === '108.959');
+                done();
+            }, layer, { path: `./integration/expected/${resPath}/polygonFill/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: 0 });
+        });
+
         it('layer altitude', done => {
             const resPath = 'BatchedDraco/dayanta/';
             const layer = new Geo3DTilesLayer('3d-tiles', {
@@ -1615,7 +1666,6 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -1632,7 +1682,6 @@ describe('render specs', () => {
                 services : [
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -1648,6 +1697,41 @@ describe('render specs', () => {
                     }, 200);
                 }, 200);
             }, layer, { path: `./integration/expected/${resPath}/removeGroupgllayer/expected.png`, diffCount: 0, renderCount: 1, noGroup: false });
+        });
+
+        it('Add 3dtiles with skybox(issue#467)', done => {
+            const resPath = 'withSkyBox/3dtiles';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/Model.json`,
+                        heightOffset: 0,
+                        ambientLight: [1.0, 1.0, 1.0]
+                    }
+                ]
+            });
+            map.setLights(lightWithSkybox);
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/withSkyBox/lit/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: 0 });
+        });
+
+        it('Add 3dtiles with skybox and unlit in service is true(issue#467)', done => {
+            const resPath = 'withSkyBox/3dtiles';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/Model.json`,
+                        heightOffset: 0,
+                        ambientLight: [1.0, 1.0, 1.0],
+                        unlit: true
+                    }
+                ]
+            });
+            map.setLights(lightWithSkybox);
+            runner(() => {
+                done();
+            }, layer, { path: `./integration/expected/withSkyBox/unlit/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: 0 });
         });
     });
 
@@ -1713,7 +1797,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -1734,7 +1817,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420
                     }
                 ]
@@ -1757,7 +1839,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420,
                         scale: [4, 4, 4],
                         rotation: [0, 0, 45]
@@ -1777,7 +1858,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420,
                         scale: [4, 4, 4],
                         rotation: [0, 0, 45]
@@ -1801,7 +1881,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: -420,
                         scale: [4, 4, 4],
                         rotation: [0, 0, 45],
@@ -1822,7 +1901,6 @@ describe('render specs', () => {
                     {
                         url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                         shader: 'phong',
-                        ambientLight: [1, 1, 1],
                         heightOffset: 0,
                         scale: [1, 1, 1],
                         rotation: [0, 0, 0],

@@ -55,7 +55,6 @@ describe('render specs', () => {
                 {
                     url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
                     shader: 'phong',
-                    ambientLight: [1, 1, 1],
                     heightOffset: -420
                 }
             ]

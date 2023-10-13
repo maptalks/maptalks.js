@@ -1,3 +1,4 @@
+import Color from 'color';
 export function isNil(v) {
     return v === undefined || v === null;
 }
@@ -144,4 +145,19 @@ export function pushIn(dest) {
         }
     }
     return dest.length;
+}
+
+const colorCache = {};
+export function normalizeColor(out, color) {
+    if (!Array.isArray(color)) {
+        const key = color;
+        color = colorCache[key] = colorCache[key] || Color(color).array().map(v => { return v / 255; });
+    }
+    for (let i = 0; i < color.length; i++) {
+        out[i] = color[i];
+    }
+    if (color.length === 3) {
+        out[3] = 1;
+    }
+    return out;
 }

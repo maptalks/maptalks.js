@@ -1,0 +1,22 @@
+{
+  "asset": {
+    "version": "0.0",
+    "gltfUpAxis": "Y"
+  },
+  "geometricError": 301.5519966775190142,
+  "root": {
+    "boundingVolume": {
+      "sphere": [
+        -2366448.4377654897980392,
+        5375302.4752620598301291,
+        2479119.8152844398282468,
+        215.7695261396430055
+      ]
+    },
+    "refine": "REPLACE",
+    "geometricError": 8,
+    "content": {
+      "url": "Model.b3dm"
+    }
+  }
+}

@@ -70,6 +70,20 @@ describe('MultiGLTFMarker', () => {
         return data;
     }
 
+    function initInstanceDataWithBloom() {
+        const data = [];
+        const coordinate0 = center.add(0, 0);
+        for (let i = -1; i < 2; i++) {
+            for (let j = -1; j < 2; j++) {
+                data.push({
+                    coordinates: coordinate0.add(i * 0.001, j * 0.001),
+                    bloom: i === 0 && j === 0
+                });
+            }
+        }
+        return data;
+    }
+
     it('addData', (done) => {//TODO 增加像素判断
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         const importData = initInstanceData0();
@@ -389,8 +403,9 @@ describe('MultiGLTFMarker', () => {
         });
         multigltfmarker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    containerPoint: clickContainerPoint.add(50, 0)
+                happen.click(eventContainer, {
+                    'clientX': clickContainerPoint.x + 60,
+                    'clientY': clickContainerPoint.y
                 });
             }, 100);
         });
@@ -417,8 +432,9 @@ describe('MultiGLTFMarker', () => {
         });
         multigltfmarker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    containerPoint: clickContainerPoint.add(50, 0)
+                happen.click(eventContainer, {
+                    'clientX': clickContainerPoint.x + 60,
+                    'clientY': clickContainerPoint.y
                 });
             }, 100);
         });
@@ -462,7 +478,7 @@ describe('MultiGLTFMarker', () => {
         });
     });
 
-    it('responding mouseleave event when multigltfmarker overlay together', done => {
+    it('responding mouseout event when multigltfmarker overlay together', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
         const importData = initInstanceData0();
@@ -475,12 +491,14 @@ describe('MultiGLTFMarker', () => {
             }
         }).addTo(gltflayer);
         map.setPitch(45);
-        multigltfmarker.on('mouseleave', () => {
+        multigltfmarker.on('mouseenter', () => {
+        });
+        multigltfmarker.on('mouseout', () => {
             done();
         });
         multigltfmarker.once('load', () => {
             setTimeout(function() {
-                const point = new maptalks.Point([200, 155]);
+                const point = new maptalks.Point([250, 150]);
                 for (let i = 0; i < 20; i++) {
                     happen.mousemove(eventContainer, {
                         'clientX':point.x,
@@ -576,6 +594,35 @@ describe('MultiGLTFMarker', () => {
             map.setPitch(30);
             setTimeout(function() {
                 testShadow();
+            }, 100);
+        });
+    });
+
+    it('bloom data item in MultiGLTFMarkerarker(issue#451)', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GroupGLLayer('group', [gltflayer],  { sceneConfig }).addTo(map);
+        const importData = initInstanceDataWithBloom();
+        const multigltfmarker = new maptalks.MultiGLTFMarker(importData, {
+            symbol: {
+                url: url3,
+                scaleX: 20,
+                scaleY: 20,
+                scaleZ: 20,
+            }
+        }).addTo(gltflayer);
+        function closeBloom() {
+            multigltfmarker.updateData(4, 'bloom', false);
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([131, 111, 25, 255], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        }
+        multigltfmarker.once('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([255, 255, 142, 255], pixel)).to.be.eql(true);
+                closeBloom();
             }, 100);
         });
     });

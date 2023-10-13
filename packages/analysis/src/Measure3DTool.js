@@ -79,7 +79,7 @@ export default class Measure3DTool extends maptalks.DrawTool {
     }
 
     _getPickedCoordinate(coordinate) {
-        const identifyData = this._gllayer.identify(coordinate, { includeInternals: true })[0];
+        const identifyData = this._gllayer.identify(coordinate)[0];
         const pickedPoint = identifyData && identifyData.coordinate;
         if (pickedPoint) {
             return new maptalks.Coordinate(identifyData.coordinate);

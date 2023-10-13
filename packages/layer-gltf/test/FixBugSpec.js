@@ -1,7 +1,8 @@
 describe('bug', () => {
-    let map;
+    let map, eventContainer;
     beforeEach(function() {
         map = createMap();
+        eventContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {
@@ -516,9 +517,9 @@ describe('bug', () => {
         };
         map.on('dom:click', handle);
         setTimeout(function () {
-            map.fire('dom:click', {
-                coordinate: clickPoint,
-                containerPoint: clickContainerPoint
+            happen.click(eventContainer, {
+                'clientX':clickContainerPoint.x,
+                'clientY':clickContainerPoint.y
             });
         }, 100);
     });
@@ -855,9 +856,9 @@ describe('bug', () => {
         };
         map.on('dom:click', handle);
         setTimeout(function () {
-            map.fire('dom:click', {
-                coordinate: clickPoint,
-                containerPoint: clickContainerPoint
+            happen.click(eventContainer, {
+                'clientX':clickContainerPoint.x,
+                'clientY':clickContainerPoint.y
             });
         }, 100);
     });
@@ -1266,8 +1267,9 @@ describe('bug', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
         gltflayer.on('modelload', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    containerPoint: clickContainerPoint.add(100, 0)
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x + 100,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });
@@ -1373,9 +1375,9 @@ describe('bug', () => {
         });
         marker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:dblclick', {
-                    coordinate: clickPoint,
-                    containerPoint: clickContainerPoint
+                happen.dblclick(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });

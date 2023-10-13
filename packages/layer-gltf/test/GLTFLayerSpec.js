@@ -1,7 +1,8 @@
 describe('maptalks.gltf', function () {
-    let map;
+    let map, eventContainer;
     beforeEach(function() {
         map = createMap();
+        eventContainer = map._panels.canvasContainer;
     });
 
     afterEach(function() {
@@ -336,17 +337,18 @@ describe('maptalks.gltf', function () {
                 url: url2
             }
         }).addTo(gltflayer);
-        map.setPitch(50);
+        map.setPitch(40);
         marker.on('click', () => {
             done();
         });
         gltflayer.on('modelload', () => {
             setTimeout(function() {
                 //TODO 判断在正确位置响应事件
-                map.fire('dom:click', {
-                    containerPoint: new maptalks.Point([map.width / 2, 5])
+                happen.click(eventContainer, {
+                    'clientX': map.width / 2,
+                    'clientY': 20
                 });
-            }, 100);
+            }, 500);
         });
     });
 
@@ -431,9 +433,9 @@ describe('maptalks.gltf', function () {
         gltflayer.addTo(map);
         marker.on('load', () => {
             setTimeout(function () {
-                map.fire('dom:click', {
-                    coordinate: clickPoint,
-                    containerPoint: clickContainerPoint
+                happen.click(eventContainer, {
+                    'clientX':clickContainerPoint.x,
+                    'clientY':clickContainerPoint.y
                 });
             }, 100);
         });
@@ -726,8 +728,9 @@ describe('maptalks.gltf', function () {
         const clickPoint = new maptalks.Point([200, 50]);
         marker.on('load', () => {
             setTimeout(function() {
-                map.fire('dom:click', {
-                    containerPoint: clickPoint
+                happen.click(eventContainer, {
+                    'clientX': clickPoint.x,
+                    'clientY': clickPoint.y
                 });
             }, 100);
         });

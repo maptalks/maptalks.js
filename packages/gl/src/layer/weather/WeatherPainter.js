@@ -106,6 +106,7 @@ class WeatherPainter {
         uniforms['time'] = this._getTimeSpan() / 1000;
         uniforms['resolution'] = vec2.set(RESOLUTION, this._fbo.width, this._fbo.height);
         this.renderer.render(this._weatherShader, uniforms, null, this._fbo);
+        this._renderMeshes = meshes;
         return this._fbo;
     }
 
@@ -195,6 +196,13 @@ class WeatherPainter {
     }
 
     update() {
+        if (!this.isEnable() && this._renderMeshes) {
+            this._renderMeshes.forEach(mesh => {
+                delete mesh.defines['HAS_SNOW'];
+                delete mesh.defines['HAS_RAIN'];
+                delete mesh.defines['HAS_FOG'];
+            });
+        }
         if (this.isEnableRain()) {
             this._rainPainter = this._rainPainter || new RainPainter(this._regl, this._layer);
             this._rainPainter.update();

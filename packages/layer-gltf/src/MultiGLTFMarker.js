@@ -1,7 +1,7 @@
 
 import GLTFMarker from './GLTFMarker';
 import { Coordinate } from 'maptalks';
-import { mat4, vec3, quat } from '@maptalks/gl';
+import { mat4, vec3, quat, reshader } from '@maptalks/gl';
 import { coordinateToWorld, defined } from './common/Util';
 // The structure of MultiGLTFMarker will like below:
 // new MultiGLTFMarker([{
@@ -34,6 +34,7 @@ export default class MultiGLTFMarker extends GLTFMarker {
         this._centerPosition = [0, 0, 0];
         this._centerMatrix = mat4.identity([]);
         this._type = 'multigltfmarker';
+        this._bloomMeshes = [];
     }
 
     static fromJSON(json) {
@@ -81,6 +82,10 @@ export default class MultiGLTFMarker extends GLTFMarker {
         this._data.splice(index, 1);
         if (this._attributeMatrixs) {
             this._attributeMatrixs.splice(index, 1);
+        }
+        const layer = this.getLayer();
+        if (layer) {
+            layer._updateMarkerMap();
         }
         this._dirty = true;
         return this;
@@ -192,37 +197,50 @@ export default class MultiGLTFMarker extends GLTFMarker {
     }
 
     _updateInstanceAttributesData() {
-        if (!this._attributesData || this._attributesData['instance_vectorA'].length / 4 !== this._attributeMatrixs.length) {
-            this._attributesData = {
-                'instance_vectorA' : [],
-                'instance_vectorB' : [],
-                'instance_vectorC' : [],
-                'instance_color' : [],
-                'aPickingId' : [],
-                'aOutline': []
-            };
-        }
+        this._attributesData = {
+            'instance_vectorA' : [],
+            'instance_vectorB' : [],
+            'instance_vectorC' : [],
+            'instance_color' : [],
+            'aPickingId' : [],
+            'aOutline': [],
+            'aBloom': []
+        };
+        this._bloomAttributeData = {
+            'instance_vectorA' : [],
+            'instance_vectorB' : [],
+            'instance_vectorC' : [],
+            'instance_color' : [],
+            'aPickingId' : [],
+            'aOutline': [],
+            'aBloom': []
+        };
         for (let i = 0; i < this._attributeMatrixs.length; i++) {
-            // const matrix = mat4.multiply(EMPTY_MAT, this._attributeMatrixs[i], localTransform);
+            let data = this._attributesData;
+            if(this._data[i]['bloom']) {
+                data = this._bloomAttributeData;
+            }
             const matrix = this._attributeMatrixs[i];
-            this._setDataForAttributes('instance_vectorA', i, matrix, 0);
-            this._setDataForAttributes('instance_vectorB', i, matrix, 1);
-            this._setDataForAttributes('instance_vectorC', i, matrix, 2);
+            const len = data['instance_vectorA'].length / 4;
+            this._setDataForAttributes(data, 'instance_vectorA', len, matrix, 0);
+            this._setDataForAttributes(data, 'instance_vectorB', len, matrix, 1);
+            this._setDataForAttributes(data, 'instance_vectorC', len, matrix, 2);
             const color = this._data[i]['color'] || DEFAULT_COLOR;
-            this._attributesData['instance_color'][i * 4] = color[0];
-            this._attributesData['instance_color'][i * 4 + 1] = color[1];
-            this._attributesData['instance_color'][i * 4 + 2] = color[2];
-            this._attributesData['instance_color'][i * 4 + 3] = color[3];
-            this._attributesData['aPickingId'][i] = this._getPickingId() + i;
-            this._attributesData['aOutline'][i] = this._data[i]['outline'] ? 1 : 0;
+            data['instance_color'][len * 4] = color[0];
+            data['instance_color'][len * 4 + 1] = color[1];
+            data['instance_color'][len * 4 + 2] = color[2];
+            data['instance_color'][len * 4 + 3] = color[3];
+            data['aPickingId'][len] = this._getPickingId() + i;
+            data['aOutline'][len] = this._data[i]['outline'] ? 1 : 0;
+            data['aBloom'][len] = this._data[i]['bloom'] ? 1 : 0;
         }
-        return this._attributesData;
+        return { attributesData: this._attributesData, bloomAttributesData: this._bloomAttributeData };
     }
 
     _updateInstancedMeshData(mesh) {
-        const attributes = this._getInstanceAttributesData();
-        for (const key in attributes) {
-            mesh.updateInstancedData(key, attributes[key]);
+        const { attributesData, bloomAttributesData } = this._getInstanceAttributesData();
+        for (const key in attributesData) {
+            mesh.updateInstancedData(key, attributesData[key]);
         }
         if (this.regl) {
             mesh.generateInstancedBuffers(this.regl);
@@ -230,22 +248,56 @@ export default class MultiGLTFMarker extends GLTFMarker {
             this._noBuffersMeshes = this._noBuffersMeshes || [];
             this._noBuffersMeshes.push(mesh);
         }
-        mesh.instanceCount = this.getCount();
+        mesh.instanceCount = this._attributesData['instance_vectorA'].length / 4;
+        if (this._hasBloom()) {
+            const bloomAttrData = bloomAttributesData;
+            const count = bloomAttrData['aBloom'].length;
+            mesh.properties.bloomMesh = mesh.properties.bloomMesh || new reshader.InstancedMesh(bloomAttrData, count, mesh.geometry, mesh.material);
+            const bloomMesh = mesh.properties.bloomMesh;
+            bloomMesh.positionMatrix = mesh.positionMatrix;
+            bloomMesh.localTransform = mesh.localTransform;
+            for (const key in bloomAttrData) {
+                bloomMesh.updateInstancedData(key, bloomAttrData[key]);
+            }
+            bloomMesh.generateInstancedBuffers(this.regl);
+            const defines = mesh.getDefines();
+            bloomMesh.setDefines(defines);
+            bloomMesh.uniforms = mesh.uniforms;
+            bloomMesh.bloom = 1;
+            bloomMesh.instanceCount = count;
+        } else if (mesh.properties.bloomMesh) {
+            mesh.properties.bloomMesh.dispose();
+            delete mesh.properties.bloomMesh;
+        }
     }
 
-    _setDataForAttributes(name, idx, matrix, col) {
-        if (!this._attributesData[name] || !matrix) {
+    _setDataForBloomAttributes(name, idx, matrix, col) {
+        if (!this._bloomAttributeData[name] || !matrix) {
             return;
         }
-        this._attributesData[name][idx * 4] = matrix[col];
-        this._attributesData[name][idx * 4 + 1] = matrix[col + 4];
-        this._attributesData[name][idx * 4 + 2] = matrix[col + 8];
-        this._attributesData[name][idx * 4 + 3] = matrix[col + 12];
+        this._bloomAttributeData[name][idx * 4] = matrix[col];
+        this._bloomAttributeData[name][idx * 4 + 1] = matrix[col + 4];
+        this._bloomAttributeData[name][idx * 4 + 2] = matrix[col + 8];
+        this._bloomAttributeData[name][idx * 4 + 3] = matrix[col + 12];
+    }
+
+    _hasBloom() {
+        return this._bloomAttributeData && this._bloomAttributeData['aBloom'].length;
+    }
+
+    _setDataForAttributes(data, name, idx, matrix, col) {
+        if (!data[name] || !matrix) {
+            return;
+        }
+        data[name][idx * 4] = matrix[col];
+        data[name][idx * 4 + 1] = matrix[col + 4];
+        data[name][idx * 4 + 2] = matrix[col + 8];
+        data[name][idx * 4 + 3] = matrix[col + 12];
     }
 
     _getInstanceAttributesData(localTransform) {
         if (!this._dirty &&  this._attributesData) {
-            return this._attributesData;
+            return { attributesData: this._attributesData, bloomAttributesData: this._bloomAttributeData };
         }
         //每次拿取instanceData前，先更新数据
         return this._updateInstanceAttributesData(localTransform);
@@ -257,6 +309,15 @@ export default class MultiGLTFMarker extends GLTFMarker {
 
     getCount() {
         return this._data.length;
+    }
+
+    _getBloomDataCount() {
+        this._updateAttributeMatrix();
+        return !this._bloomAttributeData ? 0 : this._bloomAttributeData['aBloom'].length;
+    }
+
+    _getNoBloomDataCount() {
+        return this.getCount() - this._getBloomDataCount();
     }
 
     toJSON() {

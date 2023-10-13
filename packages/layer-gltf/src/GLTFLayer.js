@@ -49,7 +49,6 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
 
     onAdd() {
         const map = this.getMap();
-        map.on(this.mapEvents, this._mapEventHandler, this);
         const geoList = this['_geoList'];
         geoList.forEach(geo => {
             if (!defined(geo.getZoomOnAdded())) {
@@ -62,16 +61,6 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
     onRemove() {
         super.onRemove();
         this.clear();
-    }
-
-    remove() {
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        const currentEvents = this.mapEvents.replace(' ', ' dom:');
-        map.off('dom:' + currentEvents, this._mapEventHandler, this);
-        super.remove();
     }
 
     identify(coordinate, options) {
@@ -99,7 +88,16 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const x = point.x * dpr, y = point.y * dpr;
         const picked = this._pick(x, y, options);
         if (picked && picked.data) {
-            results.push(picked);
+            if (options['includeInternals'] && !options['excludeMasks']) { //由事件抛出
+                results.push(picked.data);
+                const domEvent = options.domEvent;
+                if (domEvent) {
+                    domEvent.gltfPickingInfo = domEvent.gltfPickingInfo || {};
+                    domEvent.gltfPickingInfo[this.getId()] = picked;
+                }
+            } else {
+                results.push(picked);
+            }
         }
         return results;
     }

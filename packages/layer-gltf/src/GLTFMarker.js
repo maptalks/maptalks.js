@@ -826,8 +826,8 @@ export default class GLTFMarker extends Marker {
         if (type === 'multigltfmarker') {
             this._updateAttributeMatrix();
             const attributes = this._getInstanceAttributesData(mat4.identity(MAT4));
-            const count = this.getCount();
-            modelMesh = new reshader.InstancedMesh(attributes, count, geometry, material);
+            const count = this._getNoBloomDataCount();
+            modelMesh = new reshader.InstancedMesh(attributes.attributesData, count, geometry, material);
             modelMesh.setUniform('instance', 1);
             if (regl) {
                 modelMesh.generateInstancedBuffers(regl);
@@ -1000,6 +1000,15 @@ export default class GLTFMarker extends Marker {
             this._bboxMesh.geometry.dispose();
             this._bboxMesh.dispose();
             delete this._bboxMesh;
+        }
+        if (this._meshes) {
+            this._meshes.forEach(mesh => {
+                mesh.dispose();
+                if (mesh.properties.bloomMesh) {
+                    mesh.properties.bloomMesh.dispose();
+                    delete mesh.properties.bloomMesh;
+                }
+            });
         }
         this._login = false;
         delete this._gltfData;
@@ -1357,19 +1366,19 @@ export default class GLTFMarker extends Marker {
     }
 
     //重写事件监听方法
-    on(events, callback, context) {
-        super.on(events, callback, context || this);
-        if (this.getLayer()) {
-            this.getLayer()._addEvents(events);
-        }
-    }
+    // on(events, callback, context) {
+    //     super.on(events, callback, context || this);
+    //     if (this.getLayer()) {
+    //         this.getLayer()._addEvents(events);
+    //     }
+    // }
 
-    off(events, callback, context) {
-        super.off(events, callback, context || this);
-        if (this.getLayer()) {
-            this.getLayer()._removeEvents();
-        }
-    }
+    // off(events, callback, context) {
+    //     super.off(events, callback, context || this);
+    //     if (this.getLayer()) {
+    //         this.getLayer()._removeEvents();
+    //     }
+    // }
 
     _toJSONObject() {
         const json = this.toJSON();
@@ -1603,6 +1612,21 @@ export default class GLTFMarker extends Marker {
 
     _hasGLTFAnimations() {
         return this.getGLTFMarkerType() !== 'effectmarker' && this.getGLTFMarkerType() !== 'glowmarker';
+    }
+
+    _onEvent(event, type) {
+        const layer = this.getLayer();
+        const id = layer.getId();
+        this._pickingParams = (event.gltfPickingInfo && event.gltfPickingInfo[id]) || {};
+        super['_onEvent'](event, type);
+    }
+
+    _fireEvent(eventName, param) {
+        for (const p in this._pickingParams) {
+            param[p] = this._pickingParams[p];
+        }
+        delete this._pickingParams;
+        super['_fireEvent'](eventName, param);
     }
 }
 

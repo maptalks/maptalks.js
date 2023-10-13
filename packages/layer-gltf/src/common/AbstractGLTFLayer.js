@@ -2,12 +2,12 @@
 
 import * as maptalks from 'maptalks';
 import { compileStyle } from '@maptalks/feature-filter';
-import { isNil, intersectArray, defined } from './Util';
+import { isNil } from './Util';
 import { GeoJSON, GEOJSON_TYPES } from './GeoJSON';
 import SHADER_MAP from './ShaderMap';
 
 //鼠标事件列表
-const MAP_EVENTS = ['mousedown', 'mouseup', 'mousemove', 'contextmenu', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend'];
+// const MAP_EVENTS = ['mousedown', 'mouseup', 'mousemove', 'contextmenu', 'click', 'dblclick', 'touchstart', 'touchmove', 'touchend'];
 const options = {
     'renderer': 'gl',
     'doubleBuffer': false,
@@ -30,7 +30,6 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
         this._markerMap = {};
         this._modelMap = {};
         this._idList = {};
-        this.mapEvents = '';
         const style = options && options.style;
         this.setStyle(style);
         if (geometries) {
@@ -82,7 +81,7 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
             marker._setPickingId(this.pickingId);
             this._markerMap[this.pickingId] = marker;
             // marker._layer = this;
-            this._addEvents(marker.getListeningEvents());
+            // this._addEvents(marker.getListeningEvents());
             const id = marker.getId();
             if (id) {
                 this._idList[id] = marker;
@@ -205,52 +204,6 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
         return Object.keys(this._modelMap);
     }
 
-    _addEvents(events) {
-        const splitEvents = maptalks.Util.isString(events) ? events.split(/\s+/).map(e => {
-            //mouseleave、mouseenter、mouseout需要置换成map的mousemove事件
-            return (e === 'mouseleave' || e === 'mouseenter' || e === 'mouseout') ? 'mousemove' : e;
-        }) : events;
-        let currentEvents = this.mapEvents;
-        const newEvents = intersectArray(splitEvents, MAP_EVENTS).filter(e => {
-            return this.mapEvents.indexOf(e) < 0;
-        });
-        this.mapEvents += ' ' + newEvents.join(' ');
-        this.mapEvents = this.mapEvents.trim();
-        const domEvents = this.mapEvents.replace(' ', ' dom:');
-        currentEvents = currentEvents.replace(' ', ' dom:');
-        const map = this.getMap();
-        if (map) {
-            map.off('dom:' + currentEvents, this._mapEventHandler, this);
-            map.on('dom:' + domEvents, this._mapEventHandler, this);
-        }
-    }
-    //去重
-    _removeEvents() {
-        const newEvents = {};
-        let currentEvents = this.mapEvents;
-        const geoList = this['_geoList'];
-        for (let i = 0; i < geoList.length; i++) {
-            const marker = geoList[i];
-            //marker自己的事件，置换mouseleave、mouseenter、mouseout为mousemove
-            const markerEvents = marker.getListeningEvents().map(e => {
-                return (e === 'mouseleave' || e === 'mouseenter' || e === 'mouseout') ? 'mousemove' : e;
-            });
-            //有效的map事件
-            for (let ii = 0; ii < markerEvents.length; ii++) {
-                //利用对象字面量进行去重，例如[a, b, c, mousemove] =>  {a:1,b:1,c:1,mousemove:1}
-                newEvents[markerEvents[ii]] = 1;
-            }
-        }
-        this.mapEvents = intersectArray(Object.keys(newEvents), MAP_EVENTS).join(' ');
-        const domEvents = this.mapEvents.replace(' ', ' dom:');
-        currentEvents = currentEvents.replace(' ', ' dom:');
-        const map = this.getMap();
-        if (map) {
-            map.off('dom:' + currentEvents, this._mapEventHandler, this);
-            map.on('dom:' + domEvents, this._mapEventHandler, this);
-        }
-    }
-
     //将symbol中url的$root部分用style的root替换
     _processRootUrl(layerStyle) {
         if (maptalks.Util.isString(layerStyle.$root)) {
@@ -292,14 +245,10 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
         }
     }
 
-    removeGeometry(markers) {
-        this._removeEvents();
-        super.removeGeometry(markers);
-    }
-
-    getMapEvents() {
-        return this.mapEvents;
-    }
+    // removeGeometry(markers) {
+    //     this._removeEvents();
+    //     super.removeGeometry(markers);
+    // }
 
     _deleteMarker(marker) {
         const id = maptalks.Util.isString(marker) ? this._idList[marker]._getPickingId() : marker._getPickingId();
@@ -347,131 +296,6 @@ export default class AbstractGLTFLayer extends maptalks.OverlayLayer {
             return null;
         }
         return renderer._getMarkerContainerExtent(pickingId);
-    }
-
-    _mapEventHandler(e) {
-        if (!this.options.markerEvents) {
-            return;
-        }
-        const map = this.getMap();
-        if (!map) {
-            return;
-        }
-        this._lastTargetId = this._currentTargetId;
-        this._lastTargetIndex = this._currentTargetIndex;
-        this._lastPoint = this._currentPoint;
-        this._lastMeshId = this._currentMeshId;
-        this._lastPickingId = this._currentPickingId;
-        const containerPoint = e.containerPoint;
-        const x = Math.round(containerPoint.x), y = Math.round(containerPoint.y);
-        if (x <= 0 || x >= map.width || y <= 0 || y >= map.height) {
-            this._currentTargetId = null;
-            this._currentMeshId = null;
-            this._currentPoint = null;
-            return;
-        }
-        const dpr = map.getDevicePixelRatio();
-        const result = this._pick(x * dpr, y * dpr);
-        if (!result) {
-            return;
-        }
-        result.coordinate = e.coordinate;
-        this._currentTargetId = null;
-        if (result.data && result.data.getGLTFMarkerType() === 'gltfmarker') {
-            this._currentTargetId = result.data._getPickingId();
-        } else if (result.data && result.data.getGLTFMarkerType() === 'multigltfmarker') {
-            this._currentTargetId = result.data._getPickingId() + result.index;
-        }
-        this._currentTargetIndex = result.data ? result.index : null;
-        this._currentMeshId = result.meshId;
-        this._currentPoint = JSON.stringify(result.point);
-        this._currentPickingId = result.pickingId;
-        const event = e.type.replace('dom:', '');
-        if (event === 'mousemove') {
-            const mousemoveTargets = this._getMouseMoveTargets();
-            mousemoveTargets.forEach(e => {
-                if (e.target.getIndexByPickingId) {
-                    e.index = e.target.getIndexByPickingId(e.pickingId);
-                }
-                e.target.fire(e.type, e);
-            });
-        } else if (result.data) {
-            result.data.fire(event, result);
-        }
-    }
-
-    _getMouseMoveTargets() {
-        const eventTargets = [];
-        if (defined(this._currentTargetId) && !defined(this._lastTargetId)) {
-            eventTargets.push({
-                type: 'mouseenter',
-                target: this._getEventTarget(this._currentTargetId, 0),
-                meshId: this._currentMeshId,
-                pickingId: this._currentPickingId,
-                point: JSON.parse(this._currentPoint)
-            });
-        } else if (!defined(this._currentTargetId) && defined(this._lastTargetId)) {
-            eventTargets.push({
-                type: 'mouseout',
-                target: this._getEventTarget(this._lastTargetId, 1),
-                meshId: this._lastMeshId,
-                pickingId: this._lastPickingId,
-                point: JSON.parse(this._lastPoint)
-            },
-            {
-                type: 'mouseleave',
-                target: this._getEventTarget(this._lastTargetId, 1),
-                meshId: this._lastMeshId,
-                pickingId: this._lastPickingId,
-                point: JSON.parse(this._lastPoint)
-            });
-        } else if (defined(this._currentTargetId) && defined(this._lastTargetId)) {
-            if (this._currentTargetId === this._lastTargetId) {
-                eventTargets.push({
-                    type: 'mousemove',
-                    target: this._getEventTarget(this._currentTargetId, 0),
-                    meshId: this._currentMeshId,
-                    pickingId: this._currentPickingId,
-                    point: JSON.parse(this._currentPoint)
-                });
-            } else {
-                eventTargets.push({
-                    type: 'mouseenter',
-                    target: this._getEventTarget(this._currentTargetId, 0),
-                    meshId: this._currentMeshId,
-                    pickingId: this._currentPickingId,
-                    point: JSON.parse(this._currentPoint)
-                },
-                {
-                    type: 'mouseout',
-                    target: this._getEventTarget(this._lastTargetId, 1),
-                    meshId: this._lastMeshId,
-                    pickingId: this._lastPickingId,
-                    point: JSON.parse(this._lastPoint)
-                },
-                {
-                    type: 'mouseleave',
-                    target: this._getEventTarget(this._lastTargetId, 1),
-                    meshId: this._lastMeshId,
-                    pickingId: this._lastPickingId,
-                    point: JSON.parse(this._lastPoint)
-                });
-            }
-        }
-        return eventTargets;
-    }
-
-    _getEventTarget(targetId, targetType) {
-        if (!defined(targetId)) {
-            return null;
-        }
-        if (targetType < 1) {
-            const index = this._currentTargetIndex || 0;
-            return this._markerMap[targetId - index];
-        } else {
-            const index = this._lastTargetIndex || 0;
-            return this._markerMap[targetId - index];
-        }
     }
 
     _updateGeometries(marker) {

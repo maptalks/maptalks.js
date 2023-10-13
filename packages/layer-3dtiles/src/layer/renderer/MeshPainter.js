@@ -3,7 +3,7 @@ import { reshader, vec3, vec4, mat3, mat4, quat, HighlightUtil } from '@maptalks
 import { iterateMesh, iterateBufferData, getItemAtBufferData, setInstanceData, } from '../../common/GLTFHelpers';
 import pntsVert from './glsl/pnts.vert';
 import pntsFrag from './glsl/pnts.frag';
-import { isFunction, isNil, extend, setColumn3, flatArr, isNumber } from '../../common/Util';
+import { isFunction, isNil, extend, setColumn3, flatArr, isNumber, normalizeColor } from '../../common/Util';
 import { intersectsBox } from 'frustum-intersects';
 import { basisTo2D, setTranslation, getTranslation, readBatchData } from '../../common/TileHelper';
 // import { getKHR_techniques } from './s3m/S3MTechnique';
@@ -20,6 +20,8 @@ const DEFAULT_POLYGON_OFFSET = {
     factor : 0,
     units : 0
 };
+
+const DEFAULT_POLYGONFILL = [1, 1, 1, 1], DEFAULT_HSV = [0, 0, 0];
 
 const DEFAULT_MATERIAL_INFO = {
     specularStrength: 0,
@@ -836,6 +838,22 @@ export default class MeshPainter {
                     enumerable: true,
                     get: function () {
                         return isNumber(service.opacity) ? service.opacity : 1;
+                    }
+                });
+            }
+            if (!Object.prototype.hasOwnProperty.call(mesh.uniforms, 'polygonFill')) {
+                Object.defineProperty(mesh.uniforms, 'polygonFill', {
+                    enumerable: true,
+                    get: function () {
+                        return normalizeColor([], service.polygonFill || DEFAULT_POLYGONFILL);
+                    }
+                });
+            }
+            if (!Object.prototype.hasOwnProperty.call(mesh.material.uniforms, 'hsv')) {
+                Object.defineProperty(mesh.material.uniforms, 'hsv', {
+                    enumerable: true,
+                    get: function () {
+                        return service.hsv || DEFAULT_HSV;
                     }
                 });
             }

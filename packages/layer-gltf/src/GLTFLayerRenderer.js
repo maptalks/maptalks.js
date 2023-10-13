@@ -115,6 +115,11 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
                 this._renderMarkerList.push(marker);
                 this._toRenderMeshes[shader] = this._toRenderMeshes[shader] || [];
                 maptalks.Util.pushIn(this._toRenderMeshes[shader], meshes);
+                for (let i = 0; i < meshes.length; i++) {
+                    if (meshes[i].properties.bloomMesh) {
+                        this._toRenderMeshes[shader].push(meshes[i].properties.bloomMesh);
+                    }
+                }
             }
         }
     }
@@ -686,7 +691,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         if (this.layer._getMarkerMap()[pickingId]) {
             return pickingId;
         }
-        const keys = Object.keys(this.layer._getMarkerMap()).sort().map(k => Number(k));
+        const keys = Object.keys(this.layer._getMarkerMap());
         const length = keys.length;
         let left = 0;
         let right = length - 1;
