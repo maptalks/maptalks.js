@@ -324,6 +324,11 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
     }
 
     _renderChildTerrainSkin(skinIndex, terrainTiles, visitedSkinTiles, skinImagesToDel) {
+        const skinLayer = this.layer.getSkinLayer(skinIndex);
+        const renderer = skinLayer.getRenderer();
+        if (!renderer) {
+            return;
+        }
         const layerSkinImages = [];
         for (let i = 0; i < terrainTiles.length; i++) {
             const { info, image } = terrainTiles[i];
@@ -339,8 +344,6 @@ class TerrainLayerRenderer extends MaskRendererMixin(maptalks.renderer.TileLayer
                 }
             }
         }
-        const skinLayer = this.layer.getSkinLayer(skinIndex);
-        const renderer = skinLayer.getRenderer();
         // render terrain skin of skin layer
         renderer.renderTerrainSkin(this.regl, this.layer, layerSkinImages);
     }

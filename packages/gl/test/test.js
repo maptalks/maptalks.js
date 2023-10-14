@@ -222,7 +222,7 @@ describe('gl tests', () => {
             }, 500);
         });
 
-        it.only('add skinLayers, maptalks/issues#469', done => {
+        it('add skinLayers, maptalks/issues#469', done => {
             map = new maptalks.Map(container, {
                 center: [91.14478,29.658272],
                 zoom: 12
