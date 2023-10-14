@@ -1760,7 +1760,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
           * })
           *
           */
-        this._fireEvent('dop', param);
+        this._fireEvent('drop', param);
     }
 
     isDragRotating() {
