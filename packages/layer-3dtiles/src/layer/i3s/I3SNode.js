@@ -1,7 +1,9 @@
 import { radianToCartesian3 } from '../../common/Transform';
 import { toRadian } from '../../common/Util';
-import { mat3, mat4 } from 'gl-matrix';
+import { vec3, mat3, mat4 } from 'gl-matrix';
 import { fillNodepagesToCache } from './Util';
+
+const TEMP_VEC3 = [];
 
 export default class I3SNode {
     constructor(url, rootIdx, nodeCache, fnFetchNodepages) {
@@ -178,7 +180,17 @@ export default class I3SNode {
                 obb.halfSize,
                 obb.quaternion
             );
-            boundingVolume.box = box;
+            // boundingVolume.box = box;
+            // 计算box的半径
+            const x = box[3] + box[6] + box[9];
+            const y = box[4] + box[7] + box[10];
+            const z = box[5] + box[8] + box[11];
+            vec3.set(TEMP_VEC3, x, y, z);
+            const radius = vec3.len(TEMP_VEC3);
+            boundingVolume.sphere = [
+                ...position,
+                radius
+            ];
         }
 
         // compute the geometric error
