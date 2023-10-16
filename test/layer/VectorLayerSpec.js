@@ -646,13 +646,12 @@ describe('VectorLayer.Spec', function () {
             });
         }
 
-        function getMask(outSide = false) {
+        function getMask(outside = false) {
             const circle = getCircle(5);
             const shell = circle.getShell();
-            if (outSide) {
-                return new maptalks.OutsideMask([shell]);
-            }
-            return new maptalks.InsideMask([shell]);
+            return new maptalks.ClipMask([shell], {
+                outside
+            });
         }
 
         function getLayerColor(x, y) {

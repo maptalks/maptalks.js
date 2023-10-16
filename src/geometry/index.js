@@ -19,10 +19,8 @@ import TextMarker from './TextMarker';
 import TextBox from './TextBox';
 import Label from './Label';
 import { ConnectorLine, ArcConnectorLine } from './ConnectorLine';
-import InsideMask from './mask/InsideMask';
-import OutsideMask from './mask/OutsideMask';
-import InsideMultiMask from './mask/InsideMultiMask';
-import OutsideMultiMask from './mask/OutsideMultiMask';
+import ClipMask from './mask/ClipMask';
+import ClipMultiMask from './mask/ClipMultiMask';
 export {
     ArcCurve,
     Circle,
@@ -45,8 +43,6 @@ export {
     Sector,
     TextBox,
     TextMarker,
-    InsideMask,
-    OutsideMask,
-    InsideMultiMask,
-    OutsideMultiMask
+    ClipMask,
+    ClipMultiMask
 };
