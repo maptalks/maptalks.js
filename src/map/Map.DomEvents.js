@@ -210,7 +210,7 @@ Map.include(/** @lends Map.prototype */ {
         } else {
             this._fireDOMEvent(this, e, 'dom:' + e.type);
         }
-        if (this._ignoreEvent(e)) {
+        if (this._ignoreEvent(e) || this._isEventOutMap(e)) {
             return;
         }
         let mimicClick = false;
@@ -252,7 +252,7 @@ Map.include(/** @lends Map.prototype */ {
                 this._fireDOMEvent(this, e, 'dom:click');
             }
         }
-        if (this._ignoreEvent(e)) {
+        if (this._ignoreEvent(e) || this._isEventOutMap(e)) {
             return;
         }
         this._fireDOMEvent(this, e, type);
@@ -266,9 +266,9 @@ Map.include(/** @lends Map.prototype */ {
         if (!domEvent || !this._panels.control) {
             return false;
         }
-        if (this._isEventOutMap(domEvent)) {
-            return true;
-        }
+        // if (this._isEventOutMap(domEvent)) {
+        //     return true;
+        // }
         let target = domEvent.srcElement || domEvent.target;
         let preTarget;
         if (target) {

@@ -40,7 +40,7 @@ class MapScrollWheelZoomHandler extends Handler {
             stopPropagation(evt);
         }
 
-        if (map._ignoreEvent(evt) || !map.options['zoomable']) {
+        if (map._ignoreEvent(evt) || map._isEventOutMap(evt) || !map.options['zoomable']) {
             return false;
         }
         const container = map._containerDOM;
