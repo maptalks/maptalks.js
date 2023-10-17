@@ -420,7 +420,7 @@ class Layer extends JSONAble(Eventable(Renderable(Class))) {
 
     _isOutSideMask() {
         const mask = this.getMask();
-        return (mask && mask.isOutSideMask && mask.isOutSideMask()) || (mask && mask.options && mask.options.outside);
+        return mask && mask.options && mask.options.outside;
     }
 
     /**
