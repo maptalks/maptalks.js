@@ -346,7 +346,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
                             deltaTransZ = -distance;
                         }
                     }
-                    deltaTranslate[2] = Math.sign(deltaTransZ) * this.map.pointAtResToAltitude(deltaTransZ, this.map.getGLRes());
+                    deltaTranslate[2] = deltaTransZ;
                 }
             } else if (mode === 'rotation') {
                 deltaAngle = this._calAngle(planeInteract.point, lastPlaneInteract.point);

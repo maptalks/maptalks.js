@@ -148,17 +148,22 @@ export default class MultiGLTFMarker extends GLTFMarker {
     getCenter() {
         let sumX = 0,
             sumY = 0,
+            sumZ = 0,
             counter = 0;
         for (let i = 0, l = this._data.length; i < l; i++) {
-            const coordinate = this._data[i].coordinates;
-            sumX += coordinate.x;
-            sumY += coordinate.y;
+            let coordinate = this._data[i].coordinates;
+            if (coordinate instanceof Coordinate) {
+                coordinate = coordinate.toArray();
+            }
+            sumX += coordinate[0];
+            sumY += coordinate[1];
+            sumZ += coordinate[2] || 0;
             counter++;
         }
         if (counter === 0) {
             return null;
         }
-        const center = COORD.set(sumX / counter, sumY / counter);
+        const center = COORD.set(sumX / counter, sumY / counter, sumZ / counter);
         return center;
     }
 
@@ -179,8 +184,6 @@ export default class MultiGLTFMarker extends GLTFMarker {
         if (!position) {
             return null;
         }
-        const map = this.getMap();
-        position[2] = map.altitudeToPoint(data.coordinates.z, map.getGLRes());
         const sub = vec3.sub(EMPTY_VEC, position, this._centerPosition);
         const trans = this._translationToWorldPoint(data['translation'] || this._defaultTRS.translation);
         const translation = vec3.add(EMPTY_VEC, trans || this._defaultTRS.translation, sub || this._defaultTRS.translation);

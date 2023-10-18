@@ -26,11 +26,18 @@ export function intersectArray(a, b) {
 }
 
 export function coordinateToWorld(map, coordinate) {
-    if (!map || !(coordinate instanceof Coordinate)) {
+    if (!map || !coordinate) {
         return null;
     }
-    const p = map.coordinateToPointAtRes(coordinate, map.getGLRes());
-    const z = map.altitudeToPoint(coordinate.z || 0, map.getGLRes());
+    let coord = coordinate;
+    if (Array.isArray(coordinate)) {
+        if (!Util.isNumber(coordinate[0])) {
+            return null;
+        }
+        coord = new Coordinate(coordinate);
+    }
+    const p = map.coordinateToPointAtRes(coord, map.getGLRes());
+    const z = map.altitudeToPoint(coord.z || 0, map.getGLRes());
     return [p.x, p.y, z];
 }
 

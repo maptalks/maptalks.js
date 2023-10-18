@@ -329,6 +329,74 @@ describe('transform-control', () => {
         }, 100);
     });
 
+    it('z axis change', (done) => {
+        const gltflayer = new maptalks.GLTFLayer('transform');
+        const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);
+        const marker = new maptalks.GLTFGeometry(center,
+            {
+                id:'gltfmarker',
+                symbol: {
+                    scaleX: 2 / 3,
+                    scaleY: 2 / 3,
+                    scaleZ: 2 / 3
+                }
+            }
+        ).addTo(gltflayer);
+        const transformControl = new maptalks.TransformControl();
+        transformControl.addTo(map);
+        transformControl.on('positionchange', e => {
+            marker.setCoordinates(e.center);
+        });
+        map.setPitch(45);
+        const vlayer = new maptalks.VectorLayer('vv').addTo(map);
+        map.on('mousedown', e => {
+            new maptalks.Marker(e.coordinate).addTo(vlayer);
+            const identifyData = groupgllayer.identify(e.coordinate);
+            if (identifyData.length) {
+                transformControl.enable();
+                transformControl.transform(identifyData[0].data);
+            } else if (!transformControl.picked(e.coordinate)) {
+                transformControl.disable();
+            }
+        });
+        map.on('mousemove', e => {
+            new maptalks.Marker(e.coordinate).addTo(vlayer);
+        });
+
+        function moveTransformControl() {
+            const point = map.coordinateToContainerPoint(center).add(8, -50);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            for (let i = 0; i < 10; i++) {
+                happen.mousemove(eventContainer, {
+                    'clientX':point.x,
+                    'clientY':point.y - i
+                });
+            }
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                const newCoord = marker.getCoordinates();
+                expect(newCoord.x).to.be.eql(0);
+                expect(newCoord.y).to.be.eql(0);
+                expect(newCoord.z).to.be.eql(-0.008699143884461176);// change z value
+                done();
+            }, 100);
+        }
+        setTimeout(function() {
+            const point = map.coordinateToContainerPoint(center);
+            happen.mousedown(eventContainer, {
+                'clientX':point.x,
+                'clientY':point.y
+            });
+            happen.mouseup(eventContainer);
+            setTimeout(function() {
+                moveTransformControl();
+            }, 100);
+        }, 100);
+    });
+
     it('xyz scale', (done) => {
         const gltflayer = new maptalks.GLTFLayer('transform');
         const groupgllayer = new maptalks.GroupGLLayer('gl', [gltflayer], {sceneConfig}).addTo(map);

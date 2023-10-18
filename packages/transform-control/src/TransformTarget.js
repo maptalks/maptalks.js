@@ -37,15 +37,9 @@ export default class TransformTarget {
     _updateTRS(task, deltaTranslate, deltaRotation, deltaScale, limitScale, map, transformcontrol) {
         for (let i = 0; i < this._targetList.length; i++) {
             const target = this._targetList[i];
-            const currentCoordinate = target.getCoordinates();
-            const currentWorldPos = map.coordinateToPointAtRes(currentCoordinate, map.getGLRes(), TEMP_POINT);
             const currentRotation = target.getRotation();
             const currentScaling = target.getScale();
-            const currentWorlPosition = vec3.set(EMPTY_VEC, currentWorldPos.x, currentWorldPos.y, currentCoordinate.z || 0);
-
-            const targetWorldPosition = vec3.add(currentWorlPosition, currentWorlPosition, deltaTranslate);
             const targetCoordinate = this._calNewCenter(map, target, deltaScale, deltaRotation, deltaTranslate);
-            targetCoordinate.z = targetWorldPosition[2];
             let tempScale = null;
             //放大时，拉伸的空间可无限大，但是缩小时，是向圈内缩放，空间有限，需要增加缩小的倍数
             if (deltaScale >= 0) {
@@ -84,8 +78,10 @@ export default class TransformTarget {
         const originCenter = target.getTransformOrigin();
         const glRes = map.getGLRes();
         const pCenter = map.coordinateToPointAtRes(center, glRes, TEMP_POINT);
+        pCenter.z = map.altitudeToPoint(center.z, glRes);
         vec3.set(TEMP_VEC_1, pCenter.x, pCenter.y, pCenter.z || 0);
         const pOriginCenter = map.coordinateToPointAtRes(originCenter, glRes, TEMP_POINT);
+        pOriginCenter.z = map.altitudeToPoint(originCenter.z, glRes);
         vec3.set(TEMP_VEC_2, pOriginCenter.x , pOriginCenter.y, pOriginCenter.z || 0);
         const point = vec3.sub(EMPTY_VEC, TEMP_VEC_1, TEMP_VEC_2);
         const rotation = quat.fromEuler(EMPTY_QUAT, 0, 0, deltaRotation[2]);

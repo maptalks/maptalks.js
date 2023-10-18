@@ -118,6 +118,9 @@ export default class GLTFMarker extends Marker {
             bboxes.push([bbox.min, bbox.max]);
         }
         const bbox0 = bboxes[0];
+        if (!bbox0) {
+            return null;
+        }
         const min = vec3.copy([], bbox0[0]), max = vec3.copy([], bbox0[1]);
         for (let i = 1; i < bboxes.length; i++) {
             const bbox = bboxes[i];
@@ -244,9 +247,11 @@ export default class GLTFMarker extends Marker {
             return null;
         }
         const translate = this._getTranslationPoint();
-        const currentPosition = new Point([coordPosition[0] + translate[0], coordPosition[1] + translate[1]]);
-
-        return map.pointAtResToCoord(currentPosition, map.getGLRes());
+        const currentPosition = new Point([coordPosition[0] + translate[0], coordPosition[1] + translate[1], coordPosition[2] + translate[2]]);
+        const glRes = map.getGLRes();
+        const coord = map.pointAtResToCoord(currentPosition, glRes);
+        coord.z = (currentPosition.z / map.altitudeToPoint(100, glRes)) * 100;
+        return coord;
     }
 
     getPointZ() {
