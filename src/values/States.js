@@ -503,6 +503,7 @@ include(
                     this.vaoOES.bindVertexArrayOES(vao);
                 }
             }
+            this.states.activeAttribType = 1;
         },
 
         /**
@@ -516,6 +517,7 @@ include(
          */
         vertexAttribPointer(index, size, type, normalized, stride, offset) {
             this._checkAndRestore();
+            this.states.activeAttribType = 0;
             // const args = [index, size, type, normalized, stride, offset];
             if (!this.states.attributes[index]) {
                 this.states.attributes[index] = {
@@ -578,6 +580,7 @@ include(
             const target = this.states;
 
             const gl = this._gl;
+            let activeAttibNum = 0;
             for (const p in target) {
                 if (
                     p === 'capabilities' ||
@@ -591,6 +594,9 @@ include(
                 } else if (p === 'program') {
                     if (target.program !== preStates.program) {
                         gl.useProgram(target.program);
+                        if (target.program) {
+                            activeAttibNum = gl.getProgramParameter(target.program, gl['ACTIVE_ATTRIBUTES']);
+                        }
                     }
                 } else if (p === 'framebuffer') {
                     for (const t in target[p]) {
@@ -671,50 +677,18 @@ include(
                 this._vaoOES.bindVertexArrayOES(null);
             }
 
-            // if (target.attribOrder === 1) {
-            //     this._restoreAttribs(target, gl);
-            //     this._restoreVAO(target, gl);
-            //     console.log(1);
-            // } else {
-            //     this._restoreVAO(target, gl);
-            //     this._restoreAttribs(target, gl);
-            //     console.log(2);
-            // }
+            if (preStates.activeAttribType === 1) {
+                this._restoreAttribs(target, gl, 0);
+                this._restoreVAO(target, gl);
+            } else {
+                this._restoreAttribs(target, gl, activeAttibNum);
+            }
+            //
 
-            // this._restoreVAO(target, gl);
-            this._restoreAttribs(target, gl);
-
-            //restore attributes
-            // const attrs = target.attributes,
-            //     preAttrs = preStates.attributes;
-            // for (const p in attrs) {
-            //     if (!preAttrs[p] || attrs[p].buffer !== preAttrs[p].buffer ||
-            //         !equal(attrs[p].args, preAttrs[p].args)) {
-            //         if (attrs[p].buffer) {
-            //             gl.bindBuffer(gl.ARRAY_BUFFER, attrs[p].buffer);
-            //             gl.vertexAttribPointer(...attrs[p].args);
-            //             if (attrs[p].divisor !== undefined) {
-            //                 if (this._is2) {
-            //                     gl.vertexAttribDivisor(+p, attrs[p].divisor);
-            //                 } else {
-            //                     this.angleOES.vertexAttribDivisorANGLE(+p, attrs[p].divisor);
-            //                 }
-            //             }
-            //             if (attrs[p].enable) {
-            //                 gl.enableVertexAttribArray(attrs[p].args[0]);
-            //             } else {
-            //                 gl.disableVertexAttribArray(attrs[p].args[0]);
-            //             }
-            //         }
-            //     }
-            // }
 
             //restore array buffer and element array buffer
             gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
-
-            //TODO vao和buffer的顺序可能会有冲突
-
         },
 
         _restoreVAO(target, gl) {
@@ -728,39 +702,38 @@ include(
             }
         },
 
-        _restoreAttribs(target, gl) {
+        _restoreAttribs(target, gl, activeAttibNum) {
             const limit = this._attrLimit;
 
-            // const attrs = target.attributes;
-            // let invalidIndex = -1;
+            const attrs = target.attributes;
+            let activeCount = 0;
             for (let i = 0; i < limit; i++) {
-                gl.disableVertexAttribArray(i);
-                // const attribute = attrs[i];
-                // if (invalidIndex < 0 && attribute && attribute.buffer) {
-                //     gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
-                //     gl.vertexAttribPointer(...attribute.args);
-                //     if (attribute.divisor !== undefined) {
-                //         if (this._is2) {
-                //             gl.vertexAttribDivisor(i, attribute.divisor);
-                //         } else {
-                //             this.angleOES.vertexAttribDivisorANGLE(
-                //                 i,
-                //                 attribute.divisor
-                //             );
-                //         }
-                //     }
-
-                //     if (attribute.enable) {
-                //         gl.enableVertexAttribArray(i);
-                //     } else {
-                //         gl.disableVertexAttribArray(i);
-                //     }
-                // } else {
-                //     if (invalidIndex === -1) {
-                //         invalidIndex = i;
-                //     }
-                //     gl.disableVertexAttribArray(i);
-                // }
+                const attribute = attrs[i];
+                if (activeCount < activeAttibNum && attribute) {
+                    if (attribute.buffer) {
+                        gl.bindBuffer(gl.ARRAY_BUFFER, attribute.buffer);
+                        gl.vertexAttribPointer(...attribute.args);
+                        if (attribute.divisor) {
+                            if (this._is2) {
+                                gl.vertexAttribDivisor(i, attribute.divisor);
+                            } else {
+                                this.angleOES.vertexAttribDivisorANGLE(
+                                    i,
+                                    attribute.divisor
+                                );
+                            }
+                        }
+                    }
+                    // gl.enableVertexAttribArray(i);
+                    if (attribute.enable) {
+                        gl.enableVertexAttribArray(i);
+                        activeCount++;
+                    } else {
+                        gl.disableVertexAttribArray(i);
+                    }
+                } else {
+                    gl.disableVertexAttribArray(i);
+                }
             }
         }
     }
