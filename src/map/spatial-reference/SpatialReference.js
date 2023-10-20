@@ -151,9 +151,13 @@ export default class SpatialReference {
                 for (let i = 0; i < names.length; i++) {
                     if (names[i].toLowerCase() === prjName) {
                         if (projections[p].create) {
-                            return projections[p].create(projection);
+                            const instance = projections[p].create(projection);
+                            instance.code = projection.code;
+                            return instance;
                         } else {
-                            return projections[p];
+                            const instance = extend({}, projections[p]);
+                            instance.code = projection.code;
+                            return instance;
                         }
                     }
                 }
