@@ -152,11 +152,11 @@ export default class SpatialReference {
                     if (names[i].toLowerCase() === prjName) {
                         if (projections[p].create) {
                             const instance = projections[p].create(projection);
-                            instance.code = projection.code;
+                            instance.code = names[i];
                             return instance;
                         } else {
                             const instance = extend({}, projections[p]);
-                            instance.code = projection.code;
+                            instance.code = names[i];
                             return instance;
                         }
                     }
