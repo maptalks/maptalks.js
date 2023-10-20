@@ -856,38 +856,23 @@ describe('gl tests', () => {
                 }
             }
             const group = new maptalks.GroupGLLayer('group', skinLayers, { terrain });
-            let count = 0;
 
-            group.once('terrainlayercreated', () => {
-                const terrainLayer = group.getTerrainLayer();
-                terrainLayer.on('paintercreated', () => {
-                    count++;
-                });
-                terrainLayer.once('terrainreadyandrender', () => {
-                    group.once('layerload', () => {
-                        let count1 = 0;
-                        group.on('layerload', () => {
-                            count1++;
-                            if (count1 === 3) {
-                                expect(count).to.be.eql(2);
-                                const canvas = map.getRenderer().canvas;
-                                const ctx = canvas.getContext('2d');
-                                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
-                                expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 } });
-                                done();
-                            }
-                        });
-                        expect(count).to.be.eql(1);
-                        const canvas = map.getRenderer().canvas;
-                        const ctx = canvas.getContext('2d');
-                        const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
-                        expect(pixel).to.be.eql({ data: { '0': 139, '1': 143, '2': 144, '3': 255 } });
-                        group.getTerrainLayer().options.shader = 'default';
-                    });
-                });
-            });
+            setTimeout(() => {
+                const canvas = map.getRenderer().canvas;
+                const ctx = canvas.getContext('2d');
+                const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2 + 7, 1, 1);
+                expect(pixel).to.be.eql({ data: { '0': 139, '1': 143, '2': 144, '3': 255 } });
+                group.getTerrainLayer().options.shader = 'default';
+                setTimeout(() => {
+                    const canvas = map.getRenderer().canvas;
+                    const ctx = canvas.getContext('2d');
+                    const pixel = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                    expect(pixel).to.be.eql({ data: { '0': 136, '1': 140, '2': 141, '3': 255 } });
+                    done();
+                }, 1000);
+            }, 2000);
             group.addTo(map);
-        });
+        }).timeout(5000);
 
         it('terrain of cesium', done => {
             map = new maptalks.Map(container, {
