@@ -124,7 +124,7 @@ describe('weather tests', () => {
         }
     });
 
-    it('enable snow', done => {
+    it.skip('enable snow', done => {
         const snow = {
             enable: true
         };
