@@ -1,7 +1,7 @@
 import createREGL from '@maptalks/regl';
 import * as reshader from '@maptalks/reshader.gl';
 
-const PREFILTER_CUBE_SIZE = 256;
+const PREFILTER_CUBE_SIZE = 128;
 
 class LightManager {
 
