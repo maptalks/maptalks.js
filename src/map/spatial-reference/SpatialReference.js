@@ -155,6 +155,9 @@ export default class SpatialReference {
                             instance.code = names[i];
                             return instance;
                         } else {
+                            if (projections[p].code === names[i]) {
+                                return projections[p];
+                            }
                             const instance = extend({}, projections[p]);
                             instance.code = names[i];
                             return instance;
