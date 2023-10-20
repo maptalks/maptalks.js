@@ -21,7 +21,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@maptalks/gltf-loader": "^0.91.0",
-    "@maptalks/tbn-packer": "^1.4.2",
+    "@maptalks/tbn-packer": "^1.4.3",
     "earcut": "^2.2.4",
     "gl-matrix": "^2.6.1"
   },
