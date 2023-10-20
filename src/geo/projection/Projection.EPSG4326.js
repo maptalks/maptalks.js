@@ -21,6 +21,7 @@ export default extend({}, Common, /** @lends projection.EPSG4326 */ {
      * @constant
      */
     code: 'EPSG:4326',
+    aliases: ['EPSG:4490'],
     project: function (p, out) {
         if (out) {
             out.x = p.x;

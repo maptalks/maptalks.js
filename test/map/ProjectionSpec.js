@@ -205,5 +205,52 @@ describe('Map.Projection', function () {
             var b = baiduProj.project(new maptalks.Coordinate(-Infinity, -Infinity));
         });
     });
-});
 
+    describe('utm projection', function () {
+        it('utm project and unproject', function () {
+            var spatialReference = {
+                projection: {
+                    code: 'utm',
+                    zone: 51
+                },
+                resolutions: (function () {
+                    let res = Math.pow(2, 8);
+                    const resolutions = [];
+                    for (let i = 0; i < 23; i++) {
+                        resolutions[i] = res;
+                        res *= 0.5;
+                    }
+                    return resolutions;
+                })(),
+                fullExtent: {
+                    'top': 200000,
+                    'left': -200000,
+                    'bottom': -200000,
+                    'right': 200000
+                }
+            };
+            map.remove();
+            map = new maptalks.Map(container, {
+                center: [121.50, 31.24],
+                zoom: 5,
+                centerCross: true,
+                spatialReference
+            });
+            var center = map.getCenter();
+            var projection = map.getProjection();
+            var p0 = center.add(-0.018, -0.003);
+            var p1 = center.add(0.018, -0.003);
+
+            var pj0 = projection.project(p0);
+            var pj1 = projection.project(p1);
+
+            expect(pj0.toArray()).to.be.eql([355434.28874248517, 3456861.229232939]);
+            expect(pj1.toArray()).to.be.eql([358863.0849529234, 3456814.667859022]);
+
+            var pp0 = projection.unproject(pj0);
+            var pp1 = projection.unproject(pj1);
+            expect(pp0.toArray()).to.be.eql([121.482, 31.23699999999999]);
+            expect(pp1.toArray()).to.be.eql([121.518, 31.237]);
+        });
+    });
+});
