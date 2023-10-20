@@ -15,7 +15,7 @@ describe('bug', () => {
             symbol: {
                 url: url8
             }
-        }).addTo(gltflayer);
+        });
         let times = 0;
         function pickColor(expectedValue) {
             setTimeout(function() {
@@ -52,6 +52,8 @@ describe('bug', () => {
 
             }, 100);
         });
+        gltflayer.addTo(map);
+        marker.addTo(gltflayer);
     });
 
     it('non-power-of-two width and height textures(fuzhenn/maptalks-studio#2075)', (done) => {
@@ -1468,7 +1470,7 @@ describe('bug', () => {
         });
     });
 
-    it.only('add gltfmarker when map has skybox', done => {
+    it('add gltfmarker when map has skybox', done => {
         const newLightConfig = {
             ambient: {
                 resource: {
