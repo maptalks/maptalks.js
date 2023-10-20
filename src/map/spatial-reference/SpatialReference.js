@@ -1,4 +1,4 @@
-import { extend, isNil, isObject, hasOwn, sign, isString } from '../../core/util';
+import { extend, isNil, hasOwn, sign, isString } from '../../core/util';
 import Coordinate from '../../geo/Coordinate';
 import Extent from '../../geo/Extent';
 import * as projections from '../../geo/projection';
@@ -121,27 +121,48 @@ export default class SpatialReference {
         return Object.keys(DefaultSpatialReference);
     }
 
-    static getProjectionInstance(prjName) {
-        if (!prjName) {
+    static getProjectionInstance(projection) {
+        if (!projection) {
             return null;
         }
-        if (isObject(prjName)) {
-            if (!prjName.locate) {
-                prjName = extend({}, prjName);
-                if (prjName.measure === 'identity') {
-                    extend(prjName, Measurer.getInstance('IDENTITY'));
+        if (isString(projection)) {
+            projection = {
+                code: projection
+            };
+        }
+        // a custom one
+        if (projection.project) {
+            if (!projection.locate) {
+                projection = extend({}, projection);
+                if (projection.measure === 'identity') {
+                    extend(projection, Measurer.getInstance('IDENTITY'));
                 } else {
-                    extend(prjName, Measurer.getInstance('EPSG:4326'));
+                    extend(projection, Measurer.getInstance('EPSG:4326'));
                 }
             }
-            return prjName;
+            return projection;
         }
-        prjName = (prjName + '').toLowerCase();
+        const prjName = (projection.code + '').toLowerCase();
         for (const p in projections) {
             if (hasOwn(projections, p)) {
+                const names = projections[p].aliases || [];
                 const code = projections[p]['code'];
-                if (code && code.toLowerCase() === prjName) {
-                    return projections[p];
+                names.push(code);
+                for (let i = 0; i < names.length; i++) {
+                    if (names[i].toLowerCase() === prjName) {
+                        if (projections[p].create) {
+                            const instance = projections[p].create(projection);
+                            instance.code = names[i];
+                            return instance;
+                        } else {
+                            if (projections[p].code === names[i]) {
+                                return projections[p];
+                            }
+                            const instance = extend({}, projections[p]);
+                            instance.code = names[i];
+                            return instance;
+                        }
+                    }
                 }
             }
         }
