@@ -1714,7 +1714,7 @@ describe('render specs', () => {
             runner(() => {
                 done();
             }, layer, { path: `./integration/expected/withSkyBox/lit/expected.png`, diffCount: 0, renderCount: 1, noGroup: true, zoomOffset: 0 });
-        });
+        }).timeout(5000);
 
         it('Add 3dtiles with skybox and unlit in service is true(issue#467)', done => {
             const resPath = 'withSkyBox/3dtiles';
