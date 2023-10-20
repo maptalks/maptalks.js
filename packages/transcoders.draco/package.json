@@ -17,7 +17,7 @@
     "dist/transcoders.draco.es.js"
   ],
   "dependencies": {
-    "@maptalks/gl": "^0.91.2"
+    "@maptalks/gl": "<2.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
