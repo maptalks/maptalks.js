@@ -10,7 +10,7 @@ describe('bug', () => {
     });
 
     it('clear markers and then add a new one(fuzhenn/maptalks-studio#1390)', (done) => {
-        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFGeometry(center, {
             symbol: {
                 url: url8
@@ -1466,5 +1466,46 @@ describe('bug', () => {
             expect(copyMarkers[2].coordinates.toArray().slice(0, 2)).to.eql([0.0006950739275419895, 0.0006950739275419895]);
             done();
         });
+    });
+
+    it.only('add gltfmarker when map has skybox', done => {
+        const newLightConfig = {
+            ambient: {
+                resource: {
+                    url: {
+                        front: "./resources/skybox/skybox.jpg",
+                        back: "./resources/skybox/skybox.jpg",
+                        left: "./resources/skybox/skybox.jpg",
+                        right: "./resources/skybox/skybox.jpg",
+                        top: "./resources/skybox/skybox.jpg",
+                        bottom: "./resources/skybox/skybox.jpg"
+                    },
+                    prefilterCubeSize: 32
+                },
+                color: [0.2, 0.2, 0.2],
+                exposure: 1.5
+            },
+            directional: {
+                color: [0.1, 0.1, 0.1],
+                specular: [0.8, 0.8, 0.8],
+                direction: [-1, -1, -1],
+            }
+        };
+        map.setLights(newLightConfig);
+        const layer = new maptalks.GLTFLayer('layer');
+        const marker = new maptalks.GLTFMarker(center, {
+            symbol: {
+                url: url11,
+                modelHeight: 50
+            }
+        }).addTo(layer);
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(hasColor(pixel)).to.be.ok();
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [layer], { sceneConfig }).addTo(map);
     });
 });

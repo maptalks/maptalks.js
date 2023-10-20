@@ -30,7 +30,14 @@ export default class GLTFAdapter {
             const dataview = this._createDataView(bufferView, bufferData);
             return this.getImageByBuffer(dataview, source);
         }
-        const promise = this._imgRequests[buffer.id] = Ajax.getArrayBuffer(buffer.uri, null).then(response => {
+        let url;
+        const isBlob = buffer.uri.indexOf('blob:') >= 0;
+        if (buffer.uri.indexOf('://') > 0 || isBlob) {
+            url = buffer.uri;
+        } else {
+            url = this.rootPath + '/' + buffer.uri;
+        }
+        const promise = this._imgRequests[buffer.id] = Ajax.getArrayBuffer(url, null).then(response => {
             const bufferData = this.buffers[buffer.id] = response.data;
             const dataview = this._createDataView(bufferView, bufferData);
             return this.getImageByBuffer(dataview, source);

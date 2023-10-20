@@ -34,6 +34,15 @@ export function prepareMesh(modelName, translate, rotation, scale, color, pickin
             mesh.originColor = color || g.materialInfo.baseColorFactor;
             meshes.push(mesh);
         });
+        if (pickingId > 100) {
+            meshes[0].properties['relatedMeshes'] = meshes.slice(1, 2);
+            meshes[1].properties['relatedMeshes'] = meshes.slice(0, 1);
+            meshes[2].properties['relatedMeshes'] = meshes.slice(3, 4);
+            meshes[3].properties['relatedMeshes'] = meshes.slice(2, 3);
+            meshes[4].properties['relatedMeshes'] = meshes.slice(5, 6);
+            meshes[5].properties['relatedMeshes'] = meshes.slice(4, 5);
+            meshes[6].properties['relatedMeshes'] = meshes.slice(0, 6);
+        }
     });
     return meshes;
 }

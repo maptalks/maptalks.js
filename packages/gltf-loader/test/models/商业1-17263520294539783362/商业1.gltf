@@ -1,0 +1,236 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 6298,
+      "max": [
+        1640.0009765625,
+        1640,
+        3266.16650390625
+      ],
+      "min": [
+        -1640.0003662109375,
+        -1659.6748046875,
+        -6.4000244140625
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 6298,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 6298,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 6298,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 6298,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 6298,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5123,
+      "count": 7848,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "gltfutil-transform",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 75576,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 75576,
+      "byteOffset": 75576
+    },
+    {
+      "buffer": 0,
+      "byteLength": 50384,
+      "byteOffset": 151152
+    },
+    {
+      "buffer": 0,
+      "byteLength": 50384,
+      "byteOffset": 201536
+    },
+    {
+      "buffer": 0,
+      "byteLength": 50384,
+      "byteOffset": 251920
+    },
+    {
+      "buffer": 0,
+      "byteLength": 50384,
+      "byteOffset": 302304
+    },
+    {
+      "buffer": 0,
+      "byteLength": 15696,
+      "byteOffset": 352688
+    },
+    {
+      "buffer": 0,
+      "byteLength": 36110,
+      "byteOffset": 368384
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3849,
+      "byteOffset": 404496
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 408348,
+      "uri": "buffer_6ce343b351fa2ddd.bin"
+    }
+  ],
+  "images": [
+    {
+      "bufferView": 7,
+      "mimeType": "image/jpeg",
+      "name": "AIColor"
+    },
+    {
+      "bufferView": 8,
+      "mimeType": "image/png",
+      "name": "A-B"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "AIT01W2W8",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "AIT01W2W8_AIT01W2W8_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2,
+            "TEXCOORD_1": 3,
+            "TEXCOORD_2": 4,
+            "TEXCOORD_3": 5
+          },
+          "indices": 6,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "AIT01W2W8_AIT01W2W8_0",
+      "scale": [
+        0.007330205757170916,
+        0.007273441180586815,
+        0.007330204825848341
+      ]
+    },
+    {
+      "children": [
+        0
+      ],
+      "name": "AIT01W2W8",
+      "rotation": [
+        -0.7071068286895752,
+        0,
+        0,
+        0.7071068286895752
+      ]
+    },
+    {
+      "children": [
+        1
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "AIT01W2W8.FBX",
+      "rotation": [
+        0.7071068286895752,
+        0,
+        0,
+        0.7071068286895752
+      ]
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "Sketchfab_model",
+      "rotation": [
+        -0.7071068286895752,
+        0,
+        0,
+        0.7071068286895752
+      ]
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        4
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    }
+  ]
+}

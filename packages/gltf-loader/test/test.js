@@ -278,6 +278,33 @@ describe('GLTF', () => {
                 });
             });
         });
+
+        it('get all resources in .bin', (done) => {
+            const root = 'models/商业1-17263520294539783362';
+            gltf.Ajax.getJSON(root + '/商业1.gltf', {}).then(json => {
+                const loader = new gltf.GLTFLoader(root, json);
+                loader.load().then(gltf => {
+                    expect(gltf.scene).to.be.eql(0);
+                    const nodes = gltf.scenes[gltf.scene].nodes;
+                    expect(nodes[0]).to.be.ok();
+                    const children0 = nodes[0].children;
+                    expect(children0.length).to.be.eql(1);
+                    const children1 = children0[0].children;
+                    expect(children1.length).to.be.eql(1);
+                    const children2 = children1[0].children;
+                    expect(children2.length).to.be.eql(1);
+                    const children3 = children2[0];
+                    expect(children3).to.be.ok();
+
+                    let index = 0;
+                    for (const node in gltf.nodes) {
+                        expect(Number(gltf.nodes[node].nodeIndex)).to.be.eql(index);
+                        index++;
+                    }
+                    done();
+                });
+            });
+        });
     });
 });
 describe('gltf v1', () => {

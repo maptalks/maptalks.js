@@ -53,11 +53,12 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
 
     setMode(mode) {
         this._mode = mode;
+        this._resetScale();
         if (this.layerRenderer) {
             this.layerRenderer.setToRedraw();
         }
     }
-    
+
     getMode() {
         return this._mode;
     }
@@ -153,7 +154,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
     }
 
     _mousedownHandle(e) {
-        if (!this._isAvailable()) {
+        if (!this._isAvailable() || e.domEvent.button !== 0) {
             return;
         }
         const meshes = this._getMeshes();
@@ -444,15 +445,29 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             }
             const pickedMesh = meshes[this.currentPickingObject.meshId];
             if (pickedMesh && noChangeColorPickingIds.indexOf(this.currentPickingObject.pickingId) < 0) {
-                const color = [pickedMesh.originColor[0], pickedMesh.originColor[1], pickedMesh.originColor[2], 0.8];
-                pickedMesh.material.set('color', color);
-                this._setTranslateMeshesColor(pickedMesh, 0.5);
+                if (this.currentPickingObject.pickingId > 100) {
+                    this._changeXYZScaleColor(pickedMesh);
+                } else {
+                    const color = [pickedMesh.originColor[0], pickedMesh.originColor[1], pickedMesh.originColor[2], 0.8];
+                    pickedMesh.material.set('color', color);
+                    this._setTranslateMeshesColor(pickedMesh, 0.5);
+                }
             }
             this.layerRenderer.setToRedraw();
         } else if (this.lastPickingObject && this.lastPickingObject.meshId != null) {
             this.map.resetCursor();
             this._resetColor();
             this.layerRenderer.setToRedraw();
+        }
+    }
+
+    _changeXYZScaleColor(pickedMesh) {
+        const color = [255 / 255, 179 / 255, 2 / 255, 1];
+        pickedMesh.material.set('color', color);
+        if(pickedMesh.properties['relatedMeshes']) {
+            pickedMesh.properties['relatedMeshes'].forEach(mesh => {
+                mesh.material.set('color', color)
+            });
         }
     }
 
@@ -494,6 +509,11 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
             });
         }
         lastMesh.material.set('color', lastMesh.originColor);
+        if(lastMesh.properties['relatedMeshes']) {
+            lastMesh.properties['relatedMeshes'].forEach(mesh => {
+                mesh.material.set('color', mesh.originColor)
+            });
+        }
     }
 
     _setTranslateMeshesColor(pickedMesh, opacity) {
