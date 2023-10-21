@@ -147,5 +147,4 @@ class MapRenderer extends Class {
     }
 }
 
-
 export default MapRenderer;
