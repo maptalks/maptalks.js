@@ -1734,35 +1734,6 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._fireEvent('dragrotateend', this._parseEvent(param ? param['domEvent'] : null, 'dragrotateend'));
     }
 
-    onDrop(param) {
-        /**
-          * map drop event,you can drag img,model etc data to map container
-          *
-          * @event Map#drop
-          * @type {Object}
-          * @property {String} type - drop
-          * @property {Map} target - map
-          * @example
-          * map.on('drop',e=>{
-          *   console.log(e);
-              const dataTransfer = e.dataTransfer;
-              const markerfile = dataTransfer.getData('markerfile');
-              if (!markerfile) {
-                  return;
-              }
-              const point = new maptalks.Marker(e.coordinate, {
-                  symbol: {
-                      markerFile: markerfile,
-                      markerVerticalAlignment: 'middle'
-                  }
-              }).addTo(layer);
-          *
-          * })
-          *
-          */
-        this._fireEvent('drop', param);
-    }
-
     isDragRotating() {
         return !!this._dragRotating;
     }

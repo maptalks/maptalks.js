@@ -1,13 +1,6 @@
-import { off, offsetDom, on } from '../../core/util/dom';
+import { offsetDom } from '../../core/util/dom';
 import Class from '../../core/Class';
 import Point from '../../geo/Point';
-import { extend } from '../../core/util';
-
-function dragEventHanlder(event) {
-    event.stopPropagation();
-    event.preventDefault();
-}
-const DRAGEVENTS = ['dragstart', 'dragenter', 'dragend', 'dragleave', 'dragover'];
 
 /**
  * @classdesc
@@ -27,23 +20,8 @@ class MapRenderer extends Class {
         this._thisDocVisibilitychange = this._onDocVisibilitychange.bind(this);
         this._thisDocDragStart = this._onDocDragStart.bind(this);
         this._thisDocDragEnd = this._onDocDragEnd.bind(this);
-        this._thisDropEvent = this._onDropEvent.bind(this);
-
-        const container = map.getContainer();
-        DRAGEVENTS.forEach(eventName => {
-            on(container, eventName, dragEventHanlder);
-        });
-        on(container, 'drop', this._thisDropEvent);
     }
 
-    _removeDragEvents() {
-        const map = this.map;
-        const container = map.getContainer();
-        DRAGEVENTS.forEach(eventName => {
-            off(container, eventName, dragEventHanlder);
-        });
-        off(container, 'drop', this._thisDropEvent);
-    }
 
     callInNextFrame(fn) {
         this._handlerQueue.push(fn);
@@ -167,15 +145,6 @@ class MapRenderer extends Class {
         }
         const minSize = Math.min(container.clientWidth, container.clientHeight);
         return minSize <= 0;
-    }
-
-    _onDropEvent(event) {
-        // https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API
-        event.stopPropagation();
-        event.preventDefault();
-        let eventParams = this.map._parseEvent(event, event.type);
-        eventParams = extend({}, eventParams, { dataTransfer: event.dataTransfer });
-        this.map.onDrop(eventParams);
     }
 }
 

@@ -442,7 +442,6 @@ class MapCanvasRenderer extends MapRenderer {
             removeDomEvent(document, 'dragstart', this._thisDocDragStart, this);
             removeDomEvent(document, 'dragend', this._thisDocDragEnd, this);
         }
-        this._removeDragEvents();
         if (this._resizeInterval) {
             clearInterval(this._resizeInterval);
         }
