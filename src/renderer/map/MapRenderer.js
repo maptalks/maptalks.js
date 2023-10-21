@@ -22,7 +22,6 @@ class MapRenderer extends Class {
         this._thisDocDragEnd = this._onDocDragEnd.bind(this);
     }
 
-
     callInNextFrame(fn) {
         this._handlerQueue.push(fn);
     }
