@@ -171,10 +171,19 @@ Map.include(/** @lends Map.prototype */ {
                 continue;
             }
             const layerHits = fn(layer);
+            const layerId = layer.getId();
             if (layerHits) {
                 if (Array.isArray(layerHits)) {
+                    for (let i = 0; i < layerHits.length; i++) {
+                        if (layerHits[i] && !layerHits[i].getLayer && isNil(layerHits[i].layer)) {
+                            layerHits[i].layer = layerId;
+                        }
+                    }
                     pushIn(hits, layerHits);
                 } else {
+                    if (!layerHits.getLayer && isNil(layerHits.layer)) {
+                        layerHits.layer = layerId;
+                    }
                     hits.push(layerHits);
                 }
             }
