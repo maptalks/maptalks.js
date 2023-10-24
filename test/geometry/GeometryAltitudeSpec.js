@@ -274,7 +274,7 @@ describe('Geometry.Altitude', function () {
         });
 
         it('#1519', function (done) {
-            map.setView({"center":[120.16412861168442,30.239409643648713],"zoom":12,"pitch":56,"bearing":0});
+            map.setView({ "center": [120.16412861168442, 30.239409643648713], "zoom": 12, "pitch": 56, "bearing": 0 });
             var line = new maptalks.LineString([
                 [120.30774946474676, 30.326071649658527],
                 [120.17326800494756, 30.39428919301061],
@@ -286,25 +286,25 @@ describe('Geometry.Altitude', function () {
                 [120.36555022945609, 30.324137052892578],
                 [120.30774946474676, 30.326071649658527]
             ], {
-              properties: {
-                  'altitude': [100, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200]
-              }
+                properties: {
+                    'altitude': [100, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200, 400, 1200]
+                }
             });
 
             var layer = new maptalks.VectorLayer('vector', [line], {
-              style: {
-                  symbol: {
-                      lineDasharray: [5, 10, 30, 10], //**这个参数 */
-                      lineColor: '#ff0000'
-                  }
-              },
-              enableAltitude: true,
-              drawAltitude: {
-                  polygonFill: '#1bbc9b',
-                  polygonOpacity: 0.3,
-                  lineWidth: 0,
-                  'lineDasharray': [10, 5, 5],
-              }
+                style: {
+                    symbol: {
+                        lineDasharray: [5, 10, 30, 10], //**这个参数 */
+                        lineColor: '#ff0000'
+                    }
+                },
+                enableAltitude: true,
+                drawAltitude: {
+                    polygonFill: '#1bbc9b',
+                    polygonOpacity: 0.3,
+                    lineWidth: 0,
+                    'lineDasharray': [10, 5, 5],
+                }
             });
             layer.once('layerload', function () {
                 done();
@@ -329,5 +329,70 @@ describe('Geometry.Altitude', function () {
             });
             map.addLayer(layer);
         });
+    });
+
+
+    it('clear altitude cache when altitude update', function (done) {
+        const center = map.getCenter();
+        const c1 = center.toArray();
+        const c2 = center.add(0.001, 0);
+        const c3 = center.add(0.001, 0.001);
+        const coordiantes1 = c1;
+        const coordiantes2 = [c1, c2];
+        const coordiantes3 = [[c1, c2, c3]];
+        const point = new maptalks.Marker(coordiantes1);
+        const line = new maptalks.LineString(coordiantes2);
+        const polygon = new maptalks.Polygon(coordiantes3);
+        const data = [
+            {
+                geometry: point,
+                coordiantes: coordiantes1
+            },
+            {
+                geometry: line,
+                coordiantes: coordiantes2
+            },
+            {
+                geometry: polygon,
+                coordiantes: coordiantes3
+            }
+        ];
+
+        let idx = 0;
+        function test() {
+            if (idx === data.length) {
+                done();
+                return;
+            } else {
+                const { geometry, coordiantes } = data[idx];
+                layer.clear();
+                layer.addGeometry(geometry);
+                function expectTest(){
+                    expect(geometry._minAlt).to.be.equal(undefined);
+                    expect(geometry._maxAlt).to.be.equal(undefined);
+                     //cache alt
+                    geometry.getContainerExtent();
+                }
+
+                setTimeout(() => {
+                    //default value
+                    expectTest();
+                    //update altitude
+                    geometry.setAltitude(10);
+                    expectTest();
+                    // update coordinates
+                    geometry.setCoordinates(coordiantes);
+                    expectTest();
+                    // update properties
+                    geometry.setProperties({ altitude: 20 });
+                    expectTest();
+                    idx++;
+                    test();
+                }, 100);
+            }
+        }
+
+        test();
+
     });
 });
