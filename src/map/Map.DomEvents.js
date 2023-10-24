@@ -8,6 +8,12 @@ import {
 } from '../core/util/dom';
 import Map from './Map';
 
+function dragEventHanlder(event) {
+    event.stopPropagation();
+    event.preventDefault();
+}
+const DRAGEVENTS = ['dragstart', 'dragenter', 'dragend', 'dragleave', 'dragover'].join(' ').toString();
+
 const events =
     /**
      * mousedown event
@@ -176,20 +182,43 @@ const events =
      * @property {Point} viewPoint       - view point of the event
      * @property {Event} domEvent                 - dom event
      */
-    'touchend ';
+    'touchend ' +
+    /**
+     * drop event
+     * @event Map#drop
+     * @type {Object}
+     * @property {String} type                    - drop
+     * @property {Map} target            - the map fires event
+     * @property {Coordinate} coordinate - coordinate of the event
+     * @property {Point} containerPoint  - container point of the event
+     * @property {Point} viewPoint       - view point of the event
+     * @property {Event} domEvent                 - dom event
+     */
+    'drop ';
 
 Map.include(/** @lends Map.prototype */ {
     _registerDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         addDomEvent(dom, events, this._handleDOMEvent, this);
+        addDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
     },
 
     _removeDomEvents() {
         const dom = this._panels.mapWrapper || this._containerDOM;
         removeDomEvent(dom, events, this._handleDOMEvent, this);
+        removeDomEvent(dom, DRAGEVENTS, dragEventHanlder, this);
     },
 
     _handleDOMEvent(e) {
+        if (e && e.type === 'drop') {
+            // https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API
+            e.stopPropagation();
+            e.preventDefault();
+            let eventParam = this._parseEvent(e, e.type);
+            eventParam = extend({}, eventParam, { dataTransfer: e.dataTransfer });
+            this._fireEvent(e.type, eventParam);
+            return;
+        }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));

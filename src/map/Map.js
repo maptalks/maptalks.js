@@ -1026,7 +1026,7 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
      * @param  {Number} [options.paddingTop] - Sets the amount of padding in the top of a map container
      * @param  {Number} [options.paddingRight] - Sets the amount of padding in the right of a map container
      * @param  {Number} [options.paddingBottom] - Sets the amount of padding in the bottom of a map container
-	 * @param  {Boolean} [options.isFraction=false] - can locate to fractional zoom
+     * @param  {Boolean} [options.isFraction=false] - can locate to fractional zoom
      * @return {Map} - this
      */
     fitExtent(extent, zoomOffset, options = {}, step) {
