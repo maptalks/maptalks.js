@@ -232,6 +232,8 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     setProperties(properties) {
         const old = this.properties;
         this.properties = isObject(properties) ? extend({}, properties) : properties;
+        //such as altitude update
+        this._clearAltitudeCache();
         this._repaint();
         /**
          * propertieschange event, thrown when geometry's properties is changed.
@@ -1185,6 +1187,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     _clearCache() {
         delete this._extent;
         delete this._extent2d;
+        this._clearAltitudeCache();
     }
 
     _clearProjection() {
@@ -1484,6 +1487,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
                 this._repaint();
             }
         }
+        this._clearAltitudeCache();
         return this;
     }
 
@@ -1524,6 +1528,13 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             return 0;
         }
         return this._maxAlt;
+    }
+
+    //clear alt cache
+    _clearAltitudeCache() {
+        this._minAlt = undefined;
+        this._maxAlt = undefined;
+        return this;
     }
 
 }
