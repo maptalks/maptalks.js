@@ -87,7 +87,7 @@ export default class GLTFLayer extends MaskLayerMixin(AbstractGLTFLayer) {
         const dpr = map.getDevicePixelRatio();
         const x = point.x * dpr, y = point.y * dpr;
         const picked = this._pick(x, y, options);
-        if (picked && picked.data) {
+        if (picked && (picked.data || picked.length)) {
             if (options['includeInternals'] && !options['excludeMasks']) { //由事件抛出
                 results.push(picked.data);
                 const domEvent = options.domEvent;

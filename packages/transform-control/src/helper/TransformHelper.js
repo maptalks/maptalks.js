@@ -6,7 +6,7 @@ import PlaneHelper from './PlaneHelper';
 import { prepareMesh, calFixedScale, getTranslationPoint } from '../common/Util.js';
 import XyzScaleHelper from './XyzScaleHelper';
 
-const VEC3 = [], TRANS = [], MAT4 = [], QUAT = [], SCALE = [], ratio = [177 / 170, 177 / 170, 177 / 170];
+const VEC3 = [], TRANS = [], MAT4 = [], QUAT = [], SCALE = [], ratio = [177 / 170, 177 / 170, 177 / 170], ROTATION = [];
 const scaleChangePickingIds = [1, 2, 3, 4, 12];
 
 export default class TransformHelper {
@@ -54,7 +54,7 @@ export default class TransformHelper {
                     const mesh = m[j];
                     const pickingId = mesh.getUniform('uPickingId');
                     const translate = vec3.copy(VEC3, mesh.translate);
-                    const rotation = [mesh.rotation[0], mesh.rotation[1], mesh.rotation[2]];
+                    let rotation = vec3.copy(ROTATION, mesh.rotation);
                     const scaling = mesh.scaling;
                     if (pickingId === 11) {
                         if (this._rotateClockwise) {
@@ -66,6 +66,9 @@ export default class TransformHelper {
                             rotation[0] = 360;
                             rotation[2] -= 90;
                         }
+                    }
+                    if (pickingId > 100 && target.getTargets().length === 1) {
+                        rotation = target.getTargets()[0].getRotation();
                     }
                     if (scaleChangePickingIds.indexOf(pickingId) > -1) {
                         if (pickingId !== 12) {

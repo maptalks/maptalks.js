@@ -57,6 +57,7 @@ export default class TransformControl extends Eventable(Handlerable(Class)) {
         if (this.layerRenderer) {
             this.layerRenderer.setToRedraw();
         }
+        this.fire('modechange', { mode, type: 'modechange' });
     }
 
     getMode() {

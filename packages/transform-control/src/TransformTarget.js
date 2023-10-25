@@ -47,7 +47,7 @@ export default class TransformTarget {
             } else {
                 tempScale = deltaScale * (this.options && this.options.scaleStrength || 1.0);
             }
-            const targetScale = vec3.add(TEMP_SCALE, vec3.set(EMPTY_VEC, tempScale, tempScale * (currentScaling[1] / currentScaling[0]), tempScale * (currentScaling[2] / currentScaling[0])), currentScaling);
+            const targetScale = vec3.add(TEMP_SCALE, vec3.set(EMPTY_VEC, tempScale *  currentScaling[0], tempScale * currentScaling[1], tempScale * currentScaling[2]), currentScaling);
             const minScale = Math.min(...targetScale);
             //minScale可能会出现<=0的情况，所以minScale只作为判断是否要限定scale的依据，计算的逻辑则用当前target的scale去计算，当前target的scale可以保证>=0.01
             if (minScale < limitScale) {

@@ -1510,4 +1510,41 @@ describe('bug', () => {
         });
         new maptalks.GroupGLLayer('gl', [layer], { sceneConfig }).addTo(map);
     });
+
+    it('identifyAtPoint with more tolerance', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        new maptalks.GLTFMarker(center.add(0, 0.0005), {
+            symbol: {
+                modelHeight: 50,
+                url: url1
+            }
+        }).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(-0.0005, -0.0005), {
+            symbol: {
+                modelHeight: 50,
+                url: url2
+            }
+        }).addTo(gltflayer);
+        new maptalks.GLTFMarker(center.add(0.0005, -0.0005), {
+            symbol: {
+                modelHeight: 50,
+                url: url3
+            }
+        }).addTo(gltflayer);
+        gltflayer.on('modelload', () => {
+            setTimeout(function() {
+                const results = gltflayer.identifyAtPoint(new maptalks.Point(200, 150), {
+                    tolerance: [100, 100],
+                    returnAll: true
+                });
+                const pickedMarkers = results[0];
+                expect(pickedMarkers.length).to.be.eql(3);
+                for (let i = 0; i < pickedMarkers.length; i++) {
+                    expect(pickedMarkers[i].data).to.be.ok();
+                }
+                done();
+            }, 100);
+        })
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    });
 });

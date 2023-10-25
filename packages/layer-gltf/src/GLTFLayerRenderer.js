@@ -654,7 +654,8 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
             this._picking.render(meshes, uniforms, true);
             this._needRefreshPicking = false;
         }
-        const { meshId, pickingId, point, coordinate } = this._picking.pick(
+        const method = options.returnAll ? 'pickAll' : 'pick';
+        const results = this._picking[method](
             x,   // 屏幕坐标 x轴的值
             y,  // 屏幕坐标 y轴的值
             options.tolerance || 3,
@@ -668,6 +669,23 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
                 returnPoint : true
             }
         );
+        if (results.length) {
+            const checked = {};
+            const pickedResults = [];//只返回pickingId唯一的
+            for (let i = 0; i < results.length; i++) {
+                if (!checked[results[i].pickingId]) {
+                    const result = this._getResult(results[i]);
+                    checked[results[i].pickingId] = true;
+                    pickedResults.push(result);
+                }
+            }
+            return pickedResults;
+        }
+        return this._getResult(results);
+    }
+
+    _getResult(result) {
+        const { meshId, pickingId, point, coordinate } = result;
         const markerId = this._squeezeTarget(pickingId);
         const data = this.layer._getMarkerMap()[markerId];
         const index = pickingId - markerId;

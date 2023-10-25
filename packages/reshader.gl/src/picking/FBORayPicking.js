@@ -1,4 +1,4 @@
-import { interpolate, extend } from '../common/Util';
+import { interpolate, extend, isNumber } from '../common/Util';
 import { mat4 } from 'gl-matrix';
 import MeshShader from '../shader/MeshShader';
 import Scene from '../Scene';
@@ -6,7 +6,7 @@ import { pack3, packDepth } from './PickingUtil';
 
 let TMP_POINT;
 let TMP_COORD;
-
+const TOLERANCE = [1, 1];
 const unpackFun = `
     vec3 unpack(highp float f) {
         highp vec3 color;
@@ -240,7 +240,62 @@ export default class FBORayPicking {
         return this;
     }
 
+    pickAll(x, y, tolerance, uniforms, options) {
+        tolerance = getTolerance(tolerance);
+        const { meshIds, pickingIds, coords, points } = this._pick(x, y, tolerance, uniforms, options);
+        const results = [];
+        if (pickingIds && meshIds) {
+            const checked = {};
+            for (let i = 0; i < meshIds.length; i++) {
+                const key = `${pickingIds[i]}_${meshIds[i]}`;
+                if (meshIds[i] != null && pickingIds[i] != null && !checked[key]) {
+                    checked[key] = true;
+                    results.push({
+                        meshId: meshIds[i],
+                        pickingId: pickingIds[i],
+                        point: points[i] || null,
+                        coordinate: coords[i] || null
+                    });
+                }
+            }
+        }
+        return results;
+    }
+
     pick(x, y, tolerance, uniforms, options = {}) {
+        tolerance = getTolerance(tolerance);
+        const { meshIds, pickingIds, width, coords, points } = this._pick(x, y, tolerance, uniforms, options);
+        if (pickingIds && meshIds) {
+            //从x,y开始从内往外遍历，优先测试离x,y较近的点
+            const iterDists = [];
+            for (let i = 0; i <= tolerance[0]; i++) {
+                iterDists.push(i);
+                if (i > 0) {
+                    iterDists.push(-i);
+                }
+            }
+            for (let i = 0; i < iterDists.length; i++) { //行
+                for (let j = 0; j < iterDists.length; j++) { //列
+                    const ii = (iterDists[j] + tolerance[1]) * width + (iterDists[i] + tolerance[0]);
+                    if (meshIds[ii] != null && pickingIds[ii] != null) {
+                        return {
+                            meshId: meshIds[ii],
+                            pickingId: pickingIds[ii],
+                            point: points[ii] || null,
+                            coordinate: coords[ii] || null
+                        };
+                    }
+                }
+            }
+        }
+        return {
+            pickingId: null,
+            meshId: null,
+            point: null
+        };
+    }
+
+    _pick(x, y, tolerance, uniforms, options = {}) {
         const shader = this._currentShader;
         const meshes = this._currentMeshes;
         if (!shader || !meshes || !meshes.length) {
@@ -330,34 +385,7 @@ export default class FBORayPicking {
                 }
             }
         }
-
-        //从x,y开始从内往外遍历，优先测试离x,y较近的点
-        const iterDists = [];
-        for (let i = 0; i <= tolerance; i++) {
-            iterDists.push(i);
-            if (i > 0) {
-                iterDists.push(-i);
-            }
-        }
-        for (let i = 0; i < iterDists.length; i++) { //行
-            for (let j = 0; j < iterDists.length; j++) { //列
-                const ii = (iterDists[j] + tolerance) * width + (iterDists[i] + tolerance);
-                if (meshIds[ii] != null && pickingIds[ii] != null) {
-                    return {
-                        meshId: meshIds[ii],
-                        pickingId: pickingIds[ii],
-                        point: points[ii] || null,
-                        coordinate: coords[ii] || null
-                    };
-                }
-            }
-        }
-
-        return {
-            pickingId: null,
-            meshId: null,
-            point: null
-        };
+        return { meshIds, pickingIds, coords, points, width, height };
     }
 
     _convertPickPoint(point) {
@@ -573,12 +601,13 @@ export default class FBORayPicking {
     // }
 
     _getParams(px, py, tolerance, fbo) {
-        px -= tolerance;
+        const x = tolerance[0], y = tolerance[1];
+        px -= x;
         py = fbo.height - py;
-        py -= tolerance;
+        py -= y;
 
-        let width = 2 * tolerance + 1;
-        let height = 2 * tolerance + 1;
+        let width = 2 * x + 1;
+        let height = 2 * y + 1;
 
         //        ____
         //      |      |
@@ -621,4 +650,12 @@ function applyMatrix(out, v, e) {
     out[2] = (e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z + e[ 14 ]) * w;
 
     return out;
+}
+
+function getTolerance(tolerance) {
+    if (isNumber(tolerance)) { //tolerance增加对x,y方向的支持，同时对原来数字形式的支持
+        TOLERANCE[0] = TOLERANCE[1] = tolerance;
+        tolerance = TOLERANCE;
+    }
+    return tolerance;
 }

@@ -441,7 +441,7 @@ describe('transform-control', () => {
                 expect(newCoord.x).to.be.eql(0);
                 expect(newCoord.y).to.be.eql(0);
                 const scale = marker.getScale();
-                expect(scale).to.be.eql([0.8571506832979845, 0.6666666666666666, 0.6666666666666666]);
+                expect(scale).to.be.eql([0.804950643537273, 0.6666666666666666, 0.6666666666666666]);
                 done();
             }, 100);
         }
