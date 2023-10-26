@@ -1069,7 +1069,7 @@ function float32ToInt16(inputArray, compressed_ratio, min, max, name) {
         maxElement = max;
     }
     if (!checkError(inputArray, minElement, maxElement, name) && COMPRESSED_ERROR[name]) {
-        console.warn(`${name} is not compressed!`);
+        // console.warn(`${name} is not compressed!`);
         return null;
     }
     return encodeFloat32(inputArray, minElement, maxElement);
