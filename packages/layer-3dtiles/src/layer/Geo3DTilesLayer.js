@@ -19,7 +19,6 @@ const options = {
     'retireInterval' : 2000,
     'loadingLimitOnInteracting' : 5,
     'loadingLimit' : 5,
-    // 'ajaxInMainThread' : false,
     'renderer' : 'gl',
     'forceRenderOnZooming' : true,
     'forceRenderOnRotating' : true,

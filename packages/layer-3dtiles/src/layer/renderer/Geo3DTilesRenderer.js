@@ -339,29 +339,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (node && isRelativeURL(url) && !isI3SMesh(url)) {
             url = node.baseUrl + url;
         }
-        const service = this.layer._getNodeService(node._rootIdx);
-        if (service.ajaxInMainThread) {
-            let urlParams = service['urlParams'];
-            if (urlParams) {
-                urlParams = (url.indexOf('?') > 0 ? '&' : '?') + urlParams;
-            }
-            let promise = Ajax.getArrayBuffer(url + (urlParams || ''), service['fetchOptions']);
-            const xhr = promise.xhr;
-            promise = promise.then(data => {
-                delete this._requests[url];
-                if (!data) {
-                    this.onTileError(null, node, url);
-                } else {
-                    this._loadTileContent(url, data.data, node);
-                }
-            }).catch(err => {
-                delete this._requests[url];
-                this.onTileError(err, node, url);
-            });
-            this._requests[url] = xhr;
-        } else {
-            this._loadTileContent(url, null, node);
-        }
+        this._loadTileContent(url, null, node);
         return null;
     }
 
@@ -580,14 +558,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
     abortTileLoading(tile) {
         if (!tile || !this.workerConn) return;
         const url = tile.node.content.url;
-        if (this.layer._getNodeService(tile.node._rootIdx)['ajaxInMainThread']) {
-            const xhr = this._requests[url];
-            if (xhr) {
-                xhr.abort();
-            }
-        } else {
-            this.workerConn.abortTileLoading(this.layer.getId(), url);
-        }
+        this.workerConn.abortTileLoading(this.layer.getId(), url);
         delete this._requests[url];
     }
 
