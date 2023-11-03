@@ -13,6 +13,9 @@ import { parseI3SJSON, isI3STileset, isI3SMesh, getI3SNodeInfo } from '../i3s/I3
 import { fillNodepagesToCache } from '../i3s/Util';
 import I3SNode from '../i3s/I3SNode';
 
+const COORD_IN = new maptalks.Coordinate(0, 0);
+const COORD_OUT = new maptalks.Coordinate(0, 0);
+
 const REPORTED_ERRORS = new Set();
 
 const EMPTY_ARRAY = [];
@@ -330,7 +333,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         if (isI3STileset(url)) {
             const rootIdx = node._rootIdx;
             const nodeCache = this._i3sNodeCache[rootIdx];
-            const i3sNode = new I3SNode(url, rootIdx, nodeCache, this._fnFetchNodepages);
+            const i3sNode = new I3SNode(url, rootIdx, nodeCache, this.layer, this._fnFetchNodepages);
             return i3sNode.load().then(tileset => {
                 this.onTilesetLoad(tileset, node, url);
             });
@@ -359,6 +362,7 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
 
         if (isI3SMesh(url)) {
             const nodeCache = this._i3sNodeCache[tile._rootIdx];
+            params.projection = nodeCache.projection;
             params.i3sInfo = getI3SNodeInfo(url, nodeCache, this.regl, this.layer.options['enableI3SCompressedGeometry'], this.layer.options['forceI3SCompressedGeometry']);
             if (!params.i3sInfo) {
                 this.onTileError({ status: 404 }, tile, url);
@@ -622,7 +626,8 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
         let options = this.layer.options || {};
         options = extend({}, options);
         delete options['offset'];
-        options.projection = map.getSpatialReference().getProjection().code;
+        const spatialReference = map.options.spatialReference;
+        options.projection = spatialReference && spatialReference.coordType || spatialReference && spatialReference.projection || map.getSpatialReference().getProjection().code;
         const id = this.layer.getId();
         workerConn.addLayer(id, options, err => {
             if (err) throw err;
@@ -823,7 +828,11 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             url = url + 'layers/0'
         }
         nodeCache.version = +(service.i3sVersion || tileset.store.version);
-        parseI3SJSON(tileset, rootIdx, service, url, nodeCache, this._fnFetchNodepages).then(json => {
+        if (tileset.spatialReference && (!tileset.spatialReference.wkid || tileset.spatialReference.wkid !== 4326)) {
+            console.warn('i3s has a spatialReference other than 4326.', tileset.spatialReference);
+        }
+        nodeCache.projection = tileset.spatialReference;
+        parseI3SJSON(this.layer, tileset, rootIdx, service, url, nodeCache, this._fnFetchNodepages).then(json => {
             this.onTilesetLoad(json, parent, url);
         });
     }
@@ -926,6 +935,59 @@ export default class Geo3DTilesRenderer extends MaskRendererMixin(maptalks.rende
             return [];
         }
         return this.painter._getCurrentBatchIDs();
+    }
+
+    _tileCoordToLngLat(out, position) {
+        const map = this.getMap();
+        const code = map.getProjection().code.toLowerCase();
+        if (code === 'identity') {
+            const projection = this._getCoordProjection();
+            COORD_IN.x = position[0];
+            COORD_IN.y = position[1];
+            projection.unproject(COORD_IN, COORD_OUT);
+            out[0] = COORD_OUT.x;
+            out[1] = COORD_OUT.y;
+            return out;
+        } else {
+            COORD_IN.x = position[0];
+            COORD_IN.y = position[1];
+            map.getProjection().unproject(COORD_IN, COORD_OUT);
+            out[0] = COORD_OUT.x;
+            out[1] = COORD_OUT.y;
+            return out;
+        }
+    }
+
+    _lngLatToIdentityCoord(out, position) {
+        const projection = this._getCoordProjection();
+        COORD_IN.x = position[0];
+        COORD_IN.y = position[1];
+        projection.project(COORD_IN, COORD_OUT);
+        out[0] = COORD_OUT.x;
+        out[1] = COORD_OUT.y;
+        return out;
+    }
+
+    _identityCoordToLngLat(out, coord) {
+        const projection = this._getCoordProjection();
+        COORD_IN.x = coord[0];
+        COORD_IN.y = coord[1];
+        projection.unproject(COORD_IN, COORD_OUT);
+        out[0] = COORD_OUT.x;
+        out[1] = COORD_OUT.y;
+        return out;
+    }
+
+    _getCoordProjection() {
+        const map = this.getMap();
+        const coordType = map.options.spatialReference.coordType;
+        if (!coordType) {
+            throw new Error('Missing coordType in map spatialReference.');
+        }
+        if (!this._centerProjection) {
+            this._centerProjection = maptalks.SpatialReference.getProjectionInstance(coordType);
+        }
+        return this._centerProjection;
     }
 }
 

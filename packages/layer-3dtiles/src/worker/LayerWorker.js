@@ -106,7 +106,7 @@ export default class BaseLayerWorker {
         if (isI3SURL(url)) {
             const i3sInfo = params.i3sInfo;
             const maxTextureSize = service.maxTextureSize || 1024;
-            const promise = loadI3STile(i3sInfo, params.supportedFormats, this.options.projection, maxTextureSize);
+            const promise = loadI3STile(i3sInfo, params.supportedFormats, this.options.projection, params.projection, maxTextureSize);
             promise.then(i3sData => {
                 delete this._requests[url];
                 if (!i3sData) {

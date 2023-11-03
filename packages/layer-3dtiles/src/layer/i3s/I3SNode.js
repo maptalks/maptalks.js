@@ -6,7 +6,8 @@ import { fillNodepagesToCache } from './Util';
 const TEMP_VEC3 = [];
 
 export default class I3SNode {
-    constructor(url, rootIdx, nodeCache, fnFetchNodepages) {
+    constructor(url, rootIdx, nodeCache, layer, fnFetchNodepages) {
+        this._layer = layer;
         this._url = url;
         this._rootIdx = rootIdx;
         this._fnFetchNodepages = fnFetchNodepages;
@@ -158,6 +159,9 @@ export default class I3SNode {
     }
 
     _convertNode(nodeJSON) {
+        const renderer = this._layer.getRenderer();
+        const projection = this._nodeCache.projection;
+        const is4326 = !projection || projection && projection.wkid === 4326;
         const version = this._version;
         const nodeCache = this._nodeCache;
         const nodeData = nodeJSON;
@@ -168,13 +172,21 @@ export default class I3SNode {
         let position;
 
         if (mbs) {
-            position = _WGS84ToCartesian([], mbs[0], mbs[1], mbs[2]); // cartesian center of box
+            position = vec3.set([], mbs[0], mbs[1], mbs[2]);
+            if (!is4326) {
+                position = renderer._tileCoordToLngLat(position, position);
+            }
+            position = _WGS84ToCartesian([], position[0], position[1], position[2]); // cartesian center of box
             boundingVolume.sphere = [
                 ...position, // cartesian center of sphere
                 mbs[3] // radius of sphere
             ];
         } else if (obb) {
-            position = _WGS84ToCartesian([], obb.center[0], obb.center[1], obb.center[2]); // cartesian center of box;
+            position = vec3.set([], obb.center[0], obb.center[1], obb.center[2]); // cartesian center of box;
+            if (!is4326) {
+                position = renderer._tileCoordToLngLat(position, position);
+            }
+            position = _WGS84ToCartesian([], position[0], position[1], position[2]); // cartesian center of box;
             const box = fromCenterHalfSizeQuaternion(
                 position, // cartesian center of box
                 obb.halfSize,

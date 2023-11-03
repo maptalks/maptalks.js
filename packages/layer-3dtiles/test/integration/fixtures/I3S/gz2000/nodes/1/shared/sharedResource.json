@@ -1,0 +1,1 @@
+{"materialDefinitions":{"Mat1":{"type":"standard","name":"standard","params":{"vertexRegions":false,"vertexColors":true,"reflectivity":0,"useVertexColorAlpha":false,"ambient":[0,0,0],"diffuse":[1,1,1],"specular":[0.098039215686274508,0.098039215686274508,0.098039215686274508],"shininess":1,"renderMode":"solid","cullFace":"none"}}}}

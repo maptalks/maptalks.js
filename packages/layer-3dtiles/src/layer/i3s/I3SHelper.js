@@ -22,7 +22,7 @@ const supportWASM = (() => {
     return false;
 })();
 
-export function parseI3SJSON(json, rootIdx, service, url, nodeCache, fnFetchNodepages) {
+export function parseI3SJSON(layer, json, rootIdx, service, url, nodeCache, fnFetchNodepages) {
     if (!nodeCache.layerScene) {
         // the scene layer
         nodeCache.layerScene = json;
@@ -41,7 +41,7 @@ export function parseI3SJSON(json, rootIdx, service, url, nodeCache, fnFetchNode
         }
         nodeCache.layerScene.baseUrl = regulateURL(baseUrl);
     }
-    const node = new I3SNode(url, rootIdx, nodeCache, fnFetchNodepages);
+    const node = new I3SNode(url, rootIdx, nodeCache, layer, fnFetchNodepages);
     return node.load();
 }
 

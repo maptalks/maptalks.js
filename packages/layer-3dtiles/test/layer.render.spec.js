@@ -137,6 +137,74 @@ describe('render specs', () => {
     };
 
     context('Other specs', () => {
+        const gz2000 = {
+            code: 'Traverse_Mercator',
+            centralMeridian: 113.283333333,
+            falseEasting: 39980,
+            falseNorthing: -2329620,
+            scaleFactor: 1
+        };
+
+        const gzSpatialRef = {
+            projection: 'identity',
+            coordType: gz2000,
+            fullExtent: {
+                "xmin": 2645.5277000004426,
+                "ymin": 148689.98279999942,
+                "xmax": 120899.6615000004,
+                "ymax": 321469.9662999995
+            },
+            resolutions: [
+                1222.994898823131,
+                611.4974494115655,
+                305.74872470578276,
+                152.87436235289138,
+                76.43717985352637,
+                38.2185912496825,
+                19.10929430192194,
+                9.55464715096097,
+                4.777323575480485,
+                2.3886631106595546,
+                1.1943315553297773,
+                0.5971657776648887,
+                0.2985828888324443,
+                0.14929144441622216,
+                0.07464572220811108
+            ]
+        };
+
+        const etmercSpatialRef = {
+            "resolutions": [
+                1222.994898823131,
+                611.4974494115655,
+                305.74872470578276,
+                152.87436235289138,
+                76.43717985352637,
+                38.2185912496825,
+                19.10929430192194,
+                9.55464715096097,
+                4.777323575480485,
+                2.3886631106595546,
+                1.1943315553297773,
+                0.5971657776648887,
+                0.2985828888324443,
+                0.14929144441622216,
+                0.07464572220811108
+            ],
+            "fullExtent": {
+                "xmin": 2645.5277000004426,
+                "ymin": 148689.98279999942,
+                "xmax": 120899.6615000004,
+                "ymax": 321469.9662999995
+            },
+            "projection": {
+                "code": "Traverse_Mercator",
+                "centralMeridian": 113.283333333,
+                "falseEasting": 39980,
+                "falseNorthing": -2329620,
+                "scaleFactor": 1
+            }
+        }
 
         it('i3s-eslpk-1.7-no-draco', done => {
             // 必须要放到第一个来运行测试，否则会失败，原因未知
@@ -201,6 +269,78 @@ describe('render specs', () => {
                 ]
             });
             runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 4, threshold: 0.4, zoomOffset: 0 });
+        }).timeout(10000);
+
+        it('i3s-map-identity-data-4326', done => {
+            // 必须要放到第一个来运行测试，否则会失败，原因未知
+            map.setSpatialReference(gzSpatialRef);
+            map.setCenterAndZoom([36204.383499633776, 231876.47550045006], 8);
+            const resPath = 'I3S/4326';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                enableI3SCompressedGeometry: false,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/3dSceneLayer.json`,
+                        shader: 'phong',
+                        maximumScreenSpaceError: 32
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 5 });
+        }).timeout(10000);
+
+        it('i3s-map-identity-data-identity', done => {
+            // 必须要放到第一个来运行测试，否则会失败，原因未知
+            map.setSpatialReference(gzSpatialRef);
+            map.setCenterAndZoom([36204.383499633776, 231876.47550045006], 8);
+            const resPath = 'I3S/gz2000';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                enableI3SCompressedGeometry: false,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/3dSceneLayer.json`,
+                        shader: 'phong',
+                        maximumScreenSpaceError: 32
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}/expected.png`, diffCount: 50, renderCount: 6 });
+        }).timeout(10000);
+
+        it('i3s-map-traverse_mercator-data-identity', done => {
+            // 必须要放到第一个来运行测试，否则会失败，原因未知
+            map.setSpatialReference(etmercSpatialRef);
+            map.setCenterAndZoom([113.24668898, 23.1531471], 4);
+            const resPath = 'I3S/gz2000';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                enableI3SCompressedGeometry: false,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/3dSceneLayer.json`,
+                        shader: 'phong',
+                        maximumScreenSpaceError: 32
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 6 });
+        }).timeout(10000);
+
+        it('i3s-map-traverse_mercator-data-4326', done => {
+            // 必须要放到第一个来运行测试，否则会失败，原因未知
+            map.setSpatialReference(etmercSpatialRef);
+            map.setCenterAndZoom([113.24668898, 23.1531471], 4);
+            const resPath = 'I3S/4326';
+            const layer = new Geo3DTilesLayer('3d-tiles', {
+                enableI3SCompressedGeometry: false,
+                services : [
+                    {
+                        url : `http://localhost:${PORT}/integration/fixtures/${resPath}/3dSceneLayer.json`,
+                        shader: 'phong',
+                        maximumScreenSpaceError: 32
+                    }
+                ]
+            });
+            runner(done, layer, { path: `./integration/expected/${resPath}-etmerc/expected.png`, diffCount: 50, renderCount: 5 });
         }).timeout(10000);
 
         it('fangzhicheng', done => {

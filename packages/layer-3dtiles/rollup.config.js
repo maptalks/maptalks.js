@@ -114,15 +114,15 @@ module.exports = [
             resolve({}),
             commonjs(),
             replace({
-              // 'this.exports = this.exports || {}': '',
-              '(function (exports) {': 'function (exports) {',
-              '})(this.exports = this.exports || {});': '}',
+                // 'this.exports = this.exports || {}': '',
+                '(function (exports) {': 'function (exports) {',
+                '})(this.exports = this.exports || {});': '}',
 
-              // 为了引入loaders.gl做的修改
-              '(function (exports, Module, path) {': 'function (exports) { const Module = {}; const path = {};',
-              '})(this.exports = this.exports || {}, Module, path);': '}',
-              preventAssignment: false,
-              delimiters: ['', '']
+                // 为了引入loaders.gl做的修改
+                '(function (exports, Module, path) {': 'function (exports) { const Module = {}; const path = {};',
+                '})(this.exports = this.exports || {}, Module, path);': '}',
+                preventAssignment: false,
+                delimiters: ['', '']
             })
         ].concat(plugins).concat([transformBackQuote()]),
         output: {

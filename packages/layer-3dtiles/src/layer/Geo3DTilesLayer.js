@@ -222,6 +222,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     boundingVolumeToExtent(node) {
         const matrix = node.boundingVolume._centerTransformed ? IDENTITY_MATRIX : node.matrix;
         const map = this.getMap();
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
+        const renderer = this.getRenderer();
         if (node.boundingVolume.region) {
             const region = node.boundingVolume.region;
             return new maptalks.Extent(toDegree(region[0]), toDegree(region[1]), toDegree(region[2]), toDegree(region[3]));
@@ -230,6 +232,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // let nodeCenter = sphere.slice(0, 3);
             const nodeCenter = vec3.transformMat4([], sphere, matrix);
             const center = cartesian3ToDegree([], nodeCenter);
+            if (isIdentity) {
+                renderer._lngLatToIdentityCoord(center, center);
+            }
             const radius = sphere[3];
             const nw = map.locate(center, -radius, radius);
             const se = map.locate(center, radius, -radius);
@@ -239,6 +244,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             // let nodeCenter = nodeBox.slice(0, 3);
             const nodeCenter = vec3.transformMat4([], nodeBox, matrix);
             const center = new maptalks.Coordinate(cartesian3ToDegree([], nodeCenter));
+            if (isIdentity) {
+                renderer._lngLatToIdentityCoord(center, center);
+            }
             const halfAxes = nodeBox.slice(3);
             mat3.multiply(halfAxes, mat3.fromMat4([], node.matrix), halfAxes);
             const rx = vec3.length(halfAxes.slice(0, 3));
@@ -264,17 +272,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         const map = this.getMap();
         const cameraPosition = map.cameraPosition;
-        let cameraCoord, distance;
-        if (map.getGLZoom) {
-            distance = map.pointToDistance(cameraPosition[2], 0, map.getGLZoom());
-            CAMERA_COORD.set(cameraPosition[0], cameraPosition[1]);
-            cameraCoord = map.pointToCoord(CAMERA_COORD, map.getGLZoom());
-        } else {
-            const res = map.getGLRes();
-            distance = map.pointAtResToDistance(cameraPosition[2], 0, res);
-            CAMERA_COORD.set(cameraPosition[0], cameraPosition[1]);
-            cameraCoord = map.pointAtResToCoord(CAMERA_COORD, res);
-        }
+        const distance = map.pointAtResToDistance(cameraPosition[2], 0, map.getGLRes());
+        const cameraCoord = this._getCameraLonLat(cameraPosition);
         this._cameraLocation = this._cameraLocation || [];
         vec3.set(this._cameraLocation, toRadian(cameraCoord.x), toRadian(cameraCoord.y), distance);
         this._cameraCartesian3 = radianToCartesian3(this._cameraCartesian3 || [], this._cameraLocation[0], this._cameraLocation[1], this._cameraLocation[2]);
@@ -771,7 +770,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
     }
 
     _createBBox(node) {
+        const renderer = this.getRenderer();
         const map = this.getMap();
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
         const glRes = map.getGLRes();
         const nodeBox = node.boundingVolume.box;
         const center = nodeBox.slice(0, 3);
@@ -786,7 +787,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         for (let i = 0; i < BOX_POS.length; i += 3) {
             const pos = BOX_POS.slice(i, i + 3);
             vec3.transformMat4(pos, pos, modelMatrix);
-            const coord = new maptalks.Coordinate(cartesian3ToDegree(pos, pos));
+            cartesian3ToDegree(pos, pos)
+            if (isIdentity) {
+                renderer._lngLatToIdentityCoord(pos, pos);
+            }
+            const coord = new maptalks.Coordinate();
             let point = map.coordToPointAtRes(coord, glRes);
             point = [point.x, point.y, map.altitudeToPoint(coord.z, glRes)];
             boxPosition[i] = point[0] - bboxPointCenter[0];
@@ -799,6 +804,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _createSphere(node) {
         const map = this.getMap();
+        const renderer = this.getRenderer();
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
         const sphere = node.boundingVolume.sphere
         const nodeCenter = sphere;
         let center = TEMP_VEC3_0;
@@ -806,6 +813,9 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             center = [0, 0, -6378137];
         } else {
             cartesian3ToDegree(center, nodeCenter);
+        }
+        if (isIdentity) {
+            renderer._lngLatToIdentityCoord(center, center);
         }
         const coord = new maptalks.Coordinate(center);
         const sphereCenter = this._coordToPoint(coord, TEMP_POINT).toArray();
@@ -836,6 +846,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
 
     _calBoxCenter(node) {
         const map = this.getMap();
+        const renderer = this.getRenderer();
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
         const glRes = map.getGLRes();
         const nodeBox = node.boundingVolume.box;
         const center = nodeBox.slice(0, 3);
@@ -843,7 +855,11 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const modelMatrix = fromRotationTranslation(halfAxes, center);
         const box_center = [0, 0, 0];
         vec3.transformMat4(box_center, box_center, modelMatrix);
-        const box_center_coord = new maptalks.Coordinate(cartesian3ToDegree(box_center, box_center));
+        cartesian3ToDegree(box_center, box_center)
+        if (isIdentity) {
+            renderer._lngLatToIdentityCoord(box_center, box_center);
+        }
+        const box_center_coord = new maptalks.Coordinate(box_center);
         const point_center = map.coordToPointAtRes(box_center_coord, glRes);
         return [point_center.x, point_center.y, map.altitudeToPoint(box_center_coord.z, glRes)];
     }
@@ -888,6 +904,8 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         this._offsetBoundingVolume(rootNode);
         const map = this.getMap();
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
+        const renderer = this.getRenderer();
         const glRes = map.getGLRes();
         const box = rootNode.boundingVolume.box;
         const center = box.slice(0, 3);
@@ -895,7 +913,12 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         const modelMatrix = fromRotationTranslation(halfAxes, center);
         const boxCenter = [0, 0, 0];
         vec3.transformMat4(boxCenter, boxCenter, modelMatrix);
-        const coordCenter = new maptalks.Coordinate(cartesian3ToDegree(boxCenter, boxCenter));
+        cartesian3ToDegree(boxCenter, boxCenter);
+
+        if (isIdentity) {
+            renderer._lngLatToIdentityCoord(boxCenter, boxCenter);
+        }
+        const coordCenter = new maptalks.Coordinate(boxCenter);
         let pointCenter = map.coordToPointAtRes(coordCenter, glRes);
         pointCenter.z = map.altitudeToPoint(coordCenter.z, glRes);
         pointCenter = [pointCenter.x, pointCenter.y, pointCenter.z];
@@ -1158,6 +1181,23 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
         }
         renderer.setToRedraw();
         return this;
+    }
+
+    _getCameraLonLat(cameraPosition) {
+        const map = this.getMap();
+        const res = map.getGLRes();
+
+        CAMERA_COORD.set(cameraPosition[0], cameraPosition[1]);
+        const cameraCoord = map.pointAtResToCoord(CAMERA_COORD, res);
+        const isIdentity = map.getProjection().code.toLowerCase() === 'identity';
+        if (!isIdentity) {
+            return cameraCoord;
+        }
+        TEMP_VEC3_1[0] = cameraCoord.x;
+        TEMP_VEC3_1[1] = cameraCoord.y;
+        this.getRenderer()._identityCoordToLngLat(TEMP_VEC3_0, TEMP_VEC3_1);
+        cameraCoord.set(TEMP_VEC3_0[0], TEMP_VEC3_0[1]);
+        return cameraCoord;
     }
 }
 

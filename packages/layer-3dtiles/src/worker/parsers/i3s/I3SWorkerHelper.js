@@ -84,8 +84,7 @@ export function isI3SURL(url) {
     return url.indexOf('i3s:') >= 0;
 }
 
-export function loadI3STile(i3sInfo, supportedFormats, projection, maxTextureSize) {
-    // debugger
+export function loadI3STile(i3sInfo, supportedFormats, projection, dataProjection, maxTextureSize) {
     const promises = [];
     const texCount = [];
     const xhrs = [];
@@ -138,7 +137,7 @@ export function loadI3STile(i3sInfo, supportedFormats, projection, maxTextureSiz
             });
             index += 1 + count;
         }
-        const gltf = buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection);
+        const gltf = buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection, dataProjection);
         return gltf;
     });
     loadPromise.xhr = xhrs;
@@ -159,7 +158,7 @@ const sampler = {
     "wrapT": 0x812F
 };
 
-function buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection) {
+function buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection, dataProjection) {
     const gltf = {
         asset: {
             generator: 'i3s',
@@ -187,9 +186,9 @@ function buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection) 
         }
         const isDraco = isDracoCompressed(geoBuf);
         if (isDraco) {
-            primPromise = buildCompressedPrimitive(gltf, i, geometry, geoBuf, i3sInfo.transform, i3sInfo.center, projection);
+            primPromise = buildCompressedPrimitive(gltf, i, geometry, geoBuf, i3sInfo.transform, i3sInfo.center, projection, dataProjection);
         } else {
-            primPromise = buildPrimitive(gltf, i, geometry, geoBuf, i3sInfo.transform, i3sInfo.center, projection);
+            primPromise = buildPrimitive(gltf, i, geometry, geoBuf, i3sInfo.transform, i3sInfo.center, projection, dataProjection);
         }
         promises.push(primPromise);
         gltf.nodes[i] = {
@@ -216,7 +215,7 @@ function buildGLTF(i3sInfo, bins, supportedFormats, maxTextureSize, projection) 
     });
 }
 
-function buildCompressedPrimitive(gltf, index, geometry, buffer, transform, center, projection) {
+function buildCompressedPrimitive(gltf, index, geometry, buffer, transform, center, projection, dataProjection) {
     const compressedAttributes = geometry.info.compressedAttributes;
     const attributes = compressedAttributes.attributes.reduce((prevValue, currentValue, idx) => {
         const attr = COMPRESSED_ATTRIBUTES[currentValue];
@@ -236,7 +235,7 @@ function buildCompressedPrimitive(gltf, index, geometry, buffer, transform, cent
         skipAttributeTransform: false
     };
     return DRACO(buffer, dracoOptions).then(data => {
-        return buildPrimitiveObject(data, gltf, index, transform, center, projection);
+        return buildPrimitiveObject(data, gltf, index, transform, center, projection, dataProjection);
     });
 }
 
@@ -351,7 +350,7 @@ const binaryAttributeDecoders = {
 };
 
 
-function buildPrimitive(gltf, index, geometry, buffer, transform, center, projection) {
+function buildPrimitive(gltf, index, geometry, buffer, transform, center, projection, dataProjection) {
     const decodedGeometry = {
         vertexCount: 0,
     };
@@ -475,10 +474,10 @@ function buildPrimitive(gltf, index, geometry, buffer, transform, center, projec
         };
     }
 
-    return buildPrimitiveObject({ attributes: attributeData }, gltf, index, transform, center, projection);
+    return buildPrimitiveObject({ attributes: attributeData }, gltf, index, transform, center, projection, dataProjection);
 }
 
-function buildPrimitiveObject(data, gltf, index, transform, center, projection) {
+function buildPrimitiveObject(data, gltf, index, transform, center, projection, dataProjection) {
     const primitive = {
         attributes: data.attributes,
         material: index,
@@ -487,9 +486,9 @@ function buildPrimitiveObject(data, gltf, index, transform, center, projection) 
     };
 
     // const vertexCount = data.attributes['POSITION'].array.length / 3;
-
     scalePosition(data.attributes['POSITION']);
-    const projCenter = projVertices(data.attributes['POSITION'], transform, center, projection);
+    // i3s的坐标是定义在3DSceneLayer里的，默认为经纬度
+    const projCenter = projVertices(data.attributes['POSITION'], transform, center, projection, dataProjection);
     // if (data.attributes['TEXCOORD_0'] && data.attributes["uvRegion"]) {
     //     // debugger
     //     cropUVs(
@@ -519,16 +518,13 @@ function buildPrimitiveObject(data, gltf, index, transform, center, projection) 
     return primitive;
 }
 
-function projVertices(vertices, nodeMatrix, rtcCenter, projection) {
-    const cesiumCenter = rtcCenter;
+function projVertices(vertices, nodeMatrix, rtcCenter, projection, dataProjection) {
     let carto = [0, 0, 0, 1],
         height;
     const proj = [0, 0];
-    const projCenter = project([], rtcCenter, projection);
+    const projCenter = project([], rtcCenter, projection, dataProjection);
     projCenter[2] = rtcCenter[2];
-
     const isTransformIdentity = nodeMatrix && mat4.exactEquals(IDENTITY_MATRIX, nodeMatrix);
-
     iterateBufferData(vertices, (vertex) => {
         carto[0] = vertex[0];
         carto[1] = vertex[1];
@@ -537,11 +533,11 @@ function projVertices(vertices, nodeMatrix, rtcCenter, projection) {
             carto = vec3.transformMat4(carto, carto, nodeMatrix);
         }
 
-        if (cesiumCenter) {
-            vec3.add(carto, carto, cesiumCenter);
+        if (rtcCenter) {
+            vec3.add(carto, carto, rtcCenter);
         }
 
-        project(proj, carto, projection);
+        project(proj, carto, projection, dataProjection);
         height = carto[2];
 
         vertex[0] = proj[0] - projCenter[0];
