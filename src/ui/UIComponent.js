@@ -533,10 +533,22 @@ class UIComponent extends Eventable(Class) {
         const mapWidth = map.width;
         const mapHeight = map.height;
         if (dom && dom.getBoundingClientRect) {
+            const mapRect = map.getContainer().getBoundingClientRect();
+            //map left ,top value
+            const mapLeft = mapRect.left;
+            const mapTop = mapRect.top;
             const margin = 50;
             const rect = dom.getBoundingClientRect();
             let offsetX = 0, offsetY = 0;
-            const { left, right, top, bottom, width, height } = rect;
+
+            let { left, right, top, bottom } = rect;
+            const { width, height } = rect;
+            //sub map left,top,Position values relative to the map should be used
+            left -= mapLeft;
+            right -= mapLeft;
+            top -= mapTop;
+            bottom -= mapTop;
+
             if (width > 0 && height > 0) {
                 if (left < margin) {
                     offsetX = margin - left;
