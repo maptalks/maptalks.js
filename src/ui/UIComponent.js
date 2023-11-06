@@ -532,8 +532,9 @@ class UIComponent extends Eventable(Class) {
         const point = this._getViewPoint()._round();
         const mapWidth = map.width;
         const mapHeight = map.height;
-        if (dom && dom.getBoundingClientRect) {
-            const mapRect = map.getContainer().getBoundingClientRect();
+        const mapContainer = map.getContainer();
+        if (dom && mapContainer && dom.getBoundingClientRect) {
+            const mapRect = mapContainer.getBoundingClientRect();
             //map left ,top value
             const mapLeft = mapRect.left;
             const mapTop = mapRect.top;
