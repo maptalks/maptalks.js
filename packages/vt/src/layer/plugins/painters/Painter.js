@@ -532,17 +532,17 @@ class Painter {
     getPolygonOffset() {
         const layer = this.layer;
         return {
-            factor: (_, props) => {
-                if (props.meshConfig.ssr) {
-                    return layer.getTotalPolygonOffset();
-                }
+            factor: () => {
+                // if (props.meshConfig.ssr) {
+                //     return layer.getTotalPolygonOffset();
+                // }
                 const factor = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return factor;
             },
-            units: (_, props) => {
-                if (props.meshConfig.ssr) {
-                    return layer.getTotalPolygonOffset();
-                }
+            units: () => {
+                // if (props.meshConfig.ssr) {
+                //     return layer.getTotalPolygonOffset();
+                // }
                 const units = layer.getPolygonOffset() + (this.polygonOffsetIndex || 0);
                 return units;
             }
