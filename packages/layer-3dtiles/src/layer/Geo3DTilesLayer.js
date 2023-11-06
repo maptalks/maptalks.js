@@ -791,7 +791,7 @@ export default class Geo3DTilesLayer extends MaskLayerMixin(maptalks.Layer) {
             if (isIdentity) {
                 renderer._lngLatToIdentityCoord(pos, pos);
             }
-            const coord = new maptalks.Coordinate();
+            const coord = new maptalks.Coordinate(pos);
             let point = map.coordToPointAtRes(coord, glRes);
             point = [point.x, point.y, map.altitudeToPoint(coord.z, glRes)];
             boxPosition[i] = point[0] - bboxPointCenter[0];
