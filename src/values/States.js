@@ -677,18 +677,14 @@ include(
                 this._vaoOES.bindVertexArrayOES(null);
             }
 
-            if (preStates.activeAttribType === 1) {
-                this._restoreAttribs(target, gl, 0);
-                this._restoreVAO(target, gl);
-            } else {
-                this._restoreAttribs(target, gl, activeAttibNum);
-            }
-            //
 
-
+            this._restoreAttribs(target, gl, activeAttibNum);
             //restore array buffer and element array buffer
             gl.bindBuffer(gl.ARRAY_BUFFER, target.arrayBuffer);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, target.elementArrayBuffer);
+            if (preStates.activeAttribType === 1) {
+                this._restoreVAO(target, gl);
+            }
         },
 
         _restoreVAO(target, gl) {
