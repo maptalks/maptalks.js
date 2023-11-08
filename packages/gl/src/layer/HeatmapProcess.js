@@ -41,7 +41,7 @@ export default class HeatmapProcess {
             textureOutputSize: this._outputSize
         }, uniforms);
         this._transformGround();
-        this.renderer.render(this._displayShader, displayUniforms, this._groundScene, fbo);
+        return this.renderer.render(this._displayShader, displayUniforms, this._groundScene, fbo);
     }
 
     dispose() {
