@@ -27,10 +27,10 @@
   "author": "fuzhenn",
   "license": "UNLICENSED",
   "dependencies": {
-    "@maptalks/fusiongl": "^0.6.3",
+    "@maptalks/fusiongl": "^0.6.4",
     "@maptalks/gltf-loader": "^0.91.2",
     "@maptalks/martini": "^0.4.0",
-    "@maptalks/regl": "^3.3.2",
+    "@maptalks/regl": "^3.3.3",
     "@maptalks/reshader.gl": "^0.91.4",
     "color": "^3.0.0",
     "gl-matrix": "^2.6.1"

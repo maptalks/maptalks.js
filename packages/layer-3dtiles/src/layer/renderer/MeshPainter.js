@@ -1674,19 +1674,25 @@ export default class MeshPainter {
 
             if (material.normalTexture) {
                 const texture = this._getTexture(gltf.textures[material.normalTexture.index], gltfWeakResources);
-                const normalMapFactor = material.normalTexture.scale || 1;
-                matInfo.normalTexture = texture;
-                matInfo.normalMapFactor = normalMapFactor;
+                if (texture) {
+                    const normalMapFactor = material.normalTexture.scale || 1;
+                    matInfo.normalTexture = texture;
+                    matInfo.normalMapFactor = normalMapFactor;
+                }
             }
             if (material.occlusionTexture) {
                 const texture = this._getTexture(gltf.textures[material.occlusionTexture.index], gltfWeakResources);
-                const occlusionFactor = material.occlusionTexture.strength || 1;
-                matInfo.occlusionTexture = texture;
-                matInfo.occlusionFactor = occlusionFactor;
+                if (texture) {
+                    const occlusionFactor = material.occlusionTexture.strength || 1;
+                    matInfo.occlusionTexture = texture;
+                    matInfo.occlusionFactor = occlusionFactor;
+                }
             }
             if (material.emissiveTexture) {
                 const texture = this._getTexture(gltf.textures[material.emissiveTexture.index], gltfWeakResources);
-                matInfo.emissiveTexture = texture;
+                if (texture) {
+                    matInfo.emissiveTexture = texture;
+                }
             }
             if (material.emissiveFactor) {
                 matInfo.emissiveFactor = material.emissiveFactor;
@@ -1703,9 +1709,12 @@ export default class MeshPainter {
                     if (texInfo.image && texInfo.image.color) {
                         matInfo.baseColorFactor = matInfo.baseColorFactor ? vec4.multiply(matInfo.baseColorFactor, matInfo.baseColorFactor, texInfo.image.color) : texInfo.image.color;
                     } else {
-                        matInfo.baseColorTexture = this._getTexture(texInfo, gltfWeakResources);
-                        // 调用getREGLTexture以回收bitmap
-                        matInfo.baseColorTexture.getREGLTexture(this._regl);
+                        const texture = this._getTexture(texInfo, gltfWeakResources);
+                        if (texture) {
+                            matInfo.baseColorTexture = texture;
+                            // 调用getREGLTexture以回收bitmap
+                            matInfo.baseColorTexture.getREGLTexture(this._regl);
+                        }
                     }
                 }
                 if (!isNil(pbrMetallicRoughness.metallicFactor)) {
@@ -1716,7 +1725,9 @@ export default class MeshPainter {
                 }
                 if (material.metallicRoughnessTexture) {
                     const texture = this._getTexture(gltf.textures[material.metallicRoughnessTexture.index], gltfWeakResources);
-                    matInfo.metallicRoughnessTexture = texture;
+                    if (texture) {
+                        matInfo.metallicRoughnessTexture = texture;
+                    }
                 }
             }
         }
@@ -1765,8 +1776,15 @@ export default class MeshPainter {
         } else if (image.mipmap) {
             config.mipmap = image.mipmap;
         }
+        if (!config.data && !config.mipmap) {
+            return null;
+        }
         config.width = image.width;
         config.height = image.height;
+        // dxt 纹理要求高宽必须大于4，否则regl中检查会报错
+        if (config.mipmap && (config.width < 4 || config.height < 4)) {
+            return null;
+        }
         const sampler = texInfo.sampler || texInfo.texture && texInfo.texture.sampler;
         if (sampler) {
             if (sampler.magFilter) config['mag'] = getTextureMagFilter(sampler.magFilter);
