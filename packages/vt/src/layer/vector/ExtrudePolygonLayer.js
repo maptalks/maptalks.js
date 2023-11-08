@@ -26,6 +26,10 @@ class ExtrudePolygonLayer extends Vector3DLayer {
         return fromJSON(json, 'ExtrudePolygonLayer', ExtrudePolygonLayer);
     }
 
+    getPolygonOffsetCount() {
+        return 0;
+    }
+
     onConfig(conf) {
         const renderer = this.getRenderer();
         if (renderer) {
@@ -244,18 +248,22 @@ class ExtrudePolygonLayerRenderer extends PolygonLayerRenderer {
         context.sceneFilter = mesh => {
             return (!sceneFilter || sceneFilter(mesh)) && topFilter(mesh);
         };
-        super._renderMeshes(...args);
+        const status0 = super._renderMeshes(...args);
         context.sceneFilter = mesh => {
             return (!sceneFilter || sceneFilter(mesh)) && topFilter(mesh);
         };
         const painter = this.painter;
         this.painter = this.sidePainter;
-        context.sceneFilter = mesh => {
+        const status1 = context.sceneFilter = mesh => {
             return (!sceneFilter || sceneFilter(mesh)) && sideFilter(mesh);
         };
         super._renderMeshes(...args);
         this.painter = painter;
         context.sceneFilter = sceneFilter;
+        return {
+            redraw: status0.redraw || status1.redraw,
+            drawCount: (status0.drawCount || 0) + (status1.drawCount || 0)
+        };
     }
 
     createMesh(painter, PackClass, symbol, features, atlas, center) {

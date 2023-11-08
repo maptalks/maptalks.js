@@ -61,7 +61,7 @@ export default class HeatmapPainter extends BasicPainter {
 
     callRenderer(shader, uniforms, context) {
         const fbo = this.getRenderFBO(context);
-        this._process.render(this.scene, uniforms, fbo);
+        this._drawCount += this._process.render(this.scene, uniforms, fbo);
     }
 
     getUniformValues(map) {

@@ -136,22 +136,27 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
         this._updateDirtyTargets();
 
         const isDefaultRender = !renderMode || renderMode === 'default';
-        const hasLine = this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode));
-        let polygonOffset = hasLine ? 2 : 1;
+        let polygonOffset = 0;
         if (this.layer.options['meshRenderOrder'] === 0) {
-            this._renderMeshes(context, polygonOffset--, renderMode);
+            const status = this._renderMeshes(context, polygonOffset, renderMode);
+            if (status.drawCount) {
+                polygonOffset--;
+            }
         }
 
         if (this._lineMeshes && (isDefaultRender || this._linePainter.supportRenderMode(renderMode))) {
             this._linePainter.startFrame(context);
             this._linePainter.addMesh(this._lineMeshes, null, { bloom: this._parentContext.bloom });
             this._linePainter.prepareRender(context);
-            context.polygonOffsetIndex = polygonOffset--;
-            this._linePainter.render(context);
+            context.polygonOffsetIndex = polygonOffset;
+            const status = this._linePainter.render(context);
+            if (status.drawCount) {
+                polygonOffset--;
+            }
         }
 
         if (this.layer.options['meshRenderOrder'] === 1) {
-            this._renderMeshes(context, polygonOffset--, renderMode);
+            this._renderMeshes(context, polygonOffset, renderMode);
         }
 
         if (this._markerMeshes && (isDefaultRender || this._markerPainter.supportRenderMode(renderMode))) {
@@ -195,8 +200,12 @@ class Vector3DLayerRenderer extends maptalks.renderer.CanvasRenderer {
             this.painter.addMesh(this.meshes, null, { bloom: context && context.bloom });
             this.painter.prepareRender(context);
             context.polygonOffsetIndex = polygonOffset++;
-            this.painter.render(context);
+            return this.painter.render(context);
         }
+        return {
+            redraw: false,
+            drawCount: 0
+        };
     }
 
     supportRenderMode() {

@@ -68,7 +68,7 @@ class WaterPainter extends BasicPainter {
         super.callShader(uniforms, context);
         this.transformWater();
         const waterUniforms = this._getWaterUniform(this.getMap(), context);
-        this.renderer.render(this._waterShader, waterUniforms, this._waterScene, this.getRenderFBO(context));
+        this._drawCount += this.renderer.render(this._waterShader, waterUniforms, this._waterScene, this.getRenderFBO(context));
     }
 
     addMesh(mesh, progress) {

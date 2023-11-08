@@ -414,7 +414,11 @@ class Painter {
     render(context) {
         this.pluginIndex = context.pluginIndex;
         this.polygonOffsetIndex = context.polygonOffsetIndex;
-        return this.paint(context);
+        this.paint(context);
+        return {
+            redraw: this._redraw,
+            drawCount: this._drawCount
+        };
     }
 
     prepareRender(context) {
@@ -510,7 +514,7 @@ class Painter {
         this._setLayerUniforms(uniforms);
 
         this.scene.setMeshes(renderMeshes);
-        this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
+        this._drawCount += this.renderer.render(shader, uniforms, this.scene, this.getRenderFBO(context));
         this.scene.setMeshes(meshes);
     }
 
@@ -681,6 +685,7 @@ class Painter {
         if (this._currentTimestamp !== context.timestamp) {
             this._redraw = false;
             this._needRetire = false;
+            this._drawCount = 0;
         }
         this.scene.clear();
     }
