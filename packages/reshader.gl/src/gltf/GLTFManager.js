@@ -24,9 +24,7 @@ export default class GLTFManager {
                     return gltfpack;
                 });
             } else {
-                this.resourceMap[url] = this._loadGLTFModel(url).catch(e => {
-                    return e;
-                });
+                this.resourceMap[url] = this._loadGLTFModel(url);
             }
             this.resourceMap[url].refCount = 1;
         } else {
@@ -71,6 +69,9 @@ export default class GLTFManager {
     }
 
     _exportGLTFResource(gltf, url, useUniqueREGLBuffer = true) {
+        if (!gltf) {
+            return null;
+        }
         const gltfPack = GLTFHelper.exportGLTFPack(gltf, useUniqueREGLBuffer ? this.regl : null);
         const geometries = gltfPack.getMeshesInfo();
         const resourceMap = {
