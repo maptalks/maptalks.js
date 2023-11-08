@@ -35,7 +35,9 @@ export default class GLTFLineString extends MultiGLTFMarker {
         for (let i = 0; i < coordinates.length - 1; i++) {
             const from = this._toCoordinate(coordinates[i]), to = this._toCoordinate(coordinates[i + 1]);
             const dataArr = this._generateData(from, to);
-            Util.pushIn(this._data, dataArr);
+            dataArr.forEach(item => {
+                this.addData(item);
+            });
         }
         this._dirty = true;
     }

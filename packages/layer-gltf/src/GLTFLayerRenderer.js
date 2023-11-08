@@ -251,7 +251,7 @@ class GLTFLayerRenderer extends MaskRendererMixin(maptalks.renderer.OverlayLayer
         this.layer.fire('contextcreate', { regl: this.regl });
     }
 
-    _getGLTFManager() {
+    getGLTFManager() {
         return this._gltfManager;
     }
 

@@ -29,6 +29,7 @@ export default class AnalysisPass {
     _renderDepth(scene, projViewMatrix, far) {
         const uniforms = {
             projViewMatrix,
+            minAltitude: 0,
             logDepthBufFC: 2.0 / (Math.log(far + 1.0) / Math.LN2)
         };
         this.renderer.clear({

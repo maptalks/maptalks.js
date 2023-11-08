@@ -28,6 +28,7 @@ export default class FloodAnalysis extends Analysis {
             this._renderOptions['hasExtent'] = 1;
         }
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+        this._renderOptions['minAltitude'] = 0;
     }
 
     _setPass(renderer) {

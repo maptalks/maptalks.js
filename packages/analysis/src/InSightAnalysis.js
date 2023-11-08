@@ -145,6 +145,7 @@ export default class InSightAnalysis extends Analysis {
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
         this._renderOptions['horizontalAngle'] = 45;
         this._renderOptions['verticalAngle'] = 45;
+        this._renderOptions['minAltitude'] = 0;
     }
 
     _setPass(renderer) {

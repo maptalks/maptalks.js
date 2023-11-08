@@ -15,6 +15,7 @@ export default class SkylineAnalysis extends Analysis {
         this._renderOptions['lineColor'] = this.options.lineColor;
         this._renderOptions['lineWidth'] = this.options.lineWidth;
         this._renderOptions['projViewMatrix'] = map.projViewMatrix;
+        this._renderOptions['minAltitude'] = 0;
     }
 
     _setPass(renderer) {

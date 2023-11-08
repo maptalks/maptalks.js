@@ -899,8 +899,8 @@ export default class GLTFMarker extends Marker {
         } else {
             material = new reshader.Material(materialInfo);
         }
-        const symbol = this.getSymbol();
-        material.doubleSided = +!!(symbol.doubleSided || geometryResource.extraInfo && geometryResource.extraInfo['doubleSided']);
+        const symbol = this.getSymbol()
+        material.doubleSided = +!!((symbol && symbol.doubleSided) || geometryResource.extraInfo && geometryResource.extraInfo['doubleSided']);
         for (const m in markerUniforms) {
             material.set(m, markerUniforms[m]);
         }

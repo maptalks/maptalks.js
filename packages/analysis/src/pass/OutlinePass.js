@@ -71,7 +71,8 @@ export default class OutlinePass extends AnalysisPass {
 
     _drawExtent(scene, matrix) {
         this.renderer.render(this.extentShader, {
-            'projViewMatrix': matrix
+            'projViewMatrix': matrix,
+            'minAltitude': 0
         }, scene, this.fboExtent);
     }
 
@@ -80,7 +81,8 @@ export default class OutlinePass extends AnalysisPass {
             'texSize' : [targetFBO.width, targetFBO.height],
             'visibleEdgeColor' : lineColor || [1, 0, 0],
             'maskTexture' : this.fboExtent,
-            'lineWidth': lineWidth || 1
+            'lineWidth': lineWidth || 1,
+            'minAltitude': 0
         }, null, targetFBO);
     }
 

@@ -1,5 +1,5 @@
 import * as GLTFHelper  from '../GLTFHelper.js';
-import { simpleModels, getSimpleModel } from './SimpleModel';
+import { simpleModels, getSimpleModel, setSimpleModel } from './SimpleModel';
 import { defined } from '../common/Util';
 
 export default class GLTFManager {
@@ -60,6 +60,14 @@ export default class GLTFManager {
 
     isSimpleModel(url) {
         return simpleModels[url];
+    }
+
+    addSimpleModel(id, gltfData) {
+        setSimpleModel(id, gltfData);
+    }
+
+    removeSimpleModel(id) {
+        delete simpleModels[id];
     }
 
     _exportGLTFResource(gltf, url, useUniqueREGLBuffer = true) {

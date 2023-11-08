@@ -142,7 +142,8 @@ export default class ViewshedPass extends AnalysisPass {
             projViewMatrix,
             near,
             far,
-            depthMap: this._depthFBO
+            depthMap: this._depthFBO,
+            minAltitude: 0
         };
         this.renderer.render(
             this._viewshedShader,

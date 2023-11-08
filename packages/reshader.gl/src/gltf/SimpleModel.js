@@ -58,6 +58,8 @@ const pyramid = {
     indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 };
 
+const DEFAULT_MODELS = ['cube', 'plane', 'pyramid'];
+
 export const simpleModels = {
     'cube': {
         meshes : [{
@@ -167,4 +169,10 @@ export function getSimpleModel(url) {
         simpleModel.scenes = JSON.parse(JSON.stringify(simpleModels[url].scenes));
     }
     return simpleModel;
+}
+
+export function setSimpleModel(key, gltfData) {
+    if (typeof key === 'string' && DEFAULT_MODELS.indexOf(key) < 0) {
+        simpleModels[key] = gltfData;
+    }
 }
