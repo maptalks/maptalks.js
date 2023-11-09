@@ -8,7 +8,7 @@ import outlineFrag from './glsl/outline.frag';
 import { updateOneGeometryFnTypeAttrib } from './util/fn_type_util';
 import { inTerrainTile } from './util/line_offset';
 import deepEuqal from 'fast-deep-equal';
-import { oldPropsKey } from '../../renderer/utils/convert_to_painter_features';
+import { oldPropsKey, externalPropsKey } from '../../renderer/utils/convert_to_painter_features';
 import { INVALID_ALTITUDE } from '../../../common/Constant';
 
 const { loginIBLResOnCanvas, logoutIBLResOnCanvas, getIBLResOnCanvas } = reshader.pbr.PBRUtils;
@@ -240,6 +240,7 @@ class Painter {
                     props.symbolIndex = geo.symbolIndex;
                     props.features = features;
                     props.is2D = glData[i].is2D;
+                    props.layer = this.layer;
                     // props.elements = props.elements || geo.geometry.elements;
 
                     this.postCreateGeometry(geo, geometries);
@@ -627,7 +628,8 @@ class Painter {
         const result = extend({}, data);
         result.feature = extend({}, data.feature);
         delete result.feature.customProps;
-        result.feature.properties = extend({}, feature.properties, feature.properties[oldPropsKey]);
+        result.feature.properties = extend({}, feature.properties, feature.properties[oldPropsKey], feature.properties[externalPropsKey]);
+        delete result.feature.properties[externalPropsKey];
         delete result.feature.properties[oldPropsKey];
         delete result.feature.properties['$layer'];
         delete result.feature.properties['$type'];

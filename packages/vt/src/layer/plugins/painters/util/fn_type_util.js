@@ -1,4 +1,5 @@
-import { fillArray, isArray } from '../../Util';
+import { isNil, fillArray, isArray } from '../../Util';
+import { externalPropsKey } from '../../../renderer/utils/convert_to_painter_features';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 import { StyleUtil } from '@maptalks/vector-packer';
 import { isObjectEmpty } from './is_obj_empty';
@@ -147,10 +148,11 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     if (isObjectEmpty(features)) {
         return;
     }
+    const layer = mesh.geometry.properties.layer;
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
         const attrName = config.attrName;
-        if (!symbolChanged(geometry, symbolDef, config)) {
+        if (!symbolChanged(geometry, symbolDef, config) && !layer._isFeatureStateDirty(mesh.geometry._featureTimestamp)) {
             const { aPickingId } = geometry.properties;
             if (!aPickingId || geometry._fnDataZoom === z) {
                 continue;
@@ -190,6 +192,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
             updateFnTypeAttrib(geometry, aIndex, config);
+            geometry._featureTimestamp = layer._getFeatureStateStamp();
             if (define) {
                 const defines = mesh.defines;
                 defines[define] = 1;
@@ -322,6 +325,7 @@ function updateFnTypeAttrib(geometry, aIndex, config) {
     }
 }
 
+const SOURCE = {};
 function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
     feature = feature.feature;
     const properties = feature.properties || {};
@@ -331,6 +335,16 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
         }
         properties['$layer'] = feature.layer;
         properties['$type'] = feature.type;
+    }
+    SOURCE.layer = feature.layer;
+    SOURCE.id = feature.id;
+    if (feature[externalPropsKey]) {
+        feature[externalPropsKey] = null;
+    }
+    const layer = geometry.properties.layer;
+    if (!isNil(feature.id)) {
+        const states = layer.getFeatureState(SOURCE);
+        feature.properties[externalPropsKey] = states;
     }
     const value = evaluate(properties, geometry, arr, start * len);
     if (Array.isArray(value)) {

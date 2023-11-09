@@ -14,9 +14,7 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
                 feature = layer.getFeature(feature);
                 feature.layer = layerId;
             }
-            if (feature.customProps) {
-                feature = proxyFea(feature);
-            }
+            feature = proxyFea(feature);
             const keyIdxValue = feaIndexes ? feaIndexes[ii] : feature[KEY_IDX_NAME];
             pluginFeas[keyIdxValue] = {
                 feature,
@@ -41,13 +39,14 @@ function hasFeature(features) {
 }
 
 export const oldPropsKey = '__original_properties';
+export const externalPropsKey = '__external_properties';
 
 const proxyGetter = {
     get: function(obj, prop) {
-        return prop in obj ? obj[prop] : obj[oldPropsKey][prop];
+        return prop in obj ? obj[prop] : (obj[oldPropsKey][prop] || obj[externalPropsKey] && obj[externalPropsKey][prop]);
     },
     has: function(obj, prop) {
-        return (prop in obj) || (prop in obj[oldPropsKey]);
+        return (prop in obj) || (prop in obj[oldPropsKey])  || obj[externalPropsKey] && (prop in obj[externalPropsKey]);
     }
 };
 
@@ -59,6 +58,7 @@ function proxyFea(feature) {
         // 已经proxy过了
         return feature;
     }
+    feature.customProps = feature.customProps || {};
     const properties = feature.customProps;
     properties['$layer'] = feature.layer;
     properties['$type'] = feature.type;

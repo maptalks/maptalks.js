@@ -107,6 +107,82 @@ class VectorTileLayer extends maptalks.TileLayer {
         }
     }
 
+    setFeatureState(source, state) {
+        if (isNil(source.id)) {
+            throw new Error('missing id in first parameter of setFeatureState.')
+        }
+        if (!this._featureStates) {
+            this._featureStates = {};
+        }
+        const layer = source.layer || '0';
+        let stateMap = this._featureStates[layer];
+        if (!this._featureStates[layer]) {
+             stateMap = this._featureStates[layer] = new Map();
+        }
+        stateMap.set(source.id, state);
+        this._markFeatureState();
+        return this;
+    }
+
+    removeFeatureState(source, key) {
+        if (isNil(source.id)) {
+            throw new Error('missing id in first parameter of removeFeatureState.')
+        }
+        if (!this._featureStates) {
+            return this;
+        }
+        const layer = source.layer || '0';
+        const stateMap = this._featureStates[layer];
+        if (!stateMap) {
+            return this;
+        }
+
+        if (!key) {
+            stateMap.delete(source.id);
+        } else {
+            const state = stateMap.get(source.id);
+            if (isObject(key)) {
+                for (const p in key) {
+                    delete state[p];
+                }
+            } else {
+                delete state[key];
+            }
+            stateMap.set(source.id, state);
+        }
+        this._markFeatureState();
+        return this;
+    }
+
+    getFeatureState(source) {
+        if (isNil(source.id)) {
+            throw new Error('missing id in first parameter of getFeatureState.')
+        }
+        if (!this._featureStates) {
+            return null;
+        }
+        const layer = source.layer || '0';
+        const stateMap = this._featureStates[layer];
+        return stateMap.get(source.id);
+    }
+
+    _markFeatureState() {
+        const renderer = this.getRenderer();
+        if (!renderer) {
+            return;
+        }
+        const timestamp = renderer.getFrameTimestamp();
+        this._featureStamp = timestamp;
+    }
+
+    _getFeatureStateStamp() {
+        return this._featureStamp;
+    }
+
+    _isFeatureStateDirty(timestamp) {
+        return this._featureStamp && this._featureStamp !== timestamp;
+    }
+
     _prepareOptions() {
         const map = this.getMap();
         const projection = map.getProjection();
@@ -622,7 +698,7 @@ class VectorTileLayer extends maptalks.TileLayer {
             }
             for (const p in symbol) {
                 if (hasOwn(symbol, p)) {
-                    if (maptalks.Util.isObject(symbol[p]) && !Array.isArray(symbol[p]) && !symbol[p].stops) {
+                    if (maptalks.Util.isObject(symbol[p]) && !Array.isArray(symbol[p]) && !isFunctionDefinition(symbol[p])) {
                         //对象类型的属性则extend
                         if (!target[p]) {
                             target[p] = {};

@@ -344,12 +344,14 @@ class MeshPainter extends Painter {
             for (let i = 0; i < meshes.length; i++) {
                 if (!keepGeometry) {
                     meshes[i].geometry.dispose();
+                    delete meshes[i].geometry.properties.layer;
                 }
                 meshes[i].dispose();
             }
         } else {
             if (!keepGeometry) {
                 meshes.geometry.dispose();
+                delete meshes.geometry.properties.layer;
             }
             meshes.dispose();
         }

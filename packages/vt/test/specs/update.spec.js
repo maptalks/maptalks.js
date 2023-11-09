@@ -555,6 +555,61 @@ describe('update style specs', () => {
         }, false, null, 0, 2);
     });
 
+    it('should can setFeatureState', done => {
+        assertChangeStyle(done, [0, 255, 0, 255], layer => {
+            layer.updateSymbol('lineStyle', {
+                lineColor: {
+                    type: 'identity',
+                    property: 'color'
+                }
+            });
+            layer.setFeatureState({ id: 0 }, { color: '#0f0' });
+            map.setZoom(map.getZoom() + 2);
+        }, false, null, 0, 2);
+    });
+
+    it('should can removeFeatureState with propertyName', done => {
+        assertChangeStyle(done, [0, 0, 0, 255], layer => {
+            layer.updateSymbol('lineStyle', {
+                lineColor: {
+                    type: 'identity',
+                    property: 'color'
+                }
+            });
+            layer.setFeatureState({ id: 0 }, { color: '#0f0' });
+            layer.removeFeatureState({ id: 0 }, 'color');
+            map.setZoom(map.getZoom() + 2);
+        }, false, null, 0, 2);
+    });
+
+    it('should can removeFeatureState with property', done => {
+        assertChangeStyle(done, [0, 0, 0, 255], layer => {
+            layer.updateSymbol('lineStyle', {
+                lineColor: {
+                    type: 'identity',
+                    property: 'color'
+                }
+            });
+            layer.setFeatureState({ id: 0 }, { color: '#0f0' });
+            layer.removeFeatureState({ id: 0 }, { color: '#0f0' });
+            map.setZoom(map.getZoom() + 2);
+        }, false, null, 0, 2);
+    });
+
+    it('should can removeFeatureState', done => {
+        assertChangeStyle(done, [0, 0, 0, 255], layer => {
+            layer.updateSymbol('lineStyle', {
+                lineColor: {
+                    type: 'identity',
+                    property: 'color'
+                }
+            });
+            layer.setFeatureState({ id: 0 }, { color: '#0f0' });
+            layer.removeFeatureState({ id: 0 });
+            map.setZoom(map.getZoom() + 2);
+        }, false, null, 0, 2);
+    });
+
     it('should can update multiple symbol', done => {
         const style = [
             {
