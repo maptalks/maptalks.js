@@ -10,6 +10,20 @@ import Extent from '../Extent';
  * @name Common
  */
 export default /** @lends projection.Common */ {
+    is(code) {
+        if (this.code === code) {
+            return true;
+        }
+        if (!this.aliases) {
+            return false;
+        }
+        for (let i = 0; i < this.aliases.length; i++) {
+            if (this.aliases[i] === code) {
+                return true;
+            }
+        }
+        return false;
+    },
     /**
      * Project a geographical coordinate to a projected coordinate (2d coordinate)
      * @param  {Coordinate} p - coordinate to project
