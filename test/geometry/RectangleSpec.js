@@ -306,9 +306,9 @@ describe('Geometry.Rectangle', function () {
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
                 [0, 0],
-                [100, 0, 0],
-                [100, -500, 0],
-                [0, -500, 0],
+                [100, 0],
+                [100, -500],
+                [0, -500],
                 [0, 0]
             ]);
         });
@@ -330,9 +330,9 @@ describe('Geometry.Rectangle', function () {
             });
             expect(rectangle.getShell().map(function (c) { return c.toArray() })).to.be.eql([
                 [0, 0],
-                [100, 0, 0],
-                [100, 500, 0],
-                [0, 500, 0],
+                [100, 0],
+                [100, 500],
+                [0, 500],
                 [0, 0]
             ]);
         })
