@@ -24,6 +24,7 @@ import Layer from '../layer/Layer';
 import Renderable from '../renderer/Renderable';
 import SpatialReference from './spatial-reference/SpatialReference';
 import { computeDomPosition } from '../core/util/dom';
+import EPSG9807 from '../geo/projection/Projection.EPSG9807.js';
 
 const TEMP_COORD = new Coordinate(0, 0);
 const TEMP_POINT = new Point(0, 0);
@@ -87,6 +88,7 @@ const REDRAW_OPTIONS_PROPERTIES = ['centerCross', 'fog', 'fogColor', 'debugSky']
  * @property {Number} [options.heightFactor=1]           - the factor for height/altitude calculation,This affects the height calculation of all layers(vectortilelayer/gllayer/threelayer/3dtilelayer)
  * @property {Boolean} [options.cameraInfiniteFar=false]           - Increase camera far plane to infinite. Enable this option may reduce map's performance.
  * @property {Boolean} [options.stopRenderOnOffscreen=true]           - whether to stop map rendering when container is offscreen
+ * @property {Boolean} [options.originLatitudeForAltitude=40]         - default latitude for map.altitudeToPoint method
  * @memberOf Map
  * @instance
  */
@@ -345,12 +347,16 @@ class Map extends Handlerable(Eventable(Renderable(Class))) {
         this._center = this.getCenter();
         this.options['spatialReference'] = ref;
         this._spatialReference = new SpatialReference(ref);
+        const projection = this._spatialReference.getProjection();
         if (this.options['spatialReference'] && isFunction(this.options['spatialReference']['projection'])) {
-            const projection = this._spatialReference.getProjection();
             //save projection code for map profiling (toJSON/fromJSON)
             this.options['spatialReference']['projection'] = projection['code'];
         }
         this._resetMapStatus();
+        if (EPSG9807.is(projection.code)) {
+            this._originLng = projection.centralMeridian;
+            this._altitudeOriginDirty = true;
+        }
         /**
          * spatialreferencechange event, fired when map's spatial reference is updated.
          *
@@ -2585,9 +2591,13 @@ Map.include(/** @lends Map.prototype */{
      * @function
      */
     altitudeToPoint: function () {
-        const DEFAULT_CENTER = new Coordinate(0, 40);
+        const DEFAULT_CENTER = new Coordinate(0, 60);
         const POINT = new Point(0, 0);
         return function (altitude = 0, res, originCenter) {
+            if (this._altitudeOriginDirty)  {
+                DEFAULT_CENTER.x = this._originLng;
+                this._altitudeOriginDirty = false;
+            }
             const p = this.distanceToPointAtRes(altitude, altitude, res, originCenter || DEFAULT_CENTER, POINT);
             if (altitude < 0 && p.x > 0) {
                 p.x = -p.x;

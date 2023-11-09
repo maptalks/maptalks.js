@@ -12,6 +12,8 @@ const RAD_TO_DEG = 57.295779513082321,
 const SRS_WGS84_SEMIMAJOR = 6378137;
 const SRS_WGS84_ESQUARED = 0.0066943799901413165;
 
+
+const aliases = ['Traverse_Mercator'];
 /**
  * Traverse Mercator Projection
  *
@@ -23,9 +25,9 @@ const SRS_WGS84_ESQUARED = 0.0066943799901413165;
  * @mixes projection.Common
  * @mixes measurer.WGS84Sphere
  */
-export default {
+export default extend({}, Common, {
     code: 'EPSG:9807',
-    aliases: ['Traverse_Mercator'],
+    aliases,
     create(params) {
         const P = {
             a: SRS_WGS84_SEMIMAJOR,
@@ -58,6 +60,8 @@ export default {
              * @constant
              */
             code: 'EPSG:9807',
+            aliases,
+            centralMeridian: params.centralMeridian,
             project: function (p, out) {
                 lp.lam = p.x * DEG_TO_RAD - P.lam0;
                 lp.phi = p.y * DEG_TO_RAD;
@@ -86,4 +90,4 @@ export default {
             }
         }, WGS84Sphere);
     }
-};
+});
