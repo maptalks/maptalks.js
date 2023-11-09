@@ -62,6 +62,11 @@ class CanvasRenderer extends Class {
             /* eslint-enable no-use-before-define */
         }
         this.checkAndDraw(this._tryToDraw, framestamp);
+        this._frameTime = framestamp;
+    }
+
+    getFrameTimestamp() {
+        return this._frameTime || 0;
     }
 
     checkAndDraw(drawFn, ...args) {
