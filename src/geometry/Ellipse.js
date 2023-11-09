@@ -116,6 +116,7 @@ class Ellipse extends CenterMixin(Polygon) {
                 dy *= -1;
             }
             const vertex = measurer.locate(center, dx, dy);
+            vertex.z = center.z;
             shell.push(vertex);
         }
         return shell;

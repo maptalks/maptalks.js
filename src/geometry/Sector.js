@@ -101,6 +101,7 @@ class Sector extends Circle {
             dx = radius * Math.cos(rad);
             dy = radius * Math.sin(rad);
             const vertex = measurer.locate(center, dx, dy);
+            vertex.z = center.z;
             shell.push(vertex);
         }
         shell.push(center.copy());
