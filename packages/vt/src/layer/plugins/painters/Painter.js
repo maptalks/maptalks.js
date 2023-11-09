@@ -1413,7 +1413,7 @@ function convertHighlights(mesh, layer, inputHighlights) {
             for (let i = 0; i < pickingIds.length; i++) {
                 highlights.set(pickingIds[i], highlight);
             }
-        } else if (highlight.filter) {
+        } else if (highlight.filter && aPickingId) {
             let current = null;
             for (let i = 0; i < aPickingId.length; i++) {
                 if (aPickingId[i] !== current) {

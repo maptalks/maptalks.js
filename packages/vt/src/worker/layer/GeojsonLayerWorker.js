@@ -1,4 +1,4 @@
-import { isString, extend, isNumber } from '../../common/Util';
+import { isString, isObject, extend, isNumber } from '../../common/Util';
 import Ajax from '../util/Ajax';
 import { log2 } from '../../common/Util';
 import geojsonvt from '@maptalks/geojson-vt';
@@ -166,6 +166,7 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
         const first1000 = [];
         const idMap = {};
         let uid = 0;
+        const feaIdProp = this.options.featureIdProperty;
         function visit(f) {
             if (!f) {
                 return;
@@ -175,6 +176,13 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             }
             if (!isNumber(f.id)) {
                 f.id = uid++;
+            }
+            if (feaIdProp) {
+                let idProp = feaIdProp;
+                if (isObject(feaIdProp)) {
+                    idProp = feaIdProp[f.layer || '0'];
+                }
+                f.id = f.properties[idProp];
             }
             idMap[f.id] = extend({}, f);
             if (f.geometry) {

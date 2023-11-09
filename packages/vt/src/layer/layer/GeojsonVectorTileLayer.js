@@ -1,7 +1,7 @@
 import * as maptalks from 'maptalks';
 import VectorTileLayer from './VectorTileLayer';
 import Ajax from '../../worker/util/Ajax';
-import { isString, isNumber } from '../../common/Util';
+import { isString, isNumber, isObject } from '../../common/Util';
 
 const options = {
     //feature data to return from worker
@@ -165,6 +165,7 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
         }
         let uid = 0;
         this._idMaps = {};
+        const feaIdProp = this.options.featureIdProperty;
         const data = this.features;
         if (Array.isArray(data)) {
             data.forEach(f => {
@@ -173,6 +174,13 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 }
                 if (!isNumber(f.id)) {
                     f.id = uid++;
+                }
+                if (feaIdProp) {
+                    let idProp = feaIdProp;
+                    if (isObject(feaIdProp)) {
+                        idProp = feaIdProp[f.layer || '0'];
+                    }
+                    f.id = f.properties[idProp];
                 }
                 this._idMaps[f.id] = f;
             });
@@ -183,6 +191,13 @@ class GeoJSONVectorTileLayer extends VectorTileLayer {
                 }
                 if (!isNumber(f.id)) {
                     f.id = uid++;
+                }
+                if (feaIdProp) {
+                    let idProp = feaIdProp;
+                    if (isObject(feaIdProp)) {
+                        idProp = feaIdProp[f.layer || '0'];
+                    }
+                    f.id = f.properties[idProp];
                 }
                 this._idMaps[f.id] = f;
             });

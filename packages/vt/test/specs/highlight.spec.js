@@ -61,7 +61,8 @@ const polygon = {
                 ]
             },
             properties: {
-                levels: 3000
+                levels: 3000,
+                externalId: 1
             }
         }
     ]
@@ -110,6 +111,7 @@ describe('highlight specs', () => {
         point.features[0].id = 'foo';
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: point,
+            featureIdProperty: 'type',
             style
         });
         const sceneConfig = {
@@ -128,12 +130,12 @@ describe('highlight specs', () => {
                 const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
                 //开始是红色
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.highlight([{ id: 0, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 }]);
+                layer.highlight([{ id: 1, color: [0, 1, 0, 1], opacity: 0.5, bloom: 1 }]);
             } else if (count === 5) {
                 const pixel = readPixel(renderer.canvas, x / 2, y / 2);
                 //变成高亮的绿色
                 assert(pixel[1] > 10);
-                point.features[0].id = 0;
+                point.features[0].id = 1;
                 done();
             }
         });
@@ -154,6 +156,7 @@ describe('highlight specs', () => {
 
         const layer = new GeoJSONVectorTileLayer('gvt', {
             data: polygon,
+            featureIdProperty: { '0': 'externalId' },
             style
         });
         const sceneConfig = {
@@ -175,7 +178,7 @@ describe('highlight specs', () => {
                 assert.deepEqual(pixel, [255, 0, 0, 255]);
                 layer.highlight({
                     name: 'test',
-                    filter: feature => { return feature.id === 0; },
+                    filter: feature => { return feature.id === 1; },
                     color: [0, 1, 0, 1],
                     opacity: 0.5,
                     bloom: 1

@@ -1,6 +1,7 @@
 import * as maptalks from 'maptalks';
+import { isFunctionDefinition } from '@maptalks/function-type';
 import VectorTileLayerRenderer from '../renderer/VectorTileLayerRenderer';
-import { extend, isNil, isString, hasOwn } from '../../common/Util';
+import { extend, isNil, isString, isObject, hasOwn } from '../../common/Util';
 import { compress, uncompress } from './Compress';
 import Ajax from '../../worker/util/Ajax';
 import Color from 'color';
@@ -55,7 +56,11 @@ const defaultOptions = {
     awareOfTerrain: true,
 
     altitudeQueryTimeLimitPerFrame: 3,
-    workerGlyph: true
+    workerGlyph: true,
+
+    // A property to use as a feature id (for feature state)
+    // https://docs.mapbox.com/style-spec/reference/sources/#vector-promoteId
+    featureIdProperty: null
 };
 
 /**
@@ -155,7 +160,8 @@ class VectorTileLayer extends maptalks.TileLayer {
             schema: this.options.schema,
             pickingGeometry: this.options['pickingGeometry'],
             projectionCode: this.getSpatialReference().getProjection().code,
-            workerGlyph: this.options['workerGlyph']
+            workerGlyph: this.options['workerGlyph'],
+            featureIdProperty: this.options['featureIdProperty']
         };
     }
 

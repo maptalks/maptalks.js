@@ -75,6 +75,7 @@ export default class BaseLayerWorker {
             callback: cb,
             ref: this
         }];
+        const feaIdProp = this.options.featureIdProperty;
         this.requests[url] = this.getTileFeatures(context, (err, features, layers, props) => {
             const waitings = loadings[url];
             delete loadings[url];
@@ -84,13 +85,20 @@ export default class BaseLayerWorker {
                 return;
             }
             delete this.requests[url];
-            if (this.options.debug && features) {
+            if ((this.options.debug || feaIdProp) && features) {
                 for (let i = 0; i < features.length; i++) {
-                    features[i]['_debug_info'] = {
-                        index: i,
-                        id: features[i].id,
-                        tileId: context.tileInfo.id
-                    };
+                    if (this.options.debug) {
+                        features[i]['_debug_info'] = {
+                            index: i,
+                            id: features[i].id,
+                            tileId: context.tileInfo.id
+                        };
+                    }
+                    if (feaIdProp) {
+                        const propName = isObject(feaIdProp) ? feaIdProp[features[i].layer] : feaIdProp;
+                        const properties = features[i].properties;
+                        features[i].id = properties && properties[propName] || null;
+                    }
                 }
             }
             if (err) {
