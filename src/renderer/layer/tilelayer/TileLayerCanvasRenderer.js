@@ -719,6 +719,11 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             return;
         }
         const e = { tile: tileInfo, tileImage: tileImage };
+        // let user update tileImage in listener if needed
+        tileImage = e.tileImage;
+        this.resetTileLoadTime(tileImage);
+        this.removeTileLoading(tileInfo);
+        this._addTileToCache(tileInfo, tileImage);
         /**
          * tileload event, fired when tile is loaded.
          *
@@ -730,11 +735,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
          * @property {Image} tileImage - tile image
          */
         this.layer.fire('tileload', e);
-        // let user update tileImage in listener if needed
-        tileImage = e.tileImage;
-        this.resetTileLoadTime(tileImage);
-        this.removeTileLoading(tileInfo);
-        this._addTileToCache(tileInfo, tileImage);
         this.setToRedraw();
     }
 
