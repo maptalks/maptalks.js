@@ -79,6 +79,9 @@ class LineGradientPainter extends LinePainter {
         const defines = {
             'HAS_GRADIENT': 1
         };
+        if (geometry.data.aAltitude) {
+            defines['HAS_ALTITUDE'] = 1;
+        }
         this.setMeshDefines(defines, geometry, symbolDef);
         mesh.setDefines(defines);
         mesh.properties.symbolIndex = symbolIndex;

@@ -152,7 +152,7 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
     for (let i = 0; i < configs.length; i++) {
         const config = configs[i];
         const attrName = config.attrName;
-        if (!symbolChanged(geometry, symbolDef, config) && !layer._isFeatureStateDirty(mesh.geometry._featureTimestamp)) {
+        if (!symbolChanged(geometry, symbolDef, config) && (!layer._isFeatureStateDirty || !layer._isFeatureStateDirty(mesh.geometry._featureTimestamp))) {
             const { aPickingId } = geometry.properties;
             if (!aPickingId || geometry._fnDataZoom === z) {
                 continue;
@@ -192,7 +192,9 @@ export function updateOneGeometryFnTypeAttrib(regl, symbolDef, configs, mesh, z)
             const aIndex = geometry.properties[aIndexPropName];
             //增加了新的fn-type arr，相应的需要增加define
             updateFnTypeAttrib(geometry, aIndex, config);
-            geometry._featureTimestamp = layer._getFeatureStateStamp();
+            if (layer._getFeatureStateStamp) {
+                geometry._featureTimestamp = layer._getFeatureStateStamp();
+            }
             if (define) {
                 const defines = mesh.defines;
                 defines[define] = 1;
@@ -336,16 +338,19 @@ function evaluateAndUpdate(arr, feature, evaluate, start, end, len, geometry) {
         properties['$layer'] = feature.layer;
         properties['$type'] = feature.type;
     }
-    SOURCE.layer = feature.layer;
-    SOURCE.id = feature.id;
-    if (feature[externalPropsKey]) {
-        feature[externalPropsKey] = null;
-    }
     const layer = geometry.properties.layer;
-    if (!isNil(feature.id)) {
-        const states = layer.getFeatureState(SOURCE);
-        feature.properties[externalPropsKey] = states;
+    if (layer.getFeatureState) {
+        SOURCE.layer = feature.layer;
+        SOURCE.id = feature.id;
+        if (feature[externalPropsKey]) {
+            feature[externalPropsKey] = null;
+        }
+        if (!isNil(feature.id)) {
+            const states = layer.getFeatureState(SOURCE);
+            feature.properties[externalPropsKey] = states;
+        }
     }
+
     const value = evaluate(properties, geometry, arr, start * len);
     if (Array.isArray(value)) {
         let dirty = false;
