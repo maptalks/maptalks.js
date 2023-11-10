@@ -267,7 +267,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         attributes.stencil = true;
         // this.glOptions = attributes;
         const gl = this._createGLContext(canvas, attributes);
-        // console.log(this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
+        // this.gl.getParameter(this.gl.MAX_VERTEX_UNIFORM_VECTORS));
         const regl = createREGL({
             gl,
             attributes,
@@ -534,7 +534,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
             };
             this._requestingMVT[url].keys[tileInfo.id] = 1;
             const fetchOptions = this.layer.options['fetchOptions'];
-            this._workerConn.loadTile({ tileInfo: { res: tileInfo.res, x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d }, glScale, zScale: this._zScale, centimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
+            this._workerConn.loadTile({ tileInfo: { res: tileInfo.res, x: tileInfo.x, y: tileInfo.y, z: tileInfo.z, url: tileInfo.url, id: tileInfo.id, extent2d: tileInfo.extent2d },
+                glScale, zScale: this._zScale, centimeterToPoint, fetchOptions, styleCounter: this._styleCounter }, this._onReceiveMVTData.bind(this, url));
         } else if (!cached.keys[tileInfo.id]) {
             cached.tiles.push(tileInfo);
             cached.keys[tileInfo.id] = 1;
@@ -575,6 +576,7 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     _onReceiveMVTData(url, err, data) {
+        this.setToRedraw();
         if (!this._requestingMVT[url]) {
             return;
         }

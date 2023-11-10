@@ -65,8 +65,12 @@ export default class GeoJSONLayerWorker extends BaseLayerWorker {
             }
         }
         if (isString(data) && data.substring(0, 1) != '{' || data.url) {
-            Ajax.getJSON(data.url ? data.url : data, data.url ? data : {}, (err, resp) => {
-                if (err) cb(err);
+            const url = data.url ? data.url : data;
+            Ajax.getJSON(url, data.url ? data : {}, (err, resp) => {
+                if (err) {
+                    console.error('Failed to fetch geojson:' + url);
+                    cb(err);
+                }
                 if (!resp) {
                     cb(null, { extent: null, idMap: {} });
                     return;
