@@ -13,6 +13,7 @@ const defaultOptions = {
     forceRenderOnRotating: true,
     meshRenderOrder: 0,
     enableBloom: false,
+    enableAltitude: true,
     workarounds: {
         //#94, text rendering crashes on windows with intel gpu
         'win-intel-gpu-crash': true
