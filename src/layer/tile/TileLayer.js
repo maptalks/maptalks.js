@@ -145,7 +145,7 @@ const options = {
     'tileLimitPerFrame': 0,
 
     'tileStackStartDepth': 7,
-    'tileStackDepth': 5,
+    'tileStackDepth': 6,
 
     'awareOfTerrain': true,
     'bufferPixel': 0.5,
@@ -1407,5 +1407,5 @@ function distanceToRect(min, max, xyz) {
 
 
 function sortingTiles(t0, t1) {
-    return t0.z - t1.z;
+    return t1.z - t0.z;
 }

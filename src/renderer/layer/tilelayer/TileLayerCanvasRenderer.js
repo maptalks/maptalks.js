@@ -185,11 +185,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             placeholders = [], placeholderKeys = {};
         //visit all the tiles
         const tileQueue = {};
-        const preLoadingCount = this.markTiles(),
-            loadingLimit = this._getLoadLimit();
+        const preLoadingCount = this.markTiles();
+        const loadingLimit = this._getLoadLimit();
 
         const l = tileGrids.length;
-
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 
@@ -432,13 +431,16 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
+
+            this.drawingParentTiles = true;
+            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingParentTiles;
+
             // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
             this.drawingChildTiles = true;
             this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingChildTiles;
-            this.drawingParentTiles = true;
-            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingParentTiles;
+
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
         }
@@ -454,12 +456,15 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             this.layer._silentConfig = true;
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
-            this.drawingChildTiles = true;
-            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingChildTiles;
+
             this.drawingParentTiles = true;
             this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
             delete this.drawingParentTiles;
+
+            this.drawingChildTiles = true;
+            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+            delete this.drawingChildTiles;
+
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
         }
@@ -746,6 +751,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
+        console.log('onTileError', tileInfo.x, tileInfo.y);
         tileImage.onerrorTick = tileImage.onerrorTick || 0;
         const tileRetryCount = this.layer.options['tileRetryCount'];
         if (tileRetryCount > tileImage.onerrorTick) {
