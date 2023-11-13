@@ -189,6 +189,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const loadingLimit = this._getLoadLimit();
 
         const l = tileGrids.length;
+        const isFirstRender = this._tileZoom === undefined;
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 
@@ -206,7 +207,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const gridTiles = tileGrid['tiles'];
             const parents = tileGrid['parents'] || EMPTY_ARRAY;
             const parentCount = parents.length;
-            const allTiles = parents.concat(gridTiles);
+            const allTiles = isFirstRender ? gridTiles.concat(parents) : parents.concat(gridTiles);
 
             let placeholder;
             if (allTiles.length) {
@@ -751,7 +752,6 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         if (!this.layer) {
             return;
         }
-        console.log('onTileError', tileInfo.x, tileInfo.y);
         tileImage.onerrorTick = tileImage.onerrorTick || 0;
         const tileRetryCount = this.layer.options['tileRetryCount'];
         if (tileRetryCount > tileImage.onerrorTick) {
