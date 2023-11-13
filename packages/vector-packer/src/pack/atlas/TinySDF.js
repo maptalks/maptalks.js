@@ -1,3 +1,14 @@
+let supportOffscreenCanvas = false;
+try {
+    const canvas = new OffscreenCanvas(1, 1);
+    const ctx = canvas.getContext('2d');
+    ctx.fillText('hello', 0, 0);
+    supportOffscreenCanvas = true;
+} catch (err) {
+    supportOffscreenCanvas = false;
+}
+
+
 /*!
  * based on @mapbox/tiny-sdf
  * https://github.com/mapbox/tiny-sdf
@@ -16,7 +27,7 @@ export default function TinySDF(fontSize, buffer, radius, cutoff, fontFamily, fo
     this.radius = radius || 8;
     var size = this.size = this.fontSize + this.buffer * 2;
 
-    this.canvas = typeof document === 'undefined' ? new OffscreenCanvas(size, size) : document.createElement('canvas');
+    this.canvas = typeof document === 'undefined' && supportOffscreenCanvas ? new OffscreenCanvas(size, size) : document.createElement('canvas');
     this.canvas.width = this.canvas.height = size;
 
     this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
