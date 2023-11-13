@@ -207,7 +207,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const gridTiles = tileGrid['tiles'];
             const parents = tileGrid['parents'] || EMPTY_ARRAY;
             const parentCount = parents.length;
-            const allTiles = isFirstRender ? gridTiles.concat(parents) : parents.concat(gridTiles);
+            const allTiles = isFirstRender ? gridTiles : parents.concat(gridTiles);
 
             let placeholder;
             if (allTiles.length) {
@@ -425,6 +425,8 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             }
         }
 
+        const renderInGL = this.layer.options.renderer === 'gl' && (!this.isGL || this.isGL());
+
         const context = { tiles, parentTiles: this._parentTiles, childTiles: this._childTiles, parentContext };
         this.onDrawTileStart(context, parentContext);
 
@@ -433,14 +435,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
 
-            this.drawingParentTiles = true;
-            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingParentTiles;
-
-            // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
-            this.drawingChildTiles = true;
-            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingChildTiles;
+            if (renderInGL) {
+                this._drawChildTiles(childTiles, parentContext);
+                this._drawParentTiles(this._parentTiles, parentContext);
+            } else {
+                this._drawParentTiles(this._parentTiles, parentContext);
+                this._drawChildTiles(childTiles, parentContext);
+            }
 
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
@@ -458,13 +459,13 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             const fadingAnimation = this.layer.options['fadeAnimation'];
             this.layer.options['fadeAnimation'] = false;
 
-            this.drawingParentTiles = true;
-            this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingParentTiles;
-
-            this.drawingChildTiles = true;
-            this._childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
-            delete this.drawingChildTiles;
+            if (renderInGL) {
+                this._drawChildTiles(childTiles, parentContext);
+                this._drawParentTiles(this._parentTiles, parentContext);
+            } else {
+                this._drawParentTiles(this._parentTiles, parentContext);
+                this._drawChildTiles(childTiles, parentContext);
+            }
 
             this.layer.options['fadeAnimation'] = fadingAnimation;
             this.layer._silentConfig = false;
@@ -474,6 +475,19 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
 
         this.onDrawTileEnd(context, parentContext);
 
+    }
+
+    _drawChildTiles(childTiles, parentContext) {
+        // _hasOwnSR 时，瓦片之间会有重叠，会产生z-fighting，所以背景瓦片要后绘制
+        this.drawingChildTiles = true;
+        childTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        delete this.drawingChildTiles;
+    }
+
+    _drawParentTiles(parentTiles, parentContext) {
+        this.drawingParentTiles = true;
+        this._parentTiles.forEach(t => this._drawTile(t.info, t.image, parentContext));
+        delete this.drawingParentTiles;
     }
 
     onDrawTileStart() { }
@@ -1172,6 +1186,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         this.clear();
         delete this.tileCache;
         delete this._tilePlaceHolder;
+        delete this._tileZoom;
         super.onRemove();
     }
 

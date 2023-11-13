@@ -29,7 +29,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     needToRedraw() {
         const map = this.getMap();
-        if (this._gl() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
+        if (this.isGL() && !map.getPitch() && map.isZooming() && !map.isMoving() && !map.isRotating()) {
             return true;
         }
         return super.needToRedraw();
@@ -81,7 +81,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
         if (tileInfo.cache !== false) {
             this._bindGLBuffer(tileImage, w, h);
         }
-        if (!this._gl()) {
+        if (!this.isGL()) {
             // fall back to canvas 2D, which is faster
             super.drawTile(tileInfo, tileImage);
             return;
@@ -153,7 +153,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
     }
 
     getCanvasImage() {
-        if (!this._gl() || !this.canvas2) {
+        if (!this.isGL() || !this.canvas2) {
             return super.getCanvasImage();
         }
         const img = super.getCanvasImage();
@@ -165,7 +165,7 @@ class TileLayerGLRenderer extends ImageGLRenderable(TileLayerCanvasRenderer) {
 
     // decide whether the layer is renderer with gl.
     // when map is pitching, or fragmentShader is set in options
-    _gl() {
+    isGL() {
         if (this.canvas.gl && this.canvas.gl.wrap) {
             //in GroupGLLayer
             return true;
