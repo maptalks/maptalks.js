@@ -74,6 +74,7 @@ export default class GLTFManager {
         }
         const gltfPack = GLTFHelper.exportGLTFPack(gltf, useUniqueREGLBuffer ? this.regl : null);
         const geometries = gltfPack.getMeshesInfo();
+        const bbox = gltfPack.getGLTFBBox();
         const resourceMap = {
             gltfPack,
             resources: geometries,

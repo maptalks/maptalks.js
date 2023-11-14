@@ -11,6 +11,8 @@ import Texture from '../Texture2D';
 
 let timespan = 0;
 
+const MAT4 = [];
+
 export default class GLTFPack {
 
     constructor(gltf, regl) {
@@ -37,6 +39,41 @@ export default class GLTFPack {
         });
         this._checkBaseColorFactor();
         return this.geometries;
+    }
+
+    getGLTFBBox() {
+        if (!this.gltf) {
+            return null;
+        }
+        const geometries = this.geometries;
+        if (!geometries || !geometries.length) {
+            return null;
+        }
+        const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+        for (let i = 1; i < geometries.length; i++) {
+            const bbox = geometries[i].bbox;
+            const bboxMin = bbox.min, bboxMax = bbox.max;
+            if (bboxMin[0] < min[0]) {
+                min[0] = bboxMin[0];
+            }
+            if (bboxMin[1] < min[1]) {
+                min[1] = bboxMin[1];
+            }
+            if (bboxMin[2] < min[2]) {
+                min[2] = bboxMin[2];
+            }
+
+            if (bboxMax[0] > max[0]) {
+                max[0] = bboxMax[0];
+            }
+            if (bboxMax[1] > max[1]) {
+                max[1] = bboxMax[1];
+            }
+            if (bboxMax[2] > max[2]) {
+                max[2] = bboxMax[2];
+            }
+        }
+        return{ min, max };
     }
 
     _createSkins(skins) {
@@ -287,8 +324,11 @@ export default class GLTFPack {
                 //一个node下可能有多个geometry, node附带的weights会影响其下辖的所有geometry的morph变形结果，这里保存
                 //geometries，方便后面morph的运算
                 node.geometries.push(geometry);
+                let bbox = geometry.boundingBox.copy();
+                bbox = bbox.transform(mat4.identity(MAT4), nodeMatrix);
                 const info = {
                     geometry,
+                    bbox,
                     nodeMatrix,
                     materialInfo,
                     extraInfo: this._createExtralInfo(primitive.material),

@@ -7,6 +7,7 @@ export default class GeometryResource {
     }
 
     _init(resource) {
+        this.bbox = resource.bbox;
         this.geometry = resource.geometry;
         this.nodeMatrix = resource.nodeMatrix;
         this.materialInfo = resource.materialInfo;

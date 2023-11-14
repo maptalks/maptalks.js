@@ -757,38 +757,7 @@ export default class GLTFMarker extends Marker {
     }
 
     _calGLTFModelBBox() {
-        const meshes = this._meshes;
-        if (!meshes || !meshes.length) {
-            return null;
-        }
-        let bbox0 = meshes[0].geometry.boundingBox.copy();
-        bbox0 = bbox0.transform(mat4.identity(MAT4), meshes[0].nodeMatrix);
-        const min = bbox0.min, max = bbox0.max;
-        for (let i = 1; i < meshes.length; i++) {
-            let bbox = meshes[i].geometry.boundingBox.copy();
-            bbox = bbox.transform(mat4.identity(MAT4), meshes[i].nodeMatrix);
-            const bboxMin = bbox.min, bboxMax = bbox.max;
-            if (bboxMin[0] < min[0]) {
-                min[0] = bboxMin[0];
-            }
-            if (bboxMin[1] < min[1]) {
-                min[1] = bboxMin[1];
-            }
-            if (bboxMin[2] < min[2]) {
-                min[2] = bboxMin[2];
-            }
-
-            if (bboxMax[0] > max[0]) {
-                max[0] = bboxMax[0];
-            }
-            if (bboxMax[1] > max[1]) {
-                max[1] = bboxMax[1];
-            }
-            if (bboxMax[2] > max[2]) {
-                max[2] = bboxMax[2];
-            }
-        }
-        return{ min, max };
+        return this.gltfPack.getGLTFBBox();
     }
 
     _prepareMesh(resource, shaderName, regl) {
