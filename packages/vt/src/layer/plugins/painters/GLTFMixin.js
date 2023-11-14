@@ -1,7 +1,7 @@
 import { vec3, mat4, quat, reshader } from '@maptalks/gl';
 import { PackUtil } from '@maptalks/vector-packer';
 import { setUniformFromSymbol, createColorSetter, isNumber, extend } from '../Util';
-import { getCentiMeterScale } from '../../../common/Util';
+import { getCentiMeterScale, isNil } from '../../../common/Util';
 import { isFunctionDefinition, interpolated } from '@maptalks/function-type';
 
 const V3 = [];
@@ -44,7 +44,6 @@ const GLTFMixin = Base =>
             super(regl, layer, symbol, sceneConfig, pluginIndex, dataConfig);
             this._ready = false;
             this.scene.sortFunction = this.sortByCommandKey;
-            this._gltfMeshInfos = [];
             this._gltfManager = new reshader.GLTFManager(regl);
             this._initTRSFuncType();
             this._initGLTF();
@@ -540,6 +539,8 @@ const GLTFMixin = Base =>
             const zoom = map.getZoom();
             const properties = feature && feature.feature && feature.feature.properties;
 
+            const heightScale = this._getModelHeightScale(zoom, properties);
+
             if (this._txFn) {
                 tx = this._txFn(zoom, properties);
             }
@@ -571,9 +572,20 @@ const GLTFMixin = Base =>
             if (this._szFn) {
                 sz = this._szFn(zoom, properties);
             }
-            const scale = vec3.set(TEMP_V3_2, sx, sy, sz);
+            const scale = vec3.set(TEMP_V3_2, sx * heightScale, sy * heightScale, sz * heightScale);
 
             return this._getGLTFMatrix(out, translation, rotation, scale);
+        }
+
+        _getModelHeightScale(zoom, properties) {
+            const symbolDef = this.symbolDef[0];
+            let modelHeight = this._modelHeightFn ? this._modelHeightFn(zoom, properties) : symbolDef['modelHeight'];
+            if (isNil(modelHeight)) {
+                modelHeight = 1;
+            }
+
+            const bbox = this._gltfBBox[0];
+            return modelHeight / (Math.abs(bbox.max[1] - bbox.min[1]));//YZ轴做了翻转，所以需要用y方向来算高度比例
         }
 
         getShaderConfig() {
@@ -590,6 +602,9 @@ const GLTFMixin = Base =>
 
         _initTRSFuncType() {
             const symbolDef = this.symbolDef[0];
+            if (isFunctionDefinition(symbolDef['modelHeight'])) {
+                this._modelHeightFn = interpolated(symbolDef['modelHeight']);
+            }
             if (isFunctionDefinition(symbolDef['translationX'])) {
                 this._txFn = interpolated(symbolDef['translationX']);
             }
@@ -622,7 +637,7 @@ const GLTFMixin = Base =>
         }
 
         _hasFuncType() {
-            return !!(this._txFn && !this._txFn.isFeatureConstant || this._tyFn && !this._tyFn.isFeatureConstant || this._tzFn && !this._tzFn.isFeatureConstant ||
+            return !!(this._modelHeightFn && !this._modelHeightFn.isFeatureConstant || this._txFn && !this._txFn.isFeatureConstant || this._tyFn && !this._tyFn.isFeatureConstant || this._tzFn && !this._tzFn.isFeatureConstant ||
                 this._rxFn && !this._rxFn.isFeatureConstant || this._ryFn && !this._ryFn.isFeatureConstant || this._rzFn && !this._rzFn.isFeatureConstant ||
                 this._sxFn && !this._sxFn.isFeatureConstant || this._syFn && !this._syFn.isFeatureConstant || this._szFn && !this._szFn.isFeatureConstant);
         }
@@ -635,6 +650,8 @@ const GLTFMixin = Base =>
             }
             this._gltfPack = [];
             this._gltfJSON = [];
+            this._gltfBBox = [];
+            this._gltfMeshInfos = [];
             const symbols = this.getSymbols();
             this._loaded = 0;
             for (let i = 0; i < symbols.length; i++) {
@@ -651,10 +668,11 @@ const GLTFMixin = Base =>
                             }
                             return;
                         }
-                        const { gltfPack: pack, json } = gltfData;
+                        const { gltfPack: pack, json, bbox } = gltfData;
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();
                         this._gltfJSON[i] = json;
+                        this._gltfBBox[i] = bbox;
                         this._loaded++;
                         if (this._loaded >= symbols.length) {
                             this._ready = true;
@@ -667,6 +685,7 @@ const GLTFMixin = Base =>
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();
                         this._gltfJSON[i] = json;
+                        this._gltfBBox[i] = bbox;
                         this._loaded++;
                     }
                 }
