@@ -10,6 +10,7 @@ import { PackUtil } from '@maptalks/vector-packer';
 const TMP_POINT = new maptalks.Point(0, 0);
 const TMP_COORD = new maptalks.Coordinate(0, 0);
 const EMPTY_ALTITUDE = [null, 0];
+const ALTITUDE = [];
 
 const defaultOptions = {
     renderer: 'gl',
@@ -293,7 +294,7 @@ class VectorTileLayer extends maptalks.TileLayer {
         const pointAtRes = this._tilePointToPoint(TMP_POINT, point, tilePoint, extent);
         if (terrainTileInfo && terrainHelper.queryTileTerrainByPointAtRes) {
             // faster
-            return terrainHelper.queryTileTerrainByPointAtRes(pointAtRes, res, terrainTileInfo.id, terrainTileInfo);
+            return terrainHelper.queryTileTerrainByPointAtRes(pointAtRes, res, terrainTileInfo.id, terrainTileInfo, ALTITUDE);
         } else {
             EMPTY_ALTITUDE[0] = null;
             EMPTY_ALTITUDE[1] = 0;
