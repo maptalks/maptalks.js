@@ -76,6 +76,7 @@ export default class GLTFManager {
         const geometries = gltfPack.getMeshesInfo();
         const bbox = gltfPack.getGLTFBBox();
         const resourceMap = {
+            bbox,
             gltfPack,
             resources: geometries,
             //目前只用到gltf原始数据中的assets和animations,为避免占用内存，只保存需要用到的信息
