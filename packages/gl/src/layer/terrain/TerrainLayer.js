@@ -7,7 +7,6 @@ import MaskLayerMixin from '../mask/MaskLayerMixin';
 const COORD0 = new maptalks.Coordinate(0, 0);
 const POINT0 = new maptalks.Point(0, 0);
 const EMPTY_ARRAY = [];
-const ALTITUDE = [];
 
 const options = {
     'forceRenderOnMoving': true,
@@ -237,62 +236,60 @@ export default class TerrainLayer extends MaskLayerMixin(maptalks.TileLayer) {
         return this._skinLayers && this._skinLayers.length || 0;
     }
 
-    queryTerrainByProjCoord(prjCoord) {
+    queryTerrainByProjCoord(prjCoord, out) {
+        out = out || [];
         const renderer = this.getRenderer();
         if (!renderer) {
-            ALTITUDE[0] = null;
-            ALTITUDE[1] = 0;
-            return ALTITUDE;
+            out[0] = null;
+            out[1] = 0;
+            return out;
         }
         const map = this.getMap();
         const tileInfo = renderer._getTerrainTileAtPrjCoord(prjCoord);
         if (!tileInfo) {
-            ALTITUDE[0] = null;
-            ALTITUDE[1] = 0;
-            return ALTITUDE;
+            out[0] = null;
+            out[1] = 0;
+            return out;
         }
         const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
-        return renderer._queryTerrain(ALTITUDE, tileInfo.id, tileInfo, worldPos, 1);
+        return renderer._queryTerrain(out, tileInfo.id, tileInfo, worldPos, 1);
     }
 
-    queryTileTerrainByProjCoord(prjCoord, tileId, tileIndex) {
+    queryTileTerrainByProjCoord(prjCoord, tileId, tileIndex, out) {
+        out = out || [];
         const renderer = this.getRenderer();
         if (!renderer) {
-            ALTITUDE[0] = null;
-            ALTITUDE[1] = 0;
-            return ALTITUDE;
+            out[0] = null;
+            out[1] = 0;
+            return out;
         }
         const map = this.getMap();
         const worldPos = map['_prjToPointAtRes'](prjCoord, 1, POINT0);
-        return renderer._queryTerrain(ALTITUDE, tileId, tileIndex, worldPos, 1);
+        return renderer._queryTerrain(out, tileId, tileIndex, worldPos, 1);
     }
 
-    queryTileTerrainByPointAtRes(point, res, tileId, tileIndex) {
+    queryTileTerrainByPointAtRes(point, res, tileId, tileIndex, out) {
+        out = out || [];
         const renderer = this.getRenderer();
         if (!renderer) {
-            ALTITUDE[0] = null;
-            ALTITUDE[1] = 0;
-            return ALTITUDE;
+            out[0] = null;
+            out[1] = 0;
+            return out;
         }
-        return renderer._queryTerrain(ALTITUDE, tileId, tileIndex, point, res);
+        return renderer._queryTerrain(out, tileId, tileIndex, point, res);
     }
 
-    queryTerrain(coordinate) {
+    queryTerrain(coordinate, out) {
+        out = out || [];
         const renderer = this.getRenderer();
         if (!renderer) {
-            return 0;
+            out[0] = null;
+            out[1] = 0;
+            return out;
         }
         const projection = this.getMap().getProjection();
         const projCoord = projection.project(coordinate, COORD0);
-        return this.queryTerrainByProjCoord(projCoord);
-    }
-
-    queryTileAltitude(out, tileExtent, res) {
-        const renderer = this.getRenderer();
-        if (!renderer) {
-            return null;
-        }
-        return renderer._queryTileAltitude(out, tileExtent, res);
+        return this.queryTerrainByProjCoord(projCoord, out);
     }
 
     queryTileMesh(tile, cb) {

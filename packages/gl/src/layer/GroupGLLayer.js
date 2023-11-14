@@ -540,18 +540,18 @@ export default class GroupGLLayer extends maptalks.Layer {
         return this;
     }
 
-    queryTerrain(coord) {
+    queryTerrain(coord, out) {
         if (!this._terrainLayer) {
             return EMPTY_ALTITUDE;
         }
-        return this._terrainLayer.queryTerrain(coord);
+        return this._terrainLayer.queryTerrain(coord, out);
     }
 
-    queryTerrainByProjCoord(projCoord) {
+    queryTerrainByProjCoord(projCoord, out) {
         if (!this._terrainLayer) {
             return EMPTY_ALTITUDE;
         }
-        return this._terrainLayer.queryTerrainByProjCoord(projCoord);
+        return this._terrainLayer.queryTerrainByProjCoord(projCoord, out);
     }
 
     _updateTerrainSkinLayers() {
