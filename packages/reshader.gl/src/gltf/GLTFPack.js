@@ -50,7 +50,7 @@ export default class GLTFPack {
             return null;
         }
         const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
-        for (let i = 1; i < geometries.length; i++) {
+        for (let i = 0; i < geometries.length; i++) {
             const bbox = geometries[i].bbox;
             const bboxMin = bbox.min, bboxMax = bbox.max;
             if (bboxMin[0] < min[0]) {
