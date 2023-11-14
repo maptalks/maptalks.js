@@ -1125,6 +1125,9 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
     }
 
     isEnableTileStencil() {
+        if (this.layer.options.altitude) {
+            return false;
+        }
         const plugins = this._getFramePlugins();
         for (let i = 0; i < plugins.length; i++) {
             if (!plugins[i] || !plugins[i].painter) {
