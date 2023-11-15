@@ -193,6 +193,10 @@ export default class GLTFMarker extends Marker {
         return meshes;
     }
 
+    getAllMeshes() {
+        return this._meshes;
+    }
+
     _getGLTFData() {
         return this._gltfData;
     }
