@@ -581,7 +581,7 @@ const GLTFMixin = Base =>
             const symbolDef = this.symbolDef[0];
             let modelHeight = this._modelHeightFn ? this._modelHeightFn(zoom, properties) : symbolDef['modelHeight'];
             if (isNil(modelHeight)) {
-                modelHeight = 1;
+                return 1;
             }
 
             const bbox = this._gltfBBox[0];
@@ -680,7 +680,7 @@ const GLTFMixin = Base =>
                         this.setToRedraw(true);
                     });
                 } else {
-                    const { gltfPack: pack, json } = gltfRes;
+                    const { gltfPack: pack, json, bbox } = gltfRes;
                     if (pack) {
                         this._gltfPack[i] = [pack];
                         this._gltfMeshInfos[i] = pack.getMeshesInfo();

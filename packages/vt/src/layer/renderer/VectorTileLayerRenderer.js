@@ -698,7 +698,8 @@ class VectorTileLayerRenderer extends maptalks.renderer.TileLayerCanvasRenderer 
         const feaIndexes = pluginData.styledFeatures;
         //pFeatures是一个和features相同容量的数组，只存放有样式的feature数据，其他为undefined
         //这样featureIndexes中的序号能从pFeatures取得正确的数据
-        const pluginFeas = convertToPainterFeatures(features, feaIndexes, i, symbol, layer);
+        // GeoJSONVectorTileLayer上的features需要复制，以保留原有的数据
+        const pluginFeas = convertToPainterFeatures(features, feaIndexes, i, symbol, layer, !!(layer.getData && layer.getData()));
         // const pluginFeas = {};
         // if (hasFeature(features)) {
         //     //[feature index, style index]

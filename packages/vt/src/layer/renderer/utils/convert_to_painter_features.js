@@ -1,9 +1,11 @@
+import * as maptalks from 'maptalks';
 import { KEY_IDX } from '../../../common/Constant';
+import { extend } from '../../../common/Util';
 
 const KEY_IDX_NAME = (KEY_IDX + '').trim();
 
 // feaIndexes是VectorTileLayer中设置过filter时，符合条件的feature的编号，可以为null
-export default function convertToPainterFeatures(features, feaIndexes, layerId, symbol, layer) {
+export default function convertToPainterFeatures(features, feaIndexes, layerId, symbol, layer, copy) {
     const pluginFeas = {};
     if (hasFeature(features)) {
         const data = feaIndexes || features;
@@ -14,7 +16,9 @@ export default function convertToPainterFeatures(features, feaIndexes, layerId, 
                 feature = layer.getFeature(feature);
                 feature.layer = layerId;
             }
-            feature = proxyFea(feature);
+            if (layer instanceof maptalks.TileLayer) {
+                feature = proxyFea(feature, copy);
+            }
             const keyIdxValue = feaIndexes ? feaIndexes[ii] : feature[KEY_IDX_NAME];
             pluginFeas[keyIdxValue] = {
                 feature,
@@ -52,11 +56,14 @@ const proxyGetter = {
 
 const EMPTY_PROPS = {};
 
-function proxyFea(feature) {
+function proxyFea(feature, copy) {
     const originalProperties = feature.properties;
     if (originalProperties && originalProperties[oldPropsKey]) {
         // 已经proxy过了
         return feature;
+    }
+    if (copy) {
+        feature = extend({}, feature);
     }
     feature.customProps = feature.customProps || {};
     const properties = feature.customProps;

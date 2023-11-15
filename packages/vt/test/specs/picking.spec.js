@@ -565,7 +565,8 @@ describe('picking specs', () => {
                             ]
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': 0,
+                        "properties": {}
                     },
                     'symbol': {
                         'lineColor': '#f00'
@@ -628,7 +629,8 @@ describe('picking specs', () => {
                             ]
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': 0,
+                        "properties": {}
                     },
                     'symbol': {
                         'lineColor': '#f00',
@@ -776,7 +778,8 @@ describe('picking specs', () => {
                             ]
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': 0,
+                        'properties': {}
                     },
                     'symbol': {
                         'polygonFill': '#f00',
@@ -850,7 +853,8 @@ describe('picking specs', () => {
                             ]
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': 0,
+                        'properties': {}
                     },
                     'symbol': {
                         'lineColor': '#f00',
@@ -996,7 +1000,8 @@ describe('picking specs', () => {
                             ]
                         },
                         'id': 0,
-                        'layer': 0
+                        'layer': 0,
+                        'properties': {}
                     },
                     'symbol': {
                         'lineColor': '#f00',

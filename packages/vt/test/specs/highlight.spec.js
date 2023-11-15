@@ -92,6 +92,53 @@ describe('highlight specs', () => {
         map.remove();
     });
 
+    it('should can highlight text', done => {
+        const style = [
+            {
+                filter: {
+                    title: '所有数据',
+                    value: ['==', 'type', 1]
+                },
+                renderPlugin: {
+                    type: 'text',
+                    dataConfig: { type: 'point' },
+                    sceneConfig: { collision: false }
+                },
+                symbol: { textName: '口', textSize: 30, textFill: '#f00' }
+            }
+        ];
+        const layer = new GeoJSONVectorTileLayer('gvt', {
+            data: point,
+            style
+        });
+        const sceneConfig = {
+            postProcess: {
+                enable: true,
+                bloom: { enable: true }
+            }
+        };
+        const group = new GroupGLLayer('group', [layer], { sceneConfig });
+        let count = 0;
+        const renderer = map.getRenderer();
+        const x = renderer.canvas.width, y = renderer.canvas.height;
+        group.on('layerload', () => {
+            count++;
+            if (count === 4) {
+                // const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
+                //开始是红色
+                // assert.deepEqual(pixel, [255, 0, 0, 255]);
+                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 1, bloom: 1 });
+            } else if (count === 6) {
+                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
+                //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
+                assert(pixel[1] > 100);
+                assert(pixel[3] < 150);
+                done();
+            }
+        });
+        group.addTo(map);
+    });
+
     it('should can highlight icon', done => {
         const style = [
             {
@@ -265,53 +312,6 @@ describe('highlight specs', () => {
             done();
         }
 
-    });
-
-    it('should can highlight text', done => {
-        const style = [
-            {
-                filter: {
-                    title: '所有数据',
-                    value: ['==', 'type', 1]
-                },
-                renderPlugin: {
-                    type: 'text',
-                    dataConfig: { type: 'point' },
-                    sceneConfig: { collision: false }
-                },
-                symbol: { textName: '口', textSize: 30, textFill: '#f00' }
-            }
-        ];
-        const layer = new GeoJSONVectorTileLayer('gvt', {
-            data: point,
-            style
-        });
-        const sceneConfig = {
-            postProcess: {
-                enable: true,
-                bloom: { enable: true }
-            }
-        };
-        const group = new GroupGLLayer('group', [layer], { sceneConfig });
-        let count = 0;
-        const renderer = map.getRenderer();
-        const x = renderer.canvas.width, y = renderer.canvas.height;
-        group.on('layerload', () => {
-            count++;
-            if (count === 4) {
-                // const pixel = readPixel(layer.getRenderer().canvas, x / 2, y / 2);
-                //开始是红色
-                // assert.deepEqual(pixel, [255, 0, 0, 255]);
-                layer.highlight({ id: 0, color: [0, 1, 0, 1], opacity: 1, bloom: 1 });
-            } else if (count === 5) {
-                let pixel = readPixel(renderer.canvas, x / 2, y / 2);
-                //变成高亮的绿色，但只高亮了文字绘制的部分，所以颜色
-                assert(pixel[1] > 100);
-                assert(pixel[3] < 150);
-                done();
-            }
-        });
-        group.addTo(map);
     });
 
     it('should can highlight line', done => {

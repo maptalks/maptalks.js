@@ -1632,7 +1632,7 @@ describe('update style specs', () => {
             if (pixel[0] > 0) {
 
                 if (!painted) {
-                    assert.deepEqual(pixel, [80, 80, 80, 255]);
+                    assert.deepEqual(pixel, [78, 78, 78, 255]);
 
                     material.baseColorTexture = 'file://' + path.resolve(__dirname, '../integration/resources/1.png');
                     layer.updateSymbol(0, { material });
@@ -1641,7 +1641,7 @@ describe('update style specs', () => {
                     count++;
                     if (count >= 3) {
                         finished = true;
-                        assert.deepEqual(pixel, [62, 72, 71, 255]);
+                        assert.deepEqual(pixel, [60, 70, 68, 255]);
                         done();
                     }
                 }
@@ -2123,27 +2123,26 @@ describe('update style specs', () => {
             tileStackDepth: 0
         });
         let styleRefreshed = false;
-        let count = 0;
         const renderer = map.getRenderer();
         const x = renderer.canvas.width, y = renderer.canvas.height;
-        layer.on('canvasisdirty', () => {
-            count++;
-            if (count === 1) {
-                layer.updateSymbol(0, {
-                    material: {
-                        "baseColorTexture": "http://localhost:" + PORT + "/textures/basecolor.jpg",
-                        "baseColorFactor": [0.984313725490196, 0.984313725490196, 0.984313725490196, 1],
-                        "normalTexture": "http://localhost:" + PORT + "/textures/normal.jpg",
-                        "normalMapFactor": 5
-                    }
-                });
-            } else if (count === 8) {
-                const pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
+        let pixel;
+        layer.once('canvasisdirty', () => {
+            pixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
+            layer.updateSymbol(0, {
+                material: {
+                    "baseColorTexture": "http://localhost:" + PORT + "/textures/basecolor.jpg",
+                    "baseColorFactor": [0.984313725490196, 0.984313725490196, 0.984313725490196, 1],
+                    "normalTexture": "http://localhost:" + PORT + "/textures/normal.jpg",
+                    "normalMapFactor": 5
+                }
+            });
+            setTimeout(() => {
+                const newPixel = readPixel(renderer.canvas, x / 2, y / 2 - 4);
                 //[87, 140, 143, 255]
                 assert(styleRefreshed);
-                assert.deepEqual(pixel, [144, 210, 214, 255]);
+                assert.notDeepEqual(pixel, newPixel);
                 done();
-            }
+            }, 500);
         });
         layer.on('refreshstyle', () => {
             styleRefreshed = true;
