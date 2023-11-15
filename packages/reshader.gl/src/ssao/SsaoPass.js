@@ -14,7 +14,6 @@ class SsaoPass {
     *   projMatrix,
         bias,
         radius,
-        intesity,
         cameraNear,
         cameraFar,
         quality: 0.6
