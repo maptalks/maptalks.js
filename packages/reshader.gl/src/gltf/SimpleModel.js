@@ -16,7 +16,44 @@ const cubeIndices = [0, 1, 2, 0, 2, 3,
     12, 13, 14, 12, 14, 15,
     16, 17, 18, 16, 18, 19,
     20, 21, 22, 20, 22, 23];
+const cubeuv = [
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
 
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
+
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
+
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
+
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
+
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0
+];
+// BOX template
+//    v2----- v1
+//   / |     /|
+//  v3------v0|
+//  |  |v6  | /v5
+//  | /     |/
+//  v7------v4
 const plane = {
     // Create a plane
     //    v2----- v3
@@ -70,6 +107,9 @@ export const simpleModels = {
                     },
                     NORMAL :{
                         array : new Int8Array(cubeNormal)
+                    },
+                    TEXCOORD_0: {
+                        array: new Int8Array(cubeuv)
                     }
                 },
                 indices : new Uint16Array(cubeIndices),
