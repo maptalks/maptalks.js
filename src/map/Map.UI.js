@@ -10,7 +10,7 @@ const uiMarkerFilter = (ui) => {
 Map.include(/** @lends Map.prototype */{
     /**
        * Get all UIs
-       * @param {Function} [filter=undefined] - a filter function of layers, return false to exclude the given layer.
+       * @param {Function} [filter=undefined] - a filter function of ui, return false to exclude the given ui.
        * @returns {UIComponent[]}
        */
     getUIs(filter) {
