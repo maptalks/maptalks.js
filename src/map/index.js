@@ -18,5 +18,6 @@ import './Map.Zoom';
 import './Map.Camera';
 import './Map.ViewHistory';
 import './Map.Collision';
+import './Map.UI';
 
 export { Map };

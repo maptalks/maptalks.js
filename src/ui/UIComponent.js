@@ -381,10 +381,6 @@ class UIComponent extends Eventable(Class) {
         if (!this._owner) {
             return this;
         }
-        const map = this.getMap();
-        if (map) {
-            map._removeUI(this);
-        }
         this.hide();
         this._switchEvents('off');
         if (this.onRemove) {
@@ -392,6 +388,11 @@ class UIComponent extends Eventable(Class) {
         }
         if (!this._singleton() && this.__uiDOM) {
             this._removePrevDOM();
+        }
+        this._collides();
+        const map = this.getMap();
+        if (map) {
+            map._removeUI(this);
         }
         delete this._owner;
         /**
@@ -403,7 +404,6 @@ class UIComponent extends Eventable(Class) {
          * @property {ui.UIComponent} target - UIComponent
          */
         this.fire('remove');
-        this._collides();
         return this;
     }
 

@@ -21,6 +21,7 @@ const files = [
     './src/map/Map.Topo.js',
     './src/map/Map.ViewHistory.js',
     './src/map/Map.Zoom.js',
+    './src/map/Map.UI.js',
     './src/map/handler',
 
     './src/map/tool/MapTool.js',
