@@ -480,6 +480,10 @@ export default class MeshPainter {
         }
         const { pnts, featureTable, rootIdx, compressed_int16_params } = data;
         const count = featureTable['POINTS_LENGTH'];
+        if (!pnts['BATCH_ID']) {
+            pnts['BATCH_ID'] = new Uint8Array(count);
+            pnts['BATCH_ID'].fill(0);
+        }
 
         const geometry = new reshader.Geometry(
             pnts,

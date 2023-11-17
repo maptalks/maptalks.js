@@ -87,7 +87,28 @@ describe('3dtiles identify specs', () => {
         }, 1000);
     });
 
-    it('can identify pnts data', done => {
+    it('can identify batched pnts data', done => {
+        const resPath = 'Cesium3DTiles/PointCloud/PointCloudConstantColor';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: [{
+                url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                pointSize: 12,
+                opacity: 1
+            }]
+        });
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        layer.addTo(map);
+        setTimeout(() => {
+            const hits = layer.identify([-75.61209122255298, 40.04252824941395]);
+            assert(hits[0].coordinate[0] !== 0);
+            done();
+        }, 1000);
+    });
+
+    it('can identify pnts data with properties', done => {
         const resPath = 'Cesium3DTiles/PointCloud/PointCloudWithPerPointProperties';
         const layer = new Geo3DTilesLayer('3d-tiles', {
             services: [{
@@ -108,4 +129,6 @@ describe('3dtiles identify specs', () => {
             done();
         }, 1000);
     });
+
+
 });
