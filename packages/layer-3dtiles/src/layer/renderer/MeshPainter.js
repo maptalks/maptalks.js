@@ -601,7 +601,11 @@ export default class MeshPainter {
         const instanceData = {
             'instance_vectorA': new Float32Array(instanceCount * 4),
             'instance_vectorB': new Float32Array(instanceCount * 4),
-            'instance_vectorC': new Float32Array(instanceCount * 4)
+            'instance_vectorC': new Float32Array(instanceCount * 4),
+            'aPickingId': new Uint16Array(instanceCount)
+        };
+        for (let i = 0; i < instanceCount; i++) {
+            instanceData['aPickingId'][i] = i;
         }
 
         const normalUp = new Float32Array(3);
@@ -1868,7 +1872,7 @@ export default class MeshPainter {
         const map = this.getMap();
         const uniforms = this._getUniformValues();
         const picking = this.picking;
-        picking.render(this._modelScene.getMeshes().filter(m => !m.bloom), uniforms, true);
+        picking.render(this._i3dmScene.getMeshes().filter(m => !m.bloom), uniforms, true);
         let picked = {};
         if (picking.getRenderedMeshes().length) {
             picked = picking.pick(x, y, tolerance, uniforms, {
