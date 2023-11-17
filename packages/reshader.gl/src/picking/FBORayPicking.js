@@ -193,7 +193,7 @@ export default class FBORayPicking {
         });
         this._depthShader = new MeshShader({
             vert,
-            frag : depthFrag,
+            frag: depthFrag,
             uniforms,
             defines : defines1,
             extraCommandProps

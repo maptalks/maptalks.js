@@ -488,7 +488,8 @@ export default class MeshPainter {
             {
                 static: true,
                 primitive: 'points',
-                positionAttribute: 'POSITION'
+                positionAttribute: 'POSITION',
+                pickingIdAttribute: 'BATCH_ID'
             }
         );
         geometry.generateBuffers(this._regl);
@@ -1544,6 +1545,21 @@ export default class MeshPainter {
             this.pickingFBO,
             this.getMap()
         );
+        this._pntsPicking = new reshader.FBORayPicking(
+            this._renderer,
+            {
+                vert: pntsVert,
+                extraCommandProps,
+                uniforms: this._pntsShader.uniforms,
+                defines: {
+                    'PICKING_MODE': 1,
+                    'ENABLE_PICKING': 1,
+                    'HAS_PICKING_ID': 1
+                }
+            },
+            this.pickingFBO,
+            this.getMap()
+        );
         // this._modelShader.filter = mesh => {
         //     return mesh.material.isReady();
         // };
@@ -1869,10 +1885,33 @@ export default class MeshPainter {
         if (!this.pickingFBO || !this.picking) {
             return [];
         }
-        const map = this.getMap();
+        const result = [];
         const uniforms = this._getUniformValues();
-        const picking = this.picking;
-        picking.render(this._i3dmScene.getMeshes().filter(m => !m.bloom), uniforms, true);
+        const b3dm = this._pickMesh(this.picking, uniforms, this._modelScene, x, y, tolerance);
+        if (b3dm) {
+            result.push(b3dm);
+        }
+        const i3dm = this._pickMesh(this.picking, uniforms, this._i3dmScene, x, y, tolerance);
+        if (i3dm) {
+            result.push(i3dm);
+        }
+        const pntsUniforms = this._getPntsUniforms();
+        const pnts = this._pickMesh(this._pntsPicking, pntsUniforms, this._pntsScene, x, y, tolerance);
+        if (pnts) {
+            result.push(pnts);
+        }
+        return result;
+
+    }
+
+    _pickMesh(picking, uniforms, scene, x, y, tolerance) {
+        if (!scene.getMeshes().length) {
+            return null;
+        }
+        const layer = this._layer;
+        const map = this.getMap();
+
+        picking.render(scene.getMeshes().filter(m => !m.bloom), uniforms, true);
         let picked = {};
         if (picking.getRenderedMeshes().length) {
             picked = picking.pick(x, y, tolerance, uniforms, {
@@ -1885,7 +1924,7 @@ export default class MeshPainter {
         const mesh = (meshId === 0 || meshId) && picking.getMeshAt(meshId);
         if (!mesh || !mesh.geometry) {
             //有可能mesh已经被回收，geometry不再存在
-            return [];
+            return null;
         }
         const props = mesh.properties;
         if (point && point.length) {
@@ -1912,14 +1951,12 @@ export default class MeshPainter {
             }
         }
 
-        const result = {
+        return {
             service: mesh.properties.serviceIndex,
             data,
             point,
             coordinate
         };
-        return [result];
-
     }
 
     _getLevelMap(tiles) {

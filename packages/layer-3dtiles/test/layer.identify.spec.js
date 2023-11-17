@@ -8,7 +8,7 @@ const assert = require('assert');
 const startServer = require('./server.js');
 
 const PORT = 39887;
-describe('3dtiles layer', () => {
+describe('3dtiles identify specs', () => {
     let container, map;
     let server;
     before(done => {
@@ -38,8 +38,8 @@ describe('3dtiles layer', () => {
     });
 
     afterEach(() => {
-        // map.remove();
-        // document.body.innerHTML = '';
+        map.remove();
+        document.body.innerHTML = '';
     });
 
     it('can identify b3dm data', done => {
@@ -59,6 +59,7 @@ describe('3dtiles layer', () => {
         setTimeout(() => {
             const hits = layer.identify([-75.61227133361945, 40.04222670592739]);
             assert(hits[0].data.batchId === 8);
+            assert(hits[0].coordinate[0] !== 0);
             done();
         }, 1000);
     });
@@ -81,6 +82,29 @@ describe('3dtiles layer', () => {
             const hits = layer.identify([-75.61309745399603, 40.042169210140145]);
             assert(hits[0].data.batchId === 5);
             assert(hits[0].data.Height === 20);
+            assert(hits[0].coordinate[0] !== 0);
+            done();
+        }, 1000);
+    });
+
+    it('can identify pnts data', done => {
+        const resPath = 'Cesium3DTiles/PointCloud/PointCloudWithPerPointProperties';
+        const layer = new Geo3DTilesLayer('3d-tiles', {
+            services: [{
+                url : `http://localhost:${PORT}/integration/fixtures/${resPath}/tileset.json`,
+                pointSize: 12,
+                opacity: 1
+            }]
+        });
+        layer.on('loadtileset', () => {
+            const extent = layer.getExtent(0);
+            map.fitExtent(extent, 0, { animation: false });
+        });
+        layer.addTo(map);
+        setTimeout(() => {
+            const hits = layer.identify([-75.61209061982572, 40.042528301338535]);
+            assert(hits[0].data.batchId > 0);
+            assert(hits[0].coordinate[0] !== 0);
             done();
         }, 1000);
     });
