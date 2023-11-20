@@ -150,11 +150,7 @@ class TerrainPainter {
         const uniforms = this.getUniformValues();
 
         const fbo = this._getRenderFBO(context);
-        uniforms.cullFace = 'back';
-        uniforms.enableStencil = false;
-        uniforms.colorMask = true;
-        uniforms.depthMask = true;
-
+        this.shader.filter = context && context.sceneFilter;
         renderCount += this.renderer.render(this.shader, uniforms, this._leafScene, fbo);
         return renderCount;
     }
