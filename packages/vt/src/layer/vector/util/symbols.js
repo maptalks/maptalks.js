@@ -211,12 +211,12 @@ export const TEXT_SYMBOL = {
     },
     textDx: {
         type: 'identity',
-        default: null,
+        default: 0,
         property: '_symbol_textDx'
     },
     textDy: {
         type: 'identity',
-        default: null,
+        default: 0,
         property: '_symbol_textDy'
     },
     textOpacity: {
