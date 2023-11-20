@@ -6,12 +6,8 @@ import { EMPTY_TERRAIN_GEO } from './TerrainTileUtil.js';
 import vert from './glsl/terrain.vert';
 import frag from './glsl/terrain.frag';
 
-const FALSE_COLOR_MASK = [false, false, false, false];
-const TRUE_COLOR_MASK = [true, true, true, true];
-
 const V3 = [];
 const SCALE3 = [];
-
 
 class TerrainPainter {
     constructor(layer) {
@@ -219,42 +215,18 @@ class TerrainPainter {
                     return canvas ? canvas.height : 1;
                 }
             },
-            colorMask: (_, props) => {
-                if (props['colorMask'] === false) {
-                    return FALSE_COLOR_MASK;
-                } else {
-                    return TRUE_COLOR_MASK;
-                }
-            },
             stencil: {
-                enable: (_, props) => {
-                    return props.enableStencil;
-                },
-                func: {
-                    cmp: () => {
-                        return '<=';
-                    },
-                    ref: (context, props) => {
-                        return props.stencilRef;
-                    }
-                },
-                op: {
-                    fail: 'keep',
-                    zfail: 'keep',
-                    zpass: 'replace'
-                }
+                enable: false
             },
             cull: {
                 enable: true,
-                face: (_, props) => {
-                    return props['cullFace'];
-                }
+                face: 'back'
             },
             depth: {
                 enable: true,
-                mask: (_, props) => {
+                mask: () => {
                     const depthMask = this.layer.options['depthMask'];
-                    return depthMask && props['depthMask'];
+                    return !!depthMask;
                 },
                 func: this.layer.options['depthFunc'] || '<='
                 // func: (_, props) => {
