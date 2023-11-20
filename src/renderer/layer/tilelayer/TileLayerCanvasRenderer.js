@@ -189,7 +189,7 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
         const loadingLimit = this._getLoadLimit();
 
         const l = tileGrids.length;
-        const isFirstRender = this._tileZoom === undefined;
+        const isFirstRender = this._tileZoom === undefined && !this._terrainHelper;
         // main tile grid is the last one (draws on top)
         this._tileZoom = tileGrids[0]['zoom'];
 
@@ -1268,6 +1268,10 @@ class TileLayerCanvasRenderer extends CanvasRenderer {
             defaultPlaceholder(canvas);
         }
         return canvas;
+    }
+
+    setTerrainHelper(helper) {
+        this._terrainHelper = helper;
     }
 }
 

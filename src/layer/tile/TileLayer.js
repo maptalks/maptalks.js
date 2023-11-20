@@ -1407,5 +1407,5 @@ function distanceToRect(min, max, xyz) {
 
 
 function sortingTiles(t0, t1) {
-    return t1.z - t0.z;
+    return t0.z - t1.z;
 }
