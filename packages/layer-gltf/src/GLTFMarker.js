@@ -1595,6 +1595,9 @@ export default class GLTFMarker extends Marker {
 
     _onEvent(event, type) {
         const layer = this.getLayer();
+        if (!layer) {
+            return;
+        }
         const id = layer.getId();
         this._pickingParams = (event.gltfPickingInfo && event.gltfPickingInfo[id]) || {};
         super['_onEvent'](event, type);

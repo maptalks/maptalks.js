@@ -25,6 +25,7 @@ export default class CrossCutAnalysis extends Analysis {
         this._renderOptions['extentMap'] = extentMap;
         this._renderOptions['projMatrix'] = map.projMatrix;
         this._renderOptions['viewMatrix'] = map.viewMatrix;
+        this._renderOptions['minAltitude'] = 0;
         const line = new maptalks.LineString(this.options.cutLine)
         this._lineExtent = line.getExtent();
     }
@@ -160,7 +161,8 @@ export default class CrossCutAnalysis extends Analysis {
                 mesh.setUniform('uPickingId', 1);
             })
             this._picking.render(meshes, {
-                projViewMatrix
+                projViewMatrix,
+                minAltitude: this._renderOptions['minAltitude']
             }, true);
             this._needRefreshPicking = false;
         }
@@ -169,7 +171,8 @@ export default class CrossCutAnalysis extends Analysis {
             y,  // 屏幕坐标 y轴的值
             options.tolerance || 3,
             {
-                projViewMatrix
+                projViewMatrix,
+                minAltitude: this._renderOptions['minAltitude']
             },
             {
                 viewMatrix,  //viewMatrix和projMatrix用于计算点的世界坐标值

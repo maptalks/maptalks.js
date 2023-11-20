@@ -131,6 +131,62 @@ export const simpleModels = {
             }
         ]
     },
+    'plane-cube': {
+        meshes : [{
+            primitives : [{
+                attributes : {
+                    POSITION : {
+                        array : new Int8Array(plane.vertices)
+                    },
+                    TEXCOORD_0: {
+                        array : new Int8Array(plane.uv)
+                    }
+                },
+                indices : new Uint16Array(plane.indices),
+                mode : 4
+            }]
+        }],
+        scenes : [
+            {
+                nodes : [
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [0, -60, 0]
+                    },
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [0, 60, 0]
+                    },
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [60, 0, 0],
+                        rotation: [0, 0, 0.7071067811865475, 0.7071067811865476]
+                    },
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [-60, 0, 0],
+                        rotation: [0, 0, 0.7071067811865475, 0.7071067811865476]
+                    },
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [0, 0, 60],
+                        rotation: [0.7071067811865475, 0, 0, 0.7071067811865476]
+                    },
+                    {
+                        mesh : 0,
+                        scale: [60, 60, 60],
+                        translation: [0, 0, -60],
+                        rotation: [0.7071067811865475, 0, 0, 0.7071067811865476]
+                    }
+                ]
+            }
+        ]
+    },
     'plane': {
         meshes : [{
             primitives : [{

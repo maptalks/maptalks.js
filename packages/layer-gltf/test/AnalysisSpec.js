@@ -33,7 +33,7 @@ describe('add analysis', () => {
             viewshedAnalysis.addTo(gllayer);
             setTimeout(function() {
                 const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
-                expect(pixelMatch([224, 45, 45, 255, 224, 45, 45, 255, 224, 45, 45, 255, 224, 45, 45, 255], pixel1)).to.be.eql(true);//不可视区域颜色
+                expect(pixelMatch([150, 150, 150, 255, 151, 151, 151, 255, 151, 151, 151, 255, 151, 151, 151, 255], pixel1)).to.be.eql(true);//不可视区域颜色
                 const pixel2 = pickPixel(map, 260, 115, 2, 2);
                 expect(pixelMatch([45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255, 45, 223, 45, 255], pixel2)).to.be.eql(true);//可视区域颜色
                 const vertexCoordinates = viewshedAnalysis.getVertexCoordinates();
@@ -66,6 +66,20 @@ describe('add analysis', () => {
                 scaleZ: 4
             }
         }).addTo(gltflayer);
+
+        function updateFloodAnalysis(floodAnalysis) {
+            const boundary =  [[-0.0002477077744060807,0.00020472131322435416],
+                [-8.199026524380315e-7,-0.00019097568653592134],
+                [0.00031709050745121203,0.00001532787743485642]];
+            floodAnalysis.update('boundary', boundary);
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 2, 2);
+                expect(pixelMatch([75, 136, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
+                const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 45, 2, 2);
+                expect(pixelMatch([147, 147, 147, 255, 148, 148, 148, 255, 146, 146, 146, 255, 146, 146, 146, 255], pixel2)).to.be.eql(true);//非水淹区颜色
+                done();
+            }, 100);
+        }
         marker.on('load', () => {
             const floodAnalysis = new maptalks.FloodAnalysis({
                 waterHeight: 10,
@@ -77,7 +91,7 @@ describe('add analysis', () => {
                 expect(pixelMatch([75, 136, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255, 76, 137, 152, 255], pixel1)).to.be.eql(true);//水淹区颜色
                 const pixel2 = pickPixel(map, map.width / 2, map.height / 2 - 80, 2, 2);
                 expect(pixelMatch([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], pixel2)).to.be.eql(true);//非水淹区颜色
-                done();
+                updateFloodAnalysis(floodAnalysis);
             }, 100);
         });
         gllayer.addTo(map);
@@ -209,7 +223,7 @@ describe('add analysis', () => {
     it('update', done => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const gllayer = new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig });
-        new maptalks.GLTFGeometry(center, {
+        const marker = new maptalks.GLTFGeometry(center, {
             symbol : {
                 url : modelUrl,
                 scaleX: 2,
@@ -217,7 +231,7 @@ describe('add analysis', () => {
                 scaleZ: 2
             }
         }).addTo(gltflayer);
-        const eyePos = [center.x + 0.01, center.y, 0];
+        const eyePos = [center.x + 0.0005, center.y, 0];
         const lookPoint = [center.x, center.y, 0];
         const verticalAngle = 30;
         const horizontalAngle = 20;
@@ -228,17 +242,27 @@ describe('add analysis', () => {
             horizontalAngle
         });
         viewshedAnalysis.addTo(gllayer);
-        setTimeout(() => {
-            viewshedAnalysis.update('eyePos', [center.x - 0.01, center.y + 0.01, 10]);
-            viewshedAnalysis.update('lookPoint', [center.x + 0.01, center.y - 0.01, 0]);
-            viewshedAnalysis.update('verticalAngle', 45);
-            viewshedAnalysis.update('horizontalAngle', 30);
-            setTimeout(function() {
-                testColor();
+        marker.on('load', () => {
+            setTimeout(() => {
+                testColorBefore();
+                viewshedAnalysis.update('eyePos', [center.x - 0.0005, center.y + 0.0005, 10]);
+                viewshedAnalysis.update('lookPoint', [center.x + 0.0005, center.y - 0.0005, 0]);
+                viewshedAnalysis.update('verticalAngle', 60);
+                viewshedAnalysis.update('horizontalAngle', 30);
+                setTimeout(function() {
+                    testColorAfter();
+                }, 100);
             }, 100);
-        }, 100);
+        })
 
-        function testColor() {
+        function testColorBefore() {
+            const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//不可视区域的颜色
+            const pixel2 = pickPixel(map, 120, 80, 1, 1);//可视区域颜色
+            expect(pixelMatch([45, 224, 45, 255], pixel1)).to.be.eql(true);
+            expect(pixelMatch([0, 0, 0, 0], pixel2)).to.be.eql(true);
+        }
+
+        function testColorAfter() {
             const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//不可视区域的颜色
             const pixel2 = pickPixel(map, 120, 80, 1, 1);//可视区域颜色
             expect(pixelMatch([204, 204, 25, 255], pixel1)).to.be.eql(true);
@@ -335,7 +359,7 @@ describe('add analysis', () => {
             viewshedAnalysis.addTo(gllayer);
             viewshedAnalysis.enable();
             setTimeout(() => {
-                const pixel = pickPixel(map, map.width / 2, map.height / 2, 1, 1);//enable后的颜色
+                const pixel = pickPixel(map, map.width / 2 + 10, map.height / 2, 1, 1);//enable后的颜色
                 expect(pixelMatch([224, 45, 45, 255], pixel)).to.be.eql(true);
                 viewshedAnalysis.disable();
                 setTimeout(function() {
@@ -368,9 +392,16 @@ describe('add analysis', () => {
             }).addTo(gllayer);
             crosscutAnalysis.addTo(gllayer);
             setTimeout(function() {
-                crosscutAnalysis.update('cutLine', [[ -0.00084, 0.00082],
-                    [-0.001355, 0.0000960],
-                    [-0.00042, -0.00057]]);
+                const coords =  [[-0.0002477077744060807,0.00020472131322435416],
+                    [-8.199026524380315e-7,-0.00019097568653592134],
+                    [0.00031709050745121203,0.00001532787743485642]];
+                crosscutAnalysis.update('cutLine', coords);
+                const results = crosscutAnalysis.getAltitudes(10);
+                expect(results.length).to.be.eql(10);
+                for (let i = 0; i < results.length; i++) {
+                    expect(results[i].coordinate).to.be.ok();
+                    expect(results[i].distance !== undefined).to.be.ok();
+                }
                 done();
             }, 500);
         });

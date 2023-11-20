@@ -78,11 +78,7 @@ export default class AnalysisPass {
 
     _getDepthMapSize(horizontalAngle, verticalAngle) {
         if (this._validViewport(horizontalAngle, verticalAngle)) {
-            if (horizontalAngle >= verticalAngle) {
-                return { width: RESOLUTION, height: RESOLUTION * verticalAngle / horizontalAngle };
-            } else {
-                return { width: RESOLUTION * horizontalAngle / verticalAngle, height: RESOLUTION };
-            }
+            return { width: RESOLUTION, height: RESOLUTION};
         }
         return null;
     }
