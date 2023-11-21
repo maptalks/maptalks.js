@@ -1387,6 +1387,7 @@ const preset4326 = {
 }
 
 maptalks.SpatialReference.registerPreset('preset-vt-4326', preset4326);
+maptalks.SpatialReference.registerPreset('preset-4326-512', preset4326);
 
 // const preset3857 = {
 //     'projection': 'EPSG:3857',
