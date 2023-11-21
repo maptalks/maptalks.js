@@ -436,6 +436,11 @@ export default class GroupGLLayer extends maptalks.Layer {
             if (isMapGeometryEvent && (geometryEvents === undefined || geometryEvents === false || geometryEvents === 0)) {
                 continue;
             }
+            if (layer.isGeometryListening && isMapGeometryEvent && options.eventTypes.indexOf('mousemove') >= 0) {
+                if (!layer.isGeometryListening(options.eventTypes)) {
+                    continue;
+                }
+            }
             let picks = layer.identifyAtPoint(point, options);
             if (!picks || !picks.length) {
                 continue;
