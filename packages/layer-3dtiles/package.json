@@ -1,6 +1,6 @@
 {
   "name": "@maptalks/3dtiles",
-  "version": "0.92.0",
+  "version": "0.93.0",
   "description": "3d tiles layer for maptalks",
   "main": "dist/maptalks.3dtiles.js",
   "module": "dist/maptalks.3dtiles.es.js",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/fuzhenn/3dtiles-issues/",
   "dependencies": {
-    "@maptalks/gltf-loader": "^0.92.0",
+    "@maptalks/gltf-loader": "^0.93.0",
     "@maptalks/tbn-packer": "^1.4.5",
     "frustum-intersects": "^0.2.2",
     "gl-matrix": "^2.6.1",
@@ -44,10 +44,10 @@
     "parse-dds": "^1.2.1"
   },
   "devDependencies": {
-    "@maptalks/gl": "^0.92.0",
-    "@maptalks/transcoders.crn": "^0.92.0",
-    "@maptalks/transcoders.draco": "^0.92.0",
-    "@maptalks/transcoders.ktx2": "^0.92.0",
+    "@maptalks/gl": "^0.93.0",
+    "@maptalks/transcoders.crn": "^0.93.0",
+    "@maptalks/transcoders.draco": "^0.93.0",
+    "@maptalks/transcoders.ktx2": "^0.93.0",
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "4.0.0",
