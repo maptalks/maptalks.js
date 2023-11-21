@@ -200,6 +200,8 @@ const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
     'textFill': 1,
     'textSize': 1,
     'textOpacity': 1,
+    'textDx': 1,
+    'textDy': 1,
     'markerWidth': 1,
     'markerHeight': 1,
     'markerOpacity': 1,

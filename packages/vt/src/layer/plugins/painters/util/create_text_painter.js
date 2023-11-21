@@ -484,8 +484,11 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_TEXT_DX',
             type: Uint8Array,
             width: 1,
-            evaluate: properties => {
-                const x = textDxFn(map.getZoom(), properties);
+            evaluate: (properties, geometry) => {
+                let x = textDxFn(map.getZoom(), properties);
+                if (isFunctionDefinition(x)) {
+                    x = this.evaluateInFnTypeConfig(x, geometry, map, properties);
+                }
                 u8[0] = x;
                 return u8[0];
             }
@@ -496,8 +499,11 @@ export function getTextFnTypeConfig(map, symbolDef) {
             define: 'HAS_TEXT_DY',
             type: Uint8Array,
             width: 1,
-            evaluate: properties => {
-                const y = textDyFn(map.getZoom(), properties);
+            evaluate: (properties, geometry) => {
+                let y = textDyFn(map.getZoom(), properties);
+                if (isFunctionDefinition(y)) {
+                    y = this.evaluateInFnTypeConfig(y, geometry, map, properties);
+                }
                 u8[0] = y;
                 return u8[0];
             }
