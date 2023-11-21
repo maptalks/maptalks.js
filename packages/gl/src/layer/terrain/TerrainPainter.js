@@ -69,17 +69,10 @@ class TerrainPainter {
             const emptyTexture = this.getEmptyTexture();
             mesh.setUniform('skin', emptyTexture);
         }
-        if (!hasOwn(mesh.uniforms, 'minAltitude')) {
-            Object.defineProperty(mesh.uniforms, 'minAltitude', {
-                enumerable: true,
-                get: () => {
-                    return terrainImage.minAltitude || 0;
-                }
-            });
-        }
+
         mesh.setUniform('heightTexture', heightTexture);
         this._updateMaskDefines(mesh);
-        this.prepareMesh(mesh, tileInfo, terrainGeo);
+        this.prepareMesh(mesh, tileInfo, terrainImage);
         return mesh;
     }
 
@@ -114,7 +107,8 @@ class TerrainPainter {
         return localTransform;
     }
 
-    prepareMesh(mesh, tileInfo, terrainGeo) {
+    prepareMesh(mesh, tileInfo, terrainImage) {
+        const { mesh: terrainGeo } = terrainImage;
         const { triangles, numTrianglesWithoutSkirts, terrainWidth } = terrainGeo;
         mesh.localTransform = this._getLocalTransform(mesh.localTransform || [], tileInfo, terrainWidth);
         mesh.positionMatrix = this._getPositionMatrix(mesh.positionMatrix || []);
@@ -125,6 +119,14 @@ class TerrainPainter {
         mesh.properties.maxHeight = terrainGeo.maxHeight;
         mesh.properties.terrainWidth = terrainWidth;
         mesh.castShadow = false;
+        if (!hasOwn(mesh.uniforms, 'minAltitude')) {
+            Object.defineProperty(mesh.uniforms, 'minAltitude', {
+                enumerable: true,
+                get: () => {
+                    return terrainImage.minAltitude || 0;
+                }
+            });
+        }
     }
 
     addTerrainImage(tileInfo, tileImage) {
