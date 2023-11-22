@@ -1,0 +1,19 @@
+{
+  "distancetool": {
+    "start": "起点",
+    "units": {
+      "mile": " 米",
+      "feet": " 公里",
+      "kilometer": " 英尺",
+      "meter": " 英里"
+    }
+  },
+  "areatool": {
+    "units": {
+      "mile": " 平方英里",
+      "feet": " 平方英尺",
+      "kilometer": " 平方公里",
+      "meter": " 平方米"
+    }
+  }
+}
