@@ -50,7 +50,7 @@ Geometry.include({
     }
 });
 
-function _computePrjExtent() {
+function _computePrjExtentForRotated() {
     const coord = this._getPrjShell();
     const bbox = getDefaultBBOX();
     //cal all points center
@@ -65,11 +65,11 @@ const el = {
     _redrawWhenRotate: function () {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
-    _computePrjExtent,
+    _computePrjExtentForRotated,
 
     _paintAsPath: function () {
         //why? when rotate need draw by path
-        if (isNumber(this._angle) && this._pivot) {
+        if (this.isRotated()) {
             return true;
         }
         const map = this.getMap();
@@ -120,7 +120,7 @@ Rectangle.include({
     },
 
     _paintOn: Canvas.polygon,
-    _computePrjExtent
+    _computePrjExtentForRotated
 });
 //----------------------------------------------------
 Sector.include(el, {

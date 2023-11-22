@@ -1021,6 +1021,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         return rotatePrjCoordinates[0];
     }
 
+    isRotated() {
+        return isNumber(this._angle) && this._pivot;
+    }
+
     /**
      * Get the connect points for [ConnectorLine]{@link ConnectorLine}
      * @return {Coordinate[]} connect points
@@ -1128,7 +1132,11 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const p = this._getProjection();
         this._verifyProjection();
         if (!this._extent && p) {
-            this._extent = this._computePrjExtent(p);
+            if (this.isRotated() && this._computePrjExtentForRotated) {
+                this._extent = this._computePrjExtentForRotated(p);
+            } else {
+                this._extent = this._computePrjExtent(p);
+            }
         }
         return this._extent;
     }
