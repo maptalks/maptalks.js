@@ -123,9 +123,15 @@ class Rectangle extends Polygon {
         }
         const points = [];
         points.push(nw);
-        points.push(measurer.locate(nw, sx * this._width, 0));
-        points.push(measurer.locate(nw, sx * this._width, sy * this._height));
-        points.push(measurer.locate(nw, 0, sy * this._height));
+        const p0 = measurer.locate(nw, sx * this._width, 0);
+        p0.z = nw.z;
+        points.push(p0);
+        const p1 = measurer.locate(nw, sx * this._width, sy * this._height);
+        p1.z = nw.z;
+        points.push(p1);
+        const p2 = measurer.locate(nw, 0, sy * this._height);
+        points.push(p2);
+        p2.z = nw.z;
         points.push(nw);
         return points;
 

@@ -90,6 +90,25 @@ describe('#Sector', function () {
         expect(shell[shell.length - 2].x).to.be.approx(0, 1E-3);
     });
 
+    it('getShell with altitude', function () {
+        var sector = new maptalks.Sector({ x: 0, y: 0, z: 100 }, 1000, 0, 90);
+        var shell = sector.getShell();
+
+        expect(shell).to.have.length(sector.options.numberOfShellPoints);
+        var num = sector.options.numberOfShellPoints;
+        expect(shell).to.have.length(num);
+        expect(map.computeLength(shell[1], [0, 0,])).to.be.approx(sector.getRadius(), 1E-5);
+        expect(shell[1].x).to.be.above(0);
+        expect(shell[1].y).to.be.eql(0);
+
+        expect(map.computeLength(shell[shell.length - 2], [0, 0])).to.be.approx(sector.getRadius(), 1E-5);
+        expect(shell[shell.length - 2].y).to.be.above(0);
+        expect(shell[shell.length - 2].x).to.be.approx(0, 1E-3);
+
+        expect(shell[shell.length - 2].z).to.be.eql(100);
+        expect(shell[1].z).to.be.eql(100);
+    });
+
     describe('geometry fires events', function () {
         it('canvas events', function () {
             var vector = new maptalks.Sector(center, 1, 0, 270);

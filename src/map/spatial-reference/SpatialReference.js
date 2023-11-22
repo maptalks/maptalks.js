@@ -94,10 +94,29 @@ const DefaultSpatialReference = {
             'bottom': -6378137 * Math.PI,
             'right': 6378137 * Math.PI
         }
+    },
+
+    'PRESET-VT-4326': {
+        'projection': 'EPSG:4326',
+        'fullExtent': {
+            'top': 90,
+            'left': -180,
+            'bottom': -90,
+            'right': 180
+        },
+        'resolutions': (function () {
+            const resolutions = [];
+            for (let i = 0; i < MAX_ZOOM; i++) {
+                resolutions[i] = 180 / 4 / (Math.pow(2, i) * 128);
+            }
+            return resolutions;
+        })()
     }
 };
 
 DefaultSpatialReference['EPSG:4490'] = DefaultSpatialReference['EPSG:4326'];
+DefaultSpatialReference['PRESET-3857-512'] = DefaultSpatialReference['PRESET-VT-3857'];
+DefaultSpatialReference['PRESET-4326-512'] = DefaultSpatialReference['PRESET-VT-4326'];
 
 export default class SpatialReference {
     constructor(options = {}) {
@@ -108,7 +127,7 @@ export default class SpatialReference {
     static registerPreset(name, value) {
         name = name && name.toUpperCase();
         if (DefaultSpatialReference[name]) {
-            throw new Error(`Spatial reference ${name} already existed.`);
+            console.warn(`Spatial reference ${name} already registered.`);
         }
         DefaultSpatialReference[name] = value;
     }

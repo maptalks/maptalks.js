@@ -145,7 +145,7 @@ const options = {
     'tileLimitPerFrame': 0,
 
     'tileStackStartDepth': 7,
-    'tileStackDepth': 5,
+    'tileStackDepth': 6,
 
     'awareOfTerrain': true,
     'bufferPixel': 0.5,
@@ -854,11 +854,12 @@ class TileLayer extends Layer {
     }
 
     getMinZoom() {
+        const minZoom = this.options['minZoom'] || 0;
         const sr = this.getSpatialReference();
         if (sr !== this.getMap().getSpatialReference()) {
-            return Math.max(super.getMinZoom(), this._srMinZoom);
+            return Math.max(minZoom, this._srMinZoom);
         }
-        return super.getMinZoom();
+        return minZoom;
     }
 
     getMaxZoom() {
