@@ -9,7 +9,8 @@ import Rectangle from '../../geometry/Rectangle';
 import Path from '../../geometry/Path';
 import LineString from '../../geometry/LineString';
 import Polygon from '../../geometry/Polygon';
-import { BBOX_TEMP, pointsBBOX, resetBBOX } from '../../core/util/bbox';
+import { BBOX_TEMP, getDefaultBBOX, pointsBBOX, resetBBOX } from '../../core/util/bbox';
+import Extent from '../../geo/Extent';
 
 const TEMP_WITHIN = {
     within: false,
@@ -49,20 +50,32 @@ Geometry.include({
     }
 });
 
+function _computePrjExtent() {
+    const coord = this._getPrjShell();
+    const bbox = getDefaultBBOX();
+    //cal all points center
+    pointsBBOX(coord, bbox);
+    const [minx, miny, maxx, maxy] = bbox;
+    return new Extent(minx, miny, maxx, maxy);
+}
+
 const el = {
     _redrawWhenPitch: () => true,
 
     _redrawWhenRotate: function () {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
+    _computePrjExtent,
 
     _paintAsPath: function () {
         //why? when rotate need draw by path
-        // const map = this.getMap();
-        // const altitude = this._getAltitude();
+        if (isNumber(this._angle) && this._pivot) {
+            return true;
+        }
+        const map = this.getMap();
+        const altitude = this._getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
-        // return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
-        return true;
+        return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
     },
 
     _getPaintParams() {
@@ -106,7 +119,8 @@ Rectangle.include({
         return [points];
     },
 
-    _paintOn: Canvas.polygon
+    _paintOn: Canvas.polygon,
+    _computePrjExtent
 });
 //----------------------------------------------------
 Sector.include(el, {

@@ -25,6 +25,7 @@ import Painter from '../renderer/geometry/Painter';
 import CollectionPainter from '../renderer/geometry/CollectionPainter';
 import SpatialReference from '../map/spatial-reference/SpatialReference';
 import { isFunctionDefinition } from '../core/mapbox';
+import { getDefaultBBOX, pointsBBOX } from '../core/util/bbox';
 
 const TEMP_POINT0 = new Point(0, 0);
 const TEMP_EXTENT = new PointExtent();
@@ -966,16 +967,17 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
     }
 
     _rotatePrjCoordinates(coordinates) {
-        if (!coordinates) {
+        if (!coordinates || this._angle === 0 || !this._pivot) {
             return coordinates;
         }
-        if (this._angle === 0 || !this._pivot) {
+        const projection = this._getProjection();
+        if (!projection) {
             return coordinates;
         }
         let offsetAngle = 0;
         const isArray = Array.isArray(coordinates);
         const coord = isArray ? coordinates : [coordinates];
-        const rotetePrjCoordinates = [];
+        const rotatePrjCoordinates = [];
         let cx, cy;
         //sector is special
         if (this.getRotateOffsetAngle) {
@@ -984,16 +986,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             cx = center.x;
             cy = center.y;
         } else {
-            let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+            const bbox = getDefaultBBOX();
             //cal all points center
-            for (let i = 0, len = coord.length; i < len; i++) {
-                const c = coord[i];
-                const { x, y } = c;
-                minx = Math.min(x, minx);
-                miny = Math.min(y, miny);
-                maxx = Math.max(x, maxx);
-                maxy = Math.max(y, maxy);
-            }
+            pointsBBOX(coord, bbox);
+            const [minx, miny, maxx, maxy] = bbox;
             cx = (minx + maxx) / 2;
             cy = (miny + maxy) / 2;
         }
@@ -1007,23 +1003,22 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
             const rad = (sAngle - this._angle + offsetAngle) / 180 * Math.PI;
             const rx = Math.cos(rad) * r, ry = Math.sin(rad) * r;
             const rc = new Coordinate(cx + rx, cy + ry);
-            rotetePrjCoordinates.push(rc);
+            rotatePrjCoordinates.push(rc);
         }
-        const projection = this._getProjection();
         const prjCenter = projection.project(this._pivot);
         const rx = prjCenter.x, ry = prjCenter.y;
         //translate rotate center
         const translateX = cx - rx, translateY = cy - ry;
         //平移到指定的选中中心点
-        for (let i = 0, len = rotetePrjCoordinates.length; i < len; i++) {
-            const c = rotetePrjCoordinates[i];
+        for (let i = 0, len = rotatePrjCoordinates.length; i < len; i++) {
+            const c = rotatePrjCoordinates[i];
             c.x -= translateX;
             c.y -= translateY;
         }
         if (isArray) {
-            return rotetePrjCoordinates;
+            return rotatePrjCoordinates;
         }
-        return rotetePrjCoordinates[0];
+        return rotatePrjCoordinates[0];
     }
 
     /**
