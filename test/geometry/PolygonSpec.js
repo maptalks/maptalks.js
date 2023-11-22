@@ -432,7 +432,7 @@ describe('Geometry.Polygon', function () {
     });
 
 
-    it('polygon subtype geometry rotate', function (done) {
+    it('polygon sub geometries(Rectange/Ellipse/Sector) rotate', function (done) {
         layer.config('drawImmediate', true);
         layer.clear();
         map.config({ centerCross: true });
