@@ -122,6 +122,11 @@ class Ellipse extends CenterMixin(Polygon) {
         return shell;
     }
 
+    _getPrjShell() {
+        const shell = super._getPrjShell();
+        return this._rotatePrjCoordinates(shell);
+    }
+
     /**
      * Ellipse won't have any holes, always returns null
      * @return {Object[]} an empty array

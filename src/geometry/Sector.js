@@ -108,6 +108,15 @@ class Sector extends Circle {
         return shell;
     }
 
+    getRotateOffsetAngle() {
+        return 90;
+    }
+
+    _getPrjShell() {
+        const shell = super._getPrjShell();
+        return this._rotatePrjCoordinates(shell);
+    }
+
     _containsPoint(point, tolerance) {
         const map = this.getMap();
         if (map.isTransforming()) {

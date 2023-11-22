@@ -57,10 +57,12 @@ const el = {
     },
 
     _paintAsPath: function () {
-        const map = this.getMap();
-        const altitude = this._getAltitude();
+        //why? when rotate need draw by path
+        // const map = this.getMap();
+        // const altitude = this._getAltitude();
         // when map is tilting, draw the circle/ellipse as a polygon by vertexes.
-        return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
+        // return altitude > 0 || map.getPitch() || ((this instanceof Ellipse) && map.getBearing());
+        return true;
     },
 
     _getPaintParams() {

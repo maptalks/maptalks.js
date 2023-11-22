@@ -169,7 +169,8 @@ class Rectangle extends Polygon {
         const shell = super._getPrjShell();
         const projection = this._getProjection();
         if (!projection.isSphere()) {
-            return shell;
+            // return shell;
+            return this._rotatePrjCoordinates(shell);
         }
         const sphereExtent = projection.getSphereExtent(),
             sx = sphereExtent.sx,
@@ -187,7 +188,8 @@ class Rectangle extends Polygon {
             }
             shell[i]._add(dx, dy);
         }
-        return shell;
+        return this._rotatePrjCoordinates(shell);
+        // return shell;
     }
 
     //update cached variables if geometry is updated.

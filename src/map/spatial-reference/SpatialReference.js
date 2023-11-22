@@ -127,7 +127,9 @@ export default class SpatialReference {
     static registerPreset(name, value) {
         name = name && name.toUpperCase();
         if (DefaultSpatialReference[name]) {
-            throw new Error(`Spatial reference ${name} already existed.`);
+            console.warn(`Spatial reference ${name} already existed.`);
+            return;
+            // throw new Error(`Spatial reference ${name} already existed.`);
         }
         DefaultSpatialReference[name] = value;
     }

@@ -929,6 +929,10 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
      * @returns {Geometry} this
      */
     rotate(angle, pivot) {
+        if (!isNumber(angle)) {
+            console.error(`angle:${angle} is not number`);
+            return this;
+        }
         if (this.type === 'GeometryCollection') {
             const geometries = this.getGeometries();
             geometries.forEach(g => g.rotate(angle, pivot));
@@ -939,12 +943,18 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         } else {
             pivot = new Coordinate(pivot);
         }
+        this._angle = angle;
+        this._pivot = pivot;
         const measurer = this._getMeasurer();
         const coordinates = this.getCoordinates();
         if (!Array.isArray(coordinates)) {
-            if (pivot.x !== coordinates.x || pivot.y !== coordinates.y) {
+            //exclude Rectangle ,Ellipse,Sector by shell judge
+            if ((pivot.x !== coordinates.x || pivot.y !== coordinates.y) && !this.getShell) {
                 const c = measurer._rotate(coordinates, pivot, angle);
                 this.setCoordinates(c);
+            } else {
+                //only redraw ,not to change coordinate
+                this.onPositionChanged();
             }
             return this;
         }
@@ -953,6 +963,67 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         });
         this.setCoordinates(coordinates);
         return this;
+    }
+
+    _rotatePrjCoordinates(coordinates) {
+        if (!coordinates) {
+            return coordinates;
+        }
+        if (this._angle === 0 || !this._pivot) {
+            return coordinates;
+        }
+        let offsetAngle = 0;
+        const isArray = Array.isArray(coordinates);
+        const coord = isArray ? coordinates : [coordinates];
+        const rotetePrjCoordinates = [];
+        let cx, cy;
+        //sector is special
+        if (this.getRotateOffsetAngle) {
+            offsetAngle = this.getRotateOffsetAngle();
+            const center = coord[coord.length - 1];
+            cx = center.x;
+            cy = center.y;
+        } else {
+            let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+            //cal all points center
+            for (let i = 0, len = coord.length; i < len; i++) {
+                const c = coord[i];
+                const { x, y } = c;
+                minx = Math.min(x, minx);
+                miny = Math.min(y, miny);
+                maxx = Math.max(x, maxx);
+                maxy = Math.max(y, maxy);
+            }
+            cx = (minx + maxx) / 2;
+            cy = (miny + maxy) / 2;
+        }
+        //图形按照自身的几何中心旋转
+        for (let i = 0, len = coord.length; i < len; i++) {
+            const c = coord[i];
+            const { x, y } = c;
+            const dx = x - cx, dy = y - cy;
+            const r = Math.sqrt(dx * dx + dy * dy);
+            const sAngle = getSegmentAngle(cx, cy, x, y);
+            const rad = (sAngle - this._angle + offsetAngle) / 180 * Math.PI;
+            const rx = Math.cos(rad) * r, ry = Math.sin(rad) * r;
+            const rc = new Coordinate(cx + rx, cy + ry);
+            rotetePrjCoordinates.push(rc);
+        }
+        const projection = this._getProjection();
+        const prjCenter = projection.project(this._pivot);
+        const rx = prjCenter.x, ry = prjCenter.y;
+        //translate rotate center
+        const translateX = cx - rx, translateY = cy - ry;
+        //平移到指定的选中中心点
+        for (let i = 0, len = rotetePrjCoordinates.length; i < len; i++) {
+            const c = rotetePrjCoordinates[i];
+            c.x -= translateX;
+            c.y -= translateY;
+        }
+        if (isArray) {
+            return rotetePrjCoordinates;
+        }
+        return rotetePrjCoordinates[0];
     }
 
     /**
@@ -1557,7 +1628,7 @@ function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
         coordinatesHasAlt(coordinates, tempAlts);
         if (tempAlts.length) {
             const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
-            if (geometry.getShell) {
+            if (geometry.getShell && Array.isArray(alts[0])) {
                 return alts[0][0];
             }
             return alts;
@@ -1604,6 +1675,21 @@ function getCoordinatesAlts(coordinates, layerAlt, enableAltitude) {
     } else {
         return 0;
     }
+}
+
+function getSegmentAngle(cx, cy, x, y) {
+    if (cx === x) {
+        if (y > cy) {
+            return -90;
+        }
+        return 90;
+    }
+    x -= cx;
+    y -= cy;
+    //经纬坐标系和屏幕坐标正好相反,经纬度向上递增,而屏幕坐标递减
+    y = -y;
+    const rad = Math.atan2(y, x);
+    return rad / Math.PI * 180;
 }
 
 export default Geometry;
