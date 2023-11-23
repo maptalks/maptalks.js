@@ -1,5 +1,5 @@
 import * as maptalks from 'maptalks';
-import { mat4 } from 'gl-matrix';
+import { vec2, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
@@ -12,6 +12,14 @@ const DEFAULT_TEX_SCALE = [1, 1];
 
 const COORD0 = new maptalks.Coordinate(0, 0);
 const COORD1 = new maptalks.Coordinate(0, 0);
+
+const ARR2_0 = [];
+const ARR2_1 = [];
+const ARR2_2 = [];
+const ARR2_3 = [];
+const ARR2_4 = [];
+const ARR2_5 = [];
+const ARR2_6 = [];
 
 class GroundPainter {
     static getGroundTransform(out, map) {
@@ -377,18 +385,33 @@ class GroundPainter {
 
         const pointOrigin = patternOrigin ? COORD0 : null;
 
+        // compute uv offset
+        let uvOffset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
+        uvOffset = vec2.copy(ARR2_0, uvOffset);
+        if (uvOffset[0]) {
+            uvOffset[0] = this._meterToPoint(uvOffset[0], pointOrigin);
+        }
+        if (uvOffset[1]) {
+            uvOffset[1] = this._meterToPoint(uvOffset[1], pointOrigin, 1);
+        }
+
+        // compute uv scale
+        const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
+
         let texWidth = 0.5;
         const patternWidth = this.material ? this.material.get('textureWidth') : symbol.polygonPatternFileWidth;
         if (patternWidth) {
             texWidth = this._meterToPoint(patternWidth, pointOrigin);
         }
-        let texHeight = texWidth / texAspect;
 
-        const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
+        texWidth *= scale[0];
+
+        let texHeight = texWidth / texAspect;
         const patternHeight = this.material ? patternWidth * (scale[1] / scale[0]) : symbol.polygonPatternFileHeight;
         if (patternHeight) {
             texHeight = this._meterToPoint(patternHeight, pointOrigin, 1);
         }
+        texHeight *= scale[1];
 
         // 乘以2是因为plane的大小是extent的2倍
         const scaleX = extent.getWidth() * 2 / texWidth;
@@ -396,19 +419,15 @@ class GroundPainter {
 
         if (!this.material) {
             // fill
-            this._ground.setUniform('uvScale', [scaleX, scaleY]);
-            this._ground.setUniform('uvOffset', [(xmin / texWidth) % 1, (ymin / texHeight) % 1]);
+            this._ground.setUniform('uvScale', vec2.set(ARR2_1, scaleX, scaleY));
+            this._ground.setUniform('uvOffset', vec2.set(ARR2_2, ((xmin + uvOffset[0]) / texWidth) % 1, ((ymin - uvOffset[1]) / texHeight) % 1));
             return;
         }
 
-        let offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
-        offset[0] = this._meterToPoint(offset[0] || 0, pointOrigin);
-        offset[1] = this._meterToPoint(offset[1] || 0, pointOrigin, 1);
         const uvOffsetAnim = this._getUVOffsetAnim();
         const hasNoise = this.material && this.material.get('noiseTexture');
         const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
         if (hasUVAnim) {
-            offset = [offset[0], offset[1]];
             const timeStamp = performance.now() / 1000;
             // 256 是noiseTexture的高宽，乘以256可以保证动画首尾平滑过渡，不会出现跳跃
             // const speed = hasNoise ? 50000 : 1000;
@@ -416,37 +435,35 @@ class GroundPainter {
             const animX = -this._meterToPoint(uvOffsetAnim[0], pointOrigin);
             const animY = -this._meterToPoint(uvOffsetAnim[1], pointOrigin, 1);
             if (uvOffsetAnim[0]) {
-                offset[0] = timeStamp * animX;
+                uvOffset[0] = timeStamp * animX;
             }
             if (uvOffsetAnim[1]) {
-                offset[1] = timeStamp * animY;
+                uvOffset[1] = timeStamp * animY;
             }
         }
 
-        this._ground.setUniform('uvScale', [scaleX, scaleY]);
+        this._ground.setUniform('uvScale', vec2.set(ARR2_6, scaleX, scaleY));
         if (hasUVAnim && hasNoise) {
             // 打开纹理随机分布时，地面的uv动画通过把offset值计入uvOrigin来实现的
-            const origin = [xmin + (uvOffsetAnim[0] ? offset[0] : 0), ymin - (uvOffsetAnim[1] ? offset[1] : 0)];
+            const origin = vec2.set(ARR2_3, xmin + (uvOffsetAnim[0] ? uvOffset[0] : 0), ymin - (uvOffsetAnim[1] ? uvOffset[1] : 0));
             const uvStartX = (origin[0] / texWidth) % 1;
             const uvStartY = (origin[1] / texHeight) % 1;
-            const uvOrigin = [origin[0] / texWidth - uvStartX, origin[1] / texHeight - uvStartY];
+            const uvOrigin = vec2.set(ARR2_4, origin[0] / texWidth - uvStartX, origin[1] / texHeight - uvStartY);
             // 如果坐标轴上有uvOffsetAnim，则把offset设为0，因为origin中已经计入了offset
             // 如果没有uvOffsetAnim，则直接采用uvOffset的值
-            this._ground.setUniform('uvOffset', [
-                uvStartX + (uvOffsetAnim[0] ? 0 : offset[0]),
-                uvStartY + (uvOffsetAnim[1] ? 0 : offset[1])
-            ]);
+            this._ground.setUniform('uvOffset', vec2.set(ARR2_5,
+                uvStartX + (uvOffsetAnim[0] ? 0 : uvOffset[0]),
+                uvStartY + (uvOffsetAnim[1] ? 0 : uvOffset[1])
+            ));
             this._ground.setUniform('uvOrigin', uvOrigin);
         } else {
-            const uvOriginX = ((xmin + offset[0]) / texWidth);
-            const uvOriginY = ((ymin - offset[1]) / texWidth);
-            this._ground.setUniform('uvOffset', [
+            const uvOriginX = ((xmin + uvOffset[0]) / texWidth);
+            const uvOriginY = ((ymin - uvOffset[1]) / texHeight);
+            this._ground.setUniform('uvOffset', vec2.set(ARR2_3,
                 uvOriginX % 1,
                 uvOriginY % 1
-            ]);
-            // this._ground.setUniform('uvOrigin', [0, 0]);
-            const uvOrigin = [uvOriginX - (uvOriginX % 1),  uvOriginY - (uvOriginY % 1)];
-            this._ground.setUniform('uvOrigin', uvOrigin);
+            ));
+            this._ground.setUniform('uvOrigin', vec2.set(ARR2_4, uvOriginX - (uvOriginX % 1),  uvOriginY - (uvOriginY % 1)));
         }
 
     }
