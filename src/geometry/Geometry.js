@@ -1132,11 +1132,7 @@ class Geometry extends JSONAble(Eventable(Handlerable(Class))) {
         const p = this._getProjection();
         this._verifyProjection();
         if (!this._extent && p) {
-            if (this.isRotated() && this._computePrjExtentForRotated) {
-                this._extent = this._computePrjExtentForRotated(p);
-            } else {
-                this._extent = this._computePrjExtent(p);
-            }
+            this._extent = this._computePrjExtent(p);
         }
         return this._extent;
     }

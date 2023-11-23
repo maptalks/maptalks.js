@@ -88,6 +88,13 @@ class Sector extends Circle {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
+        if (this.isRotated()) {
+            return this.getRotatedShell();
+        }
+        return this._getShell();
+    }
+
+    _getShell() {
         const measurer = this._getMeasurer(),
             center = this.getCoordinates(),
             numberOfPoints = this.options['numberOfShellPoints'] - 2,
@@ -115,6 +122,13 @@ class Sector extends Circle {
     _getPrjShell() {
         const shell = super._getPrjShell();
         return this._rotatePrjCoordinates(shell);
+    }
+
+    _computePrjExtent() {
+        if (this.isRotated()) {
+            return this._computeRotatedPrjExtent();
+        }
+        return super._computePrjExtent();
     }
 
     _containsPoint(point, tolerance) {

@@ -107,6 +107,13 @@ class Rectangle extends Polygon {
      * @return {Coordinate[]} - shell coordinates
      */
     getShell() {
+        if (this.isRotated()) {
+            return this.getRotatedShell();
+        }
+        return this._getShell();
+    }
+
+    _getShell() {
         const measurer = this._getMeasurer();
         const nw = this._coordinates;
         const map = this.getMap();
@@ -223,6 +230,9 @@ class Rectangle extends Polygon {
     }
 
     _computePrjExtent(projection) {
+        if (this.isRotated()) {
+            return this._computeRotatedPrjExtent();
+        }
         const se = this._getSouthEast(projection);
         if (!se) {
             return null;

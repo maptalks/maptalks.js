@@ -50,7 +50,7 @@ Geometry.include({
     }
 });
 
-function _computePrjExtentForRotated() {
+function _computeRotatedPrjExtent() {
     const coord = this._getPrjShell();
     const bbox = getDefaultBBOX();
     //cal all points center
@@ -59,13 +59,25 @@ function _computePrjExtentForRotated() {
     return new Extent(minx, miny, maxx, maxy);
 }
 
+function getRotatedShell() {
+    const prjs = this._getPrjShell();
+    if (!prjs || !Array.isArray(prjs)) {
+        return [];
+    }
+    const projection = this._getProjection();
+    return prjs.map(prj => {
+        return projection.unproject(prj);
+    });
+}
+
 const el = {
     _redrawWhenPitch: () => true,
 
     _redrawWhenRotate: function () {
         return (this instanceof Ellipse) || (this instanceof Sector);
     },
-    _computePrjExtentForRotated,
+    _computeRotatedPrjExtent,
+    getRotatedShell,
 
     _paintAsPath: function () {
         //why? when rotate need draw by path
@@ -120,7 +132,8 @@ Rectangle.include({
     },
 
     _paintOn: Canvas.polygon,
-    _computePrjExtentForRotated
+    _computeRotatedPrjExtent,
+    getRotatedShell
 });
 //----------------------------------------------------
 Sector.include(el, {
