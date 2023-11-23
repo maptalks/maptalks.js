@@ -9,10 +9,10 @@ class Plane extends Geometry {
             {
                 //width and height are both 1
                 aPosition : new arrType([
-                    -1, -1, z,
-                    1, -1, z,
-                    -1, 1, z,
-                    1, 1, z,
+                    -1, -1, z, // left bottom
+                    1, -1, z,  // right bottom
+                    -1, 1, z,  // left top
+                    1, 1, z,   // right top
                 ]),
 
                 // Normal

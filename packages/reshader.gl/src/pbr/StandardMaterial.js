@@ -4,7 +4,9 @@ import { extend } from '../common/Util.js';
 const DEFAULT_UNIFORMS = {
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
-    'uvRotation': 0,
+    // 'uvRotation': 0,
+    'textureOrigin': null,
+    'textureWidth': null,
 
     'baseColorFactor': [1, 1, 1, 1],
     'emissiveFactor': [0, 0, 0],

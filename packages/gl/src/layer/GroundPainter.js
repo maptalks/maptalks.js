@@ -1,3 +1,4 @@
+import * as maptalks from 'maptalks';
 import { mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
@@ -6,10 +7,11 @@ import ShadowProcess from './shadow/ShadowProcess';
 import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
-const TEX_SIZE_W = 128 / 256; //maptalks/vector-packer，考虑把默认值弄成一个单独的项目
-const TEX_SIZE_H = 128 / 256;
 const DEFAULT_TEX_OFFSET = [0, 0];
 const DEFAULT_TEX_SCALE = [1, 1];
+
+const COORD0 = new maptalks.Coordinate(0, 0);
+const COORD1 = new maptalks.Coordinate(0, 0);
 
 class GroundPainter {
     static getGroundTransform(out, map) {
@@ -117,6 +119,7 @@ class GroundPainter {
                         }
                         this._polygonPatternFile = this._createPatternTexture(image);
                         this._polygonPatternFile['_pattern_src'] = polygonPatternFile;
+                        this.setToRedraw();
                     };
                     image.src = polygonPatternFile;
                 }
@@ -333,7 +336,12 @@ class GroundPainter {
     _createGround() {
         const planeGeo = new reshader.Plane();
         planeGeo.data.aTexCoord = new Uint8Array(
-            [0, 1, 1, 1, 0, 0, 1, 0]
+            [
+                0, 0,
+                1, 0,
+                0, 1,
+                1, 1
+            ]
         );
         planeGeo.createTangent();
         planeGeo.generateBuffers(this.renderer.regl);
@@ -349,43 +357,76 @@ class GroundPainter {
         const map = this.getMap();
         const localTransform = GroundPainter.getGroundTransform(this._ground.localTransform, map);
         this._ground.setLocalTransform(localTransform);
-
-        const extent = map['_get2DExtentAtRes'](map.getGLRes());
+        const glRes = map.getGLRes();
+        const extent = map['_get2DExtentAtRes'](glRes);
         const width = extent.getWidth();
         const height = extent.getHeight();
         const center = map.cameraLookAt;
-        const xmin = center[0] - width;
-        const ymax = center[1] + height;
+        let xmin = center[0] - width;
+        let ymin = center[1] - height;
+        const texAspect = this._polygonPatternFile ? this._polygonPatternFile.width / this._polygonPatternFile.height : 1;
+
+        const symbol = this.getSymbol();
+        const patternOrigin = this.material ? this.material.get('textureOrigin') : symbol.polygonPatternFileOrigin;
+        if (patternOrigin) {
+            COORD0.set(patternOrigin[0], patternOrigin[1]);
+            map.coordToPointAtRes(COORD0, glRes, COORD1);
+            xmin = xmin - COORD1.x;
+            ymin = ymin - COORD1.y;
+        }
+
+        const pointOrigin = patternOrigin ? COORD0 : null;
+
+        let texWidth = 0.5;
+        const patternWidth = this.material ? this.material.get('textureWidth') : symbol.polygonPatternFileWidth;
+        if (patternWidth) {
+            texWidth = this._meterToPoint(patternWidth, pointOrigin);
+        }
+        let texHeight = texWidth / texAspect;
+
+        const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
+        const patternHeight = this.material ? patternWidth * (scale[1] / scale[0]) : symbol.polygonPatternFileHeight;
+        if (patternHeight) {
+            texHeight = this._meterToPoint(patternHeight, pointOrigin, 1);
+        }
+
+        // 乘以2是因为plane的大小是extent的2倍
+        const scaleX = extent.getWidth() * 2 / texWidth;
+        const scaleY = extent.getHeight() * 2 / texHeight;
+
+        if (!this.material) {
+            // fill
+            this._ground.setUniform('uvScale', [scaleX, scaleY]);
+            this._ground.setUniform('uvOffset', [(xmin / texWidth) % 1, (ymin / texHeight) % 1]);
+            return;
+        }
 
         let offset = this.material && this.material.get('uvOffset') || DEFAULT_TEX_OFFSET;
-        offset[0] = offset[0] || 0;
-        offset[1] = offset[1] || 0;
+        offset[0] = this._meterToPoint(offset[0] || 0, pointOrigin);
+        offset[1] = this._meterToPoint(offset[1] || 0, pointOrigin, 1);
         const uvOffsetAnim = this._getUVOffsetAnim();
         const hasNoise = this.material && this.material.get('noiseTexture');
         const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
         if (hasUVAnim) {
             offset = [offset[0], offset[1]];
-            const timeStamp = performance.now();
+            const timeStamp = performance.now() / 1000;
             // 256 是noiseTexture的高宽，乘以256可以保证动画首尾平滑过渡，不会出现跳跃
-            const speed = hasNoise ? 50000 : 1000;
-            const scale = (hasNoise ? 256 : 1);
+            // const speed = hasNoise ? 50000 : 1000;
+            // const scale = (hasNoise ? 256 : 1);
+            const animX = -this._meterToPoint(uvOffsetAnim[0], pointOrigin);
+            const animY = -this._meterToPoint(uvOffsetAnim[1], pointOrigin, 1);
             if (uvOffsetAnim[0]) {
-                offset[0] = ((timeStamp * uvOffsetAnim[0]) % speed) / speed * scale;
+                offset[0] = timeStamp * animX;
             }
             if (uvOffsetAnim[1]) {
-                offset[1] = ((timeStamp * uvOffsetAnim[1]) % speed) / speed * scale;
+                offset[1] = timeStamp * animY;
             }
-
         }
-        const scale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
-        const texWidth = TEX_SIZE_W / scale[0];
-        const texHeight = TEX_SIZE_H / scale[1];
-        const w = extent.getWidth() / texWidth * 2;
-        const h = extent.getHeight() / texHeight * 2;
-        this._ground.setUniform('uvScale', [w, -h]);
+
+        this._ground.setUniform('uvScale', [scaleX, scaleY]);
         if (hasUVAnim && hasNoise) {
             // 打开纹理随机分布时，地面的uv动画通过把offset值计入uvOrigin来实现的
-            const origin = [xmin - (uvOffsetAnim[0] ? offset[0] : 0), ymax + (uvOffsetAnim[1] ? offset[1] : 0)];
+            const origin = [xmin + (uvOffsetAnim[0] ? offset[0] : 0), ymin - (uvOffsetAnim[1] ? offset[1] : 0)];
             const uvStartX = (origin[0] / texWidth) % 1;
             const uvStartY = (origin[1] / texHeight) % 1;
             const uvOrigin = [origin[0] / texWidth - uvStartX, origin[1] / texHeight - uvStartY];
@@ -397,13 +438,24 @@ class GroundPainter {
             ]);
             this._ground.setUniform('uvOrigin', uvOrigin);
         } else {
-            const uvStartX = (xmin / texWidth) % 1;
-            const uvStartY = (ymax / texHeight) % 1;
-            const uvOrigin = [xmin / texWidth - uvStartX, ymax / texHeight - uvStartY];
-            this._ground.setUniform('uvOffset', [uvStartX + offset[0], uvStartY + offset[1]]);
+            const uvOriginX = ((xmin + offset[0]) / texWidth);
+            const uvOriginY = ((ymin - offset[1]) / texWidth);
+            this._ground.setUniform('uvOffset', [
+                uvOriginX % 1,
+                uvOriginY % 1
+            ]);
+            // this._ground.setUniform('uvOrigin', [0, 0]);
+            const uvOrigin = [uvOriginX - (uvOriginX % 1),  uvOriginY - (uvOriginY % 1)];
             this._ground.setUniform('uvOrigin', uvOrigin);
         }
 
+    }
+
+    _meterToPoint(meter, patternOrigin, isYAxis) {
+        const map = this.getMap();
+        const glRes = map.getGLRes();
+        const point = map.distanceToPointAtRes(meter, meter, glRes, patternOrigin ? COORD0 : null, COORD1);
+        return isYAxis ? point.y : point.x;
     }
 
     _getGroundDefines(context) {
@@ -505,7 +557,7 @@ class GroundPainter {
             data: image,
             mag: 'linear',
             min: 'linear mipmap linear',
-            flipY: false,
+            flipY: true,
             wrap: 'repeat'
         };
         return regl.texture(config);
