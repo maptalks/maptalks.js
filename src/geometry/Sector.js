@@ -128,7 +128,7 @@ class Sector extends Circle {
         if (this.isRotated()) {
             return this._computeRotatedPrjExtent();
         }
-        return super._computePrjExtent();
+        return Circle.prototype._computePrjExtent.apply(this, arguments);
     }
 
     _containsPoint(point, tolerance) {
