@@ -206,6 +206,7 @@ class MapGeometryEventsHandler extends Handler {
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
         if (isMoveEvent(eventType) && !Browser.isTest && !mousemoveEventTimeThresholdJudge(this, map.options['mousemoveTimeThreshold'])) {
+            stopPropagation(domEvent);
             return;
         }
 
