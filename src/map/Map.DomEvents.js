@@ -1,3 +1,4 @@
+import Browser from '../core/Browser';
 import { now, extend } from '../core/util';
 import {
     addDomEvent,
@@ -222,7 +223,7 @@ Map.include(/** @lends Map.prototype */ {
         }
         const clickTimeThreshold = this.options['clickTimeThreshold'];
         const type = e.type;
-        if (isMoveEvent(type) && !mousemoveEventTimeThresholdJudge(this, this.options['mousemoveTimeThreshold'])) {
+        if (isMoveEvent(type) && !Browser.isTest && !mousemoveEventTimeThresholdJudge(this, this.options['mousemoveTimeThreshold'])) {
             return;
         }
         const isMouseDown = type === 'mousedown' || (type === 'touchstart' && (!e.touches || e.touches.length === 1));

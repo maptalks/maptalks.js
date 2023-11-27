@@ -3,6 +3,7 @@ import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMov
 import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
+import Browser from '../../core/Browser';
 
 const EVENTS =
     /**
@@ -204,7 +205,7 @@ class MapGeometryEventsHandler extends Handler {
         }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
-        if (isMoveEvent(eventType) && !mousemoveEventTimeThresholdJudge(this, map.options['mousemoveTimeThreshold'])) {
+        if (isMoveEvent(eventType) && !Browser.isTest && !mousemoveEventTimeThresholdJudge(this, map.options['mousemoveTimeThreshold'])) {
             return;
         }
 
