@@ -1,5 +1,5 @@
 import { now } from '../../core/util';
-import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent } from '../../core/util/dom';
+import { on, off, getEventContainerPoint, preventDefault, stopPropagation, isMoveEvent, mousemoveEventTimeThresholdJudge } from '../../core/util/dom';
 import Handler from '../../handler/Handler';
 import Geometry from '../../geometry/Geometry';
 import Map from '../Map';
@@ -204,6 +204,10 @@ class MapGeometryEventsHandler extends Handler {
         }
         let oneMoreEvent = null;
         const eventType = type || domEvent.type;
+        if (isMoveEvent(eventType) && !mousemoveEventTimeThresholdJudge(this, map.options['mousemoveTimeThreshold'])) {
+            return;
+        }
+
         // ignore click lasted for more than 300ms.
         const isMousedown = eventType === 'mousedown' || (eventType === 'touchstart' && domEvent.touches && domEvent.touches.length === 1);
         if (isMousedown) {
@@ -279,9 +283,11 @@ class MapGeometryEventsHandler extends Handler {
                         if (!geometryCursorStyle && geometry.options['cursor']) {
                             geometryCursorStyle = geometry.options['cursor'];
                         }
-                        if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
-                            return false;
-                        }
+                        //always return true for mouseout mouseleave
+                        return true;
+                        // if (!geometry.listens('mousemove') && !geometry.listens('mouseover') && !geometry.listens('mouseenter')) {
+                        //     return false;
+                        // }
                     } else if (!geometry.listens(eventToFire) && !geometry.listens(oneMoreEvent)) {
                         return false;
                     }
