@@ -11,7 +11,6 @@ export class TranslatorError extends Error {
     constructor(msg) {
         super('Translator: ' + msg);
         this.name = 'TranslatorError';
-
     }
 }
 
@@ -34,11 +33,9 @@ class Translator extends Class {
      *  @example setLang('zh-CN')
     */
     setLang(lang) {
-
         const newLanguageNodes = this.languages[lang];
         if (!newLanguageNodes) throw new TranslatorError('Setted Lang does not exist');
         this.nodes = newLanguageNodes;
-
     }
 
     _validateNestedProps(nestedProps) {
@@ -76,14 +73,11 @@ class Translator extends Class {
                 } catch (err) {
                     throw new TranslatorError('Unable to find the text translated in lang json' + err.message);
                 }
-
             } else {
                 translatedText = this.nodes[textNode];
                 return translatedText;
             }
-
         } else {
-            // what to do if textnode has no dot on string
             throw new TranslatorError('Param passed has to be a String');
         }
     }
