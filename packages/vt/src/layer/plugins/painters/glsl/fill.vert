@@ -46,9 +46,9 @@ uniform mat4 projViewModelMatrix;
         varying vec2 vUVOffset;
     #endif
 
-    #ifdef HAS_PATTERN_SCALE
-        attribute vec2 aPatternScale;
-        varying vec2 vPatternScale;
+    #ifdef HAS_PATTERN_WIDTH
+        attribute vec2 aPatternWidth;
+        varying vec2 vPatternWidth;
     #endif
 
     #ifdef HAS_PATTERN_ORIGIN
@@ -65,9 +65,20 @@ uniform mat4 projViewModelMatrix;
             float v = vertex.y / uvSize.y;
             return vec2(u, v);
         #else
+            vec2 patternWidth = uvSize;
+            // 等于glScale时，填充图片不会随地图缩放改变大小
+            float mapGLScale = glScale;
+            #ifdef HAS_PATTERN_WIDTH
+                mapGLScale = 1.0;
+                patternWidth = aPatternWidth;
+            #endif
+            vec2 origin = uvOrigin;
+            #ifdef HAS_PATTERN_ORIGIN
+                origin = aPatternOrigin;
+            #endif
             //减去tilePoint是为了减小u和v的值，增加u和v的精度，以免在地图级别很大(scale很大)时，精度不足产生的纹理马赛克现象
-            float u = (vertex.x - uvOrigin.x) * glScale / uvSize.x;
-            float v = (vertex.y - uvOrigin.y) * glScale / uvSize.y;
+            float u = (vertex.x - origin.x) * mapGLScale / patternWidth.x;
+            float v = (vertex.y - origin.y) * mapGLScale / patternWidth.y;
             return vec2(u, -v);
         #endif
     }
@@ -96,28 +107,22 @@ void main() {
         #ifdef HAS_PATTERN_ORIGIN
             origin = origin - aPatternOrigin;
         #endif
-        vec2 patternScale = uvScale;
-        #ifdef HAS_PATTERN_SCALE
-            patternScale *= aPatternScale;
-        #endif
-        patternScale = vec2(0.1910925656557083);
+        //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
         vec2 patternSize = aTexInfo.zw + 1.0;
         #ifdef IS_VT
             //瓦片左上角对应的纹理偏移量
-            vec2 centerOffset = mod(origin * patternScale * tileScale * vec2(1.0, -1.0) / patternSize, 1.0);
-            vTexCoord = centerOffset / patternScale + computeUV(myPosition.xy * tileScale / tileRatio, patternSize);
+            vec2 originOffset = mod(origin * uvScale * tileScale * vec2(1.0, -1.0) / patternSize, 1.0);
+            vTexCoord = originOffset / uvScale + computeUV(myPosition.xy * tileScale / tileRatio, patternSize);
         #else
             vec4 position = modelMatrix * localVertex;
-            // vec2 centerOffset = mod(uvOrigin * glScale / patternSize * vec2(1.0, -1.0), 1.0);
-            //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
             vTexCoord = computeUV(position.xy, patternSize);
         #endif
 
         #ifdef HAS_UV_SCALE
             vUVScale = aUVScale / 255.0;
         #endif
-        #ifdef HAS_PATTERN_SCALE
-            vPatternScale = aPatternScale;
+        #ifdef HAS_PATTERN_WIDTH
+            vPatternWidth = aPatternWidth;
         #endif
         #ifdef HAS_UV_OFFSET
             vUVOffset = aUVOffset / 255.0;

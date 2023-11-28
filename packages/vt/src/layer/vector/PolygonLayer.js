@@ -47,6 +47,21 @@ const SYMBOL = {
         type: 'identity',
         default: [0, 0],
         property: '_symbol_uvOffset'
+    },
+    polygonPatternFileWidth: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_polygonPatternFileWidth'
+    },
+    polygonPatternFileHeight: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_polygonPatternFileHeight'
+    },
+    polygonPatternFileOrigin: {
+        type: 'identity',
+        default: undefined,
+        property: '_symbol_polygonPatternFileOrigin'
     }
 };
 

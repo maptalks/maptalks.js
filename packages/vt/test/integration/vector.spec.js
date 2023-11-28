@@ -86,6 +86,8 @@ describe('vector 3d integration specs', () => {
             } else {
                 layer.addTo(map);
             }
+            // const vLayer = new maptalks.VectorLayer('v').addTo(map);
+            // vLayer.addGeometry(new maptalks.Circle(map.locate(map.getCenter(), 4000, 0), 4000));
         };
     };
 

@@ -145,6 +145,18 @@ export default class VectorPack {
     }
 
     fillPosition(data, x, y, altitude) {
+        if (x < this._minX) {
+            this._minX = x;
+        }
+        if (x > this._maxX) {
+            this._maxX = x;
+        }
+        if (y < this._minY) {
+            this._minY = y;
+        }
+        if (y > this._maxY) {
+            this._maxY = y;
+        }
         // 乘以100是把米转为厘米
         if (this.needAltitudeAttribute()) {
             data.aPosition.push(x, y);
@@ -425,6 +437,8 @@ export default class VectorPack {
         }
         this.maxIndex = 0;
         this.maxPos = 0;
+        this._minX = this._minY = Infinity;
+        this._maxX = this._maxY = -Infinity;
         this.maxAltitude = 0;
         this.dynamicAttrs = {};
         const data = this.data = {};
@@ -550,6 +564,7 @@ export default class VectorPack {
             // format,
             indices: this.hasElements() ? elements : null,
             positionSize,
+            positionBounding: [this._minX, this._minY, this._maxX, this._maxY],
             buffers,
             symbolIndex: this.symbolDef.index || { index: 0 },
             dynamicAttributes: this.dynamicAttrs
