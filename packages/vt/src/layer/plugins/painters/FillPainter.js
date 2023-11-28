@@ -1,5 +1,6 @@
+import * as maptalks from 'maptalks';
 import BasicPainter from './BasicPainter';
-import { reshader, mat4 } from '@maptalks/gl';
+import { vec2, reshader, mat4 } from '@maptalks/gl';
 import vert from './glsl/fill.vert';
 import frag from './glsl/fill.frag';
 import pickingVert from './glsl/fill.picking.vert';
@@ -8,6 +9,7 @@ import { prepareFnTypeData } from './util/fn_type_util';
 import { createAtlasTexture } from './util/atlas_util';
 import { isFunctionDefinition, piecewiseConstant, interpolated } from '@maptalks/function-type';
 import Color from 'color';
+import { isObjectEmpty } from './util/is_obj_empty';
 
 const IDENTITY_ARR = mat4.identity([]);
 
@@ -19,6 +21,11 @@ const DEFAULT_UNIFORMS = {
 };
 
 const EMPTY_ARRAY = [];
+
+const COORD0 = new maptalks.Coordinate(0, 0);
+const COORD1 = new maptalks.Coordinate(0, 0);
+
+const ARR_0 = [];
 
 class FillPainter extends BasicPainter {
     static getBloomSymbol() {
@@ -76,23 +83,35 @@ class FillPainter extends BasicPainter {
     }
 
     createMesh(geo, transform, params) {
+        const map = this.getMap();
         const { tilePoint } = params;
         const { geometry, symbolIndex, ref } = geo;
         const isVectorTile = geometry.data.aPosition instanceof Int16Array;
+        const tileSize = this.layer.getTileSize().width;
+        const tileRatio = geometry.properties.tileExtent / tileSize;
+        const tileRes = geometry.properties.tileResolution;
+        const tileCoord = map.pointAtResToCoord(COORD0.set(tilePoint[0], tilePoint[1]), tileRes);
         const uniforms = {
             tileExtent: geometry.properties.tileExtent,
-            tileRatio: geometry.properties.tileRatio
+            tileRatio
         };
 
         const symbol = this.getSymbol(symbolIndex);
+        const symbolDef = this.getSymbolDef(symbolIndex);
+
+        if (isFunctionDefinition(symbolDef['polygonPatternFileWidth']) || isFunctionDefinition(symbolDef['polygonPatternFileWidth'])) {
+            this._preparePatternScale(symbolDef, geo, tileRatio, tileCoord, tileRes);
+        }
+        if (isFunctionDefinition(symbolDef['polygonPatternFileOrigin'])) {
+            this._preparePatternOrigin(symbolDef, geo, tileRes);
+        }
 
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
-        setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', DEFAULT_UNIFORMS['uvScale']);
         setUniformFromSymbol(uniforms, 'uvOffset', symbol, 'uvOffset', DEFAULT_UNIFORMS['uvOffset']);
 
         if (ref === undefined) {
-            const symbolDef = this.getSymbolDef(symbolIndex);
+
             const fnTypeConfig = this.getFnTypeConfig(symbolIndex);
             prepareFnTypeData(geometry, symbolDef, fnTypeConfig);
             geometry.generateBuffers(this.regl);
@@ -100,24 +119,51 @@ class FillPainter extends BasicPainter {
 
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexInfo) {
-            // const resolution = this.getMap().getResolution();
-            const map = this.getMap();
-            uniforms.tilePoint = tilePoint;
-            // Object.defineProperty(uniforms, 'tilePoint', {
-            //     enumerable: true,
-            //     get: function () {
-            //         const tileScale = geometry.properties.tileResolution / map.getResolution();
-            //         return [tilePoint[0] * tileScale, tilePoint[1] * tileScale];
-            //     }
-            // });
+            const tilePointUniform = [];
+
+            Object.defineProperty(uniforms, 'uvOrigin', {
+                enumerable: true,
+                get: () => {
+                    const patternOrigin = symbol.polygonPatternFileOrigin;
+                    if (!patternOrigin) {
+                        return tilePoint;
+                    }
+                    COORD0.set(patternOrigin[0], patternOrigin[1]);
+                    map.coordToPointAtRes(COORD0, tileRes, COORD1);
+                    return vec2.set(tilePointUniform, tilePoint[0] - COORD1.x, tilePoint[1] - COORD1.y);
+                }
+            });
+
+            const uvScaleUniform = [];
+            Object.defineProperty(uniforms, 'uvScale', {
+                enumerable: true,
+                get: () => {
+                    if (geometry.data.aPatternScale) {
+                        return DEFAULT_UNIFORMS['uvScale'];
+                    }
+                    const texWidth = symbolDef.polygonPatternFileWidth;
+                    const texHeight = symbolDef.polygonPatternFileHeight;
+                    if (!texWidth && !texHeight) {
+                        return DEFAULT_UNIFORMS['uvScale'];
+                    }
+                    const [ scaleX, scaleY ] = this._computePatternScale(ARR_0, texWidth, texHeight, tileRatio, tileCoord, tileRes);
+                    const uvScaleX = symbol.uvScale && symbol.uvScale[0] || 1;
+                    const uvScaleY = symbol.uvScale && symbol.uvScale[1] || 1;
+
+                    return vec2.set(uvScaleUniform, scaleX * uvScaleX, scaleY * uvScaleY);
+                }
+            });
             Object.defineProperty(uniforms, 'tileScale', {
                 enumerable: true,
                 get: function () {
+                    const texWidth = symbolDef.polygonPatternFileWidth;
+                    const texHeight = symbolDef.polygonPatternFileHeight;
+                    if (texWidth || texHeight) {
+                        return tileRatio;
+                    }
                     return geometry.properties.tileResolution / map.getResolution();
                 }
             });
-            // uniforms.tileRatio = geometry.properties.tileResolution / resolution / geometry.properties.tileRatio;
-            //如果SCALE[0] !== 1，说明是Vector3DLayer，则texture不用设置flipY
             uniforms.polygonPatternFile = createAtlasTexture(this.regl, iconAtlas, false, false);
             uniforms.atlasSize = [iconAtlas.width, iconAtlas.height];
             this.drawDebugAtlas(iconAtlas);
@@ -148,6 +194,12 @@ class FillPainter extends BasicPainter {
         if (geometry.data.aUVOffset) {
             defines['HAS_UV_OFFSET'] = 1;
         }
+        if (geometry.data.aPatternOrigin) {
+            defines['HAS_PATTERN_ORIGIN'] = 1;
+        }
+        if (geometry.data.aPatternScale) {
+            defines['HAS_PATTERN_SCALE'] = 1;
+        }
 
         if (isVectorTile) {
             defines['IS_VT'] = 1;
@@ -157,6 +209,99 @@ class FillPainter extends BasicPainter {
         mesh.setLocalTransform(transform);
         mesh.properties.symbolIndex = symbolIndex;
         return mesh;
+    }
+
+    _preparePatternScale(symbolDef, geo, tileRatio, tileCoord, tileRes) {
+        geo = geo && geo.geometry;
+        if (!geo) {
+            return;
+        }
+        const features = geo.properties.features;
+        if (isObjectEmpty(features)) {
+            return;
+        }
+        const widthSymbol = symbolDef['polygonPatternFileWidth'];
+        const heightSymbol = symbolDef['polygonPatternFileHeight'];
+        let widthFn, heightFn;
+        if (isFunctionDefinition(widthSymbol)) {
+            widthFn = interpolated(widthSymbol);
+        }
+        if (isFunctionDefinition(heightSymbol)) {
+            heightFn = interpolated(heightSymbol);
+        }
+
+        const aPickingId = geo.data.aPickingId;
+        const count = aPickingId.length;
+        const aPatternScale = new Float32Array(count * 2);
+
+        let current, currentScaleX, currentScaleY;
+        for (let i = 0, l = aPickingId.length; i < l; i++) {
+            let width, height;
+            if (aPickingId[i] === current) {
+                aPatternScale[i * 2] = currentScaleX;
+                aPatternScale[i * 2 + 1] = currentScaleY;
+            } else {
+                const feature = features[aPickingId[i]];
+                width = widthFn && widthFn(null, feature.feature.properties) || widthSymbol;
+                height = heightFn && heightFn(null, feature.feature.properties) || heightSymbol;
+                current = aPickingId[i];
+                if (width || height) {
+                    const [ scaleX, scaleY ] = this._computePatternScale(ARR_0, width, height, tileRatio, tileCoord, tileRes);
+                    currentScaleX = aPatternScale[i * 2] = scaleX;
+                    currentScaleY = aPatternScale[i * 2 + 1] = scaleY;
+                } else {
+                    currentScaleX = aPatternScale[i * 2] = 0;
+                    currentScaleY = aPatternScale[i * 2 + 1] = 0;
+                }
+            }
+        }
+        geo.data.aPatternScale = aPatternScale;
+    }
+
+    _preparePatternOrigin(symbolDef, geo, tileRes) {
+        geo = geo && geo.geometry;
+        if (!geo) {
+            return;
+        }
+        const features = geo.properties.features;
+        if (isObjectEmpty(features)) {
+            return;
+        }
+        const map = this.getMap();
+        const originFn = interpolated(symbolDef['polygonPatternFileOrigin']);
+        const aPickingId = geo.data.aPickingId;
+        const count = aPickingId.length;
+        const aPatternOrigin = new Float32Array(count * 2);
+        let current, currentOrigin;
+        for (let i = 0, l = aPickingId.length; i < l; i++) {
+            let patternOrigin;
+            if (aPickingId[i] === current) {
+                patternOrigin = currentOrigin;
+            } else {
+                const current = aPickingId[i];
+                const feature = features[current];
+                patternOrigin = originFn(null, feature.feature.properties);
+                currentOrigin = patternOrigin;
+            }
+
+            if (patternOrigin) {
+                COORD0.set(patternOrigin[0], patternOrigin[1]);
+                map.coordToPointAtRes(COORD0, tileRes, COORD1);
+                aPatternOrigin[i * 2] = COORD1.x;
+                aPatternOrigin[i * 2 + 1] = COORD1.y;
+            } else {
+                aPatternOrigin[i * 2] = 0;
+                aPatternOrigin[i * 2 + 1] = 0;
+            }
+        }
+        geo.data.aPatternOrigin = aPatternOrigin;
+    }
+
+    _meterToPoint(meter, patternOrigin, res, isYAxis) {
+        const map = this.getMap();
+        // const glRes = map.getGLRes();
+        const point = map.distanceToPointAtRes(meter, meter, res, patternOrigin ? COORD0 : null, COORD1);
+        return isYAxis ? point.y : point.x;
     }
 
     createFnTypeConfig(map, symbolDef) {
@@ -385,6 +530,25 @@ class FillPainter extends BasicPainter {
         this.setIncludeUniformValues(uniforms, context);
         return uniforms;
     }
+
+    _computePatternScale(out, texWidth, texHeight, tileRatio, tileCoord, tileRes) {
+        let scaleX, scaleY;
+        if (texWidth) {
+            const pointWidth = this._meterToPoint(texWidth, tileCoord, tileRes);
+            scaleX = 1 / tileRatio / pointWidth;
+        }
+        if (texHeight) {
+            const pointHeight = this._meterToPoint(texHeight, tileCoord, tileRes, 1);
+            scaleY = 1 / tileRatio / pointHeight;
+        }
+        scaleX = scaleX || scaleY;
+        scaleY = scaleY || scaleX;
+        out[0] = scaleX;
+        out[1] = scaleY;
+        return out;
+    }
 }
 
 export default FillPainter;
+
+

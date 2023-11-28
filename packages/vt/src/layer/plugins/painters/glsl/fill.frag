@@ -10,7 +10,11 @@ precision mediump float;
     #ifdef HAS_UV_SCALE
         varying vec2 vUVScale;
     #else
-        uniform vec2 uvScale;
+        uniform highp vec2 uvScale;
+    #endif
+
+    #ifdef HAS_PATTERN_SCALE
+        varying vec2 vPatternScale;
     #endif
 
     #ifdef HAS_UV_OFFSET
@@ -31,6 +35,9 @@ precision mediump float;
             vec2 myUVScale = vUVScale;
         #else
             vec2 myUVScale = uvScale;
+        #endif
+        #ifdef HAS_PATTERN_SCALE
+            myUVScale *= vPatternScale;
         #endif
         #ifdef HAS_UV_OFFSET
             vec2 myUVOffset = vUVOffset;

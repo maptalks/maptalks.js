@@ -211,7 +211,9 @@ const SYMBOLS_SUPPORT_IDENTITY_FN_TYPE = {
     'lineColor': 1,
     'lineOpacity': 1,
     'polygonFill': 1,
-    'polygonOpacity': 1
+    'polygonOpacity': 1,
+    'polygonPatternFileWidth': 1,
+    'polygonPatternFileOrigin': 1
 };
 
 // 遍历features，检查 symbolName 对应的属性中，是否有fn-type类型的值，而且和zoom相关
