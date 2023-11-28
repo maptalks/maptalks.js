@@ -343,6 +343,7 @@ class GeometryEditor extends Eventable(Class) {
         function onHandleDragstart(param) {
             this._updating = true;
             if (opts.onDown) {
+                opts.onDown.call(me, param['containerPoint'], param);
                 /**
                  * change geometry shape start event, fired when drag to change geometry shape.
                  *
@@ -352,7 +353,6 @@ class GeometryEditor extends Eventable(Class) {
                  * @property {Geometry} target - the geometry fires the event
                  */
                 this._geometry.fire('handledragstart');
-                opts.onDown.call(me, param['containerPoint'], param);
             }
             return false;
         }
@@ -360,6 +360,7 @@ class GeometryEditor extends Eventable(Class) {
         function onHandleDragging(param) {
             me._hideContext();
             if (opts.onMove) {
+                opts.onMove.call(me, param);
                 /**
                  * changing geometry shape event, fired when dragging to change geometry shape.
                  *
@@ -369,13 +370,14 @@ class GeometryEditor extends Eventable(Class) {
                  * @property {Geometry} target - the geometry fires the event
                  */
                 this._geometry.fire('handledragging');
-                opts.onMove.call(me, param);
             }
             return false;
         }
 
         function onHandleDragEnd(ev) {
             if (opts.onUp) {
+                //run mouseup code for handle delete etc
+                opts.onUp.call(me, ev);
                 /**
                  * changed geometry shape event, fired when drag end to change geometry shape.
                  *
@@ -385,7 +387,6 @@ class GeometryEditor extends Eventable(Class) {
                  * @property {Geometry} target - the geometry fires the event
                  */
                 this._geometry.fire('handledragend');
-                opts.onUp.call(me, ev);
             }
             this._updating = false;
             return false;
