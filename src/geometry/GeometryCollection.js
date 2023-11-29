@@ -5,6 +5,7 @@ import Coordinate from '../geo/Coordinate';
 import PointExtent from '../geo/PointExtent';
 import Extent from '../geo/Extent';
 import Geometry from './Geometry';
+import Browser from '../core/Browser';
 
 const TEMP_EXTENT = new PointExtent();
 
@@ -289,7 +290,9 @@ class GeometryCollection extends Geometry {
                 continue;
             }
             if (isSelf(geometry)) {
-                console.error(geometry, ' is GeometryCollection sub class,it Cannot be placed in GeometryCollection');
+                if (!Browser.isTest) {
+                    console.error(geometry, ' is GeometryCollection sub class,it Cannot be placed in GeometryCollection');
+                }
                 continue;
             }
             filterGeometries.push(geometry);
