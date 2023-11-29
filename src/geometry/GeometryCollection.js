@@ -277,20 +277,24 @@ class GeometryCollection extends Geometry {
      */
     _checkGeometries(geometries) {
         const invalidGeoError = 'The geometry added to collection is invalid.';
-        if (geometries && !Array.isArray(geometries)) {
-            if (geometries instanceof Geometry) {
-                return [geometries];
-            } else {
-                throw new Error(invalidGeoError);
+        geometries = Array.isArray(geometries) ? geometries : [geometries];
+        const filterGeometries = [];
+        for (let i = 0, l = geometries.length; i < l; i++) {
+            const geometry = geometries[i];
+            if (!geometry) {
+                continue;
             }
-        } else {
-            for (let i = 0, l = geometries.length; i < l; i++) {
-                if (!this._checkGeo(geometries[i])) {
-                    throw new Error(invalidGeoError + ' Index: ' + i);
-                }
+            if (!this._checkGeo(geometry)) {
+                console.error(invalidGeoError + ' Index: ' + i);
+                continue;
             }
-            return geometries;
+            if (isSelf(geometry)) {
+                console.error(geometry, ' is GeometryCollection sub class,it Cannot be placed in GeometryCollection');
+                continue;
+            }
+            filterGeometries.push(geometry);
         }
+        return filterGeometries;
     }
 
     _checkGeo(geo) {
@@ -587,3 +591,8 @@ function computeExtent(projection, fn) {
 
     return extent;
 }
+
+function isSelf(geom) {
+    return (geom instanceof GeometryCollection);
+}
+

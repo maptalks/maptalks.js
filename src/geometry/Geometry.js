@@ -1557,7 +1557,7 @@ function getGeometryCoordinatesAlts(geometry, layerAlt, enableAltitude) {
         coordinatesHasAlt(coordinates, tempAlts);
         if (tempAlts.length) {
             const alts = getCoordinatesAlts(coordinates, layerAlt, enableAltitude);
-            if (geometry.getShell) {
+            if (geometry.getShell && Array.isArray(alts[0])) {
                 return alts[0][0];
             }
             return alts;
