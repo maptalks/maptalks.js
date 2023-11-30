@@ -350,7 +350,7 @@ class TubePainter extends BasicPainter {
                     }
                     i8[0] = speed / 127;
                     i8[1] = arr[index + 1];
-                    return i8[0];
+                    return i8;
                 }
             },
             {
@@ -368,7 +368,7 @@ class TubePainter extends BasicPainter {
                     // 0 - 12.7
                     i8[1] = gap * 10;
                     i8[0] = arr[index];
-                    return i8[0];
+                    return i8;
                 }
             }
         ].concat(shapeConfigs);

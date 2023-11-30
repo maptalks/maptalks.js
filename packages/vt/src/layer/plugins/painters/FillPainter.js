@@ -321,7 +321,8 @@ class FillPainter extends BasicPainter {
         const uvScaleFn = interpolated(symbolDef['uvScale']);
         const uvOffsetFn = interpolated(symbolDef['uvOffset']);
         const u8 = new Uint8Array(1);
-        const u16 = new Uint16Array(1);
+        const u16 = new Uint16Array(2);
+        const offsetU8 = new Uint8Array(2);
         return [
             {
                 //geometry.data 中的属性数据
@@ -367,9 +368,10 @@ class FillPainter extends BasicPainter {
                 width: 2,
                 define: 'HAS_UV_SCALE',
                 evaluate: properties => {
-                    let scale = uvScaleFn(map.getZoom(), properties);
-                    u16[0] = scale * 10;
-                    return u16[0];
+                    const scale = uvScaleFn(map.getZoom(), properties);
+                    u16[0] = scale[0] * 255;
+                    u16[1] = scale[1] * 255;
+                    return u16;
                 }
             },
             {
@@ -379,9 +381,10 @@ class FillPainter extends BasicPainter {
                 width: 2,
                 define: 'HAS_UV_OFFSET',
                 evaluate: properties => {
-                    let offset = uvOffsetFn(map.getZoom(), properties);
-                    u8[0] = offset * 255;
-                    return u8[0];
+                    const offset = uvOffsetFn(map.getZoom(), properties);
+                    offsetU8[0] = offset[0] * 255;
+                    offsetU8[1] = offset[1] * 255;
+                    return offsetU8;
                 }
             }
         ];
