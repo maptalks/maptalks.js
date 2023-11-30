@@ -114,9 +114,16 @@ void main() {
             #ifdef HAS_PATTERN_WIDTH
                 myPatternWidth = aPatternWidth;
             #endif
+            // 没有patternWidth时
+            #ifdef HAS_UV_SCALE
+                vec2 myUVScale = aUVScale / 255.0;
+            #else
+                vec2 myUVScale = uvScale;
+            #endif
             //瓦片左上角对应的纹理偏移量
-            vec2 originOffset = origin * uvScale * vec2(1.0, -1.0) / myPatternWidth;
-            vTexCoord = originOffset + computeUV(myPosition.xy * tileScale / tileRatio, myPatternWidth * tileScale);
+            vec2 originOffset = origin * tileScale * myUVScale * vec2(1.0, -1.0) / myPatternWidth;
+
+            vTexCoord = originOffset / myUVScale + computeUV(myPosition.xy * tileScale / tileRatio, myPatternWidth);
         #else
             vec2 myPatternWidth = patternSize;
             #ifdef HAS_PATTERN_WIDTH

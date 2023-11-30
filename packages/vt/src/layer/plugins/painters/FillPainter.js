@@ -164,7 +164,7 @@ class FillPainter extends BasicPainter {
                     const texWidth = symbolDef.polygonPatternFileWidth;
                     const texHeight = symbolDef.polygonPatternFileHeight;
                     if (texWidth || texHeight) {
-                        return tileRatio;
+                        return 1;
                     }
                     return geometry.properties.tileResolution / map.getResolution();
                 }
