@@ -3,15 +3,13 @@ const path = require('path');
 const data = {
     type: 'FeatureCollection',
     features: [
-        // { type : 'Feature', geometry : { type : 'Polygon', coordinates : [[[-1, 0.0], [-0.4, 0.0], [0, -0.5], [-1, 0]]] }, properties : { type : 3 }}
         {
             type: 'Feature',
             geometry: {
                 type: 'Polygon', coordinates: [
-                    [[-1., 1.0], [1., 1.0], [1., -1.0], [-1., -1], [-1., 1]],
-                    [[-0.5, 0.5], [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5], [-0.5, 0.5]]
+                    [[-1., 1.0], [1., 1.0], [1., -1.0], [-1., -1], [-1., 1]]
                 ]
-            }, properties: { type: 3, width: 100, origin: [1, 0] }
+            }, properties: { type: 3, width: 8000, origin: [1, 0] }
         }
     ]
 };
@@ -29,13 +27,11 @@ const style = {
                 }
             },
             symbol: {
-                // polygonPatternFile: '{$root}/1.png',
                 polygonPatternFile: '{$root}/avatar.jpg',
                 polygonPatternFileWidth: {
                     type: 'identity',
                     property: 'width'
                 },
-                // polygonPatternFileWidth: 100,
                 polygonPatternFileOrigin: {
                     type: 'identity',
                     property: 'origin'
@@ -49,7 +45,7 @@ module.exports = {
     style,
     data: data,
     view: {
-        center: [0.61090629, -0.54981564],
+        center: [0.5, 0],
         zoom: 9.6
     }
 

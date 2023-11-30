@@ -24,6 +24,7 @@ uniform mat4 projViewModelMatrix;
 #ifdef HAS_PATTERN
     attribute vec4 aTexInfo;
 
+    uniform vec2 patternWidth;
     uniform vec2 uvOrigin;
     uniform vec2 uvScale;
     #ifdef IS_VT
@@ -58,19 +59,16 @@ uniform mat4 projViewModelMatrix;
     varying vec2 vTexCoord;
     varying vec4 vTexInfo;
 
-    vec2 computeUV(vec2 vertex, vec2 uvSize) {
-        vTexInfo = vec4(aTexInfo.xy, uvSize);
+    vec2 computeUV(vec2 vertex, vec2 patternWidth) {
         #ifdef IS_VT
-            float u = vertex.x / uvSize.x;
-            float v = vertex.y / uvSize.y;
+            float u = vertex.x / patternWidth.x;
+            float v = vertex.y / patternWidth.y;
             return vec2(u, v);
         #else
-            vec2 patternWidth = uvSize;
             // 等于glScale时，填充图片不会随地图缩放改变大小
             float mapGLScale = glScale;
             #ifdef HAS_PATTERN_WIDTH
                 mapGLScale = 1.0;
-                patternWidth = aPatternWidth;
             #endif
             vec2 origin = uvOrigin;
             #ifdef HAS_PATTERN_ORIGIN
@@ -103,19 +101,29 @@ void main() {
     //     vPosition = aPosition.xy;
     // #endif
     #ifdef HAS_PATTERN
-        vec2 origin = uvOrigin;
-        #ifdef HAS_PATTERN_ORIGIN
-            origin = origin - aPatternOrigin;
-        #endif
         //uvSize + 1.0 是为了把256宽实际存为255，这样可以用Uint8Array来存储宽度为256的值
         vec2 patternSize = aTexInfo.zw + 1.0;
+        vTexInfo = vec4(aTexInfo.xy, patternSize);
         #ifdef IS_VT
+            vec2 origin = uvOrigin;
+            #ifdef HAS_PATTERN_ORIGIN
+                origin = origin - aPatternOrigin;
+            #endif
+            float hasPatternWidth = sign(length(patternWidth));
+            vec2 myPatternWidth = mix(patternSize, patternWidth, hasPatternWidth);
+            #ifdef HAS_PATTERN_WIDTH
+                myPatternWidth = aPatternWidth;
+            #endif
             //瓦片左上角对应的纹理偏移量
-            vec2 originOffset = mod(origin * uvScale * tileScale * vec2(1.0, -1.0) / patternSize, 1.0);
-            vTexCoord = originOffset / uvScale + computeUV(myPosition.xy * tileScale / tileRatio, patternSize);
+            vec2 originOffset = origin * uvScale * vec2(1.0, -1.0) / myPatternWidth;
+            vTexCoord = originOffset + computeUV(myPosition.xy * tileScale / tileRatio, myPatternWidth * tileScale);
         #else
+            vec2 myPatternWidth = patternSize;
+            #ifdef HAS_PATTERN_WIDTH
+                myPatternWidth = aPatternWidth;
+            #endif
             vec4 position = modelMatrix * localVertex;
-            vTexCoord = computeUV(position.xy, patternSize);
+            vTexCoord = computeUV(position.xy, myPatternWidth);
         #endif
 
         #ifdef HAS_UV_SCALE
