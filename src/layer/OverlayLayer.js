@@ -52,6 +52,27 @@ class OverlayLayer extends Layer {
         }
     }
 
+    isGeometryListening(types) {
+        if (!this._geoList) {
+            return false;
+        }
+        if (!Array.isArray(types)) {
+            types = [types];
+        }
+        for (let i = 0, l = this._geoList.length; i < l; i++) {
+            const geometry = this._geoList[i];
+            if (!geometry) {
+                continue;
+            }
+            for (let j = 0; j < types.length; j++) {
+                if (geometry.listens(types[j])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Get a geometry by its id
      * @param  {String|Number} id   - id of the geometry
