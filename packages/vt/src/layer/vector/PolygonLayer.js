@@ -48,6 +48,11 @@ const SYMBOL = {
         default: [0, 0],
         property: '_symbol_uvOffset'
     },
+    uvOffsetInMeter: {
+        type: 'identity',
+        default: false,
+        property: '_symbol_uvOffsetInMeter'
+    },
     polygonPatternFileWidth: {
         type: 'identity',
         default: undefined,

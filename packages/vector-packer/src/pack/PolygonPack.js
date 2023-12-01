@@ -96,7 +96,7 @@ export default class PolygonPack extends VectorPack {
 
     _addPolygon(geometry, feature) {
         let dynFill, dynOpacity, dynUVScale, dynUVOffset;
-        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn } = this._fnTypes;
+        const { polygonFillFn, polygonOpacityFn, uvScaleFn, uvOffsetFn, uvOffsetInMeterFn } = this._fnTypes;
         const properties = feature.properties;
         if (polygonFillFn) {
             dynFill = polygonFillFn(this.options['zoom'], properties) || vec4.set([], 255, 255, 255, 255);
@@ -136,15 +136,19 @@ export default class PolygonPack extends VectorPack {
 
         }
         if (uvOffsetFn) {
-            dynUVOffset = uvOffsetFn(this.options['zoom'], properties);
-            if (isFunctionDefinition(dynUVOffset)) {
+            if (uvOffsetInMeterFn && uvOffsetInMeterFn(null, properties)) {
                 dynUVOffset = [0, 0];
-                this.dynamicAttrs['aUVOffset'] = 1;
             } else {
-                if (isNil(dynUVOffset)) {
+                dynUVOffset = uvOffsetFn(this.options['zoom'], properties);
+                if (isFunctionDefinition(dynUVOffset)) {
                     dynUVOffset = [0, 0];
+                    this.dynamicAttrs['aUVOffset'] = 1;
+                } else {
+                    if (isNil(dynUVOffset)) {
+                        dynUVOffset = [0, 0];
+                    }
+                    dynUVOffset = [dynUVOffset[0] * 255, dynUVOffset[1] * 255];
                 }
-                dynUVOffset = [dynUVOffset[0] * 255, dynUVOffset[1] * 255];
             }
         }
 

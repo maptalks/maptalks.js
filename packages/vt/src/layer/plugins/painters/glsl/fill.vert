@@ -25,6 +25,7 @@ uniform mat4 projViewModelMatrix;
     attribute vec4 aTexInfo;
 
     uniform vec2 patternWidth;
+    uniform vec2 patternOffset;
     uniform vec2 uvOrigin;
     uniform vec2 uvScale;
     #ifdef IS_VT
@@ -56,6 +57,10 @@ uniform mat4 projViewModelMatrix;
         attribute vec2 aPatternOrigin;
     #endif
 
+    #ifdef HAS_PATTERN_OFFSET
+        attribute vec2 aPatternOffset;
+    #endif
+
     varying vec2 vTexCoord;
     varying vec4 vTexInfo;
 
@@ -68,12 +73,19 @@ uniform mat4 projViewModelMatrix;
             // 等于glScale时，填充图片不会随地图缩放改变大小
             float mapGLScale = glScale;
             #ifdef HAS_PATTERN_WIDTH
-                mapGLScale = 1.0;
+                float hasPatternWidth = sign(length(aPatternWidth));
+                mapGLScale = mix(glScale, 1.0, hasPatternWidth);
             #endif
             vec2 origin = uvOrigin;
             #ifdef HAS_PATTERN_ORIGIN
                 origin = aPatternOrigin;
             #endif
+            #ifdef HAS_PATTERN_OFFSET
+                vec2 myPatternOffset = aPatternOffset;
+            #else
+                vec2 myPatternOffset = patternOffset;
+            #endif
+            origin += myPatternOffset;
             //减去tilePoint是为了减小u和v的值，增加u和v的精度，以免在地图级别很大(scale很大)时，精度不足产生的纹理马赛克现象
             float u = (vertex.x - origin.x) * mapGLScale / patternWidth.x;
             float v = (vertex.y - origin.y) * mapGLScale / patternWidth.y;
@@ -105,7 +117,12 @@ void main() {
         vec2 patternSize = aTexInfo.zw + 1.0;
         vTexInfo = vec4(aTexInfo.xy, patternSize);
         #ifdef IS_VT
-            vec2 origin = uvOrigin;
+            #ifdef HAS_PATTERN_OFFSET
+                vec2 myPatternOffset = aPatternOffset;
+            #else
+                vec2 myPatternOffset = patternOffset;
+            #endif
+            vec2 origin = uvOrigin + myPatternOffset;
             #ifdef HAS_PATTERN_ORIGIN
                 origin = origin - aPatternOrigin;
             #endif
@@ -127,7 +144,8 @@ void main() {
         #else
             vec2 myPatternWidth = patternSize;
             #ifdef HAS_PATTERN_WIDTH
-                myPatternWidth = aPatternWidth;
+                float hasPatternWidth = sign(length(aPatternWidth));
+                myPatternWidth = mix(patternSize, aPatternWidth, hasPatternWidth);
             #endif
             vec4 position = modelMatrix * localVertex;
             vTexCoord = computeUV(position.xy, myPatternWidth);

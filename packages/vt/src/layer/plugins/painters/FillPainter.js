@@ -18,7 +18,8 @@ const DEFAULT_UNIFORMS = {
     'polygonOpacity': 1,
     'uvScale': [1, 1],
     'uvOffset': [0, 0],
-    'patternWidth': [0, 0]
+    'patternWidth': [0, 0],
+    'patternOffset': [0, 0]
 };
 
 const EMPTY_ARRAY = [];
@@ -28,7 +29,6 @@ const COORD1 = new maptalks.Coordinate(0, 0);
 const COORD2 = new maptalks.Coordinate(0, 0);
 
 const ARR_0 = [];
-const ARR_1 = [];
 
 class FillPainter extends BasicPainter {
     static getBloomSymbol() {
@@ -103,17 +103,20 @@ class FillPainter extends BasicPainter {
         const symbolDef = this.getSymbolDef(symbolIndex);
 
         if (isFunctionDefinition(symbolDef['polygonPatternFileOrigin'])) {
-            this._preparePatternOrigin(symbolDef, geo, tileRes);
+            this._preparePatternOrigin(symbolDef, geo, isVectorTile ? [0, 0] : tilePoint, tileRes);
         }
         if (isFunctionDefinition(symbolDef['polygonPatternFileWidth']) || isFunctionDefinition(symbolDef['polygonPatternFileWidth'])) {
             this._preparePatternWidth(symbolDef, geo, isVectorTile ? tileRatio : 1, tileCoord, tileRes);
+        }
+        if (symbolDef['uvOffsetInMeter'] && isFunctionDefinition(symbolDef['uvOffset'])) {
+            this._preparePatternOffset(symbolDef, geo, tileCoord, tileRes);
         }
 
 
         setUniformFromSymbol(uniforms, 'polygonFill', symbol, 'polygonFill', DEFAULT_UNIFORMS['polygonFill'], createColorSetter(this.colorCache));
         setUniformFromSymbol(uniforms, 'polygonOpacity', symbol, 'polygonOpacity', DEFAULT_UNIFORMS['polygonOpacity']);
         setUniformFromSymbol(uniforms, 'uvScale', symbol, 'uvScale', DEFAULT_UNIFORMS['uvScale']);
-        setUniformFromSymbol(uniforms, 'uvOffset', symbol, 'uvOffset', DEFAULT_UNIFORMS['uvOffset']);
+        // setUniformFromSymbol(uniforms, 'uvOffset', symbol, 'uvOffset', DEFAULT_UNIFORMS['uvOffset']);
 
         if (ref === undefined) {
 
@@ -125,7 +128,6 @@ class FillPainter extends BasicPainter {
         const iconAtlas = geometry.properties.iconAtlas;
         if (iconAtlas && geometry.data.aTexInfo) {
             const tilePointUniform = [];
-
             Object.defineProperty(uniforms, 'uvOrigin', {
                 enumerable: true,
                 get: () => {
@@ -158,6 +160,41 @@ class FillPainter extends BasicPainter {
                     return vec2.set(patternWidthUniform, width, height);
                 }
             });
+
+
+            Object.defineProperty(uniforms, 'uvOffset', {
+                enumerable: true,
+                get: () => {
+                    if (geometry.data.aPatternOffset) {
+                        return DEFAULT_UNIFORMS['uvOffset'];
+                    }
+                    if (symbolDef.uvOffsetInMeter) {
+                        return DEFAULT_UNIFORMS['uvOffset'];
+                    }
+                    return symbol.uvOffset || DEFAULT_UNIFORMS['uvOffset'];
+                }
+            });
+
+            const offsetUniform = [];
+            Object.defineProperty(uniforms, 'patternOffset', {
+                enumerable: true,
+                get: () => {
+                    if (geometry.data.aPatternOffset) {
+                        return DEFAULT_UNIFORMS['uvOffset'];
+                    }
+                    if (!symbolDef.uvOffsetInMeter) {
+                        return DEFAULT_UNIFORMS['uvOffset'];
+                    }
+                    const offset = symbolDef.uvOffset;
+                    if (!offset) {
+                        return DEFAULT_UNIFORMS['uvOffset'];
+                    }
+                    const offsetX = this._meterToPoint(offset[0], tileCoord, tileRes);
+                    const offsetY = this._meterToPoint(offset[1], tileCoord, tileRes);
+                    return vec2.set(offsetUniform, offsetX, offsetY);
+                }
+            });
+
             Object.defineProperty(uniforms, 'tileScale', {
                 enumerable: true,
                 get: function () {
@@ -204,6 +241,9 @@ class FillPainter extends BasicPainter {
         }
         if (geometry.data.aPatternWidth) {
             defines['HAS_PATTERN_WIDTH'] = 1;
+        }
+        if (geometry.data.aPatternOffset) {
+            defines['HAS_PATTERN_OFFSET'] = 1;
         }
 
         if (isVectorTile) {
@@ -271,7 +311,58 @@ class FillPainter extends BasicPainter {
         geo.data.aPatternWidth = aPatternWidth;
     }
 
-    _preparePatternOrigin(symbolDef, geo, tileRes) {
+    _preparePatternOffset(symbolDef, geo, tileCoord, tileRes) {
+        geo = geo && geo.geometry;
+        if (!geo) {
+            return;
+        }
+        const features = geo.properties.features;
+        if (isObjectEmpty(features)) {
+            return;
+        }
+        let isMeterFn = isFunctionDefinition(symbolDef['uvOffsetInMeter']) && piecewiseConstant(symbolDef['uvOffsetInMeter']);
+        const uvOffsetFn = interpolated(symbolDef['uvOffset']);
+        const originFn = interpolated(symbolDef['polygonPatternFileOrigin']);
+
+        const { aPickingId, aPatternOrigin } = geo.data;
+        const count = aPickingId.length;
+        const aPatternOffset = new Float32Array(count * 2);
+
+        let current, currentOffsetX, currentOffsetY;
+        for (let i = 0, l = aPickingId.length; i < l; i++) {
+            if (aPickingId[i] === current) {
+                aPatternOffset[i * 2] = currentOffsetX;
+                aPatternOffset[i * 2 + 1] = currentOffsetY;
+                continue;
+            }
+            const feature = features[aPickingId[i]];
+            const offset = uvOffsetFn(null, feature.feature.properties);
+            let isUvOffsetInMeter = true;
+            if (isMeterFn) {
+                isUvOffsetInMeter = isMeterFn(null, feature.feature.properties);
+            }
+            current = aPickingId[i];
+            if (offset && isUvOffsetInMeter) {
+                let origin = tileCoord;
+                if (aPatternOrigin) {
+                    const patternOrigin = originFn(null, feature.feature.properties);
+                    if (patternOrigin) {
+                        origin = COORD2.set(patternOrigin[0], patternOrigin[1]);
+                    }
+                }
+                const offsetX = this._meterToPoint(offset[0], origin, tileRes);
+                const offsetY = this._meterToPoint(offset[0], origin, tileRes);
+                currentOffsetX = aPatternOffset[i * 2] = offsetX;
+                currentOffsetY = aPatternOffset[i * 2 + 1] = offsetY;
+            } else {
+                currentOffsetX = aPatternOffset[i * 2] = 0;
+                currentOffsetY = aPatternOffset[i * 2 + 1] = 0;
+            }
+        }
+        geo.data.aPatternOffset = aPatternOffset;
+    }
+
+    _preparePatternOrigin(symbolDef, geo, tilePoint, tileRes) {
         geo = geo && geo.geometry;
         if (!geo) {
             return;
@@ -302,8 +393,8 @@ class FillPainter extends BasicPainter {
                 currentOriginX = aPatternOrigin[i * 2] = COORD1.x;
                 currentOriginY = aPatternOrigin[i * 2 + 1] = COORD1.y;
             } else {
-                currentOriginX = aPatternOrigin[i * 2] = 0;
-                currentOriginX = aPatternOrigin[i * 2 + 1] = 0;
+                currentOriginX = aPatternOrigin[i * 2] = tilePoint[0];
+                currentOriginY = aPatternOrigin[i * 2 + 1] = tilePoint[1];
             }
         }
         geo.data.aPatternOrigin = aPatternOrigin;
