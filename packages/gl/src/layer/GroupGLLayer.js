@@ -38,7 +38,8 @@ const options = {
     forceRenderOnRotating : true,
     viewMoveThreshold: 100,
     geometryEvents: true,
-    multiSamples: 4
+    multiSamples: 4,
+    forceRedrawPerFrame: false
 };
 
 //
