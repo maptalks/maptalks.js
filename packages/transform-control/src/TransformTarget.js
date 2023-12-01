@@ -1,7 +1,7 @@
 import { Coordinate, Point } from "maptalks";
 import { vec3, mat4, quat } from '@maptalks/gl';
 
-const EMPTY_VEC = [], EMPTY_QUAT = [], EMPTY_MAT = [], TEMP_POINT = new Point(0, 0), TEMP_VEC_1 = [], TEMP_VEC_2 = [], TEMP_SCALE = [];
+const EMPTY_VEC = [], EMPTY_QUAT = [], EMPTY_MAT = [], TEMP_POINT = new Point(0, 0), TEMP_VEC_1 = [], TEMP_VEC_2 = [], TEMP_SCALE = [], EMPTY_TRANS = [0, 0, 0];
 export default class TransformTarget {
     constructor() {
         this._targetList = [];
@@ -124,7 +124,10 @@ export default class TransformTarget {
     }
 
     getTranslation() {
-        return this._translating;
+        if (this._targetList.length === 1) {
+            return this._targetList[0].getTranslation() || EMPTY_TRANS;
+        }
+        return EMPTY_TRANS;
     }
 
     getRotation() {

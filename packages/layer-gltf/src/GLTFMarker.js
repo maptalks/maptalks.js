@@ -55,6 +55,8 @@ const BOX_INDEX = [
     7, 4
 ];
 
+const BBOX_LINECOLOR = [0.8, 0.8, 0.1, 1.0], BBOX_LINEOPACITY = 1;
+
 export default class GLTFMarker extends Marker {
     constructor(coordinates, options) {
         //Marker中有维护自己的symbol，为避免重复处理symbol，先去掉symbol字段，后面利用自己的处理逻辑
@@ -398,15 +400,6 @@ export default class GLTFMarker extends Marker {
         const {nodeMatrixMap, skinMap } = this._updateAnimation(timestamp);
         this._calSpatialScale(TEMP_SCALE);
         let zOffset = 0;
-        const markerPixelHeight = this._getMarkerPixelHeight();
-        const modelHeight = this.getModelHeight();
-        if (markerPixelHeight && markerPixelHeight > 0) {
-            const fixSizeScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE);
-            vec3.multiply(TEMP_SCALE, TEMP_SCALE, fixSizeScale);
-        } else if (modelHeight) {
-            const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE);
-            vec3.multiply(TEMP_SCALE, TEMP_SCALE, modelHeightScale);
-        }
         meshes.forEach((mesh) => {
             const nodeIndex = mesh.properties.geometryResource.nodeIndex;
             const animNodeMatrix = nodeMatrixMap[nodeIndex];
@@ -470,6 +463,7 @@ export default class GLTFMarker extends Marker {
                 this._updateInstancedMeshData(mesh);
             }
         });
+        this.fire('updatematrix', { target: this });
     }
 
     getBoundingBoxCenter() {
@@ -496,14 +490,7 @@ export default class GLTFMarker extends Marker {
         }
         const idx = axis || 0;
         const { min, max } = bbox;
-        let scale = this.getScale()[idx];
-        const modelHeight = this.getModelHeight();
-        if (modelHeight) {
-            const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE);
-            scale = modelHeightScale[idx]
-        } else {
-            scale = this.getScale()[idx];
-        }
+        const scale = this._getScale()[idx];
         return (max[idx] - min[idx]) * scale;
     }
 
@@ -535,7 +522,6 @@ export default class GLTFMarker extends Marker {
     _calFixSizeScale(out) {
         const bbox = this._gltfModelBBox;
         const symbol = this.getSymbol();
-        const scale = this.getScale();
         const pixelHeight = symbol.markerPixelHeight;
         if (!pixelHeight || pixelHeight < 0 || !bbox) {
             return out;
@@ -545,7 +531,7 @@ export default class GLTFMarker extends Marker {
         const pointZ = map.altitudeToPoint(boxHeight, map.getGLRes());
         const heightInPoint = pixelHeight * map.getGLScale();
         const ratio = heightInPoint / pointZ;
-        return vec3.set(out, ratio / scale[0] , ratio / scale[1], ratio / scale[2]);
+        return vec3.set(out, ratio , ratio , ratio);
     }
 
     getCurrentPixelHeight() {
@@ -650,6 +636,8 @@ export default class GLTFMarker extends Marker {
     //  v7------v4
     _getBoundingBoxMesh() {
         if (this._bboxMesh) {
+            this._bboxMesh.material.set('lineColor', this._bboxLineColor || BBOX_LINECOLOR);
+            this._bboxMesh.material.set('lineOpacity', this._bboxLineOpacity || BBOX_LINEOPACITY);
             return this._bboxMesh;
         }
         const bbox = this._gltfModelBBox;
@@ -699,14 +687,16 @@ export default class GLTFMarker extends Marker {
             positionAttribute: 'POSITION'
         });
         geometry.generateBuffers(this.regl);
-        const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: [0.8, 0.8, 0.1, 1.0], lineOpacity: 1 }));
+        const mesh = new reshader.Mesh(geometry, new reshader.Material({ lineColor: this._bboxLineColor || BBOX_LINECOLOR, lineOpacity: this._bboxLineOpacity || BBOX_LINEOPACITY }));
         this._bboxMesh = mesh;
         this._bboxMesh._originLocalTransform = mat4.copy([], mesh.localTransform);
         return mesh;
     }
 
-    showBoundingBox() {
+    showBoundingBox(options) {
         this.options['showDebugBoundingBox'] = true;
+        this._bboxLineColor = options && options.lineColor;
+        this._bboxLineOpacity = options && options.lineOpacity;
         this._dirty = true;
     }
 
@@ -1248,6 +1238,22 @@ export default class GLTFMarker extends Marker {
         return vec3.set(this._defaultTRS.scale, scaleX, scaleY, scaleZ);
     }
 
+    _getScale() {
+        const scale = this.getScale();
+        if (this._gltfModelBBox) {
+            const markerPixelHeight = this._getMarkerPixelHeight();
+            const modelHeight = this.getModelHeight();
+            if (markerPixelHeight && markerPixelHeight > 0) {
+                const pixelHeightScale = this._calFixSizeScale(TEMP_FIXSIZE_SCALE);
+                return vec3.multiply(pixelHeightScale, pixelHeightScale, scale);
+            } else if (modelHeight) {
+                const modelHeightScale = this._calModelHeightScale(TEMP_FIXSIZE_SCALE);
+                return vec3.multiply(modelHeightScale, modelHeightScale, scale);
+            }
+        }
+        return scale;
+    }
+
     //TODO
     //绕轴旋转的方法暂时不提供，需要知道将四元数组反解为欧拉角的方法
     // rotateAround(angle, axis) {
@@ -1331,7 +1337,7 @@ export default class GLTFMarker extends Marker {
         const translation = this._getWorldTranslation();
         const r = this.getRotation();
         const rotation = quat.fromEuler(EMPTY_QUAT, r[0], r[1], r[2]);
-        const scale = this.getScale();
+        const scale = this._getScale();
         this._modelMatrix = mat4.fromRotationTranslationScale(this._modelMatrix, rotation, translation, scale);
     }
 

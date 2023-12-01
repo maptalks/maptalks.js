@@ -85,6 +85,28 @@ const lightConfig = {
     }
 };
 
+const MAX_ZOOM = 25;
+const identitySpatialReference = {
+    projection: 'identity',
+    coordType: {
+        code: 'utm',
+        zone: 17
+    },
+    resolutions: (function () {
+        const resolutions = [];
+        for (let i = 0; i < MAX_ZOOM; i++) {
+            resolutions[MAX_ZOOM - 1 - i] = Math.pow(2, i - 8);
+        }
+        return resolutions;
+    })(),
+    fullExtent: {
+        top: 1000,
+        left: -1000,
+        bottom: -1000,
+        right: 1000,
+    }
+};
+
 function createMap() {
     const container = document.createElement('div');
     container.style.width = '400px';

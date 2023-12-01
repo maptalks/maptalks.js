@@ -1,5 +1,5 @@
 import MultiGLTFMarker from "./MultiGLTFMarker";
-import { Coordinate, measurer, Util } from "maptalks";
+import { Coordinate, Util } from "maptalks";
 import { vec3 } from '@maptalks/gl';
 
 const options = {
@@ -43,11 +43,14 @@ export default class GLTFLineString extends MultiGLTFMarker {
     }
 
     _generateData(from, to) {
-        const measure = measurer.Measurer.getInstance();
-        const dist = measure.measureLenBetween(from, to);
+        const items = [];
+        const map = this.getMap();
+        if (!map) {
+            return items;
+        }
+        const dist = map.getProjection().measureLenBetween(from, to);
         const boxWidth = this._calBoxWidth(from, to);
         const times = Math.floor(dist / boxWidth );
-        const items = [];
         const rotationZ = this._getRotation(from, to);
         //取余缩放
         if (times >= 1) {

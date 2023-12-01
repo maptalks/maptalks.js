@@ -59,4 +59,30 @@ describe('GLTFLineString', () => {
         });
         new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
     });
+
+    it('add GLTFLineString in map with identity spatial reference', done => {
+        map.setSpatialReference(identitySpatialReference);
+        const gltflayer = new maptalks.GLTFLayer('gltf');
+        const coords = [
+            [0, 100], [0, 0], [100, 0]
+        ];
+        const gltfline = new maptalks.GLTFLineString(coords, {
+            direction: 2,
+            symbol: {
+                url: './models/fence/wooden_fence.glb',
+                rotationZ: 90
+            },
+        }).addTo(gltflayer);
+        map.setPitch(50);
+        gltfline.on('load', () => {
+            setTimeout(function() {
+                const pixel1 = pickPixel(map, map.width / 2, map.height / 2, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, 295, 140, 1, 1);
+                expect(pixelMatch([61, 52, 43, 255], pixel2)).to.be.eql(true);
+                done();
+            }, 100);
+        });
+        new maptalks.GroupGLLayer('gl', [gltflayer], { sceneConfig }).addTo(map);
+    })
 });

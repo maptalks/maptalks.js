@@ -1197,9 +1197,6 @@ describe('bug', () => {
         const gltflayer = new maptalks.GLTFLayer('gltf');
         const marker = new maptalks.GLTFMarker(center, {
             symbol: {
-                scaleX: 120,
-                scaleY: 120,
-                scaleZ: 120,
                 modelHeight: 50,
                 url: url2
             }
@@ -1207,15 +1204,19 @@ describe('bug', () => {
 
         function checkColor() {
             setTimeout(function() {
-                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixelMatch([130, 130, 130, 255], pixel)).to.be.eql(true);
+                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
+                expect(pixelMatch([57, 88, 114, 255], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
+                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
                 done();
             }, 100);
         }
         marker.on('load', () => {
             setTimeout(function() {
-                const pixel = pickPixel(map, map.width / 2, 20, 1, 1);
-                expect(pixelMatch([130, 130, 130, 255], pixel)).to.be.eql(true);
+                const pixel1 = pickPixel(map, map.width / 2, 50, 1, 1);
+                expect(pixelMatch([0, 0, 0, 0], pixel1)).to.be.eql(true);
+                const pixel2 = pickPixel(map, map.width / 2, 100, 1, 1);
+                expect(pixelMatch([130, 130, 130, 255], pixel2)).to.be.eql(true);
                 marker.setModelHeight(100);
                 checkColor();
             }, 100);
@@ -1410,6 +1411,24 @@ describe('bug', () => {
                 done();
             }, 100);
         }
+    });
+
+    it('show boundingBox with linecolor and lineOpacity', done => {
+        const gltflayer = new maptalks.GLTFLayer('gltf').addTo(map);
+        const marker = new maptalks.GLTFGeometry(center, { symbol: { url: url2,
+            scaleX: 80,
+            scaleY: 80,
+            scaleZ: 80
+        }});
+        gltflayer.addGeometry(marker);
+        marker.showBoundingBox({ lineColor: [0.1, 0.1, 1, 1], lineOpacity: 0.5 });
+        marker.on('load', () => {
+            setTimeout(function() {
+                const pixel = pickPixel(map, 187, 120, 1, 1);
+                expect(pixelMatch([24, 24, 255, 127], pixel)).to.be.eql(true);
+                done();
+            }, 100);
+        });
     });
 
     it('combineGLTFBoundingBox', done => {
