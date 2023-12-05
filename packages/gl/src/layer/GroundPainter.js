@@ -1,19 +1,14 @@
-import * as maptalks from 'maptalks';
 import { vec2, mat4 } from 'gl-matrix';
 import * as reshader from '@maptalks/reshader.gl';
 import fillVert from './glsl/fill.vert';
 import fillFrag from './glsl/fill.frag';
 import ShadowProcess from './shadow/ShadowProcess';
-import { extend, getGroundTransform, hasOwn, normalizeColor } from './util/util.js';
+import { extend, getGroundTransform, hasOwn, normalizeColor, computeUVUniforms } from './util/util.js';
 
 const { createIBLTextures, disposeIBLTextures, getPBRUniforms } = reshader.pbr.PBRUtils;
 const DEFAULT_TEX_OFFSET = [0, 0];
 const DEFAULT_TEX_SCALE = [1, 1];
 
-const COORD0 = new maptalks.Coordinate(0, 0);
-const COORD1 = new maptalks.Coordinate(0, 0);
-
-const ARR2_0 = [];
 const ARR2_1 = [];
 const ARR2_2 = [];
 const ARR2_3 = [];
@@ -369,92 +364,31 @@ class GroundPainter {
         const width = extent.getWidth();
         const height = extent.getHeight();
         const center = map.cameraLookAt;
-        let xmin = center[0] - width;
-        let ymin = center[1] - height;
+        const xmin = center[0] - width;
+        const ymin = center[1] - height;
         const texAspect = this._polygonPatternFile ? this._polygonPatternFile.width / this._polygonPatternFile.height : 1;
 
         const symbol = this.getSymbol();
         const patternOrigin = this.material ? this.material.get('textureOrigin') : symbol.polygonPatternFileOrigin;
-        if (patternOrigin) {
-            COORD0.set(patternOrigin[0], patternOrigin[1]);
-            map.coordToPointAtRes(COORD0, glRes, COORD1);
-            xmin = xmin - COORD1.x;
-            ymin = ymin - COORD1.y;
-        }
-
-        const pointOrigin = patternOrigin ? COORD0 : null;
-
         const isOffsetInMeter = !!(this.material ? this.material.get('uvOffsetInMeter') : symbol.uvOffsetInMeter);
         const offsetValue = (this.material ? this.material.get('uvOffset') : symbol.uvOffset) || DEFAULT_TEX_OFFSET;
-        // compute uv offset
-        const uvOffset = !isOffsetInMeter && offsetValue || DEFAULT_TEX_OFFSET;
-        let meterOffset = isOffsetInMeter && offsetValue || DEFAULT_TEX_OFFSET;
-        meterOffset = vec2.copy(ARR2_0, meterOffset);
-        if (meterOffset[0]) {
-            meterOffset[0] = this._meterToPoint(meterOffset[0], pointOrigin);
-        }
-        if (meterOffset[1]) {
-            meterOffset[1] = this._meterToPoint(meterOffset[1], pointOrigin, 1);
-        }
-
-        // compute uv scale
         const uvScale = this.material && this.material.get('uvScale') || DEFAULT_TEX_SCALE;
-
-        let texWidth = 0.5;
         const patternWidth = this.material ? this.material.get('textureWidth') : symbol.polygonPatternFileWidth;
-        if (patternWidth) {
-            texWidth = this._meterToPoint(patternWidth, pointOrigin);
-        }
-
-        let texHeight = texWidth / texAspect;
         const patternHeight = this.material ? patternWidth * (uvScale[1] / uvScale[0]) : symbol.polygonPatternFileHeight;
-        if (patternHeight) {
-            texHeight = this._meterToPoint(patternHeight, pointOrigin, 1);
-        }
-
-        // 乘以2是因为plane的长宽是extent的2倍
-        const scaleX = extent.getWidth() * 2 / texWidth;
-        const scaleY = extent.getHeight() * 2 / texHeight;
+        const uvOffsetAnim = this._getUVOffsetAnim();
+        const [scaleX, scaleY, uvStartX, uvStartY, uvOffset] = computeUVUniforms(map,
+            xmin, ymin, extent.getWidth() * 2, extent.getHeight() * 2,
+            patternOrigin, patternWidth, patternHeight, texAspect,
+            uvScale,
+            isOffsetInMeter, offsetValue, uvOffsetAnim);
 
         if (!this.material) {
             // fill
-            this._ground.setUniform('uvScale', vec2.set(ARR2_1, scaleX * uvScale[0], scaleY * uvScale[1]));
-            this._ground.setUniform('uvOffset', vec2.set(ARR2_2, ((xmin + meterOffset[0]) / texWidth) % 1  + uvOffset[0], ((ymin - meterOffset[1]) / texHeight) % 1 + uvOffset[1]));
+            this._ground.setUniform('uvScale', vec2.set(ARR2_1, scaleX, scaleY));
+            this._ground.setUniform('uvOffset', vec2.set(ARR2_2, uvStartX % 1 + uvOffset[0], uvStartY % 1 + uvOffset[1]));
             return;
         }
-
-        const uvOffsetAnim = this._getUVOffsetAnim();
-        const hasUVAnim = uvOffsetAnim && (uvOffsetAnim[0] || uvOffsetAnim[1]);
-        if (hasUVAnim) {
-            const timeStamp = performance.now() / 1000;
-            // 256 是noiseTexture的高宽，乘以256可以保证动画首尾平滑过渡，不会出现跳跃
-            // const speed = hasNoise ? 50000 : 1000;
-            // const scale = (hasNoise ? 256 : 1);
-            let animX = uvOffsetAnim[0];
-            let animY = uvOffsetAnim[1];
-            if (isOffsetInMeter) {
-                animX = -this._meterToPoint(uvOffsetAnim[0], pointOrigin);
-                animY = -this._meterToPoint(uvOffsetAnim[1], pointOrigin, 1);
-            }
-            if (uvOffsetAnim[0]) {
-                if (isOffsetInMeter) {
-                    meterOffset[0] = timeStamp * animX;
-                } else {
-                    uvOffset[0] = timeStamp * animX;
-                }
-            }
-            if (uvOffsetAnim[1]) {
-                if (isOffsetInMeter) {
-                    meterOffset[1] = timeStamp * animY;
-                } else {
-                    uvOffset[1] = timeStamp * animY;
-                }
-            }
-        }
-
         this._ground.setUniform('uvScale', vec2.set(ARR2_5, scaleX, scaleY));
-        const uvStartX = ((xmin + meterOffset[0]) / texWidth);
-        const uvStartY = ((ymin - meterOffset[1]) / texHeight);
         this._ground.setUniform('uvOffset', vec2.set(ARR2_3,
             uvStartX % 1 + uvOffset[0],
             uvStartY % 1 + uvOffset[1]
@@ -462,13 +396,6 @@ class GroundPainter {
         // uvOrigin 是 uvStart的整数部分
         this._ground.setUniform('uvOrigin', vec2.set(ARR2_4, uvStartX - (uvStartX % 1),  uvStartY - (uvStartY % 1)));
 
-    }
-
-    _meterToPoint(meter, patternOrigin, isYAxis) {
-        const map = this.getMap();
-        const glRes = map.getGLRes();
-        const point = map.distanceToPointAtRes(meter, meter, glRes, patternOrigin ? COORD0 : null, COORD1);
-        return isYAxis ? point.y : point.x;
     }
 
     _getGroundDefines(context) {
